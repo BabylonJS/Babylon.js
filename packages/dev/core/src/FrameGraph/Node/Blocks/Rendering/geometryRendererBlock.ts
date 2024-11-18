@@ -25,9 +25,12 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
+     * @param doNotChangeAspectRatio True (default) to not change the aspect ratio of the scene in the RTT
      */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true) {
         super(name, frameGraph, scene);
+
+        this._additionalConstructionParameters = [doNotChangeAspectRatio];
 
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
@@ -49,7 +52,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this.outputDepth._typeConnectionSource = this.depth;
 
-        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene);
+        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio });
     }
 
     /** Indicates if depth testing must be enabled or disabled */
@@ -72,6 +75,19 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.depthWrite = value;
     }
 
+    /** True (default) to not change the aspect ratio of the scene in the RTT */
+    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get doNotChangeAspectRatio() {
+        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
+    }
+
+    public set doNotChangeAspectRatio(value: boolean) {
+        this._frameGraphTask.dispose();
+        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
+        this._additionalConstructionParameters = [value];
+    }
+
+    /** Width of the geometry texture */
     @editableInPropertyPage("Texture width", PropertyTypeForEdition.Int, "PROPERTIES")
     public get width() {
         return this._frameGraphTask.size.width;
@@ -81,6 +97,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.size.width = value;
     }
 
+    /** Height of the geometry texture */
     @editableInPropertyPage("Texture height", PropertyTypeForEdition.Int, "PROPERTIES")
     public get height() {
         return this._frameGraphTask.size.height;
@@ -90,6 +107,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.size.height = value;
     }
 
+    /** Indicates if the geometry texture width and height are percentages or absolute values */
     @editableInPropertyPage("Size is in percentage", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get sizeInPercentage() {
         return this._frameGraphTask.sizeIsPercentage;
@@ -99,6 +117,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.sizeIsPercentage = value;
     }
 
+    /** Number of samples of the geometry texture */
     @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 8 })
     public get samples() {
         return this._frameGraphTask.samples;

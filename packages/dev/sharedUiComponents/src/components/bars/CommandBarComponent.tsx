@@ -11,7 +11,7 @@ import logoIcon from "../../imgs/babylonLogo.svg";
 import canvasFitIcon from "../../imgs/canvasFitIcon.svg";
 import betaFlag from "../../imgs/betaFlag.svg";
 
-import style from "./CommandBar.modules.scss";
+import style from "./CommandBar.module.scss";
 import { Color3 } from "core/Maths/math.color";
 import { ColorPickerLineComponent } from "../lines/ColorPickerLineComponent";
 

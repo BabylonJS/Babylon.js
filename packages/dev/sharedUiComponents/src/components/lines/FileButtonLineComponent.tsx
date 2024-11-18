@@ -1,5 +1,5 @@
 import * as React from "react";
-import styles from "./FileButtonLineComponent.modules.scss";
+import styles from "./FileButtonLineComponent.module.scss";
 
 export interface IFileButtonLineComponentProps {
     label: string;

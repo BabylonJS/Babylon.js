@@ -23,11 +23,26 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
+     * @param doNotChangeAspectRatio True (default) to not change the aspect ratio of the scene in the RTT
      */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true) {
         super(name, frameGraph, scene);
 
-        this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, frameGraph, scene);
+        this._additionalConstructionParameters = [doNotChangeAspectRatio];
+
+        this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio });
+    }
+
+    /** True (default) to not change the aspect ratio of the scene in the RTT */
+    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get doNotChangeAspectRatio() {
+        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
+    }
+
+    public set doNotChangeAspectRatio(value: boolean) {
+        this._frameGraphTask.dispose();
+        this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
+        this._additionalConstructionParameters = [value];
     }
 
     /** Number of accumulated samples */

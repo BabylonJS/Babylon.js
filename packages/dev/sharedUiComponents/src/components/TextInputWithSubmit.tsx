@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
-import style from "./TextInputWithSubmit.modules.scss";
+import style from "./TextInputWithSubmit.module.scss";
 
 import submitIcon from "../imgs/confirmGridElementDark.svg";
 import cancelIcon from "../imgs/deleteGridElementDark.svg";

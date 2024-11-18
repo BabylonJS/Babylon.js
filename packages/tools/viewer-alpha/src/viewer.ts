@@ -153,17 +153,34 @@ export type ViewerOptions = Partial<
 
 export type EnvironmentOptions = Partial<Readonly<{}>>;
 
-export type ViewerHotSpotQuery = {
-    /**
-     * The type of the hot spot.
-     */
-    type: "surface";
+export type ViewerHotSpotQuery =
+    | ({
+          /**
+           * The type of the hot spot.
+           */
+          type: "surface";
 
-    /**
-     * The index of the mesh within the loaded model.
-     */
-    meshIndex: number;
-} & HotSpotQuery;
+          /**
+           * The index of the mesh within the loaded model.
+           */
+          meshIndex: number;
+      } & HotSpotQuery)
+    | {
+          /**
+           * The type of the hot spot.
+           */
+          type: "world";
+
+          /**
+           * The fixed world space position of the hot spot.
+           */
+          position: [x: number, y: number, z: number];
+
+          /**
+           * The fixed world space normal of the hot spot.
+           */
+          normal: [x: number, y: number, z: number];
+      };
 
 /**
  * Provides the result of a hot spot query.
@@ -837,14 +854,21 @@ export class Viewer implements IDisposable {
         if (!this._details.model) {
             return false;
         }
+
         const worldNormal = this._vector3[2];
         const worldPos = this._vector3[1];
         const screenPos = this._vector3[0];
-        const mesh = this._details.model.meshes[query.meshIndex];
-        if (!mesh) {
-            return false;
+
+        if (query.type === "surface") {
+            const mesh = this._details.model.meshes[query.meshIndex];
+            if (!mesh) {
+                return false;
+            }
+            GetHotSpotToRef(mesh, query, worldPos, worldNormal);
+        } else {
+            worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
+            worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
-        GetHotSpotToRef(mesh, query, worldPos, worldNormal);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
