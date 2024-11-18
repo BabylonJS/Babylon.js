@@ -24,6 +24,24 @@ export interface ISplitterProps {
      * Minimum size for the second element
      */
     minSize2?: number;
+
+    /**
+     * Maximum size for the first element
+     */
+    maxSize1?: number;
+    /**
+     * Maximum size for the second element
+     */
+    maxSize2?: number;
+
+    /**
+     * Initial size for the first element
+     */
+    initialSize1?: number;
+    /**
+     * Initial size for the second element
+     */
+    initialSize2?: number;
 }
 
 /**
@@ -51,6 +69,10 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             elementRef.current.style.width = `100%`;
             elementRef.current.classList.add(styles["vertical"]);
         }
+
+        if (props.initialSize1 || props.initialSize2) {
+            splitContext.init(elementRef.current, props.initialSize1, props.initialSize2);
+        }
     }, []);
 
     const onPointerDown = (evt: React.PointerEvent) => {
@@ -72,9 +94,9 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             return;
         }
         if (splitContext.direction === "horizontal") {
-            splitContext.drag(evt.clientX - startValue, elementRef.current, props.minSize1, props.minSize2);
+            splitContext.drag(evt.clientX - startValue, elementRef.current, props.minSize1, props.minSize2, props.maxSize1, props.maxSize2);
         } else {
-            splitContext.drag(evt.clientY - startValue, elementRef.current, props.minSize1, props.minSize2);
+            splitContext.drag(evt.clientY - startValue, elementRef.current, props.minSize1, props.minSize2, props.maxSize1, props.maxSize2);
         }
     };
     const onPointerUp = (evt: React.PointerEvent) => {

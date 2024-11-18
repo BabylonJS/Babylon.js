@@ -15,6 +15,16 @@ export interface ISplitContainerProps {
      * Split direction
      */
     direction: "horizontal" | "vertical";
+
+    /**
+     * RefObject to the root div element
+     */
+    ref?: React.RefObject<HTMLDivElement>;
+
+    /**
+     * Optional class name
+     */
+    className?: string;
 }
 
 /**
@@ -23,8 +33,9 @@ export interface ISplitContainerProps {
  * @returns the split container component
  */
 export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
-    const elementRef: React.RefObject<HTMLDivElement> = useRef(null);
+    const elementRef: React.RefObject<HTMLDivElement> = props.ref || useRef(null);
     const sizes: number[] = [];
+    const initialSizes: string[] = [];
 
     useEffect(() => {
         if (!elementRef.current) {
@@ -35,12 +46,18 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
 
         let gridDefinition = "";
         let gridIndex = 1;
+        const pickArray = Array.from(children);
         for (const child of children) {
             const childElement = child as HTMLElement;
             if (child.classList.contains(styles["splitter"])) {
                 gridDefinition += "auto ";
             } else {
-                gridDefinition += "1fr ";
+                const sourceIndex = pickArray.indexOf(child);
+                if (initialSizes[sourceIndex]) {
+                    gridDefinition += initialSizes[sourceIndex] + " ";
+                } else {
+                    gridDefinition += "1fr ";
+                }
             }
 
             if (props.direction === "horizontal") {
@@ -63,7 +80,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         }
     }, []);
 
-    const drag = (offset: number, source: HTMLElement, minSize1?: number, minSize2?: number) => {
+    const drag = (offset: number, source: HTMLElement, minSize1?: number, minSize2?: number, maxSize1?: number, maxSize2?: number) => {
         if (!elementRef.current) {
             return;
         }
@@ -77,23 +94,29 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         minSize1 = minSize1 || 0;
         minSize2 = minSize2 || 0;
 
-        if (sizes[sourceIndex - 1] + offset < minSize1 || sizes[sourceIndex + 1] - offset < minSize2) {
+        const newSize1 = sizes[sourceIndex - 1] + offset;
+        const newSize2 = sizes[sourceIndex + 1] - offset;
+
+        if (newSize1 < minSize1 || newSize2 < minSize2) {
+            return;
+        }
+
+        if ((maxSize1 && newSize1 > maxSize1) || (maxSize2 && newSize2 > maxSize2)) {
             return;
         }
 
         let split: string[] = [];
-        if (props.direction === "horizontal") {
-            const gridTemplateRows = elementRef.current.style.gridTemplateColumns;
-            split = gridTemplateRows.split(" ");
 
-            split[sourceIndex - 1] = `${sizes[sourceIndex - 1] + offset}px`;
-            split[sourceIndex + 1] = `${sizes[sourceIndex + 1] - offset}px`;
+        if (props.direction === "horizontal") {
+            const gridTemplateColumns = elementRef.current.style.gridTemplateColumns;
+            split = gridTemplateColumns.split(" ");
         } else {
-            // const gridTemplateRows = elementRef.current.style.gridTemplateRows;
-            // if (offset < 0) {
-            // } else {
-            // }
+            const gridTemplateRows = elementRef.current.style.gridTemplateRows;
+            split = gridTemplateRows.split(" ");
         }
+
+        split[sourceIndex - 1] = `${newSize1}px`;
+        split[sourceIndex + 1] = `${newSize2}px`;
 
         elementRef.current.style.gridTemplateColumns = split.join(" ");
     };
@@ -119,9 +142,32 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         sizes.length = 0;
     };
 
+    const init = (source: HTMLElement, size1?: number, size2?: number) => {
+        if (!elementRef.current) {
+            return;
+        }
+
+        if (!size1 && !size2) {
+            return;
+        }
+
+        const children = elementRef.current.children;
+        const sourceIndex = Array.from(children).indexOf(source);
+        if (sourceIndex <= 0) {
+            return;
+        }
+
+        if (size1) {
+            initialSizes[sourceIndex - 1] = `${size1}px`;
+        }
+        if (size2) {
+            initialSizes[sourceIndex + 1] = `${size2}px`;
+        }
+    };
+
     return (
-        <SplitContext.Provider value={{ direction: props.direction, drag, beginDrag, endDrag }}>
-            <div id={props.id} className={styles["split-container"]} ref={elementRef}>
+        <SplitContext.Provider value={{ direction: props.direction, drag, beginDrag, endDrag, init }}>
+            <div id={props.id} className={styles["split-container"] + " " + props.className} ref={elementRef}>
                 {props.children}
             </div>
         </SplitContext.Provider>

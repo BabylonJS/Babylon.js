@@ -23,6 +23,8 @@ import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
+import { SplitContainer } from "shared-ui-components/split/splitContainer";
+import { Splitter } from "shared-ui-components/split/splitter";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { GlobalState } from "./globalState";
@@ -686,42 +688,36 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     override render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div
+                <SplitContainer
                     id="node-editor-graph-root"
-                    style={{
-                        gridTemplateColumns: this.buildColumnLayout(),
-                    }}
-                    onMouseMove={(evt) => {
-                        this._mouseLocationX = evt.pageX;
-                        this._mouseLocationY = evt.pageY;
-                    }}
-                    onMouseDown={(evt) => {
-                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
-                            return;
-                        }
-                        this.props.globalState.lockObject.lock = false;
-                    }}
+                    direction="horizontal"
+                    // onMouseMove={(evt) => {
+                    //     this._mouseLocationX = evt.pageX;
+                    //     this._mouseLocationY = evt.pageY;
+                    // }}
+                    // onMouseDown={(evt) => {
+                    //     if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                    //         return;
+                    //     }
+                    //     this.props.globalState.lockObject.lock = false;
+                    // }}
                 >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 
-                    <div
-                        id="leftGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt)}
-                    ></div>
+                    <Splitter size={8} minSize1={180} minSize2={400} initialSize1={200} maxSize1={350} />
 
                     {/* The node graph diagram */}
-                    <div
+                    <SplitContainer
+                        direction="vertical"
                         className="diagram-container"
                         ref={this._diagramContainerRef}
-                        onDrop={(event) => {
-                            this.dropNewBlock(event);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                        }}
+                        // onDrop={(event) => {
+                        //     this.dropNewBlock(event);
+                        // }}
+                        // onDragOver={(event) => {
+                        //     event.preventDefault();
+                        // }}
                     >
                         <GraphCanvasComponent
                             ref={this._graphCanvasRef}
@@ -730,14 +726,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 return this.appendBlock(nodeData.data as NodeMaterialBlock);
                             }}
                         />
-                    </div>
+                        <Splitter size={8} minSize1={400} minSize2={120} initialSize2={120} maxSize2={500} />
+                        <LogComponent globalState={this.props.globalState} />
+                    </SplitContainer>
 
-                    <div
-                        id="rightGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt, false)}
-                    ></div>
+                    <Splitter size={8} minSize1={400} minSize2={250} initialSize2={300} maxSize2={450} />
 
                     {/* Property tab */}
                     <div className="nme-right-panel">
@@ -745,9 +738,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
                         {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}
                     </div>
-
-                    <LogComponent globalState={this.props.globalState} />
-                </div>
+                </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Material Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
