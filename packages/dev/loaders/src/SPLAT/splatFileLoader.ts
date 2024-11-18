@@ -31,6 +31,7 @@ const enum Mode {
     Splat = 0,
     PointCloud = 1,
     Mesh = 2,
+    Reject = 3,
 }
 
 /**
@@ -179,46 +180,159 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
+    private _parseSPZ(data: ArrayBuffer): Promise<ParsedPLY> {
+        const ubuf = new Uint8Array(data);
+        const ubufu32 = new Uint32Array(data);
+        Logger.Log(`SPZ version ${ubufu32[1]}`);
+        Logger.Log(`num points ${ubufu32[2]}`);
+        const splatCount = ubufu32[2];
+
+        //const shDegree = ubuf[12];
+        const fractionalBits = ubuf[13];
+        //const flags = ubuf[14];
+        const reserved = ubuf[15];
+
+        // check magic and version
+        if (reserved || ubufu32[0] != 0x5053474e || ubufu32[1] != 2) {
+            // reserved must be 0
+            return new Promise((resolve) => {
+                resolve({ mode: Mode.Reject, data: buffer, hasVertexColors: false });
+            });
+        }
+
+        const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
+        const buffer = new ArrayBuffer(/*GaussianSplattingMesh._RowOutputLength **/ rowOutputLength * splatCount);
+
+        const positionScale = 1.0 / (1 << fractionalBits);
+
+        //floatView = new Float32Array(1);
+        const int32View = new Int32Array(1);
+        const uint8View = new Uint8Array(int32View.buffer);
+        const read24bComponent = function (u8: Uint8Array, offset: number) {
+            uint8View[0] = u8[offset + 0];
+            uint8View[1] = u8[offset + 1];
+            uint8View[2] = u8[offset + 2];
+            uint8View[3] = u8[offset + 2] & 0x80 ? 0xff : 0x00;
+            //const value = (u8[offset + 2] << 16) + (u8[offset + 1] << 8) + u8[offset];
+            //if (u8[offset + 2] & 0x80) return value * positionScale;
+            return int32View[0] * positionScale;
+        };
+        let byteOffset = 16;
+
+        const position = new Float32Array(buffer);
+        const scale = new Float32Array(buffer);
+        const rgba = new Uint8ClampedArray(buffer);
+        const rot = new Uint8ClampedArray(buffer);
+
+        // positions
+        for (let i = 0; i < splatCount; i++) {
+            position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
+            position[i * 8 + 1] = -read24bComponent(ubuf, byteOffset + 3);
+            position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
+            byteOffset += 9;
+        }
+
+        // colors
+        for (let i = 0; i < splatCount; i++) {
+            rgba[i * 32 + 24 + 0] = ubuf[byteOffset + splatCount + i * 3 + 0];
+            rgba[i * 32 + 24 + 1] = ubuf[byteOffset + splatCount + i * 3 + 1];
+            rgba[i * 32 + 24 + 2] = ubuf[byteOffset + splatCount + i * 3 + 2];
+            rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
+        }
+        byteOffset += splatCount * 4;
+
+        // scales
+        for (let i = 0; i < splatCount; i++) {
+            scale[i * 8 + 3 + 0] = Math.exp(ubuf[byteOffset + 0] / 16.0 - 10.0);
+            scale[i * 8 + 3 + 1] = Math.exp(ubuf[byteOffset + 1] / 16.0 - 10.0);
+            scale[i * 8 + 3 + 2] = Math.exp(ubuf[byteOffset + 2] / 16.0 - 10.0);
+            byteOffset += 3;
+        }
+        // rotations
+        for (let i = 0; i < splatCount; i++) {
+            const x = ubuf[byteOffset + 0];
+            const y = ubuf[byteOffset + 1];
+            const z = ubuf[byteOffset + 2];
+            const nx = x / 127.5 - 1;
+            const ny = y / 127.5 - 1;
+            const nz = z / 127.5 - 1;
+            rot[i * 32 + 28 + 1] = x;
+            rot[i * 32 + 28 + 2] = y;
+            rot[i * 32 + 28 + 3] = z;
+            rot[i * 32 + 28 + 0] = Math.sqrt(1.0 - (nx * nx + ny * ny + nz * nz)) * 127.5 + 127.5;
+            byteOffset += 3;
+        }
+
+        return new Promise((resolve) => {
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false });
+        });
+    }
+
     private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
-        return SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
-            const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
-            switch (parsedPLY.mode) {
-                case Mode.Splat:
-                    {
+        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+
+        const readableStream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(new Uint8Array(data)); // Enqueue the ArrayBuffer as a Uint8Array
+                controller.close();
+            },
+        });
+
+        // Use GZip DecompressionStream
+        const decompressionStream = new DecompressionStream("gzip");
+        const decompressedStream = readableStream.pipeThrough(decompressionStream);
+
+        return new Promise((resolve) => {
+            new Response(decompressedStream)
+                .arrayBuffer()
+                .then((buffer) => {
+                    this._parseSPZ(buffer).then((parsedSPZ) => {
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        await gaussianSplatting.updateDataAsync(parsedPLY.data);
-                    }
-                    break;
-                case Mode.PointCloud:
-                    {
-                        const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
-                        if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
-                            return Promise.all([pointcloud.buildMeshAsync()]).then((mesh) => {
-                                babylonMeshesArray.push(mesh[0]);
-                                return babylonMeshesArray;
-                            });
-                        } else {
-                            pointcloud.dispose();
+                        gaussianSplatting.updateData(parsedSPZ.data);
+                    });
+                    resolve(babylonMeshesArray);
+                })
+                .catch(() => {
+                    // Catch any decompression errors
+                    SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
+                        switch (parsedPLY.mode) {
+                            case Mode.Splat:
+                                {
+                                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                    gaussianSplatting._parentContainer = this._assetContainer;
+                                    babylonMeshesArray.push(gaussianSplatting);
+                                    gaussianSplatting.updateData(parsedPLY.data);
+                                }
+                                break;
+                            case Mode.PointCloud:
+                                {
+                                    const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
+                                    if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
+                                        await pointcloud.buildMeshAsync().then((mesh) => {
+                                            babylonMeshesArray.push(mesh);
+                                        });
+                                    } else {
+                                        pointcloud.dispose();
+                                    }
+                                }
+                                break;
+                            case Mode.Mesh:
+                                {
+                                    if (parsedPLY.faces) {
+                                        babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
+                                    } else {
+                                        throw new Error("PLY mesh doesn't contain face informations.");
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new Error("Unsupported Splat mode");
                         }
-                    }
-                    break;
-                case Mode.Mesh:
-                    {
-                        if (parsedPLY.faces) {
-                            babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
-                        } else {
-                            throw new Error("PLY mesh doesn't contain face informations.");
-                        }
-                    }
-                    break;
-                default:
-                    throw new Error("Unsupported Splat mode");
-            }
-            return new Promise((resolve) => {
-                resolve(babylonMeshesArray);
-            });
+                    });
+                    resolve(babylonMeshesArray);
+                });
         });
     }
 
