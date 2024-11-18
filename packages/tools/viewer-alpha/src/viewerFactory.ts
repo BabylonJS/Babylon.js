@@ -69,6 +69,21 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
         });
         disposeActions.push(() => beforeRenderObserver.remove());
 
+        // If the canvas is not visible, suspend rendering.
+        let offscreenRenderingSuspension: Nullable<IDisposable> = null;
+        const interactionObserver = new IntersectionObserver((entries) => {
+            if (entries.length > 0) {
+                if (entries[entries.length - 1].isIntersecting) {
+                    offscreenRenderingSuspension?.dispose();
+                    offscreenRenderingSuspension = null;
+                } else {
+                    offscreenRenderingSuspension = details.suspendRendering();
+                }
+            }
+        });
+        interactionObserver.observe(canvas);
+        disposeActions.push(() => interactionObserver.disconnect());
+
         // Call the original onInitialized callback, if one was provided.
         onInitialized?.(details);
     };

@@ -140,6 +140,12 @@ export type ViewerDetails = {
      * Provides access to the currently loaded model.
      */
     model: Nullable<AssetContainer>;
+
+    /**
+     * Suspends the render loop.
+     * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
+     */
+    suspendRendering(): IDisposable;
 };
 
 export type ViewerOptions = Partial<
@@ -382,6 +388,7 @@ export class Viewer implements IDisposable {
                 scene,
                 camera,
                 model: null,
+                suspendRendering: this._suspendRendering.bind(this),
             };
         }
         this._details.scene.skipFrustumClipping = true;
@@ -961,6 +968,48 @@ export class Viewer implements IDisposable {
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 
         return true;
+    }
+
+    private _suspendRendering(): IDisposable {
+        this._renderLoopController?.dispose();
+        this._suspendRenderCount++;
+        let disposed = false;
+        return {
+            dispose: () => {
+                if (!disposed) {
+                    disposed = true;
+                    this._suspendRenderCount--;
+                    if (this._suspendRenderCount === 0) {
+                        this._beginRendering();
+                    }
+                }
+            },
+        };
+    }
+
+    private _beginRendering(): void {
+        if (!this._renderLoopController) {
+            const render = () => {
+                this._details.scene.render();
+                if (this.isAnimationPlaying) {
+                    this.onAnimationProgressChanged.notifyObservers();
+                    this._autoRotationBehavior.resetLastInteractionTime();
+                }
+            };
+
+            this._engine.runRenderLoop(render);
+
+            let disposed = false;
+            this._renderLoopController = {
+                dispose: () => {
+                    if (!disposed) {
+                        disposed = true;
+                        this._engine.stopRenderLoop(render);
+                        this._renderLoopController = null;
+                    }
+                },
+            };
+        }
     }
 
     private _updateCamera(interpolate = false): void {
