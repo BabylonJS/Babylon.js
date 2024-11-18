@@ -370,7 +370,7 @@ export class Viewer implements IDisposable {
                 idleCameraSuspension?.dispose();
                 isPolling = false;
             });
-            scene.onAfterRenderCameraObservable.add(() => {
+            scene.onAfterRenderObservable.add(() => {
                 if (idleCameraFrames++ > 5) {
                     idleCameraSuspension = this.suspendRendering();
                     isPolling = true;
