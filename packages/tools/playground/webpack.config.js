@@ -1,5 +1,6 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
+const path = require("path");
 
 module.exports = (env) => {
     const commonConfig = {
@@ -16,7 +17,10 @@ module.exports = (env) => {
             }
         ),
         resolve: {
-            extensions: [".js", ".ts", ".tsx"],
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
+            alias: {
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+            },
         },
         externals: {
             "@dev/core": "BABYLON",

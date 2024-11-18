@@ -15,6 +15,7 @@ import { ShortcutManager } from "./tools/shortcutManager";
 import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
 import { ExamplesComponent } from "./components/examplesComponent";
 import { QRCodeComponent } from "./components/qrCodeComponent";
+import { SplitContainer } from "shared-ui-components/split/splitContainer";
 
 import "./scss/main.scss";
 import * as Split from "split.js";
@@ -24,7 +25,6 @@ interface IPlaygroundProps {
 }
 
 export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
-    private _splitRef: React.RefObject<HTMLDivElement>;
     private _monacoRef: React.RefObject<HTMLDivElement>;
     private _renderingRef: React.RefObject<HTMLDivElement>;
 
@@ -41,7 +41,6 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
         this._globalState.runtimeMode = props.runtimeMode || RuntimeMode.Editor;
 
-        this._splitRef = React.createRef();
         this._monacoRef = React.createRef();
         this._renderingRef = React.createRef();
 
@@ -142,12 +141,12 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <div ref={this._splitRef} id="pg-split">
+                <SplitContainer id="pg-split">
                     <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this._monacoRef} />
                     <div ref={this._renderingRef} id="canvasZone" className="pg-split-part canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
-                </div>
+                </SplitContainer>
                 {window.innerWidth < 1080 && <HamburgerMenuComponent globalState={this._globalState} />}
                 <ExamplesComponent globalState={this._globalState} />
                 <FooterComponent globalState={this._globalState} />
