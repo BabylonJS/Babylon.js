@@ -17,6 +17,11 @@ export interface ISplitContainerProps {
     direction: SplitDirection;
 
     /**
+     * Minimum size for the floating elements
+     */
+    floatingMinSize?: number;
+
+    /**
      * RefObject to the root div element
      */
     containerRef?: React.RefObject<HTMLDivElement>;
@@ -65,28 +70,30 @@ export interface ISplitContainerProps {
 export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     const elementRef: React.RefObject<HTMLDivElement> = props.containerRef || useRef(null);
     const sizes: number[] = [];
-    const initialSizes: string[] = [];
-    const gridCells: string[] = [];
+    const floatingCells: boolean[] = [];
+    const noInitialSizes: boolean[] = [];
+    const floatingMinSize = props.floatingMinSize || 200;
+    const controllers: number[][] = [];
 
-    useEffect(() => {
+    const buildGridDefinition = () => {
         if (!elementRef.current) {
             return;
         }
-
         const children = elementRef.current.children;
 
         let gridIndex = 1;
         const pickArray = Array.from(children);
+        let gridDefinition = "";
         for (const child of children) {
             const childElement = child as HTMLElement;
             if (child.classList.contains(styles["splitter"])) {
-                gridCells.push("auto");
+                gridDefinition += "auto ";
             } else {
                 const sourceIndex = pickArray.indexOf(child);
-                if (initialSizes[sourceIndex]) {
-                    gridCells.push(initialSizes[sourceIndex]);
+                if (floatingCells[sourceIndex] || noInitialSizes[sourceIndex]) {
+                    gridDefinition += "1fr ";
                 } else {
-                    gridCells.push("1fr");
+                    gridDefinition += "auto ";
                 }
             }
 
@@ -101,7 +108,6 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             gridIndex++;
         }
 
-        const gridDefinition = gridCells.join(" ");
         if (props.direction === SplitDirection.Horizontal) {
             elementRef.current.style.gridTemplateRows = "100%";
             elementRef.current.style.gridTemplateColumns = gridDefinition;
@@ -109,6 +115,47 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             elementRef.current.style.gridTemplateColumns = "100%";
             elementRef.current.style.gridTemplateRows = gridDefinition;
         }
+    };
+
+    const handleResize = () => {
+        if (!elementRef.current) {
+            return;
+        }
+
+        // Check if we have enough room for everyone
+        const children = elementRef.current.children;
+        for (let i = 0; i < children.length; i++) {
+            if (!floatingCells[i]) {
+                continue;
+            }
+
+            const child = children[i] as HTMLElement;
+            let childsize = 0;
+            if (props.direction === SplitDirection.Horizontal) {
+                childsize = child.getBoundingClientRect().width;
+            } else {
+                childsize = child.getBoundingClientRect().height;
+            }
+
+            if (childsize < floatingMinSize) {
+                const missing = floatingMinSize - childsize;
+                // picking the first controller and reducing its size
+                const controller = children[controllers[i][0]] as HTMLElement;
+                controller.style.width = `${(props.direction === SplitDirection.Horizontal ? controller.getBoundingClientRect().width : controller.getBoundingClientRect().height) - missing}px`;
+            }
+        }
+    };
+
+    useEffect(() => {
+        buildGridDefinition();
+
+        // Add event listener for window resize
+        window.addEventListener("resize", handleResize);
+
+        // Cleanup the event listener on component unmount
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
     }, []);
 
     const drag = (offset: number, source: HTMLElement, controlledSide: ControlledSize, minSize?: number, maxSize?: number) => {
@@ -117,35 +164,52 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         }
 
         const children = elementRef.current.children;
-        const sourceIndex = Array.from(children).indexOf(source);
+        const childArray = Array.from(children) as HTMLElement[];
+        const sourceIndex = childArray.indexOf(source);
         if (sourceIndex <= 0) {
             return;
         }
 
         minSize = minSize || 0;
-
-        const newSize = controlledSide === ControlledSize.First ? sizes[sourceIndex - 1] + offset : sizes[sourceIndex + 1] - offset;
-
-        if (newSize < minSize) {
-            return;
-        }
-
-        if (maxSize && newSize > maxSize) {
-            return;
-        }
-
+        let current = 0;
         if (controlledSide === ControlledSize.First) {
-            gridCells[sourceIndex - 1] = `${newSize}px`;
+            current = sourceIndex - 1;
         } else {
-            gridCells[sourceIndex + 1] = `${newSize}px`;
+            current = sourceIndex + 1;
         }
 
-        const gridDefinition = gridCells.join(" ");
-        if (props.direction === SplitDirection.Horizontal) {
-            elementRef.current.style.gridTemplateColumns = gridDefinition;
-        } else {
-            elementRef.current.style.gridTemplateRows = gridDefinition;
+        noInitialSizes[current] = false;
+        buildGridDefinition();
+
+        let newSize = Math.floor(controlledSide === ControlledSize.First ? sizes[current] + offset : sizes[current] - offset);
+
+        // Min size check
+        if (newSize < minSize) {
+            newSize = minSize;
         }
+
+        // Max size check
+        if (maxSize && newSize > maxSize) {
+            newSize = maxSize;
+        }
+
+        // Max size check across the whole container
+        const maxContainerSize = sizes.reduce((a, b) => a + b, 0) || 0;
+        let totalSize = 0;
+        let totalFloating = 0;
+        for (let i = 0; i < children.length; i++) {
+            if (floatingCells[i]) {
+                totalFloating++;
+            } else {
+                totalSize += i === current ? newSize : sizes[i];
+            }
+        }
+
+        if (maxContainerSize - totalSize < floatingMinSize * totalFloating) {
+            newSize = maxContainerSize - floatingMinSize * totalFloating;
+        }
+
+        childArray[current].style.width = `${newSize}px`;
     };
 
     const beginDrag = () => {
@@ -153,7 +217,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             return;
         }
         const children = elementRef.current.children;
-
+        sizes.length = 0;
         for (const child of children) {
             const childElement = child as HTMLElement;
 
@@ -169,22 +233,46 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         sizes.length = 0;
     };
 
-    const init = (source: HTMLElement, controlledSide: ControlledSize, size: number) => {
+    // We assume splitter are not flagging floating cells in a different way
+    const init = (source: HTMLElement, controlledSide: ControlledSize, size?: number) => {
         if (!elementRef.current) {
             return;
         }
 
         const children = elementRef.current.children;
-        const sourceIndex = Array.from(children).indexOf(source);
+        const childArray = Array.from(children) as HTMLElement[];
+        const sourceIndex = childArray.indexOf(source);
         if (sourceIndex <= 0) {
             return;
         }
 
+        let current = 0;
+        let other = 0;
         if (controlledSide === ControlledSize.First) {
-            initialSizes[sourceIndex - 1] = `${size}px`;
+            current = sourceIndex - 1;
+            other = sourceIndex + 1;
         } else {
-            initialSizes[sourceIndex + 1] = `${size}px`;
+            current = sourceIndex + 1;
+            other = sourceIndex - 1;
         }
+
+        if (size !== undefined) {
+            const sizeString = `${size | 0}px`;
+
+            if (props.direction === SplitDirection.Horizontal) {
+                childArray[current].style.width = sizeString;
+            } else {
+                childArray[current].style.height = sizeString;
+            }
+        } else {
+            noInitialSizes[current] = true;
+        }
+
+        if (!controllers[other]) {
+            controllers[other] = [];
+        }
+        controllers[other].push(current);
+        floatingCells[other] = true;
     };
 
     return (

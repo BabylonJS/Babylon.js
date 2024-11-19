@@ -43,7 +43,7 @@ export interface ISplitContext {
      * @param size size of the controlled element
      * @param size2 size of the second element
      */
-    init: (source: HTMLElement, controlledSide: ControlledSize, size: number) => void;
+    init: (source: HTMLElement, controlledSide: ControlledSize, size?: number) => void;
 }
 
 // Create the context

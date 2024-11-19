@@ -28,6 +28,8 @@ interface IPlaygroundProps {
 export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
     private _monacoRef: React.RefObject<HTMLDivElement>;
     private _renderingRef: React.RefObject<HTMLDivElement>;
+    private _splitterRef: React.RefObject<HTMLDivElement>;
+    private _splitContainerRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
 
@@ -43,6 +45,8 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
         this._monacoRef = React.createRef();
         this._renderingRef = React.createRef();
+        this._splitterRef = React.createRef();
+        this._splitContainerRef = React.createRef();
 
         const defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
 
@@ -82,17 +86,26 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
         switch (this.state.mode) {
             case EditionMode.CodeOnly:
+                this._splitContainerRef.current!.classList.add("disable-split-code");
+                this._splitContainerRef.current!.classList.remove("disable-split-rendering");
                 this._renderingRef.current!.classList.add("hidden");
+                this._splitterRef.current!.classList.add("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.style.width = "100%";
                 break;
             case EditionMode.RenderingOnly:
+                this._splitContainerRef.current!.classList.add("disable-split-rendering");
+                this._splitContainerRef.current!.classList.remove("disable-split-code");
                 this._monacoRef.current!.classList.add("hidden");
+                this._splitterRef.current!.classList.add("hidden");
                 this._renderingRef.current!.classList.remove("hidden");
                 this._renderingRef.current!.style.width = "100%";
                 break;
             case EditionMode.Desktop:
+                this._splitContainerRef.current!.classList.remove("disable-split-code");
+                this._splitContainerRef.current!.classList.remove("disable-split-rendering");
                 this._renderingRef.current!.classList.remove("hidden");
+                this._splitterRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
                 break;
         }
@@ -129,14 +142,14 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <SplitContainer id="pg-split" direction={SplitDirection.Horizontal}>
+                <SplitContainer id="pg-split" direction={SplitDirection.Horizontal} containerRef={this._splitContainerRef}>
                     <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
-                    <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} />
+                    <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} refObject={this._splitterRef} />
                     <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
                 </SplitContainer>
-                {window.innerWidth < 1080 && <HamburgerMenuComponent globalState={this._globalState} />}
+                {window.innerWidth < 1140 && <HamburgerMenuComponent globalState={this._globalState} />}
                 <ExamplesComponent globalState={this._globalState} />
                 <FooterComponent globalState={this._globalState} />
                 <QRCodeComponent globalState={this._globalState} />

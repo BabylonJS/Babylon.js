@@ -36,6 +36,11 @@ export interface ISplitterProps {
      * Defines the controlled side
      */
     controlledSide: ControlledSize;
+
+    /**
+     * refObject to the splitter element
+     */
+    refObject?: React.RefObject<HTMLDivElement>;
 }
 
 /**
@@ -44,7 +49,7 @@ export interface ISplitterProps {
  * @returns the splitter component
  */
 export const Splitter: React.FC<ISplitterProps> = (props) => {
-    const elementRef: React.RefObject<HTMLDivElement> = useRef(null);
+    const elementRef: React.RefObject<HTMLDivElement> = props.refObject || useRef(null);
     const splitContext = useContext(SplitContext);
     let isCaptured = false;
     let startValue: number;
@@ -64,10 +69,8 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             elementRef.current.classList.add(styles["vertical"]);
         }
 
-        if (props.initialSize) {
-            splitContext.init(elementRef.current, props.controlledSide, props.initialSize);
-        }
-    }, []);
+        splitContext.init(elementRef.current, props.controlledSide, props.initialSize);
+    });
 
     const onPointerDown = (evt: React.PointerEvent) => {
         if (!elementRef.current) {

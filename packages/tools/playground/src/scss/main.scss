@@ -46,6 +46,14 @@
     grid-column: 1 / 3;
     overflow: hidden;
     height: 100%;
+
+    &.disable-split-code {
+        grid-template-columns: 1fr auto auto !important;
+    }
+
+    &.disable-split-rendering {
+        grid-template-columns: auto auto 1fr !important;
+    }
 }
 
 .hidden {
@@ -68,7 +76,7 @@
     }
 }
 
-@media screen and (max-width: 1080px) {
+@media screen and (max-width: 1140px) {
     #pg-root {
         grid-template-rows: 40px calc(100% - 75px) 35px;
     }
