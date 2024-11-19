@@ -146,6 +146,11 @@ export type ViewerDetails = {
      * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
      */
     suspendRendering(): IDisposable;
+
+    /**
+     * Marks the scene as mutated, which will trigger a render on the next frame (unless rendering is suspended).
+     */
+    markSceneMutated(): void;
 };
 
 export type ViewerOptions = Partial<
@@ -207,6 +212,8 @@ export class ViewerHotSpotResult {
      */
     public visibility: number = NaN;
 }
+
+// TODO: Need to add properties for anything in the upper layers, such as clearColor, so we can mark the scene as mutated.
 
 /**
  * @experimental
@@ -324,6 +331,12 @@ export class Viewer implements IDisposable {
         options?: ViewerOptions
     ) {
         {
+            // TODO: The actual resize call for the canvas scenario is in onBeforeRenderObservable, which means the next layer up needs to call markSceneMutated.
+            // Is there anything smarter we can do that keeps more of the logic in this layer?
+            this._engine.onResizeObservable.add(() => {
+                this._markSceneMutated();
+            });
+
             const scene = new Scene(this._engine);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
@@ -357,7 +370,6 @@ export class Viewer implements IDisposable {
 
                 if (hasChanged) {
                     this.onPostProcessingChanged.notifyObservers();
-                    this._markSceneMutated();
                 }
             });
 
@@ -372,6 +384,7 @@ export class Viewer implements IDisposable {
                 camera,
                 model: null,
                 suspendRendering: this._suspendRendering.bind(this),
+                markSceneMutated: this._markSceneMutated.bind(this),
             };
         }
         this._details.scene.skipFrustumClipping = true;
@@ -508,6 +521,7 @@ export class Viewer implements IDisposable {
         this._details.scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
 
         this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
     }
 
     /**
@@ -901,7 +915,7 @@ export class Viewer implements IDisposable {
     }
 
     private _markSceneMutated() {
-        this._sceneMutated = true;
+        this._details.scene.incrementRenderId();
         this._details.scene.executeWhenReady(() => {
             this._sceneMutated = true;
         });
@@ -928,10 +942,21 @@ export class Viewer implements IDisposable {
         };
     }
 
+    private count = 0;
     private _beginRendering(): void {
         if (!this._renderLoopController) {
             const render = () => {
                 if (this._shouldRender) {
+                    this.count = 0;
+                } else {
+                    this.count++;
+                }
+
+                // For some additional things state changes have not taken effect:
+                // 1. WebGPU Snapshot mode (need to debug webgpuSnapshotRendering.ts, enabled property getting set)
+                // 2. Animations entering a paused state (animations resume at the wrong frame)
+                if (this._shouldRender || this.count < 3) {
+                    //if (this._shouldRender) {
                     this._sceneMutated = false;
                     this._details.scene.render();
                     console.log("rendered");
