@@ -570,6 +570,7 @@ export class Viewer implements IDisposable {
             }
 
             this.onSelectedAnimationChanged.notifyObservers();
+            this.onAnimationProgressChanged.notifyObservers();
         }
     }
 

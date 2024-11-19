@@ -159,6 +159,7 @@ export class HTML3DElement extends LitElement {
                 calc(var(--ui-background-opacity) - 0.1)
             );
             all: inherit;
+            overflow: hidden;
         }
 
         .full-size {
