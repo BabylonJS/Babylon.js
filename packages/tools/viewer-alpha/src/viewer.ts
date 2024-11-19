@@ -300,6 +300,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
+    private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
 
@@ -316,7 +317,7 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
-    private _vector3 = BuildTuple(4, Vector3.Zero);
+    private _tempVectors = BuildTuple(4, Vector3.Zero);
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -356,33 +357,15 @@ export class Viewer implements IDisposable {
 
                 if (hasChanged) {
                     this.onPostProcessingChanged.notifyObservers();
+                    this._markSceneMutated();
                 }
             });
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
-            let isPolling = false;
-            let idleCameraFrames = 0;
-            let idleCameraSuspension: Nullable<IDisposable> = null;
-            const updateCamera = () => {
-                if (isPolling) {
-                    console.log("updateCamera");
-                    camera.update();
-                    requestAnimationFrame(updateCamera);
-                }
-            };
             camera.onViewMatrixChangedObservable.add(() => {
-                //console.log("camera.onViewMatrixChangedObservable");
-                idleCameraFrames = 0;
-                idleCameraSuspension?.dispose();
-                isPolling = false;
+                this._sceneMutated = true;
             });
-            scene.onAfterRenderObservable.add(() => {
-                if (idleCameraFrames++ > 5) {
-                    idleCameraSuspension = this.suspendRendering();
-                    isPolling = true;
-                    requestAnimationFrame(updateCamera);
-                }
-            });
+
             this._details = {
                 viewer: this,
                 scene,
@@ -458,6 +441,7 @@ export class Viewer implements IDisposable {
                     this._snapshotHelper.disableSnapshotRendering();
                     material.microSurface = 1.0 - value;
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 }
             }
             this.onSkyboxBlurChanged.notifyObservers();
@@ -631,68 +615,12 @@ export class Viewer implements IDisposable {
             this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
             this.onAnimationProgressChanged.notifyObservers();
             this._autoRotationBehavior.resetLastInteractionTime();
+            this._markSceneMutated();
         }
     }
 
     private get _activeAnimation(): Nullable<AnimationGroup> {
         return this._details.model?.animationGroups[this._selectedAnimation] ?? null;
-    }
-
-    /**
-     * Suspends the render loop.
-     * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
-     */
-    public suspendRendering(): IDisposable {
-        this._renderLoopController?.dispose();
-        this._suspendRenderCount++;
-        let disposed = false;
-        return {
-            dispose: () => {
-                if (!disposed) {
-                    disposed = true;
-                    this._suspendRenderCount--;
-                    if (this._suspendRenderCount === 0) {
-                        this._beginRendering();
-                    }
-                }
-            },
-        };
-    }
-
-    private _beginRendering(): void {
-        if (!this._renderLoopController) {
-            // let cameraMutated = false;
-            // this._details.camera.onViewMatrixChangedObservable.add(() => {
-            //     cameraMutated = true;
-            // });
-            const render = () => {
-                // if (cameraMutated || this.isAnimationPlaying || !this._details.scene.isReady(true)) {
-                //     cameraMutated = false;
-                this._details.scene.render();
-                console.log("rendered");
-                if (this.isAnimationPlaying) {
-                    this.onAnimationProgressChanged.notifyObservers();
-                    this._autoRotationBehavior.resetLastInteractionTime();
-                }
-                // } else {
-                //     console.log("camera updated");
-                //     this._details.camera.update();
-                // }
-            };
-
-            this._engine.runRenderLoop(render);
-
-            let disposed = false;
-            this._renderLoopController = {
-                dispose: () => {
-                    if (!disposed) {
-                        disposed = true;
-                        this._engine.stopRenderLoop(render);
-                        this._renderLoopController = null;
-                    }
-                },
-            };
-        }
     }
 
     /**
@@ -779,6 +707,7 @@ export class Viewer implements IDisposable {
                 this._isLoadingModel = false;
                 this.onLoadingProgressChanged.notifyObservers();
                 this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }
@@ -860,6 +789,7 @@ export class Viewer implements IDisposable {
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }
@@ -931,9 +861,9 @@ export class Viewer implements IDisposable {
             return false;
         }
 
-        const worldNormal = this._vector3[2];
-        const worldPos = this._vector3[1];
-        const screenPos = this._vector3[0];
+        const worldNormal = this._tempVectors[2];
+        const worldPos = this._tempVectors[1];
+        const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
             const mesh = this._details.model.meshes[query.meshIndex];
@@ -961,13 +891,24 @@ export class Viewer implements IDisposable {
         result.worldPosition[2] = worldPos.z;
 
         // visibility
-        const eyeToSurface = this._vector3[3];
+        const eyeToSurface = this._tempVectors[3];
         eyeToSurface.copyFrom(this._details.camera.globalPosition);
         eyeToSurface.subtractInPlace(worldPos);
         eyeToSurface.normalize();
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 
         return true;
+    }
+
+    private _markSceneMutated() {
+        this._sceneMutated = true;
+        this._details.scene.executeWhenReady(() => {
+            this._sceneMutated = true;
+        });
+    }
+
+    private get _shouldRender() {
+        return this._sceneMutated || this.isAnimationPlaying || this._snapshotHelper.isEnabling;
     }
 
     private _suspendRendering(): IDisposable {
@@ -990,10 +931,17 @@ export class Viewer implements IDisposable {
     private _beginRendering(): void {
         if (!this._renderLoopController) {
             const render = () => {
-                this._details.scene.render();
-                if (this.isAnimationPlaying) {
-                    this.onAnimationProgressChanged.notifyObservers();
-                    this._autoRotationBehavior.resetLastInteractionTime();
+                if (this._shouldRender) {
+                    this._sceneMutated = false;
+                    this._details.scene.render();
+                    console.log("rendered");
+                    if (this.isAnimationPlaying) {
+                        this.onAnimationProgressChanged.notifyObservers();
+                        this._autoRotationBehavior.resetLastInteractionTime();
+                    }
+                } else {
+                    this._details.camera.update();
+                    console.log("camera updated");
                 }
             };
 

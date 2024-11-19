@@ -92,21 +92,6 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
     const viewer = new Viewer(engine, finalOptions);
     disposeActions.push(viewer.dispose.bind(viewer));
 
-    // If the canvas is not visible, suspend rendering.
-    let offscreenRenderingSuspension: Nullable<IDisposable> = null;
-    const interactionObserver = new IntersectionObserver((entries) => {
-        if (entries.length > 0) {
-            if (entries[entries.length - 1].isIntersecting) {
-                offscreenRenderingSuspension?.dispose();
-                offscreenRenderingSuspension = null;
-            } else {
-                offscreenRenderingSuspension = viewer.suspendRendering();
-            }
-        }
-    });
-    interactionObserver.observe(canvas);
-    disposeActions.push(() => interactionObserver.disconnect());
-
     disposeActions.push(() => engine.dispose());
 
     // Override the Viewer's dispose method to add in additional cleanup.
