@@ -60,7 +60,7 @@ import {
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
-import { MultiMaterial, PBRBaseMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
+import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
@@ -1030,15 +1030,15 @@ export class GLTFExporter {
                     }
                     // Convert StandardMaterial vertex colors from gamma to linear space.
                     case VertexBuffer.ColorKind: {
-                        const pbrCount = meshes.filter((mesh) => mesh.material instanceof PBRBaseMaterial).length;
+                        const stdMaterialCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial || mesh.material == null).length;
 
-                        if (pbrCount === meshes.length) {
-                            break; // Buffer used by only PBR materials, so no conversion needed.
+                        if (stdMaterialCount == 0) {
+                            break; // Buffer not used by StandardMaterials, so no conversion needed.
                         }
 
                         // TODO: Implement this case.
-                        if (pbrCount !== 0) {
-                            Logger.Warn("Not converting vertex color space, as buffer is shared by both PBR and StandardMaterials. Results may look incorrect.");
+                        if (stdMaterialCount != meshes.length) {
+                            Logger.Warn("Not converting vertex color space, as buffer is shared by StandardMaterials and other material types. Results may look incorrect.");
                             break;
                         }
 
