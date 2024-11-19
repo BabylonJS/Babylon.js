@@ -140,7 +140,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             PrepareAttributesForInstances(attribs, defines);
 
             const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal"];
-            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
+            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "shTexture3"];
             const uniformBuffers = ["Scene", "Mesh"];
 
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
@@ -238,6 +238,12 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+
+            if (gsMesh.shTextures) {
+                for (let i = 0; i < gsMesh.shTextures?.length; i++) {
+                    effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
+                }
+            }
         }
     }
     /**
@@ -266,6 +272,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         // Bind data
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
+
+        // SH
+        defines.setValue("SH_DEGREE", true);
 
         if (mustRebind) {
             this.bindView(effect);

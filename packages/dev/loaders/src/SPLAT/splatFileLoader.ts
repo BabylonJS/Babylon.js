@@ -42,6 +42,7 @@ interface ParsedPLY {
     mode: Mode;
     faces?: number[];
     hasVertexColors?: boolean;
+    sh?: Uint8Array[];
 }
 
 /**
@@ -187,7 +188,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         Logger.Log(`num points ${ubufu32[2]}`);
         const splatCount = ubufu32[2];
 
-        //const shDegree = ubuf[12];
+        const shDegree = ubuf[12];
         const fractionalBits = ubuf[13];
         //const flags = ubuf[14];
         const reserved = ubuf[15];
@@ -201,11 +202,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         }
 
         const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
-        const buffer = new ArrayBuffer(/*GaussianSplattingMesh._RowOutputLength **/ rowOutputLength * splatCount);
+        const buffer = new ArrayBuffer(rowOutputLength * splatCount);
 
         const positionScale = 1.0 / (1 << fractionalBits);
 
-        //floatView = new Float32Array(1);
         const int32View = new Int32Array(1);
         const uint8View = new Uint8Array(int32View.buffer);
         const read24bComponent = function (u8: Uint8Array, offset: number) {
@@ -213,10 +213,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             uint8View[1] = u8[offset + 1];
             uint8View[2] = u8[offset + 2];
             uint8View[3] = u8[offset + 2] & 0x80 ? 0xff : 0x00;
-            //const value = (u8[offset + 2] << 16) + (u8[offset + 1] << 8) + u8[offset];
-            //if (u8[offset + 2] & 0x80) return value * positionScale;
             return int32View[0] * positionScale;
         };
+
         let byteOffset = 16;
 
         const position = new Float32Array(buffer);
@@ -248,6 +247,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             scale[i * 8 + 3 + 2] = Math.exp(ubuf[byteOffset + 2] / 16.0 - 10.0);
             byteOffset += 3;
         }
+
         // rotations
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
@@ -261,6 +261,51 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             rot[i * 32 + 28 + 3] = z;
             rot[i * 32 + 28 + 0] = Math.sqrt(1.0 - (nx * nx + ny * ny + nz * nz)) * 127.5 + 127.5;
             byteOffset += 3;
+        }
+
+        //SH
+        if (shDegree) {
+            // shDim is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
+            const shDim = (shDegree + 1) * (shDegree + 1) - 1;
+            const textureCount = Math.ceil(shDim / 4);
+            let shIndex = byteOffset;
+
+            // sh is an array of uint8array that will be used to create sh textures
+            const sh: Uint8Array[] = [];
+            // per degree list the number of components needed per texture
+            const shTextureComponentCounts = [[3], [4, 4], [4, 4, 4, 3]];
+            // per texture, get an index value that is used to push sh value
+            const advancePerTexture = [0, 0, 0, 0];
+            // create array for the number of textures needed.
+            for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
+                const textureComponentCount = shTextureComponentCounts[shDegree - 1][textureIndex];
+                const texture = new Uint8Array(splatCount * textureComponentCount);
+                sh.push(texture);
+            }
+
+            // for each sh value (up to 15 per splat)
+            // compute the texture index
+            // add the sh value for the texture
+            // example:
+            // 15 values per splat. uvuf looks like this:
+            // abcd efgh ijkl mno
+            // abcd efgh ijkl mno
+            // ...
+            // abcd efgh ijkl mno
+            // transform the data so 1st texture is made of this array:
+            // abcd abcd abcd .... abcd
+            // 2nd texture is made of
+            // efgh efgh efgh .... efgh
+            // etc
+            for (let i = 0; i < splatCount * shDim; i++) {
+                const shValue = ubuf[shIndex++];
+                const textureIndex = Math.floor((i % shDim) / 4);
+                const shArray = sh[textureIndex];
+                shArray[advancePerTexture[textureIndex]++] = shValue;
+            }
+            return new Promise((resolve) => {
+                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+            });
         }
 
         return new Promise((resolve) => {
@@ -290,7 +335,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        gaussianSplatting.updateData(parsedSPZ.data);
+                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
                     });
                     resolve(babylonMeshesArray);
                 })

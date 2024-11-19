@@ -21,6 +21,11 @@ uniform sampler2D covariancesBTexture;
 uniform sampler2D centersTexture;
 uniform sampler2D colorsTexture;
 
+uniform sampler2D shTexture0;
+uniform sampler2D shTexture1;
+uniform sampler2D shTexture2;
+uniform sampler2D shTexture3;
+
 // Output
 varying vec4 vColor;
 varying vec2 vPosition;

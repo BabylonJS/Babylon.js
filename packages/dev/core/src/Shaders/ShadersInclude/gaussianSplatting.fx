@@ -17,6 +17,16 @@ struct Splat {
     vec4 color;
     vec4 covA;
     vec4 covB;
+#if SH_DEGREE >= 1
+    vec4 sh0;
+#endif
+#if SH_DEGREE >= 2
+    vec4 sh1;
+#endif
+#if SH_DEGREE == 3
+    vec4 sh2;
+    vec4 sh3;
+#endif
 };
 
 Splat readSplat(float splatIndex)
@@ -27,6 +37,17 @@ Splat readSplat(float splatIndex)
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
+#if SH_DEGREE >= 1
+    splat.sh0 = texture2D(shTexture0, splatUV);
+#endif
+#if SH_DEGREE >= 2
+    splat.sh1 = texture2D(shTexture1, splatUV);
+#endif
+#if SH_DEGREE == 3
+    splat.sh2 = texture2D(shTexture2, splatUV);
+    splat.sh3 = texture2D(shTexture3, splatUV);
+#endif
+
     return splat;
 }
     
