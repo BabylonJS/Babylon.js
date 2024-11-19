@@ -58,7 +58,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         } else {
             Tools.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
         }
-        context._removePendingBlock(this);
+        this._resetAfterCanceled(context);
         this.done._activateSignal(context);
     }
 
