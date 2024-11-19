@@ -1,6 +1,477 @@
 {
-    "fromTag": "7.34.0",
+    "fromTag": "7.34.1",
     "changelog": {
+        "7.34.2": [
+            {
+                "pr": "15846",
+                "title": "fixed leaking observables in XR",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/motionController/webXRAbstractMotionController.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15845",
+                "title": "Contributing: update links in Pull requests",
+                "description": null,
+                "author": {
+                    "name": "fabsharp",
+                    "url": "https://github.com/fabsharp"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15835",
+                "title": "Viewer suspend rendering when not visible",
+                "description": "This change makes is so that when the viewer element is not within the browser viewport, it suspends the render loop (to avoid unnecessary power consumption, and also to help scale if you have a page with many viewer instances).\r\n\r\n- Introduce a suspendRendering function on the lower level Viewer. This is ref counted, because I intend to use the same mechanism for other scenarios, such as when the viewer is visible but nothing is changing.\r\n- In the `createViewerForCanvas` function, use `IntersectionObserver` to detect when the viewer canvas is not in the browser viewport and suspend rendering.\r\n- Update the test app to be able to toggle on/off extra blank content before/after the <babylon-viewer> element to make it easy to test the outside of viewport scenario.\r\n\r\n\r\nhttps://github.com/user-attachments/assets/ecac125c-3b8e-4196-b01d-aa074fbb0417\r\n\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15813",
+                "title": "added onboxhover observable that returns the hovered mesh to boundingboxgizmo",
+                "description": "boundingBoxGizmo.ts",
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15836",
+                "title": "Fix AnimationGroup isPlaying when mask is applied",
+                "description": "Fixes the forum issue:\r\nhttps://forum.babylonjs.com/t/animationgroup-isplaying-is-always-true-if-animationgroupmask-is-applied/54799/1",
+                "author": {
+                    "name": "s207152",
+                    "url": "https://github.com/s207152"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15840",
+                "title": "GPUPicker: Fix class doc",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15841",
+                "title": "Terrain material: Fix bug when using Cascaded Shadow Maps",
+                "description": "See https://forum.babylonjs.com/t/terrain-self-shadow-with-cascadedshadowgenerator/54820",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15834",
+                "title": "Include Lit in viewer lib ES6 bundle",
+                "description": "Lit was added as a direct dependency of the Viewer, with the intention that it would be directly embedded as a private dependency of the Viewer to avoid any potential version conflicts (e.g. if a consuming app uses other custom elements that also use Lit). However, when it was added I missed adding the `nodeResolve` plugin, so it wasn't actually getting included in the bundle (it relied on the consuming app to bring in Lit). This PR fixes this, and also makes viewer package build warnings be errors so these types of issues don't slip through in the future.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.lib.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15833",
+                "title": "Viewer world space hotspots",
+                "description": "Static/fixed world space hotspots (unassociated with a mesh surface, for static camera poses or cases where we don't have geometry, like splats). This is the last tiny bit of support for hotspots/annotations.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15832",
+                "title": "PBR material: Fix isScatteringEnabled switch not working as expected",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15831",
+                "title": "WebGPU: Fix crash when using sub-surface scattering",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockPrePass.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15823",
+                "title": "Viewer annotation custom element",
+                "description": "This change adds a simple custom element to add HTML screen space annotations that track hotspots. For example:\r\n\r\n```html\r\n<babylon-viewer\r\n    source=\"https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb\"\r\n    hotspots='{\r\n        \"antenna\": {\r\n            \"type\": \"surface\",\r\n            \"meshIndex\": 1,\r\n            \"pointIndex\": [94, 93, 76],\r\n            \"barycentric\": [0.391, 0.387, 0.223],\r\n            \"cameraOrbit\": [1.270, 1.424, 0.514]\r\n        }\r\n    }'\r\n>\r\n    <babylon-viewer-annotation hotspot=\"antenna\">\r\n        <div>\r\n            <svg style=\"width: 20px; height: 20px; transform: translate(-50%, -50%)\">\r\n                <ellipse cx=\"10\" cy=\"10\" rx=\"8\" ry=\"8\" fill=\"red\" stroke=\"white\" stroke-width=\"3\" />\r\n            </svg>\r\n        </div>\r\n    </babylon-viewer-annotation>\r\n</babylon-viewer>\r\n```\r\n\r\nAnnotation elements have a custom state for when the associated hotspot is facing away from the camera, which can be used in CSS styling. The default is to decrease the opacity when the hotspot is not facing the camera.\r\n\r\nhttps://github.com/user-attachments/assets/8c0c6c40-b81f-45fd-8d8e-6226c64e0438\r\n\r\n\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/customStateSet.d.ts",
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15821",
+                "title": "Extract ObjectRenderer from RenderTargetTexture",
+                "description": "The aim of this PR is to extract from `RenderTargetTexture` what is related to rendering only, and to leave specifically in `RenderTargetTexture` what is related to output texture management. This way, I can use `ObjectRenderer` in the frame graph, as the texture management part of `RenderTargetTexture` is of no use.\r\n\r\nFirstly, `ObjectRenderer` can be changed to whatever name suits you :)\r\n\r\nSecondly, the PR should be a non-breaking change (if it is, it's a bug!), which is why:\r\n* I have two functions `prepareRenderList` and `initRender` that you have to call one after the other. I'd have preferred to call `prepareRenderList` inside `initRender` and have only the latter method public, but in the existing `RenderTargetTexture` function there's notification of the `onBeforeBindObservable` observable between these two blocks of code, and it doesn't make sense to have this observable in the `ObjectRenderer` class (because this class isn't concerned with texture management).\r\n* There's a `skipOnAfterRenderObservable` parameter to the `ObjectRenderer.render` method, so as not to notify the `onAfterRenderObservable` at the end of `ObjectRenderer.render`. This is because in `RenderTargetTexture`, this observable is notified in the `Engine.unBindFramebuffer` callback: notifying it at the end of `ObjectRenderer.render` would have been a breaking change.\r\n\r\nThe expected usage is as follows (if you use the class directly - it's hidden from you if you use `RenderTargetTexture`):\r\n* call `prepareRenderList()` (optional, you can avoid this call if you know that `renderList` is up to date)\r\n* call `initRender(viewportWidth, viewportHeight)`.\r\n* call `render(layerOrFaceIndex)` as many times as necessary (for a cube texture, you'll want to call it 6 times, each time linking the right face of the cube to the output texture)\r\n* call `finishRender()`.\r\n\r\nOnce again, the names of these methods can be changed!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15780",
+                "title": "Needed changes to enable the inspector on the viewer",
+                "description": "Added the ability to toggle the inspector in the viewr alpha test app.\r\n\r\nA few notes:\r\n\r\n* Many file changes to the repository were required to get this to work. The reason is that vite requires the moduled scss files to be called \".module.scss\" and we called them. \".modules.scss\". In webpack it is configurable.\r\n* as the viewer renders the canvas in a shadow dom, adding the inspector to the canvas as its parent won't work - the css rules will nto be applied there. Therefore it is needed to add it to an inspector host. it defaults to body if not provided, but the body needs to be styled correctly in order for that to work. The viewer has another div element that is stretched on the screen, which is used as the host.\r\n* The inspector is async-loaded.\r\n* All require keywords were removed from the source. it is fine with webpack, but not with vite nor rollup\r\n\r\nThese changes actually allow the inspector to be released as a standalone es6 module (i.e. - not bundled). As this can be considered a breaking change I did not include it in this PR. we can discuss it in the future. for now no change was made to break anything.\r\n\r\n---\r\nEDIT from @ryantrem:\r\n- After trying for a bit I wasn't able to get this to work with the viewer distribution bundle, so I removed the `showInspector` function from the viewer element.\r\n- However, I kept the \"show inspector\" button in the viewer test app, which directly invokes the inspector (so we can both test inspector with the viewer and use it in local development).\r\n- I made some small changes to Inspector to make it work with shadow doms.\r\n\r\nWe can circle back to the inspector integration later and try to get it included as a feature, particularly if we think it is important to have it work with the viewer distribution bundle. At least now with these changes if both the viewer and the inspector are consumed by an app being build/bundled, inspector will work with the viewer.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint.tsx",
+                    "packages/dev/inspector/src/components/embedHost/embedHostComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/dev/inspector/tsconfig.json",
+                    "packages/dev/sharedUiComponents/src/components/Button.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBar.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButton.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdown.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/clampDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/common.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/outputDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/trigonometryDisplayManager.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/custom.d.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/common.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/elbowDisplayManager.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15809",
+                "title": "Small changes to jest, including the recommended jest extension",
+                "description": "This mades changes to the jest configuration to remove a seprecation warning.\n\nI also include the jest extension in the recommendations for this repo to allow quick testing using vscode.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".vscode/extensions.json",
+                    "jest.config.ts",
+                    "tsconfig.test.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15830",
+                "title": "WebGPU: Add occlusion query module to the core WebGPU engine",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15828",
+                "title": "Add display name texture property",
+                "description": "As requested from forum post: https://forum.babylonjs.com/t/add-display-name-for-textures/54745/3",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/textureTreeItemComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15829",
+                "title": "Fix Hotspot normal computation//add missing gizmo dispose",
+                "description": "- Fix normal computation for hotspot.\r\n- Add missing super.dispose for position and rotation gizmos ( https://forum.babylonjs.com/t/positiongizmo-dispose-not-complete/54770/2 )\r\n\r\nNote:\r\nNormal is local. world matrix is used when converting from local to world. So no need to use determinant. Only Clock orientation is important here.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15825",
+                "title": "Yet another voxelization fix for IBL shadows",
+                "description": "Okay, I'm still running into cases where the voxelization never happens because the required textures aren't ready when the callback occurs.\r\nTo make this more robust, I'm allowing the call to happen as many times as it takes before everything is ready and then rendering the voxel grid and then unbinding.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15827",
+                "title": "Fix input selection crsh on NRGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15822",
+                "title": "Add tags display for Inspector",
+                "description": "Fixing https://forum.babylonjs.com/t/display-tags-in-the-inspector/42781/3",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15824",
+                "title": "local declarations on windows use \\ instead of /",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15819",
+                "title": "Better message",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15814",
+                "title": "hotspot visibility",
+                "description": "- compute surface normal from hotspot data\r\n- compute visibility factor (dot product from surface normal to eyeToSurface vector)",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.34.1": [
             {
                 "pr": "15816",

@@ -8,7 +8,6 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../globalState";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
-import { Tags } from "core/Misc/tags";
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -52,29 +51,12 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
         return components;
     }
 
-    renderTags() {
-        const tags = Object.keys(Tags.GetTags(this.props.host, false));
-
-        return tags.map((tag: string, i: number) => {
-            return (
-                <div className="tag" key={"tag" + i}>
-                    {tag}
-                </div>
-            );
-        });
-    }
-
     override render() {
         return (
             <div>
                 {this.props.host.metadata && this.props.host.metadata.xmp && (
                     <LineContainerComponent title="XMP METADATA" selection={this.props.globalState}>
                         {this.renderLevel(this.props.host.metadata.xmp)}
-                    </LineContainerComponent>
-                )}
-                {Tags.HasTags(this.props.host) && (
-                    <LineContainerComponent title="TAGS" selection={this.props.globalState}>
-                        <div className="tagContainer">{this.renderTags()}</div>
                     </LineContainerComponent>
                 )}
             </div>
