@@ -9,6 +9,7 @@ import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
+import { convertToRightHandedPosition, convertToRightHandedRotation } from "../glTFUtilities";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -71,8 +72,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     // retrieve all the instance world matrix
                     const matrix = babylonNode.thinInstanceGetWorldMatrices();
 
-                    const iwt = TmpVectors.Vector3[2];
-                    const iwr = TmpVectors.Quaternion[1];
+                    let iwt = TmpVectors.Vector3[2];
+                    let iwr = TmpVectors.Quaternion[1];
                     const iws = TmpVectors.Vector3[3];
 
                     let hasAnyInstanceWorldTranslation = false;
@@ -87,6 +88,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     let i = 0;
                     for (const m of matrix) {
                         m.decompose(iws, iwr, iwt);
+
+                        if (convertToRightHanded) {
+                            iwt = convertToRightHandedPosition(iwt);
+                            iwr = convertToRightHandedRotation(iwr);
+                        }
 
                         // fill the temp buffer
                         translationBuffer.set(iwt.asArray(), i * 3);
