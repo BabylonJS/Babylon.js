@@ -16,7 +16,14 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { DataWriter } from "./dataWriter";
-import { createAccessor, createBufferView, getAccessorElementCount, convertToRightHandedRotation, convertToRightHandedPosition } from "./glTFUtilities";
+import {
+    createAccessor,
+    createBufferView,
+    getAccessorElementCount,
+    convertToRightHandedPosition,
+    convertCameraRotationToGLTF,
+    convertToRightHandedRotation,
+} from "./glTFUtilities";
 
 /**
  * @internal
@@ -620,6 +627,7 @@ export class _GLTFAnimation {
             const eulerVec3 = new Vector3();
             const position = new Vector3();
             const tempQuaterionArray = [0, 0, 0, 0];
+            const isCamera = babylonTransformNode instanceof Camera;
 
             animationData.outputs.forEach(function (output) {
                 if (convertToRightHanded) {
@@ -635,22 +643,24 @@ export class _GLTFAnimation {
                         case AnimationChannelTargetPath.ROTATION:
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
-                                convertToRightHandedRotation(rotationQuaternion);
-                                rotationQuaternion.toArray(tempQuaterionArray);
-                                binaryWriter.writeFloat32(tempQuaterionArray[0]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[1]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[2]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[3]);
                             } else {
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
-                                convertToRightHandedRotation(rotationQuaternion);
-                                rotationQuaternion.toArray(tempQuaterionArray);
-                                binaryWriter.writeFloat32(tempQuaterionArray[0]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[1]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[2]);
-                                binaryWriter.writeFloat32(tempQuaterionArray[3]);
                             }
+
+                            if (isCamera) {
+                                convertCameraRotationToGLTF(rotationQuaternion);
+                            } else {
+                                if (!Quaternion.IsIdentity(rotationQuaternion)) {
+                                    convertToRightHandedRotation(rotationQuaternion);
+                                }
+                            }
+
+                            rotationQuaternion.toArray(tempQuaterionArray);
+                            binaryWriter.writeFloat32(tempQuaterionArray[0]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[1]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[3]);
 
                             break;
 
@@ -661,14 +671,35 @@ export class _GLTFAnimation {
                             break;
                     }
                 } else {
-                    output.forEach(function (entry) {
-                        binaryWriter.writeFloat32(entry);
-                    });
+                    switch (animationChannelTargetPath) {
+                        case AnimationChannelTargetPath.ROTATION:
+                            if (output.length === 4) {
+                                Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
+                            } else {
+                                Vector3.FromArrayToRef(output, 0, eulerVec3);
+                                Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
+                            }
+                            if (isCamera) {
+                                convertCameraRotationToGLTF(rotationQuaternion);
+                            }
+                            rotationQuaternion.toArray(tempQuaterionArray);
+                            binaryWriter.writeFloat32(tempQuaterionArray[0]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[1]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[3]);
+
+                            break;
+
+                        default:
+                            output.forEach(function (entry) {
+                                binaryWriter.writeFloat32(entry);
+                            });
+                            break;
+                    }
                 }
             });
 
             //TODO: Handle right hand vs left hand here.
-
             accessor = createAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;

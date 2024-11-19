@@ -1,109 +1,110 @@
-// import type { IMaterial, IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
-// import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-// import { GLTFExporter } from "../glTFExporter";
-// import type { Material } from "core/Materials/material";
-// import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-// import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IMaterial, IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { GLTFExporter } from "../glTFExporter";
+import type { Material } from "core/Materials/material";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
-// import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools";
 
-// const NAME = "KHR_materials_clearcoat";
+const NAME = "KHR_materials_clearcoat";
 
-// /**
-//  * @internal
-//  */
-// // eslint-disable-next-line @typescript-eslint/naming-convention
-// export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
-//     /** Name of this extension */
-//     public readonly name = NAME;
+/**
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
+    /** Name of this extension */
+    public readonly name = NAME;
 
-//     /** Defines whether this extension is enabled */
-//     public enabled = true;
+    /** Defines whether this extension is enabled */
+    public enabled = true;
 
-//     /** Defines whether this extension is required */
-//     public required = false;
+    /** Defines whether this extension is required */
+    public required = false;
 
-//     private _exporter: GLTFExporter;
+    private _exporter: GLTFExporter;
 
-//     private _wasUsed = false;
+    private _wasUsed = false;
 
-//     constructor(exporter: GLTFExporter) {
-//         this._exporter = exporter;
-//     }
+    constructor(exporter: GLTFExporter) {
+        this._exporter = exporter;
+    }
 
-//     public dispose() {}
+    public dispose() {}
 
-//     /** @internal */
-//     public get wasUsed() {
-//         return this._wasUsed;
-//     }
+    /** @internal */
+    public get wasUsed() {
+        return this._wasUsed;
+    }
 
-//     public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
-//         const additionalTextures: BaseTexture[] = [];
-//         if (babylonMaterial instanceof PBRBaseMaterial) {
-//             if (babylonMaterial.clearCoat.isEnabled) {
-//                 if (babylonMaterial.clearCoat.texture) {
-//                     additionalTextures.push(babylonMaterial.clearCoat.texture);
-//                 }
-//                 if (!babylonMaterial.clearCoat.useRoughnessFromMainTexture && babylonMaterial.clearCoat.textureRoughness) {
-//                     additionalTextures.push(babylonMaterial.clearCoat.textureRoughness);
-//                 }
-//                 if (babylonMaterial.clearCoat.bumpTexture) {
-//                     additionalTextures.push(babylonMaterial.clearCoat.bumpTexture);
-//                 }
-//                 return additionalTextures;
-//             }
-//         }
+    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+        const additionalTextures: BaseTexture[] = [];
+        if (babylonMaterial instanceof PBRBaseMaterial) {
+            if (babylonMaterial.clearCoat.isEnabled) {
+                if (babylonMaterial.clearCoat.texture) {
+                    additionalTextures.push(babylonMaterial.clearCoat.texture);
+                }
+                if (!babylonMaterial.clearCoat.useRoughnessFromMainTexture && babylonMaterial.clearCoat.textureRoughness) {
+                    additionalTextures.push(babylonMaterial.clearCoat.textureRoughness);
+                }
+                if (babylonMaterial.clearCoat.bumpTexture) {
+                    additionalTextures.push(babylonMaterial.clearCoat.bumpTexture);
+                }
+                return additionalTextures;
+            }
+        }
 
-//         return [];
-//     }
+        return [];
+    }
 
-//     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-//         return new Promise((resolve) => {
-//             if (babylonMaterial instanceof PBRBaseMaterial) {
-//                 if (!babylonMaterial.clearCoat.isEnabled) {
-//                     resolve(node);
-//                     return;
-//                 }
+    public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+        return new Promise((resolve) => {
+            if (babylonMaterial instanceof PBRBaseMaterial) {
+                if (!babylonMaterial.clearCoat.isEnabled) {
+                    resolve(node);
+                    return;
+                }
 
-//                 this._wasUsed = true;
+                this._wasUsed = true;
 
-//                 node.extensions = node.extensions || {};
+                node.extensions = node.extensions || {};
 
-//                 const clearCoatTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
-//                 let clearCoatTextureRoughnessInfo;
-//                 if (babylonMaterial.clearCoat.useRoughnessFromMainTexture) {
-//                     clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
-//                 } else {
-//                     clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
-//                 }
+                const clearCoatTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.texture);
+                let clearCoatTextureRoughnessInfo;
+                if (babylonMaterial.clearCoat.useRoughnessFromMainTexture) {
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.texture);
+                } else {
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
+                }
 
-//                 if (babylonMaterial.clearCoat.isTintEnabled) {
-//                     Tools.Warn(`Clear Color tint is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
-//                 }
+                if (babylonMaterial.clearCoat.isTintEnabled) {
+                    Tools.Warn(`Clear Color tint is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
+                }
 
-//                 if (babylonMaterial.clearCoat.remapF0OnInterfaceChange) {
-//                     Tools.Warn(`Clear Color F0 remapping is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
-//                 }
+                if (babylonMaterial.clearCoat.remapF0OnInterfaceChange) {
+                    Tools.Warn(`Clear Color F0 remapping is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
+                }
 
-//                 const clearCoatNormalTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
+                const clearCoatNormalTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
 
-//                 const clearCoatInfo: IKHRMaterialsClearcoat = {
-//                     clearcoatFactor: babylonMaterial.clearCoat.intensity,
-//                     clearcoatTexture: clearCoatTextureInfo ?? undefined,
-//                     clearcoatRoughnessFactor: babylonMaterial.clearCoat.roughness,
-//                     clearcoatRoughnessTexture: clearCoatTextureRoughnessInfo ?? undefined,
-//                     clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
-//                     hasTextures: () => {
-//                         return clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null;
-//                     },
-//                 };
+                const clearCoatInfo: IKHRMaterialsClearcoat = {
+                    clearcoatFactor: babylonMaterial.clearCoat.intensity,
+                    clearcoatTexture: clearCoatTextureInfo ?? undefined,
+                    clearcoatRoughnessFactor: babylonMaterial.clearCoat.roughness,
+                    clearcoatRoughnessTexture: clearCoatTextureRoughnessInfo ?? undefined,
+                    clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
+                };
 
-//                 node.extensions[NAME] = clearCoatInfo;
-//             }
-//             resolve(node);
-//         });
-//     }
-// }
+                if (clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
 
-// GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat(exporter));
+                node.extensions[NAME] = clearCoatInfo;
+            }
+            resolve(node);
+        });
+    }
+}
+
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat(exporter));

@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IBufferView, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
+import type { IBufferView, AccessorComponentType, IAccessor, INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 
 import type { DataArray, IndicesArray, Nullable } from "core/types";
@@ -16,6 +16,9 @@ import type { Node } from "core/node";
 
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+
+// 180 degrees rotation in Y.
+const rotation180Y = new Quaternion(0, 1, 0, 0);
 
 /**
  * Creates a buffer view based on the supplied arguments
@@ -205,6 +208,94 @@ export function convertToRightHandedRotation(value: Quaternion): Quaternion {
     return value;
 }
 
+export function convertToRightHandedNode(value: INode) {
+    let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+    let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+
+    translation = convertToRightHandedPosition(translation);
+    rotation = convertToRightHandedRotation(rotation);
+
+    value.rotation = rotation.asArray();
+    value.translation = translation.asArray();
+
+    if (translation.equalsToFloats(0, 0, 0)) {
+        delete value.translation;
+    } else {
+        value.translation = translation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(rotation)) {
+        delete value.rotation;
+    } else {
+        value.rotation = rotation.asArray();
+    }
+}
+
+/**
+ * Rotation by 180 as glTF has a different convention than Babylon.
+ * @param rotation Target camera rotation.
+ * @returns Ref to camera rotation.
+ */
+export function convertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
+    return rotation.multiplyInPlace(rotation180Y);
+}
+
+export function rotateNode180Y(node: INode) {
+    if (node.rotation) {
+        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+        rotation180Y.multiplyToRef(rotation, rotation);
+        node.rotation = rotation.asArray();
+    }
+}
+
+/**
+ * Colapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
+ * @param node Target parent node.
+ * @param parentNode Original GLTF node (Light or Camera).
+ */
+export function collapseParentNode(node: INode, parentNode: INode) {
+    const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+    const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+
+    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
+    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
+
+    parentMatrix.multiplyToRef(matrix, matrix);
+    matrix.decompose(parentScale, parentRotation, parentTranslation);
+
+    if (parentTranslation.equalsToFloats(0, 0, 0)) {
+        delete parentNode.translation;
+    } else {
+        parentNode.translation = parentTranslation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(parentRotation)) {
+        delete parentNode.rotation;
+    } else {
+        parentNode.rotation = parentRotation.asArray();
+    }
+
+    if (parentScale.equalsToFloats(1, 1, 1)) {
+        delete parentNode.scale;
+    } else {
+        parentNode.scale = parentScale.asArray();
+    }
+}
+
+/**
+ * Sometimes the GLTF Importer can add extra transform nodes (for lights and cameras). This checks if a parent node was added by the GLTF Importer. If so, it should be removed during serialization.
+ * @param babylonNode Original GLTF node (Light or Camera).
+ * @param parentBabylonNode Target parent node.
+ * @returns True if the parent node was added by the GLTF importer.
+ */
+export function isParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
+    return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
+}
+
 // /**
 //  * Converts a new right-handed Vector3
 //  * @param vector vector3 array
@@ -336,4 +427,23 @@ export function getMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
     });
 
     return { min, max };
+}
+
+/**
+ * Removes keys from an object that have the same value as the default values.
+ * Useful for avoiding unnecessary properties in the glTF JSON.
+ * @param object the object to omit default values from
+ * @param defaultValues a partial object with default values
+ * @returns new object with default values omitted
+ */
+export function omitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+    return Object.fromEntries(
+        Object.entries(object).filter(([key, value]) => {
+            const defaultValue = defaultValues[key as keyof T];
+            if (Array.isArray(value) && Array.isArray(defaultValue) && value.length === defaultValue.length) {
+                return value.every((val, i) => val !== defaultValue[i]);
+            }
+            return value !== defaultValue;
+        })
+    ) as T;
 }
