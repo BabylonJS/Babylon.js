@@ -71,6 +71,8 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { buildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
+import { LinesMesh } from "core/Meshes/linesMesh";
+import { Color3 } from "core/Maths/math.color";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -1378,22 +1380,6 @@ export class GLTFExporter {
     private async _exportMaterialAsync(babylonMaterial: Material, vertexBuffers: { [kind: string]: VertexBuffer }, subMesh: SubMesh, primitive: IMeshPrimitive): Promise<void> {
         let materialIndex = this._materialMap.get(babylonMaterial);
         if (materialIndex === undefined) {
-            // TODO: Handle LinesMesh
-            // if (babylonMesh instanceof LinesMesh) {
-            //     const material: IMaterial = {
-            //         name: babylonMaterial.name,
-            //     };
-
-            //     if (!babylonMesh.color.equals(Color3.White()) || babylonMesh.alpha < 1) {
-            //         material.pbrMetallicRoughness = {
-            //             baseColorFactor: [...babylonMesh.color.asArray(), babylonMesh.alpha],
-            //         };
-            //     }
-
-            //     this._materials.push(material);
-            //     materialIndex = this._materials.length - 1;
-            // }
-
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
             if (babylonMaterial instanceof PBRMaterial) {
@@ -1426,14 +1412,39 @@ export class GLTFExporter {
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
         const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
+        let isLinesMesh = false;
+
+        if (babylonMesh instanceof LinesMesh) {
+            isLinesMesh = true;
+        }
+
         const subMeshes = babylonMesh.subMeshes;
         if (vertexBuffers && subMeshes && subMeshes.length > 0) {
             for (const subMesh of subMeshes) {
                 const primitive: IMeshPrimitive = { attributes: {} };
 
-                // Material
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
-                await this._exportMaterialAsync(babylonMaterial, vertexBuffers, subMesh, primitive);
+
+                // Special case for LinesMesh
+                if (isLinesMesh) {
+                    const material: IMaterial = {
+                        name: babylonMaterial.name,
+                    };
+
+                    const babylonLinesMesh = babylonMesh as LinesMesh;
+
+                    if (!babylonLinesMesh.color.equals(Color3.White()) || babylonLinesMesh.alpha < 1) {
+                        material.pbrMetallicRoughness = {
+                            baseColorFactor: [...babylonLinesMesh.color.asArray(), babylonLinesMesh.alpha],
+                        };
+                    }
+
+                    this._materials.push(material);
+                    primitive.material = this._materials.length - 1;
+                } else {
+                    // Material
+                    await this._exportMaterialAsync(babylonMaterial, vertexBuffers, subMesh, primitive);
+                }
 
                 // Index buffer
                 const fillMode = babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode;
