@@ -323,7 +323,7 @@ export class GLTFExporter {
     ): Promise<Nullable<INode>> {
         return this._applyExtensions(
             node,
-            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded)
+            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._dataWriter)
         );
     }
 
@@ -1338,6 +1338,11 @@ export class GLTFExporter {
 
     private _exportVertexBuffer(vertexBuffer: VertexBuffer, babylonMaterial: Material, start: number, count: number, state: ExporterState, primitive: IMeshPrimitive): void {
         const kind = vertexBuffer.getKind();
+
+        if (kind.startsWith("world")) {
+            return;
+        }
+
         if (kind.startsWith("uv") && !this._options.exportUnusedUVs) {
             if (!babylonMaterial || !this._materialNeedsUVsSet.has(babylonMaterial)) {
                 return;
@@ -1370,11 +1375,9 @@ export class GLTFExporter {
                 state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
                 primitive.attributes[getAttributeType(kind)] = accessorIndex;
             }
+        } else {
+            primitive.attributes[getAttributeType(kind)] = accessorIndex;
         }
-
-        // TODO: StandardMaterial color spaces
-        // probably have to create new buffer view to store new colors during collectBuffers and figure out if only standardMaterial is using it
-        // separate map by color space
     }
 
     private async _exportMaterialAsync(babylonMaterial: Material, vertexBuffers: { [kind: string]: VertexBuffer }, subMesh: SubMesh, primitive: IMeshPrimitive): Promise<void> {

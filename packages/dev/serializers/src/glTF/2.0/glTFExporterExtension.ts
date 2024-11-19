@@ -9,6 +9,7 @@ import type { IDisposable } from "core/scene";
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { DataWriter } from "./dataWriter";
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
@@ -54,7 +55,14 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param convertToRightHanded Flag indicating whether to convert values to right-handed
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>>;
+    postExportNodeAsync?(
+        context: string,
+        node: Nullable<INode>,
+        babylonNode: Node,
+        nodeMap: Map<Node, number>,
+        convertToRightHanded: boolean,
+        dataWriter: DataWriter
+    ): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material
