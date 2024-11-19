@@ -1,6 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
-import type { AudioEngineV2 } from "../audioEngine";
+import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
@@ -23,9 +23,15 @@ export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 export async function CreateStreamingSoundAsync(
     name: string,
     source: StreamingSoundSourceType,
-    engine: AudioEngineV2,
+    engine: Nullable<AudioEngineV2> = null,
     options: Nullable<IStreamingSoundOptions> = null
 ): Promise<StreamingSound> {
+    engine = engine ?? LastCreatedAudioEngine();
+
+    if (!engine) {
+        throw new Error("No audio engine available.");
+    }
+
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }

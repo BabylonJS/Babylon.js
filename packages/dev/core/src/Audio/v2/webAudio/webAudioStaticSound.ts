@@ -1,5 +1,5 @@
 import type { Nullable } from "../../../types";
-import type { AudioEngineV2 } from "../audioEngine";
+import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStaticSoundOptions } from "../staticSound";
@@ -22,7 +22,18 @@ export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffe
  * @param options - The options for the static sound.
  * @returns A promise that resolves to the created static sound.
  */
-export async function CreateSoundAsync(name: string, source: StaticSoundSourceType, engine: AudioEngineV2, options: Nullable<IStaticSoundOptions> = null): Promise<StaticSound> {
+export async function CreateSoundAsync(
+    name: string,
+    source: StaticSoundSourceType,
+    engine: Nullable<AudioEngineV2> = null,
+    options: Nullable<IStaticSoundOptions> = null
+): Promise<StaticSound> {
+    engine = engine ?? LastCreatedAudioEngine();
+
+    if (!engine) {
+        throw new Error("No audio engine available.");
+    }
+
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
@@ -40,7 +51,17 @@ export async function CreateSoundAsync(name: string, source: StaticSoundSourceTy
  * @param options - The options for the static sound buffer.
  * @returns A promise that resolves to the created static sound buffer.
  */
-export async function CreateSoundBufferAsync(source: StaticSoundSourceType, engine: AudioEngineV2, options: Nullable<IStaticSoundOptions> = null): Promise<StaticSoundBuffer> {
+export async function CreateSoundBufferAsync(
+    source: StaticSoundSourceType,
+    engine: Nullable<AudioEngineV2> = null,
+    options: Nullable<IStaticSoundOptions> = null
+): Promise<StaticSoundBuffer> {
+    engine = engine ?? LastCreatedAudioEngine();
+
+    if (!engine) {
+        throw new Error("No audio engine available.");
+    }
+
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }

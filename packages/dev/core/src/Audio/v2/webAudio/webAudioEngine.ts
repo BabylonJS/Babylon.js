@@ -121,6 +121,11 @@ export class WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public constructor() {
+        super();
+    }
+
+    /** @internal */
     public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         this.audioContext = new Promise<BaseAudioContext>((resolve) => {
             this._resolveAudioContext = resolve;

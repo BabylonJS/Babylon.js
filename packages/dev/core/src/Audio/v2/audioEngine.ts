@@ -6,6 +6,20 @@ import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
+const instances: AudioEngineV2[] = [];
+
+/**
+ * Gets the most recently created v2 audio engine.
+ * @returns The most recently created v2 audio engine.
+ */
+export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
+    if (instances.length === 0) {
+        return null;
+    }
+
+    return instances[instances.length - 1];
+}
+
 /**
  * Abstract base class for audio engines.
  */
@@ -64,11 +78,20 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
         return this._defaultMainBus;
     }
 
+    protected constructor() {
+        super();
+        instances.push(this);
+    }
+
     /**
      * Releases associated resources.
      */
     public override dispose(): void {
         super.dispose();
+
+        if (instances.includes(this)) {
+            instances.splice(instances.indexOf(this), 1);
+        }
 
         this._soundInstances.clear();
 
