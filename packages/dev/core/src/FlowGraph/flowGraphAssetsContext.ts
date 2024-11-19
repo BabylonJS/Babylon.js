@@ -36,22 +36,40 @@ export type AssetType<T extends FlowGraphAssetType> = T extends FlowGraphAssetTy
  * @param assetsContext The assets context to get the asset from
  * @param type The type of the asset
  * @param index The index of the asset
+ * @param useIndexAsUniqueId If set to true, instead of the index in the array it will search for the unique id of the asset.
  * @returns The asset or null if not found
  */
-export function GetFlowGraphAssetWithType<T extends FlowGraphAssetType>(assetsContext: IAssetContainer, type: T, index: number): Nullable<AssetType<T>> {
+export function GetFlowGraphAssetWithType<T extends FlowGraphAssetType>(
+    assetsContext: IAssetContainer,
+    type: T,
+    index: number,
+    useIndexAsUniqueId?: boolean
+): Nullable<AssetType<T>> {
     switch (type) {
         case FlowGraphAssetType.Animation:
-            return (assetsContext.animations[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.animations.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.animations[index] as AssetType<typeof type>) ?? null);
         case FlowGraphAssetType.AnimationGroup:
-            return (assetsContext.animationGroups[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.animationGroups.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.animationGroups[index] as AssetType<typeof type>) ?? null);
         case FlowGraphAssetType.Mesh:
-            return (assetsContext.meshes[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.meshes.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.meshes[index] as AssetType<typeof type>) ?? null);
         case FlowGraphAssetType.Material:
-            return (assetsContext.materials[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.materials.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.materials[index] as AssetType<typeof type>) ?? null);
         case FlowGraphAssetType.Camera:
-            return (assetsContext.cameras[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.cameras.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.cameras[index] as AssetType<typeof type>) ?? null);
         case FlowGraphAssetType.Light:
-            return (assetsContext.lights[index] as AssetType<typeof type>) ?? null;
+            return useIndexAsUniqueId
+                ? ((assetsContext.lights.find((a) => a.uniqueId === index) as AssetType<typeof type>) ?? null)
+                : ((assetsContext.lights[index] as AssetType<typeof type>) ?? null);
         default:
             return null;
     }
