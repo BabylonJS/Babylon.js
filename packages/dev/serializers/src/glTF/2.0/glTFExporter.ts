@@ -1007,30 +1007,33 @@ export class GLTFExporter {
 
             const bytes = dataArrayToUint8Array(data).slice();
 
+            // Apply conversions to buffer data in-place.
             for (const vertexBuffer of vertexBuffers) {
+                const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+                const size = vertexBuffer.getSize();
+                const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
+                const maxTotalVertices = meshes.reduce((max, current) => {
+                    return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+                }, -Number.MAX_VALUE); // To ensure nothing is missed when enumerating, but may not be necessary.
+
                 switch (vertexBuffer.getKind()) {
                     // Normalize normals and tangents.
                     case VertexBuffer.NormalKind:
                     case VertexBuffer.TangentKind: {
-                        for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
-                            const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                            const size = vertexBuffer.getSize();
-                            enumerateFloatValues(bytes, byteOffset, byteStride, size, type, mesh.getTotalVertices() * size, normalized, (values) => {
-                                const invLength = 1 / Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
-                                values[0] *= invLength;
-                                values[1] *= invLength;
-                                values[2] *= invLength;
-                            });
-                        }
+                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
+                            const invLength = 1 / Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
+                            values[0] *= invLength;
+                            values[1] *= invLength;
+                            values[2] *= invLength;
+                        });
                         break;
                     }
                     // Convert StandardMaterial vertex colors from gamma to linear space.
                     case VertexBuffer.ColorKind: {
-                        const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
                         const pbrCount = meshes.filter((mesh) => mesh.material instanceof PBRBaseMaterial).length;
 
                         if (pbrCount === meshes.length) {
-                            break; // Only PBR materials, so no conversion needed.
+                            break; // Buffer used by only PBR materials, so no conversion needed.
                         }
 
                         // TODO: Implement this case.
@@ -1040,12 +1043,6 @@ export class GLTFExporter {
                         }
 
                         // Proceed with conversion
-                        const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                        const size = vertexBuffer.getSize();
-                        const maxTotalVertices = meshes.reduce((max, current) => {
-                            return current.getTotalVertices() > max ? current.getTotalVertices() : max;
-                        }, -Number.MAX_VALUE);
-
                         if (type == VertexBuffer.BYTE || type == VertexBuffer.UNSIGNED_BYTE) {
                             Logger.Warn("Converting uint8 vertex colors to linear space. Results may look incorrect.");
                         }
