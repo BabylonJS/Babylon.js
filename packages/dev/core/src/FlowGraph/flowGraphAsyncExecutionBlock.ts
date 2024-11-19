@@ -51,12 +51,20 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      * @param context
      */
     public _startPendingTasks(context: FlowGraphContext) {
-        if (!context._getExecutionVariable(this, "_initialized", false)) {
-            this._preparePendingTasks(context);
-            context._addPendingBlock(this);
-            this.out._activateSignal(context);
-            context._setExecutionVariable(this, "_initialized", true);
+        if (context._getExecutionVariable(this, "_initialized", false)) {
+            this._cancelPendingTasks(context);
+            this._resetAfterCanceled(context);
         }
+
+        this._preparePendingTasks(context);
+        context._addPendingBlock(this);
+        this.out._activateSignal(context);
+        context._setExecutionVariable(this, "_initialized", true);
+    }
+
+    public _resetAfterCanceled(context: FlowGraphContext) {
+        context._deleteExecutionVariable(this, "_initialized");
+        context._removePendingBlock(this);
     }
 
     public abstract _cancelPendingTasks(context: FlowGraphContext): void;
