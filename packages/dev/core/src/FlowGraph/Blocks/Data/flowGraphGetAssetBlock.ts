@@ -22,6 +22,12 @@ export interface IFlowGraphGetAssetBlockConfiguration<T> extends IFlowGraphBlock
      * If not provided you can still change it using the input connection.
      */
     index?: number;
+
+    /**
+     * If set to true, instead of the index in the array it will search for the unique id of the asset.
+     * The value of index will be used as the unique id.
+     */
+    useIndexAsUniqueId?: boolean;
 }
 
 /**
@@ -62,7 +68,7 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
         const type = this.type.getValue(context);
         const index = this.index.getValue(context);
         // get the asset from the context
-        const asset = GetFlowGraphAssetWithType(context.assetsContext, type, index);
+        const asset = GetFlowGraphAssetWithType(context.assetsContext, type, index, this.config.useIndexAsUniqueId);
         this.value.setValue(asset, context);
     }
 
