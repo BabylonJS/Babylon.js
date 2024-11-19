@@ -39,7 +39,9 @@ export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlo
  *
  * Note that values will be parsed when the in connection is triggered. until then changing the value will not trigger a new interpolation.
  *
- * Internally this block uses the Animation class from Babylon.js. It evaluates the interpolation
+ * Internally this block uses the Animation class.
+ *
+ * Note that if the interpolation is already running a signal will be sent to stop the animation group running it.
  */
 export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     /**
@@ -112,10 +114,23 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
+        const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
         const propertyName = this.propertyName.getValue(context);
         const easingFunction = this.easingFunction.getValue(context);
         const animation = this._createAnimation(context, propertyName, easingFunction);
+        // If an old animation exists, it will be ignored here.
+        // This is because if the animation is running and they both have the same target, the old will be stopped.
+        // This doesn't happen here, it happens in the play animation block.
         this.animation.setValue(animation, context);
+        // to make sure no 2 interpolations are running on the same target, we will mark the animation in the context
+        if (Array.isArray(animation)) {
+            for (const anim of animation) {
+                interpolationAnimations.push(anim.uniqueId);
+            }
+        } else {
+            interpolationAnimations.push(animation.uniqueId);
+        }
+        context._setGlobalContextVariable("interpolationAnimations", interpolationAnimations);
     }
 
     private _createAnimation(context: FlowGraphContext, propertyName: string | string[], easingFunction: EasingFunction): Animation | Animation[] {
