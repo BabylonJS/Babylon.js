@@ -1447,9 +1447,10 @@ export class GLTFExporter {
                 }
 
                 // Index buffer
-                const fillMode = babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode;
+                const fillMode = isLinesMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
+
                 this._exportIndices(indices, subMesh.indexStart, subMesh.indexCount, -subMesh.verticesStart, fillMode, sideOrientation, state, primitive);
 
                 // Vertex buffers
