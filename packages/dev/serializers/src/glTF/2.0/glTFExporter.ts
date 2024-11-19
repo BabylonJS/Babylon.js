@@ -1043,7 +1043,7 @@ export class GLTFExporter {
                         }
 
                         // Proceed with conversion
-                        if (type == VertexBuffer.BYTE || type == VertexBuffer.UNSIGNED_BYTE) {
+                        if (type == VertexBuffer.UNSIGNED_BYTE) {
                             Logger.Warn("Converting uint8 vertex colors to linear space. Results may look incorrect.");
                         }
 
