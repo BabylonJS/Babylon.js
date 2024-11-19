@@ -5,15 +5,13 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AnimationGroup } from "core/Animations/animationGroup";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { Logger } from "core/Misc/logger";
 /**
  * @experimental
  * Block that stops a running animation
  */
 export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The name of the block.
-     */
-    public static readonly ClassName = "FGStopAnimationBlock";
     /**
      * Input connection: The animation to stop.
      */
@@ -37,6 +35,8 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
         if (index !== -1) {
             animationToStopValue.stop();
             currentlyRunning.splice(index, 1);
+        } else {
+            Logger.Warn("Trying to stop an animation that is not running.");
         }
         this.out._activateSignal(context);
     }
@@ -45,7 +45,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphStopAnimationBlock.ClassName;
+        return FlowGraphBlockNames.StopAnimation;
     }
 }
-RegisterClass(FlowGraphStopAnimationBlock.ClassName, FlowGraphStopAnimationBlock);
+RegisterClass(FlowGraphBlockNames.StopAnimation, FlowGraphStopAnimationBlock);
