@@ -69,7 +69,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             elementRef.current.classList.add(styles["vertical"]);
         }
 
-        splitContext.init(elementRef.current, props.controlledSide, props.initialSize, props.minSize, props.maxSize);
+        splitContext.sync(elementRef.current, props.controlledSide, props.initialSize, props.minSize, props.maxSize);
     });
 
     const onPointerDown = (evt: React.PointerEvent) => {

@@ -35,15 +35,15 @@ export interface ISplitContext {
     endDrag: () => void;
 
     /**
-     * Defines initial sizes for the elements
+     * Sync sizes for the elements
      * @param source source element
      * @param controlledSide defined controlled element
      * @param size size of the controlled element
      * @param minSize minimum size for the controlled element
      * @param maxSize maximum size for the controlled element
      */
-    init: (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => void;
+    sync: (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => void;
 }
 
 // Create the context
-export const SplitContext = createContext<ISplitContext>({ direction: SplitDirection.Horizontal, drag: () => {}, beginDrag: () => {}, endDrag: () => {}, init: () => {} });
+export const SplitContext = createContext<ISplitContext>({ direction: SplitDirection.Horizontal, drag: () => {}, beginDrag: () => {}, endDrag: () => {}, sync: () => {} });

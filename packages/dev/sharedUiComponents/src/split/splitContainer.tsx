@@ -262,7 +262,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     };
 
     // We assume splitter are not flagging floating cells in a different way
-    const init = (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => {
+    const sync = (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => {
         if (!elementRef.current) {
             return;
         }
@@ -312,7 +312,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     };
 
     return (
-        <SplitContext.Provider value={{ direction: props.direction, drag, beginDrag, endDrag, init }}>
+        <SplitContext.Provider value={{ direction: props.direction, drag, beginDrag, endDrag, sync }}>
             <div
                 id={props.id}
                 className={styles["split-container"] + " " + props.className}
