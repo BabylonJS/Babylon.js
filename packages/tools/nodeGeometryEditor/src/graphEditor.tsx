@@ -15,7 +15,7 @@ import { PreviewAreaComponent } from "./components/preview/previewAreaComponent"
 import { SerializationTools } from "./serializationTools";
 import * as ReactDOM from "react-dom";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
-import { Popup } from "./sharedComponents/popup";
+import { CopyStyles } from "shared-ui-components/styleHelper";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
@@ -597,7 +597,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         popupWindow.document.body.appendChild(parentControl);
 
-        Popup._CopyStyles(this.props.globalState.hostWindow.document, parentDocument);
+        CopyStyles(this.props.globalState.hostWindow.document, parentDocument);
 
         (this as any)[windowVariableName] = popupWindow;
 

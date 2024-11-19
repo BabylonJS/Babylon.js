@@ -1,3 +1,4 @@
+import { CopyStyles } from "shared-ui-components/styleHelper";
 export class Popup {
     public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
         const windowCreationOptionsList = {
@@ -38,40 +39,14 @@ export class Popup {
         parentControl.style.padding = "0";
 
         popupWindow.document.body.appendChild(parentControl);
-        this._CopyStyles(window.document, parentDocument);
+        CopyStyles(window.document, parentDocument);
         setTimeout(() => {
             // need this for late bindings
-            this._CopyStyles(window.document, parentDocument);
+            CopyStyles(window.document, parentDocument);
         }, 0);
 
         (this as any)[windowVariableName] = popupWindow;
 
         return parentControl;
-    }
-
-    public static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
-        for (let index = 0; index < sourceDoc.styleSheets.length; index++) {
-            const styleSheet: any = sourceDoc.styleSheets[index];
-            try {
-                if (styleSheet.cssRules) {
-                    // for <style> elements
-                    const newStyleEl = sourceDoc.createElement("style");
-
-                    for (const cssRule of styleSheet.cssRules) {
-                        // write the text of each rule into the body of the style element
-                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
-                    }
-
-                    targetDoc.head!.appendChild(newStyleEl);
-                } else if (styleSheet.href) {
-                    // for <link> elements loading CSS from a URL
-                    const newLinkEl = sourceDoc.createElement("link");
-
-                    newLinkEl.rel = "stylesheet";
-                    newLinkEl.href = styleSheet.href;
-                    targetDoc.head!.appendChild(newLinkEl);
-                }
-            } catch (e) {}
-        }
     }
 }
