@@ -142,15 +142,15 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             if (childsize < floatingMinSize) {
                 const missing = Math.floor(floatingMinSize - childsize);
                 let done = 0;
-                // picking the controller in order and try to reduce their size to fit
 
+                // picking the controller in order and try to reduce their size to fit
                 for (let j = 0; j < controllers[i].length; j++) {
                     const controllerIndex = controllers[i][j];
                     const controller = children[controllerIndex] as HTMLElement;
                     const currentSize = props.direction === SplitDirection.Horizontal ? controller.getBoundingClientRect().width : controller.getBoundingClientRect().height;
                     let newSize = currentSize - missing;
                     if (minSizes[controllerIndex]) {
-                        newSize = Math.min(currentSize - minSizes[controllerIndex], missing);
+                        newSize = Math.max(newSize, minSizes[controllerIndex]);
                     }
                     if (props.direction === SplitDirection.Horizontal) {
                         controller.style.width = `${newSize}px`;
