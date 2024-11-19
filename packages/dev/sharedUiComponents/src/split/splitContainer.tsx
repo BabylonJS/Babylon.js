@@ -74,6 +74,8 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     const noInitialSizes: boolean[] = [];
     const floatingMinSize = props.floatingMinSize || 200;
     const controllers: number[][] = [];
+    const minSizes: number[] = [];
+    const maxSizes: number[] = [];
 
     const buildGridDefinition = () => {
         if (!elementRef.current) {
@@ -138,10 +140,31 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             }
 
             if (childsize < floatingMinSize) {
-                const missing = floatingMinSize - childsize;
-                // picking the first controller and reducing its size
-                const controller = children[controllers[i][0]] as HTMLElement;
-                controller.style.width = `${(props.direction === SplitDirection.Horizontal ? controller.getBoundingClientRect().width : controller.getBoundingClientRect().height) - missing}px`;
+                const missing = Math.floor(floatingMinSize - childsize);
+                let done = 0;
+                // picking the controller in order and try to reduce their size to fit
+
+                for (let j = 0; j < controllers[i].length; j++) {
+                    const controllerIndex = controllers[i][j];
+                    const controller = children[controllerIndex] as HTMLElement;
+                    const currentSize = props.direction === SplitDirection.Horizontal ? controller.getBoundingClientRect().width : controller.getBoundingClientRect().height;
+                    let newSize = currentSize - missing;
+                    if (minSizes[controllerIndex]) {
+                        newSize = Math.min(currentSize - minSizes[controllerIndex], missing);
+                    }
+                    if (props.direction === SplitDirection.Horizontal) {
+                        controller.style.width = `${newSize}px`;
+                    } else {
+                        controller.style.height = `${newSize}px`;
+                    }
+
+                    done += currentSize - newSize;
+
+                    if (done === missing) {
+                        // We made it
+                        break;
+                    }
+                }
             }
         }
     };
@@ -158,7 +181,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         };
     }, []);
 
-    const drag = (offset: number, source: HTMLElement, controlledSide: ControlledSize, minSize?: number, maxSize?: number) => {
+    const drag = (offset: number, source: HTMLElement, controlledSide: ControlledSize) => {
         if (!elementRef.current) {
             return;
         }
@@ -170,13 +193,14 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             return;
         }
 
-        minSize = minSize || 0;
         let current = 0;
         if (controlledSide === ControlledSize.First) {
             current = sourceIndex - 1;
         } else {
             current = sourceIndex + 1;
         }
+        const minSize = minSizes[current] || 0;
+        const maxSize = maxSizes[current];
 
         noInitialSizes[current] = false;
         buildGridDefinition();
@@ -209,7 +233,11 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             newSize = maxContainerSize - floatingMinSize * totalFloating;
         }
 
-        childArray[current].style.width = `${newSize}px`;
+        if (props.direction === SplitDirection.Horizontal) {
+            childArray[current].style.width = `${newSize}px`;
+        } else {
+            childArray[current].style.height = `${newSize}px`;
+        }
     };
 
     const beginDrag = () => {
@@ -234,7 +262,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     };
 
     // We assume splitter are not flagging floating cells in a different way
-    const init = (source: HTMLElement, controlledSide: ControlledSize, size?: number) => {
+    const init = (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => {
         if (!elementRef.current) {
             return;
         }
@@ -266,6 +294,14 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             }
         } else {
             noInitialSizes[current] = true;
+        }
+
+        if (minSize !== undefined) {
+            minSizes[current] = minSize;
+        }
+
+        if (maxSize !== undefined) {
+            maxSizes[current] = maxSize;
         }
 
         if (!controllers[other]) {

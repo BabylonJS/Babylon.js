@@ -69,7 +69,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             elementRef.current.classList.add(styles["vertical"]);
         }
 
-        splitContext.init(elementRef.current, props.controlledSide, props.initialSize);
+        splitContext.init(elementRef.current, props.controlledSide, props.initialSize, props.minSize, props.maxSize);
     });
 
     const onPointerDown = (evt: React.PointerEvent) => {
@@ -92,9 +92,9 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             return;
         }
         if (splitContext.direction === SplitDirection.Horizontal) {
-            splitContext.drag(evt.clientX - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
+            splitContext.drag(evt.clientX - startValue, elementRef.current, props.controlledSide);
         } else {
-            splitContext.drag(evt.clientY - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
+            splitContext.drag(evt.clientY - startValue, elementRef.current, props.controlledSide);
         }
         evt.preventDefault();
     };

@@ -23,10 +23,8 @@ export interface ISplitContext {
      * @param offset new offet
      * @param source source element
      * @param controlledSide defined controlled element
-     * @param minSize minimum size for the controlled element
-     * @param maxSize maximum size for the controlled element
      */
-    drag: (offset: number, source: HTMLElement, controlledSide: ControlledSize, minSize?: number, maxSize?: number) => void;
+    drag: (offset: number, source: HTMLElement, controlledSide: ControlledSize) => void;
     /**
      * Function called by splitters to begin dragging
      */
@@ -41,9 +39,10 @@ export interface ISplitContext {
      * @param source source element
      * @param controlledSide defined controlled element
      * @param size size of the controlled element
-     * @param size2 size of the second element
+     * @param minSize minimum size for the controlled element
+     * @param maxSize maximum size for the controlled element
      */
-    init: (source: HTMLElement, controlledSide: ControlledSize, size?: number) => void;
+    init: (source: HTMLElement, controlledSide: ControlledSize, size?: number, minSize?: number, maxSize?: number) => void;
 }
 
 // Create the context
