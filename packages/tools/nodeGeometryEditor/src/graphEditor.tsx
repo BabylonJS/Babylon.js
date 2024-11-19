@@ -15,7 +15,7 @@ import { PreviewAreaComponent } from "./components/preview/previewAreaComponent"
 import { SerializationTools } from "./serializationTools";
 import * as ReactDOM from "react-dom";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
-import { Popup } from "./sharedComponents/popup";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
@@ -478,7 +478,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewManager) {
             this._previewManager.dispose();
         }
-        this._popUpWindow.close();
+        this._popUpWindow?.close();
         this.setState(
             {
                 showPreviewPopUp: false,
@@ -505,63 +505,31 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             embedHostWidth: "100%",
             ...userOptions,
         };
-        const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
-        if (popUpWindow) {
-            popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-            const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
-            this.createPreviewMeshControlHost(options, parentControl);
-            this.createPreviewHost(options, parentControl);
-            if (parentControl) {
-                this.fixPopUpStyles(parentControl.ownerDocument!);
-                this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
-            }
-        }
-    };
 
-    createPopupWindow = (title: string, windowVariableName: string, width = 500, height = 500): Window | null => {
-        const windowCreationOptionsList = {
-            width: width,
-            height: height,
-            top: (this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
-            left: (this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX,
-        };
-
-        const windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
-            .join(",");
-
-        const popupWindow = this.props.globalState.hostWindow.open("", title, windowCreationOptions);
-        if (!popupWindow) {
-            return null;
-        }
-
-        const parentDocument = popupWindow.document;
-
-        parentDocument.title = title;
-        parentDocument.body.style.width = "100%";
-        parentDocument.body.style.height = "100%";
-        parentDocument.body.style.margin = "0";
-        parentDocument.body.style.padding = "0";
-
-        const parentControl = parentDocument.createElement("div");
-        parentControl.style.width = "100%";
-        parentControl.style.height = "100%";
-        parentControl.style.margin = "0";
-        parentControl.style.padding = "0";
-        parentControl.style.display = "grid";
-        parentControl.style.gridTemplateRows = "40px auto";
-        parentControl.id = "node-geometry-editor-graph-root";
-        parentControl.className = "nge-right-panel popup";
-
-        popupWindow.document.body.appendChild(parentControl);
-
-        Popup._CopyStyles(this.props.globalState.hostWindow.document, parentDocument);
-
-        (this as any)[windowVariableName] = popupWindow;
-
-        this._popUpWindow = popupWindow;
-
-        return popupWindow;
+        let popUpWindow: Nullable<Window> = null;
+        CreatePopup("PREVIEW AREA", {
+            width: 500,
+            height: 500,
+            onParentControlCreateCallback: (parentControl) => {
+                parentControl.style.display = "grid";
+                parentControl.style.gridTemplateRows = "40px auto";
+                parentControl.id = "node-geometry-editor-graph-root";
+                parentControl.className = "nge-right-panel popup";
+            },
+            onWindowCreateCallback: (w) => {
+                popUpWindow = w;
+                if (popUpWindow) {
+                    popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
+                    const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
+                    this.createPreviewMeshControlHost(options, parentControl);
+                    this.createPreviewHost(options, parentControl);
+                    if (parentControl) {
+                        this.fixPopUpStyles(parentControl.ownerDocument!);
+                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+                    }
+                }
+            },
+        });
     };
 
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
