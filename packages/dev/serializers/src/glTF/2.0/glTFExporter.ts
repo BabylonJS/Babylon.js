@@ -1047,19 +1047,20 @@ export class GLTFExporter {
                             Logger.Warn("Converting uint8 vertex colors to linear space. Results may look incorrect.");
                         }
 
-                        const vertexData: Color3 | Color4 = size === 3 ? new Color3() : new Color4();
+                        const vertexData3 = new Color3();
+                        const vertexData4 = new Color4();
                         const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
 
                         enumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
-                            // Cast values to Color3 or Color4 to ensure TS calls correct functions
+                            // Using separate Color3 and Color4 objects to ensure the right functions are called.
                             if (values.length === 3) {
-                                (vertexData as Color3).fromArray(values, 0);
-                                (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3, useExactSrgbConversions);
-                                (vertexData as Color3).toArray(values, 0);
+                                vertexData3.fromArray(values, 0);
+                                vertexData3.toLinearSpaceToRef(vertexData3, useExactSrgbConversions);
+                                vertexData3.toArray(values, 0);
                             } else {
-                                (vertexData as Color4).fromArray(values, 0);
-                                (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4, useExactSrgbConversions);
-                                (vertexData as Color4).toArray(values, 0);
+                                vertexData4.fromArray(values, 0);
+                                vertexData4.toLinearSpaceToRef(vertexData4, useExactSrgbConversions);
+                                vertexData4.toArray(values, 0);
                             }
                         });
                     }
