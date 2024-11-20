@@ -1,6 +1,201 @@
 {
-    "fromTag": "7.34.1",
+    "fromTag": "7.34.3",
     "changelog": {
+        "7.34.4": [
+            {
+                "pr": "15857",
+                "title": "Fix rgba",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15856",
+                "title": "Some small Viewer bug fixes",
+                "description": "This PR includes a few small bug fixes:\r\n1. `computeMaxExtents` changes the current animation frame to do its calculations, but it doesn't restore the original value. This was causing the Viewer to start at the wrong animation frame when first starting an animation and when switching animations. I think it's best to fix this in the `computeMaxExtents` function so it leaves the animation in the state it found it in.\r\n2. When switching animations, we reset to the first animation frame, and we need to fire one onAnimationProgressChanged event so the animation timeline properly syncs to the animation state.\r\n3. The viewer HTML element should set overflow to hidden by default, otherwise if a child annotation is pulled out of view (e.g. through an animation or panning the camera) it will overflow and show scroll bars. Instead we just want the annotation to go out of view along with the model.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.34.3": [
+            {
+                "pr": "15855",
+                "title": "Better style and popup management for editors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/popupComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/dev/sharedUiComponents/src/lines/popup.ts",
+                    "packages/dev/sharedUiComponents/src/popupHelper.ts",
+                    "packages/dev/sharedUiComponents/src/styleHelper.ts",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/guiEditor.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/nodeEditor.ts",
+                    "packages/tools/nodeEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/nodeGeometryEditor.ts",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/nodeRenderGraphEditor.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/vsm/src/vsm.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15844",
+                "title": "PointerDragBehavior: Support all dragAxis",
+                "description": "#15843\r\n\r\nhttps://forum.babylonjs.com/t/pointerdragbehavior-dragaxis-inconstant-behavior-with-dragaxis-other-than-axis/54781/3\r\n\r\n ",
+                "author": {
+                    "name": "fabsharp",
+                    "url": "https://github.com/fabsharp"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15854",
+                "title": "Switch to Manifold 3.0",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15852",
+                "title": "Split container - Remove dependencies on split.js",
+                "description": "cc @AmoebaChant to do it on Smart Filters editor too",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitContext.ts",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/tools/nodeEditor/src/components/log/log.scss",
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/log/log.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/components/log/log.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/playground/src/components/monacoComponent.tsx",
+                    "packages/tools/playground/src/custom.d.ts",
+                    "packages/tools/playground/src/playground.tsx",
+                    "packages/tools/playground/src/scss/header.scss",
+                    "packages/tools/playground/src/scss/main.scss",
+                    "packages/tools/playground/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15851",
+                "title": "Bump cross-spawn from 7.0.3 to 7.0.6",
+                "description": "Bumps [cross-spawn](https://github.com/moxystudio/node-cross-spawn) from 7.0.3 to 7.0.6.\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/moxystudio/node-cross-spawn/blob/master/CHANGELOG.md\">cross-spawn's changelog</a>.</em></p>\n<blockquote>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.5...v7.0.6\">7.0.6</a> (2024-11-18)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>update cross-spawn version to 7.0.5 in package-lock.json (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/f700743918d901eff92960e15a8dd68f87bd4176\">f700743</a>)</li>\n</ul>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.4...v7.0.5\">7.0.5</a> (2024-11-07)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>fix escaping bug introduced by backtracking (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/640d391fde65388548601d95abedccc12943374f\">640d391</a>)</li>\n</ul>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.3...v7.0.4\">7.0.4</a> (2024-11-07)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>disable regexp backtracking (<a href=\"https://redirect.github.com/moxystudio/node-cross-spawn/issues/160\">#160</a>) (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/5ff3a07d9add449021d806e45c4168203aa833ff\">5ff3a07</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/77cd97f3ca7b62c904a63a698fc4a79bf41977d0\"><code>77cd97f</code></a> chore(release): 7.0.6</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/6717de49ff1e5de49622488dcb9c33fb25370c85\"><code>6717de4</code></a> chore: upgrade standard-version</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/f700743918d901eff92960e15a8dd68f87bd4176\"><code>f700743</code></a> fix: update cross-spawn version to 7.0.5 in package-lock.json</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/9a7e3b2165917367f74b8365faad9873b30d7263\"><code>9a7e3b2</code></a> chore: fix build status badge</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/085268352dcbcad8064c64c5efb25268b4023184\"><code>0852683</code></a> chore(release): 7.0.5</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/640d391fde65388548601d95abedccc12943374f\"><code>640d391</code></a> fix: fix escaping bug introduced by backtracking</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/bff0c87c8b627c4e6d04ec2449e733048bebb464\"><code>bff0c87</code></a> chore: remove codecov</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/a7c6abc6fee79641d45b452fe6217deaa1bd0973\"><code>a7c6abc</code></a> chore: replace travis with github workflows</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/9b9246e0969e86656d7ccd527716bc3c18842a19\"><code>9b9246e</code></a> chore(release): 7.0.4</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/5ff3a07d9add449021d806e45c4168203aa833ff\"><code>5ff3a07</code></a> fix: disable regexp backtracking (<a href=\"https://redirect.github.com/moxystudio/node-cross-spawn/issues/160\">#160</a>)</li>\n<li>Additional commits viewable in <a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.3...v7.0.6\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=cross-spawn&package-manager=npm_and_yarn&previous-version=7.0.3&new-version=7.0.6)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15853",
+                "title": "Fix ktx texture orientation in sandbox",
+                "description": "See https://github.com/KhronosGroup/KTX-Software/pull/959 for full context.\r\n\r\nThe gist of it is that KTX textures are y inverted when previewing in the sandbox. The reason why is because [passing in `invertY` of true doesn't actually work for compressed textures](https://forum.babylonjs.com/t/make-inverty-flag-more-consistent-across-different-texture-loading-scenarios/52751). I fixed it by updating the UVs of the preview plane to be OpenGL conventions so that all textures behave the same.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Compat/index.ts",
+                    "packages/dev/core/src/index.ts",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15848",
+                "title": "Goal of this PR is to make sure we raise the onNewXXX when the entity…",
+                "description": "… is fully constructed",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15847",
+                "title": "Move tags to all entities",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.34.2": [
             {
                 "pr": "15846",
