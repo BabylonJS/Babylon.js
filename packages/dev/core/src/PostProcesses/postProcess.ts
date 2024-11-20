@@ -656,9 +656,9 @@ export class PostProcess {
                 defines,
                 vertexUrl,
                 indexParameters,
-                blockCompilation,
+                blockCompilation: true,
                 shaderLanguage,
-                extraInitializations,
+                extraInitializations: undefined,
             });
 
         this.name = name;
