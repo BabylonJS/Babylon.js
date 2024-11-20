@@ -78,8 +78,6 @@ export class WebAudioEngine extends AudioEngineV2 {
         return this._mainOutput;
     }
 
-    private _resolveInitPromise: Nullable<() => void> = null;
-
     private _initAudioContext: () => Promise<void> = async () => {
         if (!this._audioContext) {
             return;
@@ -95,24 +93,17 @@ export class WebAudioEngine extends AudioEngineV2 {
 
         this._mainOutput = await CreateMainAudioOutputAsync(this);
         await CreateMainAudioBusAsync("default", this);
-
-        this._resolveIsReadyPromise();
     };
 
     private _onUserInteraction: () => void = async () => {
-        if (!this._audioContext) {
-            return;
-        }
-
-        await this._audioContext.resume();
-        this._resolveInitPromise?.();
+        await this.audioContext.resume();
     };
 
     private _onAudioContextStateChange = () => {
         if (this.state === "running") {
             this._audioContextStarted = true;
             document.removeEventListener("click", this._onUserInteraction);
-            this._resolveInitPromise?.();
+            this._resolveIsReadyPromise?.();
         }
         if (this.state === "suspended" || this.state === "interrupted") {
             if (this._resumeOnInteraction) {
