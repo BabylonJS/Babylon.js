@@ -107,6 +107,15 @@ class WebAudioStreamingSound extends StreamingSound {
 
         this.volume = options?.volume ?? 1;
 
+        await new Promise<void>((resolve) => {
+            const timer = setInterval(() => {
+                if (document.body) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 100);
+        });
+
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
