@@ -6,7 +6,6 @@ import { createEngine } from "./createEngine";
 
 let engine;
 let scene;
-
 const resize = () => {
     engine && engine.resize();
 };
@@ -16,7 +15,6 @@ const openInspector = (e) => {
     }
 };
 const runScene = async () => {
-    console.log("runScene");
     try {
         // eslint-disable-next-line no-undef
         await Recast();
