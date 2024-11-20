@@ -1,6 +1,37 @@
 {
-    "fromTag": "7.34.2",
+    "fromTag": "7.34.3",
     "changelog": {
+        "7.34.4": [
+            {
+                "pr": "15857",
+                "title": "Fix rgba",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15856",
+                "title": "Some small Viewer bug fixes",
+                "description": "This PR includes a few small bug fixes:\r\n1. `computeMaxExtents` changes the current animation frame to do its calculations, but it doesn't restore the original value. This was causing the Viewer to start at the wrong animation frame when first starting an animation and when switching animations. I think it's best to fix this in the `computeMaxExtents` function so it leaves the animation in the state it found it in.\r\n2. When switching animations, we reset to the first animation frame, and we need to fire one onAnimationProgressChanged event so the animation timeline properly syncs to the animation state.\r\n3. The viewer HTML element should set overflow to hidden by default, otherwise if a child annotation is pulled out of view (e.g. through an animation or panning the camera) it will overflow and show scroll bars. Instead we just want the annotation to go out of view along with the model.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.34.3": [
             {
                 "pr": "15855",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.34.4
+
+### Core
+
+- Some small Viewer bug fixes - by [ryantrem](https://github.com/ryantrem) ([#15856](https://github.com/BabylonJS/Babylon.js/pull/15856))
+
 ## 7.34.3
 
 ### Core
