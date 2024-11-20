@@ -34,6 +34,7 @@ import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { BuildTuple } from "core/Misc/arrayTools";
+import { Logger } from "core/Misc/logger";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -949,19 +950,28 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
+            let renderedLastFrame = false;
             const render = () => {
                 if (this._shouldRender) {
-                    //if (this._shouldRender) {
                     this._sceneMutated = false;
                     this._details.scene.render();
-                    console.log("Rendered Frame");
+
+                    if (!renderedLastFrame) {
+                        Logger.Log("Viewer Resumed Rendering");
+                        renderedLastFrame = true;
+                    }
+
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
                         this._autoRotationBehavior.resetLastInteractionTime();
                     }
                 } else {
                     this._details.camera.update();
-                    console.log("Skipped Frame");
+
+                    if (renderedLastFrame) {
+                        Logger.Log("Viewer Suspended Rendering");
+                        renderedLastFrame = false;
+                    }
                 }
             };
 
@@ -974,6 +984,10 @@ export class Viewer implements IDisposable {
                         disposed = true;
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
+
+                        if (renderedLastFrame) {
+                            Logger.Log("Viewer Suspended Rendering");
+                        }
                     }
                 },
             };
