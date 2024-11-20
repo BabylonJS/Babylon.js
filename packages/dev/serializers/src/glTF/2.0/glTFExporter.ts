@@ -898,7 +898,9 @@ export class GLTFExporter {
         const noopRH = new ExporterState(false, this._options.userUint16SkinIndex, true);
         scene.nodes.push(...(await this._exportNodesAsync(rootNoopNodesRH, noopRH)));
 
-        this._scenes.push(scene);
+        if (scene.nodes.length) {
+            this._scenes.push(scene);
+        }
 
         this._exportAndAssignCameras();
         this._exportAndAssignSkeletons();
