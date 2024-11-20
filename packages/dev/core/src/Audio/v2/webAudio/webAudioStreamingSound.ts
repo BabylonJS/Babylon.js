@@ -186,7 +186,18 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
 
-    private _startTime: number = 0;
+    private _currentTime: number = 0;
+    private _startTime: number = Infinity;
+
+    /** @internal */
+    get currentTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._startTime;
+        return this._currentTime + timeSinceLastStart;
+    }
 
     /** @internal */
     get startTime(): number {
@@ -195,15 +206,6 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         }
 
         return this._startTime;
-    }
-
-    /** @internal */
-    get currentTime(): number {
-        if (this._state === SoundState.Stopped) {
-            return 0;
-        }
-
-        return this._source.audioContext.currentTime - this._startTime;
     }
 
     private _onEngineStateChanged = () => {
@@ -331,8 +333,10 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return;
         }
 
-        this.mediaElement.pause();
         this._setState(SoundState.Paused);
+        this._currentTime += this.engine.currentTime - this._startTime;
+
+        this.mediaElement.pause();
     }
 
     /** @internal */
