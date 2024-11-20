@@ -469,6 +469,12 @@ export class HTML3DElement extends LitElement {
     public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
+     * When true, the scene will be rendered even if no scene state has changed.
+     */
+    @property({ attribute: "render-when-idle", type: Boolean })
+    public renderWhenIdle = false;
+
+    /**
      * The model URL.
      */
     @property({ reflect: true })
@@ -725,7 +731,7 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
-        if (changedProperties.get("engine")) {
+        if (changedProperties.get("engine") || changedProperties.has("renderWhenIdle")) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -935,6 +941,7 @@ export class HTML3DElement extends LitElement {
 
                 await createViewerForCanvas(canvas, {
                     engine: this.engine,
+                    autoSuspendRendering: !this.renderWhenIdle,
                     onInitialized: (details) => {
                         this._viewerDetails = details;
 

@@ -160,6 +160,13 @@ export type ViewerOptions = Partial<
          * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
          */
         onInitialized: (details: Readonly<ViewerDetails>) => void;
+
+        /**
+         * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
+         * This can reduce resource CPU/GPU pressure when the scene is static.
+         * Enabled by default.
+         */
+        autoSuspendRendering: boolean;
     }>
 >;
 
@@ -308,6 +315,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
+    private readonly _autoSuspendRendering: boolean = true;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -331,6 +339,7 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
+        this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
 
@@ -919,11 +928,13 @@ export class Viewer implements IDisposable {
 
     private get _shouldRender() {
         // We should render if:
-        // 1. The scene has been mutated.
-        // 2. The snapshot helper is not yet in a ready state.
-        // 3. An animation is playing.
-        // 4. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+        // 1. Auto suspend rendering is disabled.
+        // 2. The scene has been mutated.
+        // 3. The snapshot helper is not yet in a ready state.
+        // 4. An animation is playing.
+        // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
         return (
+            !this._autoSuspendRendering ||
             this._sceneMutated ||
             !this._snapshotHelper.isReady ||
             this.isAnimationPlaying ||
