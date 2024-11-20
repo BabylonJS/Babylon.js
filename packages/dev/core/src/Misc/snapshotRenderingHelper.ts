@@ -101,8 +101,8 @@ export class SnapshotRenderingHelper {
         });
     }
 
-    public get isEnabling() {
-        return this._isEnabling;
+    public get isReady() {
+        return !this._isEnabling;
     }
 
     /**

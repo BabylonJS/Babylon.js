@@ -922,7 +922,7 @@ export class Viewer implements IDisposable {
     }
 
     private get _shouldRender() {
-        return this._sceneMutated || this.isAnimationPlaying || this._snapshotHelper.isEnabling;
+        return this._sceneMutated || this.isAnimationPlaying || !this._snapshotHelper.isReady;
     }
 
     private _suspendRendering(): IDisposable {
@@ -955,7 +955,7 @@ export class Viewer implements IDisposable {
                 // For some additional things state changes have not taken effect:
                 // 1. WebGPU Snapshot mode (need to debug webgpuSnapshotRendering.ts, enabled property getting set)
                 // 2. Animations entering a paused state (animations resume at the wrong frame)
-                if (this._shouldRender || this.count < 3) {
+                if (this._shouldRender || this.count < 0) {
                     //if (this._shouldRender) {
                     this._sceneMutated = false;
                     this._details.scene.render();
