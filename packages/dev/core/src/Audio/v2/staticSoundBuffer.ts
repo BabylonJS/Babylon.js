@@ -1,4 +1,4 @@
-import type { AudioEngineV2 } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngineV2";
 
 /**
  * Abstract class for static sound buffer.

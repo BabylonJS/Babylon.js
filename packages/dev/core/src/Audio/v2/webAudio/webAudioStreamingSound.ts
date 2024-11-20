@@ -1,6 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
-import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngine";
+import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";

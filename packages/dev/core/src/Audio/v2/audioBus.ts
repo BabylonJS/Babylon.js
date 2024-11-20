@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 import { AbstractAudioBus } from "./abstractAudioBus";
-import type { AudioEngineV2 } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngineV2";
 import type { AudioPositioner } from "./audioPositioner";
 import type { AudioSender } from "./audioSender";
 import type { MainAudioBus } from "./mainAudioBus";

@@ -2,7 +2,7 @@ import type { Quaternion, Vector3 } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
-import type { AudioEngineV2 } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngineV2";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 

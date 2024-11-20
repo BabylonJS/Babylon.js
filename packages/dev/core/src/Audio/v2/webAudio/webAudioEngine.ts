@@ -1,8 +1,8 @@
 import type { Nullable } from "../../../types";
-import { AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSound } from "../abstractSound";
 import type { AbstractSoundInstance } from "../abstractSoundInstance";
+import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import { CreateMainAudioOutputAsync } from "./webAudioMainOutput";

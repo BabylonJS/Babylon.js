@@ -1,4 +1,4 @@
-import type { AudioEngineV2 } from "../audioEngine";
+import type { AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { MainAudioBus } from "../mainAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";

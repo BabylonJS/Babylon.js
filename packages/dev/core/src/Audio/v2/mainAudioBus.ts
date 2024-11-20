@@ -1,5 +1,5 @@
 import { AbstractAudioBus } from "./abstractAudioBus";
-import type { AudioEngineV2 } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngineV2";
 
 /**
  * Abstract class representing the main audio bus in the audio engine.
