@@ -1204,8 +1204,10 @@ export class GaussianSplattingMesh extends Mesh {
         updateTextureFromDataU8(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
-                // TODO: number of components per texture
-                const shView = new Uint8Array(this._sh![i].buffer, texelStart * 4, texelCount * 4);
+                // number of component per sh degree and texture number
+                const shTextureComponentCounts = [[3], [4, 4], [4, 4, 4, 3]];
+                const componentCount = shTextureComponentCounts[this.shDegree - 1][i];
+                const shView = new Uint8Array(this._sh![i].buffer, texelStart * componentCount, texelCount * componentCount);
                 updateTextureFromDataU8(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
             }
         }

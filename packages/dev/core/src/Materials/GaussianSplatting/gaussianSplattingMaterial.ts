@@ -274,7 +274,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
 
         // SH
-        defines.setValue("SH_DEGREE", true);
+        defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
 
         if (mustRebind) {
             this.bindView(effect);
