@@ -13,7 +13,6 @@ export async function CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise
     }
 
     const mainAudioOutput = new WebAudioMainOutput(engine);
-    await mainAudioOutput.init();
     return mainAudioOutput;
 }
 
@@ -30,11 +29,8 @@ export class WebAudioMainOutput extends MainAudioOutput {
     /** @internal */
     constructor(engine: AudioEngineV2) {
         super(engine);
-    }
 
-    /** @internal */
-    public async init(): Promise<void> {
-        const audioContext = await (this.engine as WebAudioEngine).audioContext;
+        const audioContext = (this.engine as WebAudioEngine).audioContext;
 
         this._gainNode = new GainNode(audioContext);
         this._destinationNode = audioContext.destination;

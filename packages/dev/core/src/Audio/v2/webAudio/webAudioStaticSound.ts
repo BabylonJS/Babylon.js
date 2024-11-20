@@ -79,7 +79,7 @@ class WebAudioStaticSound extends StaticSound {
     public override readonly engine: WebAudioEngine;
 
     /** @internal */
-    public audioContext: BaseAudioContext;
+    public audioContext: AudioContext | BaseAudioContext;
 
     private _buffer: WebAudioStaticSoundBuffer;
 
@@ -114,7 +114,7 @@ class WebAudioStaticSound extends StaticSound {
 
     /** @internal */
     public async init(source: StaticSoundSourceType, options: Nullable<IStaticSoundOptions> = null): Promise<void> {
-        this.audioContext = await this.engine.audioContext;
+        this.audioContext = this.engine.audioContext;
 
         this._gainNode = new GainNode(this.audioContext);
 
@@ -124,7 +124,13 @@ class WebAudioStaticSound extends StaticSound {
             this._buffer = (await CreateSoundBufferAsync(source, this.engine, options)) as WebAudioStaticSoundBuffer;
         }
 
-        this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
+        if (options?.outputBus) {
+            this.outputBus = options.outputBus;
+        } else {
+            await this.engine.isReadyPromise;
+            this.outputBus = this.engine.defaultMainBus;
+        }
+
         this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
@@ -237,14 +243,32 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     private async _initFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<void> {
-        this.audioBuffer = await (await this.engine.audioContext).decodeAudioData(arrayBuffer);
+        this.audioBuffer = await this.engine.audioContext.decodeAudioData(arrayBuffer);
     }
 }
 
 /** @internal */
 class WebAudioStaticSoundInstance extends StaticSoundInstance {
+    /** @internal */
+    public override readonly engine: WebAudioEngine;
+
+    private _duration: Nullable<number> = null;
+    private _loop: boolean = false;
     private _startTime: number = 0;
+
     private _currentTime: number = 0;
+
+    private _onEngineStateChanged = () => {
+        if (this.engine.state !== "running") {
+            return;
+        }
+
+        if (this._loop && this.state === SoundState.Starting) {
+            this.play(this._startTime, this._startOffset, this._duration);
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    };
 
     protected override _source: WebAudioStaticSound;
 
@@ -273,13 +297,18 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
     constructor(source: WebAudioStaticSound) {
         super(source);
         this._initSourceNode();
+        this._loop = source.loop;
     }
 
     /** @internal */
     public override dispose(): void {
         super.dispose();
+
         this.stop();
+
         this._deinitSourceNode();
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
 
     /** @internal */
@@ -287,6 +316,8 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         if (this._state === SoundState.Started) {
             return;
         }
+
+        this._duration = duration;
 
         if (this._state === SoundState.Paused) {
             // TODO: Make this fall within loop points when loop start/end is set.
@@ -298,11 +329,17 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
             startOffset = this._startOffset;
         }
 
-        this._setState(SoundState.Started);
         this._startTime = this.engine.currentTime + (waitTime ?? 0);
 
         this._initSourceNode();
-        this.sourceNode?.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
+
+        if (this.engine.state === "running") {
+            this._setState(SoundState.Started);
+            this.sourceNode?.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
+        } else if (this._loop) {
+            this._setState(SoundState.Starting);
+            this.engine.stateChangedObservable.add(this._onEngineStateChanged);
+        }
     }
 
     /** @internal */
@@ -334,6 +371,8 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         this._setState(SoundState.Stopped);
 
         this.sourceNode?.stop(waitTime ? this.engine.currentTime + waitTime : 0);
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
 
     /** @internal */
