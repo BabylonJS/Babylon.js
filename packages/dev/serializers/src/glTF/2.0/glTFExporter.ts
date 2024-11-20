@@ -1192,6 +1192,19 @@ export class GLTFExporter {
             }
         }
 
+        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
+        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
+        if (!processedNode) {
+            Logger.Warn(`Not exporting node ${babylonNode.name}`);
+            return null;
+        }
+
+        nodeIndex = this._nodes.length;
+        this._nodes.push(node);
+        this._nodeMap.set(babylonNode, nodeIndex);
+        state.pushExportedNode(babylonNode);
+
+        // Process node's animations once the node has been added to nodeMap (TODO: This should be refactored)
         const runtimeGLTFAnimation: IAnimation = {
             name: "runtime animations",
             channels: [],
@@ -1230,17 +1243,14 @@ export class GLTFExporter {
             }
         }
 
-        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
-        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
-        if (!processedNode) {
-            Logger.Warn(`Not exporting node ${babylonNode.name}`);
-            return null;
+        if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
+            this._animations.push(runtimeGLTFAnimation);
         }
-
-        nodeIndex = this._nodes.length;
-        this._nodes.push(node);
-        this._nodeMap.set(babylonNode, nodeIndex);
-        state.pushExportedNode(babylonNode);
+        idleGLTFAnimations.forEach((idleGLTFAnimation) => {
+            if (idleGLTFAnimation.channels.length && idleGLTFAnimation.samplers.length) {
+                this._animations.push(idleGLTFAnimation);
+            }
+        });
 
         // Begin processing child nodes once parent has been added to the node list
         for (const babylonChildNode of babylonNode.getChildren()) {
