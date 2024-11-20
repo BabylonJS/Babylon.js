@@ -331,12 +331,6 @@ export class Viewer implements IDisposable {
         options?: ViewerOptions
     ) {
         {
-            // TODO: The actual resize call for the canvas scenario is in onBeforeRenderObservable, which means the next layer up needs to call markSceneMutated.
-            // Is there anything smarter we can do that keeps more of the logic in this layer?
-            this._engine.onResizeObservable.add(() => {
-                this._markSceneMutated();
-            });
-
             const scene = new Scene(this._engine);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
@@ -923,7 +917,17 @@ export class Viewer implements IDisposable {
     }
 
     private get _shouldRender() {
-        return this._sceneMutated || this.isAnimationPlaying || !this._snapshotHelper.isReady;
+        // We should render if:
+        // 1. The scene has been mutated.
+        // 2. The snapshot helper is not yet in a ready state.
+        // 3. An animation is playing.
+        // 4. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+        return (
+            this._sceneMutated ||
+            !this._snapshotHelper.isReady ||
+            this.isAnimationPlaying ||
+            this._details.model?.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted))
+        );
     }
 
     private _suspendRendering(): IDisposable {
@@ -943,31 +947,21 @@ export class Viewer implements IDisposable {
         };
     }
 
-    private count = 0;
     private _beginRendering(): void {
         if (!this._renderLoopController) {
             const render = () => {
                 if (this._shouldRender) {
-                    this.count = 0;
-                } else {
-                    this.count++;
-                }
-
-                // For some additional things state changes have not taken effect:
-                // 1. WebGPU Snapshot mode (need to debug webgpuSnapshotRendering.ts, enabled property getting set)
-                // 2. Animations entering a paused state (animations resume at the wrong frame)
-                if (this._shouldRender || this.count < 0) {
                     //if (this._shouldRender) {
                     this._sceneMutated = false;
                     this._details.scene.render();
-                    console.log("rendered");
+                    console.log("Rendered Frame");
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
                         this._autoRotationBehavior.resetLastInteractionTime();
                     }
                 } else {
                     this._details.camera.update();
-                    console.log("camera updated");
+                    console.log("Skipped Frame");
                 }
             };
 
