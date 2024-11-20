@@ -1163,8 +1163,6 @@ export class GLTFExporter {
             }
         }
 
-        let skipNode = false;
-
         if (babylonNode instanceof Camera) {
             const gltfCamera = this._camerasMap.get(babylonNode);
 
@@ -1182,7 +1180,7 @@ export class GLTFExporter {
                     if (parentNodeIndex) {
                         const parentNode = this._nodes[parentNodeIndex];
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
-                        skipNode = true;
+                        return null; // Skip exporting this node
                     }
                 } else {
                     if (state.convertToRightHanded) {
@@ -1194,16 +1192,29 @@ export class GLTFExporter {
             }
         }
 
-        if (!skipNode) {
-            const runtimeGLTFAnimation: IAnimation = {
-                name: "runtime animations",
-                channels: [],
-                samplers: [],
-            };
-            const idleGLTFAnimations: IAnimation[] = [];
+        const runtimeGLTFAnimation: IAnimation = {
+            name: "runtime animations",
+            channels: [],
+            samplers: [],
+        };
+        const idleGLTFAnimations: IAnimation[] = [];
 
-            if (!this._babylonScene.animationGroups.length) {
-                _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
+        if (!this._babylonScene.animationGroups.length) {
+            _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
+                babylonNode,
+                runtimeGLTFAnimation,
+                idleGLTFAnimations,
+                this._nodeMap,
+                this._nodes,
+                this._dataWriter,
+                this._bufferViews,
+                this._accessors,
+                this._animationSampleRate,
+                state.convertToRightHanded,
+                this._options.shouldExportAnimation
+            );
+            if (babylonNode.animations.length) {
+                _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
                     babylonNode,
                     runtimeGLTFAnimation,
                     idleGLTFAnimations,
@@ -1216,50 +1227,33 @@ export class GLTFExporter {
                     state.convertToRightHanded,
                     this._options.shouldExportAnimation
                 );
-                if (babylonNode.animations.length) {
-                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
-                        babylonNode,
-                        runtimeGLTFAnimation,
-                        idleGLTFAnimations,
-                        this._nodeMap,
-                        this._nodes,
-                        this._dataWriter,
-                        this._bufferViews,
-                        this._accessors,
-                        this._animationSampleRate,
-                        state.convertToRightHanded,
-                        this._options.shouldExportAnimation
-                    );
-                }
             }
-
-            // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
-            const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
-            if (!processedNode) {
-                Logger.Warn(`Not exporting node ${babylonNode.name}`);
-                return null;
-            }
-
-            nodeIndex = this._nodes.length;
-            this._nodes.push(node);
-            this._nodeMap.set(babylonNode, nodeIndex);
-            state.pushExportedNode(babylonNode);
-
-            // Begin processing child nodes once parent has been added to the node list
-            for (const babylonChildNode of babylonNode.getChildren()) {
-                if (this._shouldExportNode(babylonChildNode)) {
-                    const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
-                    if (childNodeIndex !== null) {
-                        node.children ||= [];
-                        node.children.push(childNodeIndex);
-                    }
-                }
-            }
-
-            return nodeIndex;
         }
 
-        return null;
+        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
+        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
+        if (!processedNode) {
+            Logger.Warn(`Not exporting node ${babylonNode.name}`);
+            return null;
+        }
+
+        nodeIndex = this._nodes.length;
+        this._nodes.push(node);
+        this._nodeMap.set(babylonNode, nodeIndex);
+        state.pushExportedNode(babylonNode);
+
+        // Begin processing child nodes once parent has been added to the node list
+        for (const babylonChildNode of babylonNode.getChildren()) {
+            if (this._shouldExportNode(babylonChildNode)) {
+                const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
+                if (childNodeIndex !== null) {
+                    node.children ||= [];
+                    node.children.push(childNodeIndex);
+                }
+            }
+        }
+
+        return nodeIndex;
     }
 
     private _exportIndices(
