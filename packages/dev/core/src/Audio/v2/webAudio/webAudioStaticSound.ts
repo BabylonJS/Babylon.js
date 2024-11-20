@@ -254,26 +254,9 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
 
     private _duration: Nullable<number> = null;
     private _loop: boolean = false;
-    private _startTime: number = 0;
 
     private _currentTime: number = 0;
-
-    private _onEngineStateChanged = () => {
-        if (this.engine.state !== "running") {
-            return;
-        }
-
-        if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._startTime, this._startOffset, this._duration);
-        }
-
-        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
-    };
-
-    protected override _source: WebAudioStaticSound;
-
-    /** @internal */
-    public sourceNode: Nullable<AudioBufferSourceNode>;
+    private _startTime: number = 0;
 
     /** @internal */
     get startTime(): number {
@@ -293,6 +276,23 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._startTime;
         return this._currentTime + timeSinceLastStart;
     }
+
+    private _onEngineStateChanged = () => {
+        if (this.engine.state !== "running") {
+            return;
+        }
+
+        if (this._loop && this.state === SoundState.Starting) {
+            this.play(this._startTime, this._startOffset, this._duration);
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    };
+
+    protected override _source: WebAudioStaticSound;
+
+    /** @internal */
+    public sourceNode: Nullable<AudioBufferSourceNode>;
 
     constructor(source: WebAudioStaticSound) {
         super(source);
