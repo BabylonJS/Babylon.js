@@ -65,13 +65,14 @@ function getFileExtensionFromMimeType(mimeType: ImageMimeType): string {
 }
 
 /**
- * Computes the metallic factor
+ * Computes the metallic factor.
+ * Exported to be testable in unit tests.
  * @param diffuse diffused value
  * @param specular specular value
  * @param oneMinusSpecularStrength one minus the specular strength
  * @returns metallic value
  */
-function solveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
+export function solveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
     if (specular < dielectricSpecular.r) {
         dielectricSpecular;
         return 0;
