@@ -137,8 +137,8 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
                 const babylonSpotLight = babylonNode as SpotLight;
                 light.spot = {
-                    innerConeAngle: babylonSpotLight.innerAngle,
-                    outerConeAngle: babylonSpotLight.angle,
+                    innerConeAngle: babylonSpotLight.innerAngle / 2.0,
+                    outerConeAngle: babylonSpotLight.angle / 2.0,
                 };
                 light.spot = omitDefaultValues(light.spot, SPOTDEFAULTS!);
             }

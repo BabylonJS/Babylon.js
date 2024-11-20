@@ -441,7 +441,7 @@ export function omitDefaultValues<T extends Object>(object: T, defaultValues: Pa
         Object.entries(object).filter(([key, value]) => {
             const defaultValue = defaultValues[key as keyof T];
             if (Array.isArray(value) && Array.isArray(defaultValue) && value.length === defaultValue.length) {
-                return value.every((val, i) => val !== defaultValue[i]);
+                return !value.every((val, i) => val === defaultValue[i]);
             }
             return value !== defaultValue;
         })
