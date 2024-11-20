@@ -5,7 +5,7 @@ import type { GlobalState } from "../globalState";
 import "../scss/monaco.scss";
 
 interface IMonacoComponentProps {
-    className: string;
+    className?: string;
     refObject: React.RefObject<HTMLDivElement>;
     globalState: GlobalState;
 }

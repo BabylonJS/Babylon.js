@@ -1,5 +1,16 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, DrawWrapper, IColor4Like, Layer, FrameGraphTextureHandle, Effect, FrameGraphTextureManager, RenderTargetTexture } from "core/index";
+import type {
+    Nullable,
+    AbstractEngine,
+    DrawWrapper,
+    IColor4Like,
+    Layer,
+    FrameGraphTextureHandle,
+    Effect,
+    FrameGraphTextureManager,
+    ObjectRenderer,
+    Scene,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
@@ -18,10 +29,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
 
+    private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
+        return (value as ObjectRenderer).initRender !== undefined;
+    }
+
     /** @internal */
     constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _textureManager: FrameGraphTextureManager
+        private readonly _textureManager: FrameGraphTextureManager,
+        private readonly _scene?: Scene
     ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
@@ -190,10 +206,27 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /**
      * Renders a RenderTargetTexture or a layer
      * @param object The RenderTargetTexture/Layer to render
+     * @param viewportWidth The width of the viewport (optional for Layer, but mandatory for ObjectRenderer)
+     * @param viewportHeight The height of the viewport (optional for Layer, but mandatory for ObjectRenderer)
      */
-    public render(object: Layer | RenderTargetTexture): void {
-        this._applyRenderTarget();
-        object.render();
+    public render(object: Layer | ObjectRenderer, viewportWidth?: number, viewportHeight?: number): void {
+        if (FrameGraphRenderContext._IsObjectRenderer(object)) {
+            if (object.shouldRender()) {
+                this._scene?.incrementRenderId();
+                this._scene?.resetCachedMaterial();
+
+                object.prepareRenderList();
+                object.initRender(viewportWidth!, viewportHeight!);
+
+                this._applyRenderTarget();
+                object.render();
+
+                object.finishRender();
+            }
+        } else {
+            this._applyRenderTarget();
+            object.render();
+        }
     }
 
     /**

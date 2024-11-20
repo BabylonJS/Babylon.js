@@ -80,30 +80,34 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions.size}
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
-                                <OptionsLine
-                                    label="Format"
-                                    options={textureFormatList}
-                                    target={creationOptions}
-                                    propertyName=""
-                                    onSelect={(value: number | string) => {
-                                        creationOptions.options.formats![0] = value as number;
-                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                                    }}
-                                    extractValue={() => creationOptions.options.formats![0]}
-                                    noDirectUpdate={true}
-                                />
-                                <OptionsLine
-                                    label="Type"
-                                    options={textureTypeList}
-                                    target={creationOptions}
-                                    propertyName=""
-                                    onSelect={(value: number | string) => {
-                                        creationOptions.options.types![0] = value as number;
-                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                                    }}
-                                    extractValue={() => creationOptions.options.types![0]}
-                                    noDirectUpdate={true}
-                                />
+                                {creationOptions.options.formats && (
+                                    <OptionsLine
+                                        label="Format"
+                                        options={textureFormatList}
+                                        target={creationOptions}
+                                        propertyName=""
+                                        onSelect={(value: number | string) => {
+                                            creationOptions.options.formats![0] = value as number;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                        extractValue={() => creationOptions.options.formats![0]}
+                                        noDirectUpdate={true}
+                                    />
+                                )}
+                                {creationOptions.options.types && (
+                                    <OptionsLine
+                                        label="Type"
+                                        options={textureTypeList}
+                                        target={creationOptions}
+                                        propertyName=""
+                                        onSelect={(value: number | string) => {
+                                            creationOptions.options.types![0] = value as number;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                        extractValue={() => creationOptions.options.types![0]}
+                                        noDirectUpdate={true}
+                                    />
+                                )}
                                 <FloatLineComponent
                                     lockObject={this.props.stateManager.lockObject}
                                     digits={0}

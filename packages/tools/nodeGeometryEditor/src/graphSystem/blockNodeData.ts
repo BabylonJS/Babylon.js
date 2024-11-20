@@ -2,7 +2,7 @@ import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interf
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
-import styles from "./blockNodeData.modules.scss";
+import styles from "./blockNodeData.module.scss";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";

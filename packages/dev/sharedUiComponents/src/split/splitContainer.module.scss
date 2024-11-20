@@ -1,0 +1,25 @@
+:local .split-container {
+    display: grid;
+
+    .splitter {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        background-color: #444;
+        border: 0px;
+        overlay: hidden;
+
+        &.vertical {
+            cursor: row-resize;
+        }
+
+        &.horizontal {
+            cursor: col-resize;
+        }
+
+        &:hover {
+            background-color: #666;
+        }
+    }
+}

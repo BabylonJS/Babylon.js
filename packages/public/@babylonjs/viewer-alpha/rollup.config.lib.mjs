@@ -1,5 +1,6 @@
 import typescript from "@rollup/plugin-typescript";
 import { dts } from "rollup-plugin-dts";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 const commonConfig = {
     input: "../../../tools/viewer-alpha/src/index.ts",
@@ -14,7 +15,11 @@ const jsConfig = {
         format: "es",
         exports: "named",
     },
-    plugins: [typescript({ tsconfig: "tsconfig.build.lib.json" })],
+    plugins: [typescript({ tsconfig: "tsconfig.build.lib.json" }), nodeResolve({ mainFields: ["browser", "module", "main"] })],
+    onwarn(warning, warn) {
+        // Treat all warnings as errors.
+        throw new Error(warning.message);
+    },
 };
 
 const dtsConfig = {

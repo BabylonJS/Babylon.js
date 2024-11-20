@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext } from "core/index";
+import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext, ObjectRendererOptions } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 
 /**
  * Task used to render objects to a texture.
@@ -34,7 +34,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     public set camera(camera: Camera) {
         this._camera = camera;
-        this._rtt.activeCamera = this.camera;
+        this._renderer.activeCamera = this.camera;
     }
 
     /**
@@ -65,13 +65,15 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
     protected _scene: Scene;
-    protected _rtt: RenderTargetTexture;
+    protected _renderer: ObjectRenderer;
+    protected _textureWidth: number;
+    protected _textureHeight: number;
 
     /**
-     * The render target texture used to render the objects.
+     * The object renderer used to render the objects.
      */
-    public get renderTargetTexture() {
-        return this._rtt;
+    public get objectRenderer() {
+        return this._renderer;
     }
 
     public override get name() {
@@ -80,8 +82,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     public override set name(value: string) {
         this._name = value;
-        if (this._rtt) {
-            this._rtt.name = value + "_internal_rtt";
+        if (this._renderer) {
+            this._renderer.name = value;
         }
     }
 
@@ -90,23 +92,27 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
+     * @param options The options of the object renderer.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
         super(name, frameGraph);
 
         this._scene = scene;
-        this._rtt = new RenderTargetTexture(name, 1, scene, {
-            delayAllocation: true,
-        });
-        this._rtt.skipInitialClear = true;
+        this._renderer = new ObjectRenderer(name, scene, options);
         this.name = name;
+
+        this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
+            if (!this._renderer.options.doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
+            }
+        });
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this._rtt.isReadyForRendering();
+        return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void) {
@@ -143,7 +149,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
-        this._rtt._size = outputTextureDescription.size;
+        this._textureWidth = outputTextureDescription.size.width;
+        this._textureHeight = outputTextureDescription.size.height;
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
@@ -151,14 +158,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         if (this.depthTexture !== undefined) {
             pass.setRenderTargetDepth(this.depthTexture);
         }
-        pass.setExecuteFunc((_context) => {
-            this._rtt.renderList = this.objectList.meshes;
-            this._rtt.particleSystemList = this.objectList.particleSystems;
-            this._scene.incrementRenderId();
-            this._scene.resetCachedMaterial();
-            _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
-            _context.render(this._rtt);
-            additionalExecute?.(_context);
+        pass.setExecuteFunc((context) => {
+            this._renderer.renderList = this.objectList.meshes;
+            this._renderer.particleSystemList = this.objectList.particleSystems;
+
+            context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
+            context.render(this._renderer, this._textureWidth, this._textureHeight);
+
+            additionalExecute?.(context);
         });
 
         if (this.dependencies !== undefined) {
@@ -185,7 +192,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     }
 
     public override dispose(): void {
-        this._rtt.dispose();
+        this._renderer.dispose();
         super.dispose();
     }
 }

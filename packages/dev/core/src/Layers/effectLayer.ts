@@ -765,7 +765,9 @@ export abstract class EffectLayer {
             );
         }
 
-        return drawWrapper.effect!.isReady();
+        const effectIsReady = drawWrapper.effect!.isReady();
+
+        return this._arePostProcessAndMergeReady() && effectIsReady;
     }
 
     protected async _importShadersAsync(): Promise<void> {
@@ -776,33 +778,37 @@ export abstract class EffectLayer {
         }
     }
 
-    /**
-     * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
-     */
-    public render(): void {
+    protected _arePostProcessAndMergeReady(): boolean {
+        let isReady = true;
+
         for (let i = 0; i < this._postProcesses.length; i++) {
-            if (!this._postProcesses[i].isReady()) {
-                return;
-            }
+            isReady = this._postProcesses[i].isReady() && isReady;
         }
 
-        const engine = this._scene.getEngine();
         const numDraws = this._numInternalDraws();
 
-        // Check
-        let isReady = true;
         for (let i = 0; i < numDraws; ++i) {
             let currentEffect = this._mergeDrawWrapper[i];
             if (!currentEffect) {
                 currentEffect = this._mergeDrawWrapper[i] = new DrawWrapper(this._engine);
                 currentEffect.setEffect(this._createMergeEffect());
             }
-            isReady = isReady && currentEffect.effect!.isReady();
+            isReady = currentEffect.effect!.isReady() && isReady;
         }
 
-        if (!isReady) {
+        return isReady;
+    }
+
+    /**
+     * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+     */
+    public render(): void {
+        if (!this._arePostProcessAndMergeReady()) {
             return;
         }
+
+        const engine = this._scene.getEngine();
+        const numDraws = this._numInternalDraws();
 
         this.onBeforeComposeObservable.notifyObservers(this);
 

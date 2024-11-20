@@ -345,6 +345,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
     /** @internal */
     public _markScenePrePassDirty(): void {
+        this._enable(this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
         this._internalMarkScenePrePassDirty();
     }

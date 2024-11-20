@@ -50,6 +50,7 @@ type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number
 // Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
+    viewerrender: Event;
     environmentchange: Event;
     environmenterror: ErrorEvent;
     modelchange: Event;
@@ -62,7 +63,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
+ * Displays a 3D model using the Babylon.js Viewer.
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
@@ -158,6 +159,7 @@ export class HTML3DElement extends LitElement {
                 calc(var(--ui-background-opacity) - 0.1)
             );
             all: inherit;
+            overflow: hidden;
         }
 
         .full-size {
@@ -981,6 +983,10 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onAnimationProgressChanged.add(() => {
                             this.animationProgress = details.viewer.animationProgress ?? 0;
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                        });
+
+                        details.scene.onAfterRenderCameraObservable.add(() => {
+                            this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                         });
 
                         this._updateModel();

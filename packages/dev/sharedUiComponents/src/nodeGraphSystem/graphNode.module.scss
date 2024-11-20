@@ -280,7 +280,7 @@
     transform: translateY(-1px);
 }
 
-.active {
+.activeNode {
     border-radius: 4px 4px 0 0;
     border-color: transparent;
     background-color: rgba(0, 0, 0, 0.2);
@@ -302,7 +302,7 @@
     border: 0;
     z-index: 100000;
     background-color: rgb(51, 51, 51);
-    border: 1px solid rgba(51, 51, 51);
+    border: 1px solid rgb(51, 51, 51);
     max-height: 200px;
 
     // Simple

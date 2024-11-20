@@ -43,6 +43,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public name: string;
 
     /**
+     * Define the display name of the texture, which is used as tree item name of the dedicated node in the inspector
+     */
+    @serialize()
+    public displayName: string;
+
+    /**
      * Gets or sets an object used to store user defined information.
      */
     @serialize()

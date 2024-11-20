@@ -20,7 +20,8 @@
             "viewer/*": ["tools/viewer/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
             "vsm": ["tools/vsm/dist/*"]
-        }
+        },
+        "allowSyntheticDefaultImports": true
     },
 
     "references": [
