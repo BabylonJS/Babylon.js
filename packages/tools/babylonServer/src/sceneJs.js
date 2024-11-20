@@ -6,6 +6,8 @@ import { createEngine } from "./createEngine";
 
 let engine;
 let scene;
+
+let couille;
 const resize = () => {
     engine && engine.resize();
 };
@@ -15,6 +17,7 @@ const openInspector = (e) => {
     }
 };
 const runScene = async () => {
+    console.log("runScene");
     try {
         // eslint-disable-next-line no-undef
         await Recast();
@@ -36,16 +39,19 @@ const runScene = async () => {
         } else {
             scene = createdScene;
         }
+
+        couille = scene.onBeforeRenderObservable.add(() => {});
+        console.log(couille);
     }
 
-    window.addEventListener("resize", resize);
-    window.addEventListener("hashchange", runScene);
-    window.addEventListener("keydown", openInspector);
-    scene.onDisposeObservable.add(() => {
-        window.removeEventListener("resize", resize);
-        window.removeEventListener("hashchange", runScene);
-        window.removeEventListener("keydown", openInspector);
-    });
+    // window.addEventListener("resize", resize);
+    // window.addEventListener("hashchange", runScene);
+    // window.addEventListener("keydown", openInspector);
+    // scene.onDisposeObservable.add(() => {
+    //     window.removeEventListener("resize", resize);
+    //     window.removeEventListener("hashchange", runScene);
+    //     window.removeEventListener("keydown", openInspector);
+    // });
 
     const runInVisualizationTestMode = (typeof process !== "undefined" && process.env.VIS_TEST_MODE === "true") || false;
     if (runInVisualizationTestMode) {
@@ -89,3 +95,10 @@ const runScene = async () => {
 runScene();
 
 console.log("Open the inspector using Ctrl+Shift+U (or Command+Shift+U on Mac)");
+
+setTimeout(() => {
+    engine.dispose();
+    engine = null;
+    scene = null;
+    window.couille = couille;
+}, 1000);
