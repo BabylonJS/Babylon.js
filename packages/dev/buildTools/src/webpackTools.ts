@@ -125,6 +125,7 @@ export const getRules = (
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
+                            esModule: true,
                             modules: {
                                 localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
                             },
@@ -145,7 +146,12 @@ export const getRules = (
                     "style-loader",
                     {
                         loader: "css-loader",
+
                         options: {
+                            esModule: true,
+                            modules: {
+                                localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
+                            },
                             sourceMap: true,
                         },
                     },
