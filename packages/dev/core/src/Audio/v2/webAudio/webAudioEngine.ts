@@ -69,6 +69,13 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resolveIsReadyPromise: () => void;
 
     /** @internal */
+    public readonly isUnlockedPromise: Promise<void> = new Promise((resolve) => {
+        this._resolveIsUnlockedPromise = resolve;
+    });
+
+    private _resolveIsUnlockedPromise: () => void;
+
+    /** @internal */
     public get currentTime(): number {
         return this._audioContext?.currentTime ?? 0;
     }
@@ -86,9 +93,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         if (this.state === "running") {
-            this._resolveIsReadyPromise?.();
+            this._resolveIsUnlockedPromise();
         } else if (this._resumeOnInteraction) {
             document.addEventListener("click", this._onUserInteraction, { once: true });
+            this._audioContext.resume();
         }
 
         this._mainOutput = await CreateMainAudioOutputAsync(this);
@@ -103,7 +111,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         if (this.state === "running") {
             this._audioContextStarted = true;
             document.removeEventListener("click", this._onUserInteraction);
-            this._resolveIsReadyPromise?.();
+            this._resolveIsUnlockedPromise();
         }
         if (this.state === "suspended" || this.state === "interrupted") {
             if (this._resumeOnInteraction) {
@@ -152,7 +160,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
 
         await this._initAudioContext();
-        await this.isReadyPromise;
+        this._resolveIsReadyPromise();
     }
 
     /** @internal */
