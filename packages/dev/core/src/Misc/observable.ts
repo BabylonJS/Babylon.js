@@ -1,5 +1,8 @@
 import type { Nullable } from "../types";
 
+type WeakReference<T extends Function> = any;
+declare const WeakRef: any;
+
 /**
  * A class serves as a medium between the observable and its observers
  */
@@ -79,7 +82,7 @@ export class Observer<T> {
      * It will be set by the observable that the observer belongs to.
      * @internal
      */
-    public _remove: Nullable<WeakRef<() => void>> = null;
+    public _remove: Nullable<WeakReference<() => void>> = null;
 
     /**
      * Creates a new observer
