@@ -85,10 +85,10 @@ export class WebAudioEngine extends AudioEngineV2 {
 
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
-        if (this.state === "suspended" || this.state === "interrupted") {
-            if (this._resumeOnInteraction) {
-                document.addEventListener("click", this._onUserInteraction, { once: true });
-            }
+        if (this.state === "running") {
+            this._resolveIsReadyPromise?.();
+        } else if (this._resumeOnInteraction) {
+            document.addEventListener("click", this._onUserInteraction, { once: true });
         }
 
         this._mainOutput = await CreateMainAudioOutputAsync(this);
@@ -152,6 +152,7 @@ export class WebAudioEngine extends AudioEngineV2 {
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
 
         await this._initAudioContext();
+        await this.isReadyPromise;
     }
 
     /** @internal */
