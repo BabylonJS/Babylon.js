@@ -10,7 +10,7 @@ import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
 
-export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
+type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /**
  * Creates a new streaming sound.
@@ -22,7 +22,7 @@ export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
  */
 export async function CreateStreamingSoundAsync(
     name: string,
-    source: StreamingSoundSourceType,
+    source: HTMLMediaElement | string | string[],
     engine: Nullable<AudioEngineV2> = null,
     options: Nullable<IStreamingSoundOptions> = null
 ): Promise<StreamingSound> {

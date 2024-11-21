@@ -12,7 +12,7 @@ import type { _WebAudioMainBus } from "./webAudioMainBus";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
 
-export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
+type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
 /**
  * Creates a new static sound.
@@ -24,7 +24,7 @@ export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffe
  */
 export async function CreateSoundAsync(
     name: string,
-    source: StaticSoundSourceType,
+    source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
     engine: Nullable<AudioEngineV2> = null,
     options: Nullable<IStaticSoundOptions> = null
 ): Promise<StaticSound> {
@@ -52,7 +52,7 @@ export async function CreateSoundAsync(
  * @returns A promise that resolves to the created static sound buffer.
  */
 export async function CreateSoundBufferAsync(
-    source: StaticSoundSourceType,
+    source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
     engine: Nullable<AudioEngineV2> = null,
     options: Nullable<IStaticSoundOptions> = null
 ): Promise<StaticSoundBuffer> {
