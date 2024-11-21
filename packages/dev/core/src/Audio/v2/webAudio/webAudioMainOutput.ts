@@ -40,6 +40,6 @@ export class _WebAudioMainOutput extends MainAudioOutput {
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioMainOutput";
+        return "_WebAudioMainOutput";
     }
 }

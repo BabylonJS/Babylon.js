@@ -135,7 +135,7 @@ class WebAudioStreamingSound extends StreamingSound {
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
+        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
             this.webAudioOutputNode.connect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
@@ -145,7 +145,7 @@ class WebAudioStreamingSound extends StreamingSound {
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
+        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
             this.webAudioOutputNode.disconnect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
