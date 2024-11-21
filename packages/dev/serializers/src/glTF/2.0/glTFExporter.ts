@@ -1370,7 +1370,17 @@ export class GLTFExporter {
             } else {
                 const bufferViewIndex = state.getVertexBufferView(vertexBuffer._buffer)!;
                 const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
-                this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind, state.hasVertexColorAlpha(vertexBuffer)), vertexBuffer.type, count, byteOffset, minMax));
+                this._accessors.push(
+                    createAccessor(
+                        bufferViewIndex,
+                        getAccessorType(kind, state.hasVertexColorAlpha(vertexBuffer)),
+                        vertexBuffer.type,
+                        count,
+                        byteOffset,
+                        minMax,
+                        vertexBuffer.normalized // TODO: Find other places where this is needed.
+                    )
+                );
                 accessorIndex = this._accessors.length - 1;
                 state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
                 primitive.attributes[getAttributeType(kind)] = accessorIndex;
