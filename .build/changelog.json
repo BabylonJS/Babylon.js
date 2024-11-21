@@ -1,6 +1,1150 @@
 {
-    "fromTag": "7.32.5",
+    "fromTag": "7.34.4",
     "changelog": {
+        "7.34.4": [
+            {
+                "pr": "15857",
+                "title": "Fix rgba",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15856",
+                "title": "Some small Viewer bug fixes",
+                "description": "This PR includes a few small bug fixes:\r\n1. `computeMaxExtents` changes the current animation frame to do its calculations, but it doesn't restore the original value. This was causing the Viewer to start at the wrong animation frame when first starting an animation and when switching animations. I think it's best to fix this in the `computeMaxExtents` function so it leaves the animation in the state it found it in.\r\n2. When switching animations, we reset to the first animation frame, and we need to fire one onAnimationProgressChanged event so the animation timeline properly syncs to the animation state.\r\n3. The viewer HTML element should set overflow to hidden by default, otherwise if a child annotation is pulled out of view (e.g. through an animation or panning the camera) it will overflow and show scroll bars. Instead we just want the annotation to go out of view along with the model.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.35.0": [
+            {
+                "pr": "15826",
+                "title": "Update TypeScript",
+                "description": "One of my other [PR](https://github.com/BabylonJS/Babylon.js/pull/15823)s is failing in the build because the older version of TS we are using (5.1.6) is missing the `states` property from the `ElementInternals` WebAPI type (the `states` property and the its type `CustomStateSet` are sort of new but supported in all the major browsers). TypeScript 5.5+ has this property and type, so I started trying to update our TypeScript version. However I ran into some problems with deprecated TypeScript APIs used for the path transformation stuff in the build. I tried to fix it (based on some input from the TypeScript team!), but I definitely broke it. So I'm creating a draft PR as a starting point for getting TypeScript updated.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15860",
+                "title": "fixed leaking observables in Rendering",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15861",
+                "title": "Add missing Bone.dispose()",
+                "description": "https://forum.babylonjs.com/t/inspector-not-refreshing-correctly-after-removing-and-creating-new-bones/54874/5",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/tools/playground/src/scss/main.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15859",
+                "title": "PostProcess: fix shader imports not being ready in ES6",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "15858",
+                "title": "EffectLayer: Fix isReady to check readiness for post processes and merge effect",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
+        "7.34.3": [
+            {
+                "pr": "15855",
+                "title": "Better style and popup management for editors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/popupComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/dev/sharedUiComponents/src/lines/popup.ts",
+                    "packages/dev/sharedUiComponents/src/popupHelper.ts",
+                    "packages/dev/sharedUiComponents/src/styleHelper.ts",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/guiEditor.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/nodeEditor.ts",
+                    "packages/tools/nodeEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/nodeGeometryEditor.ts",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/nodeRenderGraphEditor.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/sharedComponents/popup.tsx",
+                    "packages/tools/vsm/src/vsm.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15844",
+                "title": "PointerDragBehavior: Support all dragAxis",
+                "description": "#15843\r\n\r\nhttps://forum.babylonjs.com/t/pointerdragbehavior-dragaxis-inconstant-behavior-with-dragaxis-other-than-axis/54781/3\r\n\r\n ",
+                "author": {
+                    "name": "fabsharp",
+                    "url": "https://github.com/fabsharp"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15854",
+                "title": "Switch to Manifold 3.0",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15852",
+                "title": "Split container - Remove dependencies on split.js",
+                "description": "cc @AmoebaChant to do it on Smart Filters editor too",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitContext.ts",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/tools/nodeEditor/src/components/log/log.scss",
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/log/log.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/components/log/log.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/playground/src/components/monacoComponent.tsx",
+                    "packages/tools/playground/src/custom.d.ts",
+                    "packages/tools/playground/src/playground.tsx",
+                    "packages/tools/playground/src/scss/header.scss",
+                    "packages/tools/playground/src/scss/main.scss",
+                    "packages/tools/playground/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15851",
+                "title": "Bump cross-spawn from 7.0.3 to 7.0.6",
+                "description": "Bumps [cross-spawn](https://github.com/moxystudio/node-cross-spawn) from 7.0.3 to 7.0.6.\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/moxystudio/node-cross-spawn/blob/master/CHANGELOG.md\">cross-spawn's changelog</a>.</em></p>\n<blockquote>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.5...v7.0.6\">7.0.6</a> (2024-11-18)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>update cross-spawn version to 7.0.5 in package-lock.json (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/f700743918d901eff92960e15a8dd68f87bd4176\">f700743</a>)</li>\n</ul>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.4...v7.0.5\">7.0.5</a> (2024-11-07)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>fix escaping bug introduced by backtracking (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/640d391fde65388548601d95abedccc12943374f\">640d391</a>)</li>\n</ul>\n<h3><a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.3...v7.0.4\">7.0.4</a> (2024-11-07)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>disable regexp backtracking (<a href=\"https://redirect.github.com/moxystudio/node-cross-spawn/issues/160\">#160</a>) (<a href=\"https://github.com/moxystudio/node-cross-spawn/commit/5ff3a07d9add449021d806e45c4168203aa833ff\">5ff3a07</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/77cd97f3ca7b62c904a63a698fc4a79bf41977d0\"><code>77cd97f</code></a> chore(release): 7.0.6</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/6717de49ff1e5de49622488dcb9c33fb25370c85\"><code>6717de4</code></a> chore: upgrade standard-version</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/f700743918d901eff92960e15a8dd68f87bd4176\"><code>f700743</code></a> fix: update cross-spawn version to 7.0.5 in package-lock.json</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/9a7e3b2165917367f74b8365faad9873b30d7263\"><code>9a7e3b2</code></a> chore: fix build status badge</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/085268352dcbcad8064c64c5efb25268b4023184\"><code>0852683</code></a> chore(release): 7.0.5</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/640d391fde65388548601d95abedccc12943374f\"><code>640d391</code></a> fix: fix escaping bug introduced by backtracking</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/bff0c87c8b627c4e6d04ec2449e733048bebb464\"><code>bff0c87</code></a> chore: remove codecov</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/a7c6abc6fee79641d45b452fe6217deaa1bd0973\"><code>a7c6abc</code></a> chore: replace travis with github workflows</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/9b9246e0969e86656d7ccd527716bc3c18842a19\"><code>9b9246e</code></a> chore(release): 7.0.4</li>\n<li><a href=\"https://github.com/moxystudio/node-cross-spawn/commit/5ff3a07d9add449021d806e45c4168203aa833ff\"><code>5ff3a07</code></a> fix: disable regexp backtracking (<a href=\"https://redirect.github.com/moxystudio/node-cross-spawn/issues/160\">#160</a>)</li>\n<li>Additional commits viewable in <a href=\"https://github.com/moxystudio/node-cross-spawn/compare/v7.0.3...v7.0.6\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=cross-spawn&package-manager=npm_and_yarn&previous-version=7.0.3&new-version=7.0.6)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15853",
+                "title": "Fix ktx texture orientation in sandbox",
+                "description": "See https://github.com/KhronosGroup/KTX-Software/pull/959 for full context.\r\n\r\nThe gist of it is that KTX textures are y inverted when previewing in the sandbox. The reason why is because [passing in `invertY` of true doesn't actually work for compressed textures](https://forum.babylonjs.com/t/make-inverty-flag-more-consistent-across-different-texture-loading-scenarios/52751). I fixed it by updating the UVs of the preview plane to be OpenGL conventions so that all textures behave the same.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Compat/index.ts",
+                    "packages/dev/core/src/index.ts",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15848",
+                "title": "Goal of this PR is to make sure we raise the onNewXXX when the entity…",
+                "description": "… is fully constructed",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15847",
+                "title": "Move tags to all entities",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.34.2": [
+            {
+                "pr": "15846",
+                "title": "fixed leaking observables in XR",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/motionController/webXRAbstractMotionController.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15845",
+                "title": "Contributing: update links in Pull requests",
+                "description": null,
+                "author": {
+                    "name": "fabsharp",
+                    "url": "https://github.com/fabsharp"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15835",
+                "title": "Viewer suspend rendering when not visible",
+                "description": "This change makes is so that when the viewer element is not within the browser viewport, it suspends the render loop (to avoid unnecessary power consumption, and also to help scale if you have a page with many viewer instances).\r\n\r\n- Introduce a suspendRendering function on the lower level Viewer. This is ref counted, because I intend to use the same mechanism for other scenarios, such as when the viewer is visible but nothing is changing.\r\n- In the `createViewerForCanvas` function, use `IntersectionObserver` to detect when the viewer canvas is not in the browser viewport and suspend rendering.\r\n- Update the test app to be able to toggle on/off extra blank content before/after the <babylon-viewer> element to make it easy to test the outside of viewport scenario.\r\n\r\n\r\nhttps://github.com/user-attachments/assets/ecac125c-3b8e-4196-b01d-aa074fbb0417\r\n\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15813",
+                "title": "added onboxhover observable that returns the hovered mesh to boundingboxgizmo",
+                "description": "boundingBoxGizmo.ts",
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15836",
+                "title": "Fix AnimationGroup isPlaying when mask is applied",
+                "description": "Fixes the forum issue:\r\nhttps://forum.babylonjs.com/t/animationgroup-isplaying-is-always-true-if-animationgroupmask-is-applied/54799/1",
+                "author": {
+                    "name": "s207152",
+                    "url": "https://github.com/s207152"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15840",
+                "title": "GPUPicker: Fix class doc",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15841",
+                "title": "Terrain material: Fix bug when using Cascaded Shadow Maps",
+                "description": "See https://forum.babylonjs.com/t/terrain-self-shadow-with-cascadedshadowgenerator/54820",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15834",
+                "title": "Include Lit in viewer lib ES6 bundle",
+                "description": "Lit was added as a direct dependency of the Viewer, with the intention that it would be directly embedded as a private dependency of the Viewer to avoid any potential version conflicts (e.g. if a consuming app uses other custom elements that also use Lit). However, when it was added I missed adding the `nodeResolve` plugin, so it wasn't actually getting included in the bundle (it relied on the consuming app to bring in Lit). This PR fixes this, and also makes viewer package build warnings be errors so these types of issues don't slip through in the future.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.lib.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15833",
+                "title": "Viewer world space hotspots",
+                "description": "Static/fixed world space hotspots (unassociated with a mesh surface, for static camera poses or cases where we don't have geometry, like splats). This is the last tiny bit of support for hotspots/annotations.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15832",
+                "title": "PBR material: Fix isScatteringEnabled switch not working as expected",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15831",
+                "title": "WebGPU: Fix crash when using sub-surface scattering",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockPrePass.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15823",
+                "title": "Viewer annotation custom element",
+                "description": "This change adds a simple custom element to add HTML screen space annotations that track hotspots. For example:\r\n\r\n```html\r\n<babylon-viewer\r\n    source=\"https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb\"\r\n    hotspots='{\r\n        \"antenna\": {\r\n            \"type\": \"surface\",\r\n            \"meshIndex\": 1,\r\n            \"pointIndex\": [94, 93, 76],\r\n            \"barycentric\": [0.391, 0.387, 0.223],\r\n            \"cameraOrbit\": [1.270, 1.424, 0.514]\r\n        }\r\n    }'\r\n>\r\n    <babylon-viewer-annotation hotspot=\"antenna\">\r\n        <div>\r\n            <svg style=\"width: 20px; height: 20px; transform: translate(-50%, -50%)\">\r\n                <ellipse cx=\"10\" cy=\"10\" rx=\"8\" ry=\"8\" fill=\"red\" stroke=\"white\" stroke-width=\"3\" />\r\n            </svg>\r\n        </div>\r\n    </babylon-viewer-annotation>\r\n</babylon-viewer>\r\n```\r\n\r\nAnnotation elements have a custom state for when the associated hotspot is facing away from the camera, which can be used in CSS styling. The default is to decrease the opacity when the hotspot is not facing the camera.\r\n\r\nhttps://github.com/user-attachments/assets/8c0c6c40-b81f-45fd-8d8e-6226c64e0438\r\n\r\n\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/customStateSet.d.ts",
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15821",
+                "title": "Extract ObjectRenderer from RenderTargetTexture",
+                "description": "The aim of this PR is to extract from `RenderTargetTexture` what is related to rendering only, and to leave specifically in `RenderTargetTexture` what is related to output texture management. This way, I can use `ObjectRenderer` in the frame graph, as the texture management part of `RenderTargetTexture` is of no use.\r\n\r\nFirstly, `ObjectRenderer` can be changed to whatever name suits you :)\r\n\r\nSecondly, the PR should be a non-breaking change (if it is, it's a bug!), which is why:\r\n* I have two functions `prepareRenderList` and `initRender` that you have to call one after the other. I'd have preferred to call `prepareRenderList` inside `initRender` and have only the latter method public, but in the existing `RenderTargetTexture` function there's notification of the `onBeforeBindObservable` observable between these two blocks of code, and it doesn't make sense to have this observable in the `ObjectRenderer` class (because this class isn't concerned with texture management).\r\n* There's a `skipOnAfterRenderObservable` parameter to the `ObjectRenderer.render` method, so as not to notify the `onAfterRenderObservable` at the end of `ObjectRenderer.render`. This is because in `RenderTargetTexture`, this observable is notified in the `Engine.unBindFramebuffer` callback: notifying it at the end of `ObjectRenderer.render` would have been a breaking change.\r\n\r\nThe expected usage is as follows (if you use the class directly - it's hidden from you if you use `RenderTargetTexture`):\r\n* call `prepareRenderList()` (optional, you can avoid this call if you know that `renderList` is up to date)\r\n* call `initRender(viewportWidth, viewportHeight)`.\r\n* call `render(layerOrFaceIndex)` as many times as necessary (for a cube texture, you'll want to call it 6 times, each time linking the right face of the cube to the output texture)\r\n* call `finishRender()`.\r\n\r\nOnce again, the names of these methods can be changed!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15780",
+                "title": "Needed changes to enable the inspector on the viewer",
+                "description": "Added the ability to toggle the inspector in the viewr alpha test app.\r\n\r\nA few notes:\r\n\r\n* Many file changes to the repository were required to get this to work. The reason is that vite requires the moduled scss files to be called \".module.scss\" and we called them. \".modules.scss\". In webpack it is configurable.\r\n* as the viewer renders the canvas in a shadow dom, adding the inspector to the canvas as its parent won't work - the css rules will nto be applied there. Therefore it is needed to add it to an inspector host. it defaults to body if not provided, but the body needs to be styled correctly in order for that to work. The viewer has another div element that is stretched on the screen, which is used as the host.\r\n* The inspector is async-loaded.\r\n* All require keywords were removed from the source. it is fine with webpack, but not with vite nor rollup\r\n\r\nThese changes actually allow the inspector to be released as a standalone es6 module (i.e. - not bundled). As this can be considered a breaking change I did not include it in this PR. we can discuss it in the future. for now no change was made to break anything.\r\n\r\n---\r\nEDIT from @ryantrem:\r\n- After trying for a bit I wasn't able to get this to work with the viewer distribution bundle, so I removed the `showInspector` function from the viewer element.\r\n- However, I kept the \"show inspector\" button in the viewer test app, which directly invokes the inspector (so we can both test inspector with the viewer and use it in local development).\r\n- I made some small changes to Inspector to make it work with shadow doms.\r\n\r\nWe can circle back to the inspector integration later and try to get it included as a feature, particularly if we think it is important to have it work with the viewer distribution bundle. At least now with these changes if both the viewer and the inspector are consumed by an app being build/bundled, inspector will work with the viewer.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/keyPoint.tsx",
+                    "packages/dev/inspector/src/components/embedHost/embedHostComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/dev/inspector/tsconfig.json",
+                    "packages/dev/sharedUiComponents/src/components/Button.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBar.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButton.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdown.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/clampDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/common.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/outputDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/trigonometryDisplayManager.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/custom.d.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/common.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.module.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/elbowDisplayManager.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15809",
+                "title": "Small changes to jest, including the recommended jest extension",
+                "description": "This mades changes to the jest configuration to remove a seprecation warning.\n\nI also include the jest extension in the recommendations for this repo to allow quick testing using vscode.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".vscode/extensions.json",
+                    "jest.config.ts",
+                    "tsconfig.test.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15830",
+                "title": "WebGPU: Add occlusion query module to the core WebGPU engine",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15828",
+                "title": "Add display name texture property",
+                "description": "As requested from forum post: https://forum.babylonjs.com/t/add-display-name-for-textures/54745/3",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/textureTreeItemComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15829",
+                "title": "Fix Hotspot normal computation//add missing gizmo dispose",
+                "description": "- Fix normal computation for hotspot.\r\n- Add missing super.dispose for position and rotation gizmos ( https://forum.babylonjs.com/t/positiongizmo-dispose-not-complete/54770/2 )\r\n\r\nNote:\r\nNormal is local. world matrix is used when converting from local to world. So no need to use determinant. Only Clock orientation is important here.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15825",
+                "title": "Yet another voxelization fix for IBL shadows",
+                "description": "Okay, I'm still running into cases where the voxelization never happens because the required textures aren't ready when the callback occurs.\r\nTo make this more robust, I'm allowing the call to happen as many times as it takes before everything is ready and then rendering the voxel grid and then unbinding.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15827",
+                "title": "Fix input selection crsh on NRGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15822",
+                "title": "Add tags display for Inspector",
+                "description": "Fixing https://forum.babylonjs.com/t/display-tags-in-the-inspector/42781/3",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15824",
+                "title": "local declarations on windows use \\ instead of /",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15819",
+                "title": "Better message",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15814",
+                "title": "hotspot visibility",
+                "description": "- compute surface normal from hotspot data\r\n- compute visibility factor (dot product from surface normal to eyeToSurface vector)",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.34.1": [
+            {
+                "pr": "15816",
+                "title": "IBL shadow voxelization fix",
+                "description": "Changed to `onAfterRenderObservable` as it seems to prevent the voxelization from failing sometimes. I think it gives time for all the RT's to become ready (shaders compiled, etc.).",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15126",
+                "title": "Animation: Use the right weight when calling RuntimeAnimation.goToFrame",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "15818",
+                "title": "Animation: Use the right weight when calling RuntimeAnimation.goToFrame",
+                "description": "See https://forum.babylonjs.com/t/animation-blending-and-key-interpolation-bug-in-new-cdn/54729/4.\r\n\r\nMy change in #15126 was a breaking change, because when the weight isn't -1, the animation is considered additive, and this can break if there isn't at least one animation that isn't additive.\r\n\r\nI needed this change for Teams Avatar, so I made a change so that the old behavior is the default, but I added a flag so that I could use the animation weight on demand.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            }
+        ],
+        "7.34.0": [
+            {
+                "pr": "15815",
+                "title": "Better error message",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15789",
+                "title": "Add speed and delay to camera auto orbit config/props",
+                "description": "This PR adds the ability to set the camera auto orbit delay and speed (as discussed here: https://forum.babylonjs.com/t/babylon-viewer-v2/54317/33).\r\n\r\nAfter some discussion with @sebavan we're trying out grouping related properties together at the JS layer to reduce API surface area explosion, so I applied this pattern to tone mapping + contrast + exposure as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15812",
+                "title": "Node editors: Fix editable properties for blocks with inheritance hierarchy",
+                "description": "I had this bug in NRGE:\r\n\r\n![image](https://github.com/user-attachments/assets/6da14297-00ef-4ceb-8b45-54d74c04786a)\r\n\r\nThe properties of the `TAAObjectRenderer` are visible in the `ObjectRenderer` block, as both classes inherit from a base class, so all editable properties created by the `TAAObjectRenderer` and `ObjectRenderer` are added to the base class propstore.\r\n\r\nTo display only those properties that are appropriate for the selected block, the PR stores the class name together with the property data in the propstore, and checks at display time whether the property class is part of the class hierarchy of the block for which we want to display the properties.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nrge"
+                ]
+            },
+            {
+                "pr": "15808",
+                "title": "Update NRGE colors and define port type on property window",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15807",
+                "title": "Correct spelling in IBL Shadows Pipeline",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15805",
+                "title": "Geometry buffer renderer: Fix normals not transformed by the world matrix when using normal maps",
+                "description": "See https://forum.babylonjs.com/t/world-normals-dont-account-for-right-handed-coord-system/54625",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15803",
+                "title": "Viewer hotspot activation",
+                "description": "This change makes it possible to programmatically \"focus on\" a hotspot. The camera target is determined by querying the hotspot. Additionally, each hotspot can optionally have additional explicit camera pose data (alpha/beta/radius) associated with it. When focusing on a hotspot, the calculated camera target is always used, and the alpha/beta/radius is used if it is provided.\r\n\r\nSince hotspot data has become a bit more complex (with optional camera data), and since we expect other types of hotspots in the future (like static world space locations), I switched from a custom parsed format to it just being a JSON string. I think this is much more scalable, plus people will already be familiar with JSON, so no need to learn a bespoke way of encoding structured data in a string.\r\n\r\nHotspots are specified like this:\r\n```html\r\n<babylon-viewer\r\n    source=\"https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb\"\r\n    hotspots='{\r\n        \"hotspot 1\": {\r\n            \"type\": \"surface\",\r\n            \"meshIndex\": 1,\r\n            \"pointIndex\": [228, 113, 111],\r\n            \"barycentric\": [0.217, 0.341, 0.442],\r\n            \"cameraOrbit\": [1.085, 1.417, 0.518]\r\n        },\r\n    }'\r\n>\r\n</babylon-viewer>\r\n```\r\n\r\nTo focus on a hotspot, you can call `focusHotSpot` on the viewer element:\r\n```js\r\ndocument.querySelector('babylon-viewer').focusHotSpot('hotspot 1');\r\n```\r\n\r\nTo make this a good experience, the camera pose is interpolated. To make this possible, I did a small refactor in `ArcRotateCamera` to add an `interpolateTo` function that does the same thing `ArcRotateCamera` already did when restoring the saved state, it's just now possible to interpolate to any goal state rather than only the stored state.\r\n\r\nThis PR also includes default UI to activate a defined hotspot (by activate, I mean invoke `focusOnHotspot`). Since the camera pose can be changed by user interactions, there is no concept of an \"selected\" hotspot, rather just the idea that you can one-off activate them. This is what the experience looks like:\r\n\r\nhttps://github.com/user-attachments/assets/d9c4c1ef-31c4-4264-9da1-49d2b7f853a5\r\n\r\nThe new hotspot activation button is only displayed if there are hotspots defined in the `<babylon-viewer>`. If there are hotspots but no animations, then just the hotspot button is displayed in the center of the screen. We can iterate on UX design more later.\r\n\r\nOther notes for this PR:\r\n- Since it is now easy to interpolate the camera pose, it also interpolates when changing the selected animation (since the camera pose is updated based on the first frame of each animation).\r\n- There was a bug in `GetHotSpotToRef` such that it returned the hotspot position in local space instead of world space (even though it was documented as returning the position in world space), so I fixed this. As such, when the viewer calculates the screen space position via `ProjectToRef`, it now just passes the identity matrix since the position is already in world space.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15802",
+                "title": "Update comments in ibl shadows",
+                "description": "While working on [documentation for the IBL Shadow Pipeline](https://github.com/BabylonJS/Documentation/pull/1233), I've been updating comments in the code to align.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15798",
+                "title": "Adding support to mimetype autodetection",
+                "description": "This feature adds support from automatic mime type discovery which was missing\r\n\r\nI was reluctant at first (#15793) because it introduces a breaking change.\r\n\r\nThat being said it is really unlikely that someone would make any use of what was returned.\r\nI also started to add support for fetch (indirectly) as this is something we want to do.\r\n\r\nFinally I flagged the non async functions as deprecated to help move user codebase\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Misc/webRequest.fetch.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.metadata.ts",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/viewer/src/loader/modelLoader.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "15801",
+                "title": "fix(docs): typo in nodeMaterial",
+                "description": "Link to docs: <https://doc.babylonjs.com/typedoc/classes/BABYLON.NodeMaterial#optimize>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15778",
+                "title": "GS WebGPU + NME ui fixes",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplattingUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewType.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15797",
+                "title": "Increase the visibility of InputText._selectAllTexts() public, or provide an public alternative",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15796",
+                "title": "HTMLMesh rendering issues",
+                "description": "Also fix #15794 and #15795",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/addons/src/htmlMesh/pointerEventsCaptureBehavior.ts",
+                    "packages/dev/addons/src/htmlMesh/util.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15792",
+                "title": "Fix global declaration processing",
+                "description": "To fix our playground typescript declarations",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15785",
+                "title": "Frame Graph: Add TAA task + support for history textures",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/thinTAAPostProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/taa.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15791",
+                "title": "Layer: Add support for linear colors",
+                "description": "See https://forum.babylonjs.com/t/default-rendering-hdr-pipeline-changes-background-layer-colors/54643",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/layer.ts",
+                    "packages/dev/core/src/Shaders/layer.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/layer.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15784",
+                "title": "Viewer loading progress bar",
+                "description": "This PR adds a default loading progress bar. The styling can be customized (via CSS variables for things like color or the progress-bar part for things like height, border radius, etc.) or completely replaced with custom UI (via the progress-bar slot). For cases where we don't know the size of the download, it is a simple indeterminate progress bar.\r\n\r\nCurrently this is only for model source download, it does not take into account environment texture download. I think we should probably bring this in as well, but it requires more changes to core. Open to thoughts though.\r\n\r\nhttps://github.com/user-attachments/assets/daf9bd24-670e-4c00-99f4-69c1803b63e5\r\n\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15787",
+                "title": "HTMLMesh not working if there's a VolumetricLightScatteringPostProcess on the scene?",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Shaders/volumetricLightScattering.fragment.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15783",
+                "title": "Html mesh",
+                "description": "We are promoting the HtmlMesh to our new Addons package.",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/readme.md",
+                    "packages/dev/addons/src/htmlMesh/fitStrategy.ts",
+                    "packages/dev/addons/src/htmlMesh/htmlMesh.ts",
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/addons/src/htmlMesh/index.ts",
+                    "packages/dev/addons/src/htmlMesh/pointerEventsCapture.ts",
+                    "packages/dev/addons/src/htmlMesh/pointerEventsCaptureBehavior.ts",
+                    "packages/dev/addons/src/htmlMesh/util.ts",
+                    "packages/dev/addons/src/index.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.33.0": [
             {
                 "pr": "15782",

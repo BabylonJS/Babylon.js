@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions } from "core/index";
+import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
@@ -21,9 +21,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
      * @param name The name of the task
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
+     * @param options The options of the object renderer.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
-        super(name, frameGraph, scene);
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
+        super(name, frameGraph, scene, options);
 
         this.postProcess = new ThinTAAPostProcess(`${name} post-process`, scene.getEngine());
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
@@ -80,7 +81,8 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
-        this._rtt._size = outputTextureDescription.size;
+        this._textureWidth = outputTextureDescription.size.width;
+        this._textureHeight = outputTextureDescription.size.height;
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
@@ -90,11 +92,8 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         }
 
         pass.setExecuteFunc((context) => {
-            this._rtt.renderList = this.objectList.meshes;
-            this._rtt.particleSystemList = this.objectList.particleSystems;
-
-            this._scene.incrementRenderId();
-            this._scene.resetCachedMaterial();
+            this._renderer.renderList = this.objectList.meshes;
+            this._renderer.particleSystemList = this.objectList.particleSystems;
 
             this.postProcess.updateProjectionMatrix();
 
@@ -107,7 +106,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
                 this._scene.setTransformMatrix(this.camera.getViewMatrix(), this.camera.getProjectionMatrix());
             }
 
-            context.render(this._rtt);
+            context.render(this._renderer, this._textureWidth, this._textureHeight);
 
             this._scene.activeCamera = null;
 

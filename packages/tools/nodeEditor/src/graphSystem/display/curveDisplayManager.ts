@@ -3,7 +3,7 @@ import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/inter
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 import { CurveBlockTypes } from "core/Materials/Node/Blocks/curveBlock";
-import styles from "./curveDisplayManager.modules.scss";
+import styles from "./curveDisplayManager.module.scss";
 
 export class CurveDisplayManager implements IDisplayManager {
     public getHeaderClass() {

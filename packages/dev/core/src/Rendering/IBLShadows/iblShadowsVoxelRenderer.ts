@@ -37,7 +37,6 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
-    private _renderInFlight = false;
     private _voxelMaterial: ShaderMaterial;
     private _voxelSlabDebugMaterial: ShaderMaterial;
 
@@ -629,8 +628,11 @@ export class _IblShadowsVoxelRenderer {
         if (this._voxelDebugEnabled) {
             this._addRTsForRender([this._voxelSlabDebugRT], includedMeshes, this._voxelDebugAxis, 1, true);
         }
-        this._scene.onAfterRenderTargetsRenderObservable.addOnce(this._renderVoxelGrid.bind(this));
+        this._renderVoxelGridBound = this._renderVoxelGrid.bind(this);
+        this._scene.onAfterRenderObservable.add(this._renderVoxelGridBound);
     }
+
+    private _renderVoxelGridBound: () => void;
 
     private _renderVoxelGrid() {
         if (this._voxelizationInProgress) {
@@ -644,7 +646,6 @@ export class _IblShadowsVoxelRenderer {
                 allReady &&= rttReady;
             }
             if (allReady) {
-                this._renderInFlight = false;
                 this._renderTargets.forEach((rt) => {
                     rt.render();
                 });
@@ -655,13 +656,8 @@ export class _IblShadowsVoxelRenderer {
                 }
                 this._generateMipMaps();
                 this._copyMipMaps();
+                this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
                 this._voxelizationInProgress = false;
-                this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
-            } else if (!this._renderInFlight) {
-                this._renderInFlight = true;
-                setTimeout(() => {
-                    this._renderVoxelGrid();
-                }, 16);
             }
         }
     }

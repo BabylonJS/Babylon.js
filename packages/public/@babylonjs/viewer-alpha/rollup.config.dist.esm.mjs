@@ -26,6 +26,10 @@ const commonConfig = {
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
     ],
+    onwarn(warning, warn) {
+        // Treat all warnings as errors.
+        throw new Error(warning.message);
+    },
 };
 
 const maxConfig = {

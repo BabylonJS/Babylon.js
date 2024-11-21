@@ -50,6 +50,7 @@ type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number
 // Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
+    viewerrender: Event;
     environmentchange: Event;
     environmenterror: ErrorEvent;
     modelchange: Event;
@@ -62,7 +63,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
+ * Displays a 3D model using the Babylon.js Viewer.
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
@@ -85,37 +86,43 @@ export class HTML3DElement extends LitElement {
         ),
         this._createPropertyBinding(
             "toneMapping",
-            (details) => details.viewer.onToneMappingChanged,
+            (details) => details.viewer.onPostProcessingChanged,
             (details) => {
                 if (this.toneMapping) {
-                    details.viewer.toneMapping = this.toneMapping;
+                    details.viewer.postProcessing = { toneMapping: this.toneMapping };
                 }
             },
-            (details) => {
-                if (details.viewer.toneMapping === "unknown") {
-                    this.toneMapping = null;
-                } else {
-                    this.toneMapping = details.viewer.toneMapping;
-                }
-            }
+            (details) => (this.toneMapping = details.viewer.postProcessing?.toneMapping)
         ),
         this._createPropertyBinding(
             "contrast",
-            (details) => details.viewer.onContrastChanged,
-            (details) => (details.viewer.contrast = this.contrast ?? details.viewer.contrast),
-            (details) => (this.contrast = details.viewer.contrast)
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => (details.viewer.postProcessing = { contrast: this.contrast ?? undefined }),
+            (details) => (this.contrast = details.viewer.postProcessing.contrast)
         ),
         this._createPropertyBinding(
             "exposure",
-            (details) => details.viewer.onExposureChanged,
-            (details) => (details.viewer.exposure = this.exposure ?? details.viewer.exposure),
-            (details) => (this.exposure = details.viewer.exposure)
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => (details.viewer.postProcessing = { exposure: this.exposure ?? undefined }),
+            (details) => (this.exposure = details.viewer.postProcessing.exposure)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
-            (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
-            (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
+            (details) => (details.viewer.cameraAutoOrbit = { enabled: this.cameraAutoOrbit }),
+            (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit.enabled)
+        ),
+        this._createPropertyBinding(
+            "cameraAutoOrbitSpeed",
+            (details) => details.viewer.onCameraAutoOrbitChanged,
+            (details) => (details.viewer.cameraAutoOrbit = { speed: this.cameraAutoOrbitSpeed ?? undefined }),
+            (details) => (this.cameraAutoOrbitSpeed = details.viewer.cameraAutoOrbit.speed)
+        ),
+        this._createPropertyBinding(
+            "cameraAutoOrbitDelay",
+            (details) => details.viewer.onCameraAutoOrbitChanged,
+            (details) => (details.viewer.cameraAutoOrbit = { delay: this.cameraAutoOrbitDelay ?? undefined }),
+            (details) => (this.cameraAutoOrbitDelay = details.viewer.cameraAutoOrbit.delay)
         ),
         this._createPropertyBinding(
             "animationSpeed",
@@ -152,6 +159,7 @@ export class HTML3DElement extends LitElement {
                 calc(var(--ui-background-opacity) - 0.1)
             );
             all: inherit;
+            overflow: hidden;
         }
 
         .full-size {
@@ -415,7 +423,7 @@ export class HTML3DElement extends LitElement {
      * Get hotspot world and screen values from a named hotspot
      * @param name slot of the hot spot
      * @param result resulting world and screen positions
-     * @returns world and screen space coordinates
+     * @returns world position, world normal and screen space coordinates
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
         return this._queryHotSpot(name, result) != null;
@@ -547,6 +555,24 @@ export class HTML3DElement extends LitElement {
         type: Boolean,
     })
     public cameraAutoOrbit = false;
+
+    /**
+     * The speed at which the camera auto-orbits around the target.
+     */
+    @property({
+        attribute: "camera-auto-orbit-speed",
+        type: Number,
+    })
+    public cameraAutoOrbitSpeed: Nullable<number> = null;
+
+    /**
+     * The delay in milliseconds before the camera starts auto-orbiting.
+     */
+    @property({
+        attribute: "camera-auto-orbit-delay",
+        type: Number,
+    })
+    public cameraAutoOrbitDelay: Nullable<number> = null;
 
     /**
      * Camera orbit can only be set as an attribute, and is set on the camera each time a new model is loaded.
@@ -957,6 +983,10 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onAnimationProgressChanged.add(() => {
                             this.animationProgress = details.viewer.animationProgress ?? 0;
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                        });
+
+                        details.scene.onAfterRenderCameraObservable.add(() => {
+                            this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                         });
 
                         this._updateModel();

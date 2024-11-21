@@ -449,9 +449,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 this.useObjectOrientationForDragging
                     ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis)
                     : this._worldDragAxis.copyFrom(this._options.dragAxis);
-
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
+
+                this._worldDragAxis.normalize();
                 dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis);
                 this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);
             } else {

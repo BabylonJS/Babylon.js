@@ -44,7 +44,7 @@ export interface IGPUMultiPickingInfo {
 
 /**
  * Class used to perform a picking operation using GPU
- * Please note that GPUPIcker cannot pick instances, only meshes
+ * GPUPIcker can pick meshes, instances and thin instances
  */
 export class GPUPicker {
     private _pickingTexture: Nullable<RenderTargetTexture> = null;

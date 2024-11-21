@@ -23,7 +23,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -33,6 +33,7 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { BuildTuple } from "core/Misc/arrayTools";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -42,6 +43,40 @@ export type LoadModelOptions = LoadAssetContainerOptions & {
      * The default animation index.
      */
     defaultAnimation?: number;
+};
+
+export type CameraAutoOrbit = {
+    /**
+     * Whether the camera should automatically orbit around the model when idle.
+     */
+    enabled: boolean;
+
+    /**
+     * The speed at which the camera orbits around the model when idle.
+     */
+    speed: number;
+
+    /**
+     * The delay in milliseconds before the camera starts orbiting around the model when idle.
+     */
+    delay: number;
+};
+
+export type PostProcessing = {
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    toneMapping: ToneMapping;
+
+    /**
+     * The contrast applied to the scene.
+     */
+    contrast: number;
+
+    /**
+     * The exposure applied to the scene.
+     */
+    exposure: number;
 };
 
 /**
@@ -105,6 +140,12 @@ export type ViewerDetails = {
      * Provides access to the currently loaded model.
      */
     model: Nullable<AssetContainer>;
+
+    /**
+     * Suspends the render loop.
+     * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
+     */
+    suspendRendering(): IDisposable;
 };
 
 export type ViewerOptions = Partial<
@@ -118,17 +159,34 @@ export type ViewerOptions = Partial<
 
 export type EnvironmentOptions = Partial<Readonly<{}>>;
 
-export type ViewerHotSpotQuery = {
-    /**
-     * The type of the hot spot.
-     */
-    type: "surface";
+export type ViewerHotSpotQuery =
+    | ({
+          /**
+           * The type of the hot spot.
+           */
+          type: "surface";
 
-    /**
-     * The index of the mesh within the loaded model.
-     */
-    meshIndex: number;
-} & HotSpotQuery;
+          /**
+           * The index of the mesh within the loaded model.
+           */
+          meshIndex: number;
+      } & HotSpotQuery)
+    | {
+          /**
+           * The type of the hot spot.
+           */
+          type: "world";
+
+          /**
+           * The fixed world space position of the hot spot.
+           */
+          position: [x: number, y: number, z: number];
+
+          /**
+           * The fixed world space normal of the hot spot.
+           */
+          normal: [x: number, y: number, z: number];
+      };
 
 /**
  * Provides the result of a hot spot query.
@@ -143,6 +201,11 @@ export class ViewerHotSpotResult {
      * 3D world coordinates
      */
     public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
+
+    /**
+     * visibility range is [-1..1]. A value of 0 means camera eye is on the plane.
+     */
+    public visibility: number = NaN;
 }
 
 /**
@@ -180,19 +243,9 @@ export class Viewer implements IDisposable {
     public readonly onSkyboxBlurChanged = new Observable<void>();
 
     /**
-     * Fired when the tone mapping changes.
+     * Fired when the post processing state changes.
      */
-    public readonly onToneMappingChanged = new Observable<void>();
-
-    /**
-     * Fired when the contrast changes.
-     */
-    public readonly onContrastChanged = new Observable<void>();
-
-    /**
-     * Fired when the exposure changes.
-     */
-    public readonly onExposureChanged = new Observable<void>();
+    public readonly onPostProcessingChanged = new Observable<void>();
 
     /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
@@ -234,11 +287,12 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
-    private readonly _renderLoopController: IDisposable;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
+    private _renderLoopController: Nullable<IDisposable> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -247,6 +301,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
+    private _suspendRenderCount = 0;
     private _isDisposed = false;
 
     private readonly _loadModelLock = new AsyncLock();
@@ -277,24 +332,30 @@ export class Viewer implements IDisposable {
             this._exposure = scene.imageProcessingConfiguration.exposure;
 
             this._imageProcessingConfigurationObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
+                let hasChanged = false;
+
                 if (this._toneMappingEnabled !== scene.imageProcessingConfiguration.toneMappingEnabled) {
                     this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._toneMappingType !== scene.imageProcessingConfiguration.toneMappingType) {
                     this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._contrast !== scene.imageProcessingConfiguration.contrast) {
                     this._contrast = scene.imageProcessingConfiguration.contrast;
-                    this.onContrastChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._exposure !== scene.imageProcessingConfiguration.exposure) {
                     this._exposure = scene.imageProcessingConfiguration.exposure;
-                    this.onExposureChanged.notifyObservers();
+                    hasChanged = true;
+                }
+
+                if (hasChanged) {
+                    this.onPostProcessingChanged.notifyObservers();
                 }
             });
 
@@ -304,6 +365,7 @@ export class Viewer implements IDisposable {
                 scene,
                 camera,
                 model: null,
+                suspendRendering: this._suspendRendering.bind(this),
             };
         }
         this._details.scene.skipFrustumClipping = true;
@@ -314,44 +376,47 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.toneMapping = "neutral";
+        this.postProcessing = {
+            toneMapping: "neutral",
+        };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
 
-        // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
-        const render = () => {
-            this._details.scene.render();
-            if (this.isAnimationPlaying) {
-                this.onAnimationProgressChanged.notifyObservers();
-                this._autoRotationBehavior.resetLastInteractionTime();
-            }
-        };
-
-        this._engine.runRenderLoop(render);
-        this._renderLoopController = {
-            dispose: () => this._engine.stopRenderLoop(render),
-        };
+        this._beginRendering();
 
         options?.onInitialized?.(this._details);
     }
 
     /**
-     * Enables or disables camera auto orbit.
+     * The camera auto orbit configuration.
      */
-    public get cameraAutoOrbit(): boolean {
-        return this._details.camera.behaviors.includes(this._autoRotationBehavior);
+    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
+        return {
+            enabled: this._details.camera.behaviors.includes(this._autoRotationBehavior),
+            speed: this._autoRotationBehavior.idleRotationSpeed,
+            delay: this._autoRotationBehavior.idleRotationWaitTime,
+        };
     }
 
-    public set cameraAutoOrbit(value: boolean) {
-        if (value !== this.cameraAutoOrbit) {
-            if (value) {
+    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
+        if (value.enabled !== undefined && value.enabled !== this.cameraAutoOrbit.enabled) {
+            if (value.enabled) {
                 this._details.camera.addBehavior(this._autoRotationBehavior);
             } else {
                 this._details.camera.removeBehavior(this._autoRotationBehavior);
             }
-            this.onCameraAutoOrbitChanged.notifyObservers();
         }
+
+        if (value.delay !== undefined) {
+            this._autoRotationBehavior.idleRotationWaitTime = value.delay;
+        }
+
+        if (value.speed !== undefined) {
+            this._autoRotationBehavior.idleRotationSpeed = value.speed;
+        }
+
+        this.onCameraAutoOrbitChanged.notifyObservers();
     }
 
     /**
@@ -377,71 +442,64 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The tone mapping to use for rendering the scene.
+     * The post processing configuration.
      */
-    public get toneMapping(): ToneMapping | "unknown" {
-        if (!this._toneMappingEnabled) {
-            return "none";
-        }
-
+    public get postProcessing(): PostProcessing {
+        let toneMapping: ToneMapping;
         switch (this._toneMappingType) {
             case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                return "standard";
+                toneMapping = "standard";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                return "aces";
+                toneMapping = "aces";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                return "neutral";
+                toneMapping = "neutral";
+                break;
             default:
-                return "unknown";
+                toneMapping = "none";
+                break;
         }
+
+        return {
+            toneMapping,
+            contrast: this._contrast,
+            exposure: this._exposure,
+        };
     }
 
-    public set toneMapping(value: ToneMapping) {
+    public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
         this._snapshotHelper.disableSnapshotRendering();
 
-        if (value === "none") {
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
-        } else {
-            switch (value) {
-                case "standard":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
-                    break;
-                case "aces":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
-                    break;
-                case "neutral":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
-                    break;
+        if (value.toneMapping !== undefined) {
+            if (value.toneMapping === "none") {
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
+            } else {
+                switch (value.toneMapping) {
+                    case "standard":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                        break;
+                    case "aces":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                        break;
+                    case "neutral":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                        break;
+                }
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
             }
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
         }
 
-        this._snapshotHelper.enableSnapshotRendering();
-    }
+        if (value.contrast !== undefined) {
+            this._details.scene.imageProcessingConfiguration.contrast = value.contrast;
+        }
 
-    /**
-     * The contrast applied to the scene.
-     */
-    public get contrast(): number {
-        return this._contrast;
-    }
+        if (value.exposure !== undefined) {
+            this._details.scene.imageProcessingConfiguration.exposure = value.exposure;
+        }
 
-    public set contrast(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.contrast = value;
-        this._snapshotHelper.enableSnapshotRendering();
-    }
+        this._details.scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
 
-    /**
-     * The exposure applied to the scene.
-     */
-    public get exposure(): number {
-        return this._exposure;
-    }
-
-    public set exposure(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.exposure = value;
         this._snapshotHelper.enableSnapshotRendering();
     }
 
@@ -512,6 +570,7 @@ export class Viewer implements IDisposable {
             }
 
             this.onSelectedAnimationChanged.notifyObservers();
+            this.onAnimationProgressChanged.notifyObservers();
         }
     }
 
@@ -761,15 +820,13 @@ export class Viewer implements IDisposable {
         this._loadEnvironmentAbortController?.abort("Thew viewer is being disposed.");
         this._loadModelAbortController?.abort("Thew viewer is being disposed.");
 
-        this._renderLoopController.dispose();
+        this._renderLoopController?.dispose();
         this._details.scene.dispose();
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
         this.onSkyboxBlurChanged.clear();
-        this.onToneMappingChanged.clear();
-        this.onContrastChanged.clear();
-        this.onExposureChanged.clear();
+        this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();
@@ -794,13 +851,24 @@ export class Viewer implements IDisposable {
         if (!this._details.model) {
             return false;
         }
-        const worldPos = TmpVectors.Vector3[1];
-        const screenPos = TmpVectors.Vector3[0];
-        const mesh = this._details.model.meshes[query.meshIndex];
-        if (!mesh) {
-            return false;
+
+        const worldNormal = this._tempVectors[2];
+        const worldPos = this._tempVectors[1];
+        const screenPos = this._tempVectors[0];
+
+        if (query.type === "surface") {
+            const mesh = this._details.model.meshes[query.meshIndex];
+            if (!mesh) {
+                return false;
+            }
+
+            if (!GetHotSpotToRef(mesh, query, worldPos, worldNormal)) {
+                return false;
+            }
+        } else {
+            worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
+            worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
-        GetHotSpotToRef(mesh, query, worldPos);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
@@ -815,7 +883,57 @@ export class Viewer implements IDisposable {
         result.worldPosition[0] = worldPos.x;
         result.worldPosition[1] = worldPos.y;
         result.worldPosition[2] = worldPos.z;
+
+        // visibility
+        const eyeToSurface = this._tempVectors[3];
+        eyeToSurface.copyFrom(this._details.camera.globalPosition);
+        eyeToSurface.subtractInPlace(worldPos);
+        eyeToSurface.normalize();
+        result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
+
         return true;
+    }
+
+    private _suspendRendering(): IDisposable {
+        this._renderLoopController?.dispose();
+        this._suspendRenderCount++;
+        let disposed = false;
+        return {
+            dispose: () => {
+                if (!disposed) {
+                    disposed = true;
+                    this._suspendRenderCount--;
+                    if (this._suspendRenderCount === 0) {
+                        this._beginRendering();
+                    }
+                }
+            },
+        };
+    }
+
+    private _beginRendering(): void {
+        if (!this._renderLoopController) {
+            const render = () => {
+                this._details.scene.render();
+                if (this.isAnimationPlaying) {
+                    this.onAnimationProgressChanged.notifyObservers();
+                    this._autoRotationBehavior.resetLastInteractionTime();
+                }
+            };
+
+            this._engine.runRenderLoop(render);
+
+            let disposed = false;
+            this._renderLoopController = {
+                dispose: () => {
+                    if (!disposed) {
+                        disposed = true;
+                        this._engine.stopRenderLoop(render);
+                        this._renderLoopController = null;
+                    }
+                },
+            };
+        }
     }
 
     private _updateCamera(interpolate = false): void {

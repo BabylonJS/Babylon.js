@@ -115,7 +115,7 @@ export default function transformer(_program: ts.Program, options: ITransformerO
 
 function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {
     function transformBundle(node: ts.Bundle) {
-        return ts.factory.createBundle(node.sourceFiles.map(transformSourceFile), node.prepends);
+        return ts.factory.createBundle(node.sourceFiles.map(transformSourceFile));
     }
 
     return function transformSourceFileOrBundle(node: T) {

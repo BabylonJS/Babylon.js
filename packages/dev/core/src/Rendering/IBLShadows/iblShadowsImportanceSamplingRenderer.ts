@@ -297,5 +297,6 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
+        this.onReadyObservable.clear();
     }
 }

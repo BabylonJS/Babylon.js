@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import * as React from "react";
 import { ClassNames } from "./classNames";
-import styles from "./MessageDialog.modules.scss";
+import styles from "./MessageDialog.module.scss";
 
 export interface MessageDialogProps {
     message: string;
