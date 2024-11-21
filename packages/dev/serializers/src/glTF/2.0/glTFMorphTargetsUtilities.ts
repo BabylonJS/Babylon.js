@@ -5,9 +5,9 @@ import type { DataWriter } from "./dataWriter";
 
 import { createAccessor, createBufferView } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes";
-import { VertexBuffer } from "core/Buffers";
-import { Vector3 } from "core/Maths";
-import type { Vector4 } from "core/Maths";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Vector3 } from "core/Maths/math.vector";
+import type { Vector4 } from "core/Maths/math.vector";
 
 /**
  * Temporary structure to store morph target information.

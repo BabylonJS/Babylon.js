@@ -63,7 +63,9 @@ import {
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
-import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
