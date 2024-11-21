@@ -31,6 +31,10 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
     }
     const base = index * 3;
     const values = [data[base + 0], data[base + 1], data[base + 2]];
+    if (values.some((value) => isNaN(value ?? Number.NaN))) {
+        return false;
+    }
+
     if (mesh.morphTargetManager) {
         for (let component = 0; component < 3; component++) {
             let value = values[component];
@@ -96,12 +100,15 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
  * @param hotSpotQuery point indices and barycentric
  * @param resPosition output world position
  * @param resNormal optional output world normal
+ * @returns false if it was not possible to compute the hotspot position
  */
-export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, resPosition: Vector3, resNormal?: Vector3): void {
+export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, resPosition: Vector3, resNormal?: Vector3): boolean {
     resPosition.set(0, 0, 0);
     for (let i = 0; i < 3; i++) {
         const index = hotSpotQuery.pointIndex[i];
-        GetTransformedPosition(mesh, index, TmpVectors.Vector3[i]);
+        if (!GetTransformedPosition(mesh, index, TmpVectors.Vector3[i])) {
+            return false;
+        }
         TmpVectors.Vector3[i].scaleAndAddToRef(hotSpotQuery.barycentric[i], resPosition);
     }
 
@@ -137,4 +144,6 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
         resNormal.normalize();
     }
+
+    return true;
 }
