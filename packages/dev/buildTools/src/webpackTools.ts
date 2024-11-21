@@ -110,6 +110,7 @@ export const getRules = (
                     {
                         loader: "sass-loader",
                         options: {
+                            api: "modern",
                             sourceMap: true,
                         },
                     },
@@ -132,6 +133,7 @@ export const getRules = (
                     {
                         loader: "sass-loader",
                         options: {
+                            api: "modern",
                             sourceMap: true,
                         },
                     },
