@@ -46,7 +46,7 @@ describe("Babylon glTF Serializer", () => {
                 babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
                 babylonStandardMaterial.specularPower = 64;
                 babylonStandardMaterial.alpha = 1;
-                const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(window.scene));
+                const materialExporter = new BABYLON.GLTF2.Exporter.GLTFMaterialExporter(new BABYLON.GLTF2.Exporter.GLTFExporter(window.scene));
 
                 const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
                 return {
@@ -62,8 +62,8 @@ describe("Babylon glTF Serializer", () => {
         });
         it("should solve for metallic", async () => {
             const assertionData = await page.evaluate(() => {
-                const solveZero = BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0);
-                const solveAproxOne = BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0);
+                const solveZero = BABYLON.GLTF2.Exporter.solveMetallic(1.0, 0.0, 1.0);
+                const solveAproxOne = BABYLON.GLTF2.Exporter.solveMetallic(0.0, 1.0, 1.0);
                 return {
                     solveZero,
                     solveAproxOne,
