@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import styles from "./splitContainer.module.scss";
+import * as styles from "./splitContainer.module.scss";
 import type { ControlledSize } from "./splitContext";
 import { SplitContext, SplitDirection } from "./splitContext";
 

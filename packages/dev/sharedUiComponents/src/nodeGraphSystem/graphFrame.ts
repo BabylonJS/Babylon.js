@@ -10,8 +10,8 @@ import { FrameNodePort } from "./frameNodePort";
 import type { NodeLink } from "./nodeLink";
 import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
-import styles from "./graphFrame.module.scss";
-import commonStyles from "./common.module.scss";
+import * as styles from "./graphFrame.module.scss";
+import * as commonStyles from "./common.module.scss";
 import { ClassNames } from "../components/classNames";
 
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
