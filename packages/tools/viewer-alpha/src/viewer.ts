@@ -287,6 +287,7 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
@@ -316,7 +317,6 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
-    private _vector3 = BuildTuple(4, Vector3.Zero);
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -852,16 +852,19 @@ export class Viewer implements IDisposable {
             return false;
         }
 
-        const worldNormal = this._vector3[2];
-        const worldPos = this._vector3[1];
-        const screenPos = this._vector3[0];
+        const worldNormal = this._tempVectors[2];
+        const worldPos = this._tempVectors[1];
+        const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
             const mesh = this._details.model.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
-            GetHotSpotToRef(mesh, query, worldPos, worldNormal);
+
+            if (!GetHotSpotToRef(mesh, query, worldPos, worldNormal)) {
+                return false;
+            }
         } else {
             worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
@@ -882,7 +885,7 @@ export class Viewer implements IDisposable {
         result.worldPosition[2] = worldPos.z;
 
         // visibility
-        const eyeToSurface = this._vector3[3];
+        const eyeToSurface = this._tempVectors[3];
         eyeToSurface.copyFrom(this._details.camera.globalPosition);
         eyeToSurface.subtractInPlace(worldPos);
         eyeToSurface.normalize();
