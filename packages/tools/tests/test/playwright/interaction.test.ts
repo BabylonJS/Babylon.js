@@ -4,7 +4,6 @@ import { evaluateInitEngineForVisualization, evaluatePrepareScene, evaluateRende
 
 let page: Page;
 
-
 test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
@@ -17,7 +16,7 @@ test.beforeAll(async ({ browser }) => {
         return window.BABYLON;
     });
     page.setDefaultTimeout(0);
-    page.setViewportSize({ width: 600, height: 400 });
+    page.setViewportSize({ width: 800, height: 600 });
 });
 
 test.afterAll(async () => {
@@ -50,40 +49,6 @@ test.afterEach(async () => {
         window.scene = null;
         window.engine = null;
     });
-});
-
-/**
- * Check if allowMouse logic for camera touch input is validating correctly
- * PG: https://playground.babylonjs.com/#ITQ2NZ#10
- */
-test("check isMouseEvent", async () => {
-    await page.evaluate(evaluatePrepareScene, {
-        sceneMetadata: { playgroundId: "#ITQ2NZ#10" },
-        globalConfig: getGlobalConfig(),
-    });
-    const renderCount = 150;
-    const rendering = page.evaluate(evaluateRenderSceneForVisualization, { renderCount });
-    const element = page.locator("#babylon-canvas");
-    const result = await element.boundingBox();
-    if (!result) {
-        throw new Error("Element not found");
-    }
-    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
-    await page.mouse.down();
-    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2 - 200, { steps: 20 });
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-
-    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
-    await page.mouse.down();
-    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2 + 200, { steps: 20 });
-    await page.mouse.up();
-    await rendering;
-
-    const testStatus = await page.evaluate(() => {
-        return (window as any).testSuccessful;
-    });
-    expect(testStatus).toBe(true);
 });
 
 test("can process InputManager pointer events", async () => {
@@ -192,6 +157,42 @@ test("check meta key allowing keyup", async () => {
     await page.mouse.click(result.x + result.width / 2, result.y + result.height / 2);
     await page.keyboard.press("Meta");
 
+    await rendering;
+
+    const testStatus = await page.evaluate(() => {
+        return (window as any).testSuccessful;
+    });
+    expect(testStatus).toBe(true);
+});
+
+/**
+ * Check if allowMouse logic for camera touch input is validating correctly
+ * PG: https://playground.babylonjs.com/#ITQ2NZ#10
+ */
+test("check isMouseEvent", async () => {
+    await page.evaluate(evaluatePrepareScene, {
+        sceneMetadata: { playgroundId: "#ITQ2NZ#11" },
+        globalConfig: getGlobalConfig(),
+    });
+    await page.mouse.move(50, 50, { steps: 20 });
+    const renderCount = 80;
+    const rendering = page.evaluate(evaluateRenderSceneForVisualization, { renderCount });
+    const element = page.locator("#babylon-canvas");
+    const result = await element.boundingBox();
+    if (!result) {
+        throw new Error("Element not found");
+    }
+    await page.waitForTimeout(30);
+    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
+    await page.mouse.down();
+    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2 - 100, { steps: 20 });
+    await page.mouse.up();
+    await page.waitForTimeout(30);
+
+    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
+    await page.mouse.down();
+    await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2 + 100, { steps: 20 });
+    await page.mouse.up();
     await rendering;
 
     const testStatus = await page.evaluate(() => {
