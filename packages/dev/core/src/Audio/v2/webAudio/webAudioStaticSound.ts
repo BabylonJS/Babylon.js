@@ -18,15 +18,15 @@ type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | str
  * Creates a new static sound.
  * @param name - The name of the sound.
  * @param source - The source of the sound.
- * @param engine - The audio engine.
  * @param options - The options for the static sound.
+ * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound.
  */
 export async function CreateSoundAsync(
     name: string,
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-    engine: Nullable<AudioEngineV2> = null,
-    options: Nullable<IStaticSoundOptions> = null
+    options: Nullable<IStaticSoundOptions> = null,
+    engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSound> {
     engine = engine ?? LastCreatedAudioEngine();
 
@@ -47,14 +47,14 @@ export async function CreateSoundAsync(
 /**
  * Creates a new static sound buffer.
  * @param source - The source of the sound buffer.
- * @param engine - The audio engine.
  * @param options - The options for the static sound buffer.
+ * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound buffer.
  */
 export async function CreateSoundBufferAsync(
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-    engine: Nullable<AudioEngineV2> = null,
-    options: Nullable<IStaticSoundOptions> = null
+    options: Nullable<IStaticSoundOptions> = null,
+    engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
     engine = engine ?? LastCreatedAudioEngine();
 
@@ -121,7 +121,7 @@ class WebAudioStaticSound extends StaticSound {
         if (source instanceof WebAudioStaticSoundBuffer) {
             this._buffer = source as WebAudioStaticSoundBuffer;
         } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
-            this._buffer = (await CreateSoundBufferAsync(source, this.engine, options)) as WebAudioStaticSoundBuffer;
+            this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
 
         if (options?.outputBus) {

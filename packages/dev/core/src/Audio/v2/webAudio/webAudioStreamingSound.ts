@@ -16,15 +16,15 @@ type StreamingSoundSourceType = HTMLMediaElement | string | string[];
  * Creates a new streaming sound.
  * @param name - The name of the sound.
  * @param source - The source of the sound.
- * @param engine - The audio engine.
  * @param options - The options for the streaming sound.
+ * @param engine - The audio engine.
  * @returns A promise that resolves to the created streaming sound.
  */
 export async function CreateStreamingSoundAsync(
     name: string,
     source: HTMLMediaElement | string | string[],
-    engine: Nullable<AudioEngineV2> = null,
-    options: Nullable<IStreamingSoundOptions> = null
+    options: Nullable<IStreamingSoundOptions> = null,
+    engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
     engine = engine ?? LastCreatedAudioEngine();
 
