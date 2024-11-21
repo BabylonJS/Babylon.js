@@ -72,7 +72,7 @@ import type { MorphTarget } from "core/Morph";
 import { buildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -1021,21 +1021,61 @@ export class GLTFExporter {
 
             const bytes = dataArrayToUint8Array(data).slice();
 
-            // Normalize normals and tangents.
+            // Apply conversions to buffer data in-place.
             for (const vertexBuffer of vertexBuffers) {
+                const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+                const size = vertexBuffer.getSize();
+                const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
+                const maxTotalVertices = meshes.reduce((max, current) => {
+                    return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+                }, -Number.MAX_VALUE); // To ensure nothing is missed when enumerating, but may not be necessary.
+
                 switch (vertexBuffer.getKind()) {
+                    // Normalize normals and tangents.
                     case VertexBuffer.NormalKind:
                     case VertexBuffer.TangentKind: {
-                        for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
-                            const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                            const size = vertexBuffer.getSize();
-                            enumerateFloatValues(bytes, byteOffset, byteStride, size, type, mesh.getTotalVertices() * size, normalized, (values) => {
-                                const invLength = 1 / Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
-                                values[0] *= invLength;
-                                values[1] *= invLength;
-                                values[2] *= invLength;
-                            });
+                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
+                            const invLength = 1 / Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
+                            values[0] *= invLength;
+                            values[1] *= invLength;
+                            values[2] *= invLength;
+                        });
+                        break;
+                    }
+                    // Convert StandardMaterial vertex colors from gamma to linear space.
+                    case VertexBuffer.ColorKind: {
+                        const stdMaterialCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial || mesh.material == null).length;
+
+                        if (stdMaterialCount == 0) {
+                            break; // Buffer not used by StandardMaterials, so no conversion needed.
                         }
+
+                        // TODO: Implement this case.
+                        if (stdMaterialCount != meshes.length) {
+                            Logger.Warn("Not converting vertex color space, as buffer is shared by StandardMaterials and other material types. Results may look incorrect.");
+                            break;
+                        }
+
+                        if (type == VertexBuffer.UNSIGNED_BYTE) {
+                            Logger.Warn("Converting uint8 vertex colors to linear space. Results may look incorrect.");
+                        }
+
+                        const vertexData3 = new Color3();
+                        const vertexData4 = new Color4();
+                        const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
+
+                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
+                            // Using separate Color3 and Color4 objects to ensure the right functions are called.
+                            if (values.length === 3) {
+                                vertexData3.fromArray(values, 0);
+                                vertexData3.toLinearSpaceToRef(vertexData3, useExactSrgbConversions);
+                                vertexData3.toArray(values, 0);
+                            } else {
+                                vertexData4.fromArray(values, 0);
+                                vertexData4.toLinearSpaceToRef(vertexData4, useExactSrgbConversions);
+                                vertexData4.toArray(values, 0);
+                            }
+                        });
                     }
                 }
             }
