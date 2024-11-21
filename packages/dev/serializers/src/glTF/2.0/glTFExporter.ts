@@ -22,8 +22,7 @@ import type {
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
 
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import { Matrix } from "core/Maths/math.vector";
-import { TmpVectors, Quaternion } from "core/Maths/math.vector";
+import { TmpVectors, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { Buffer } from "core/Buffers/buffer";
 import { VertexBuffer } from "core/Buffers/buffer";

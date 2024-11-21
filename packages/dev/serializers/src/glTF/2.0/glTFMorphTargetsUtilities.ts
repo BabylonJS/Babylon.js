@@ -4,7 +4,7 @@ import type { MorphTarget } from "core/Morph/morphTarget";
 import type { DataWriter } from "./dataWriter";
 
 import { createAccessor, createBufferView } from "./glTFUtilities";
-import type { Mesh } from "core/Meshes";
+import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
 import type { Vector4 } from "core/Maths/math.vector";
@@ -36,7 +36,6 @@ function _NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
     }
 }
 
-// TO DO: Convert Babylon morph (absolute) to GLTF (deltas)
 export function buildMorphTargetBuffers(
     morphTarget: MorphTarget,
     mesh: Mesh,
