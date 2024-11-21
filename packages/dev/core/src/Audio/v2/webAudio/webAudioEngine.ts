@@ -9,7 +9,7 @@ import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import { CreateMainAudioOutputAsync } from "./webAudioMainOutput";
 
 /**
- * Options for creating a new WebAudioEngine.
+ * Options for creating a new v2 audio engine that uses the WebAudio API.
  */
 export interface IWebAudioEngineOptions {
     /**
@@ -24,12 +24,12 @@ export interface IWebAudioEngineOptions {
 }
 
 /**
- * Creates a new WebAudioEngine.
+ * Creates a new v2 audio engine that uses the WebAudio API.
  * @param options - The options for creating the audio engine.
  * @returns A promise that resolves with the created audio engine.
  */
 export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AudioEngineV2> {
-    const engine = new WebAudioEngine();
+    const engine = new _WebAudioEngine();
     await engine.init(options);
     return engine;
 }
@@ -47,7 +47,7 @@ const formatMimeTypeMap = new Map<string, string>([
 ]);
 
 /** @internal */
-export class WebAudioEngine extends AudioEngineV2 {
+export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContext: Nullable<AudioContext | OfflineAudioContext>;
     private _audioContextStarted = false;
 

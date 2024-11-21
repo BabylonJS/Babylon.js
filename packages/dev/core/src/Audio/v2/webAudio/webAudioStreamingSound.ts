@@ -6,9 +6,9 @@ import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { StreamingSoundInstance } from "../streamingSoundInstance";
-import type { WebAudioBus } from "./webAudioBus";
-import type { WebAudioEngine } from "./webAudioEngine";
-import type { WebAudioMainBus } from "./webAudioMainBus";
+import type { _WebAudioBus } from "./webAudioBus";
+import type { _WebAudioEngine } from "./webAudioEngine";
+import type { _WebAudioMainBus } from "./webAudioMainBus";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -36,9 +36,9 @@ export async function CreateStreamingSoundAsync(
         throw new Error("Unsupported engine type.");
     }
 
-    const sound = new WebAudioStreamingSound(name, engine as WebAudioEngine, options);
+    const sound = new WebAudioStreamingSound(name, engine as _WebAudioEngine, options);
     await sound.init(source, options);
-    (engine as WebAudioEngine).addSound(sound);
+    (engine as _WebAudioEngine).addSound(sound);
     return sound;
 }
 
@@ -50,7 +50,7 @@ class WebAudioStreamingSound extends StreamingSound {
     public source: StreamingSoundSourceType;
 
     /** @internal */
-    public override readonly engine: WebAudioEngine;
+    public override readonly engine: _WebAudioEngine;
 
     /** @internal */
     public audioContext: AudioContext;
@@ -80,7 +80,7 @@ class WebAudioStreamingSound extends StreamingSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
+    constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 
@@ -136,7 +136,7 @@ class WebAudioStreamingSound extends StreamingSound {
         super._connect(node);
 
         if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
-            this.webAudioOutputNode.connect((node as WebAudioMainBus | WebAudioBus).webAudioInputNode);
+            this.webAudioOutputNode.connect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }
@@ -146,7 +146,7 @@ class WebAudioStreamingSound extends StreamingSound {
         super._disconnect(node);
 
         if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
-            this.webAudioOutputNode.disconnect((node as WebAudioMainBus | WebAudioBus).webAudioInputNode);
+            this.webAudioOutputNode.disconnect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }
@@ -156,7 +156,7 @@ class WebAudioStreamingSound extends StreamingSound {
 /** @internal */
 class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     /** @internal */
-    public override readonly engine: WebAudioEngine;
+    public override readonly engine: _WebAudioEngine;
 
     private _loop: boolean = false;
     private _preload: "" | "none" | "metadata" | "auto" = "auto";

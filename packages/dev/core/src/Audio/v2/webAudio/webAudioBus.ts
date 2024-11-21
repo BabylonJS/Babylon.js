@@ -3,17 +3,17 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import type { AudioPositioner } from "../audioPositioner";
-import type { WebAudioEngine } from "./webAudioEngine";
-import type { WebAudioMainOutput } from "./webAudioMainOutput";
+import type { _WebAudioEngine } from "./webAudioEngine";
+import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 import { CreateAudioPositionerAsync } from "./webAudioPositioner";
 
 /**
- * Options for creating a new WebAudioBus.
+ * Options for creating a new WebAudio bus.
  */
 export interface IWebAudioBusOptions extends IAudioBusOptions {}
 
 /** @internal */
-export class WebAudioBus extends AudioBus {
+export class _WebAudioBus extends AudioBus {
     private _gainNode: GainNode;
 
     /** @internal */
@@ -27,13 +27,13 @@ export class WebAudioBus extends AudioBus {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
+    constructor(name: string, engine: _WebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
     public async init(): Promise<void> {
-        this._gainNode = new GainNode(await (this.engine as WebAudioEngine).audioContext);
+        this._gainNode = new GainNode(await (this.engine as _WebAudioEngine).audioContext);
     }
 
     /** @internal */
@@ -48,8 +48,8 @@ export class WebAudioBus extends AudioBus {
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node.getClassName() === "WebAudioMainOutput" && (node as WebAudioMainOutput).webAudioInputNode) {
-            this.webAudioOutputNode.connect((node as WebAudioMainOutput).webAudioInputNode);
+        if (node.getClassName() === "WebAudioMainOutput" && (node as _WebAudioMainOutput).webAudioInputNode) {
+            this.webAudioOutputNode.connect((node as _WebAudioMainOutput).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }
@@ -58,8 +58,8 @@ export class WebAudioBus extends AudioBus {
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node.getClassName() === "WebAudioMainOutput" && (node as WebAudioMainOutput).webAudioInputNode) {
-            this.webAudioOutputNode.disconnect((node as WebAudioMainOutput).webAudioInputNode);
+        if (node.getClassName() === "WebAudioMainOutput" && (node as _WebAudioMainOutput).webAudioInputNode) {
+            this.webAudioOutputNode.disconnect((node as _WebAudioMainOutput).webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }
