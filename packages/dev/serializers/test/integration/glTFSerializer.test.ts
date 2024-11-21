@@ -535,5 +535,25 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(3);
             expect(assertionData.nodes).toHaveLength(3);
         });
+        it("should export instances as nodes pointing to same mesh", async () => {
+            const instanceCount = 3;
+            const assertionData = await page.evaluate((instanceCount) => {
+                const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
+                for (let i = 0; i < instanceCount; i++) {
+                    mesh.createInstance("boxInstance" + i);
+                }
+                return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                    const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                    const jsonData = JSON.parse(jsonString);
+                    return jsonData;
+                });
+            }, instanceCount);
+            expect(Object.keys(assertionData)).toHaveLength(9);
+            expect(assertionData.nodes).toHaveLength(instanceCount + 1);
+            expect(assertionData.meshes).toHaveLength(1);
+            for (const node of assertionData.nodes) {
+                expect(node.mesh).toEqual(0);
+            }
+        });
     });
 });
