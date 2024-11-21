@@ -175,19 +175,19 @@ test("check isMouseEvent", async () => {
         globalConfig: getGlobalConfig(),
     });
     await page.mouse.move(50, 50, { steps: 20 });
-    const renderCount = 80;
+    const renderCount = 100;
     const rendering = page.evaluate(evaluateRenderSceneForVisualization, { renderCount });
     const element = page.locator("#babylon-canvas");
     const result = await element.boundingBox();
     if (!result) {
         throw new Error("Element not found");
     }
-    await page.waitForTimeout(30);
+    await page.waitForTimeout(200);
     await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
     await page.mouse.down();
     await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2 - 100, { steps: 20 });
     await page.mouse.up();
-    await page.waitForTimeout(30);
+    await page.waitForTimeout(200);
 
     await page.mouse.move(result.x + result.width / 2, result.y + result.height / 2, { steps: 20 });
     await page.mouse.down();
