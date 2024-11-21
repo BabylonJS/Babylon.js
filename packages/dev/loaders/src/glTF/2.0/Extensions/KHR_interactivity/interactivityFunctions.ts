@@ -166,11 +166,11 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
         const blocks = convertBlocks(i, gltfNode, gltf, converted);
         if (blocks?.length) {
             flowGraphJsonBlocks.push(...blocks);
-            flowGraphBlocksMap.push({
-                blocks,
-                type: gltfNode.type,
-            });
         }
+        flowGraphBlocksMap.push({
+            blocks: blocks || [],
+            type: gltfNode.type,
+        });
     }
 
     // now that we have the arrays populated, we can do the connections and populate the context.
@@ -193,7 +193,8 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
         const outputMapper = getMappingForType(gltfBlock.type);
         // make sure the mapper exists
         if (!outputMapper) {
-            throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${gltfBlock.type}`);
+            Logger.Warn(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${gltfBlock.type}`);
+            continue;
         }
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
@@ -220,7 +221,8 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
             }
             const inputMapper = getMappingForType(nodeIn.type);
             if (!inputMapper) {
-                throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${nodeIn.type}`);
+                Logger.Warn(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${nodeIn.type}`);
+                continue;
             }
             const flowInMapping = inputMapper.inputs?.flows?.[flow.socket];
             const nodeInSocketName = flowInMapping?.name || flow.socket;
