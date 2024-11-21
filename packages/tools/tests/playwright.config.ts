@@ -108,18 +108,13 @@ export default defineConfig({
         {
             name: "interaction",
             testMatch: "**/interaction.test.ts",
-            use:
-                browserType === "BrowserStack"
-                    ? {
-                          connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGL2") },
-                      }
-                    : {
-                          ...devices["Desktop Safari"],
-                          headless,
-                          launchOptions: {
-                              args,
-                          },
-                      },
+            use: {
+                ...devices["Desktop Safari"],
+                headless,
+                launchOptions: {
+                    args,
+                },
+            },
         },
         {
             name: "performance",
