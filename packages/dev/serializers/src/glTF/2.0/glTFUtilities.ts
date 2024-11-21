@@ -50,6 +50,7 @@ export function createBufferView(bufferIndex: number, byteOffset: number, byteLe
  * @param count The number of attributes referenced by this accessor
  * @param byteOffset The offset relative to the start of the bufferView in bytes
  * @param minMax Minimum and maximum value of each component in this attribute
+ * @param normalized Specifies whether integer data values are normalized before usage
  * @returns accessor for glTF
  */
 export function createAccessor(
@@ -58,13 +59,18 @@ export function createAccessor(
     componentType: AccessorComponentType,
     count: number,
     byteOffset: Nullable<number>,
-    minMax: Nullable<{ min: number[]; max: number[] }> = null
+    minMax: Nullable<{ min: number[]; max: number[] }> = null,
+    normalized?: boolean
 ): IAccessor {
     const accessor: IAccessor = { bufferView: bufferViewIndex, componentType: componentType, count: count, type: type };
 
     if (minMax != null) {
         accessor.min = minMax.min;
         accessor.max = minMax.max;
+    }
+
+    if (normalized) {
+        accessor.normalized = normalized;
     }
 
     if (byteOffset != null) {
