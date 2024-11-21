@@ -106,6 +106,22 @@ export default defineConfig({
                       },
         },
         {
+            name: "interaction",
+            testMatch: "**/interaction.test.ts",
+            use:
+                browserType === "BrowserStack"
+                    ? {
+                          connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGL2") },
+                      }
+                    : {
+                          ...devices["Desktop Safari"],
+                          headless,
+                          launchOptions: {
+                              args,
+                          },
+                      },
+        },
+        {
             name: "performance",
             testMatch: "**/performance.test.ts",
             use: forceChrome
@@ -133,4 +149,3 @@ export default defineConfig({
 
     snapshotPathTemplate: "test/visualization/ReferenceImages/{arg}{ext}",
 });
-
