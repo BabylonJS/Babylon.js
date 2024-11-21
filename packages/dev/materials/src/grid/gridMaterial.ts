@@ -25,8 +25,15 @@ import {
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForMisc,
 } from "core/Materials/materialHelper.functions";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class GridMaterialDefines extends MaterialDefines {
+    public CLIPPLANE = false;
+    public CLIPPLANE2 = false;
+    public CLIPPLANE3 = false;
+    public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public OPACITY = false;
     public ANTIALIAS = false;
     public TRANSPARENT = false;
@@ -222,35 +229,26 @@ export class GridMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
+            const uniforms = [
+                "projection",
+                "mainColor",
+                "lineColor",
+                "gridControl",
+                "gridOffset",
+                "vFogInfos",
+                "vFogColor",
+                "world",
+                "view",
+                "opacityMatrix",
+                "vOpacityInfos",
+                "visibility",
+                "logarithmicDepthConstant",
+            ];
             // Defines
             const join = defines.toString();
+            addClipPlaneUniforms(uniforms);
             subMesh.setEffect(
-                scene
-                    .getEngine()
-                    .createEffect(
-                        "grid",
-                        attribs,
-                        [
-                            "projection",
-                            "mainColor",
-                            "lineColor",
-                            "gridControl",
-                            "gridOffset",
-                            "vFogInfos",
-                            "vFogColor",
-                            "world",
-                            "view",
-                            "opacityMatrix",
-                            "vOpacityInfos",
-                            "visibility",
-                            "logarithmicDepthConstant",
-                        ],
-                        ["opacitySampler"],
-                        join,
-                        undefined,
-                        this.onCompiled,
-                        this.onError
-                    ),
+                scene.getEngine().createEffect("grid", attribs, uniforms, ["opacitySampler"], join, undefined, this.onCompiled, this.onError),
                 defines,
                 this._materialContext
             );
@@ -309,6 +307,8 @@ export class GridMaterial extends PushMaterial {
                 this._activeEffect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
             }
 
+            // Clip plane
+            bindClipPlane(effect, this, scene);
             // Log. depth
             if (this._useLogarithmicDepth) {
                 BindLogDepth(defines, effect, scene);
