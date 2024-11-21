@@ -699,7 +699,6 @@ export class _GLTFAnimation {
                 }
             });
 
-            //TODO: Handle right hand vs left hand here.
             accessor = createAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
