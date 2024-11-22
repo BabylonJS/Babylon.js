@@ -106,6 +106,14 @@ export default defineConfig({
                       },
         },
         {
+            name: "interaction",
+            testMatch: "**/interaction.test.ts",
+            use: {
+                ...devices["Desktop Safari"],
+                headless,
+            },
+        },
+        {
             name: "performance",
             testMatch: "**/performance.test.ts",
             use: forceChrome
@@ -133,4 +141,3 @@ export default defineConfig({
 
     snapshotPathTemplate: "test/visualization/ReferenceImages/{arg}{ext}",
 });
-
