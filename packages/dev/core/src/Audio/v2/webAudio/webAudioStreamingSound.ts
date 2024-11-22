@@ -10,7 +10,7 @@ import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
 
-type StreamingSoundSourceType = HTMLMediaElement | string | string[];
+export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /**
  * Creates a new streaming sound.
