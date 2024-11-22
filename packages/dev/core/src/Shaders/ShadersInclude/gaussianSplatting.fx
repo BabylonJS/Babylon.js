@@ -25,7 +25,6 @@ struct Splat {
 #endif
 #if SH_DEGREE == 3
     uvec4 sh2;
-    uvec4 sh3;
 #endif
 };
 
@@ -45,7 +44,6 @@ Splat readSplat(float splatIndex)
 #endif
 #if SH_DEGREE == 3
     splat.sh2 = texture2D(shTexture2, splatUV);
-    splat.sh3 = texture2D(shTexture3, splatUV);
 #endif
 
     return splat;
@@ -53,14 +51,14 @@ Splat readSplat(float splatIndex)
     
 const float SH_C0 = 0.28209479;
 const float SH_C1 = 0.48860251;
-const float SH_C2[] = {
+const float SH_C2[5] = {
 	1.092548430,
 	-1.09254843,
 	0.315391565,
 	-1.09254843,
 	0.546274215
 };
-const float SH_C3[] = {
+const float SH_C3[7] = {
 	-0.59004358,
 	2.890611442,
 	-0.45704579,

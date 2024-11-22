@@ -267,42 +267,31 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         if (shDegree) {
             // shDim is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
             const shDim = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
-            const textureCount = Math.ceil(shDim / 4);
-            let shIndex = byteOffset;
+            const textureCount = Math.ceil((shDim * 3) / 4); // 3 components per sh. but 4 components can be stored per texture
+            let shIndexRead = byteOffset;
 
             // sh is an array of uint8array that will be used to create sh textures
             const sh: Uint8Array[] = [];
-            // per degree list the number of components needed per texture
-            const shTextureComponentCounts = [[3], [4, 4], [4, 4, 4, 3]];
-            // per texture, get an index value that is used to push sh value
-            const advancePerTexture = [0, 0, 0, 0];
+
             // create array for the number of textures needed.
             for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-                const textureComponentCount = shTextureComponentCounts[shDegree - 1][textureIndex];
-                const texture = new Uint8Array(splatCount * textureComponentCount);
+                const texture = new Uint8Array(splatCount * 4 * 4); // 4 components per texture, 4 sh per component
                 sh.push(texture);
             }
 
-            // for each sh value (up to 15 per splat)
-            // compute the texture index
-            // add the sh value for the texture
-            // example:
-            // 15 values per splat. uvuf looks like this:
-            // abcd efgh ijkl mno
-            // abcd efgh ijkl mno
-            // ...
-            // abcd efgh ijkl mno
-            // transform the data so 1st texture is made of this array:
-            // abcd abcd abcd .... abcd
-            // 2nd texture is made of
-            // efgh efgh efgh .... efgh
-            // etc
-            for (let i = 0; i < splatCount * shDim; i++) {
-                const shValue = ubuf[shIndex++];
-                const textureIndex = Math.floor((i % shDim) / 4);
-                const shArray = sh[textureIndex];
-                shArray[advancePerTexture[textureIndex]++] = shValue;
+            for (let i = 0; i < splatCount; i++) {
+                for (let shIndexWrite = 0; shIndexWrite < shDim; shIndexWrite++) {
+                    const shValue = ubuf[shIndexRead++];
+
+                    const textureIndex = Math.floor(shIndexWrite / 16);
+                    const shArray = sh[textureIndex];
+
+                    const byteIndexInTexture = shIndexWrite % 16; // [0..15]
+                    const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
+                    shArray[byteIndexInTexture + offsetPerSplat] = shValue;
+                }
             }
+
             return new Promise((resolve) => {
                 resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
             });
