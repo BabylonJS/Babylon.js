@@ -16,6 +16,8 @@ import type { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 import type { IPopupComponentProps } from "./components/popupComponent";
 import { PopupComponent } from "./components/popupComponent";
+import { CopyStyles } from "shared-ui-components/styleHelper";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -62,41 +64,6 @@ export class Inspector {
     public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
         this._GlobalState.selectedLineContainerTitles = [];
         this._GlobalState.selectedLineContainerTitles.push(...titles);
-    }
-
-    private static _CopyStyles(source: Document, target: DocumentOrShadowRoot) {
-        for (let index = 0; index < source.styleSheets.length; index++) {
-            const styleSheet: any = source.styleSheets[index];
-
-            try {
-                if (styleSheet.cssRules) {
-                    // for <style> elements
-                    const newStyleEl = source.createElement("style");
-
-                    for (const cssRule of styleSheet.cssRules) {
-                        // write the text of each rule into the body of the style element
-                        newStyleEl.appendChild(source.createTextNode(cssRule.cssText));
-                    }
-
-                    if ((target as Document).head) {
-                        (target as Document).head.appendChild(newStyleEl);
-                    } else {
-                        (target as ShadowRoot).appendChild(newStyleEl);
-                    }
-                } else if (styleSheet.href) {
-                    // for <link> elements loading CSS from a URL
-                    const newLinkEl = source.createElement("link");
-
-                    newLinkEl.rel = "stylesheet";
-                    newLinkEl.href = styleSheet.href;
-                    if ((target as Document).head) {
-                        (target as Document).head.appendChild(newLinkEl);
-                    } else {
-                        (target as ShadowRoot).appendChild(newLinkEl);
-                    }
-                }
-            } catch (e) {}
-        }
     }
 
     private static _SceneExplorerOptions: Nullable<IInternalInspectorOptions> = null;
@@ -355,59 +322,6 @@ export class Inspector {
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }
     }
-    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800, lateBinding?: boolean) {
-        const windowCreationOptionsList = {
-            width: width,
-            height: height,
-            top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX,
-        };
-
-        const windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
-            .join(",");
-
-        const popupWindow = window.open("", title, windowCreationOptions);
-        if (!popupWindow) {
-            return null;
-        }
-
-        const parentDocument = popupWindow.document;
-
-        // Font
-        const newLinkEl = parentDocument.createElement("link");
-
-        newLinkEl.rel = "stylesheet";
-        newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
-        parentDocument.head!.appendChild(newLinkEl);
-
-        parentDocument.title = title;
-        parentDocument.body.style.width = "100%";
-        parentDocument.body.style.height = "100%";
-        parentDocument.body.style.margin = "0";
-        parentDocument.body.style.padding = "0";
-
-        const parentControl = parentDocument.createElement("div");
-        parentControl.style.width = "100%";
-        parentControl.style.height = "100%";
-        parentControl.style.margin = "0";
-        parentControl.style.padding = "0";
-
-        popupWindow.document.body.appendChild(parentControl);
-
-        this._CopyStyles(window.document, parentDocument);
-
-        if (lateBinding) {
-            setTimeout(() => {
-                // need this for late bindings
-                this._CopyStyles(window.document, parentDocument);
-            }, 0);
-        }
-
-        (this as any)[windowVariableName] = popupWindow;
-
-        return parentControl;
-    }
 
     public static get IsVisible(): boolean {
         return this._OpenedPane > 0;
@@ -471,7 +385,12 @@ export class Inspector {
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
-                this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
+                this._CreateEmbedHost(
+                    scene,
+                    options,
+                    CreatePopup("INSPECTOR", { onWindowCreateCallback: (w) => (this._EmbedHostWindow = w) }),
+                    Inspector.OnSelectionChangeObservable
+                );
                 this._EmbedHostWindow.addEventListener("beforeunload", () => this._GlobalState.onSceneExplorerClosedObservable.notifyObservers());
                 this._EmbedHostWindow.addEventListener("beforeunload", () => this._GlobalState.onActionTabsClosedObservable.notifyObservers());
             } else {
@@ -503,14 +422,14 @@ export class Inspector {
                 if (this._SceneExplorerHost) {
                     this._SceneExplorerHost.style.width = "0";
                 }
-                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"));
+                this._CreateSceneExplorer(scene, options, CreatePopup("SCENE EXPLORER", { onWindowCreateCallback: (w) => (this._SceneExplorerWindow = w) }));
                 this._SceneExplorerWindow.addEventListener("beforeunload", () => this._GlobalState.onSceneExplorerClosedObservable.notifyObservers());
             }
             if (options.showInspector) {
                 if (this._ActionTabsHost) {
                     this._ActionTabsHost.style.width = "0";
                 }
-                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
+                this._CreateActionTabs(scene, options, CreatePopup("INSPECTOR", { onWindowCreateCallback: (w) => (this._ActionTabsWindow = w) }));
                 this._ActionTabsWindow.addEventListener("beforeunload", () => this._GlobalState.onActionTabsClosedObservable.notifyObservers());
             }
         } else {
@@ -552,7 +471,7 @@ export class Inspector {
         // we need to copy the styles from the document to the parent control's root.
         if (parentControl.getRootNode() !== window.document) {
             setTimeout(() => {
-                this._CopyStyles(window.document, parentControl.getRootNode() as unknown as DocumentOrShadowRoot);
+                CopyStyles(window.document, parentControl.getRootNode() as any);
             }, 0);
         }
 

@@ -2650,7 +2650,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             newMesh._addToSceneRootNodes();
         }
 
-        this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        Tools.SetImmediate(() => {
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        });
 
         if (recursive) {
             newMesh.getChildMeshes().forEach((m) => {
@@ -2974,7 +2976,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        this.onNewLightAddedObservable.notifyObservers(newLight);
+        Tools.SetImmediate(() => {
+            this.onNewLightAddedObservable.notifyObservers(newLight);
+        });
     }
 
     /**
@@ -2996,7 +3000,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this.cameras.push(newCamera);
-        this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        Tools.SetImmediate(() => {
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        });
 
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
@@ -3012,7 +3018,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.skeletons.push(newSkeleton);
-        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+
+        Tools.SetImmediate(() => {
+            this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+        });
     }
 
     /**
@@ -3057,7 +3066,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
-        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        Tools.SetImmediate(() => {
+            this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        });
     }
 
     /**
@@ -3076,7 +3087,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        Tools.SetImmediate(() => {
+            this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        });
     }
 
     /**
@@ -3483,7 +3496,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.addGeometry(geometry);
 
-        this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        Tools.SetImmediate(() => {
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        });
 
         return true;
     }

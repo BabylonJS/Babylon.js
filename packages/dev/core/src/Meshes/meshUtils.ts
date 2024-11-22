@@ -203,11 +203,13 @@ export function computeMaxExtents(
     };
 
     if (animationGroup && animationGroup.isStarted) {
+        const currentFrame = animationGroup.getCurrentFrame();
         const step = animationStep / animationGroup.getLength(0, 1);
         for (let frame = animationGroup.from; frame <= animationGroup.to; frame += step) {
             animationGroup.goToFrame(frame);
             updateMaxExtents();
         }
+        animationGroup.goToFrame(currentFrame);
     } else {
         updateMaxExtents();
     }

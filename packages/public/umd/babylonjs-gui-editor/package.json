@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "7.34.2",
+    "version": "7.35.0",
     "main": "babylon.guiEditor.max.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^7.34.2",
-        "babylonjs-gui": "^7.34.2"
+        "babylonjs": "^7.35.0",
+        "babylonjs-gui": "^7.35.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -23,7 +23,7 @@
         "@tools/gui-editor": "1.0.0",
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
-        "css-loader": "^6.4.0",
+        "css-loader": "^7.1.0",
         "react": "^17.0.2",
         "react-contextmenu": "RaananW/react-contextmenu",
         "react-dom": "^17.0.2",

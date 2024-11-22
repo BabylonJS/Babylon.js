@@ -3,7 +3,6 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
-import { Popup } from "./sharedComponents/popup";
 import { SerializationTools } from "./serializationTools";
 import type { Observable } from "core/Misc/observable";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
@@ -12,6 +11,7 @@ import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Color4 } from "core/Maths/math.color";
 import type { Scene } from "core/scene";
 import type { Mesh } from "core/Meshes/mesh";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 
 /**
  * Interface used to specify creation options for the node editor
@@ -31,6 +31,7 @@ export interface INodeEditorOptions {
  */
 export class NodeGeometryEditor {
     private static _CurrentState: GlobalState;
+    private static _PopupWindow: Window | null;
 
     /**
      * Show the node editor
@@ -43,16 +44,19 @@ export class NodeGeometryEditor {
         RegisterTypeLedger();
 
         if (this._CurrentState) {
-            const popupWindow = (Popup as any)["node-geometry-editor"];
-            if (popupWindow) {
-                popupWindow.close();
+            if (this._PopupWindow) {
+                this._PopupWindow.close();
             }
         }
 
         let hostElement = options.hostElement;
 
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS NODE GEOMETRY EDITOR", "node-geometry-editor", 1000, 800)!;
+            hostElement = CreatePopup("BABYLON.JS NODE GEOMETRY EDITOR", {
+                onWindowCreateCallback: (w) => (this._PopupWindow = w),
+                width: 1000,
+                height: 800,
+            })!;
         }
 
         const globalState = new GlobalState();
@@ -95,17 +99,15 @@ export class NodeGeometryEditor {
         }
 
         // Close the popup window when the page is refreshed or scene is disposed
-        const popupWindow = (Popup as any)["node-geometry-editor"];
-        if (globalState.nodeGeometry && options.hostScene && popupWindow) {
+        if (globalState.nodeGeometry && options.hostScene && this._PopupWindow) {
             options.hostScene.onDisposeObservable.addOnce(() => {
-                if (popupWindow) {
-                    popupWindow.close();
+                if (this._PopupWindow) {
+                    this._PopupWindow.close();
                 }
             });
             window.onbeforeunload = () => {
-                const popupWindow = (Popup as any)["node-geometry-editor"];
-                if (popupWindow) {
-                    popupWindow.close();
+                if (this._PopupWindow) {
+                    this._PopupWindow.close();
                 }
             };
         }

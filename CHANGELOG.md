@@ -1,5 +1,44 @@
 # Changelog
 
+## 7.35.0
+
+### Core
+
+- fixed leaking observables in Rendering - by [ricardovg4](https://github.com/ricardovg4) ([#15860](https://github.com/BabylonJS/Babylon.js/pull/15860))
+- Add missing Bone.dispose() - by [deltakosh](https://github.com/deltakosh) ([#15861](https://github.com/BabylonJS/Babylon.js/pull/15861))
+- PostProcess: fix shader imports not being ready in ES6 - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15859](https://github.com/BabylonJS/Babylon.js/pull/15859))
+- EffectLayer: Fix isReady to check readiness for post processes and merge effect - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15858](https://github.com/BabylonJS/Babylon.js/pull/15858))
+
+### Playground
+
+- Add missing Bone.dispose() - by [deltakosh](https://github.com/deltakosh) ([#15861](https://github.com/BabylonJS/Babylon.js/pull/15861))
+
+## 7.34.4
+
+### Core
+
+- Some small Viewer bug fixes - by [ryantrem](https://github.com/ryantrem) ([#15856](https://github.com/BabylonJS/Babylon.js/pull/15856))
+
+## 7.34.3
+
+### Core
+
+- PointerDragBehavior: Support all dragAxis - [_Bug Fix_] by [fabsharp](https://github.com/fabsharp) ([#15844](https://github.com/BabylonJS/Babylon.js/pull/15844))
+- Fix ktx texture orientation in sandbox - by [bghgary](https://github.com/bghgary) ([#15853](https://github.com/BabylonJS/Babylon.js/pull/15853))
+- Goal of this PR is to make sure we raise the onNewXXX when the entity… - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15848](https://github.com/BabylonJS/Babylon.js/pull/15848))
+
+### GUI Editor
+
+
+### Inspector
+
+
+### Node Editor
+
+
+### Playground
+
+
 ## 7.34.2
 
 ### Core
