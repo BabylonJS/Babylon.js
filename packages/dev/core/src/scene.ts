@@ -98,6 +98,7 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import { ImportanceSamplingRenderer } from "./Rendering/importanceSamplingRenderer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -514,9 +515,35 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._environmentTexture = value;
+        if (!this._importanceSamplingRenderer && value) {
+            this._importanceSamplingRenderer = new ImportanceSamplingRenderer(this);
+        }
+        if (this._importanceSamplingRenderer && value) {
+            this._importanceSamplingRenderer.iblSource = value;
+        }
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private _useEnvironmentCDFMaps = false;
+    public get useEnvironmentCDFMaps(): boolean {
+        return this._useEnvironmentCDFMaps;
+    }
+    public set useEnvironmentCDFMaps(value: boolean) {
+        if (this._useEnvironmentCDFMaps === value) {
+            return;
+        }
+
+        this._useEnvironmentCDFMaps = value;
+        if (this.environmentTexture && this._useEnvironmentCDFMaps && !this._importanceSamplingRenderer) {
+            this._importanceSamplingRenderer = new ImportanceSamplingRenderer(this);
+            this._importanceSamplingRenderer.iblSource = this.environmentTexture;
+        }
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+    private _importanceSamplingRenderer: ImportanceSamplingRenderer;
+    public get importanceSamplingRenderer(): ImportanceSamplingRenderer {
+        return this._importanceSamplingRenderer;
+    }
     /**
      * The list of postprocesses added to the scene
      */
@@ -5142,6 +5169,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 this.cameras[index].detachControl();
             }
         }
+
+        this.importanceSamplingRenderer?.dispose();
 
         // Release animation groups
         this._disposeList(this.animationGroups);

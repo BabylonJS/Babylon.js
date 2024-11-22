@@ -1,26 +1,24 @@
-import { Constants } from "../../Engines/constants";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { Constants } from "../Engines/constants";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import type { Scene } from "../../scene";
-import { Texture } from "../../Materials/Textures/texture";
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import { PostProcess } from "../../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { Vector4 } from "../../Maths/math.vector";
-import { RawTexture } from "../../Materials/Textures/rawTexture";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Observable } from "../../Misc/observable";
-import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import type { Scene } from "../scene";
+import { Texture } from "../Materials/Textures/texture";
+import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { PostProcess } from "../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../PostProcesses/postProcess";
+import { Vector4 } from "../Maths/math.vector";
+import { RawTexture } from "../Materials/Textures/rawTexture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Observable } from "../Misc/observable";
+import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
- * Build cdf maps for IBL importance sampling during IBL shadow computation.
- * This should not be instanciated directly, as it is part of a scene component
- * @internal
+ * Build cdf maps to be used for IBL importance sampling.
  */
-export class _IblShadowsImportanceSamplingRenderer {
+export class ImportanceSamplingRenderer {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
@@ -84,7 +82,7 @@ export class _IblShadowsImportanceSamplingRenderer {
      * Return the cumulative distribution function (CDF) Y texture
      * @returns Return the cumulative distribution function (CDF) Y texture
      */
-    public getIcdfyTexture(): ProceduralTexture {
+    public getIcdfyTexture(): Texture {
         return this._icdfyPT;
     }
 
@@ -92,7 +90,7 @@ export class _IblShadowsImportanceSamplingRenderer {
      * Return the cumulative distribution function (CDF) X texture
      * @returns Return the cumulative distribution function (CDF) X texture
      */
-    public getIcdfxTexture(): ProceduralTexture {
+    public getIcdfxTexture(): Texture {
         return this._icdfxPT;
     }
 
@@ -178,9 +176,9 @@ export class _IblShadowsImportanceSamplingRenderer {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowsCdfx.fragment"), import("../../ShadersWGSL/iblShadowsCdfy.fragment")]);
+                    await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment")]);
                 } else {
-                    await Promise.all([import("../../Shaders/iblShadowsCdfx.fragment"), import("../../Shaders/iblShadowsCdfy.fragment")]);
+                    await Promise.all([import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment")]);
                 }
             },
         };
@@ -193,13 +191,13 @@ export class _IblShadowsImportanceSamplingRenderer {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowsIcdfx.fragment"), import("../../ShadersWGSL/iblShadowsIcdfy.fragment")]);
+                    await Promise.all([import("../ShadersWGSL/iblIcdfx.fragment"), import("../ShadersWGSL/iblIcdfy.fragment")]);
                 } else {
-                    await Promise.all([import("../../Shaders/iblShadowsIcdfx.fragment"), import("../../Shaders/iblShadowsIcdfy.fragment")]);
+                    await Promise.all([import("../Shaders/iblIcdfx.fragment"), import("../Shaders/iblIcdfy.fragment")]);
                 }
             },
         };
-        this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblShadowsCdfy", this._scene, cdfOptions, false, false);
+        this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
         this._cdfyPT.setTexture("iblSource", this._iblSource as Texture);
         this._cdfyPT.setInt("iblHeight", size.height);
@@ -207,15 +205,15 @@ export class _IblShadowsImportanceSamplingRenderer {
             this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
         }
         this._cdfyPT.refreshRate = 0;
-        this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblShadowsIcdfy", this._scene, icdfOptions, false, false);
+        this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblIcdfy", this._scene, icdfOptions, false, false);
         this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
         this._icdfyPT.refreshRate = 0;
-        this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblShadowsCdfx", this._scene, cdfOptions, false, false);
+        this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblCdfx", this._scene, cdfOptions, false, false);
         this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
         this._cdfxPT.refreshRate = 0;
-        this._icdfxPT = new ProceduralTexture("icdfxTexture", { width: size.width, height: 1 }, "iblShadowsIcdfx", this._scene, icdfOptions, false, false);
+        this._icdfxPT = new ProceduralTexture("icdfxTexture", { width: size.width, height: 1 }, "iblIcdfx", this._scene, icdfOptions, false, false);
         this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
         this._icdfxPT.refreshRate = 0;
@@ -245,13 +243,13 @@ export class _IblShadowsImportanceSamplingRenderer {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
                 if (useWebGPU) {
-                    list.push(import("../../ShadersWGSL/iblShadowsImportanceSamplingDebug.fragment"));
+                    list.push(import("../ShadersWGSL/importanceSamplingDebug.fragment"));
                 } else {
-                    list.push(import("../../Shaders/iblShadowsImportanceSamplingDebug.fragment"));
+                    list.push(import("../Shaders/importanceSamplingDebug.fragment"));
                 }
             },
         };
-        this._debugPass = new PostProcess(this._debugPassName, "iblShadowsImportanceSamplingDebug", debugOptions);
+        this._debugPass = new PostProcess(this._debugPassName, "importanceSamplingDebug", debugOptions);
         const debugEffect = this._debugPass.getEffect();
         if (debugEffect) {
             debugEffect.defines = this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "";

@@ -84,6 +84,8 @@
     #endif
     #ifdef REALTIME_FILTERING
         in vec2 vReflectionFilteringInfo,
+        in sampler2D icdfxSampler,
+        in sampler2D icdfySampler,
     #endif
         out vec4 environmentRadiance
     )
@@ -118,7 +120,7 @@
                 float requestedReflectionLOD = reflectionLOD;
             #endif
             #ifdef REALTIME_FILTERING
-                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo, icdfxSampler, icdfySampler), 1.0);
             #else
                 environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
             #endif
@@ -204,6 +206,8 @@
     #endif
     #ifdef REALTIME_FILTERING
         , in vec2 vReflectionFilteringInfo
+        , in sampler2D icdfxSampler
+        , in sampler2D icdfySampler
     #endif
     )
     {
@@ -250,6 +254,8 @@
         #endif
         #ifdef REALTIME_FILTERING
             vReflectionFilteringInfo,
+            icdfxSampler,
+            icdfySampler,
         #endif
             environmentRadiance
         );
@@ -276,7 +282,7 @@
                 #endif
 
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo);
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, icdfxSampler, icdfySampler);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif

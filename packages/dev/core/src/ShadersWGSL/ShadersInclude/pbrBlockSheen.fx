@@ -24,69 +24,103 @@
     };
 
     #define pbr_inline
-    fn sheenBlock(
-        vSheenColor: vec4f
-    #ifdef SHEEN_ROUGHNESS
-        , vSheenRoughness: f32
+    fn sheenBlock(vSheenColor
+                  : vec4f
+#ifdef SHEEN_ROUGHNESS
+                    ,
+                    vSheenRoughness
+                  : f32
         #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            , sheenMapRoughnessData: vec4f
+                    ,
+                    sheenMapRoughnessData
+                  : vec4f
         #endif
     #endif
-        , roughness: f32
+                    ,
+                    roughness
+                  : f32
     #ifdef SHEEN_TEXTURE
-        , sheenMapData: vec4f
-        , sheenMapLevel: f32
+                    ,
+                    sheenMapData
+                  : vec4f, sheenMapLevel
+                  : f32
     #endif
-        , reflectance: f32
+                    ,
+                    reflectance
+                  : f32
     #ifdef SHEEN_LINKWITHALBEDO
-        , baseColor: vec3f
-        , surfaceAlbedo: vec3f
+                    ,
+                    baseColor
+                  : vec3f, surfaceAlbedo
+                  : vec3f
     #endif
     #ifdef ENVIRONMENTBRDF
-        , NdotV: f32
-        , environmentBrdf: vec3f
+                    ,
+                    NdotV
+                  : f32, environmentBrdf
+                  : vec3f
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-        , AARoughnessFactors: vec2f
-        , vReflectionMicrosurfaceInfos: vec3f
-        , vReflectionInfos: vec2f
-        , vReflectionColor: vec3f
-        , vLightingIntensity: vec4f
+                    ,
+                    AARoughnessFactors
+                  : vec2f, vReflectionMicrosurfaceInfos
+                  : vec3f, vReflectionInfos
+                  : vec2f, vReflectionColor
+                  : vec3f, vLightingIntensity
+                  : vec4f
         #ifdef REFLECTIONMAP_3D
-            , reflectionSampler: texture_cube<f32>
-            , reflectionSamplerSampler: sampler
-            , reflectionCoords: vec3f
+                    ,
+                    reflectionSampler
+                  : texture_cube<f32>, reflectionSamplerSampler
+                  : sampler, reflectionCoords
+                  : vec3f
         #else
             , reflectionSampler: texture_2d<f32>
             , reflectionSamplerSampler: sampler
             , reflectionCoords: vec2f
         #endif
-        , NdotVUnclamped: f32
+                    ,
+                    NdotVUnclamped
+                  : f32
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                , reflectionLowSampler: texture_cube<f32>
-                , reflectionLowSamplerSampler: sampler            
-                , reflectionHighSampler: texture_cube<f32>
-                , reflectionHighSamplerSampler: sampler   
+                    ,
+                    reflectionLowSampler
+                  : texture_cube<f32>, reflectionLowSamplerSampler
+                  : sampler, reflectionHighSampler
+                  : texture_cube<f32>, reflectionHighSamplerSampler
+                  : sampler   
             #else
-                , reflectionLowSampler: texture_2d<f32>
-                , reflectionLowSamplerSampler: sampler            
-                , reflectionHighSampler: texture_2d<f32>
-                , reflectionHighSamplerSampler: sampler    
+                     ,
+                     reflectionLowSampler
+                   : texture_2d<f32>, reflectionLowSamplerSampler
+                   : sampler, reflectionHighSampler
+                   : texture_2d<f32>, reflectionHighSamplerSampler
+                   : sampler    
             #endif
         #endif
         #ifdef REALTIME_FILTERING
-            , vReflectionFilteringInfo: vec2f
-        #endif
+                    ,
+                    vReflectionFilteringInfo
+                  : vec2f, icdfxSampler
+                  : texture_2d<f32>, icdfxSamplerSampler
+                  : sampler, icdfySampler
+                  : texture_2d<f32>, icdfySamplerSampler
+                  : sampler
+#endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
-            , seo: f32
+                    ,
+                    seo
+                  : f32
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
-            , eho: f32
+                    ,
+                    eho
+                  : f32
         #endif
     #endif
-    ) -> sheenOutParams
-    {
+                  )
+        ->sheenOutParams {
         var outParams: sheenOutParams;
         var sheenIntensity: f32 = vSheenColor.a;
 
@@ -165,28 +199,31 @@
             var environmentSheenRadiance: vec4f =  vec4f(0., 0., 0., 0.);
 
             environmentSheenRadiance = sampleReflectionTexture(
-                sheenAlphaG
-                , vReflectionMicrosurfaceInfos
-                , vReflectionInfos
-                , vReflectionColor
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , NdotVUnclamped
+                sheenAlphaG, vReflectionMicrosurfaceInfos, vReflectionInfos,
+                vReflectionColor
+#if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                ,
+                NdotVUnclamped
             #endif
             #ifdef LINEARSPECULARREFLECTION
-                , sheenRoughness
+                ,
+                sheenRoughness
             #endif
-                , reflectionSampler
-                , reflectionSamplerSampler
-                , reflectionCoords
+                ,
+                reflectionSampler, reflectionSamplerSampler, reflectionCoords
             #ifndef LODBASEDMICROSFURACE
-                , reflectionLowSampler
-                , reflectionLowSamplerSampler
-                , reflectionHighSampler
-                , reflectionHighSamplerSampler
+                ,
+                reflectionLowSampler, reflectionLowSamplerSampler,
+                reflectionHighSampler, reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
-            #endif
+                ,
+                vReflectionFilteringInfo, icdfxSampler
+                : texture_2d<f32>, icdfxSamplerSampler
+                : sampler, icdfySampler
+                : texture_2d<f32>, icdfySamplerSampler
+                : sampler
+#endif
             );
 
             var sheenEnvironmentReflectance: vec3f = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);

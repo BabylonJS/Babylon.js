@@ -120,7 +120,7 @@ struct subSurfaceOutParams
                 #endif
 
                 #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
-                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo, sampler2D icdfxSampler, sampler2D icdfySampler), 1.0);
                 #else
                     environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
                 #endif
@@ -490,7 +490,7 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo, icdfxSampler, icdfySampler);
             #else
                 vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
             #endif

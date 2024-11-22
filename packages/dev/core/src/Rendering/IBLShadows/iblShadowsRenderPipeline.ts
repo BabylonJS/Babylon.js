@@ -3,7 +3,6 @@ import { EngineStore } from "../../Engines/engineStore";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
@@ -11,7 +10,6 @@ import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { _IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
@@ -128,7 +126,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _shadowCastingMeshes: Mesh[] = [];
 
     private _voxelRenderer: _IblShadowsVoxelRenderer;
-    private _importanceSamplingRenderer: _IblShadowsImportanceSamplingRenderer;
     private _voxelTracingPass: _IblShadowsVoxelTracingPass;
     private _spatialBlurPass: _IblShadowsSpatialBlurPass;
     private _accumulationPass: _IblShadowsAccumulationPass;
@@ -277,16 +274,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Set the IBL image to be used for shadowing. It can be either a cubemap
-     * or a 2D equirectangular texture.
-     * @param iblSource The texture to use for IBL shadowing
-     */
-    public setIblTexture(iblSource: BaseTexture) {
-        if (!this._importanceSamplingRenderer) return;
-        this._importanceSamplingRenderer.iblSource = iblSource;
-    }
-
-    /**
      * Returns the texture containing the voxel grid data
      * @returns The texture containing the voxel grid data
      * @internal
@@ -297,32 +284,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return tex;
         }
         return this._dummyTexture3d;
-    }
-
-    /**
-     * Returns the texture containing the importance sampling CDF data for the IBL shadow pipeline
-     * @returns The texture containing the importance sampling CDF data for the IBL shadow pipeline
-     * @internal
-     */
-    public _getIcdfyTexture(): Texture {
-        const tex = this._importanceSamplingRenderer!.getIcdfyTexture();
-        if (tex && tex.isReady()) {
-            return tex;
-        }
-        return this._dummyTexture2d;
-    }
-
-    /**
-     * Returns the texture containing the importance sampling CDF data for the IBL shadow pipeline
-     * @returns The texture containing the importance sampling CDF data for the IBL shadow pipeline
-     * @internal
-     */
-    public _getIcdfxTexture(): Texture {
-        const tex = this._importanceSamplingRenderer.getIcdfxTexture();
-        if (tex && tex.isReady()) {
-            return tex;
-        }
-        return this._dummyTexture2d;
     }
 
     /**
@@ -406,24 +367,24 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public get importanceSamplingDebugEnabled(): boolean {
-        return this._importanceSamplingRenderer?.debugEnabled;
+        return this.scene.importanceSamplingRenderer?.debugEnabled;
     }
 
     /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public set importanceSamplingDebugEnabled(enabled: boolean) {
-        if (!this._importanceSamplingRenderer) return;
+        if (!this.scene.importanceSamplingRenderer) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable importance sampling debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this._importanceSamplingRenderer.debugEnabled) return;
-        this._importanceSamplingRenderer.debugEnabled = enabled;
+        if (enabled === this.scene.importanceSamplingRenderer.debugEnabled) return;
+        this.scene.importanceSamplingRenderer.debugEnabled = enabled;
         if (enabled) {
-            this._enableEffect(this._importanceSamplingRenderer.debugPassName, this.cameras);
+            this._enableEffect(this.scene.importanceSamplingRenderer.debugPassName, this.cameras);
         } else {
-            this._disableEffect(this._importanceSamplingRenderer.debugPassName, this.cameras);
+            this._disableEffect(this.scene.importanceSamplingRenderer.debugPassName, this.cameras);
         }
     }
 
@@ -658,10 +619,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this._allowDebugPasses === value) return;
         this._allowDebugPasses = value;
         if (value) {
-            if (this._importanceSamplingRenderer.isReady()) {
+            if (this.scene.importanceSamplingRenderer.isReady()) {
                 this._createDebugPasses();
             } else {
-                this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+                this.scene.importanceSamplingRenderer.onReadyObservable.addOnce(() => {
                     this._createDebugPasses();
                 });
             }
@@ -788,7 +749,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._geometryBufferRenderer.enablePosition = true;
         this._geometryBufferRenderer.enableNormal = true;
         this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
-
+        this.scene.useEnvironmentCDFMaps = true;
         this.shadowOpacity = options.shadowOpacity || 0.8;
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
@@ -796,7 +757,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             options ? options.resolutionExp : 6,
             options.triPlanarVoxelization !== undefined ? options.triPlanarVoxelization : true
         );
-        this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene, this);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene, this);
@@ -814,9 +774,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
         this.shadowRemanence = options.shadowRemanence ?? 0.75;
         this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-        if (this.scene.environmentTexture) {
-            this._importanceSamplingRenderer.iblSource = this.scene.environmentTexture;
-        }
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
@@ -827,7 +784,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
 
         // Assigning the shadow texture to the materials needs to be done after the RT's are created.
-        this._importanceSamplingRenderer.onReadyObservable.add(() => {
+        this.scene.importanceSamplingRenderer.onReadyObservable.add(() => {
             this._setPluginParameters();
             this.onNewIblReadyObservable.notifyObservers();
         });
@@ -888,7 +845,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _createDebugPasses() {
         this._debugPasses = [
-            { pass: this._importanceSamplingRenderer.getDebugPassPP(), enabled: this.importanceSamplingDebugEnabled },
+            { pass: this.scene.importanceSamplingRenderer.getDebugPassPP(), enabled: this.importanceSamplingDebugEnabled },
             { pass: this._voxelRenderer.getDebugPassPP(), enabled: this.voxelDebugEnabled },
             { pass: this._voxelTracingPass.getDebugPassPP(), enabled: this.voxelTracingDebugEnabled },
             { pass: this._spatialBlurPass.getDebugPassPP(), enabled: this.spatialBlurPassDebugEnabled },
@@ -960,7 +917,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
 
         if (this.importanceSamplingDebugEnabled) {
-            this._importanceSamplingRenderer.setDebugDisplayParams(x, y, cols, rows);
+            this.scene.importanceSamplingRenderer.setDebugDisplayParams(x, y, cols, rows);
             x -= width;
             if (x <= -1) {
                 x = 0;
@@ -1111,7 +1068,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         return (
             this._noiseTexture.isReady() &&
             this._voxelRenderer.isReady() &&
-            this._importanceSamplingRenderer.isReady() &&
+            this.scene.importanceSamplingRenderer.isReady() &&
             (!this._voxelTracingPass || this._voxelTracingPass.isReady()) &&
             (!this._spatialBlurPass || this._spatialBlurPass.isReady()) &&
             (!this._accumulationPass || this._accumulationPass.isReady())
@@ -1137,7 +1094,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._disposeEffectPasses();
         this._noiseTexture.dispose();
         this._voxelRenderer.dispose();
-        this._importanceSamplingRenderer.dispose();
         this._voxelTracingPass.dispose();
         this._spatialBlurPass.dispose();
         this._accumulationPass.dispose();

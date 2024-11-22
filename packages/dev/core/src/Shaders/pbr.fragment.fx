@@ -298,6 +298,8 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
+                , icdfxSampler
+                , icdfySampler
             #endif
             );
         #else
@@ -356,6 +358,8 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
+                , icdfxSampler
+                , icdfySampler
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 , seo
@@ -475,6 +479,8 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
+                , icdfxSampler
+                , icdfySampler
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
@@ -533,6 +539,8 @@ void main(void) {
                     #if defined(REALTIME_FILTERING)
                         , reflectionSampler
                         , vReflectionFilteringInfo
+                        , icdfxSampler
+                        , icdfySampler
                     #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
@@ -571,6 +579,8 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vRefractionFilteringInfo
+                , icdfxSampler
+                , icdfySampler
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , vRefractionPosition

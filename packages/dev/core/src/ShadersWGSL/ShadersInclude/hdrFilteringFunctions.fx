@@ -143,7 +143,11 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f) -> vec3f
+        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
+        #ifdef REALTIME_FILTERING
+        , icdfxSampler: sampler, icdfySampler: sampler
+        #endif
+        ) -> vec3f
         {
             var n: vec3f = normalize(inputN);
             var result: vec3f =  vec3f(0.0);
@@ -187,7 +191,11 @@
             return result;
         }
 
-        fn radiance(alphaG: f32, inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f) -> vec3f
+        fn radiance(alphaG: f32, inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
+        #ifdef REALTIME_FILTERING
+        , icdfxSampler: sampler, icdfySampler: sampler
+        #endif
+        ) -> vec3f
         {
             var n: vec3f = normalize(inputN);
             var c: vec3f = textureSample(inputTexture, inputSampler, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!

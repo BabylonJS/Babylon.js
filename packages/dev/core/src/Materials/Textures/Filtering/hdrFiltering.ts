@@ -34,7 +34,7 @@ export class HDRFiltering {
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
 
-    private _lodGenerationOffset: number = 0;
+    private _lodGenerationOffset: number = -2;
     private _lodGenerationScale: number = 0.8;
 
     /**

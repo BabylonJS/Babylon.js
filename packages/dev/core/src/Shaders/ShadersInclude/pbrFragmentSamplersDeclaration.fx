@@ -70,6 +70,11 @@
         #endif
     #endif
 
+    #ifdef REALTIME_FILTERING
+        uniform sampler2D icdfxSampler;
+        uniform sampler2D icdfySampler;
+    #endif
+
     #ifdef REFLECTIONMAP_SKYBOX
         varying vec3 vPositionUVW;
     #else
