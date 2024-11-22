@@ -72,8 +72,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     // retrieve all the instance world matrix
                     const matrix = babylonNode.thinInstanceGetWorldMatrices();
 
-                    let iwt = TmpVectors.Vector3[2];
-                    let iwr = TmpVectors.Quaternion[1];
+                    const iwt = TmpVectors.Vector3[2];
+                    const iwr = TmpVectors.Quaternion[1];
                     const iws = TmpVectors.Vector3[3];
 
                     let hasAnyInstanceWorldTranslation = false;
@@ -90,8 +90,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                         m.decompose(iws, iwr, iwt);
 
                         if (convertToRightHanded) {
-                            iwt = convertToRightHandedPosition(iwt);
-                            iwr = convertToRightHandedRotation(iwr);
+                            convertToRightHandedPosition(iwt);
+                            convertToRightHandedRotation(iwr);
                         }
 
                         // fill the temp buffer
