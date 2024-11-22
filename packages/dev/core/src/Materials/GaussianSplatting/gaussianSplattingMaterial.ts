@@ -140,7 +140,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             PrepareAttributesForInstances(attribs, defines);
 
             const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal"];
-            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "shTexture3"];
+            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
 
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{

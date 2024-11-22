@@ -1037,6 +1037,10 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
+        const createTextureFromDataU32 = (data: Uint8Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INT);
+        };
+
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
         };
@@ -1069,7 +1073,7 @@ export class GaussianSplattingMesh extends Mesh {
             if (sh) {
                 this._shTextures = [];
                 sh.forEach((shData) => {
-                    const shTexture = createTextureFromDataU8(shData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    const shTexture = createTextureFromDataU32(shData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
                     this._shTextures!.push(shTexture);
                 });
             }
@@ -1180,13 +1184,7 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
-        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, lineStart: number, lineCount: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
-        };
-        const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, lineStart: number, lineCount: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
-        };
-        const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, lineStart: number, lineCount: number) => {
+        const updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
             (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
         };
 
@@ -1198,17 +1196,15 @@ export class GaussianSplattingMesh extends Mesh {
         const covBView = new Uint16Array(covB.buffer, texelStart * covBSItemSize * Uint16Array.BYTES_PER_ELEMENT, texelCount * covBSItemSize);
         const colorsView = new Uint8Array(colors.buffer, texelStart * 4, texelCount * 4);
         const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
-        updateTextureFromDataF16(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
-        updateTextureFromDataF16(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
         updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
-        updateTextureFromDataU8(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
-                // number of component per sh degree and texture number
-                const shTextureComponentCounts = [[3], [4, 4], [4, 4, 4, 3]];
-                const componentCount = shTextureComponentCounts[this.shDegree - 1][i];
+                const componentCount = 4;
                 const shView = new Uint8Array(this._sh![i].buffer, texelStart * componentCount, texelCount * componentCount);
-                updateTextureFromDataU8(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
+                updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
             }
         }
     }
