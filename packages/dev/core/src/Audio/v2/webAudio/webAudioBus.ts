@@ -5,7 +5,7 @@ import { AudioBus } from "../audioBus";
 import type { AudioPositioner } from "../audioPositioner";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
-import { CreateAudioPositionerAsync } from "./webAudioPositioner";
+import { _CreateAudioPositionerAsync } from "./webAudioPositioner";
 
 /**
  * Options for creating a new WebAudio bus.
@@ -42,7 +42,7 @@ export class _WebAudioBus extends AudioBus {
     }
 
     protected override _createPositioner(): Promise<AudioPositioner> {
-        return CreateAudioPositionerAsync(this);
+        return _CreateAudioPositionerAsync(this);
     }
 
     protected override _connect(node: AbstractAudioNode): void {

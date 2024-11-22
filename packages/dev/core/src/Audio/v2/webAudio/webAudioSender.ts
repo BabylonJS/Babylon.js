@@ -2,7 +2,7 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AudioSender } from "../audioSender";
 
 /** @internal */
-export async function CreateAudioSenderAsync(parent: AbstractAudioNode): Promise<AudioSender> {
+export async function _CreateAudioSenderAsync(parent: AbstractAudioNode): Promise<AudioSender> {
     return new WebAudioSender(parent);
 }
 

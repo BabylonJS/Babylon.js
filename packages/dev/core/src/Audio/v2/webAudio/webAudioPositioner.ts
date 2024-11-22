@@ -8,7 +8,7 @@ import type { ISpatialAudioTransformOptions } from "../spatialAudioTransform";
 export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {}
 
 /** @internal */
-export async function CreateAudioPositionerAsync(parent: AbstractAudioNode, options: Nullable<IWebAudioPositionerOptions> = null): Promise<AudioPositioner> {
+export async function _CreateAudioPositionerAsync(parent: AbstractAudioNode, options: Nullable<IWebAudioPositionerOptions> = null): Promise<AudioPositioner> {
     return new WebAudioPositioner(parent, options);
 }
 
