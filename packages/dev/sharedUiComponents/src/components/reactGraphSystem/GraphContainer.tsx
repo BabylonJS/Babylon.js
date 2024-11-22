@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import * as style from "./GraphContainer.module.scss";
+import style from "./GraphContainer.module.scss";
 
 export interface IGraphContainerProps {}
 

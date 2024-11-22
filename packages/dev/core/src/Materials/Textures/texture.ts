@@ -69,6 +69,9 @@ export interface ITextureCreationOptions {
 
     /** Defines the underlying texture texture space */
     gammaSpace?: boolean;
+
+    /** Defines the extension to use to pick the right loader */
+    forcedExtension?: string;
 }
 
 /**
@@ -431,6 +434,7 @@ export class Texture extends BaseTexture {
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
             internalTexture = noMipmapOrOptions.internalTexture ?? null;
             gammaSpace = noMipmapOrOptions.gammaSpace ?? gammaSpace;
+            forcedExtension = noMipmapOrOptions.forcedExtension ?? forcedExtension;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
