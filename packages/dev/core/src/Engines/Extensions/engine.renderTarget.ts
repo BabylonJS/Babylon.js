@@ -171,18 +171,8 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
         internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
 
-    let type: GLenum = gl.UNSIGNED_INT;
-    if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
-        type = gl.UNSIGNED_SHORT;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
-        type = gl.UNSIGNED_INT_24_8;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
-        type = gl.FLOAT;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
-        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
-    }
-
-    const format: GLenum = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    const type = this._getWebGLTextureTypeFromDepthTextureFormat(internalTexture.format);
+    const format = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
     const internalFormat = this._getInternalFormatFromDepthTextureFormat(internalTexture.format, true, hasStencil);
 
     if (internalTexture.is2DArray) {

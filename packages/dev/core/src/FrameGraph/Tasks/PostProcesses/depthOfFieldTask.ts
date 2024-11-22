@@ -59,12 +59,37 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
      */
     public readonly hdr: boolean;
 
-    private _engine: AbstractEngine;
-    private _circleOfConfusion: FrameGraphCircleOfConfusionTask;
-    private _blurX: FrameGraphDepthOfFieldBlurTask[] = [];
-    private _blurY: FrameGraphDepthOfFieldBlurTask[] = [];
-    private _merge: FrameGraphDepthOfFieldMergeTask;
-    private _defaultPipelineTextureType: number;
+    /**
+     * The name of the task.
+     */
+    public override get name() {
+        return this._name;
+    }
+
+    public override set name(name: string) {
+        this._name = name;
+        if (this._circleOfConfusion) {
+            this._circleOfConfusion.name = `${name} Circle of Confusion`;
+        }
+
+        if (this._blurX) {
+            for (let i = 0; i < this._blurX.length; i++) {
+                this._blurX[i].name = `${name} Blur X`;
+                this._blurY[i].name = `${name} Blur Y`;
+            }
+        }
+
+        if (this._merge) {
+            this._merge.name = `${name} Merge`;
+        }
+    }
+
+    private readonly _engine: AbstractEngine;
+    private readonly _circleOfConfusion: FrameGraphCircleOfConfusionTask;
+    private readonly _blurX: FrameGraphDepthOfFieldBlurTask[] = [];
+    private readonly _blurY: FrameGraphDepthOfFieldBlurTask[] = [];
+    private readonly _merge: FrameGraphDepthOfFieldMergeTask;
+    private readonly _defaultPipelineTextureType: number;
 
     /**
      * Constructs a depth of field task.
@@ -103,7 +128,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
         this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, this.depthOfField._dofMerge);
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
@@ -115,7 +140,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             throw new Error("FrameGraphDepthOfFieldTask: sourceTexture, depthTexture and camera are required");
         }
 
-        const sourceTextureDescription = this._frameGraph.getTextureDescription(this.sourceTexture);
+        const sourceTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.sourceTexture);
 
         const textureSize = {
             width: sourceTextureDescription.size.width,
@@ -126,19 +151,16 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             size: textureSize,
             options: {
                 createMipMaps: false,
-                generateMipMaps: false,
                 types: [this._defaultPipelineTextureType],
                 formats: [circleOfConfusionTextureFormat],
                 samples: 1,
                 useSRGBBuffers: [false],
-                generateDepthBuffer: false,
-                generateStencilBuffer: false,
-                label: "",
+                labels: [""],
             },
             sizeIsPercentage: false,
         };
 
-        const circleOfConfusionTextureHandle = this._frameGraph.createRenderTargetTexture(this._circleOfConfusion.name, textureCreationOptions);
+        const circleOfConfusionTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._circleOfConfusion.name, textureCreationOptions);
 
         this._circleOfConfusion.sourceTexture = this.sourceTexture; // texture not used by the CoC shader
         this._circleOfConfusion.depthTexture = this.depthTexture;
@@ -157,7 +179,9 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio);
             textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio);
 
-            const blurYTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurY[i].name, textureCreationOptions);
+            textureCreationOptions.options.labels![0] = "step " + (i + 1);
+
+            const blurYTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurY[i].name, textureCreationOptions);
 
             this._blurY[i].sourceTexture = i === 0 ? this.sourceTexture : this._blurX[i - 1].outputTexture;
             this._blurY[i].sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -165,7 +189,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             this._blurY[i].destinationTexture = blurYTextureHandle;
             this._blurY[i].record(true);
 
-            const blurXTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurX[i].name, textureCreationOptions);
+            const blurXTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurX[i].name, textureCreationOptions);
 
             this._blurX[i].sourceTexture = this._blurY[i].outputTexture;
             this._blurX[i].sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -176,11 +200,9 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             blurSteps.push(blurXTextureHandle);
         }
 
-        const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+        const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;

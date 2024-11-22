@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass, FrameGraphTextureHandle, FrameGraphTask } from "core/index";
+import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass, FrameGraphTextureHandle, FrameGraphTask, FrameGraphRenderTarget } from "core/index";
 import { FrameGraphPass } from "./pass";
 
 /**
@@ -7,10 +7,10 @@ import { FrameGraphPass } from "./pass";
  */
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _engine: AbstractEngine;
-    protected _renderTarget: FrameGraphTextureHandle;
+    protected _renderTarget: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
     protected _usedTextures: FrameGraphTextureHandle[] = [];
-    protected _depthShared = false;
+    protected _frameGraphRenderTarget: FrameGraphRenderTarget | undefined;
 
     /**
      * Checks if a pass is a render pass.
@@ -22,9 +22,9 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /**
-     * Gets the render target used by the render pass.
+     * Gets the render target(s) used by the render pass.
      */
-    public get renderTarget(): FrameGraphTextureHandle {
+    public get renderTarget(): FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined {
         return this._renderTarget;
     }
 
@@ -52,10 +52,10 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /**
-     * Sets the render target to use for rendering.
-     * @param renderTargetHandle The render target to use for rendering.
+     * Sets the render target(s) to use for rendering.
+     * @param renderTargetHandle The render target to use for rendering, or an array of render targets to use for multi render target rendering.
      */
-    public setRenderTarget(renderTargetHandle: FrameGraphTextureHandle) {
+    public setRenderTarget(renderTargetHandle?: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
         this._renderTarget = renderTargetHandle;
     }
 
@@ -69,12 +69,9 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     /** @internal */
     public override _execute() {
-        if (this._renderTargetDepth && !this._depthShared) {
-            this._context._shareDepth(this._renderTargetDepth, this._renderTarget);
-            this._depthShared = true;
-        }
+        this._frameGraphRenderTarget = this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth);
 
-        this._context.bindRenderTarget(this._renderTarget, `frame graph - render pass '${this.name}'`);
+        this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
 
         super._execute();
 
@@ -84,6 +81,10 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     /** @internal */
     public override _isValid(): Nullable<string> {
         const errMsg = super._isValid();
-        return errMsg ? errMsg : this._renderTarget !== undefined ? null : "Render target is not set (call setRenderTarget to set it)";
+        return errMsg
+            ? errMsg
+            : this._renderTarget !== undefined || this.renderTargetDepth !== undefined
+              ? null
+              : "Render target and render target depth cannot both be undefined.";
     }
 }

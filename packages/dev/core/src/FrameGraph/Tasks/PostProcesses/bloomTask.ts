@@ -43,11 +43,37 @@ export class FrameGraphBloomTask extends FrameGraphTask {
      */
     public readonly hdr: boolean;
 
-    private _downscale: FrameGraphExtractHighlightsTask;
-    private _blurX: FrameGraphBlurTask;
-    private _blurY: FrameGraphBlurTask;
-    private _merge: FrameGraphBloomMergeTask;
-    private _defaultPipelineTextureType: number;
+    /**
+     * The name of the task.
+     */
+    public override get name() {
+        return this._name;
+    }
+
+    public override set name(name: string) {
+        this._name = name;
+        if (this._downscale) {
+            this._downscale.name = `${name} Downscale`;
+        }
+
+        if (this._blurX) {
+            this._blurX.name = `${name} Blur X`;
+        }
+
+        if (this._blurY) {
+            this._blurY.name = `${name} Blur Y`;
+        }
+
+        if (this._merge) {
+            this._merge.name = `${name} Merge`;
+        }
+    }
+
+    private readonly _downscale: FrameGraphExtractHighlightsTask;
+    private readonly _blurX: FrameGraphBlurTask;
+    private readonly _blurY: FrameGraphBlurTask;
+    private readonly _merge: FrameGraphBloomMergeTask;
+    private readonly _defaultPipelineTextureType: number;
 
     /**
      * Constructs a new bloom task.
@@ -85,7 +111,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom._blurY);
         this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom._merge);
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
@@ -97,7 +123,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");
         }
 
-        const sourceTextureDescription = this._frameGraph.getTextureDescription(this.sourceTexture);
+        const sourceTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.sourceTexture);
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
@@ -106,45 +132,39 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             },
             options: {
                 createMipMaps: false,
-                generateMipMaps: false,
                 types: [this._defaultPipelineTextureType],
-                samplingModes: [Constants.TEXTURE_BILINEAR_SAMPLINGMODE],
                 formats: [Constants.TEXTUREFORMAT_RGBA],
                 samples: 1,
                 useSRGBBuffers: [false],
-                generateDepthBuffer: false,
-                generateStencilBuffer: false,
-                label: "",
+                labels: [""],
             },
             sizeIsPercentage: false,
         };
 
-        const downscaleTextureHandle = this._frameGraph.createRenderTargetTexture(this._downscale.name, textureCreationOptions);
+        const downscaleTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._downscale.name, textureCreationOptions);
 
         this._downscale.sourceTexture = this.sourceTexture;
         this._downscale.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._downscale.destinationTexture = downscaleTextureHandle;
         this._downscale.record(true);
 
-        const blurXTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurX.name, textureCreationOptions);
+        const blurXTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurX.name, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
         this._blurX.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._blurX.destinationTexture = blurXTextureHandle;
         this._blurX.record(true);
 
-        const blurYTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurY.name, textureCreationOptions);
+        const blurYTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurY.name, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
         this._blurY.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._blurY.destinationTexture = blurYTextureHandle;
         this._blurY.record(true);
 
-        const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+        const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;

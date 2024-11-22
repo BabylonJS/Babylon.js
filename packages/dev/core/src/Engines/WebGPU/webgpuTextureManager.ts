@@ -1011,7 +1011,7 @@ export class WebGPUTextureManager {
         dontCreateMSAATexture?: boolean
     ): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
-            texture._hardwareTexture = new WebGPUHardwareTexture();
+            texture._hardwareTexture = new WebGPUHardwareTexture(this._engine);
         }
 
         if (width === undefined) {
@@ -1165,7 +1165,7 @@ export class WebGPUTextureManager {
             this._commandEncoderForCreation,
             WebGPUConstants.TextureUsage.RenderAttachment,
             0,
-            texture.label ? "MSAA" + texture.label : undefined
+            texture.label ? "MSAA_" + texture.label : "MSAA"
         );
         gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }
