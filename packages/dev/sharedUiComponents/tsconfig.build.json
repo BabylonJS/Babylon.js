@@ -9,7 +9,8 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
     },
 
     "references": [

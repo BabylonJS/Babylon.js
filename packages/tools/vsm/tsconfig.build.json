@@ -4,7 +4,8 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "composite": true
+        "composite": true,
+        "allowSyntheticDefaultImports": true,
     },
 
     "references": [

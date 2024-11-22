@@ -11,7 +11,8 @@
             "serializers/*": ["dev/serializers/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
     },
 
     "references": [

@@ -10,7 +10,8 @@
             "gui/*": ["dev/gui/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-editor/*": ["tools/nodeEditor/src/*"]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
     },
 
     "references": [
