@@ -265,9 +265,13 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         //SH
         if (shDegree) {
-            // shDim is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
-            const shDim = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
-            const textureCount = Math.ceil((shDim * 3) / 4); // 3 components per sh. but 4 components can be stored per texture
+            // shVectorCount is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
+            // number of vec3 vector needed per splat
+            const shVectorCount = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
+            // number of component values : 3 per vector3 (45)
+            const shComponentCount = shVectorCount * 3;
+
+            const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
             let shIndexRead = byteOffset;
 
             // sh is an array of uint8array that will be used to create sh textures
@@ -280,7 +284,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
 
             for (let i = 0; i < splatCount; i++) {
-                for (let shIndexWrite = 0; shIndexWrite < shDim; shIndexWrite++) {
+                for (let shIndexWrite = 0; shIndexWrite < shComponentCount; shIndexWrite++) {
                     const shValue = ubuf[shIndexRead++];
 
                     const textureIndex = Math.floor(shIndexWrite / 16);
