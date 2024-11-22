@@ -71,10 +71,11 @@ const float SH_C3[] = {
 };
 
 // dir = normalized(splat pos - cam pos)
-vec3 computeColorFromSHDegree(vec3 dir, int deg, const vec3 sh[16])
+vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 {
 	glm::vec3 result = SH_C0 * sh[0];
 
+#if SH_DEGREE > 0
     float x = dir.x;
     float y = dir.y;
     float z = dir.z;
@@ -101,62 +102,63 @@ vec3 computeColorFromSHDegree(vec3 dir, int deg, const vec3 sh[16])
         SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
 #endif
 #endif
-	result += 0.5f;
+#endif
+	//result += 0.5f;
     return result;
 }
 
 vec4 decompose(uint value)
 {
-    return vec4((((value >> uint(24))& 255u) * (2./255.)) - 1.,
-                (((value >> uint(16))& 255u) * (2./255.)) - 1.,
-                (((value >> uint( 8))& 255u) * (2./255.)) - 1.,
-                (((value            )& 255u) * (2./255.)) - 1.);
+    return vec4((((value >> uint(24)) & 255u) * (2./255.)) - 1.,
+                (((value >> uint(16)) & 255u) * (2./255.)) - 1.,
+                (((value >> uint( 8)) & 255u) * (2./255.)) - 1.,
+                (((value            ) & 255u) * (2./255.)) - 1.);
 }
 
-vec3 computeSH(Splat splat, vec3 dir)
+vec3 computeSH(Splat splat, vec3 color, vec3 dir)
 {
     vec3 sh[16];
     
+    sh[0] = color;
+
 #if SH_DEGREE >= 1
     vec4 sh00 = decompose(splat.sh0.x);
     vec4 sh01 = decompose(splat.sh0.y);
     vec4 sh02 = decompose(splat.sh0.z);
-    vec4 sh03 = decompose(splat.sh0.w);
+
+    sh[1] = vec3(sh00.x, sh00.y, sh00.z);
+    sh[2] = vec3(sh00.w, sh01.x, sh01.y);
+    sh[3] = vec3(sh01.z, sh01.w, sh02.x);
 #endif
 #if SH_DEGREE >= 2
-    vec4 sh10 = decompose(splat.sh1.x);
-    vec4 sh11 = decompose(splat.sh1.y);
-    vec4 sh12 = decompose(splat.sh1.z);
-    vec4 sh13 = decompose(splat.sh1.w);
+    vec4 sh03 = decompose(splat.sh0.w);
+    vec4 sh04 = decompose(splat.sh1.x);
+    vec4 sh05 = decompose(splat.sh1.y);
+
+    sh[4] = vec3(sh02.y, sh02.z, sh02.w);
+    sh[5] = vec3(sh03.x, sh03.y, sh03.z);
+    sh[6] = vec3(sh03.w, sh04.x, sh04.y);
+    sh[7] = vec3(sh04.z, sh04.w, sh05.x);
+    sh[8] = vec3(sh05.y, sh05.z, sh05.w);
 #endif
 #if SH_DEGREE == 3
-    vec4 sh20 = decompose(splat.sh2.x);
-    vec4 sh21 = decompose(splat.sh2.y);
-    vec4 sh22 = decompose(splat.sh2.z);
-    vec4 sh23 = decompose(splat.sh2.w);
-    vec4 sh30 = decompose(splat.sh3.x);
-    vec4 sh31 = decompose(splat.sh3.y);
-    vec4 sh32 = decompose(splat.sh3.z);
-    vec4 sh33 = decompose(splat.sh3.w);
+    vec4 sh06 = decompose(splat.sh1.z);
+    vec4 sh07 = decompose(splat.sh1.w);
+    vec4 sh08 = decompose(splat.sh2.x);
+    vec4 sh09 = decompose(splat.sh2.y);
+    vec4 sh10 = decompose(splat.sh2.z);
+    vec4 sh11 = decompose(splat.sh2.w);
+
+    sh[9] = vec3(sh06.x, sh06.y, sh06.z);
+    sh[10] = vec3(sh06.w, sh07.x, sh07.y);
+    sh[11] = vec3(sh07.z, sh07.w, sh08.x);
+    sh[12] = vec3(sh08.y, sh08.z, sh08.w);
+    sh[13] = vec3(sh09.x, sh09.y, sh09.z);
+    sh[14] = vec3(sh09.w, sh10.x, sh10.y);
+    sh[15] = vec3(sh10.z, sh10.w, sh11.x);    
 #endif
 
-    sh[0] = sh00.xyz;
-    sh[1] = vec3(sh00.w, sh01.x, sh01.y);
-    sh[2] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[3] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[4] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[5] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[6] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[7] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[8] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[9] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[10] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[11] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[12] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[13] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[14] = vec3(sh00.x, sh00.x, sh00.x);
-    sh[15] = vec3(sh00.x, sh00.x, sh00.x);
-    return computeColorFromSHDegree(dir, SH_DEGREE, sh[16]);
+    return computeColorFromSHDegree(dir, sh);
 }
 
 vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 covB, mat4 worldMatrix, mat4 viewMatrix, mat4 projectionMatrix)

@@ -44,7 +44,7 @@ void main () {
 
 #if SH_DEGREE
     vec3 dir = normalize(splat.center.xyz - vEyePosition.xyz);
-    vColor.xyz *= computeSH(splat, dir);
+    vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif
 
     gl_Position = gaussianSplatting(position, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);

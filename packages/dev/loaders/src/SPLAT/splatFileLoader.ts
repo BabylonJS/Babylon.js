@@ -266,7 +266,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         //SH
         if (shDegree) {
             // shDim is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
-            const shDim = (shDegree + 1) * (shDegree + 1) - 1;
+            const shDim = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
             const textureCount = Math.ceil(shDim / 4);
             let shIndex = byteOffset;
 
