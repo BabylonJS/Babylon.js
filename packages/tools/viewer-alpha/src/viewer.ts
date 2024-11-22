@@ -388,7 +388,7 @@ export class Viewer implements IDisposable {
                 camera,
                 model: null,
                 suspendRendering: this._suspendRendering.bind(this),
-                markSceneMutated: this._markSceneMutated.bind(this),
+                markSceneMutated: () => (this._sceneMutated = true),
             };
         }
         this._details.scene.skipFrustumClipping = true;
@@ -458,7 +458,7 @@ export class Viewer implements IDisposable {
                     this._snapshotHelper.disableSnapshotRendering();
                     material.microSurface = 1.0 - value;
                     this._snapshotHelper.enableSnapshotRendering();
-                    this._markSceneMutated();
+                    this._sceneMutated = true;
                 }
             }
             this.onSkyboxBlurChanged.notifyObservers();
@@ -525,7 +525,7 @@ export class Viewer implements IDisposable {
         this._details.scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
 
         this._snapshotHelper.enableSnapshotRendering();
-        this._markSceneMutated();
+        this._sceneMutated = true;
     }
 
     /**
@@ -634,7 +634,7 @@ export class Viewer implements IDisposable {
             this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
             this.onAnimationProgressChanged.notifyObservers();
             this._autoRotationBehavior.resetLastInteractionTime();
-            this._markSceneMutated();
+            this._sceneMutated = true;
         }
     }
 
@@ -726,7 +726,7 @@ export class Viewer implements IDisposable {
                 this._isLoadingModel = false;
                 this.onLoadingProgressChanged.notifyObservers();
                 this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
+                this._sceneMutated = true;
             }
         });
     }
@@ -808,7 +808,7 @@ export class Viewer implements IDisposable {
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
+                this._sceneMutated = true;
             }
         });
     }
@@ -919,13 +919,6 @@ export class Viewer implements IDisposable {
         return true;
     }
 
-    private _markSceneMutated() {
-        this._details.scene.incrementRenderId();
-        this._details.scene.executeWhenReady(() => {
-            this._sceneMutated = true;
-        });
-    }
-
     private get _shouldRender() {
         // We should render if:
         // 1. Auto suspend rendering is disabled.
@@ -963,7 +956,9 @@ export class Viewer implements IDisposable {
         if (!this._renderLoopController) {
             let renderedLastFrame = false;
             const render = () => {
-                if (this._shouldRender) {
+                // When we resume rendering, continue rendering until the scene reports it is ready.
+                const shouldRender = this._shouldRender || (renderedLastFrame && !this._details.scene.isReady(true));
+                if (shouldRender) {
                     this._sceneMutated = false;
                     this._details.scene.render();
 
