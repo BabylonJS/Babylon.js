@@ -49,6 +49,8 @@ Splat readSplat(float splatIndex)
     return splat;
 }
     
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+// no SH for GS and WebGL1
 // dir = normalized(splat pos - cam pos)
 vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 {
@@ -159,6 +161,12 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
 
     return computeColorFromSHDegree(dir, sh);
 }
+#else
+vec3 computeSH(Splat splat, vec3 color, vec3 dir)
+{
+    return color;
+}
+#endif
 
 vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 covB, mat4 worldMatrix, mat4 viewMatrix, mat4 projectionMatrix)
 {
