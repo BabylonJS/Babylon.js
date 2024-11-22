@@ -45,10 +45,6 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      */
     public _currentLOD = 0;
 
-    public override get depthStencilTexture() {
-        return this._depthStencilTexture;
-    }
-
     public override set depthStencilTexture(texture: Nullable<InternalTexture>) {
         this._depthStencilTexture = texture;
         this._generateDepthBuffer = this._generateStencilBuffer = false;
