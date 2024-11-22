@@ -6,7 +6,7 @@ import type { AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
-import { CreateMainAudioOutputAsync } from "./webAudioMainOutput";
+import { _CreateMainAudioOutputAsync } from "./webAudioMainOutput";
 
 /**
  * Options for creating a new v2 audio engine that uses the WebAudio API.
@@ -99,7 +99,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this._audioContext.resume();
         }
 
-        this._mainOutput = await CreateMainAudioOutputAsync(this);
+        this._mainOutput = await _CreateMainAudioOutputAsync(this);
         await CreateMainAudioBusAsync("default", this);
     };
 

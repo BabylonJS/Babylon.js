@@ -2,12 +2,8 @@ import type { AudioEngineV2 } from "../audioEngineV2";
 import { MainAudioOutput } from "../mainAudioOutput";
 import type { _WebAudioEngine } from "./webAudioEngine";
 
-/**
- * Creates a new main audio output.
- * @param engine - The audio engine.
- * @returns A promise that resolves with the created audio output.
- */
-export async function CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<MainAudioOutput> {
+/** @internal */
+export async function _CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<MainAudioOutput> {
     if (!engine.isWebAudio) {
         throw new Error("Wrong engine type.");
     }
