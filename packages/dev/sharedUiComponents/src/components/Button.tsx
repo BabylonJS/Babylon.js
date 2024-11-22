@@ -1,4 +1,4 @@
-import * as styles from "./Button.module.scss";
+import styles from "./Button.module.scss";
 import { ClassNames } from "./classNames";
 
 export type ButtonProps = {
