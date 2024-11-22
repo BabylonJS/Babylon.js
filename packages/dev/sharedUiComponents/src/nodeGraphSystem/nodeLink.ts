@@ -7,8 +7,8 @@ import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
-import * as commonStyles from "./common.module.scss";
-import * as styles from "./nodeLink.module.scss";
+import commonStyles from "./common.module.scss";
+import styles from "./nodeLink.module.scss";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
