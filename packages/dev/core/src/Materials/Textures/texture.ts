@@ -434,7 +434,7 @@ export class Texture extends BaseTexture {
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
             internalTexture = noMipmapOrOptions.internalTexture ?? null;
             gammaSpace = noMipmapOrOptions.gammaSpace ?? gammaSpace;
-            forcedExtension = noMipmapOrOptions.forcedExtension;
+            forcedExtension = noMipmapOrOptions.forcedExtension ?? forcedExtension;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
