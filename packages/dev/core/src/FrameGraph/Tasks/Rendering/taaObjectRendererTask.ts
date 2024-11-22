@@ -81,9 +81,9 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._textureWidth = outputTextureDescription.size.width;
         this._textureHeight = outputTextureDescription.size.height;
 
-        const pass = this._frameGraph.addRenderPass(this.name);
-
         let pingPongRenderTargetWrapper: FrameGraphRenderTarget | undefined;
+
+        const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
         pass.setRenderTargetDepth(this.depthTexture);

@@ -6,10 +6,10 @@ import { FrameGraphPass } from "./pass";
  * Render pass used to render objects.
  */
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
-    protected _engine: AbstractEngine;
+    protected readonly _engine: AbstractEngine;
     protected _renderTarget: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
-    protected _usedTextures: FrameGraphTextureHandle[] = [];
+    protected readonly _usedTextures: FrameGraphTextureHandle[] = [];
     protected _frameGraphRenderTarget: FrameGraphRenderTarget | undefined;
 
     /**

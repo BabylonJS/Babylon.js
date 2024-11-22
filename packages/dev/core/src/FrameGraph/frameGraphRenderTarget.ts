@@ -6,9 +6,9 @@ import type { FrameGraphTextureHandle, FrameGraphTextureManager, IMultiRenderTar
  * @experimental
  */
 export class FrameGraphRenderTarget {
-    protected _textureManager: FrameGraphTextureManager;
-    protected _renderTargets: FrameGraphTextureHandle[] | undefined;
-    protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
+    protected readonly _textureManager: FrameGraphTextureManager;
+    protected readonly _renderTargets: FrameGraphTextureHandle[] | undefined;
+    protected readonly _renderTargetDepth: FrameGraphTextureHandle | undefined;
     protected _renderTargetWrapper: RenderTargetWrapper | undefined;
     protected _isBackBuffer = false;
 

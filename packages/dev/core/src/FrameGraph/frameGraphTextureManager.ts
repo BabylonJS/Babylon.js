@@ -67,7 +67,7 @@ export class FrameGraphTextureManager {
     constructor(
         public readonly engine: AbstractEngine,
         private readonly _debugTextures = false,
-        private _scene: Scene
+        private readonly _scene: Scene
     ) {
         this._addSystemTextures();
     }

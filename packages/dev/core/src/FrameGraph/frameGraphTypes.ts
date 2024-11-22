@@ -16,6 +16,9 @@ export const backbufferColorTextureHandle: FrameGraphTextureHandle = 0;
  */
 export const backbufferDepthStencilTextureHandle: FrameGraphTextureHandle = 1;
 
+/**
+ * Options used to describe a texture to be created in the frame graph.
+ */
 export type FrameGraphTextureOptions = {
     /** Specifies if mipmaps must be created for the textures (default: false) */
     createMipMaps?: boolean;

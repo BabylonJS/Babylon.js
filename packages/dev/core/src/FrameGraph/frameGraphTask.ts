@@ -10,8 +10,8 @@ import { FrameGraphRenderPass } from "./Passes/renderPass";
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
 
-    private _passes: IFrameGraphPass[] = [];
-    private _passesDisabled: IFrameGraphPass[] = [];
+    private readonly _passes: IFrameGraphPass[] = [];
+    private readonly _passesDisabled: IFrameGraphPass[] = [];
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     // Same thing for the disabled property
