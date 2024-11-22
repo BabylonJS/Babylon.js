@@ -759,7 +759,8 @@ export class GLTFExporter {
 
     // Cleanup unused cameras and assign index to nodes.
     private _exportAndAssignCameras(): void {
-        for (const [, gltfCamera] of this._camerasMap) {
+        const gltfCameras = Array.from(this._camerasMap.values());
+        for (const gltfCamera of gltfCameras) {
             const usedNodes = this._nodesCameraMap.get(gltfCamera);
             if (usedNodes !== undefined) {
                 this._cameras.push(gltfCamera);
@@ -1009,10 +1010,18 @@ export class GLTFExporter {
             this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap, state);
         }
 
-        for (const [buffer, vertexBuffers] of bufferToVertexBuffersMap) {
+        const buffers = Array.from(bufferToVertexBuffersMap.keys());
+
+        for (const buffer of buffers) {
             const data = buffer.getData();
             if (!data) {
                 throw new Error("Buffer data is not available");
+            }
+
+            const vertexBuffers = bufferToVertexBuffersMap.get(buffer);
+
+            if (!vertexBuffers) {
+                continue;
             }
 
             const byteStride = vertexBuffers[0].byteStride;
@@ -1133,7 +1142,15 @@ export class GLTFExporter {
                 );
             }
 
-            for (const [vertexBuffer, array] of floatMatricesIndices) {
+            const floatArrayVertexBuffers = Array.from(floatMatricesIndices.keys());
+
+            for (const vertexBuffer of floatArrayVertexBuffers) {
+                const array = floatMatricesIndices.get(vertexBuffer);
+
+                if (!array) {
+                    continue;
+                }
+
                 const byteOffset = this._dataWriter.byteOffset;
                 if (state.userUint16SkinIndex) {
                     const newArray = new Uint16Array(array.length);
@@ -1155,7 +1172,15 @@ export class GLTFExporter {
             }
         }
 
-        for (const [morphTarget, meshes] of morphTagetsMeshesMap) {
+        const morphTargets = Array.from(morphTagetsMeshesMap.keys());
+
+        for (const morphTarget of morphTargets) {
+            const meshes = morphTagetsMeshesMap.get(morphTarget);
+
+            if (!meshes) {
+                continue;
+            }
+
             const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, meshes[0], this._dataWriter, this._bufferViews, this._accessors, state.convertToRightHanded);
 
             for (const mesh of meshes) {
