@@ -171,7 +171,7 @@ test("check meta key allowing keyup", async () => {
  */
 test("check isMouseEvent", async () => {
     await page.evaluate(evaluatePrepareScene, {
-        sceneMetadata: { playgroundId: "#ITQ2NZ#11" },
+        sceneMetadata: { playgroundId: "#ITQ2NZ#12" },
         globalConfig: getGlobalConfig(),
     });
     await page.mouse.move(50, 50, { steps: 20 });
