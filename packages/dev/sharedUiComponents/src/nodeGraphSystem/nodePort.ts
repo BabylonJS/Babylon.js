@@ -7,8 +7,8 @@ import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOpti
 import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
 import type { IPortData } from "./interfaces/portData";
-import commonStyles from "./common.module.scss";
-import localStyles from "./nodePort.module.scss";
+import * as commonStyles from "./common.module.scss";
+import * as localStyles from "./nodePort.module.scss";
 
 export class NodePort {
     protected _element: HTMLDivElement;

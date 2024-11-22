@@ -662,6 +662,7 @@ export class ObjectRenderer {
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderingManagerRenderObservable.clear();
         this.onAfterRenderingManagerRenderObservable.clear();
+        this.onFastPathRenderObservable.clear();
 
         this._releaseRenderPassId();
 

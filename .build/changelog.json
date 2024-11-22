@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.34.3",
+    "fromTag": "7.34.4",
     "changelog": {
         "7.34.4": [
             {
@@ -30,6 +30,90 @@
                     "packages/tools/viewer-alpha/src/viewerElement.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.35.0": [
+            {
+                "pr": "15826",
+                "title": "Update TypeScript",
+                "description": "One of my other [PR](https://github.com/BabylonJS/Babylon.js/pull/15823)s is failing in the build because the older version of TS we are using (5.1.6) is missing the `states` property from the `ElementInternals` WebAPI type (the `states` property and the its type `CustomStateSet` are sort of new but supported in all the major browsers). TypeScript 5.5+ has this property and type, so I started trying to update our TypeScript version. However I ran into some problems with deprecated TypeScript APIs used for the path transformation stuff in the build. I tried to fix it (based on some input from the TypeScript team!), but I definitely broke it. So I'm creating a draft PR as a starting point for getting TypeScript updated.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15860",
+                "title": "fixed leaking observables in Rendering",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15861",
+                "title": "Add missing Bone.dispose()",
+                "description": "https://forum.babylonjs.com/t/inspector-not-refreshing-correctly-after-removing-and-creating-new-bones/54874/5",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/tools/playground/src/scss/main.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15859",
+                "title": "PostProcess: fix shader imports not being ready in ES6",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "15858",
+                "title": "EffectLayer: Fix isReady to check readiness for post processes and merge effect",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
             }
         ],
         "7.34.3": [

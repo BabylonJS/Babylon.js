@@ -20,6 +20,8 @@ varying vec3 vNormal;
 #extension GL_EXT_frag_depth : enable
 #endif
 
+#include<clipPlaneFragmentDeclaration>
+
 #include<logDepthDeclaration>
 
 #include<fogFragmentDeclaration>
@@ -89,6 +91,8 @@ float normalImpactOnAxis(float x) {
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
+
+    #include<clipPlaneFragment>
 
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
