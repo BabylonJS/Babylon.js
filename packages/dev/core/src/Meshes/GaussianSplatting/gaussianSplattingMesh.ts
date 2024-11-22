@@ -1096,8 +1096,8 @@ export class GaussianSplattingMesh extends Mesh {
             this._updateSplatIndexBuffer(vertexCount);
         }
         this._vertexCount = vertexCount;
-        // degree == 1 for 1 textre (3 terms), 2 for 2 textures(8 terms) and 3 for 4 textures (15 terms)
-        this._shDegree = sh ? (sh.length == 4 ? 3 : sh.length) : 0;
+        // degree == 1 for 1 texture (3 terms), 2 for 2 textures(8 terms) and 3 for 3 textures (15 terms)
+        this._shDegree = sh ? sh.length : 0;
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
