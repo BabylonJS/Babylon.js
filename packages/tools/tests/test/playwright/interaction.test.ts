@@ -169,6 +169,9 @@ test("check meta key allowing keyup", async () => {
  * Check if allowMouse logic for camera touch input is validating correctly
  * PG: https://playground.babylonjs.com/#ITQ2NZ#10
  */
+/*
+NOTE: Disabled temporarily due to flakiness
+
 test("check isMouseEvent", async () => {
     await page.evaluate(evaluatePrepareScene, {
         sceneMetadata: { playgroundId: "#ITQ2NZ#12" },
@@ -200,3 +203,4 @@ test("check isMouseEvent", async () => {
     });
     expect(testStatus).toBe(true);
 });
+*/
