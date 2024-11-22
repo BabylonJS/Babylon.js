@@ -395,7 +395,7 @@ export class CSG2 implements IDisposable {
      * @param ignoreWorldMatrix defines if the world matrix should be ignored
      * @returns a new CSG2 class
      */
-    public static FromMesh(mesh: Mesh, ignoreWorldMatrix = false): any {
+    public static FromMesh(mesh: Mesh, ignoreWorldMatrix = false): CSG2 {
         const sourceVertices = mesh.getVerticesData(VertexBuffer.PositionKind);
         const sourceIndices = mesh.getIndices();
         const worldMatrix = mesh.computeWorldMatrix(true);
