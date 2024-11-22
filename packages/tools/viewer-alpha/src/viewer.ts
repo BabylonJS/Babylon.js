@@ -382,6 +382,10 @@ export class Viewer implements IDisposable {
                 this._sceneMutated = true;
             });
 
+            scene.onClearColorChangedObservable.add(() => {
+                this._sceneMutated = true;
+            });
+
             this._details = {
                 viewer: this,
                 scene,
