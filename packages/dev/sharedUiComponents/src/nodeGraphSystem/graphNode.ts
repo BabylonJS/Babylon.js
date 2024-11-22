@@ -12,8 +12,8 @@ import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
-import localStyles from "./graphNode.module.scss";
-import commonStyles from "./common.module.scss";
+import * as localStyles from "./graphNode.module.scss";
+import * as commonStyles from "./common.module.scss";
 import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
@@ -850,14 +850,14 @@ export class GraphNode {
 
                         select.onclick = () => {
                             selectList.classList.toggle(commonStyles.hidden);
-                            select.classList.toggle(localStyles.active);
+                            select.classList.toggle(localStyles.activeNode);
                             this._visual.classList.toggle(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = !this._stateManager.modalIsDisplayed;
                         };
 
                         select.onpointerleave = () => {
                             selectList.classList.add(commonStyles.hidden);
-                            select.classList.remove(localStyles.active);
+                            select.classList.remove(localStyles.activeNode);
                             this._visual.classList.remove(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = false;
                         };

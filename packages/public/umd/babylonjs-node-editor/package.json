@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "7.34.1",
+    "version": "7.35.0",
     "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^7.34.1"
+        "babylonjs": "^7.35.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -22,7 +22,7 @@
         "@tools/node-editor": "1.0.0",
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
-        "css-loader": "^6.4.0",
+        "css-loader": "^7.1.0",
         "react": "^17.0.2",
         "react-contextmenu": "RaananW/react-contextmenu",
         "react-dom": "^17.0.2",

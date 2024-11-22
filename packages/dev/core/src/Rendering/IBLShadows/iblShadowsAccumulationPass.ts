@@ -359,5 +359,6 @@ export class _IblShadowsAccumulationPass {
         if (this._debugPassPP) {
             this._debugPassPP.dispose();
         }
+        this.onReadyObservable.clear();
     }
 }

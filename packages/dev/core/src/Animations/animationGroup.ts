@@ -920,6 +920,7 @@ export class AnimationGroup implements IDisposable {
             if (!skipOnAnimationEnd) {
                 this.onAnimationGroupEndObservable.notifyObservers(this);
             }
+            this._animatables.length = 0;
         }
     }
 
