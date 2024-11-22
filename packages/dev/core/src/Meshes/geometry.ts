@@ -23,8 +23,8 @@ import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
-import type { IAssetContainer } from "core/IAssetContainer";
 import { CopyFloatData } from "../Buffers/bufferUtils";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
