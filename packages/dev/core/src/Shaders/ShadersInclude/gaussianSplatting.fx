@@ -49,29 +49,28 @@ Splat readSplat(float splatIndex)
     return splat;
 }
     
-const float SH_C0 = 0.28209479;
-const float SH_C1 = 0.48860251;
-const float SH_C2[5] = {
-	1.092548430,
-	-1.09254843,
-	0.315391565,
-	-1.09254843,
-	0.546274215
-};
-const float SH_C3[7] = {
-	-0.59004358,
-	2.890611442,
-	-0.45704579,
-	0.373176332,
-	-0.45704579,
-	1.445305721,
-	-0.59004358
-};
-
 // dir = normalized(splat pos - cam pos)
 vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 {
-	glm::vec3 result = SH_C0 * sh[0];
+    const float SH_C0 = 0.28209479;
+    const float SH_C1 = 0.48860251;
+    float SH_C2[5];
+    SH_C2[0] = 1.092548430;
+    SH_C2[1] = -1.09254843;
+    SH_C2[2] = 0.315391565;
+    SH_C2[3] = -1.09254843;
+    SH_C2[4] = 0.546274215;
+    
+    float SH_C3[7];
+    SH_C3[0] = -0.59004358;
+    SH_C3[1] = 2.890611442;
+    SH_C3[2] = -0.45704579;
+    SH_C3[3] = 0.373176332;
+    SH_C3[4] = -0.45704579;
+    SH_C3[5] = 1.445305721;
+    SH_C3[6] = -0.59004358;
+
+	vec3 result = SH_C0 * sh[0];
 
 #if SH_DEGREE > 0
     float x = dir.x;
@@ -107,10 +106,12 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 
 vec4 decompose(uint value)
 {
-    return vec4((((value >> uint(24)) & 255u) * (2./255.)) - 1.,
-                (((value >> uint(16)) & 255u) * (2./255.)) - 1.,
-                (((value >> uint( 8)) & 255u) * (2./255.)) - 1.,
-                (((value            ) & 255u) * (2./255.)) - 1.);
+    vec4 components = vec4(float((value >> uint(24)) & 255u),
+                        float((value >> uint(16)) & 255u),
+                        float((value >> uint( 8)) & 255u),
+                        float((value            ) & 255u));
+
+    return components * vec4(2./255.) - vec4(1.);
 }
 
 vec3 computeSH(Splat splat, vec3 color, vec3 dir)

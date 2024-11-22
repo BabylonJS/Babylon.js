@@ -184,8 +184,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private _parseSPZ(data: ArrayBuffer): Promise<ParsedPLY> {
         const ubuf = new Uint8Array(data);
         const ubufu32 = new Uint32Array(data);
-        Logger.Log(`SPZ version ${ubufu32[1]}`);
-        Logger.Log(`num points ${ubufu32[2]}`);
+        // debug infos
+        //Logger.Log(`SPZ version ${ubufu32[1]}`);
+        //Logger.Log(`num points ${ubufu32[2]}`);
         const splatCount = ubufu32[2];
 
         const shDegree = ubuf[12];
