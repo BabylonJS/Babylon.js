@@ -254,7 +254,7 @@ export function getFloatData(
  * @param totalVertices number of vertices in the buffer to take into account
  * @param output the output float array
  */
-export function copyFloatData(
+export function CopyFloatData(
     input: DataArray,
     size: number,
     type: number,

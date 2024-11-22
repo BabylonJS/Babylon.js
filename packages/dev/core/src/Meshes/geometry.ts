@@ -24,7 +24,7 @@ import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { IAssetContainer } from "core/IAssetContainer";
-import { copyFloatData } from "../Buffers/bufferUtils";
+import { CopyFloatData } from "../Buffers/bufferUtils";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -472,7 +472,7 @@ export class Geometry implements IGetSetVerticesData {
         vertexData[kind] ||= new Float32Array(this._totalVertices * vertexBuffer.getSize());
         const data = vertexBuffer.getData();
         if (data) {
-            copyFloatData(
+            CopyFloatData(
                 data,
                 vertexBuffer.getSize(),
                 vertexBuffer.type,
