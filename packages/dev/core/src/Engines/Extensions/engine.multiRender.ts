@@ -163,7 +163,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
-    let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
+    let depthTextureFormat: number | undefined = undefined;
     let textureCount = 1;
     let samples = 1;
 
@@ -214,6 +214,10 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
+    }
+
+    if (depthTextureFormat === undefined) {
+        depthTextureFormat = generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
     }
 
     const gl = this._gl;
