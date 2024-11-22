@@ -18,14 +18,14 @@ struct Splat {
     vec4 covA;
     vec4 covB;
 #if SH_DEGREE >= 1
-    vec4 sh0;
+    uvec4 sh0; // 4 * 32bits uint
 #endif
 #if SH_DEGREE >= 2
-    vec4 sh1;
+    uvec4 sh1;
 #endif
 #if SH_DEGREE == 3
-    vec4 sh2;
-    vec4 sh3;
+    uvec4 sh2;
+    uvec4 sh3;
 #endif
 };
 
@@ -51,6 +51,114 @@ Splat readSplat(float splatIndex)
     return splat;
 }
     
+const float SH_C0 = 0.28209479;
+const float SH_C1 = 0.48860251;
+const float SH_C2[] = {
+	1.092548430,
+	-1.09254843,
+	0.315391565,
+	-1.09254843,
+	0.546274215
+};
+const float SH_C3[] = {
+	-0.59004358,
+	2.890611442,
+	-0.45704579,
+	0.373176332,
+	-0.45704579,
+	1.445305721,
+	-0.59004358
+};
+
+// dir = normalized(splat pos - cam pos)
+vec3 computeColorFromSHDegree(vec3 dir, int deg, const vec3 sh[16])
+{
+	glm::vec3 result = SH_C0 * sh[0];
+
+    float x = dir.x;
+    float y = dir.y;
+    float z = dir.z;
+    result = result - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+
+#if SH_DEGREE > 1
+    float xx = x * x, yy = y * y, zz = z * z;
+    float xy = x * y, yz = y * z, xz = x * z;
+    result = result +
+        SH_C2[0] * xy * sh[4] +
+        SH_C2[1] * yz * sh[5] +
+        SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
+        SH_C2[3] * xz * sh[7] +
+        SH_C2[4] * (xx - yy) * sh[8];
+
+#if SH_DEGREE > 2
+    result = result +
+        SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
+        SH_C3[1] * xy * z * sh[10] +
+        SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
+        SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
+        SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
+        SH_C3[5] * z * (xx - yy) * sh[14] +
+        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
+#endif
+#endif
+	result += 0.5f;
+    return result;
+}
+
+vec4 decompose(uint value)
+{
+    return vec4((((value >> uint(24))& 255u) * (2./255.)) - 1.,
+                (((value >> uint(16))& 255u) * (2./255.)) - 1.,
+                (((value >> uint( 8))& 255u) * (2./255.)) - 1.,
+                (((value            )& 255u) * (2./255.)) - 1.);
+}
+
+vec3 computeSH(Splat splat, vec3 dir)
+{
+    vec3 sh[16];
+    
+#if SH_DEGREE >= 1
+    vec4 sh00 = decompose(splat.sh0.x);
+    vec4 sh01 = decompose(splat.sh0.y);
+    vec4 sh02 = decompose(splat.sh0.z);
+    vec4 sh03 = decompose(splat.sh0.w);
+#endif
+#if SH_DEGREE >= 2
+    vec4 sh10 = decompose(splat.sh1.x);
+    vec4 sh11 = decompose(splat.sh1.y);
+    vec4 sh12 = decompose(splat.sh1.z);
+    vec4 sh13 = decompose(splat.sh1.w);
+#endif
+#if SH_DEGREE == 3
+    vec4 sh20 = decompose(splat.sh2.x);
+    vec4 sh21 = decompose(splat.sh2.y);
+    vec4 sh22 = decompose(splat.sh2.z);
+    vec4 sh23 = decompose(splat.sh2.w);
+    vec4 sh30 = decompose(splat.sh3.x);
+    vec4 sh31 = decompose(splat.sh3.y);
+    vec4 sh32 = decompose(splat.sh3.z);
+    vec4 sh33 = decompose(splat.sh3.w);
+#endif
+
+    sh[0] = sh00.xyz;
+    sh[1] = vec3(sh00.w, sh01.x, sh01.y);
+    sh[2] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[3] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[4] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[5] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[6] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[7] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[8] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[9] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[10] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[11] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[12] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[13] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[14] = vec3(sh00.x, sh00.x, sh00.x);
+    sh[15] = vec3(sh00.x, sh00.x, sh00.x);
+    return computeColorFromSHDegree(dir, SH_DEGREE, sh[16]);
+}
+
 vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 covB, mat4 worldMatrix, mat4 viewMatrix, mat4 projectionMatrix)
 {
     mat4 modelView = viewMatrix * worldMatrix;

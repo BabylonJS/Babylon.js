@@ -42,6 +42,11 @@ void main () {
     vColor = splat.color;
     vPosition = position;
 
+#if SH_DEGREE
+    vec3 dir = normalize(splat.center.xyz - vEyePosition.xyz);
+    vColor.xyz *= computeSH(splat, dir);
+#endif
+
     gl_Position = gaussianSplatting(position, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
 
 #include<clipPlaneVertex>
