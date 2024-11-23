@@ -123,14 +123,14 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 }
             }
 
-            let light: IKHRLightsPunctual_Light = {
+            const light: IKHRLightsPunctual_Light = {
                 type: lightType,
                 name: babylonNode.name,
                 color: babylonNode.diffuse.asArray(),
                 intensity: babylonNode.intensity,
                 range: babylonNode.range,
             };
-            light = OmitDefaultValues(light, DEFAULTS);
+            OmitDefaultValues(light, DEFAULTS);
 
             // Separately handle the required 'spot' field for spot lights
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
@@ -139,7 +139,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     innerConeAngle: babylonSpotLight.innerAngle / 2.0,
                     outerConeAngle: babylonSpotLight.angle / 2.0,
                 };
-                light.spot = OmitDefaultValues(light.spot, SPOTDEFAULTS!);
+                OmitDefaultValues(light.spot, SPOTDEFAULTS!);
             }
 
             this._lights ||= {
