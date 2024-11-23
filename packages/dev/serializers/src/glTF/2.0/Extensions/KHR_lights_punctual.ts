@@ -119,7 +119,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 const axis = Vector3.Cross(LIGHTDIRECTION, direction);
                 const lightRotationQuaternion = Quaternion.RotationAxis(axis, angle);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
-                    node.rotation = lightRotationQuaternion.normalize().asArray();
+                    node.rotation = lightRotationQuaternion.asArray();
                 }
             }
 
