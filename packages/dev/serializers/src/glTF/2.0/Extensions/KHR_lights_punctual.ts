@@ -12,13 +12,13 @@ import { Logger } from "core/Misc/logger";
 import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseParentNode, IsParentAddedByImporter } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
-const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
+const DEFAULTS: Omit<IKHRLightsPunctual_Light, "type"> = {
     name: "",
     color: [1, 1, 1],
     intensity: 1,
     range: Number.MAX_VALUE,
 };
-const SPOTDEFAULTS: IKHRLightsPunctual_Light["spot"] = {
+const SPOTDEFAULTS: NonNullable<IKHRLightsPunctual_Light["spot"]> = {
     innerConeAngle: 0,
     outerConeAngle: Math.PI / 4.0,
 };
@@ -139,7 +139,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     innerConeAngle: babylonSpotLight.innerAngle / 2.0,
                     outerConeAngle: babylonSpotLight.angle / 2.0,
                 };
-                OmitDefaultValues(light.spot, SPOTDEFAULTS!);
+                OmitDefaultValues(light.spot, SPOTDEFAULTS);
             }
 
             this._lights ||= {
