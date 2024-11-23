@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
-import type { PropertyValues } from "lit";
+import type { PropertyValues, TemplateResult } from "lit";
 import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
@@ -748,75 +748,100 @@ export class HTML3DElement extends LitElement {
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
         const isIndeterminate = this.loadingProgress === true;
 
+        const progressBar = html`
+            <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
+                <div
+                    class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
+                    style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
+                ></div>
+            </div>
+        `;
+
+        // Setup the list of toolbar controls.
+        let toolbarControls: TemplateResult[] = [];
+        if (this._viewerDetails?.model != null) {
+            // If the model has animations, add animation controls.
+            if (this._hasAnimations) {
+                toolbarControls.push(html`
+                    <div class="animation-timeline">
+                        <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
+                            ${!this.isAnimationPlaying
+                                ? html`
+                                      <svg viewBox="0 0 20 20">
+                                          <path d="${playFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `
+                                : html`
+                                      <svg viewBox="-3 -2 24 24">
+                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `}
+                        </button>
+                        <input
+                            aria-label="Animation Progress"
+                            class="animation-timeline-input"
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.0001"
+                            .value="${this.animationProgress}"
+                            @input="${this._onAnimationTimelineChanged}"
+                            @pointerdown="${this._onAnimationTimelinePointerDown}"
+                        />
+                    </div>
+                    <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
+                        ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option> `)}
+                    </select>
+                    ${this.animations.length > 1
+                        ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                              ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
+                          </select>`
+                        : ""}
+                `);
+            }
+
+            // If hotspots have been defined, add hotspot controls.
+            if (this._hasHotSpots) {
+                toolbarControls.push(html`
+                    <div class="select-container">
+                        <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                            <option value="" hidden selected></option>
+                            <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
+                            ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
+                        </select>
+                        <!-- This button is not actually interactive, we want input to pass through to the select below. -->
+                        <button style="pointer-events: none">
+                            <svg viewBox="0 0 20 20">
+                                <path d="${targetFilledIcon}" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `);
+            }
+
+            // Add a vertical divider between each toolbar control.
+            const controlCount = toolbarControls.length;
+            const separator = html`<div class="divider"></div>`;
+            toolbarControls = toolbarControls.reduce((toolbarControls, toolbarControl, index) => {
+                if (index < controlCount - 1) {
+                    return [...toolbarControls, toolbarControl, separator];
+                } else {
+                    return [...toolbarControls, toolbarControl];
+                }
+            }, new Array<TemplateResult>());
+        }
+
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
-                <slot name="progress-bar">
-                    <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
-                        <div
-                            class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
-                            style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
-                        ></div>
-                    </div>
-                </slot>
-                ${this._viewerDetails?.model == null || (!this._hasAnimations && !this._hasHotSpots)
+                <slot name="progress-bar"> ${progressBar}</slot>
+                ${toolbarControls.length === 0
                     ? ""
                     : html`
                           <slot name="tool-bar">
-                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">
-                                  ${!this._hasAnimations
-                                      ? ""
-                                      : html`<div class="animation-timeline">
-                                                <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                                                    ${!this.isAnimationPlaying
-                                                        ? html`<svg viewBox="0 0 20 20">
-                                                              <path d="${playFilledIcon}" fill="currentColor"></path>
-                                                          </svg>`
-                                                        : html`<svg viewBox="-3 -2 24 24">
-                                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                                          </svg>`}
-                                                </button>
-                                                <input
-                                                    aria-label="Animation Progress"
-                                                    class="animation-timeline-input"
-                                                    type="range"
-                                                    min="0"
-                                                    max="1"
-                                                    step="0.0001"
-                                                    .value="${this.animationProgress}"
-                                                    @input="${this._onAnimationTimelineChanged}"
-                                                    @pointerdown="${this._onAnimationTimelinePointerDown}"
-                                                />
-                                            </div>
-                                            <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
-                                                ${allowedAnimationSpeeds.map(
-                                                    (speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`
-                                                )}
-                                            </select> `}
-                                  ${this.animations.length > 1
-                                      ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                                            ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
-                                        </select>`
-                                      : ""}
-                                  ${this._hasAnimations && this._hasHotSpots ? html`<div class="divider"></div>` : ""}
-                                  ${this._hasHotSpots
-                                      ? html`<div class="select-container">
-                                            <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
-                                                <option value="" hidden selected></option>
-                                                <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
-                                                ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
-                                            </select>
-                                            <!-- This button is not actually interactive, we want input to pass through to the select below. -->
-                                            <button style="pointer-events: none">
-                                                <svg viewBox="0 0 20 20">
-                                                    <path d="${targetFilledIcon}" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </div> `
-                                      : ""}
-                              </div>
+                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
                           </slot>
                       `}
             </div>
