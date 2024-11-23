@@ -9,7 +9,7 @@ import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { convertToRightHandedPosition, convertToRightHandedRotation } from "../glTFUtilities";
+import { ConvertToRightHandedPosition, ConvertToRightHandedRotation } from "../glTFUtilities";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -90,8 +90,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                         m.decompose(iws, iwr, iwt);
 
                         if (convertToRightHanded) {
-                            convertToRightHandedPosition(iwt);
-                            convertToRightHandedRotation(iwr);
+                            ConvertToRightHandedPosition(iwt);
+                            ConvertToRightHandedRotation(iwr);
                         }
 
                         // fill the temp buffer

@@ -17,12 +17,12 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { DataWriter } from "./dataWriter";
 import {
-    createAccessor,
-    createBufferView,
-    getAccessorElementCount,
-    convertToRightHandedPosition,
-    convertCameraRotationToGLTF,
-    convertToRightHandedRotation,
+    CreateAccessor,
+    CreateBufferView,
+    GetAccessorElementCount,
+    ConvertToRightHandedPosition,
+    ConvertCameraRotationToGLTF,
+    ConvertToRightHandedRotation,
 } from "./glTFUtilities";
 
 /**
@@ -601,13 +601,13 @@ export class _GLTFAnimation {
             // Creates buffer view and accessor for key frames.
             let byteLength = animationData.inputs.length * 4;
             const offset = binaryWriter.byteOffset;
-            bufferView = createBufferView(0, offset, byteLength);
+            bufferView = CreateBufferView(0, offset, byteLength);
             bufferViews.push(bufferView);
             animationData.inputs.forEach(function (input) {
                 binaryWriter.writeFloat32(input);
             });
 
-            accessor = createAccessor(bufferViews.length - 1, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, null, {
+            accessor = CreateAccessor(bufferViews.length - 1, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, null, {
                 min: [animationData.inputsMin],
                 max: [animationData.inputsMax],
             });
@@ -617,10 +617,10 @@ export class _GLTFAnimation {
 
             // create bufferview and accessor for keyed values.
             outputLength = animationData.outputs.length;
-            byteLength = getAccessorElementCount(dataAccessorType) * 4 * animationData.outputs.length;
+            byteLength = GetAccessorElementCount(dataAccessorType) * 4 * animationData.outputs.length;
 
             // check for in and out tangents
-            bufferView = createBufferView(0, binaryWriter.byteOffset, byteLength);
+            bufferView = CreateBufferView(0, binaryWriter.byteOffset, byteLength);
             bufferViews.push(bufferView);
 
             const rotationQuaternion = new Quaternion();
@@ -634,7 +634,7 @@ export class _GLTFAnimation {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);
-                            convertToRightHandedPosition(position);
+                            ConvertToRightHandedPosition(position);
                             binaryWriter.writeFloat32(position.x);
                             binaryWriter.writeFloat32(position.y);
                             binaryWriter.writeFloat32(position.z);
@@ -649,10 +649,10 @@ export class _GLTFAnimation {
                             }
 
                             if (isCamera) {
-                                convertCameraRotationToGLTF(rotationQuaternion);
+                                ConvertCameraRotationToGLTF(rotationQuaternion);
                             } else {
                                 if (!Quaternion.IsIdentity(rotationQuaternion)) {
-                                    convertToRightHandedRotation(rotationQuaternion);
+                                    ConvertToRightHandedRotation(rotationQuaternion);
                                 }
                             }
 
@@ -680,7 +680,7 @@ export class _GLTFAnimation {
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
                             if (isCamera) {
-                                convertCameraRotationToGLTF(rotationQuaternion);
+                                ConvertCameraRotationToGLTF(rotationQuaternion);
                             }
                             rotationQuaternion.toArray(tempQuaterionArray);
                             binaryWriter.writeFloat32(tempQuaterionArray[0]);
@@ -699,7 +699,7 @@ export class _GLTFAnimation {
                 }
             });
 
-            accessor = createAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
+            accessor = CreateAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
 

@@ -9,7 +9,7 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { convertToRightHandedPosition, omitDefaultValues, collapseParentNode, isParentAddedByImporter } from "../glTFUtilities";
+import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseParentNode, IsParentAddedByImporter } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
@@ -102,7 +102,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
                 const translation = TmpVectors.Vector3[0].copyFrom(babylonNode.position);
                 if (convertToRightHanded) {
-                    convertToRightHandedPosition(translation);
+                    ConvertToRightHandedPosition(translation);
                 }
                 node.translation = translation.asArray();
             }
@@ -113,7 +113,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
                 const direction = babylonNode.direction.normalize();
                 if (convertToRightHanded) {
-                    convertToRightHandedPosition(direction);
+                    ConvertToRightHandedPosition(direction);
                 }
                 const angle = Math.acos(Vector3.Dot(LIGHTDIRECTION, direction));
                 const axis = Vector3.Cross(LIGHTDIRECTION, direction);
@@ -130,7 +130,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 intensity: babylonNode.intensity,
                 range: babylonNode.range,
             };
-            light = omitDefaultValues(light, DEFAULTS);
+            light = OmitDefaultValues(light, DEFAULTS);
 
             // Separately handle the required 'spot' field for spot lights
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
@@ -139,7 +139,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     innerConeAngle: babylonSpotLight.innerAngle / 2.0,
                     outerConeAngle: babylonSpotLight.angle / 2.0,
                 };
-                light.spot = omitDefaultValues(light.spot, SPOTDEFAULTS!);
+                light.spot = OmitDefaultValues(light.spot, SPOTDEFAULTS!);
             }
 
             this._lights ||= {
@@ -155,12 +155,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
 
-            if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
+            if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
                     const parentNode = this._exporter._nodes[parentNodeIndex];
-                    collapseParentNode(node, parentNode);
+                    CollapseParentNode(node, parentNode);
                     parentNode.extensions ||= {};
                     parentNode.extensions[NAME] = lightReference;
 

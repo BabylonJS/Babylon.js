@@ -4,7 +4,7 @@ import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
-import { enumerateFloatValues, getFloatData, getTypeByteLength } from "./bufferUtils";
+import { EnumerateFloatValues, GetFloatData, GetTypeByteLength } from "./bufferUtils";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -567,7 +567,7 @@ export class VertexBuffer {
             this.type = type;
         }
 
-        const typeByteLength = getTypeByteLength(this.type);
+        const typeByteLength = GetTypeByteLength(this.type);
 
         if (useBytes) {
             this._size = size || (stride ? stride / typeByteLength : VertexBuffer.DeduceStride(kind));
@@ -642,7 +642,7 @@ export class VertexBuffer {
             return null;
         }
 
-        return getFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
+        return GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
 
     /**
@@ -668,7 +668,7 @@ export class VertexBuffer {
      * @deprecated Please use byteStride instead.
      */
     public getStrideSize(): number {
-        return this.byteStride / getTypeByteLength(this.type);
+        return this.byteStride / GetTypeByteLength(this.type);
     }
 
     /**
@@ -677,7 +677,7 @@ export class VertexBuffer {
      * @deprecated Please use byteOffset instead.
      */
     public getOffset(): number {
-        return this.byteOffset / getTypeByteLength(this.type);
+        return this.byteOffset / GetTypeByteLength(this.type);
     }
 
     /**
@@ -686,7 +686,7 @@ export class VertexBuffer {
      * @returns the number of components
      */
     public getSize(sizeInBytes = false): number {
-        return sizeInBytes ? this._size * getTypeByteLength(this.type) : this._size;
+        return sizeInBytes ? this._size * GetTypeByteLength(this.type) : this._size;
     }
 
     /**
@@ -755,7 +755,7 @@ export class VertexBuffer {
      * @param callback the callback function called for each value
      */
     public forEach(count: number, callback: (value: number, index: number) => void): void {
-        enumerateFloatValues(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, (values, index) => {
+        EnumerateFloatValues(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, (values, index) => {
             for (let i = 0; i < this._size; i++) {
                 callback(values[i], index + i);
             }
@@ -887,7 +887,7 @@ export class VertexBuffer {
      * @deprecated Use `getTypeByteLength` from `bufferUtils` instead
      */
     public static GetTypeByteLength(type: number): number {
-        return getTypeByteLength(type);
+        return GetTypeByteLength(type);
     }
 
     /**
@@ -912,7 +912,7 @@ export class VertexBuffer {
         normalized: boolean,
         callback: (value: number, index: number) => void
     ): void {
-        enumerateFloatValues(data, byteOffset, byteStride, componentCount, componentType, count, normalized, (values, index) => {
+        EnumerateFloatValues(data, byteOffset, byteStride, componentCount, componentType, count, normalized, (values, index) => {
             for (let componentIndex = 0; componentIndex < componentCount; componentIndex++) {
                 callback(values[componentIndex], index + componentIndex);
             }
@@ -942,6 +942,6 @@ export class VertexBuffer {
         totalVertices: number,
         forceCopy?: boolean
     ): FloatArray {
-        return getFloatData(data, size, type, byteOffset, byteStride, normalized, totalVertices, forceCopy);
+        return GetFloatData(data, size, type, byteOffset, byteStride, normalized, totalVertices, forceCopy);
     }
 }

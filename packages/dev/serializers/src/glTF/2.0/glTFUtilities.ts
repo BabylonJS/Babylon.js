@@ -11,7 +11,7 @@ import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Mesh } from "core/Meshes/mesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
-import { enumerateFloatValues } from "core/Buffers/bufferUtils";
+import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
 // Matrix that converts handedness on the X-axis.
@@ -28,7 +28,7 @@ const rotation180Y = new Quaternion(0, 1, 0, 0);
  * @param byteStride byte distance between conequential elements
  * @returns bufferView for glTF
  */
-export function createBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number): IBufferView {
+export function CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number): IBufferView {
     const bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
 
     if (byteOffset) {
@@ -53,7 +53,7 @@ export function createBufferView(bufferIndex: number, byteOffset: number, byteLe
  * @param normalized Specifies whether integer data values are normalized before usage
  * @returns accessor for glTF
  */
-export function createAccessor(
+export function CreateAccessor(
     bufferViewIndex: number,
     type: AccessorType,
     componentType: AccessorComponentType,
@@ -80,7 +80,7 @@ export function createAccessor(
     return accessor;
 }
 
-export function getAccessorElementCount(accessorType: AccessorType): number {
+export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
         case AccessorType.MAT2:
             return 4;
@@ -99,7 +99,7 @@ export function getAccessorElementCount(accessorType: AccessorType): number {
     }
 }
 
-export function getAccessorType(kind: string, hasVertexColorAlpha: boolean): AccessorType {
+export function GetAccessorType(kind: string, hasVertexColorAlpha: boolean): AccessorType {
     if (kind == VertexBuffer.ColorKind) {
         return hasVertexColorAlpha ? AccessorType.VEC4 : AccessorType.VEC3;
     }
@@ -126,7 +126,7 @@ export function getAccessorType(kind: string, hasVertexColorAlpha: boolean): Acc
     throw new Error(`Unknown kind ${kind}`);
 }
 
-export function getAttributeType(kind: string): string {
+export function GetAttributeType(kind: string): string {
     switch (kind) {
         case VertexBuffer.PositionKind:
             return "POSITION";
@@ -161,7 +161,7 @@ export function getAttributeType(kind: string): string {
     throw new Error(`Unknown kind: ${kind}`);
 }
 
-export function getPrimitiveMode(fillMode: number): MeshPrimitiveMode {
+export function GetPrimitiveMode(fillMode: number): MeshPrimitiveMode {
     switch (fillMode) {
         case Material.TriangleFillMode:
             return MeshPrimitiveMode.TRIANGLES;
@@ -183,7 +183,7 @@ export function getPrimitiveMode(fillMode: number): MeshPrimitiveMode {
     throw new Error(`Unknown fill mode: ${fillMode}`);
 }
 
-export function isTriangleFillMode(fillMode: number): boolean {
+export function IsTriangleFillMode(fillMode: number): boolean {
     switch (fillMode) {
         case Material.TriangleFillMode:
         case Material.TriangleStripDrawMode:
@@ -194,7 +194,7 @@ export function isTriangleFillMode(fillMode: number): boolean {
     return false;
 }
 
-export function normalizeTangent(tangent: Vector4) {
+export function NormalizeTangent(tangent: Vector4) {
     const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
     if (length > 0) {
         tangent.x /= length;
@@ -203,23 +203,23 @@ export function normalizeTangent(tangent: Vector4) {
     }
 }
 
-export function convertToRightHandedPosition(value: Vector3): Vector3 {
+export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     value.x *= -1;
     return value;
 }
 
-export function convertToRightHandedRotation(value: Quaternion): Quaternion {
+export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
     value.x *= -1;
     value.y *= -1;
     return value;
 }
 
-export function convertToRightHandedNode(value: INode) {
+export function ConvertToRightHandedNode(value: INode) {
     let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
 
-    translation = convertToRightHandedPosition(translation);
-    rotation = convertToRightHandedRotation(rotation);
+    translation = ConvertToRightHandedPosition(translation);
+    rotation = ConvertToRightHandedRotation(rotation);
 
     value.rotation = rotation.asArray();
     value.translation = translation.asArray();
@@ -242,11 +242,11 @@ export function convertToRightHandedNode(value: INode) {
  * @param rotation Target camera rotation.
  * @returns Ref to camera rotation.
  */
-export function convertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
+export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
     return rotation.multiplyInPlace(rotation180Y);
 }
 
-export function rotateNode180Y(node: INode) {
+export function RotateNode180Y(node: INode) {
     if (node.rotation) {
         const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
         rotation180Y.multiplyToRef(rotation, rotation);
@@ -259,7 +259,7 @@ export function rotateNode180Y(node: INode) {
  * @param node Target parent node.
  * @param parentNode Original GLTF node (Light or Camera).
  */
-export function collapseParentNode(node: INode, parentNode: INode) {
+export function CollapseParentNode(node: INode, parentNode: INode) {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
     const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
@@ -298,7 +298,7 @@ export function collapseParentNode(node: INode, parentNode: INode) {
  * @param parentBabylonNode Target parent node.
  * @returns True if the parent node was added by the GLTF importer.
  */
-export function isParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
+export function IsParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 
@@ -363,7 +363,7 @@ export function isParentAddedByImporter(babylonNode: Node, parentBabylonNode: No
 //     quaternion[1] *= -1;
 // }
 
-export function isNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
+export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     if (!(node instanceof TransformNode)) {
         return false;
     }
@@ -389,7 +389,7 @@ export function isNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     return true;
 }
 
-export function areIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
+export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
     if (indices) {
         if (indices instanceof Array) {
             return indices.some((value) => value >= 65536);
@@ -401,7 +401,7 @@ export function areIndices32Bits(indices: Nullable<IndicesArray>, count: number)
     return count >= 65536;
 }
 
-export function indicesArrayToUint8Array(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint8Array {
+export function IndicesArrayToUint8Array(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint8Array {
     if (indices instanceof Array) {
         const subarray = indices.slice(start, start + count);
         indices = is32Bits ? new Uint32Array(subarray) : new Uint16Array(subarray);
@@ -411,7 +411,7 @@ export function indicesArrayToUint8Array(indices: IndicesArray, start: number, c
     return ArrayBuffer.isView(indices) ? new Uint8Array(indices.buffer, indices.byteOffset, indices.byteLength) : new Uint8Array(indices);
 }
 
-export function dataArrayToUint8Array(data: DataArray): Uint8Array {
+export function DataArrayToUint8Array(data: DataArray): Uint8Array {
     if (data instanceof Array) {
         const floatData = new Float32Array(data);
         return new Uint8Array(floatData.buffer, floatData.byteOffset, floatData.byteLength);
@@ -420,12 +420,12 @@ export function dataArrayToUint8Array(data: DataArray): Uint8Array {
     return ArrayBuffer.isView(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : new Uint8Array(data);
 }
 
-export function getMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: number, count: number): { min: number[]; max: number[] } {
+export function GetMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: number, count: number): { min: number[]; max: number[] } {
     const { byteOffset, byteStride, type, normalized } = vertexBuffer;
     const size = vertexBuffer.getSize();
     const min = new Array<number>(size).fill(Infinity);
     const max = new Array<number>(size).fill(-Infinity);
-    enumerateFloatValues(data, byteOffset + start * byteStride, byteStride, size, type, count * size, normalized, (values) => {
+    EnumerateFloatValues(data, byteOffset + start * byteStride, byteStride, size, type, count * size, normalized, (values) => {
         for (let i = 0; i < size; i++) {
             min[i] = Math.min(min[i], values[i]);
             max[i] = Math.max(max[i], values[i]);
@@ -442,7 +442,7 @@ export function getMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
  * @param defaultValues a partial object with default values
  * @returns new object with default values omitted
  */
-export function omitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+export function OmitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
     return Object.fromEntries(
         Object.entries(object).filter(([key, value]) => {
             const defaultValue = defaultValues[key as keyof T];
