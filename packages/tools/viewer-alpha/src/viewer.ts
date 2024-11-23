@@ -737,24 +737,27 @@ export class Viewer implements IDisposable {
             this._environment = null;
             this._details.scene.autoClear = true;
 
+            const disposeActions: (() => void)[] = [];
             try {
                 if (url) {
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+                    disposeActions.push(() => cubeTexture.dispose());
+
+                    const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
+                    disposeActions.push(() => skybox.dispose());
+                    this._snapshotHelper.fixMeshes([skybox]);
+
+                    this._details.scene.environmentTexture = cubeTexture;
+                    disposeActions.push(() => (this._details.scene.environmentTexture = null));
+                    this._skybox = skybox;
+                    disposeActions.push(() => (this._skybox = null));
+
+                    this._details.scene.autoClear = false;
+                    disposeActions.push(() => (this._details.scene.autoClear = true));
+
+                    const dispose = () => disposeActions.forEach((dispose) => dispose());
+
                     this._environment = await new Promise<IDisposable>((resolve, reject) => {
-                        const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
-                        this._details.scene.environmentTexture = cubeTexture;
-
-                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
-                        this._snapshotHelper.fixMeshes([skybox]);
-                        this._skybox = skybox;
-
-                        this._details.scene.autoClear = false;
-
-                        const dispose = () => {
-                            cubeTexture.dispose();
-                            skybox.dispose();
-                            this._skybox = null;
-                        };
-
                         const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
@@ -777,6 +780,7 @@ export class Viewer implements IDisposable {
                 this._updateLight();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
+                disposeActions.forEach((dispose) => dispose());
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
