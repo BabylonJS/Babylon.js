@@ -73,10 +73,9 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param convertToRightHanded Flag to convert the values to right-handed
      * @returns nullable INode promise
      */
-    public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
+    public postExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
-            // If node was nullified (marked as skippable) earlier in the pipeline, or it's not a light, skip
-            if (!node || !(babylonNode instanceof ShadowLight)) {
+            if (!(babylonNode instanceof ShadowLight)) {
                 resolve(node);
                 return;
             }

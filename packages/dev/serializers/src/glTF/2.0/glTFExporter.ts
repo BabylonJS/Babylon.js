@@ -274,10 +274,10 @@ export class GLTFExporter {
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
 
     private _applyExtension<T>(
-        node: Nullable<T>,
+        node: T,
         extensions: IGLTFExporterExtensionV2[],
         index: number,
-        actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined
+        actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined
     ): Promise<Nullable<T>> {
         if (index >= extensions.length) {
             return Promise.resolve(node);
@@ -289,13 +289,10 @@ export class GLTFExporter {
             return this._applyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then((newNode) => this._applyExtension(newNode, extensions, index + 1, actionAsync));
+        return currentPromise.then((newNode) => (newNode ? this._applyExtension(newNode, extensions, index + 1, actionAsync) : null));
     }
 
-    private _applyExtensions<T>(
-        node: Nullable<T>,
-        actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined
-    ): Promise<Nullable<T>> {
+    private _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         const extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of GLTFExporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
@@ -304,7 +301,7 @@ export class GLTFExporter {
         return this._applyExtension(node, extensions, 0, actionAsync);
     }
 
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
+    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
         return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
@@ -315,20 +312,14 @@ export class GLTFExporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(
-        context: string,
-        node: Nullable<INode>,
-        babylonNode: Node,
-        nodeMap: Map<Node, number>,
-        convertToRightHanded: boolean
-    ): Promise<Nullable<INode>> {
+    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return this._applyExtensions(
             node,
             (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._dataWriter)
         );
     }
 
-    public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
+    public _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
         return this._applyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
