@@ -68,7 +68,7 @@ export class FrameGraphRenderTarget {
             }
 
             if (this._renderTargetDepth !== undefined) {
-                this._renderTargetWrapper.depthStencilTexture = this._textureManager.getTextureFromHandle(this._renderTargetDepth);
+                this._renderTargetWrapper.setDepthStencilTexture(this._textureManager.getTextureFromHandle(this._renderTargetDepth), false);
             }
         }
 

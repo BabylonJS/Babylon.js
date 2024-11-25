@@ -49,13 +49,22 @@ export class RenderTargetWrapper {
     public label?: string;
 
     /**
-     * Gets or sets the depth/stencil texture
+     * Gets the depth/stencil texture
      */
     public get depthStencilTexture() {
         return this._depthStencilTexture;
     }
 
-    public set depthStencilTexture(texture: Nullable<InternalTexture>) {
+    /**
+     * Sets the depth/stencil texture
+     * @param texture The depth/stencil texture to set
+     * @param disposeExisting True to dispose the existing depth/stencil texture (if any) before replacing it (default: true)
+     */
+    public setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true) {
+        if (disposeExisting && this._depthStencilTexture) {
+            this._depthStencilTexture.dispose();
+        }
+
         this._depthStencilTexture = texture;
 
         this._generateDepthBuffer = this._generateStencilBuffer = false;
