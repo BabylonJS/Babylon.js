@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import style from "./FlexibleColumn.module.scss";
+import * as style from "./FlexibleColumn.module.scss";
 
 /**
  * Arguments for the Column component.
