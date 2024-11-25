@@ -3,7 +3,7 @@
 import type { IBufferView, AccessorComponentType, IAccessor, INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 
-import type { DataArray, IndicesArray, Nullable } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, Nullable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -97,6 +97,10 @@ export function GetAccessorElementCount(accessorType: AccessorType): number {
         case AccessorType.VEC4:
             return 4;
     }
+}
+
+export function FloatsNeed16BitInteger(floatArray: FloatArray): boolean {
+    return floatArray.some((value) => value >= 256);
 }
 
 export function GetAccessorType(kind: string, hasVertexColorAlpha: boolean): AccessorType {

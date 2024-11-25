@@ -59,6 +59,7 @@ import {
     IsParentAddedByImporter,
     ConvertToRightHandedNode,
     RotateNode180Y,
+    FloatsNeed16BitInteger,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -96,17 +97,14 @@ class ExporterState {
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
 
-    public constructor(convertToRightHanded: boolean, useUint16SkinIndex: boolean, wasAddedByNoopNode: boolean) {
+    public constructor(convertToRightHanded: boolean, wasAddedByNoopNode: boolean) {
         this.convertToRightHanded = convertToRightHanded;
-        this.useUint16SkinIndex = useUint16SkinIndex;
         this.wasAddedByNoopNode = wasAddedByNoopNode;
     }
 
     public readonly convertToRightHanded: boolean;
 
     public readonly wasAddedByNoopNode: boolean;
-
-    public readonly useUint16SkinIndex: boolean;
 
     // Only used when convertToRightHanded is true.
     public readonly convertedToRightHandedBuffers = new Map<Buffer, Uint8Array>();
@@ -402,7 +400,6 @@ export class GLTFExporter {
             exportUnusedUVs: false,
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
-            useUint16SkinIndex: false,
             ...options,
         };
 
@@ -884,11 +881,11 @@ export class GLTFExporter {
         this._listAvailableSkeletons();
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
-        const stateLH = new ExporterState(true, this._options.useUint16SkinIndex, false);
+        const stateLH = new ExporterState(true, false);
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, stateLH)));
-        const stateRH = new ExporterState(false, this._options.useUint16SkinIndex, false);
+        const stateRH = new ExporterState(false, false);
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, stateRH)));
-        const noopRH = new ExporterState(false, this._options.useUint16SkinIndex, true);
+        const noopRH = new ExporterState(false, true);
         scene.nodes.push(...(await this._exportNodesAsync(rootNoopNodesRH, noopRH)));
 
         if (scene.nodes.length) {
@@ -1143,7 +1140,7 @@ export class GLTFExporter {
                 }
 
                 const byteOffset = this._dataWriter.byteOffset;
-                if (state.useUint16SkinIndex) {
+                if (FloatsNeed16BitInteger(array)) {
                     const newArray = new Uint16Array(array.length);
                     for (let index = 0; index < array.length; index++) {
                         newArray[index] = array[index];
