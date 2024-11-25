@@ -6,6 +6,7 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
+import { GeometryInputBlock } from "./geometryInputBlock";
 
 /**
  * Conditions supported by the condition block
@@ -117,6 +118,20 @@ export class ConditionBlock extends NodeGeometryBlock {
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
+    }
+
+    public override autoConfigure() {
+        if (!this.ifTrue.isConnected) {
+            const minInput = new GeometryInputBlock("True");
+            minInput.value = 1;
+            minInput.output.connectTo(this.ifTrue);
+        }
+
+        if (!this.ifFalse.isConnected) {
+            const maxInput = new GeometryInputBlock("False");
+            maxInput.value = 0;
+            maxInput.output.connectTo(this.ifFalse);
+        }
     }
 
     protected override _buildBlock() {
