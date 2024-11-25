@@ -12,19 +12,10 @@ import type { Vector4 } from "core/Maths/math.vector";
 /**
  * Temporary structure to store morph target information.
  */
-export class GlTFMorphTarget {
-    /**
-     *
-     */
-    public attributes: { [name: string]: number };
-    /**
-     *
-     */
-    public influence: number;
-    /**
-     *
-     */
-    public name: string;
+export interface IGlTFMorphTarget {
+    attributes: { [name: string]: number };
+    influence: number;
+    name: string;
 }
 
 function NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
@@ -43,8 +34,12 @@ export function BuildMorphTargetBuffers(
     bufferViews: IBufferView[],
     accessors: IAccessor[],
     convertToRightHanded: boolean
-): GlTFMorphTarget {
-    const result = new GlTFMorphTarget();
+): IGlTFMorphTarget {
+    const result: IGlTFMorphTarget = {
+        attributes: {},
+        influence: 0,
+        name: "",
+    };
     result.influence = morphTarget.influence;
     result.name = morphTarget.name;
     result.attributes = {};
@@ -121,11 +116,11 @@ export function BuildMorphTargetBuffers(
         for (let i = vertexStart; i < vertexCount; ++i) {
             // Only read the x, y, z components and ignore w
             const originalTangent = Vector3.FromArray(originalTangents, i * 4);
-            _NormalizeTangentFromRef(originalTangent);
+            NormalizeTangentFromRef(originalTangent);
 
             // Morph target tangents omit the w component so it won't be present in the data
             const morphTangent = Vector3.FromArray(morphTangents, i * 3);
-            _NormalizeTangentFromRef(morphTangent);
+            NormalizeTangentFromRef(morphTangent);
 
             morphTangent.subtractToRef(originalTangent, difference);
             dataWriter.writeFloat32(difference.x * flipX);

@@ -71,7 +71,7 @@ import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
-import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
+import type { IGlTFMorphTarget } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 
@@ -87,7 +87,7 @@ class ExporterState {
 
     private _remappedBufferView = new Map<Buffer, Map<VertexBuffer, number>>();
 
-    private _meshMorphTargetMap = new Map<Mesh, GlTFMorphTarget[]>();
+    private _meshMorphTargetMap = new Map<Mesh, IGlTFMorphTarget[]>();
 
     private _vertexMapColorAlpha = new Map<VertexBuffer, boolean>();
 
@@ -206,7 +206,7 @@ class ExporterState {
         this._meshMap.set(mesh, meshIndex);
     }
 
-    public bindMorphDataToMesh(mesh: Mesh, morphData: GlTFMorphTarget) {
+    public bindMorphDataToMesh(mesh: Mesh, morphData: IGlTFMorphTarget) {
         const morphTargets = this._meshMorphTargetMap.get(mesh) || [];
         this._meshMorphTargetMap.set(mesh, morphTargets);
         if (morphTargets.indexOf(morphData) === -1) {
@@ -214,7 +214,7 @@ class ExporterState {
         }
     }
 
-    public getMorphTargetsFromMesh(mesh: Mesh): GlTFMorphTarget[] | undefined {
+    public getMorphTargetsFromMesh(mesh: Mesh): IGlTFMorphTarget[] | undefined {
         return this._meshMorphTargetMap.get(mesh);
     }
 }
