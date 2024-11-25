@@ -900,7 +900,7 @@ export class VertexBuffer {
      * @param count the number of values to enumerate
      * @param normalized whether the data is normalized
      * @param callback the callback function called for each value
-     * @deprecated Use `enumerateFloatValues` from `bufferUtils` instead
+     * @deprecated Use `EnumerateFloatValues` from `bufferUtils` instead
      */
     public static ForEach(
         data: DataArray,
