@@ -60,6 +60,7 @@ import {
     ConvertToRightHandedNode,
     RotateNode180Y,
     FloatsNeed16BitInteger,
+    IsMorphTargetsVertexBuffer,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -1397,6 +1398,10 @@ export class GLTFExporter {
 
     private _exportVertexBuffer(vertexBuffer: VertexBuffer, babylonMaterial: Material, start: number, count: number, state: ExporterState, primitive: IMeshPrimitive): void {
         const kind = vertexBuffer.getKind();
+
+        if (IsMorphTargetsVertexBuffer(kind)) {
+            return;
+        }
 
         if (kind.startsWith("world")) {
             return;
