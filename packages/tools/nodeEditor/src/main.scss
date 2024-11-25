@@ -42,9 +42,6 @@
     }
 
     .nme-right-panel {
-        display: grid;
-        grid-template-rows: 1fr 40px auto 40px;
-        grid-template-columns: 100%;
         height: 100%;
         overflow-y: auto;
     }
@@ -80,8 +77,6 @@
     }
 
     #preview-mesh-bar {
-        grid-row: 2;
-        grid-column: 1;
         display: grid;
         grid-template-columns: auto 1fr 40px 40px 40px;
         align-items: center;
@@ -185,8 +180,7 @@
     }
 
     #preview-config-bar {
-        grid-row: 4;
-        grid-column: 1;
+        background-color: #555555;
         display: grid;
         grid-template-columns: 40px 40px 40px 1fr 40px 40px;
         color: white;
@@ -282,10 +276,12 @@
         padding: 0 !important;
         user-select: none;
         overflow: hidden;
+        aspect-ratio: 1 / 1;
+        height: auto;
 
         #preview-canvas {
             width: 100%;
-            aspect-ratio: 1 / 1;
+            height: 100%;
             outline: 0 !important;
             padding: 0 !important;
             grid-row: 1;

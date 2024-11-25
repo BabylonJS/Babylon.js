@@ -582,6 +582,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (previewContainer) {
             previewContainer.style.height = "auto";
             previewContainer.style.gridRow = "1";
+            previewContainer.style.aspectRatio = "unset";
         }
         const previewConfigBar = document.getElementById("preview-config-bar");
         if (previewConfigBar) {
