@@ -58,7 +58,7 @@ export interface IExportOptions {
     /**
      * If set to true it will export skin matrix index as Uint16.
      */
-    userUint16SkinIndex?: boolean;
+    useUint16SkinIndex?: boolean;
 }
 
 /**

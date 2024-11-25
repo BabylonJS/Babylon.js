@@ -96,9 +96,9 @@ class ExporterState {
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
 
-    public constructor(convertToRightHanded: boolean, userUint16SkinIndex: boolean, wasAddedByNoopNode: boolean) {
+    public constructor(convertToRightHanded: boolean, useUint16SkinIndex: boolean, wasAddedByNoopNode: boolean) {
         this.convertToRightHanded = convertToRightHanded;
-        this.userUint16SkinIndex = userUint16SkinIndex;
+        this.useUint16SkinIndex = useUint16SkinIndex;
         this.wasAddedByNoopNode = wasAddedByNoopNode;
     }
 
@@ -402,7 +402,7 @@ export class GLTFExporter {
             exportUnusedUVs: false,
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
-            userUint16SkinIndex: false,
+            useUint16SkinIndex: false,
             ...options,
         };
 
@@ -884,11 +884,11 @@ export class GLTFExporter {
         this._listAvailableSkeletons();
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
-        const stateLH = new ExporterState(true, this._options.userUint16SkinIndex, false);
+        const stateLH = new ExporterState(true, this._options.useUint16SkinIndex, false);
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, stateLH)));
-        const stateRH = new ExporterState(false, this._options.userUint16SkinIndex, false);
+        const stateRH = new ExporterState(false, this._options.useUint16SkinIndex, false);
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, stateRH)));
-        const noopRH = new ExporterState(false, this._options.userUint16SkinIndex, true);
+        const noopRH = new ExporterState(false, this._options.useUint16SkinIndex, true);
         scene.nodes.push(...(await this._exportNodesAsync(rootNoopNodesRH, noopRH)));
 
         if (scene.nodes.length) {
@@ -1143,7 +1143,7 @@ export class GLTFExporter {
                 }
 
                 const byteOffset = this._dataWriter.byteOffset;
-                if (state.userUint16SkinIndex) {
+                if (state.useUint16SkinIndex) {
                     const newArray = new Uint16Array(array.length);
                     for (let index = 0; index < array.length; index++) {
                         newArray[index] = array[index];
