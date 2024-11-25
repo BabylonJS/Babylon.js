@@ -108,7 +108,7 @@ export class LatticePluginMaterial extends MaterialPluginBase {
      * @param shaderLanguage The shader language to use.
      * @returns the description of the uniforms
      */
-    public override getUniforms(shaderLanguage: ShaderLanguage) {
+    public override getUniforms(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL) {
         if (shaderLanguage === ShaderLanguage.WGSL) {
             // For webgpu we only define the UBO with the correct type and size.
             return {
@@ -171,8 +171,8 @@ export class LatticePluginMaterial extends MaterialPluginBase {
         }
 
         let code = `
-            if (positionUpdated.x >= lattice_min.x && positionUpdated.x <= lattice_max.x && 
-                positionUpdated.y >= lattice_min.y && positionUpdated.y <= lattice_max.y && 
+            if (positionUpdated.x >= lattice_min.x && positionUpdated.x <= lattice_max.x &&
+                positionUpdated.y >= lattice_min.y && positionUpdated.y <= lattice_max.y &&
                 positionUpdated.z >= lattice_min.z && positionUpdated.z <= lattice_max.z) {
 
                 // Map vertex position to lattice local coordinates
