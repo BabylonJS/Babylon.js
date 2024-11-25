@@ -302,6 +302,7 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
@@ -333,7 +334,6 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
-    private _tempVectors = BuildTuple(4, Vector3.Zero);
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -768,24 +768,27 @@ export class Viewer implements IDisposable {
             this._environment = null;
             this._details.scene.autoClear = true;
 
+            const disposeActions: (() => void)[] = [];
             try {
                 if (url) {
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+                    disposeActions.push(() => cubeTexture.dispose());
+
+                    const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
+                    disposeActions.push(() => skybox.dispose());
+                    this._snapshotHelper.fixMeshes([skybox]);
+
+                    this._details.scene.environmentTexture = cubeTexture;
+                    disposeActions.push(() => (this._details.scene.environmentTexture = null));
+                    this._skybox = skybox;
+                    disposeActions.push(() => (this._skybox = null));
+
+                    this._details.scene.autoClear = false;
+                    disposeActions.push(() => (this._details.scene.autoClear = true));
+
+                    const dispose = () => disposeActions.forEach((dispose) => dispose());
+
                     this._environment = await new Promise<IDisposable>((resolve, reject) => {
-                        const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
-                        this._details.scene.environmentTexture = cubeTexture;
-
-                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
-                        this._snapshotHelper.fixMeshes([skybox]);
-                        this._skybox = skybox;
-
-                        this._details.scene.autoClear = false;
-
-                        const dispose = () => {
-                            cubeTexture.dispose();
-                            skybox.dispose();
-                            this._skybox = null;
-                        };
-
                         const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
@@ -808,6 +811,7 @@ export class Viewer implements IDisposable {
                 this._updateLight();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
+                disposeActions.forEach((dispose) => dispose());
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
@@ -893,7 +897,10 @@ export class Viewer implements IDisposable {
             if (!mesh) {
                 return false;
             }
-            GetHotSpotToRef(mesh, query, worldPos, worldNormal);
+
+            if (!GetHotSpotToRef(mesh, query, worldPos, worldNormal)) {
+                return false;
+            }
         } else {
             worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);

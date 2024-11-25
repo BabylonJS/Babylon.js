@@ -42,10 +42,10 @@
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
-             /* babylon-viewer-annotation:state(back-facing) {
+            /* babylon-viewer-annotation:state(back-facing) {
                 display: none;
              } */
-             /* babylon-viewer-annotation:state(invalid) {
+            /* babylon-viewer-annotation:state(invalid) {
                 display: unset;
                 opacity: 1;
              } */
@@ -59,6 +59,10 @@
                 width: unset;
                 max-width: unset;
                 transform: unset;
+            } */
+
+            /* babylon-viewer::part(progress-bar) {
+                border: none;
             } */
 
             /* This keeps child nodes hidden while custom elements load */
@@ -79,7 +83,7 @@
                 selected-animation="1"
                 camera-orbit="auto auto auto"
                 camera-target="auto auto auto"
-                    hotspots='{
+                hotspots='{
                     "antenna": {
                         "type": "surface",
                         "meshIndex": 1,
@@ -102,7 +106,7 @@
                     },
                     "poi": {
                         "type": "world",
-                        "position": [0.374, 0.600, 0.022],
+                        "position": [0.374, 0.575, 0.022],
                         "normal": [0.690, 0.443, -0.572],
                         "cameraOrbit": [-32.108, 1.112, 1.714]
                     }
@@ -122,10 +126,10 @@
                     </div>
                 </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="thruster">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">Thruster</div>
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">Thruster</div>
                 </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="poi">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">World Space POI</div>
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">World Space POI</div>
                 </babylon-viewer-annotation>
             </babylon-viewer>
         </div>
@@ -197,7 +201,7 @@
                     await customElements.whenDefined("babylon-viewer");
                     await viewerDetails.viewer.loadModel(file);
                 }
-            }
+            };
 
             // update hotspot svg
             function drawHotSpotLine(svgLine, name, rect) {
@@ -212,17 +216,17 @@
             const updateHotSpotLines = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
                 drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
-            }
+            };
 
             globalThis.onToggleDOM = () => {
                 const viewerContainer = document.getElementById("viewerContainer");
                 isViewerConnected ? viewerContainer.removeChild(viewerElement) : viewerContainer.appendChild(viewerElement);
                 isViewerConnected = !isViewerConnected;
-            }
+            };
 
             globalThis.onToggleEngine = () => {
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
-            }
+            };
 
             globalThis.onToggleHotSpot = () => {
                 hotspotVisible = !hotspotVisible;
@@ -232,7 +236,7 @@
                 } else {
                     viewerElement.removeEventListener("viewerrender", updateHotSpotLines);
                 }
-            }
+            };
 
             let isInspectorVisible = false;
             globalThis.onToggleInspector = () => {
@@ -245,21 +249,21 @@
                     Inspector.Show(viewerDetails.scene, {});
                 }
                 isInspectorVisible = !isInspectorVisible;
-            }
+            };
 
             let isTopContentVisible = false;
             globalThis.onToggleTopContent = () => {
                 const topContent = document.getElementById("moreUpperPageContent");
                 topContent.style.display = isTopContentVisible ? "none" : "block";
                 isTopContentVisible = !isTopContentVisible;
-            }
+            };
 
             let isBottomContentVisible = false;
             globalThis.onToggleBottomContent = () => {
                 const bottomContent = document.getElementById("moreLowerPageContent");
                 bottomContent.style.display = isBottomContentVisible ? "none" : "block";
                 isBottomContentVisible = !isBottomContentVisible;
-            }
+            };
         </script>
     </body>
 </html>
