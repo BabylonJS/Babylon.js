@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* eslint-disable babylonjs/available */
-
 import type {
     IBufferView,
     IAccessor,
