@@ -2698,7 +2698,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             facetData.facetPositions = [] as Vector3[];
             facetData.facetNormals = [] as Vector3[];
             facetData.facetPartitioning = new Array<number[]>();
-            facetData.facetParameters = null;
+            facetData.facetParameters = {};
             facetData.depthSortedIndices = new Uint32Array(0);
         }
         return this;
