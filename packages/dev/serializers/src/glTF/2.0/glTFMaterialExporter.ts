@@ -914,7 +914,7 @@ export class GLTFMaterialExporter {
     }
 
     private async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        let textureInfo = this._textureMap.get(babylonTexture);
+        const textureInfo = this._textureMap.get(babylonTexture);
         if (!textureInfo) {
             const pixels = await this._getPixelsFromTexture(babylonTexture);
             if (!pixels) {
