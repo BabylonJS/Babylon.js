@@ -12,7 +12,7 @@ import type { Vector4 } from "core/Maths/math.vector";
 /**
  * Temporary structure to store morph target information.
  */
-export interface IGlTFMorphTarget {
+export interface IGLTFMorphTarget {
     attributes: { [name: string]: number };
     influence: number;
     name: string;
@@ -34,8 +34,8 @@ export function BuildMorphTargetBuffers(
     bufferViews: IBufferView[],
     accessors: IAccessor[],
     convertToRightHanded: boolean
-): IGlTFMorphTarget {
-    const result: IGlTFMorphTarget = {
+): IGLTFMorphTarget {
+    const result: IGLTFMorphTarget = {
         attributes: {},
         influence: 0,
         name: "",
