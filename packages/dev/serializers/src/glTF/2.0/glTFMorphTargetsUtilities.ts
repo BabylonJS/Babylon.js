@@ -27,7 +27,7 @@ export class GlTFMorphTarget {
     public name: string;
 }
 
-function _NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
+function NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
     const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
     if (length > 0) {
         tangent.x /= length;
