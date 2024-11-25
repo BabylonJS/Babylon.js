@@ -656,11 +656,10 @@ export class _GLTFAnimation {
                                 }
                             }
 
-                            rotationQuaternion.toArray(tempQuaterionArray);
-                            binaryWriter.writeFloat32(tempQuaterionArray[0]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[1]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[3]);
+                            binaryWriter.writeFloat32(rotationQuaternion.x);
+                            binaryWriter.writeFloat32(rotationQuaternion.y);
+                            binaryWriter.writeFloat32(rotationQuaternion.z);
+                            binaryWriter.writeFloat32(rotationQuaternion.w);
 
                             break;
 
