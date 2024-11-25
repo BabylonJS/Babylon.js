@@ -1,88 +1,114 @@
 {
-    "fromTag": "7.35.0",
+    "fromTag": "7.35.1",
     "changelog": {
-        "7.35.0": [
+        "7.35.2": [
             {
-                "pr": "15826",
-                "title": "Update TypeScript",
-                "description": "One of my other [PR](https://github.com/BabylonJS/Babylon.js/pull/15823)s is failing in the build because the older version of TS we are using (5.1.6) is missing the `states` property from the `ElementInternals` WebAPI type (the `states` property and the its type `CustomStateSet` are sort of new but supported in all the major browsers). TypeScript 5.5+ has this property and type, so I started trying to update our TypeScript version. However I ran into some problems with deprecated TypeScript APIs used for the path transformation stuff in the build. I tried to fix it (based on some input from the TypeScript team!), but I definitely broke it. So I'm creating a draft PR as a starting point for getting TypeScript updated.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "package-lock.json",
-                    "package.json",
-                    "packages/dev/buildTools/src/ltsTransformer.ts",
-                    "packages/dev/buildTools/src/pathTransform.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15860",
-                "title": "fixed leaking observables in Rendering",
-                "description": null,
-                "author": {
-                    "name": "ricardovg4",
-                    "url": "https://github.com/ricardovg4"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
-                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
-                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
-                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
-                    "packages/dev/core/src/Rendering/objectRenderer.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15861",
-                "title": "Add missing Bone.dispose()",
-                "description": "https://forum.babylonjs.com/t/inspector-not-refreshing-correctly-after-removing-and-creating-new-bones/54874/5",
+                "pr": "15887",
+                "title": "New visual clue for type conversions",
+                "description": "![Screenshot 2024-11-25 092933](https://github.com/user-attachments/assets/df928f17-f568-4ed7-94cc-c18845aa33d5)\r\n",
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Bones/bone.ts",
-                    "packages/tools/playground/src/scss/main.scss"
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15885",
+                "title": "facetParameters disableFacetData() doesn't block reuse of updateFacet…",
+                "description": "mesh.disableFacetData() sets the facetParameters to null, which doesn't allow updateFacetData() to be run again. This clears the object instead.  As the type  of facetParameters is already any, there is no change for the user other than being able to enable/ disable the feature.\r\n\r\nhttps://playground.babylonjs.com/#8EWBO5",
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15859",
-                "title": "PostProcess: fix shader imports not being ready in ES6",
+                "pr": "15886",
+                "title": "Allow EquiRectangularCuteTexture to work in a Worker environment",
                 "description": null,
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "post-process"
+                    "new feature"
                 ]
             },
             {
-                "pr": "15858",
-                "title": "EffectLayer: Fix isReady to check readiness for post processes and merge effect",
-                "description": null,
+                "pr": "15883",
+                "title": "WebGPU: Fix glow layer when using opacity",
+                "description": "See https://forum.babylonjs.com/t/error-with-babylon-7-0-and-webgpu-using-glowlayer-and-advanceddynamictexture/54982",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Layers/effectLayer.ts"
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx"
                 ],
                 "tags": [
                     "bug",
-                    "rendering engine"
+                    "WebGPU"
                 ]
+            },
+            {
+                "pr": "15863",
+                "title": "Weak ref",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15881",
+                "title": "Fix LatticePluginMaterial TypeScript error",
+                "description": "Seeing this TypeScript error when consuming the latest Babylon core package when using strict TS:\r\n\r\nProperty 'getUniforms' in type 'LatticePluginMaterial' is not assignable to the same property in base type 'MaterialPluginBase'.\r\n\r\nType '(shaderLanguage: ShaderLanguage) => { ubo: { name: string; size: number; type: string; }[]; vertex?: undefined; } | { ubo: { name: string; size: number; type: string; }[]; vertex: string; }' is not assignable to type '(_shaderLanguage?: ShaderLanguage | undefined) => { ubo?: { name: string; size?: number; type?: string; arraySize?: number; }[]; vertex?: string; fragment?: string; }'.\r\n\r\nWith this change, the param becomes optional with the same default as the base class.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/lattice.material.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15879",
+                "title": "Misc viewer related fixes",
+                "description": "Three small fixes:\r\n1. When an environment fails to load, roll back any related state mutations (especially scene autoclear).\r\n2. Add a 1px border to the default progress bar since by default the background will typically be white, which makes the progress bar hard to see. Users can always apply custom styles to the progress bar as well.\r\n3. Dynamically import DDSTools so we don't pay the bundle cost when its not needed.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
             }
         ],
         "7.35.1": [
@@ -459,6 +485,90 @@
                     "packages/dev/core/src/Animations/animationGroup.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.35.0": [
+            {
+                "pr": "15826",
+                "title": "Update TypeScript",
+                "description": "One of my other [PR](https://github.com/BabylonJS/Babylon.js/pull/15823)s is failing in the build because the older version of TS we are using (5.1.6) is missing the `states` property from the `ElementInternals` WebAPI type (the `states` property and the its type `CustomStateSet` are sort of new but supported in all the major browsers). TypeScript 5.5+ has this property and type, so I started trying to update our TypeScript version. However I ran into some problems with deprecated TypeScript APIs used for the path transformation stuff in the build. I tried to fix it (based on some input from the TypeScript team!), but I definitely broke it. So I'm creating a draft PR as a starting point for getting TypeScript updated.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15860",
+                "title": "fixed leaking observables in Rendering",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15861",
+                "title": "Add missing Bone.dispose()",
+                "description": "https://forum.babylonjs.com/t/inspector-not-refreshing-correctly-after-removing-and-creating-new-bones/54874/5",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/tools/playground/src/scss/main.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15859",
+                "title": "PostProcess: fix shader imports not being ready in ES6",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "15858",
+                "title": "EffectLayer: Fix isReady to check readiness for post processes and merge effect",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
             }
         ],
         "7.34.4": [
