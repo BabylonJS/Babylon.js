@@ -930,7 +930,7 @@ export class VertexBuffer {
      * @param totalVertices number of vertices in the buffer to take into account
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
-     * @deprecated Use `getFloatData` from `bufferUtils` instead
+     * @deprecated Use `GetFloatData` from `bufferUtils` instead
      */
     public static GetFloatData(
         data: DataArray,
