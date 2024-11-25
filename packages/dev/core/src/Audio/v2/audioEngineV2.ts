@@ -128,6 +128,14 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
      */
     public abstract resume(): Promise<void>;
 
+    /**
+     * Unlocks the audio engine if it is locked.
+     * @returns A promise that resolves when the audio engine is unlocked.
+     */
+    public unlock(): Promise<void> {
+        return this.resume();
+    }
+
     protected _addMainBus(mainBus: MainAudioBus): void {
         this._mainBuses.add(mainBus);
         mainBus.onDisposeObservable.addOnce(() => {
