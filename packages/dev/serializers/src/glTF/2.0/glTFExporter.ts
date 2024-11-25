@@ -698,7 +698,7 @@ export class GLTFExporter {
         const rotation = TmpVectors.Quaternion[0];
 
         if (parent !== null) {
-            // We need local coordinates. If camera has parent we need to que local translation/rotation.
+            // Camera.getWorldMatrix returs global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
             const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
             const cameraWorldMatrix = babylonCamera.getWorldMatrix();
             const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
