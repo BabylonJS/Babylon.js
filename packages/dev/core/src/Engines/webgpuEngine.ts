@@ -3416,33 +3416,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * Generates mipmaps for each texture of a render target
-     * @param texture The render target containing the textures to generate the mipmaps for
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
      */
     public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
-        const rtWrapper = texture as WebGPURenderTargetWrapper;
-
-        if (texture.isMulti) {
-            const attachments = rtWrapper._attachments!;
-            const count = attachments.length;
-
-            for (let i = 0; i < count; i++) {
-                const texture = rtWrapper.textures![i];
-                if (texture.generateMipMaps && !texture.isCube && !texture.is3D) {
-                    this._generateMipmaps(texture);
-                }
-            }
-        } else {
-            if (texture.texture?.generateMipMaps && !texture.isCube) {
-                this._generateMipmaps(texture.texture);
-            }
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
         }
     }
 
     /**
-     * Resolves the MSAA textures of the render target into their non-MSAA version.
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
      * Note that if "texture" is not a MSAA render target, no resolve is performed.
-     * @param _texture  The render target texture containing the MSAA textures to resolve
+     * @param _texture The render target texture containing the MSAA texture to resolve
      */
     public resolveFramebuffer(_texture: RenderTargetWrapper): void {
         throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");

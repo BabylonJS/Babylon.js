@@ -207,7 +207,11 @@ export class RenderTargetWrapper {
      * Note that if samples equals 1 (no MSAA), no resolve is performed.
      */
     public resolveMSAATextures(): void {
-        this._engine.resolveFramebuffer(this);
+        if (this.isMulti) {
+            this._engine.resolveMultiFramebuffer(this);
+        } else {
+            this._engine.resolveFramebuffer(this);
+        }
     }
 
     /**
@@ -217,7 +221,11 @@ export class RenderTargetWrapper {
         if (this._engine._currentRenderTarget === this) {
             this._engine.unBindFramebuffer(this, true);
         }
-        this._engine.generateMipMapsFramebuffer(this);
+        if (this.isMulti) {
+            this._engine.generateMipMapsMultiFramebuffer(this);
+        } else {
+            this._engine.generateMipMapsFramebuffer(this);
+        }
     }
 
     /**
