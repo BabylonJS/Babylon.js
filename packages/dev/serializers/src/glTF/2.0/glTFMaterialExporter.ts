@@ -65,14 +65,14 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
 }
 
 /**
+ * @internal
  * Computes the metallic factor.
- * Exported to be testable in unit tests.
  * @param diffuse diffused value
  * @param specular specular value
  * @param oneMinusSpecularStrength one minus the specular strength
  * @returns metallic value
  */
-export function SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
+export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
     if (specular < dielectricSpecular.r) {
         dielectricSpecular;
         return 0;
@@ -528,7 +528,7 @@ export class GLTFMaterialExporter {
         const diffusePerceivedBrightness = this._getPerceivedBrightness(specularGlossiness.diffuseColor);
         const specularPerceivedBrightness = this._getPerceivedBrightness(specularGlossiness.specularColor);
         const oneMinusSpecularStrength = 1 - this._getMaxComponent(specularGlossiness.specularColor);
-        const metallic = SolveMetallic(diffusePerceivedBrightness, specularPerceivedBrightness, oneMinusSpecularStrength);
+        const metallic = _SolveMetallic(diffusePerceivedBrightness, specularPerceivedBrightness, oneMinusSpecularStrength);
         const baseColorFromDiffuse = specularGlossiness.diffuseColor.scale(oneMinusSpecularStrength / (1.0 - dielectricSpecular.r) / Math.max(1 - metallic));
         const baseColorFromSpecular = specularGlossiness.specularColor.subtract(dielectricSpecular.scale(1 - metallic)).scale(1 / Math.max(metallic));
         let baseColor = Color3.Lerp(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic);
