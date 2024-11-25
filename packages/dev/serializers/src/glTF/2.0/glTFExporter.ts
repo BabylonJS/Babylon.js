@@ -238,9 +238,9 @@ export class GLTFExporter {
     public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
     private readonly _orderedImageData: Array<{ data: ArrayBuffer; mimeType: ImageMimeType }> = [];
 
-    // /**
-    //  * Baked animation sample rate
-    //  */
+    /**
+     * Baked animation sample rate
+     */
     private _animationSampleRate: number;
 
     private readonly _options: Required<IExportOptions>;
