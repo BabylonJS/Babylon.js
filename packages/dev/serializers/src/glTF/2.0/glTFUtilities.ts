@@ -398,13 +398,13 @@ export function GetMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
 export function OmitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
     for (const [key, value] of Object.entries(object)) {
         const defaultValue = defaultValues[key as keyof T];
-        if ((Array.isArray(value) && Array.isArray(defaultValue) && areArraysEqual(value, defaultValue)) || value === defaultValue) {
+        if ((Array.isArray(value) && Array.isArray(defaultValue) && AreArraysEqual(value, defaultValue)) || value === defaultValue) {
             delete object[key as keyof T];
         }
     }
     return object;
 }
 
-function areArraysEqual(array1: unknown[], array2: unknown[]): boolean {
+function AreArraysEqual(array1: unknown[], array2: unknown[]): boolean {
     return array1.length === array2.length && array1.every((val, i) => val === array2[i]);
 }

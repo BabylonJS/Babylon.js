@@ -1,7 +1,7 @@
 import { ImageMimeType } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 
-function getMimeType(fileName: string): string | undefined {
+function GetMimeType(fileName: string): string | undefined {
     if (fileName.endsWith(".glb")) {
         return "model/gltf-binary";
     } else if (fileName.endsWith(".bin")) {
@@ -41,7 +41,7 @@ export class GLTFData {
     public downloadFiles(): void {
         for (const key in this.files) {
             const value = this.files[key];
-            const blob = new Blob([value], { type: getMimeType(key) });
+            const blob = new Blob([value], { type: GetMimeType(key) });
             Tools.Download(blob, key);
         }
     }

@@ -51,7 +51,7 @@ interface IPBRMetallicRoughness {
     baseColorTextureData?: Nullable<ArrayBuffer>;
 }
 
-function getFileExtensionFromMimeType(mimeType: ImageMimeType): string {
+function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
     switch (mimeType) {
         case ImageMimeType.JPEG:
             return ".jpg";
@@ -90,7 +90,7 @@ export function SolveMetallic(diffuse: number, specular: number, oneMinusSpecula
  * @param glTFMaterial glTF material
  * @param babylonMaterial Babylon material
  */
-function setAlphaMode(glTFMaterial: IMaterial, babylonMaterial: Material & { alphaCutOff?: number }): void {
+function SetAlphaMode(glTFMaterial: IMaterial, babylonMaterial: Material & { alphaCutOff?: number }): void {
     if (babylonMaterial.needAlphaBlending()) {
         glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
     } else if (babylonMaterial.needAlphaTesting()) {
@@ -99,7 +99,7 @@ function setAlphaMode(glTFMaterial: IMaterial, babylonMaterial: Material & { alp
     }
 }
 
-function createWhiteTexture(width: number, height: number, scene: Scene): Texture {
+function CreateWhiteTexture(width: number, height: number, scene: Scene): Texture {
     const data = new Uint8Array(width * height * 4);
 
     for (let i = 0; i < data.length; i = i + 4) {
@@ -111,7 +111,7 @@ function createWhiteTexture(width: number, height: number, scene: Scene): Textur
     return rawTexture;
 }
 
-function convertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
+function ConvertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
     if (pixels instanceof Uint8Array) {
         const length = pixels.length;
         const buffer = new Float32Array(pixels.length);
@@ -232,7 +232,7 @@ export class GLTFMaterialExporter {
         }
 
         material.pbrMetallicRoughness = pbrMetallicRoughness;
-        setAlphaMode(material, babylonStandardMaterial);
+        SetAlphaMode(material, babylonStandardMaterial);
 
         await this._finishMaterialAsync(material, babylonStandardMaterial, mimeType);
 
@@ -338,14 +338,14 @@ export class GLTFMaterialExporter {
             if (texture1 && texture1 instanceof Texture) {
                 resizedTexture1 = TextureTools.CreateResizedCopy(texture1, texture2Size.width, texture2Size.height, true);
             } else {
-                resizedTexture1 = createWhiteTexture(texture2Size.width, texture2Size.height, scene);
+                resizedTexture1 = CreateWhiteTexture(texture2Size.width, texture2Size.height, scene);
             }
             resizedTexture2 = texture2!;
         } else if (texture1Size.width > texture2Size.width) {
             if (texture2 && texture2 instanceof Texture) {
                 resizedTexture2 = TextureTools.CreateResizedCopy(texture2, texture1Size.width, texture1Size.height, true);
             } else {
-                resizedTexture2 = createWhiteTexture(texture1Size.width, texture1Size.height, scene);
+                resizedTexture2 = CreateWhiteTexture(texture1Size.width, texture1Size.height, scene);
             }
             resizedTexture1 = texture1!;
         } else {
@@ -396,12 +396,12 @@ export class GLTFMaterialExporter {
             const specularPixels = await resizedTextures.texture2.readPixels();
 
             if (diffusePixels) {
-                diffuseBuffer = convertPixelArrayToFloat32(diffusePixels);
+                diffuseBuffer = ConvertPixelArrayToFloat32(diffusePixels);
             } else {
                 return Promise.reject("Failed to retrieve pixels from diffuse texture!");
             }
             if (specularPixels) {
-                specularGlossinessBuffer = convertPixelArrayToFloat32(specularPixels);
+                specularGlossinessBuffer = ConvertPixelArrayToFloat32(specularPixels);
             } else {
                 return Promise.reject("Failed to retrieve pixels from specular glossiness texture!");
             }
@@ -808,7 +808,7 @@ export class GLTFMaterialExporter {
         mimeType: ImageMimeType,
         hasUVs: boolean
     ): Promise<void> {
-        setAlphaMode(glTFMaterial, babylonPBRMaterial);
+        SetAlphaMode(glTFMaterial, babylonPBRMaterial);
 
         if (!metallicRoughness.baseColor.equalsWithEpsilon(white, epsilon) || !Scalar.WithinEpsilon(babylonPBRMaterial.alpha, 1, epsilon)) {
             glTFPbrMetallicRoughness.baseColorFactor = [metallicRoughness.baseColor.r, metallicRoughness.baseColor.g, metallicRoughness.baseColor.b, babylonPBRMaterial.alpha];
@@ -963,7 +963,7 @@ export class GLTFMaterialExporter {
         const imageData = this._exporter._imageData;
 
         const baseName = name.replace(/\.\/|\/|\.\\|\\/g, "_");
-        const extension = getFileExtensionFromMimeType(mimeType);
+        const extension = GetFileExtensionFromMimeType(mimeType);
         let fileName = baseName + extension;
         if (fileName in imageData) {
             fileName = `${baseName}_${Tools.RandomId()}${extension}`;

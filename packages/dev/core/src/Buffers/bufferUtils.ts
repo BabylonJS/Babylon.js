@@ -2,7 +2,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { DataArray, FloatArray } from "../types";
 
-function getFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
+function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
         case Constants.BYTE: {
             let value = dataView.getInt8(byteOffset);
@@ -47,7 +47,7 @@ function getFloatValue(dataView: DataView, type: number, byteOffset: number, nor
     }
 }
 
-function setFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean, value: number): void {
+function SetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean, value: number): void {
     switch (type) {
         case Constants.BYTE: {
             if (normalized) {
@@ -164,14 +164,14 @@ export function EnumerateFloatValues(
         const componentByteLength = GetTypeByteLength(componentType);
         for (let index = 0; index < count; index += componentCount) {
             for (let componentIndex = 0, componentByteOffset = byteOffset; componentIndex < componentCount; componentIndex++, componentByteOffset += componentByteLength) {
-                oldValues[componentIndex] = newValues[componentIndex] = getFloatValue(dataView, componentType, componentByteOffset, normalized);
+                oldValues[componentIndex] = newValues[componentIndex] = GetFloatValue(dataView, componentType, componentByteOffset, normalized);
             }
 
             callback(newValues, index);
 
             for (let componentIndex = 0, componentByteOffset = byteOffset; componentIndex < componentCount; componentIndex++, componentByteOffset += componentByteLength) {
                 if (oldValues[componentIndex] !== newValues[componentIndex]) {
-                    setFloatValue(dataView, componentType, componentByteOffset, normalized, newValues[componentIndex]);
+                    SetFloatValue(dataView, componentType, componentByteOffset, normalized, newValues[componentIndex]);
                 }
             }
 
