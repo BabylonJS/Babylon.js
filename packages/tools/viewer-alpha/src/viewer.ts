@@ -627,7 +627,7 @@ export class Viewer implements IDisposable {
     /**
      * The list of material variant names for the currently loaded model.
      */
-    public get materialVariants(): string[] {
+    public get materialVariants(): readonly string[] {
         return this._materialVariantsController?.variants ?? [];
     }
 
@@ -718,6 +718,7 @@ export class Viewer implements IDisposable {
             this._details.model?.dispose();
             this._details.model = null;
             this._materialVariantsController = null;
+            this.onSelectedMaterialVariantChanged.notifyObservers();
             this.selectedAnimation = -1;
 
             try {
@@ -726,6 +727,7 @@ export class Viewer implements IDisposable {
                     this._modelLoadingProgress = 0;
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                    this.onSelectedMaterialVariantChanged.notifyObservers();
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
                         group.pause();

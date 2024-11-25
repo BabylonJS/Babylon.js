@@ -60,6 +60,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     animationspeedchange: Event;
     animationplayingchange: Event;
     animationprogresschange: Event;
+    selectedmaterialvariantchange: Event;
 }
 
 /**
@@ -140,6 +141,12 @@ export class HTML3DElement extends LitElement {
             (details) => details.viewer.onSelectedAnimationChanged,
             (details) => (details.viewer.selectedAnimation = this.selectedAnimation ?? details.viewer.selectedAnimation),
             (details) => (this.selectedAnimation = details.viewer.selectedAnimation)
+        ),
+        this._createPropertyBinding(
+            "selectedMaterialVariant",
+            (details) => details.viewer.onSelectedMaterialVariantChanged,
+            (details) => (details.viewer.selectedMaterialVariant = this.selectedMaterialVariant ?? details.viewer.selectedMaterialVariant ?? ""),
+            (details) => (this.selectedMaterialVariant = details.viewer.selectedMaterialVariant)
         ),
     ] as const;
 
@@ -694,10 +701,23 @@ export class HTML3DElement extends LitElement {
     public animationProgress = 0;
 
     @state()
-    private _animations: string[] = [];
+    private _animations: readonly string[] = [];
 
     @state()
     private _isAnimationPlaying = false;
+
+    /**
+     * The list of material variants for the currently loaded model.
+     */
+    public get materialVariants(): readonly string[] {
+        return this._viewerDetails?.viewer.materialVariants ?? [];
+    }
+
+    /**
+     * The currently selected material variant.
+     */
+    @property({ attribute: "material-variant" })
+    public selectedMaterialVariant: Nullable<string> = null;
 
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
@@ -800,11 +820,20 @@ export class HTML3DElement extends LitElement {
                 `);
             }
 
+            // If the model has material variants, add material variant controls.
+            if (this.materialVariants.length > 1) {
+                toolbarControls.push(html`
+                    <select aria-label="Select Material Variant" @change="${this._onMaterialVariantChanged}">
+                        ${this.materialVariants.map((name) => html`<option value="${name}" .selected="${this.selectedMaterialVariant === name}">${name}</option>`)}
+                    </select>
+                `);
+            }
+
             // If hotspots have been defined, add hotspot controls.
             if (this._hasHotSpots) {
                 toolbarControls.push(html`
                     <div class="select-container">
-                        <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                        <select aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
                             <option value="" hidden selected></option>
                             <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
                             ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
@@ -888,6 +917,11 @@ export class HTML3DElement extends LitElement {
             const input = event.target as HTMLInputElement;
             input.addEventListener("pointerup", () => this._viewerDetails?.viewer.playAnimation(), { once: true });
         }
+    }
+
+    private _onMaterialVariantChanged(event: Event) {
+        const selectElement = event.target as HTMLSelectElement;
+        this.selectedMaterialVariant = selectElement.value;
     }
 
     private _onHotSpotsChanged(event: Event) {
