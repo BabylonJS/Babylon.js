@@ -40,10 +40,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
-        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
+        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
