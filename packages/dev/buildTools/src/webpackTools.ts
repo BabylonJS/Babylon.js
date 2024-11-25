@@ -149,9 +149,6 @@ export const getRules = (
 
                         options: {
                             esModule: true,
-                            modules: {
-                                localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
-                            },
                             sourceMap: true,
                         },
                     },
