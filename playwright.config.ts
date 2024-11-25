@@ -1,7 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { populateEnvironment } from "@dev/build-tools";
-import { getCdpEndpoint } from "tools/tests/browserstack.config";
-import { get } from "selenium-webdriver/http";
+import { getCdpEndpoint } from "./packages/tools/tests/browserstack.config";
 populateEnvironment();
 
 const isCI = !!process.env.CI;
@@ -35,8 +34,8 @@ export default defineConfig({
         ignoreHTTPSErrors: true,
     },
 
-    globalSetup: browserType === "BrowserStack" ? require.resolve("./globalSetup.ts") : undefined,
-    globalTeardown: browserType === "BrowserStack" ? require.resolve("./globalTeardown.ts") : undefined,
+    globalSetup: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalSetup.ts") : undefined,
+    globalTeardown: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
 
     /* Project configuration */
     projects: [
