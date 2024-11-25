@@ -9,6 +9,7 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 import type { Nullable } from "../../types";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { Logger } from "core/Misc/logger";
+import type { NodeGeometry } from "./nodeGeometry";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -344,8 +345,9 @@ export class NodeGeometryBlock {
 
     /**
      * Lets the block try to connect some inputs automatically
+     * @param _nodeGeometry defines the node geometry to use for auto connection
      */
-    public autoConfigure() {
+    public autoConfigure(_nodeGeometry: NodeGeometry) {
         // Do nothing
     }
 

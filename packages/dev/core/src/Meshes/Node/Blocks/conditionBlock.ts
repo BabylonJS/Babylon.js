@@ -7,6 +7,7 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
 import { GeometryInputBlock } from "./geometryInputBlock";
+import type { NodeGeometry } from "../nodeGeometry";
 
 /**
  * Conditions supported by the condition block
@@ -120,15 +121,19 @@ export class ConditionBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    public override autoConfigure() {
+    public override autoConfigure(nodeGeometry: NodeGeometry) {
         if (!this.ifTrue.isConnected) {
-            const minInput = new GeometryInputBlock("True");
+            const minInput =
+                (nodeGeometry.getBlockByPredicate((b) => b.isInput && (b as GeometryInputBlock).value === 1 && b.name === "True") as GeometryInputBlock) ||
+                new GeometryInputBlock("True");
             minInput.value = 1;
             minInput.output.connectTo(this.ifTrue);
         }
 
         if (!this.ifFalse.isConnected) {
-            const maxInput = new GeometryInputBlock("False");
+            const maxInput =
+                (nodeGeometry.getBlockByPredicate((b) => b.isInput && (b as GeometryInputBlock).value === 0 && b.name === "False") as GeometryInputBlock) ||
+                new GeometryInputBlock("False");
             maxInput.value = 0;
             maxInput.output.connectTo(this.ifFalse);
         }

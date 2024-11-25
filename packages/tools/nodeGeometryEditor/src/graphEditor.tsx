@@ -437,7 +437,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
             }
 
-            block.autoConfigure();
+            block.autoConfigure(this.props.globalState.nodeGeometry);
             newNode = this.appendBlock(block);
             newNode.addClassToVisual(block.getClassName());
         }

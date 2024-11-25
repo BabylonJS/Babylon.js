@@ -20,7 +20,7 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
         const nodeGeometry = (rootData as GlobalState).nodeGeometry;
         nodeGeometry.attachedBlocks.push(emittedBlock);
         if (!emittedBlock.isInput) {
-            emittedBlock.autoConfigure();
+            emittedBlock.autoConfigure(nodeGeometry);
         }
 
         return {
