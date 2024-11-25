@@ -154,6 +154,11 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Sets this property to true to disable the automatic MSAA resolve that happens when the render target wrapper is unbound (default is false)
+     */
+    public disableAutomaticMSAAResolve = false;
+
+    /**
      * Gets the base array layer of a texture in the textures array
      * This is an number that is calculated based on the layer and face indices set for this texture at that index
      * @param index The index of the texture in the textures array to get the base array layer for
@@ -195,6 +200,20 @@ export class RenderTargetWrapper {
             : this._engine.updateRenderTargetTextureSampleCount(this, value);
         this._samples = value;
         return result;
+    }
+
+    /**
+     * Resolves the MSAA textures into their non-MSAA version.
+     * Note that if samples equals 1 (no MSAA), no resolve is performed but mipmaps will still be generated (except if disableGenerateMipMaps is true or if a texture has generateMipMaps equals to false).
+     * @param disableGenerateMipMaps true to disable the generation of mipmaps for the textures (default: false)
+     */
+    public resolveMSAATextures(disableGenerateMipMaps = false): void {
+        const value = this.disableAutomaticMSAAResolve;
+        this.disableAutomaticMSAAResolve = false;
+
+        this._engine.resolveFramebuffer(this, disableGenerateMipMaps);
+
+        this.disableAutomaticMSAAResolve = value;
     }
 
     /**
@@ -537,7 +556,7 @@ export class RenderTargetWrapper {
      */
     public releaseTextures(): void {
         if (this._textures) {
-            for (let i = 0; i < this._textures?.length ?? 0; ++i) {
+            for (let i = 0; i < this._textures.length; ++i) {
                 this._textures[i].dispose();
             }
         }

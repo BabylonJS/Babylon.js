@@ -3416,6 +3416,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
+     * Resolves the MSAA textures of the render target into their non-MSAA version
+     * Note that if "texture" is not a MSAA render target, no resolve is performed but mipmaps will still be generated (except if disableGenerateMipMaps is true or if a texture has generateMipMaps equals to false).
+     * @param _texture  The render target texture containing the MSAA textures to resolve
+     * @param _disableGenerateMipMaps Defines a boolean indicating that mipmaps must not be generated (default: false)
+     */
+    public resolveFramebuffer(_texture: RenderTargetWrapper, _disableGenerateMipMaps = false): void {
+        throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
+    }
+
+    /**
      * Unbind the current render target and bind the default framebuffer
      */
     public restoreDefaultFramebuffer(): void {
