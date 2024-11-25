@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
-import { IsDocumentAvailable } from "core/Misc";
+import { IsDocumentAvailable } from "core/Misc/domManagement";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
