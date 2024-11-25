@@ -106,7 +106,7 @@ class ExporterState {
 
     public readonly wasAddedByNoopNode: boolean;
 
-    public readonly userUint16SkinIndex: boolean;
+    public readonly useUint16SkinIndex: boolean;
 
     // Only used when convertToRightHanded is true.
     public readonly convertedToRightHandedBuffers = new Map<Buffer, Uint8Array>();
