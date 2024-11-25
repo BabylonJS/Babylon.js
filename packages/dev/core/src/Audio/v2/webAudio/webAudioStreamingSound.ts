@@ -119,6 +119,10 @@ class WebAudioStreamingSound extends StreamingSound {
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
+
+        if (options?.preloadCount) {
+            await this.preloadInstances(options.preloadCount);
+        }
     }
 
     /** @internal */
@@ -159,7 +163,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     public override readonly engine: _WebAudioEngine;
 
     private _loop: boolean = false;
-    private _preload: "" | "none" | "metadata" | "auto" = "auto";
+    private _preloadType: "" | "none" | "metadata" | "auto" = "auto";
 
     private _waitTimer: Nullable<NodeJS.Timeout> = null;
 
@@ -224,7 +228,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         super(source);
 
         this._loop = source.loop;
-        this._preload = source.preload;
+        this._preloadType = source.preloadType;
 
         if (typeof source.source === "string") {
             this._initFromUrl(source.source);
@@ -257,7 +261,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         mediaElement.controls = false;
         mediaElement.loop = this._loop;
-        mediaElement.preload = this._preload;
+        mediaElement.preload = this._preloadType;
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         mediaElement.addEventListener("ended", this._onEnded, { once: true });
