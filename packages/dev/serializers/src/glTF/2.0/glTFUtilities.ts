@@ -302,67 +302,6 @@ export function IsParentAddedByImporter(babylonNode: Node, parentBabylonNode: No
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 
-// /**
-//  * Converts a new right-handed Vector3
-//  * @param vector vector3 array
-//  * @returns right-handed Vector3
-//  */
-// public static _GetRightHandedNormalVector3(vector: Vector3): Vector3 {
-//     return new Vector3(vector.x, vector.y, -vector.z);
-// }
-
-// /**
-//  * Converts a Vector3 to right-handed
-//  * @param vector Vector3 to convert to right-handed
-//  */
-// public static _GetRightHandedNormalVector3FromRef(vector: Vector3) {
-//     vector.z *= -1;
-// }
-
-// /**
-//  * Converts a three element number array to right-handed
-//  * @param vector number array to convert to right-handed
-//  */
-// public static _GetRightHandedNormalArray3FromRef(vector: number[]) {
-//     vector[2] *= -1;
-// }
-
-// /**
-//  * Converts a Vector4 to right-handed
-//  * @param vector Vector4 to convert to right-handed
-//  */
-// public static _GetRightHandedVector4FromRef(vector: Vector4) {
-//     vector.z *= -1;
-//     vector.w *= -1;
-// }
-
-// /**
-//  * Converts a Vector4 to right-handed
-//  * @param vector Vector4 to convert to right-handed
-//  */
-// public static _GetRightHandedArray4FromRef(vector: number[]) {
-//     vector[2] *= -1;
-//     vector[3] *= -1;
-// }
-
-// /**
-//  * Converts a Quaternion to right-handed
-//  * @param quaternion Source quaternion to convert to right-handed
-//  */
-// public static _GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
-//     quaternion.x *= -1;
-//     quaternion.y *= -1;
-// }
-
-// /**
-//  * Converts a Quaternion to right-handed
-//  * @param quaternion Source quaternion to convert to right-handed
-//  */
-// public static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
-//     quaternion[0] *= -1;
-//     quaternion[1] *= -1;
-// }
-
 export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     if (!(node instanceof TransformNode)) {
         return false;
