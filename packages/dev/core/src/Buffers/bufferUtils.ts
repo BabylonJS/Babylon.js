@@ -100,7 +100,7 @@ function setFloatValue(dataView: DataView, type: number, byteOffset: number, nor
  * @param type the type
  * @returns the number of bytes
  */
-export function getTypeByteLength(type: number): number {
+export function GetTypeByteLength(type: number): number {
     switch (type) {
         case Constants.BYTE:
         case Constants.UNSIGNED_BYTE:
@@ -128,7 +128,7 @@ export function getTypeByteLength(type: number): number {
  * @param normalized whether the data is normalized
  * @param callback the callback function called for each group of component values
  */
-export function enumerateFloatValues(
+export function EnumerateFloatValues(
     data: DataArray,
     byteOffset: number,
     byteStride: number,
@@ -161,7 +161,7 @@ export function enumerateFloatValues(
         }
     } else {
         const dataView = data instanceof ArrayBuffer ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
-        const componentByteLength = getTypeByteLength(componentType);
+        const componentByteLength = GetTypeByteLength(componentType);
         for (let index = 0; index < count; index += componentCount) {
             for (let componentIndex = 0, componentByteOffset = byteOffset; componentIndex < componentCount; componentIndex++, componentByteOffset += componentByteLength) {
                 oldValues[componentIndex] = newValues[componentIndex] = getFloatValue(dataView, componentType, componentByteOffset, normalized);
@@ -192,7 +192,7 @@ export function enumerateFloatValues(
  * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
  * @returns a float array containing vertex data
  */
-export function getFloatData(
+export function GetFloatData(
     data: DataArray,
     size: number,
     type: number,
@@ -202,12 +202,12 @@ export function getFloatData(
     totalVertices: number,
     forceCopy?: boolean
 ): FloatArray {
-    const tightlyPackedByteStride = size * getTypeByteLength(type);
+    const tightlyPackedByteStride = size * GetTypeByteLength(type);
     const count = totalVertices * size;
 
     if (type !== Constants.FLOAT || byteStride !== tightlyPackedByteStride) {
         const copy = new Float32Array(count);
-        enumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+        EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
             for (let i = 0; i < size; i++) {
                 copy[index + i] = values[i];
             }
@@ -264,7 +264,7 @@ export function CopyFloatData(
     totalVertices: number,
     output: Float32Array
 ): void {
-    const tightlyPackedByteStride = size * getTypeByteLength(type);
+    const tightlyPackedByteStride = size * GetTypeByteLength(type);
     const count = totalVertices * size;
 
     if (output.length !== count) {
@@ -272,7 +272,7 @@ export function CopyFloatData(
     }
 
     if (type !== Constants.FLOAT || byteStride !== tightlyPackedByteStride) {
-        enumerateFloatValues(input, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+        EnumerateFloatValues(input, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
             for (let i = 0; i < size; i++) {
                 output[index + i] = values[i];
             }

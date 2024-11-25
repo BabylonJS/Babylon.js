@@ -27,7 +27,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param mimeType The mime-type of the generated image
      * @returns A promise that resolves with the exported texture
      */
-    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<Texture>>;
+    preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<Texture>>;
 
     /**
      * Define this method to get notified when a texture info is created
@@ -44,7 +44,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonSubMesh Babylon submesh
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh): Promise<IMeshPrimitive>;
+    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh): Promise<IMeshPrimitive>;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -57,7 +57,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      */
     postExportNodeAsync?(
         context: string,
-        node: Nullable<INode>,
+        node: INode,
         babylonNode: Node,
         nodeMap: Map<Node, number>,
         convertToRightHanded: boolean,
@@ -70,7 +70,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonMaterial BabylonJS material
      * @returns nullable IMaterial promise
      */
-    postExportMaterialAsync?(context: string, node: Nullable<IMaterial>, babylonMaterial: Material): Promise<IMaterial>;
+    postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
 
     /**
      * Define this method to return additional textures to export from a material

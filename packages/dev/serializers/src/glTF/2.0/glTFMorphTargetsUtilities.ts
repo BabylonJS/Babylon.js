@@ -3,7 +3,7 @@ import { AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
 import type { MorphTarget } from "core/Morph/morphTarget";
 import type { DataWriter } from "./dataWriter";
 
-import { createAccessor, createBufferView } from "./glTFUtilities";
+import { CreateAccessor, CreateBufferView } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
@@ -36,7 +36,7 @@ function _NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
     }
 }
 
-export function buildMorphTargetBuffers(
+export function BuildMorphTargetBuffers(
     morphTarget: MorphTarget,
     mesh: Mesh,
     dataWriter: DataWriter,
@@ -85,9 +85,9 @@ export function buildMorphTargetBuffers(
             dataWriter.writeFloat32(difference.z);
         }
 
-        bufferViews.push(createBufferView(0, byteOffset, morphPositions.length * floatSize, floatSize * 3));
+        bufferViews.push(CreateBufferView(0, byteOffset, morphPositions.length * floatSize, floatSize * 3));
         bufferViewIndex = bufferViews.length - 1;
-        accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max }));
+        accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max }));
         result.attributes["POSITION"] = accessors.length - 1;
     }
 
@@ -106,9 +106,9 @@ export function buildMorphTargetBuffers(
             dataWriter.writeFloat32(difference.z);
         }
 
-        bufferViews.push(createBufferView(0, byteOffset, morphNormals.length * floatSize, floatSize * 3));
+        bufferViews.push(CreateBufferView(0, byteOffset, morphNormals.length * floatSize, floatSize * 3));
         bufferViewIndex = bufferViews.length - 1;
-        accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0));
+        accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0));
         result.attributes["NORMAL"] = accessors.length - 1;
     }
 
@@ -133,9 +133,9 @@ export function buildMorphTargetBuffers(
             dataWriter.writeFloat32(difference.z);
         }
 
-        bufferViews.push(createBufferView(0, byteOffset, vertexCount * floatSize * 3, floatSize * 3));
+        bufferViews.push(CreateBufferView(0, byteOffset, vertexCount * floatSize * 3, floatSize * 3));
         bufferViewIndex = bufferViews.length - 1;
-        accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0));
+        accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0));
         result.attributes["TANGENT"] = accessors.length - 1;
     }
 

@@ -9,16 +9,16 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { convertToRightHandedPosition, omitDefaultValues, collapseParentNode, isParentAddedByImporter } from "../glTFUtilities";
+import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseParentNode, IsParentAddedByImporter } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
-const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
+const DEFAULTS: Omit<IKHRLightsPunctual_Light, "type"> = {
     name: "",
     color: [1, 1, 1],
     intensity: 1,
     range: Number.MAX_VALUE,
 };
-const SPOTDEFAULTS: IKHRLightsPunctual_Light["spot"] = {
+const SPOTDEFAULTS: NonNullable<IKHRLightsPunctual_Light["spot"]> = {
     innerConeAngle: 0,
     outerConeAngle: Math.PI / 4.0,
 };
@@ -73,10 +73,9 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param convertToRightHanded Flag to convert the values to right-handed
      * @returns nullable INode promise
      */
-    public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
+    public postExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
-            // If node was nullified (marked as skippable) earlier in the pipeline, or it's not a light, skip
-            if (!node || !(babylonNode instanceof ShadowLight)) {
+            if (!(babylonNode instanceof ShadowLight)) {
                 resolve(node);
                 return;
             }
@@ -103,7 +102,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
                 const translation = TmpVectors.Vector3[0].copyFrom(babylonNode.position);
                 if (convertToRightHanded) {
-                    convertToRightHandedPosition(translation);
+                    ConvertToRightHandedPosition(translation);
                 }
                 node.translation = translation.asArray();
             }
@@ -114,24 +113,24 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
                 const direction = babylonNode.direction.normalize();
                 if (convertToRightHanded) {
-                    convertToRightHandedPosition(direction);
+                    ConvertToRightHandedPosition(direction);
                 }
                 const angle = Math.acos(Vector3.Dot(LIGHTDIRECTION, direction));
                 const axis = Vector3.Cross(LIGHTDIRECTION, direction);
                 const lightRotationQuaternion = Quaternion.RotationAxis(axis, angle);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
-                    node.rotation = lightRotationQuaternion.normalize().asArray();
+                    node.rotation = lightRotationQuaternion.asArray();
                 }
             }
 
-            let light: IKHRLightsPunctual_Light = {
+            const light: IKHRLightsPunctual_Light = {
                 type: lightType,
                 name: babylonNode.name,
                 color: babylonNode.diffuse.asArray(),
                 intensity: babylonNode.intensity,
                 range: babylonNode.range,
             };
-            light = omitDefaultValues(light, DEFAULTS);
+            OmitDefaultValues(light, DEFAULTS);
 
             // Separately handle the required 'spot' field for spot lights
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
@@ -140,7 +139,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     innerConeAngle: babylonSpotLight.innerAngle / 2.0,
                     outerConeAngle: babylonSpotLight.angle / 2.0,
                 };
-                light.spot = omitDefaultValues(light.spot, SPOTDEFAULTS!);
+                OmitDefaultValues(light.spot, SPOTDEFAULTS);
             }
 
             this._lights ||= {
@@ -156,12 +155,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
 
-            if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
+            if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
                     const parentNode = this._exporter._nodes[parentNodeIndex];
-                    collapseParentNode(node, parentNode);
+                    CollapseParentNode(node, parentNode);
                     parentNode.extensions ||= {};
                     parentNode.extensions[NAME] = lightReference;
 
