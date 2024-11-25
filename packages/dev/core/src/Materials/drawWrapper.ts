@@ -55,6 +55,10 @@ export class DrawWrapper {
     }
 
     public dispose(): void {
+        if (this.effect) {
+            this.effect.dispose();
+            this.effect = null;
+        }
         this.drawContext?.dispose();
     }
 }

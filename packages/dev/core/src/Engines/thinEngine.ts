@@ -1884,7 +1884,9 @@ export class ThinEngine extends AbstractEngine {
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
             resetCachedPipeline(webGLPipelineContext);
-            this._gl.deleteProgram(webGLPipelineContext.program);
+            if (this._gl) {
+                this._gl.deleteProgram(webGLPipelineContext.program);
+            }
         }
     }
 
