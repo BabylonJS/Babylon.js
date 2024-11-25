@@ -108,7 +108,13 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
 ): void {
     this._currentRenderTarget = null;
 
-    this.resolveFramebuffer(rtWrapper, disableGenerateMipMaps);
+    if (!rtWrapper.disableAutomaticMSAAResolve) {
+        this.resolveFramebuffer(rtWrapper);
+    }
+
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsFramebuffer(rtWrapper);
+    }
 
     if (onBeforeUnbind) {
         if (rtWrapper._MSAAFramebuffer) {

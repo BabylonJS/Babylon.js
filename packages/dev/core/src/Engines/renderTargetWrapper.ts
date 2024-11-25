@@ -204,16 +204,20 @@ export class RenderTargetWrapper {
 
     /**
      * Resolves the MSAA textures into their non-MSAA version.
-     * Note that if samples equals 1 (no MSAA), no resolve is performed but mipmaps will still be generated (except if disableGenerateMipMaps is true or if a texture has generateMipMaps equals to false).
-     * @param disableGenerateMipMaps true to disable the generation of mipmaps for the textures (default: false)
+     * Note that if samples equals 1 (no MSAA), no resolve is performed.
      */
-    public resolveMSAATextures(disableGenerateMipMaps = false): void {
-        const value = this.disableAutomaticMSAAResolve;
-        this.disableAutomaticMSAAResolve = false;
+    public resolveMSAATextures(): void {
+        this._engine.resolveFramebuffer(this);
+    }
 
-        this._engine.resolveFramebuffer(this, disableGenerateMipMaps);
-
-        this.disableAutomaticMSAAResolve = value;
+    /**
+     * Generates mipmaps for each texture of the render target
+     */
+    public generateMipMaps(): void {
+        if (this._engine._currentRenderTarget === this) {
+            this._engine.unBindFramebuffer(this, true);
+        }
+        this._engine.generateMipMapsFramebuffer(this);
     }
 
     /**

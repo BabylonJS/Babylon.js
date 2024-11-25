@@ -3416,12 +3416,35 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * Resolves the MSAA textures of the render target into their non-MSAA version
-     * Note that if "texture" is not a MSAA render target, no resolve is performed but mipmaps will still be generated (except if disableGenerateMipMaps is true or if a texture has generateMipMaps equals to false).
-     * @param _texture  The render target texture containing the MSAA textures to resolve
-     * @param _disableGenerateMipMaps Defines a boolean indicating that mipmaps must not be generated (default: false)
+     * Generates mipmaps for each texture of a render target
+     * @param texture The render target containing the textures to generate the mipmaps for
      */
-    public resolveFramebuffer(_texture: RenderTargetWrapper, _disableGenerateMipMaps = false): void {
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        const rtWrapper = texture as WebGPURenderTargetWrapper;
+
+        if (texture.isMulti) {
+            const attachments = rtWrapper._attachments!;
+            const count = attachments.length;
+
+            for (let i = 0; i < count; i++) {
+                const texture = rtWrapper.textures![i];
+                if (texture.generateMipMaps && !texture.isCube && !texture.is3D) {
+                    this._generateMipmaps(texture);
+                }
+            }
+        } else {
+            if (texture.texture?.generateMipMaps && !texture.isCube) {
+                this._generateMipmaps(texture.texture);
+            }
+        }
+    }
+
+    /**
+     * Resolves the MSAA textures of the render target into their non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param _texture  The render target texture containing the MSAA textures to resolve
+     */
+    public resolveFramebuffer(_texture: RenderTargetWrapper): void {
         throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
     }
 

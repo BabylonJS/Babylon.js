@@ -241,13 +241,13 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
-    public override resolveMSAATextures(disableGenerateMipMaps = false): void {
+    public override resolveMSAATextures(): void {
         const engine = this._engine as ThinEngine;
         const currentFramebuffer = engine._currentFramebuffer;
 
         engine._bindUnboundFramebuffer(this._MSAAFramebuffer);
 
-        super.resolveMSAATextures(disableGenerateMipMaps);
+        super.resolveMSAATextures();
 
         engine._bindUnboundFramebuffer(currentFramebuffer);
     }

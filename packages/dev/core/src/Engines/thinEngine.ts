@@ -1140,7 +1140,13 @@ export class ThinEngine extends AbstractEngine {
 
         this._currentRenderTarget = null;
 
-        this.resolveFramebuffer(texture, disableGenerateMipMaps);
+        if (!webglRTWrapper.disableAutomaticMSAAResolve) {
+            this.resolveFramebuffer(texture);
+        }
+
+        if (!disableGenerateMipMaps) {
+            this.generateMipMapsFramebuffer(texture);
+        }
 
         if (onBeforeUnbind) {
             if (webglRTWrapper._MSAAFramebuffer) {
@@ -1154,62 +1160,72 @@ export class ThinEngine extends AbstractEngine {
     }
 
     /**
-     * Resolves the MSAA textures of the render target into their non-MSAA version
-     * Note that if "texture" is not a MSAA render target, no resolve is performed but mipmaps will still be generated (except if disableGenerateMipMaps is true or if a texture has generateMipMaps equals to false).
-     * @param texture  The render target texture containing the MSAA textures to resolve
-     * @param disableGenerateMipMaps Defines a boolean indicating that mipmaps must not be generated (default: false)
+     * Generates mipmaps for each texture of a render target
+     * @param texture The render target containing the textures to generate the mipmaps for
      */
-    public resolveFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false): void {
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
         const rtWrapper = texture as WebGLRenderTargetWrapper;
         const gl = this._gl;
-
-        if (rtWrapper._MSAAFramebuffer && !rtWrapper.disableAutomaticMSAAResolve) {
-            const bufferBits = rtWrapper._generateDepthBuffer ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT : gl.COLOR_BUFFER_BIT;
-            if (rtWrapper.isMulti) {
-                const attachments = rtWrapper._attachments!;
-                const count = attachments.length;
-
-                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
-                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
-
-                for (let i = 0; i < count; i++) {
-                    const texture = rtWrapper.textures![i];
-
-                    for (let j = 0; j < count; j++) {
-                        attachments[j] = gl.NONE;
-                    }
-
-                    attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-                    gl.readBuffer(attachments[i]);
-                    gl.drawBuffers(attachments);
-                    gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
-                }
-
-                for (let i = 0; i < count; i++) {
-                    attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-                }
-
-                gl.drawBuffers(attachments);
-            } else {
-                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
-                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
-                gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
-            }
-        }
 
         if (rtWrapper.isMulti) {
             for (let i = 0; i < rtWrapper._attachments!.length; i++) {
                 const texture = rtWrapper.textures![i];
-                if (texture?.generateMipMaps && !disableGenerateMipMaps && !texture?.isCube && !texture?.is3D) {
+                if (texture?.generateMipMaps && !texture?.isCube && !texture?.is3D) {
                     this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                     gl.generateMipmap(gl.TEXTURE_2D);
                     this._bindTextureDirectly(gl.TEXTURE_2D, null);
                 }
             }
         } else {
-            if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+            if (texture.texture?.generateMipMaps && !texture.isCube) {
                 this.generateMipmaps(texture.texture);
             }
+        }
+    }
+
+    /**
+     * Resolves the MSAA textures of the render target into their non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param texture  The render target texture containing the MSAA textures to resolve
+     */
+    public resolveFramebuffer(texture: RenderTargetWrapper): void {
+        const rtWrapper = texture as WebGLRenderTargetWrapper;
+        const gl = this._gl;
+
+        if (!rtWrapper._MSAAFramebuffer) {
+            return;
+        }
+
+        const bufferBits = rtWrapper._generateDepthBuffer ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT : gl.COLOR_BUFFER_BIT;
+        if (rtWrapper.isMulti) {
+            const attachments = rtWrapper._attachments!;
+            const count = attachments.length;
+
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+
+            for (let i = 0; i < count; i++) {
+                const texture = rtWrapper.textures![i];
+
+                for (let j = 0; j < count; j++) {
+                    attachments[j] = gl.NONE;
+                }
+
+                attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                gl.readBuffer(attachments[i]);
+                gl.drawBuffers(attachments);
+                gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
+            }
+
+            for (let i = 0; i < count; i++) {
+                attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+            }
+
+            gl.drawBuffers(attachments);
+        } else {
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+            gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
         }
     }
 
