@@ -12,6 +12,12 @@ vec2 getDataUV(float index, vec2 textureSize) {
     return vec2((x + 0.5) / textureSize.x, (y + 0.5) / textureSize.y);
 }
 
+ivec2 getDataUVint(float index, vec2 textureSize) {
+    float y = floor(index / textureSize.x);
+    float x = index - y * textureSize.x;
+    return ivec2(uint(x + 0.5), uint(y + 0.5));
+}
+
 struct Splat {
     vec4 center;
     vec4 color;
@@ -32,18 +38,19 @@ Splat readSplat(float splatIndex)
 {
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
+    ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #if SH_DEGREE >= 1
-    splat.sh0 = texture2D(shTexture0, splatUV);
+    splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
 #if SH_DEGREE >= 2
-    splat.sh1 = texture2D(shTexture1, splatUV);
+    splat.sh1 = texelFetch(shTexture1, splatUVint, 0);
 #endif
 #if SH_DEGREE == 3
-    splat.sh2 = texture2D(shTexture2, splatUV);
+    splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
 
     return splat;
@@ -102,16 +109,16 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 #endif
 #endif
 #endif
-	//result += 0.5f;
     return result;
 }
 
 vec4 decompose(uint value)
 {
-    vec4 components = vec4(float((value >> uint(24)) & 255u),
-                        float((value >> uint(16)) & 255u),
+    vec4 components = vec4(
+                                float((value            ) & 255u),
                         float((value >> uint( 8)) & 255u),
-                        float((value            ) & 255u));
+                        float((value >> uint(16)) & 255u),
+                        float((value >> uint(24)) & 255u));
 
     return components * vec4(2./255.) - vec4(1.);
 }

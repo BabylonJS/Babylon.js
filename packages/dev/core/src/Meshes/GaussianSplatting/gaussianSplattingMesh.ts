@@ -1073,7 +1073,7 @@ export class GaussianSplattingMesh extends Mesh {
             if (sh) {
                 this._shTextures = [];
                 sh.forEach((shData) => {
-                    const shTexture = createTextureFromDataU32(shData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    const shTexture = createTextureFromDataU32(shData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     this._shTextures!.push(shTexture);
                 });
             }

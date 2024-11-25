@@ -41,6 +41,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE4 = false;
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
+    public SH_DEGREE = 0;
 
     /**
      * Constructor of the defines.
@@ -128,6 +129,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
+
+        // SH
+        defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
 
         // Get correct effect
         if (defines.isDirty) {
@@ -272,9 +276,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         // Bind data
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
-
-        // SH
-        defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
 
         if (mustRebind) {
             this.bindView(effect);

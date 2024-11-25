@@ -21,10 +21,9 @@ uniform sampler2D covariancesBTexture;
 uniform sampler2D centersTexture;
 uniform sampler2D colorsTexture;
 
-uniform sampler2D shTexture0;
-uniform sampler2D shTexture1;
-uniform sampler2D shTexture2;
-uniform sampler2D shTexture3;
+uniform highp usampler2D shTexture0;
+uniform highp usampler2D shTexture1;
+uniform highp usampler2D shTexture2;
 
 // Output
 varying vec4 vColor;
@@ -43,7 +42,7 @@ void main () {
     vPosition = position;
 
 #if SH_DEGREE
-    vec3 dir = normalize(splat.center.xyz - vEyePosition.xyz);
+    vec3 dir = normalize(worldPos.xyz - vEyePosition.xyz);
     vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif
 
