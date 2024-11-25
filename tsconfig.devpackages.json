@@ -2,6 +2,7 @@
     "extends": "./tsconfig.build.json",
 
     "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
         "composite": true,
         "outDir": "./.temp/"
     },

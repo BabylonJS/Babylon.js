@@ -2,6 +2,7 @@
     "extends": "./tsconfig.build.json",
 
     "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
         "baseUrl": "packages",
         "experimentalDecorators": true,
         "noImplicitAny": true,

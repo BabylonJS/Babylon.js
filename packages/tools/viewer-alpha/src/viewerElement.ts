@@ -198,8 +198,8 @@ export class HTML3DElement extends LitElement {
 
         .loading-progress-outer {
             height: 4px;
-            border-radius: 2px;
-            border: none;
+            border-radius: 4px;
+            border: 1px solid var(--ui-background-color);
             outline: none;
             top: 12px;
             pointer-events: none;

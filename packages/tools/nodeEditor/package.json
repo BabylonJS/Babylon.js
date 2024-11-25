@@ -33,7 +33,7 @@
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
         "copy-webpack-plugin": "^11.0.0",
-        "css-loader": "^7.1.0",
+        "css-loader": "^6.4.0",
         "dagre": "^0.8.5",
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.4.0",
