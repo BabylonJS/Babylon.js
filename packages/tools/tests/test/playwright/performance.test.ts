@@ -37,9 +37,9 @@ export const checkPerformanceOfScene = async (page: Page, baseUrl: string, numbe
 
 export const evaluateRenderScene = async ({ renderCount }: { renderCount: number }): Promise<number> => {
     window.BABYLON.SceneLoader.ShowLoadingScreen = false;
-    window.scene.useConstantAnimationDeltaTime = true;
+    (window.scene as any).useConstantAnimationDeltaTime = true;
 
-    await window.scene.whenReadyAsync();
+    await (window.scene as any).whenReadyAsync();
 
     if (window.scene && window.engine) {
         const now = performance.now();
@@ -202,4 +202,3 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
 };
 
 performanceTests("webgl2", "config", false, false, true, false);
-
