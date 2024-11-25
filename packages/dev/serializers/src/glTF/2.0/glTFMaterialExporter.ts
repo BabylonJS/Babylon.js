@@ -33,7 +33,6 @@ const black = Color3.Black();
  * Interface for storing specular glossiness factors
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 interface IPBRSpecularGlossiness {
     /**
      * Represents the linear diffuse factors of the material
@@ -65,12 +64,12 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
 }
 
 /**
- * @internal
  * Computes the metallic factor.
  * @param diffuse diffused value
  * @param specular specular value
  * @param oneMinusSpecularStrength one minus the specular strength
  * @returns metallic value
+ * @internal
  */
 export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
     if (specular < dielectricSpecular.r) {
