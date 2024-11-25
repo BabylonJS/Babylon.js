@@ -4448,6 +4448,14 @@ Object.defineProperties(Vector4.prototype, {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
 export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuaternionLike {
+    /**
+     * If the first quaternion is flagged with integers (as everything is 0,0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent quaternion are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all quaternion instances that it creates.
+     * But the original quaternion instances are unchanged and has a "deprecated map".
+     * If we keep using the quaternion instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Quaternion(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Quaternion>;
     /** @internal */
     public _x: number;
 
