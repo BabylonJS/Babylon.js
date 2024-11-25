@@ -16,7 +16,7 @@
         "build": "node ./build.js",
         "analyse": "webpack --profile --json > stats.json",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
-        "test:playwright": "playwright test -c ../../../playwright.config.ts"
+        "test:playwright": "playwright test --config ../../../playwright.config.ts"
     },
     "devDependencies": {
         "@dev/core": "^1.0.0",
