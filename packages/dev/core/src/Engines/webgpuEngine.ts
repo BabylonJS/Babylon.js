@@ -3395,8 +3395,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._endCurrentRenderPass();
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         this._currentRenderTarget = null;

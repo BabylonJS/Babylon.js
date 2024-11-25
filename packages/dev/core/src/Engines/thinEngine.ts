@@ -1141,11 +1141,19 @@ export class ThinEngine extends AbstractEngine {
         this._currentRenderTarget = null;
 
         if (!webglRTWrapper.disableAutomaticMSAAResolve) {
-            this.resolveFramebuffer(texture);
+            if (texture.isMulti) {
+                this.resolveMultiFramebuffer(texture);
+            } else {
+                this.resolveFramebuffer(texture);
+            }
         }
 
         if (!disableGenerateMipMaps) {
-            this.generateMipMapsFramebuffer(texture);
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         if (onBeforeUnbind) {
