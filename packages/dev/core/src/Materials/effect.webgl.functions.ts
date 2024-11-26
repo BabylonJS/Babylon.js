@@ -89,8 +89,8 @@ export async function generatePipelineContext(
                             _preparePipelineContext,
                             _executeWhenRenderingStateIsCompiled
                         );
-                        // the default behavior so far.
-                        if (!options.waitForIsReady) {
+                        // the default behavior so far. If not async or no request to wait for isReady, resolve immediately
+                        if (!options.waitForIsReady || !pipeline.isAsync) {
                             resolve(pipeline);
                         } else {
                             // max a second for the pipeline to be ready
