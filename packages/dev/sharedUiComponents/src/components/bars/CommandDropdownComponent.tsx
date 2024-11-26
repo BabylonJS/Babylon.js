@@ -2,7 +2,7 @@ import * as React from "react";
 import { FileButtonLineComponent } from "../lines/FileButtonLineComponent";
 import { JoinClassNames } from "../classNames";
 
-import * as style from "./CommandDropdown.module.scss";
+import style from "./CommandDropdown.module.scss";
 
 interface ICommandDropdownComponentProps {
     icon?: string;

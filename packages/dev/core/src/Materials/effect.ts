@@ -1477,8 +1477,8 @@ export class Effect implements IDisposable {
     public dispose() {
         this._refCount--;
 
-        if (this._refCount > 0) {
-            // Others are still using the effect
+        if (this._refCount > 0 || this._isDisposed) {
+            // Others are still using the effect or the effect was already disposed
             return;
         }
 

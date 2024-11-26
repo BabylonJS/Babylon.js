@@ -239,6 +239,7 @@
         margin-left: 15px;
         font-size: 12px;
         font-weight: 100;
+        pointer-events: none;
     }
 }
 
@@ -405,5 +406,6 @@
         align-self: center;
         justify-self: end;
         margin-right: 10px;
+        pointer-events: none;
     }
 }

@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
-import * as style from "./NumericInputComponent.module.scss";
+import style from "./NumericInputComponent.module.scss";
 
 interface INumericInputComponentProps {
     label: string;
