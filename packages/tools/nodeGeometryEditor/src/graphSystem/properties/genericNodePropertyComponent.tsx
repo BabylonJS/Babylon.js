@@ -43,65 +43,6 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
 
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {
         switch (point.type) {
-            case NodeGeometryBlockConnectionPointTypes.Int: {
-                if (point.valueMax !== undefined && point.valueMin !== undefined) {
-                    return (
-                        <SliderLineComponent
-                            lockObject={this.props.stateManager.lockObject}
-                            key={point.name}
-                            label={point.name}
-                            target={point}
-                            propertyName="value"
-                            decimalCount={0}
-                            step={1}
-                            minimum={point.valueMin}
-                            maximum={point.valueMax}
-                            onChange={() => this.processUpdate()}
-                        />
-                    );
-                }
-                return (
-                    <FloatLineComponent
-                        lockObject={this.props.stateManager.lockObject}
-                        key={point.name}
-                        label={point.name}
-                        isInteger={true}
-                        step="1"
-                        digits={0}
-                        target={point}
-                        propertyName="value"
-                        onChange={() => this.processUpdate()}
-                    />
-                );
-            }
-            case NodeGeometryBlockConnectionPointTypes.Float: {
-                if (point.valueMax !== undefined && point.valueMin !== undefined) {
-                    return (
-                        <SliderLineComponent
-                            lockObject={this.props.stateManager.lockObject}
-                            key={point.name}
-                            label={point.name}
-                            target={point}
-                            propertyName="value"
-                            decimalCount={2}
-                            step={(point.valueMax - point.valueMin) / 100.0}
-                            minimum={point.valueMin}
-                            maximum={point.valueMax}
-                            onChange={() => this.processUpdate()}
-                        />
-                    );
-                }
-                return (
-                    <FloatLineComponent
-                        lockObject={this.props.stateManager.lockObject}
-                        key={point.name}
-                        label={point.name}
-                        target={point}
-                        propertyName="value"
-                        onChange={() => this.processUpdate()}
-                    />
-                );
-            }
             case NodeGeometryBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2LineComponent
@@ -146,6 +87,8 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
             return !input.isConnected && input.value !== null && input.value !== undefined;
         });
 
+        const projectedProperties = [NodeGeometryBlockConnectionPointTypes.Float, NodeGeometryBlockConnectionPointTypes.Int];
+
         return (
             <>
                 <LineContainerComponent title="GENERAL">
@@ -171,7 +114,9 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     />
                     {<TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />}
                 </LineContainerComponent>
-                {nonConnectedInputs.length > 0 && (
+                {nonConnectedInputs.filter(
+                    (p) => projectedProperties.indexOf(p.type) === -1 && (!p._defaultConnectionPointType || projectedProperties.indexOf(p._defaultConnectionPointType) !== -1)
+                ).length > 0 && (
                     <LineContainerComponent title="PROPERTIES">
                         {nonConnectedInputs.map((input) => {
                             return this.renderConnectionPoint(input);
