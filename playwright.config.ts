@@ -10,9 +10,6 @@ const customFlags = process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" 
 const headless = process.env.HEADLESS !== "false";
 const forceChrome = process.env.FORCE_CHROME === "true";
 
-const args = browserType === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browserType === "Firefox" ? ["-wait-for-browser"] : [];
-args.push(...customFlags);
-
 const browserStackBrowser = process.env.BROWSERSTACK_BROWSER || "chrome@latest:OSX Sonoma";
 
 export default defineConfig({
@@ -94,6 +91,8 @@ export default defineConfig({
 });
 
 function getUseDefinition(title: string, browser = browserType, noBrowserStack = false) {
+    const args = browser === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browserType === "Firefox" ? ["-wait-for-browser"] : [];
+    args.push(...customFlags);
     if (noBrowserStack) {
         return {
             ...devices["Desktop " + browser],
