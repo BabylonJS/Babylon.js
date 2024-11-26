@@ -50,6 +50,8 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
             // use feature detection. instanceof returns false. This only exists on WebGL2 context
             _webGLVersion: (context as WebGL2RenderingContext).TEXTURE_BINDING_3D ? 2 : 1,
             _context: context,
+            // when using the function without an engine we need to set it to enable parallel compilation
+            parallelShaderCompile: context.getExtension("KHR_parallel_shader_compile") || undefined,
             cachedPipelines: {},
         };
         _stateObject.set(context, state);
@@ -187,6 +189,20 @@ export function _createShaderProgram(
     }
 
     return shaderProgram;
+}
+
+export function _isRenderingStateCompiled(pipelineContext: IPipelineContext, gl: WebGLContext, validateShaderPrograms?: boolean): boolean {
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+    if (webGLPipelineContext._isDisposed) {
+        return false;
+    }
+    const stateObject = getStateObject(gl);
+    if (gl.getProgramParameter(webGLPipelineContext.program!, stateObject.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
+        _finalizePipelineContext(webGLPipelineContext, gl, validateShaderPrograms);
+        return true;
+    }
+
+    return false;
 }
 
 /**

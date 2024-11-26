@@ -2,11 +2,12 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import { _executeWhenRenderingStateIsCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
 import { _getGlobalDefines } from "core/Engines/abstractEngine.functions";
 import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "core/Engines/shaderStore";
+import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
 
 /**
  * Generate a pipeline context from the provided options
@@ -37,7 +38,8 @@ export async function generatePipelineContext(
                 break;
             case "WEBGL2":
             default:
-                processor = new (await import("core/Engines/WebGL/webGL2ShaderProcessors")).WebGL2ShaderProcessor();
+                // default to WebGL2, which is included in the package. Avoid async-load the default.
+                processor = new WebGL2ShaderProcessor();
                 break;
         }
     }
@@ -87,7 +89,25 @@ export async function generatePipelineContext(
                             _preparePipelineContext,
                             _executeWhenRenderingStateIsCompiled
                         );
-                        resolve(pipeline);
+                        // the default behavior so far.
+                        if (!options.waitForIsReady) {
+                            resolve(pipeline);
+                        } else {
+                            // max a second for the pipeline to be ready
+                            let maxTimeout = 1000;
+                            // not using the render loop as it is not guaranteed that this is done with an engine present
+                            const int = setInterval(() => {
+                                if (_isRenderingStateCompiled(pipeline, context)) {
+                                    clearInterval(int);
+                                    resolve(pipeline);
+                                }
+                                maxTimeout -= 10;
+                                if (maxTimeout < 0) {
+                                    clearInterval(int);
+                                    reject(new Error("Timeout while waiting for pipeline to be ready"));
+                                }
+                            }, 10);
+                        }
                     } catch (e) {
                         reject(e);
                     }
