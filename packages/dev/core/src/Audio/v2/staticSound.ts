@@ -84,18 +84,14 @@ export abstract class StaticSound extends AbstractSound {
      * @param waitTime - The time to wait before playing the sound in seconds.
      * @param startOffset - The time within the sound source to start playing the sound in seconds.
      * @param duration - How long to play the sound in seconds.
-     * @returns The new playback instance, or `null` if the sound was resumed from pause.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): StaticSoundInstance {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this._isPaused && this._soundInstances.size > 0) {
             this.resume();
-            return Array.from(this._soundInstances)[this._soundInstances.size - 1] as StaticSoundInstance;
         }
 
         const instance = this._createSoundInstance();
         this._play(instance, waitTime, startOffset, duration);
         this._stopExcessInstances();
-
-        return instance;
     }
 }

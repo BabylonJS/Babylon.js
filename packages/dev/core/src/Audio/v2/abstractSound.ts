@@ -204,15 +204,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     };
 
-    protected _play(
-        instance: AbstractSoundInstance,
-        waitTime: Nullable<number> = null,
-        startOffset: Nullable<number> = null,
-        duration: Nullable<number> = null
-    ): Nullable<AbstractSoundInstance> {
+    protected _play(instance: AbstractSoundInstance, waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this.state === SoundState.Paused && this._soundInstances.size > 0) {
             this.resume();
-            return null;
+            return;
         }
 
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded);
@@ -221,8 +216,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this._soundInstances.add(instance);
 
         this._state = SoundState.Started;
-
-        return instance;
     }
 
     protected _stopExcessInstances(): void {

@@ -81,22 +81,18 @@ export abstract class StreamingSound extends AbstractSound {
      * @param waitTime - The time to wait before playing the sound in seconds.
      * @param startOffset - The time within the sound source to start playing the sound in seconds.
      * @param duration - How long to play the sound in seconds.
-     * @returns The new playback instance, or `null` if the sound was resumed from pause.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): StreamingSoundInstance {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this._isPaused && this._soundInstances.size > 0) {
             this.resume();
-            return Array.from(this._soundInstances)[this._soundInstances.size - 1] as StreamingSoundInstance;
         }
 
-        let instance: Nullable<StreamingSoundInstance> = null;
+        let instance: StreamingSoundInstance;
 
         if (this.preloadedInstanceCount > 0) {
             instance = this._preloadedInstances[0];
             this._removePreloadedInstance(instance);
-        }
-
-        if (!instance) {
+        } else {
             instance = this._createSoundInstance();
         }
 
@@ -109,8 +105,6 @@ export abstract class StreamingSound extends AbstractSound {
             }
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
-
-        return instance;
     }
 
     protected get _instancesPreloadedPromise() {
