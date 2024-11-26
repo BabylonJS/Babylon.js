@@ -91,7 +91,7 @@ export default defineConfig({
 });
 
 function getUseDefinition(title: string, browser = browserType, noBrowserStack = false) {
-    const args = browser === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browserType === "Firefox" ? ["-wait-for-browser"] : [];
+    const args = browser === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browser === "Firefox" ? ["-wait-for-browser"] : [];
     args.push(...customFlags);
     if (noBrowserStack) {
         return {
