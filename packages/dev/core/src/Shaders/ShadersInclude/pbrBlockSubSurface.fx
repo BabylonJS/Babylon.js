@@ -63,6 +63,10 @@ struct subSurfaceOutParams
             #endif
             #ifdef REALTIME_FILTERING
                 , in vec2 vRefractionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , in sampler2D icdfxSampler
+                    , in sampler2D icdfySampler
+                #endif
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , in vec3 refractionPosition
@@ -120,7 +124,7 @@ struct subSurfaceOutParams
                 #endif
 
                 #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
-                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo, sampler2D icdfxSampler, sampler2D icdfySampler), 1.0);
+                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
                 #else
                     environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
                 #endif
@@ -180,6 +184,10 @@ struct subSurfaceOutParams
                 #if defined(REALTIME_FILTERING)
                     , in samplerCube reflectionSampler
                     , in vec2 vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , in sampler2D icdfxSampler
+                        , in sampler2D icdfySampler
+                    #endif
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
@@ -230,6 +238,10 @@ struct subSurfaceOutParams
         #endif
         #ifdef REALTIME_FILTERING
             , in vec2 vRefractionFilteringInfo
+            #ifdef IBL_CDF_FILTERING
+                , in sampler2D icdfxSampler
+                , in sampler2D icdfySampler
+            #endif
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
             , in vec3 refractionPosition
@@ -386,6 +398,10 @@ struct subSurfaceOutParams
                 #endif
                 #ifdef REALTIME_FILTERING
                     , vRefractionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfxSampler
+                        , icdfySampler
+                    #endif
                 #endif
                 #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                     , refractionPosition
@@ -490,7 +506,11 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo, icdfxSampler, icdfySampler);
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , icdfxSampler, icdfySampler
+                #endif
+                );
             #else
                 vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
             #endif

@@ -185,7 +185,7 @@
 
         #define inline
         vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
-        #ifdef REALTIME_FILTERING
+        #ifdef IBL_CDF_FILTERING
         , sampler2D icdfxSampler, sampler2D icdfySampler
         #endif
         )
@@ -193,7 +193,7 @@
             vec3 n = normalize(inputN);
             vec3 result = vec3(0.0);
 
-            #ifndef REALTIME_FILTERING
+            #ifndef IBL_CDF_FILTERING
             vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
             tangent = normalize(cross(tangent, n));
             vec3 bitangent = cross(n, tangent);
@@ -212,7 +212,7 @@
             {
                 vec2 Xi = hammersley(i, NUM_SAMPLES);
 
-                #ifdef REALTIME_FILTERING
+                #ifdef IBL_CDF_FILTERING
                     vec2 T;
                     T.x = textureCubeLodEXT(icdfxSampler, vec2(Xi.x, 0.0), 0.0).x;
                     T.y = textureCubeLodEXT(icdfySampler, vec2(T.x, Xi.y), 0.0).x;
@@ -233,7 +233,7 @@
                     float l = log4(omegaS) - log4(omegaP) + log4(K);
                     float mipLevel = clamp(l, 0.0, maxLevel);
 
-                    #ifdef REALTIME_FILTERING
+                    #ifdef IBL_CDF_FILTERING
                         vec3 c = textureCubeLodEXT(inputTexture, Ls, mipLevel).rgb;
                     #else
                         vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
@@ -242,7 +242,7 @@
                         c = toLinearSpace(c);
                     #endif
 
-                    #ifdef REALTIME_FILTERING
+                    #ifdef IBL_CDF_FILTERING
                         result += c * NoL;
                     #else
                         result += c;
@@ -256,11 +256,7 @@
         }
 
         #define inline
-        vec3 radiance(float alphaG, samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
-        #ifdef REALTIME_FILTERING
-        , sampler2D icdfxSampler, sampler2D icdfySampler
-        #endif
-        )
+        vec3 radiance(float alphaG, samplerCube inputTexture, vec3 inputN, vec2 filteringInfo)
         {
             vec3 n = normalize(inputN);
             vec3 c = textureCube(inputTexture, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
@@ -307,7 +303,6 @@
                         float mipLevel = clamp(float(l), 0.0, maxLevel);
 
                         weight += NoL;
-
                         vec3 c = textureCubeLodEXT(inputTexture, tbn * L, mipLevel).rgb;
                         #ifdef GAMMA_INPUT
                             c = toLinearSpace(c);

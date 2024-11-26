@@ -251,48 +251,51 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var reflectionOut: reflectionOutParams;
 
         #ifndef USE_CUSTOM_REFLECTION
-        reflectionOut =
-            reflectionBlock(fragmentInputs.vPositionW, normalW, alphaG,
-                            uniforms.vReflectionMicrosurfaceInfos,
-                            uniforms.vReflectionInfos, uniforms.vReflectionColor
-#ifdef ANISOTROPIC
-                            ,
-                            anisotropicOut
+            reflectionOut = reflectionBlock(
+                fragmentInputs.vPositionW
+                , normalW
+                , alphaG
+                , uniforms.vReflectionMicrosurfaceInfos
+                , uniforms.vReflectionInfos
+                , uniforms.vReflectionColor
+            #ifdef ANISOTROPIC
+                , anisotropicOut
             #endif
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                            ,
-                            NdotVUnclamped
+                , NdotVUnclamped
             #endif
             #ifdef LINEARSPECULARREFLECTION
-                            ,
-                            roughness
+                , roughness
             #endif
-                            ,
-                            reflectionSampler, reflectionSamplerSampler
+                , reflectionSampler
+                , reflectionSamplerSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                            ,
-                            fragmentInputs.vEnvironmentIrradiance
+                , fragmentInputs.vEnvironmentIrradiance
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                            ,
-                            uniforms.reflectionMatrix
+                    , uniforms.reflectionMatrix
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
-                            ,
-                            irradianceSampler, irradianceSamplerSampler
+                , irradianceSampler
+                , irradianceSamplerSampler
             #endif
             #ifndef LODBASEDMICROSFURACE
-                            ,
-                            reflectionLowSampler, reflectionLowSamplerSampler,
-                            reflectionHighSampler, reflectionHighSamplerSampler
+                , reflectionLowSampler
+                , reflectionLowSamplerSampler
+                , reflectionHighSampler
+                , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                            ,
-                            uniforms.vReflectionFilteringInfo,
-                            uniforms.icdfxSampler, uniforms.icdfySampler
-#endif
+                , uniforms.vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , uniforms.icdfxSampler
+                    , uniforms.icdfxSamplerSampler
+                    , uniforms.icdfySampler
+                    , uniforms.icdfySamplerSampler
+                #endif
+            #endif
             );
         #else
             #define CUSTOM_REFLECTION
@@ -313,58 +316,61 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             var sheenMapRoughnessData: vec4f = textureSample(sheenRoughnessSampler, sheenRoughnessSamplerSampler, fragmentInputs.vSheenRoughnessUV + uvOffset) * uniforms.vSheenInfos.w;
         #endif
 
-            sheenOut = sheenBlock(
-                uniforms.vSheenColor
-#ifdef SHEEN_ROUGHNESS
-                ,
-                uniforms.vSheenRoughness
+        sheenOut = sheenBlock(
+            uniforms.vSheenColor
+        #ifdef SHEEN_ROUGHNESS
+            , uniforms.vSheenRoughness
             #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-                ,
-                sheenMapRoughnessData
+                , sheenMapRoughnessData
             #endif
         #endif
-                ,
-                roughness
+            , roughness
         #ifdef SHEEN_TEXTURE
-                ,
-                sheenMapData, uniforms.vSheenInfos.y
+            , sheenMapData
+            , uniforms.vSheenInfos.y
         #endif
-                ,
-                reflectance
+            , reflectance
         #ifdef SHEEN_LINKWITHALBEDO
-                ,
-                baseColor, surfaceAlbedo
+            , baseColor
+            , surfaceAlbedo
         #endif
         #ifdef ENVIRONMENTBRDF
-                ,
-                NdotV, environmentBrdf
+            , NdotV
+            , environmentBrdf
         #endif
         #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-                ,
-                AARoughnessFactors, uniforms.vReflectionMicrosurfaceInfos,
-                uniforms.vReflectionInfos, uniforms.vReflectionColor,
-                uniforms.vLightingIntensity, reflectionSampler,
-                reflectionSamplerSampler, reflectionOut.reflectionCoords,
-                NdotVUnclamped
+            , AARoughnessFactors
+            , uniforms.vReflectionMicrosurfaceInfos
+            , uniforms.vReflectionInfos
+            , uniforms.vReflectionColor
+            , uniforms.vLightingIntensity
+            , reflectionSampler
+            , reflectionSamplerSampler
+            , reflectionOut.reflectionCoords
+            , NdotVUnclamped
             #ifndef LODBASEDMICROSFURACE
-                ,
-                reflectionLowSampler, reflectionLowSamplerSampler,
-                reflectionHighSampler, reflectionHighSamplerSampler
+                , reflectionLowSampler
+                , reflectionLowSamplerSampler
+                , reflectionHighSampler
+                , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                ,
-                vReflectionFilteringInfo, icdfxSampler, icdfySampler
-#endif
+                , vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , uniforms.icdfxSampler
+                    , uniforms.icdfxSamplerSampler
+                    , uniforms.icdfySampler
+                    , uniforms.icdfySamplerSampler
+                #endif
+            #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
-                ,
-                seo
+                , seo
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
-                ,
-                eho
+                , eho
             #endif
         #endif
-            );
+        );
 
         #ifdef SHEEN_LINKWITHALBEDO
             surfaceAlbedo = sheenOut.surfaceAlbedo;
@@ -427,70 +433,69 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             var clearCoatBumpMapData: vec4f = textureSample(clearCoatBumpSampler, clearCoatBumpSamplerSampler, fragmentInputs.vClearCoatBumpUV + uvOffset);
         #endif
 
-            clearcoatOut = clearcoatBlock(
-                fragmentInputs.vPositionW, geometricNormalW, viewDirectionW,
-                uniforms.vClearCoatParams
-#if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-                ,
-                clearCoatMapRoughnessData
+        clearcoatOut = clearcoatBlock(
+            fragmentInputs.vPositionW
+            , geometricNormalW
+            , viewDirectionW
+            , uniforms.vClearCoatParams
+            #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+                , clearCoatMapRoughnessData
             #endif
-                ,
-                specularEnvironmentR0
+            , specularEnvironmentR0
         #ifdef CLEARCOAT_TEXTURE
-                ,
-                clearCoatMapData
+            , clearCoatMapData
         #endif
         #ifdef CLEARCOAT_TINT
-                ,
-                uniforms.vClearCoatTintParams,
-                uniforms.clearCoatColorAtDistance,
-                uniforms.vClearCoatRefractionParams
+            , uniforms.vClearCoatTintParams
+            , uniforms.clearCoatColorAtDistance
+            , uniforms.vClearCoatRefractionParams
             #ifdef CLEARCOAT_TINT_TEXTURE
-                ,
-                clearCoatTintMapData
+                , clearCoatTintMapData
             #endif
         #endif
         #ifdef CLEARCOAT_BUMP
-                ,
-                uniforms.vClearCoatBumpInfos, clearCoatBumpMapData,
-                fragmentInputs.vClearCoatBumpUV
+            , uniforms.vClearCoatBumpInfos
+            , clearCoatBumpMapData
+            , fragmentInputs.vClearCoatBumpUV
             #if defined(TANGENT) && defined(NORMAL)
-                ,
-                vTBN
+                , vTBN
             #else
                 , uniforms.vClearCoatTangentSpaceParams
             #endif
             #ifdef OBJECTSPACE_NORMALMAP
-                ,
-                uniforms.normalMatrix
+                , uniforms.normalMatrix
             #endif
         #endif
         #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-                ,
-                faceNormal
+            , faceNormal
         #endif
         #ifdef REFLECTION
-                ,
-                uniforms.vReflectionMicrosurfaceInfos,
-                uniforms.vReflectionInfos, uniforms.vReflectionColor,
-                uniforms.vLightingIntensity, reflectionSampler,
-                reflectionSamplerSampler
+            , uniforms.vReflectionMicrosurfaceInfos
+            , uniforms.vReflectionInfos
+            , uniforms.vReflectionColor
+            , uniforms.vLightingIntensity
+            , reflectionSampler
+            , reflectionSamplerSampler
             #ifndef LODBASEDMICROSFURACE
-                ,
-                reflectionLowSampler, reflectionLowSamplerSampler,
-                reflectionHighSampler, reflectionHighSamplerSampler
+                , reflectionLowSampler
+                , reflectionLowSamplerSampler
+                , reflectionHighSampler
+                , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                ,
-                uniforms.vReflectionFilteringInfo, uniforms.icdfxSampler,
-                uniforms.icdfySampler
-#endif
+                , uniforms.vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , uniforms.icdfxSampler
+                    , uniforms.icdfxSamplerSampler
+                    , uniforms.icdfySampler
+                    , uniforms.icdfySamplerSampler
+                #endif
+            #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                ,
-                select(-1., 1., fragmentInputs.frontFacing)
+            , select(-1., 1., fragmentInputs.frontFacing)
         #endif
-            );
+        );
     #else
         clearcoatOut.specularEnvironmentR0 = specularEnvironmentR0;
     #endif
@@ -518,117 +523,121 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             var translucencyColorMap: vec4f = textureSample(translucencyColorSampler, translucencyColorSamplerSampler, fragmentInputs.vTranslucencyColorUV + uvOffset);
         #endif
 
-            subSurfaceOut = subSurfaceBlock(
-                uniforms.vSubSurfaceIntensity, uniforms.vThicknessParam,
-                uniforms.vTintColor, normalW, specularEnvironmentReflectance
-#ifdef SS_THICKNESSANDMASK_TEXTURE
-                ,
-                thicknessMap
+        subSurfaceOut = subSurfaceBlock(
+            uniforms.vSubSurfaceIntensity
+            , uniforms.vThicknessParam
+            , uniforms.vTintColor
+            , normalW
+            , specularEnvironmentReflectance
+        #ifdef SS_THICKNESSANDMASK_TEXTURE
+            , thicknessMap
         #endif
         #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-                ,
-                refractionIntensityMap
+            , refractionIntensityMap
         #endif
         #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-                ,
-                translucencyIntensityMap
+            , translucencyIntensityMap
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY
-                ,
-                uniforms.reflectionMatrix
+                , uniforms.reflectionMatrix
                 #ifdef USESPHERICALFROMREFLECTIONMAP
                     #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                ,
-                reflectionOut.irradianceVector
+                        , reflectionOut.irradianceVector
                     #endif
                     #if defined(REALTIME_FILTERING)
-                ,
-                reflectionSampler, reflectionSamplerSampler,
-                vReflectionFilteringInfo, icdfxSampler, icdfySampler
-#endif
-#endif
-#ifdef USEIRRADIANCEMAP
-                ,
-                irradianceSampler, irradianceSamplerSampler
-#endif
-#endif
-#endif
-#if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-                ,
-                surfaceAlbedo
-#endif
-#ifdef SS_REFRACTION
-                ,
-                fragmentInputs.vPositionW, viewDirectionW, scene.view,
-                uniforms.vRefractionInfos, uniforms.refractionMatrix,
-                uniforms.vRefractionMicrosurfaceInfos,
-                uniforms.vLightingIntensity
-#ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-                ,
-                alpha
-#endif
-#ifdef SS_LODINREFRACTIONALPHA
-                ,
-                NdotVUnclamped
-#endif
-#ifdef SS_LINEARSPECULARREFRACTION
-                ,
-                roughness
-#endif
-                ,
-                alphaG, refractionSampler, refractionSamplerSampler
-#ifndef LODBASEDMICROSFURACE
-                ,
-                refractionLowSampler, refractionLowSamplerSampler,
-                refractionHighSampler, refractionHighSamplerSampler
-#endif
-#ifdef ANISOTROPIC
-                ,
-                anisotropicOut
-#endif
-#ifdef REALTIME_FILTERING
-                ,
-                uniforms.vRefractionFilteringInfo, uniforms.icdfxSampler,
-                uniforms.icdfySampler
-#endif
-#ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-                ,
-                uniforms.vRefractionPosition, uniforms.vRefractionSize
-#endif
-#ifdef SS_DISPERSION
-                ,
-                dispersion
-#endif
-#endif
-#ifdef SS_TRANSLUCENCY
-                ,
-                uniforms.vDiffusionDistance, uniforms.vTranslucencyColor
-#ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-                ,
-                translucencyColorMap
-#endif
-#endif
-            );
+                        , reflectionSampler
+                        , reflectionSamplerSampler
+                        , vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , uniforms.icdfxSampler
+                            , uniforms.icdfxSamplerSampler
+                            , uniforms.icdfySampler
+                            , uniforms.icdfySamplerSampler
+                        #endif
+                    #endif
+                #endif
+                #ifdef USEIRRADIANCEMAP
+                    , irradianceSampler
+                    , irradianceSamplerSampler
+                #endif
+            #endif
+        #endif
+        #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+            , surfaceAlbedo
+        #endif
+        #ifdef SS_REFRACTION
+            , fragmentInputs.vPositionW
+            , viewDirectionW
+            , scene.view
+            , uniforms.vRefractionInfos
+            , uniforms.refractionMatrix
+            , uniforms.vRefractionMicrosurfaceInfos
+            , uniforms.vLightingIntensity
+            #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
+                , alpha
+            #endif
+            #ifdef SS_LODINREFRACTIONALPHA
+                , NdotVUnclamped
+            #endif
+            #ifdef SS_LINEARSPECULARREFRACTION
+                , roughness
+            #endif
+            , alphaG
+            , refractionSampler
+            , refractionSamplerSampler
+            #ifndef LODBASEDMICROSFURACE
+                , refractionLowSampler
+                , refractionLowSamplerSampler
+                , refractionHighSampler
+                , refractionHighSamplerSampler
+            #endif
+            #ifdef ANISOTROPIC
+                , anisotropicOut
+            #endif
+            #ifdef REALTIME_FILTERING
+                , uniforms.vRefractionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , uniforms.icdfxSampler
+                    , uniforms.icdfxSamplerSampler
+                    , uniforms.icdfySampler
+                    , uniforms.icdfySamplerSampler
+                #endif
+            #endif
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                , uniforms.vRefractionPosition
+                , uniforms.vRefractionSize
+            #endif
+            #ifdef SS_DISPERSION
+                , dispersion
+            #endif
+        #endif
+        #ifdef SS_TRANSLUCENCY
+            , uniforms.vDiffusionDistance
+            , uniforms.vTranslucencyColor
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+                , translucencyColorMap
+            #endif
+        #endif
+        );
 
-#ifdef SS_REFRACTION
+        #ifdef SS_REFRACTION
             surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
-#ifdef SS_LINKREFRACTIONTOTRANSPARENCY
+            #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                 alpha = subSurfaceOut.alpha;
-#endif
-#endif
-#else
-    subSurfaceOut.specularEnvironmentReflectance =
-        specularEnvironmentReflectance;
-#endif
+            #endif
+        #endif
+    #else
+        subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+    #endif
 
     // _____________________________ Direct Lighting Info __________________________________
-#include <pbrBlockDirectLighting>
+    #include<pbrBlockDirectLighting>
 
-#include <lightFragment>[0..maxSimultaneousLights]
+    #include<lightFragment>[0..maxSimultaneousLights]
 
     // _____________________________ Compute Final Lit Components ________________________
-#include <pbrBlockFinalLitComponents>
+    #include<pbrBlockFinalLitComponents>
 #endif // UNLIT
 
     #include<pbrBlockFinalUnlitComponents>

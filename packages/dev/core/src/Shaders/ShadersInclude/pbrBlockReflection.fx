@@ -84,8 +84,10 @@
     #endif
     #ifdef REALTIME_FILTERING
         in vec2 vReflectionFilteringInfo,
-        in sampler2D icdfxSampler,
-        in sampler2D icdfySampler,
+        #ifdef IBL_CDF_FILTERING
+            in sampler2D icdfxSampler,
+            in sampler2D icdfySampler,
+        #endif
     #endif
         out vec4 environmentRadiance
     )
@@ -120,7 +122,7 @@
                 float requestedReflectionLOD = reflectionLOD;
             #endif
             #ifdef REALTIME_FILTERING
-                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo, icdfxSampler, icdfySampler), 1.0);
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
             #else
                 environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
             #endif
@@ -206,8 +208,10 @@
     #endif
     #ifdef REALTIME_FILTERING
         , in vec2 vReflectionFilteringInfo
-        , in sampler2D icdfxSampler
-        , in sampler2D icdfySampler
+        #ifdef IBL_CDF_FILTERING
+            , in sampler2D icdfxSampler
+            , in sampler2D icdfySampler
+        #endif
     #endif
     )
     {
@@ -254,8 +258,10 @@
         #endif
         #ifdef REALTIME_FILTERING
             vReflectionFilteringInfo,
-            icdfxSampler,
-            icdfySampler,
+            #ifdef IBL_CDF_FILTERING
+                icdfxSampler,
+                icdfySampler,
+            #endif
         #endif
             environmentRadiance
         );
@@ -282,7 +288,11 @@
                 #endif
 
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, icdfxSampler, icdfySampler);
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfxSampler, icdfySampler
+                    #endif
+                    );
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif

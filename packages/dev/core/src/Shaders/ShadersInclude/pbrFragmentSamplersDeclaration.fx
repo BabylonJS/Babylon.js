@@ -70,11 +70,6 @@
         #endif
     #endif
 
-    #ifdef REALTIME_FILTERING
-        uniform sampler2D icdfxSampler;
-        uniform sampler2D icdfySampler;
-    #endif
-
     #ifdef REFLECTIONMAP_SKYBOX
         varying vec3 vPositionUVW;
     #else
@@ -120,4 +115,9 @@
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_REFRACTIONINTENSITY_TEXTURE,_VARYINGNAME_,RefractionIntensity,_SAMPLERNAME_,refractionIntensity)
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity,_SAMPLERNAME_,translucencyIntensity)
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYCOLOR_TEXTURE,_VARYINGNAME_,TranslucencyColor,_SAMPLERNAME_,translucencyColor)
+#endif
+
+#ifdef IBL_CDF_FILTERING
+    uniform sampler2D icdfxSampler;
+    uniform sampler2D icdfySampler;
 #endif

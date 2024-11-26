@@ -515,9 +515,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._environmentTexture = value;
-        if (!this._importanceSamplingRenderer && value) {
-            this._importanceSamplingRenderer = new ImportanceSamplingRenderer(this);
-        }
         if (this._importanceSamplingRenderer && value) {
             this._importanceSamplingRenderer.iblSource = value;
         }
@@ -525,6 +522,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     private _useEnvironmentCDFMaps = false;
+
+    /**
+     * Specifies whether IBL filtering will use the CDF (cumulative distribution function)
+     * maps for importance sampling.
+     */
     public get useEnvironmentCDFMaps(): boolean {
         return this._useEnvironmentCDFMaps;
     }
@@ -534,13 +536,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._useEnvironmentCDFMaps = value;
-        if (this.environmentTexture && this._useEnvironmentCDFMaps && !this._importanceSamplingRenderer) {
+        if (this._useEnvironmentCDFMaps && !this._importanceSamplingRenderer) {
             this._importanceSamplingRenderer = new ImportanceSamplingRenderer(this);
+        }
+        if (this._useEnvironmentCDFMaps && this.environmentTexture) {
             this._importanceSamplingRenderer.iblSource = this.environmentTexture;
         }
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
     private _importanceSamplingRenderer: ImportanceSamplingRenderer;
+
+    /**
+     * The renderer that creates CDF (cumulative distribution function) textures
+     * for importance sampling.
+     */
     public get importanceSamplingRenderer(): ImportanceSamplingRenderer {
         return this._importanceSamplingRenderer;
     }

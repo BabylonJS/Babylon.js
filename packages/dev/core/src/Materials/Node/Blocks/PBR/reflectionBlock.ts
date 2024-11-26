@@ -456,10 +456,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #endif
             #ifdef REALTIME_FILTERING
                 , ${this._vReflectionFilteringInfoName}
-                , icdfxSampler         // ** not handled **
-                ${isWebGPU ? `, icdfxSamplerSampler` : ""}
-                , icdfySampler         // ** not handled **
-                ${isWebGPU ? `, icdfySamplerSampler` : ""}
+                #ifdef IBL_CDF_FILTERING
+                    , icdfxSampler         // ** not handled **
+                    ${isWebGPU ? `, icdfxSamplerSampler` : ""}
+                    , icdfySampler         // ** not handled **
+                    ${isWebGPU ? `, icdfySamplerSampler` : ""}
+                #endif
             #endif
             );
         #endif\n`;
