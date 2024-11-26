@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* eslint-disable babylonjs/available */
-
 import type {
     IBufferView,
     IAccessor,
@@ -73,7 +70,7 @@ import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
-import type { IGlTFMorphTarget } from "./glTFMorphTargetsUtilities";
+import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 
@@ -89,7 +86,7 @@ class ExporterState {
 
     private _remappedBufferView = new Map<Buffer, Map<VertexBuffer, number>>();
 
-    private _meshMorphTargetMap = new Map<Mesh, IGlTFMorphTarget[]>();
+    private _meshMorphTargetMap = new Map<Mesh, IMorphTargetData[]>();
 
     private _vertexMapColorAlpha = new Map<VertexBuffer, boolean>();
 
@@ -205,7 +202,7 @@ class ExporterState {
         this._meshMap.set(mesh, meshIndex);
     }
 
-    public bindMorphDataToMesh(mesh: Mesh, morphData: IGlTFMorphTarget) {
+    public bindMorphDataToMesh(mesh: Mesh, morphData: IMorphTargetData) {
         const morphTargets = this._meshMorphTargetMap.get(mesh) || [];
         this._meshMorphTargetMap.set(mesh, morphTargets);
         if (morphTargets.indexOf(morphData) === -1) {
@@ -213,7 +210,7 @@ class ExporterState {
         }
     }
 
-    public getMorphTargetsFromMesh(mesh: Mesh): IGlTFMorphTarget[] | undefined {
+    public getMorphTargetsFromMesh(mesh: Mesh): IMorphTargetData[] | undefined {
         return this._meshMorphTargetMap.get(mesh);
     }
 }
@@ -241,9 +238,9 @@ export class GLTFExporter {
     public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
     private readonly _orderedImageData: Array<{ data: ArrayBuffer; mimeType: ImageMimeType }> = [];
 
-    // /**
-    //  * Baked animation sample rate
-    //  */
+    /**
+     * Baked animation sample rate
+     */
     private _animationSampleRate: number;
 
     private readonly _options: Required<IExportOptions>;
@@ -696,7 +693,7 @@ export class GLTFExporter {
         const rotation = TmpVectors.Quaternion[0];
 
         if (parent !== null) {
-            // Camera.getWorldMatrix returs global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
+            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
             const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
             const cameraWorldMatrix = babylonCamera.getWorldMatrix();
             const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
