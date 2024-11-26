@@ -10,7 +10,7 @@ import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
 
-const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
+const fileExtensionRegex = new RegExp("\\.(\\w{3,4})[$|\\?]");
 
 export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
@@ -224,7 +224,8 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
             if (skipCodecCheck) {
                 await this._initFromUrl(url);
             } else {
-                const format = url.match(fileExtensionRegex)?.at(1);
+                const matches = url.match(fileExtensionRegex);
+                const format = matches?.at(1);
                 if (format && this.engine.formatIsValid(format)) {
                     try {
                         await this._initFromUrl(url);
