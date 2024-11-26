@@ -8,7 +8,7 @@ import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader, ArrayItem, LoadBoundingInfoFromPositionAccessor } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_draco_mesh_compression";
@@ -120,9 +120,14 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression._decodeMeshToGeometryForGltfAsync(babylonMesh.name, this._loader.babylonScene, data, attributes, normalized).catch((error) => {
-                        throw new Error(`${context}: ${error.message}`);
-                    });
+                    const positionAccessor = ArrayItem.TryGet(this._loader.gltf.accessors, primitive.attributes["POSITION"]);
+                    const babylonBoundingInfo =
+                        !this._loader.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton && positionAccessor ? LoadBoundingInfoFromPositionAccessor(positionAccessor) : null;
+                    return dracoCompression
+                        ._decodeMeshToGeometryForGltfAsync(babylonMesh.name, this._loader.babylonScene, data, attributes, normalized, babylonBoundingInfo)
+                        .catch((error) => {
+                            throw new Error(`${context}: ${error.message}`);
+                        });
                 });
             }
 
