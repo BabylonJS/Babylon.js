@@ -335,8 +335,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     };
     /** @internal */
     public _pendingDebugCommands: Array<[string, Nullable<string>, number?]> = [];
-    /** @internal */
-    public _debugStackRenderPass: string[] = [];
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -917,7 +915,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
         this._configureContext();
         this._colorFormat = this._options.swapChainFormat!;
-        this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
+        this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture(this)];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.format = this._colorFormat;
         this._setColorFormat(this._mainRenderPassWrapper);
     }
@@ -2226,7 +2224,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /** @internal */
     public _createHardwareTexture(): HardwareTextureWrapper {
-        return new WebGPUHardwareTexture();
+        return new WebGPUHardwareTexture(this);
     }
 
     /**
@@ -2271,6 +2269,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
+            fullOptions.createMipMaps = options.createMipMaps;
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
@@ -2312,7 +2311,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         texture.depth = depth || layers;
         texture.isReady = true;
         texture.samples = fullOptions.samples;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.generateMipMaps = !!fullOptions.generateMipMaps;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
@@ -2326,7 +2325,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._internalTexturesCache.push(texture);
 
         if (!delayGPUTextureCreation) {
+            const createMipMapsOnly = !fullOptions.generateMipMaps && fullOptions.createMipMaps;
+
+            if (createMipMapsOnly) {
+                // So that the call to createGPUTextureForInternalTexture creates the mipmaps
+                texture.generateMipMaps = true;
+            }
+
             this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, layers || 1, fullOptions.creationFlags);
+
+            if (createMipMapsOnly) {
+                // So that we don't automatically generate mipmaps when the render target is unbound
+                texture.generateMipMaps = false;
+            }
         }
 
         return texture;
@@ -2462,7 +2473,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns the babylon internal texture
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
-        const hardwareTexture = new WebGPUHardwareTexture(texture);
+        const hardwareTexture = new WebGPUHardwareTexture(this, texture);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
@@ -2481,7 +2492,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+    public _getUseSRGBBuffer(useSRGBBuffer: boolean, _noMipmap: boolean): boolean {
         return useSRGBBuffer && this._caps.supportSRGBBuffers;
     }
 

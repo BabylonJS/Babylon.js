@@ -4,13 +4,9 @@ import type { InternalTexture } from "./internalTexture";
  * Define options used to create an internal texture
  */
 export interface InternalTextureCreationOptions {
-    /**
-     * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
-     */
+    /** Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead */
     createMipMaps?: boolean;
-    /**
-     * Specifies if mipmaps must be generated
-     */
+    /** Specifies if mipmaps must be generated */
     generateMipMaps?: boolean;
     /** Defines texture type (unsigned byte by default) */
     type?: number;
@@ -26,6 +22,10 @@ export interface InternalTextureCreationOptions {
     useSRGBBuffer?: boolean;
     /** Label of the texture (used for debugging only) */
     label?: string;
+    /** If the MSAA texture must be created right away (default: false) */
+    createMSAATexture?: boolean;
+    /** Comparison function. Used only for depth textures (default: 0) */
+    comparisonFunction?: number;
 }
 
 /**

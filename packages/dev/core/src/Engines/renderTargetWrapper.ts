@@ -1,5 +1,5 @@
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { HasStencilAspect, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
@@ -49,10 +49,30 @@ export class RenderTargetWrapper {
     public label?: string;
 
     /**
-     * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+     * Gets the depth/stencil texture
      */
     public get depthStencilTexture() {
         return this._depthStencilTexture;
+    }
+
+    /**
+     * Sets the depth/stencil texture
+     * @param texture The depth/stencil texture to set
+     * @param disposeExisting True to dispose the existing depth/stencil texture (if any) before replacing it (default: true)
+     */
+    public setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true) {
+        if (disposeExisting && this._depthStencilTexture) {
+            this._depthStencilTexture.dispose();
+        }
+
+        this._depthStencilTexture = texture;
+
+        this._generateDepthBuffer = this._generateStencilBuffer = false;
+
+        if (texture) {
+            this._generateDepthBuffer = true;
+            this._generateStencilBuffer = HasStencilAspect(texture.format);
+        }
     }
 
     /**
@@ -101,14 +121,14 @@ export class RenderTargetWrapper {
      * Gets the width of the render target wrapper
      */
     public get width(): number {
-        return (<{ width: number; height: number }>this._size).width || <number>this._size;
+        return (<{ width: number; height: number }>this._size).width ?? <number>this._size;
     }
 
     /**
      * Gets the height of the render target wrapper
      */
     public get height(): number {
-        return (<{ width: number; height: number }>this._size).height || <number>this._size;
+        return (<{ width: number; height: number }>this._size).height ?? <number>this._size;
     }
 
     /**

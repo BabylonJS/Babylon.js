@@ -126,6 +126,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let layers: number[] = [];
     let labels: string[] = [];
     let creationFlags: number[] = [];
+    let dontCreateTextures = false;
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -147,6 +148,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         labels = options.labels || labels;
         creationFlags = options.creationFlags || creationFlags;
         samples = options.samples ?? samples;
+        dontCreateTextures = options.dontCreateTextures ?? false;
     }
 
     const width = (<{ width: number; height: number }>size).width ?? <number>size;
@@ -163,7 +165,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     rtWrapper._defaultAttachments = defaultAttachments;
 
     let depthStencilTexture: Nullable<InternalTexture> = null;
-    if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+    if ((generateDepthBuffer || generateStencilBuffer || generateDepthTexture) && !dontCreateTextures) {
         if (!generateDepthTexture) {
             // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
             // So, we will align with what the WebGL engine does
@@ -207,7 +209,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         attachments.push(i + 1);
         defaultAttachments.push(initializeBuffers ? i + 1 : i === 0 ? 1 : 0);
 
-        if (target === -1) {
+        if (target === -1 || dontCreateTextures) {
             continue;
         }
 
@@ -266,13 +268,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     rtWrapper.setTextures(textures);
     rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
-    this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
+    if (!dontCreateTextures) {
+        this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
+    } else {
+        rtWrapper._samples = samples;
+    }
 
     return rtWrapper;
 };
 
 WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
-    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures[0].samples === samples) {
+    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures.length === 0 || rtWrapper.textures[0].samples === samples) {
         return samples;
     }
 

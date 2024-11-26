@@ -26,8 +26,8 @@ import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock"
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Constants } from "core/Engines/constants";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -63,7 +63,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
 
-    private _externalTextures: RenderTargetWrapper[] = [];
+    private _externalTextures: InternalTexture[] = [];
 
     appendBlock(dataToAppend: NodeRenderGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -246,16 +246,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 continue;
             }
             if (input.isAnyTexture()) {
-                let texture: RenderTargetWrapper;
+                let texture: InternalTexture;
                 if (textureIndex < this._externalTextures.length) {
                     texture = this._externalTextures[textureIndex++];
                 } else {
-                    texture = this.props.globalState.scene.getEngine().createRenderTargetTexture(
+                    texture = this.props.globalState.scene.getEngine()._createInternalTexture(
                         { width: 1, height: 1 },
                         {
                             generateMipMaps: false,
-                            generateDepthBuffer: false,
-                            generateStencilBuffer: false,
                             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                             format: Constants.TEXTUREFORMAT_RED,
                             samples: 4,
