@@ -517,9 +517,9 @@ ThinEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWr
         return;
     }
 
-    let bufferBits = gl.COLOR_BUFFER_BIT;
-    bufferBits |= rtWrapper._generateDepthBuffer ? gl.DEPTH_BUFFER_BIT : 0;
-    bufferBits |= rtWrapper._generateStencilBuffer ? gl.STENCIL_BUFFER_BIT : 0;
+    let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
 
     const attachments = rtWrapper._attachments!;
     const count = attachments.length;

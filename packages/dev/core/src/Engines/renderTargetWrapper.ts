@@ -159,6 +159,21 @@ export class RenderTargetWrapper {
     public disableAutomaticMSAAResolve = false;
 
     /**
+     * Indicates if MSAA color texture(s) should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is true)
+     */
+    public resolveMSAAColors = true;
+
+    /**
+     * Indicates if MSAA depth texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAADepth = false;
+
+    /**
+     * Indicates if MSAA stencil texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAAStencil = false;
+
+    /**
      * Gets the base array layer of a texture in the textures array
      * This is an number that is calculated based on the layer and face indices set for this texture at that index
      * @param index The index of the texture in the textures array to get the base array layer for

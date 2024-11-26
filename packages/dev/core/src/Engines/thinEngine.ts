@@ -1190,9 +1190,9 @@ export class ThinEngine extends AbstractEngine {
             return;
         }
 
-        let bufferBits = gl.COLOR_BUFFER_BIT;
-        bufferBits |= rtWrapper._generateDepthBuffer ? gl.DEPTH_BUFFER_BIT : 0;
-        bufferBits |= rtWrapper._generateStencilBuffer ? gl.STENCIL_BUFFER_BIT : 0;
+        let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
 
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
