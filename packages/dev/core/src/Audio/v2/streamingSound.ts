@@ -11,13 +11,13 @@ export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
  * Options for creating a new streaming sound.
  */
 export interface IStreamingSoundOptions extends ISoundOptions {
+    /** The number of instances to preload */
+    preloadCount?: number;
+
     /**
      * The preload type of the sound's instance.
      */
-    preloadType?: StreamingSoundPreloadType;
-
-    /** The number of instances to preload */
-    preloadCount?: number;
+    preloadType?: "none" | "metadata" | "auto";
 }
 
 /**
