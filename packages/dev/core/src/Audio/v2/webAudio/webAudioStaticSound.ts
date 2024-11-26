@@ -10,7 +10,7 @@ import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
 
-const fileExtensionRegex = new RegExp("\\.(\\w{3,4})[$|\\?]");
+const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
 export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
