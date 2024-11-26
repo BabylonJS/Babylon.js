@@ -85,12 +85,12 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
     float x = dir.x;
     float y = dir.y;
     float z = dir.z;
-    result = result - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+    result += - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
 
 #if SH_DEGREE > 1
     float xx = x * x, yy = y * y, zz = z * z;
     float xy = x * y, yz = y * z, xz = x * z;
-    result = result +
+    result += 
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
         SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
@@ -98,7 +98,7 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
         SH_C2[4] * (xx - yy) * sh[8];
 
 #if SH_DEGREE > 2
-    result = result +
+    result += 
         SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
         SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
@@ -109,13 +109,14 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
 #endif
 #endif
 #endif
+
     return result;
 }
 
 vec4 decompose(uint value)
 {
     vec4 components = vec4(
-                                float((value            ) & 255u),
+                        float((value            ) & 255u),
                         float((value >> uint( 8)) & 255u),
                         float((value >> uint(16)) & 255u),
                         float((value >> uint(24)) & 255u));

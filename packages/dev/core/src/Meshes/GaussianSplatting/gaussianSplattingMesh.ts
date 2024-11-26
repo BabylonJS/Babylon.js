@@ -1037,8 +1037,8 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
-        const createTextureFromDataU32 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INT);
+        const createTextureFromDataU32 = (data: Uint32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
         };
 
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
@@ -1073,7 +1073,10 @@ export class GaussianSplattingMesh extends Mesh {
             if (sh) {
                 this._shTextures = [];
                 sh.forEach((shData) => {
-                    const shTexture = createTextureFromDataU32(shData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                    const buffer = new Uint32Array(shData.buffer);
+                    const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                    shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
                 });
             }
