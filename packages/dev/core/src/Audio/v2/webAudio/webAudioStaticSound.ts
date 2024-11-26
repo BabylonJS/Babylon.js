@@ -381,12 +381,12 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
         return "WebAudioStaticSoundInstance";
     }
 
-    protected _onEnded = (() => {
+    protected _onEnded = () => {
         this._startTime = 0;
 
         this.onEndedObservable.notifyObservers(this);
         this._deinitSourceNode();
-    }).bind(this);
+    };
 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);

@@ -73,7 +73,7 @@ export class SpatialAudioTransform implements IDisposable {
         this._attachedTransformNode = node;
 
         if (node) {
-            node.onAfterWorldMatrixUpdateObservable.add(this._onAttachedTransformNodeWorldMatrixUpdated.bind(this));
+            node.onAfterWorldMatrixUpdateObservable.add(this._onAttachedTransformNodeWorldMatrixUpdated);
             this._positionDirty = true;
             this._rotationDirty = true;
         } else {
@@ -88,10 +88,10 @@ export class SpatialAudioTransform implements IDisposable {
         }
     }
 
-    private _onAttachedTransformNodeWorldMatrixUpdated(): void {
+    private _onAttachedTransformNodeWorldMatrixUpdated = () => {
         this._positionDirty = true;
         this._rotationDirty = true;
-    }
+    };
 
     private _updatePosition() {
         if (!this._positionDirty) {

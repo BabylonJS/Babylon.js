@@ -172,15 +172,15 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     });
     private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
 
-    private _onCanPlayThrough: () => void = (() => {
+    private _onCanPlayThrough: () => void = () => {
         this._resolveIsReadyPromise(this.mediaElement);
         this.onReadyObservable.notifyObservers(this);
-    }).bind(this);
+    };
 
-    private _onEnded: () => void = (() => {
+    private _onEnded: () => void = () => {
         this.onEndedObservable.notifyObservers(this);
         this.dispose();
-    }).bind(this);
+    };
 
     protected override _source: WebAudioStreamingSound;
 
