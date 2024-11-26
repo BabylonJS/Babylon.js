@@ -5,7 +5,7 @@ import { SoundState } from "../soundState";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
-import { StaticSoundInstance } from "../staticSoundInstance";
+import { _StaticSoundInstance } from "../staticSoundInstance";
 import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
@@ -248,7 +248,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 }
 
 /** @internal */
-class WebAudioStaticSoundInstance extends StaticSoundInstance {
+class WebAudioStaticSoundInstance extends _StaticSoundInstance {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 

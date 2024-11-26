@@ -2,7 +2,7 @@ import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSound } from "../abstractSound";
-import type { AbstractSoundInstance } from "../abstractSoundInstance";
+import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
@@ -229,7 +229,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public addSoundInstance(soundInstance: AbstractSoundInstance): void {
+    public addSoundInstance(soundInstance: _AbstractSoundInstance): void {
         this._addSoundInstance(soundInstance);
     }
 }

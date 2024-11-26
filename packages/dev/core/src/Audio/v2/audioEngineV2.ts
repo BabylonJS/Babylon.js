@@ -3,7 +3,7 @@ import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSound } from "./abstractSound";
-import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
 const instances: AudioEngineV2[] = [];
@@ -36,7 +36,7 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
     private readonly _sounds = new Set<AbstractSound>();
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
-    private readonly _soundInstances = new Set<AbstractSoundInstance>();
+    private readonly _soundInstances = new Set<_AbstractSoundInstance>();
 
     /**
      * The spatial audio listeners.
@@ -150,7 +150,7 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
         });
     }
 
-    protected _addSoundInstance(soundInstance: AbstractSoundInstance): void {
+    protected _addSoundInstance(soundInstance: _AbstractSoundInstance): void {
         this._soundInstances.add(soundInstance);
         soundInstance.onDisposeObservable.addOnce(() => {
             this._soundInstances.delete(soundInstance);

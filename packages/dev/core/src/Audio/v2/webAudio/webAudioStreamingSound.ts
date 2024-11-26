@@ -5,7 +5,7 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
-import { StreamingSoundInstance } from "../streamingSoundInstance";
+import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
@@ -158,7 +158,7 @@ class WebAudioStreamingSound extends StreamingSound {
 }
 
 /** @internal */
-class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
+class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 

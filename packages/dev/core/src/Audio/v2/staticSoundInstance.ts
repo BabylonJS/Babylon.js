@@ -1,8 +1,8 @@
 import type { AbstractSound } from "./abstractSound";
-import { AbstractSoundInstance } from "./abstractSoundInstance";
+import { _AbstractSoundInstance } from "./abstractSoundInstance";
 
 /** @internal */
-export abstract class StaticSoundInstance extends AbstractSoundInstance {
+export abstract class _StaticSoundInstance extends _AbstractSoundInstance {
     /** @internal */
     constructor(source: AbstractSound) {
         super(source);

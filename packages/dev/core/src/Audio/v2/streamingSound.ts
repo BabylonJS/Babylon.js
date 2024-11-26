@@ -3,7 +3,7 @@ import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
-import type { StreamingSoundInstance } from "./streamingSoundInstance";
+import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 
 export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 
@@ -24,7 +24,7 @@ export interface IStreamingSoundOptions extends ISoundOptions {
  * Abstract class representing a streaming sound in the audio engine.
  */
 export abstract class StreamingSound extends AbstractSound {
-    private _preloadedInstances = new Array<StreamingSoundInstance>();
+    private _preloadedInstances = new Array<_StreamingSoundInstance>();
     private _preloadedInstancesPromises = new Array<Promise<void>>();
 
     /**
@@ -74,7 +74,7 @@ export abstract class StreamingSound extends AbstractSound {
         await Promise.all(this._preloadedInstancesPromises);
     }
 
-    protected abstract override _createSoundInstance(): StreamingSoundInstance;
+    protected abstract override _createSoundInstance(): _StreamingSoundInstance;
 
     /**
      * Plays the sound.
@@ -87,7 +87,7 @@ export abstract class StreamingSound extends AbstractSound {
             this.resume();
         }
 
-        let instance: StreamingSoundInstance;
+        let instance: _StreamingSoundInstance;
 
         if (this.preloadedInstanceCount > 0) {
             instance = this._preloadedInstances[0];
@@ -111,7 +111,7 @@ export abstract class StreamingSound extends AbstractSound {
         return Promise.all(this._preloadedInstancesPromises);
     }
 
-    protected _addPreloadedInstance(instance: StreamingSoundInstance): void {
+    protected _addPreloadedInstance(instance: _StreamingSoundInstance): void {
         if (!this._preloadedInstances.includes(instance)) {
             this._preloadedInstances.push(instance);
         }
@@ -123,7 +123,7 @@ export abstract class StreamingSound extends AbstractSound {
         instance.onReadyObservable.add(this._removePreloadedInstance);
     }
 
-    protected _removePreloadedInstance: (instance: StreamingSoundInstance) => void = (instance) => {
+    protected _removePreloadedInstance: (instance: _StreamingSoundInstance) => void = (instance) => {
         let index = this._preloadedInstances.indexOf(instance);
         if (index !== -1) {
             this._preloadedInstances.splice(index, 1);

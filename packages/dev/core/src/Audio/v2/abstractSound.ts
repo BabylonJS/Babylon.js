@@ -2,7 +2,7 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import { SoundState } from "./soundState";
 
@@ -45,7 +45,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     // Owned by AbstractAudioEngine.
 
     // Non-owning.
-    protected _soundInstances = new Set<AbstractSoundInstance>();
+    protected _soundInstances = new Set<_AbstractSoundInstance>();
 
     protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
@@ -135,7 +135,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.onDisposeObservable.notifyObservers(this);
     }
 
-    protected abstract _createSoundInstance(): AbstractSoundInstance;
+    protected abstract _createSoundInstance(): _AbstractSoundInstance;
 
     /**
      * Pauses the sound.
@@ -195,7 +195,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         return this._state === SoundState.Paused && this._soundInstances.size > 0;
     }
 
-    protected _onSoundInstanceEnded: (instance: AbstractSoundInstance) => void = (instance) => {
+    protected _onSoundInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
         this._soundInstances.delete(instance);
 
         if (this._soundInstances.size === 0) {
@@ -204,7 +204,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     };
 
-    protected _play(instance: AbstractSoundInstance, waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    protected _play(instance: _AbstractSoundInstance, waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this.state === SoundState.Paused && this._soundInstances.size > 0) {
             this.resume();
             return;

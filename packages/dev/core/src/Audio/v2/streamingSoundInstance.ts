@@ -1,11 +1,11 @@
 import { Observable } from "../../Misc/observable";
 import type { AbstractSound } from "./abstractSound";
-import { AbstractSoundInstance } from "./abstractSoundInstance";
+import { _AbstractSoundInstance } from "./abstractSoundInstance";
 
 /**
  * A streaming sound instance.
  */
-export abstract class StreamingSoundInstance extends AbstractSoundInstance {
+export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     protected _resolvePreloadedPromise: () => void;
 
     /** Promise that is resolved when the instance is preloaded */
@@ -14,7 +14,7 @@ export abstract class StreamingSoundInstance extends AbstractSoundInstance {
     });
 
     /** Observable triggered when the instance is ready to play */
-    public onReadyObservable = new Observable<StreamingSoundInstance>();
+    public onReadyObservable = new Observable<_StreamingSoundInstance>();
 
     protected constructor(source: AbstractSound) {
         super(source);

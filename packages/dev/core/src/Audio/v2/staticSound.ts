@@ -3,7 +3,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
-import type { StaticSoundInstance } from "./staticSoundInstance";
+import type { _StaticSoundInstance } from "./staticSoundInstance";
 
 /**
  * Options for creating a new static sound.
@@ -77,7 +77,7 @@ export abstract class StaticSound extends AbstractSound {
         this.playbackRate = options?.playbackRate ?? 1;
     }
 
-    protected abstract override _createSoundInstance(): StaticSoundInstance;
+    protected abstract override _createSoundInstance(): _StaticSoundInstance;
 
     /**
      * Plays the sound.
