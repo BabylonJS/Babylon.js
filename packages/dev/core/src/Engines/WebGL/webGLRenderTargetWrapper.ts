@@ -241,6 +241,17 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
+    public override resolveMSAATextures(): void {
+        const engine = this._engine as ThinEngine;
+        const currentFramebuffer = engine._currentFramebuffer;
+
+        engine._bindUnboundFramebuffer(this._MSAAFramebuffer);
+
+        super.resolveMSAATextures();
+
+        engine._bindUnboundFramebuffer(currentFramebuffer);
+    }
+
     public override dispose(disposeOnlyFramebuffers = this._disposeOnlyFramebuffers): void {
         const gl = this._context;
 

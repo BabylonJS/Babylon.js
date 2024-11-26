@@ -154,6 +154,27 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Sets this property to true to disable the automatic MSAA resolve that happens when the render target wrapper is unbound (default is false)
+     */
+    public disableAutomaticMSAAResolve = false;
+
+    /**
+     * Indicates if MSAA color texture(s) should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is true)
+     * Note that you can trigger a MSAA resolve at any time by calling resolveMSAATextures()
+     */
+    public resolveMSAAColors = true;
+
+    /**
+     * Indicates if MSAA depth texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAADepth = false;
+
+    /**
+     * Indicates if MSAA stencil texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAAStencil = false;
+
+    /**
      * Gets the base array layer of a texture in the textures array
      * This is an number that is calculated based on the layer and face indices set for this texture at that index
      * @param index The index of the texture in the textures array to get the base array layer for
@@ -195,6 +216,32 @@ export class RenderTargetWrapper {
             : this._engine.updateRenderTargetTextureSampleCount(this, value);
         this._samples = value;
         return result;
+    }
+
+    /**
+     * Resolves the MSAA textures into their non-MSAA version.
+     * Note that if samples equals 1 (no MSAA), no resolve is performed.
+     */
+    public resolveMSAATextures(): void {
+        if (this.isMulti) {
+            this._engine.resolveMultiFramebuffer(this);
+        } else {
+            this._engine.resolveFramebuffer(this);
+        }
+    }
+
+    /**
+     * Generates mipmaps for each texture of the render target
+     */
+    public generateMipMaps(): void {
+        if (this._engine._currentRenderTarget === this) {
+            this._engine.unBindFramebuffer(this, true);
+        }
+        if (this.isMulti) {
+            this._engine.generateMipMapsMultiFramebuffer(this);
+        } else {
+            this._engine.generateMipMapsFramebuffer(this);
+        }
     }
 
     /**
@@ -537,7 +584,7 @@ export class RenderTargetWrapper {
      */
     public releaseTextures(): void {
         if (this._textures) {
-            for (let i = 0; i < this._textures?.length ?? 0; ++i) {
+            for (let i = 0; i < this._textures.length; ++i) {
                 this._textures[i].dispose();
             }
         }

@@ -1207,6 +1207,19 @@ export abstract class AbstractEngine {
      */
     public abstract unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
 
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public abstract generateMipMapsFramebuffer(texture: RenderTargetWrapper): void;
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param texture The render target texture containing the MSAA texture to resolve
+     */
+    public abstract resolveFramebuffer(texture: RenderTargetWrapper): void;
+
     /**Gets driver info if available */
     public abstract extractDriverInfo(): string;
 

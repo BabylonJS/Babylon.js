@@ -1140,21 +1140,20 @@ export class ThinEngine extends AbstractEngine {
 
         this._currentRenderTarget = null;
 
-        // If MSAA, we need to bitblt back to main texture
-        const gl = this._gl;
-        if (webglRTWrapper._MSAAFramebuffer) {
+        if (!webglRTWrapper.disableAutomaticMSAAResolve) {
             if (texture.isMulti) {
-                // This texture is part of a MRT texture, we need to treat all attachments
-                this.unBindMultiColorAttachmentFramebuffer(texture, disableGenerateMipMaps, onBeforeUnbind);
-                return;
+                this.resolveMultiFramebuffer(texture);
+            } else {
+                this.resolveFramebuffer(texture);
             }
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, webglRTWrapper._framebuffer);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
         }
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this.generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         if (onBeforeUnbind) {
@@ -1166,6 +1165,38 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this._bindUnboundFramebuffer(null);
+    }
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this.generateMipmaps(texture.texture);
+        }
+    }
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param texture  The render target texture containing the MSAA textures to resolve
+     */
+    public resolveFramebuffer(texture: RenderTargetWrapper): void {
+        const rtWrapper = texture as WebGLRenderTargetWrapper;
+        const gl = this._gl;
+
+        if (!rtWrapper._MSAAFramebuffer || rtWrapper.isMulti) {
+            return;
+        }
+
+        let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+        gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
     }
 
     /**

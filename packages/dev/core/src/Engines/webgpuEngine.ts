@@ -3395,8 +3395,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._endCurrentRenderPass();
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         this._currentRenderTarget = null;
@@ -3413,6 +3417,25 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRT([]);
         this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
+    }
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
+        }
+    }
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param _texture The render target texture containing the MSAA texture to resolve
+     */
+    public resolveFramebuffer(_texture: RenderTargetWrapper): void {
+        throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
     }
 
     /**
