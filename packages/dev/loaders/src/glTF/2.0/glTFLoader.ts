@@ -181,8 +181,10 @@ export interface IAnimationTargetInfo {
 /** @internal */
 export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nullable<BoundingInfo> {
     if (accessor.min && accessor.max) {
-        const min = TmpVectors.Vector3[0].copyFromFloats(...(accessor.min as [number, number, number]));
-        const max = TmpVectors.Vector3[1].copyFromFloats(...(accessor.max as [number, number, number]));
+        const minArray = accessor.min as [number, number, number];
+        const maxArray = accessor.max as [number, number, number];
+        const minVector = TmpVectors.Vector3[0].copyFromFloats(minArray[0], minArray[1], minArray[2]);
+        const maxVector = TmpVectors.Vector3[1].copyFromFloats(maxArray[0], maxArray[1], maxArray[2]);
         if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
             let divider = 1;
             switch (accessor.componentType) {
@@ -200,10 +202,10 @@ export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nulla
                     break;
             }
             const oneOverDivider = 1 / divider;
-            min.scaleInPlace(oneOverDivider);
-            max.scaleInPlace(oneOverDivider);
+            minVector.scaleInPlace(oneOverDivider);
+            maxVector.scaleInPlace(oneOverDivider);
         }
-        return new BoundingInfo(min, max);
+        return new BoundingInfo(minVector, maxVector);
     }
     return null;
 }
