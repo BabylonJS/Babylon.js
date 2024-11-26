@@ -144,7 +144,7 @@
         //
 
         fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
-        #ifdef REALTIME_FILTERING
+        #ifdef IBL_CDF_FILTERING
             , icdfxSampler: texture_2d<f32>, icdfxSamplerSampler: sampler, icdfySampler: texture_2d<f32>, icdfySamplerSampler: sampler
         #endif
         ) -> vec3f
@@ -196,7 +196,7 @@
                     #ifdef GAMMA_INPUT
                         c = toLinearSpaceVec3(c);
                     #endif
-                    
+
                     #ifdef IBL_CDF_FILTERING
                         result += c * NoL;
                     #else
