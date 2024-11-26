@@ -76,7 +76,7 @@ export default defineConfig({
         {
             name: "interaction",
             testMatch: "**/interaction.test.ts",
-            use: getUseDefinition("Interaction", true),
+            use: getUseDefinition("Interaction", "Safari", true),
         },
         {
             name: "performance",
@@ -93,10 +93,10 @@ export default defineConfig({
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
 });
 
-function getUseDefinition(title: string, noBrowserStack = false) {
+function getUseDefinition(title: string, browser = browserType, noBrowserStack = false) {
     if (noBrowserStack) {
         return {
-            ...devices["Desktop " + browserType],
+            ...devices["Desktop " + browser],
             headless,
             launchOptions: {
                 args,
@@ -117,7 +117,7 @@ function getUseDefinition(title: string, noBrowserStack = false) {
                 connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, title) },
             }
           : {
-                ...devices["Desktop " + browserType],
+                ...devices["Desktop " + browser],
                 headless,
                 launchOptions: {
                     args,
