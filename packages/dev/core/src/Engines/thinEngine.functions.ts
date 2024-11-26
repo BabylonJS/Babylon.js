@@ -191,6 +191,9 @@ export function _createShaderProgram(
     return shaderProgram;
 }
 
+/**
+ * @internal
+ */
 export function _isRenderingStateCompiled(pipelineContext: IPipelineContext, gl: WebGLContext, validateShaderPrograms?: boolean): boolean {
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
     if (webGLPipelineContext._isDisposed) {
