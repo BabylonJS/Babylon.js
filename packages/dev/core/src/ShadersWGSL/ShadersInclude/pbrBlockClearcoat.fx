@@ -276,12 +276,6 @@ struct clearcoatOutParams
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , uniforms.icdfxSampler
-                    , uniforms.icdfxSamplerSampler
-                    , uniforms.icdfySampler
-                    , uniforms.icdfySamplerSampler
-                #endif
             #endif                
             );
 

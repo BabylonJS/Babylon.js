@@ -360,10 +360,6 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
-                #endif
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 , seo
@@ -483,10 +479,6 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
-                #endif
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
@@ -587,10 +579,6 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vRefractionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
-                #endif
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , vRefractionPosition

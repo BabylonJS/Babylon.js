@@ -84,10 +84,6 @@
     #endif
     #ifdef REALTIME_FILTERING
         in vec2 vReflectionFilteringInfo,
-        #ifdef IBL_CDF_FILTERING
-            in sampler2D icdfxSampler,
-            in sampler2D icdfySampler,
-        #endif
     #endif
         out vec4 environmentRadiance
     )
@@ -258,10 +254,6 @@
         #endif
         #ifdef REALTIME_FILTERING
             vReflectionFilteringInfo,
-            #ifdef IBL_CDF_FILTERING
-                icdfxSampler,
-                icdfySampler,
-            #endif
         #endif
             environmentRadiance
         );

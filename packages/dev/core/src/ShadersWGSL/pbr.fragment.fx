@@ -356,12 +356,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , uniforms.icdfxSampler
-                    , uniforms.icdfxSamplerSampler
-                    , uniforms.icdfySampler
-                    , uniforms.icdfySamplerSampler
-                #endif
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 , seo
@@ -484,12 +478,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , uniforms.vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , uniforms.icdfxSampler
-                    , uniforms.icdfxSamplerSampler
-                    , uniforms.icdfySampler
-                    , uniforms.icdfySamplerSampler
-                #endif
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
@@ -597,12 +585,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , uniforms.vRefractionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , uniforms.icdfxSampler
-                    , uniforms.icdfxSamplerSampler
-                    , uniforms.icdfySampler
-                    , uniforms.icdfySamplerSampler
-                #endif
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , uniforms.vRefractionPosition

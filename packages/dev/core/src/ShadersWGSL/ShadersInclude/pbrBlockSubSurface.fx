@@ -68,12 +68,6 @@ struct subSurfaceOutParams
             #endif
             #ifdef REALTIME_FILTERING
                 , vRefractionFilteringInfo: vec2f
-                #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler: texture_2d<f32>
-                    , icdfxSamplerSampler: sampler
-                    , icdfySampler: texture_2d<f32>
-                    , icdfySamplerSampler: sampler
-                #endif
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , refractionPosition: vec3f
@@ -259,12 +253,6 @@ struct subSurfaceOutParams
         #endif
         #ifdef REALTIME_FILTERING
             , vRefractionFilteringInfo: vec2f
-            #ifdef IBL_CDF_FILTERING
-                , icdfxSampler: texture_2d<f32>
-                , icdfxSamplerSampler: sampler
-                , icdfySampler: texture_2d<f32>
-                , icdfySamplerSampler: sampler
-            #endif
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
             , refractionPosition: vec3f
@@ -427,12 +415,6 @@ struct subSurfaceOutParams
                 #endif
                 #ifdef REALTIME_FILTERING
                     , vRefractionFilteringInfo
-                    #ifdef IBL_CDF_FILTERING
-                        , icdfxSampler
-                        , icdfxSamplerSampler
-                        , icdfySampler
-                        , icdfySamplerSampler
-                    #endif
                 #endif
                 #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                     , refractionPosition
@@ -543,7 +525,8 @@ struct subSurfaceOutParams
                     , icdfxSamplerSampler
                     , icdfySampler
                     , icdfySamplerSampler
-                #endif);
+                #endif
+                );
             #else
                 var refractionIrradiance: vec3f = computeEnvironmentIrradiance(-irradianceVector);
             #endif

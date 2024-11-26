@@ -63,10 +63,6 @@ struct subSurfaceOutParams
             #endif
             #ifdef REALTIME_FILTERING
                 , in vec2 vRefractionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , in sampler2D icdfxSampler
-                    , in sampler2D icdfySampler
-                #endif
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                 , in vec3 refractionPosition
@@ -238,10 +234,6 @@ struct subSurfaceOutParams
         #endif
         #ifdef REALTIME_FILTERING
             , in vec2 vRefractionFilteringInfo
-            #ifdef IBL_CDF_FILTERING
-                , in sampler2D icdfxSampler
-                , in sampler2D icdfySampler
-            #endif
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
             , in vec3 refractionPosition
@@ -398,10 +390,6 @@ struct subSurfaceOutParams
                 #endif
                 #ifdef REALTIME_FILTERING
                     , vRefractionFilteringInfo
-                    #ifdef IBL_CDF_FILTERING
-                        , icdfxSampler
-                        , icdfySampler
-                    #endif
                 #endif
                 #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                     , refractionPosition
