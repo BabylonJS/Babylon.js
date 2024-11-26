@@ -160,6 +160,7 @@ export class RenderTargetWrapper {
 
     /**
      * Indicates if MSAA color texture(s) should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is true)
+     * Note that you can trigger a MSAA resolve at any time by calling resolveMSAATextures()
      */
     public resolveMSAAColors = true;
 
