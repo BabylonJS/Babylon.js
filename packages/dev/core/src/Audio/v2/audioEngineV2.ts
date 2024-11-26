@@ -83,6 +83,9 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
         instances.push(this);
     }
 
+    public abstract get volume(): number;
+    public abstract set volume(value: number);
+
     /**
      * Releases associated resources.
      */

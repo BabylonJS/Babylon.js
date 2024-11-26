@@ -6,6 +6,7 @@ import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
+import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 import { _CreateMainAudioOutputAsync } from "./webAudioMainOutput";
 
 /**
@@ -51,10 +52,11 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContext: Nullable<AudioContext | OfflineAudioContext>;
     private _audioContextStarted = false;
 
-    private _mainOutput: Nullable<AbstractAudioNode> = null;
+    private _mainOutput: Nullable<_WebAudioMainOutput> = null;
 
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
+    private _volume = 1;
 
     /** @internal */
     public get isWebAudio(): boolean {
@@ -91,6 +93,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._mainOutput = await _CreateMainAudioOutputAsync(this);
+        this._mainOutput.volume = this._volume;
+
         await CreateMainAudioBusAsync("default", this);
     };
 
@@ -137,6 +141,24 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this.audioContext.destination;
+    }
+
+    /** @internal */
+    public get volume(): number {
+        return this._volume;
+    }
+
+    /** @internal */
+    public set volume(value: number) {
+        if (this._volume === value) {
+            return;
+        }
+
+        this._volume = value;
+
+        if (this._mainOutput) {
+            this._mainOutput.volume;
+        }
     }
 
     /** @internal */

@@ -3,7 +3,7 @@ import { MainAudioOutput } from "../mainAudioOutput";
 import type { _WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
-export async function _CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<MainAudioOutput> {
+export async function _CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<_WebAudioMainOutput> {
     if (!engine.isWebAudio) {
         throw new Error("Wrong engine type.");
     }
@@ -20,6 +20,16 @@ export class _WebAudioMainOutput extends MainAudioOutput {
     /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this._gainNode;
+    }
+
+    /** @internal */
+    public get volume(): number {
+        return this._gainNode.gain.value;
+    }
+
+    /** @internal */
+    public set volume(value: number) {
+        this._gainNode.gain.value = value;
     }
 
     /** @internal */
