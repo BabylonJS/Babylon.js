@@ -88,6 +88,7 @@ export abstract class StaticSound extends AbstractSound {
     public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this._isPaused && this._soundInstances.size > 0) {
             this.resume();
+            return;
         }
 
         const instance = this._createSoundInstance();
