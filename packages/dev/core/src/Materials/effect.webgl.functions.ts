@@ -96,6 +96,7 @@ export async function generatePipelineContext(
                             // max a second for the pipeline to be ready
                             let maxTimeout = 1000;
                             // not using the render loop as it is not guaranteed that this is done with an engine present
+                            // Using setInterval to keep the package as small as possible.
                             const int = setInterval(() => {
                                 if (_isRenderingStateCompiled(pipeline, context)) {
                                     clearInterval(int);
