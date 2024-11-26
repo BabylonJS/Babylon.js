@@ -20,12 +20,6 @@ const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
 
-// Regex for testing if vertexBuffer type comes from morph targets.
-const positionRegex = /^position\d+$/;
-const normalRegex = /^normal\d+$/;
-const tangentRegex = /^tangent\d+$/;
-const uvRegex = /^uv_\d+$/;
-
 /**
  * Creates a buffer view based on the supplied arguments
  * @param bufferIndex index value of the specified buffer
@@ -109,8 +103,25 @@ export function FloatsNeed16BitInteger(floatArray: FloatArray): boolean {
     return floatArray.some((value) => value >= 256);
 }
 
-export function IsMorphTargetsVertexBuffer(type: string): boolean {
-    return positionRegex.test(type) || normalRegex.test(type) || tangentRegex.test(type) || uvRegex.test(type);
+export function IsStandardVertexAttribute(type: string): boolean {
+    switch (type) {
+        case VertexBuffer.PositionKind:
+        case VertexBuffer.NormalKind:
+        case VertexBuffer.TangentKind:
+        case VertexBuffer.ColorKind:
+        case VertexBuffer.MatricesIndicesKind:
+        case VertexBuffer.MatricesIndicesExtraKind:
+        case VertexBuffer.MatricesWeightsKind:
+        case VertexBuffer.MatricesWeightsExtraKind:
+        case VertexBuffer.UVKind:
+        case VertexBuffer.UV2Kind:
+        case VertexBuffer.UV3Kind:
+        case VertexBuffer.UV4Kind:
+        case VertexBuffer.UV5Kind:
+        case VertexBuffer.UV6Kind:
+            return true;
+    }
+    return false;
 }
 
 export function GetAccessorType(kind: string, hasVertexColorAlpha: boolean): AccessorType {
