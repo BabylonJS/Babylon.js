@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 
+const url = process.env.PLAYGROUND_BASE_URL || "https://playground.babylonjs.com/";
+
 test("Playground is loaded (Desktop)", async ({ page }) => {
-    await page.goto("https://playground.babylonjs.com/", {
+    await page.goto(url, {
         waitUntil: "networkidle",
     });
     page.setViewportSize({
@@ -15,7 +17,7 @@ test("Playground is loaded (Desktop)", async ({ page }) => {
 });
 
 test("Playground is loaded (Mobile)", async ({ page }) => {
-    await page.goto("https://playground.babylonjs.com/", {
+    await page.goto(url, {
         waitUntil: "networkidle",
     });
     page.setViewportSize({
@@ -34,7 +36,7 @@ test("Playground is loaded (Mobile)", async ({ page }) => {
 });
 
 test("Examples can be loaded", async ({ page }) => {
-    await page.goto("https://playground.babylonjs.com/", {
+    await page.goto(url, {
         waitUntil: "networkidle",
     });
     page.setViewportSize({
@@ -53,7 +55,7 @@ test("Examples can be loaded", async ({ page }) => {
 });
 
 test("User can interact with the playground", async ({ page }) => {
-    await page.goto("https://playground.babylonjs.com/", {
+    await page.goto(url, {
         waitUntil: "networkidle",
     });
     page.setViewportSize({
