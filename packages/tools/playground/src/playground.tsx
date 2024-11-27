@@ -4,14 +4,22 @@ import { MonacoComponent } from "./components/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
+import { HeaderComponent } from "./components/headerComponent";
 import { SaveManager } from "./tools/saveManager";
 import { LoadManager } from "./tools/loadManager";
 import { WaitRingComponent } from "./components/waitRingComponent";
+import { MetadataComponent } from "./components/metadataComponent";
+import { HamburgerMenuComponent } from "./components/hamburgerMenu";
 import { Utilities } from "./tools/utilities";
 import { ShortcutManager } from "./tools/shortcutManager";
 import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
+import { ExamplesComponent } from "./components/examplesComponent";
+import { QRCodeComponent } from "./components/qrCodeComponent";
+import { SplitContainer } from "shared-ui-components/split/splitContainer";
+import { Splitter } from "shared-ui-components/split/splitter";
 
 import "./scss/main.scss";
+import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
@@ -131,7 +139,25 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
             );
         }
 
-        return <div id="pg-root"></div>;
+        return (
+            <div id="pg-root">
+                <HeaderComponent globalState={this._globalState} />
+                <SplitContainer id="pg-split" direction={SplitDirection.Horizontal} containerRef={this._splitContainerRef}>
+                    <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
+                    <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} refObject={this._splitterRef} />
+                    <div ref={this._renderingRef} id="canvasZoneNameChanged" className="canvasZone">
+                        <RenderingComponent globalState={this._globalState} />
+                    </div>
+                </SplitContainer>
+                {window.innerWidth < 1140 && <HamburgerMenuComponent globalState={this._globalState} />}
+                <ExamplesComponent globalState={this._globalState} />
+                <FooterComponent globalState={this._globalState} />
+                <QRCodeComponent globalState={this._globalState} />
+                <ErrorDisplayComponent globalState={this._globalState} />
+                <WaitRingComponent globalState={this._globalState} />
+                <MetadataComponent globalState={this._globalState} />
+            </div>
+        );
     }
 
     public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
