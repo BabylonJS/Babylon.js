@@ -18,7 +18,6 @@ import { QRCodeComponent } from "./components/qrCodeComponent";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 
-import "./scss/main.scss";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IPlaygroundProps {
@@ -145,7 +144,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 <SplitContainer id="pg-split" direction={SplitDirection.Horizontal} containerRef={this._splitContainerRef}>
                     <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
                     <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} refObject={this._splitterRef} />
-                    <div ref={this._renderingRef} id="canvasZoneNameChanged" className="canvasZone">
+                    <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
                 </SplitContainer>
