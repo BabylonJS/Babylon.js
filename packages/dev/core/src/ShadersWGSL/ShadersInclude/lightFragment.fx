@@ -131,7 +131,7 @@
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
             #elif define(AREALIGHT{X})
-                info = computeAreaLighting(areaLightsLTC1{X}, areaLightsLTC2{X}, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, glossiness);
+                info = computeAreaLighting(areaLightsLTC1{X}, areaLightsLTC2{X}, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, uniforms.vReflectionInfos.y);
             #endif
         #endif
 
