@@ -1,6 +1,6 @@
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
+import { _processShaderCode, _retryWithInterval, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -93,21 +93,11 @@ export async function generatePipelineContext(
                         if (!options.waitForIsReady || !pipeline.isAsync) {
                             resolve(pipeline);
                         } else {
-                            // max a second for the pipeline to be ready
-                            let maxTimeout = 1000;
-                            // not using the render loop as it is not guaranteed that this is done with an engine present
-                            // Using setInterval to keep the package as small as possible.
-                            const int = setInterval(() => {
-                                if (_isRenderingStateCompiled(pipeline, context)) {
-                                    clearInterval(int);
-                                    resolve(pipeline);
-                                }
-                                maxTimeout -= 10;
-                                if (maxTimeout < 0) {
-                                    clearInterval(int);
-                                    reject(new Error("Timeout while waiting for pipeline to be ready"));
-                                }
-                            }, 10);
+                            _retryWithInterval(
+                                () => _isRenderingStateCompiled(pipeline, context),
+                                () => resolve(pipeline),
+                                () => reject(new Error("Timeout while waiting for pipeline to be ready"))
+                            );
                         }
                     } catch (e) {
                         reject(e);
