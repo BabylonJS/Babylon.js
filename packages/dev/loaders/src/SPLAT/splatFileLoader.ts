@@ -181,7 +181,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
-    private _parseSPZ(data: ArrayBuffer): Promise<ParsedPLY> {
+    private _parseSPZ(data: ArrayBuffer, scene: Scene): Promise<ParsedPLY> {
         const ubuf = new Uint8Array(data);
         const ubufu32 = new Uint32Array(data);
         // debug infos
@@ -278,9 +278,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // sh is an array of uint8array that will be used to create sh textures
             const sh: Uint8Array[] = [];
 
+            const engine = scene.getEngine();
+            const width = engine.getCaps().maxTextureSize;
+            const height = Math.ceil(splatCount / width);
             // create array for the number of textures needed.
             for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-                const texture = new Uint8Array(splatCount * 4 * 4); // 4 components per texture, 4 sh per component
+                const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
                 sh.push(texture);
             }
 
@@ -293,7 +296,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
                     const byteIndexInTexture = shIndexWrite % 16; // [0..15]
                     const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
-                    shArray[byteIndexInTexture + offsetPerSplat] = 128 + shValue * 0; // + shValue * 0; //shValue;
+                    shArray[byteIndexInTexture + offsetPerSplat] = shValue;
                 }
             }
 
@@ -325,7 +328,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             new Response(decompressedStream)
                 .arrayBuffer()
                 .then((buffer) => {
-                    this._parseSPZ(buffer).then((parsedSPZ) => {
+                    this._parseSPZ(buffer, scene).then((parsedSPZ) => {
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);

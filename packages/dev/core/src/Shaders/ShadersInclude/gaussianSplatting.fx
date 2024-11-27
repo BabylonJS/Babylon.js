@@ -44,13 +44,13 @@ Splat readSplat(float splatIndex)
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #if SH_DEGREE >= 1
-    splat.sh0 = uvec4(0x80808080u, 0x80808080u, 0x80808080u, 0x80808080u) ;//texelFetch(shTexture0, splatUVint, 0);
+    splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
 #if SH_DEGREE >= 2
-    splat.sh1 = uvec4(0x80808080u, 0x80808080u, 0x80808080u, 0x80808080u) ;//texelFetch(shTexture1, splatUVint, 0);
+    splat.sh1 = texelFetch(shTexture1, splatUVint, 0);
 #endif
 #if SH_DEGREE == 3
-    splat.sh2 = uvec4(0x80808080u, 0x80808080u, 0x80808080u, 0x80808080u) ;//texelFetch(shTexture2, splatUVint, 0);
+    splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
 
     return splat;
