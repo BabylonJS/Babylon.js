@@ -293,7 +293,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
                     const byteIndexInTexture = shIndexWrite % 16; // [0..15]
                     const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
-                    shArray[byteIndexInTexture + offsetPerSplat] = shValue;
+                    shArray[byteIndexInTexture + offsetPerSplat] = 128 + shValue * 0; // + shValue * 0; //shValue;
                 }
             }
 
