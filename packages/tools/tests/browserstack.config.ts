@@ -24,7 +24,7 @@ export const BS_LOCAL_ARGS = {
 export const bsLocal = new BrowserStackLocal.Local();
 
 // Patching the capabilities dynamically according to the project name.
-const patchCaps = (name, title) => {
+const patchCaps = (name: string, title: string) => {
     let combination = name.split(/@browserstack/)[0];
     let [browerCaps, osCaps] = combination.split(/:/);
     let [browser, browser_version] = browerCaps.split(/@/);
@@ -43,4 +43,3 @@ export const getCdpEndpoint = (name: string, title: string) => {
     const cdpUrl = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
     return cdpUrl;
 };
-

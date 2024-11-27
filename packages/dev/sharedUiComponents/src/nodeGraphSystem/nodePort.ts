@@ -6,9 +6,10 @@ import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
-import type { IPortData } from "./interfaces/portData";
+import { PortDirectValueTypes, type IPortData } from "./interfaces/portData";
 import * as commonStyles from "./common.module.scss";
 import * as localStyles from "./nodePort.module.scss";
+import { BuildFloatUI } from "./tools";
 
 export class NodePort {
     protected _element: HTMLDivElement;
@@ -20,6 +21,7 @@ export class NodePort {
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     protected _exposedOnFrame: boolean;
+    protected _portUIcontainer?: HTMLDivElement;
     public delegatedPort: Nullable<FrameNodePort> = null;
 
     public get element(): HTMLDivElement {
@@ -107,14 +109,30 @@ export class NodePort {
 
     public refresh() {
         this._stateManager.applyNodePortDesign(this.portData, this._element, this._img, this._pip);
+
+        if (this._portUIcontainer) {
+            if (this.portData.isConnected) {
+                if (this._portLabelElement) {
+                    this._portLabelElement.classList.remove(commonStyles.hidden);
+                }
+                this._portUIcontainer.classList.add(commonStyles.hidden);
+            } else {
+                if (this._portLabelElement) {
+                    this._portLabelElement.classList.add(commonStyles.hidden);
+                }
+                this._portUIcontainer.classList.remove(commonStyles.hidden);
+            }
+        }
     }
 
     public constructor(
         portContainer: HTMLElement,
         public portData: IPortData,
         public node: GraphNode,
-        stateManager: StateManager
+        stateManager: StateManager,
+        portUIcontainer?: HTMLDivElement
     ) {
+        this._portUIcontainer = portUIcontainer;
         this._portContainer = portContainer;
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add(commonStyles.port);
@@ -185,6 +203,36 @@ export class NodePort {
             portContainer.appendChild(portLabel);
         }
 
-        return new NodePort(portContainer, portData, node, stateManager);
+        let portUIcontainer: HTMLDivElement | undefined;
+        if (portData.directValueDefinition) {
+            portUIcontainer = root.ownerDocument!.createElement("div");
+            portUIcontainer.classList.add(localStyles.numberContainer);
+            portContainer.appendChild(portUIcontainer);
+            portUIcontainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
+            portUIcontainer.addEventListener("pointerup", (evt) => evt.stopPropagation());
+            portUIcontainer.addEventListener("pointermove", (evt) => evt.stopPropagation());
+            const source = portData.directValueDefinition.source;
+            const propertyName = portData.directValueDefinition.propertyName;
+            switch (portData.directValueDefinition.valueType) {
+                case PortDirectValueTypes.Float:
+                case PortDirectValueTypes.Int:
+                    BuildFloatUI(
+                        portUIcontainer,
+                        root.ownerDocument!,
+                        portData.name,
+                        portData.directValueDefinition.valueType === PortDirectValueTypes.Int,
+                        source,
+                        propertyName,
+                        () => {
+                            node._forceRebuild(source, propertyName);
+                        },
+                        portData.directValueDefinition.valueMin,
+                        portData.directValueDefinition.valueMax
+                    );
+                    break;
+            }
+        }
+
+        return new NodePort(portContainer, portData, node, stateManager, portUIcontainer);
     }
 }

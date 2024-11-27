@@ -1017,6 +1017,8 @@ export abstract class WebGPUCacheRenderPipeline {
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */),
         };
 
+        const topologyIsTriangle = topology === WebGPUConstants.PrimitiveTopology.TriangleList || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip;
+
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
         if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
             stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
@@ -1063,8 +1065,8 @@ export abstract class WebGPUCacheRenderPipeline {
                           stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
                           stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                           depthBias: this._depthBias,
-                          depthBiasClamp: this._depthBiasClamp,
-                          depthBiasSlopeScale: this._depthBiasSlopeScale,
+                          depthBiasClamp: topologyIsTriangle ? this._depthBiasClamp : 0,
+                          depthBiasSlopeScale: topologyIsTriangle ? this._depthBiasSlopeScale : 0,
                       },
         });
     }

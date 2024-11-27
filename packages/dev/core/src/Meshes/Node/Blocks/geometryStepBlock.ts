@@ -16,7 +16,7 @@ export class GeometryStepBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("edge", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("edge", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -55,7 +55,7 @@ export class GeometryStepBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock() {
-        if (!this.value.isConnected || !this.edge.isConnected) {
+        if (!this.value.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;

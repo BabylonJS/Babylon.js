@@ -104,6 +104,11 @@ export interface IMultiRenderTargetOptions {
      * Label of the RenderTargetWrapper (used for debugging only)
      */
     label?: string;
+    /**
+     * Define if the textures should not be created by the MultiRenderTarget (default: false)
+     * If true, you will need to set the textures yourself by calling setTexture on the MultiRenderTarget.
+     */
+    dontCreateTextures?: boolean;
 }
 
 /**

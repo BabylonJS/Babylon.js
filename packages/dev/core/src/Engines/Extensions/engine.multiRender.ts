@@ -41,6 +41,19 @@ declare module "../../Engines/abstractEngine" {
         updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
 
         /**
+         * Generates mipmaps for the texture of the (multi) render target
+         * @param texture The render target containing the textures to generate the mipmaps for
+         */
+        generateMipMapsMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
+         * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
+         * Note that if "texture" is not a MSAA render target, no resolve is performed.
+         * @param texture The render target texture containing the MSAA textures to resolve
+         */
+        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -108,43 +121,12 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
 ): void {
     this._currentRenderTarget = null;
 
-    // If MSAA, we need to bitblt back to main texture
-    const gl = this._gl;
-
-    const attachments = rtWrapper._attachments!;
-    const count = attachments.length;
-
-    if (rtWrapper._MSAAFramebuffer) {
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
-
-        for (let i = 0; i < count; i++) {
-            const texture = rtWrapper.textures![i];
-
-            for (let j = 0; j < count; j++) {
-                attachments[j] = gl.NONE;
-            }
-
-            attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-            gl.readBuffer(attachments[i]);
-            gl.drawBuffers(attachments);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
-        }
-
-        for (let i = 0; i < count; i++) {
-            attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-        }
-
-        gl.drawBuffers(attachments);
+    if (!rtWrapper.disableAutomaticMSAAResolve) {
+        this.resolveMultiFramebuffer(rtWrapper);
     }
 
-    for (let i = 0; i < count; i++) {
-        const texture = rtWrapper.textures![i];
-        if (texture?.generateMipMaps && !disableGenerateMipMaps && !texture?.isCube && !texture?.is3D) {
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
-        }
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsMultiFramebuffer(rtWrapper);
     }
 
     if (onBeforeUnbind) {
@@ -163,7 +145,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
-    let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
+    let depthTextureFormat: number | undefined = undefined;
     let textureCount = 1;
     let samples = 1;
 
@@ -182,6 +164,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let layerIndex: number[] = [];
     let layers: number[] = [];
     let labels: string[] = [];
+    let dontCreateTextures = false;
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 
@@ -201,6 +184,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         layerIndex = options.layerIndex || layerIndex;
         layers = options.layerCounts || layers;
         labels = options.labels || labels;
+        dontCreateTextures = options.dontCreateTextures ?? false;
 
         if (
             this.webGLVersion > 1 &&
@@ -212,6 +196,10 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
+    }
+
+    if (depthTextureFormat === undefined) {
+        depthTextureFormat = generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
     }
 
     const gl = this._gl;
@@ -268,7 +256,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
         attachments.push(attachment);
 
-        if (target === -1) {
+        if (target === -1 || dontCreateTextures) {
             continue;
         }
 
@@ -330,7 +318,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         this._internalTexturesCache.push(texture);
     }
 
-    if (generateDepthTexture && this._caps.depthTextureExtension) {
+    if (generateDepthTexture && this._caps.depthTextureExtension && !dontCreateTextures) {
         // Depth texture
         const depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
@@ -407,7 +395,24 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     this.resetTextureCache();
 
-    this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples, initializeBuffers);
+    if (!dontCreateTextures) {
+        this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples, initializeBuffers);
+    } else if (samples > 1) {
+        const framebuffer = gl.createFramebuffer();
+
+        if (!framebuffer) {
+            throw new Error("Unable to create multi sampled framebuffer");
+        }
+
+        rtWrapper._samples = samples;
+        rtWrapper._MSAAFramebuffer = framebuffer;
+
+        if (textureCount > 0 && initializeBuffers) {
+            this._bindUnboundFramebuffer(framebuffer);
+            gl.drawBuffers(attachments);
+            this._bindUnboundFramebuffer(null);
+        }
+    }
 
     return rtWrapper;
 };
@@ -507,4 +512,60 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     rtWrapper._samples = samples;
 
     return samples;
+};
+
+ThinEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGLRenderTargetWrapper;
+    const gl = this._gl;
+
+    if (!rtWrapper.isMulti) {
+        return;
+    }
+
+    for (let i = 0; i < rtWrapper._attachments!.length; i++) {
+        const texture = rtWrapper.textures![i];
+        if (texture?.generateMipMaps && !texture?.isCube && !texture?.is3D) {
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+        }
+    }
+};
+
+ThinEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGLRenderTargetWrapper;
+    const gl = this._gl;
+
+    if (!rtWrapper._MSAAFramebuffer || !rtWrapper.isMulti) {
+        return;
+    }
+
+    let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
+
+    const attachments = rtWrapper._attachments!;
+    const count = attachments.length;
+
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
+
+        for (let j = 0; j < count; j++) {
+            attachments[j] = gl.NONE;
+        }
+
+        attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+        gl.readBuffer(attachments[i]);
+        gl.drawBuffers(attachments);
+        gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
+    }
+
+    for (let i = 0; i < count; i++) {
+        attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+    }
+
+    gl.drawBuffers(attachments);
 };

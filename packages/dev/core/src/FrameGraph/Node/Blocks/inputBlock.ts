@@ -5,7 +5,6 @@ import type {
     FrameGraph,
     NodeRenderGraphBuildState,
     Camera,
-    RenderTargetWrapper,
     InternalTexture,
     Nullable,
     FrameGraphTextureCreationOptions,
@@ -20,7 +19,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorat
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
 
-export type NodeRenderGraphValueType = RenderTargetWrapper | Camera | FrameGraphObjectList;
+export type NodeRenderGraphValueType = InternalTexture | Camera | FrameGraphObjectList;
 
 export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptions;
 
@@ -86,12 +85,10 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
-                        generateMipMaps: false,
                         types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
                         formats: [Constants.TEXTUREFORMAT_RGBA],
                         samples: 1,
                         useSRGBBuffers: [false],
-                        generateDepthBuffer: false,
                     },
                     sizeIsPercentage: true,
                 };
@@ -103,13 +100,11 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
-                        generateMipMaps: false,
-                        depthTextureFormat: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8,
-                        textureCount: 0,
+                        types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                        formats: [Constants.TEXTUREFORMAT_DEPTH24_STENCIL8],
+                        useSRGBBuffers: [false],
+                        labels: [this.name],
                         samples: 1,
-                        generateDepthTexture: true,
-                        generateDepthBuffer: true,
-                        generateStencilBuffer: true,
                     },
                     sizeIsPercentage: true,
                 };
@@ -151,23 +146,12 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the value as a render target wrapper
-     * @returns The value as a render target wrapper if it is a render target wrapper, otherwise undefined
-     */
-    public getValueAsRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
-        if ((this._storedValue as RenderTargetWrapper).shareDepth) {
-            return this._storedValue as RenderTargetWrapper;
-        }
-        return null;
-    }
-
-    /**
-     * Gets the value as a render target wrapper
-     * @returns The internal texture stored in value if value is a render target wrapper or a thin texture, otherwise null
+     * Gets the value as an internal texture
+     * @returns The internal texture stored in value if value is an internal texture, otherwise null
      */
     public getInternalTextureFromValue(): Nullable<InternalTexture> {
-        if ((this._storedValue as RenderTargetWrapper).shareDepth) {
-            return (this._storedValue as RenderTargetWrapper).texture;
+        if ((this._storedValue as InternalTexture)._swapAndDie) {
+            return this._storedValue as InternalTexture;
         }
         return null;
     }
@@ -243,9 +227,9 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 if (this._storedValue === undefined || this._storedValue === null) {
                     throw new Error(`NodeRenderGraphInputBlock: External input "${this.name}" is not set`);
                 }
-                const texture = this.getValueAsRenderTargetWrapper();
+                const texture = this.getInternalTextureFromValue();
                 if (texture) {
-                    this.output.value = this._frameGraph.importTexture(this.name, texture, this.output.value as FrameGraphTextureHandle);
+                    this.output.value = this._frameGraph.textureManager.importTexture(this.name, texture, this.output.value as FrameGraphTextureHandle);
                 }
             }
             return;
@@ -258,7 +242,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
-            this.output.value = this._frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
+            this.output.value = this._frameGraph.textureManager.createRenderTargetTexture(this.name, textureCreateOptions);
         }
     }
 
@@ -301,6 +285,10 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         this.output.type = this._type;
         this.isExternal = serializationObject.isExternal;
         if (serializationObject.creationOptions) {
+            if (serializationObject.creationOptions.options.depthTextureFormat !== undefined) {
+                // Backward compatibility - remove this code in the future
+                serializationObject.creationOptions.options.formats = [serializationObject.creationOptions.options.depthTextureFormat];
+            }
             this.creationOptions = serializationObject.creationOptions;
         }
     }

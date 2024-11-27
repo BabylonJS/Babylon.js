@@ -30,29 +30,51 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
     /**
      * The texture to clear.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public destinationTexture?: FrameGraphTextureHandle;
 
     /**
-     * The output texture (same as destinationTexture, but the handle may be different).
+     * The depth attachment texture to clear.
+     */
+    public depthTexture?: FrameGraphTextureHandle;
+
+    /**
+     * The output texture (same as destinationTexture, but the handle will be different).
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * The output depth texture (same as depthTexture, but the handle will be different).
+     */
+    public readonly outputDepthTexture: FrameGraphTextureHandle;
+
+    /**
+     * Constructs a new clear task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph the task belongs to.
+     */
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public record() {
-        if (this.destinationTexture === undefined) {
-            throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture is required`);
+        if (this.destinationTexture === undefined && this.depthTexture === undefined) {
+            throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture and depthTexture can't both be undefined.`);
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        if (this.destinationTexture !== undefined) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        }
+        if (this.depthTexture !== undefined) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+        }
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
+        pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             context.clear(this.color, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
         });
@@ -60,6 +82,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
         passDisabled.setRenderTarget(this.destinationTexture);
+        passDisabled.setRenderTargetDepth(this.depthTexture);
         passDisabled.setExecuteFunc((_context) => {});
     }
 }

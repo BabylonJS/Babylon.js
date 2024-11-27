@@ -33,6 +33,14 @@ function colorChannelToGammaSpaceExact(color: number): number {
  */
 export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Like {
     /**
+     * If the first color is flagged with integers (as everything is 0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent colors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all color instances that it creates.
+     * But the original color instances are unchanged and has a "deprecated map".
+     * If we keep using the color instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Color3(0.5, 0.5, 0.5) as DeepImmutable<Color3>;
+    /**
      * @see Tensor.dimension
      */
     public declare readonly dimension: [3];
@@ -1009,6 +1017,14 @@ Object.defineProperties(Color3.prototype, {
  * Class used to hold a RBGA color
  */
 export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Like {
+    /**
+     * If the first color is flagged with integers (as everything is 0,0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent colors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all color instances that it creates.
+     * But the original color instances are unchanged and has a "deprecated map".
+     * If we keep using the color instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Color4(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Color4>;
     /**
      * @see Tensor.dimension
      */
