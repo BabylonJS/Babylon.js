@@ -2246,7 +2246,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#408",
+            "playgroundId": "#8R5SSE#429",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
@@ -2258,21 +2258,21 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#409",
+            "playgroundId": "#8R5SSE#425",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#410",
+            "playgroundId": "#8R5SSE#426",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Screen-space Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#380",
+            "playgroundId": "#8R5SSE#427",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
