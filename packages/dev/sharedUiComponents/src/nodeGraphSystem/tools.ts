@@ -2,7 +2,7 @@ import type { GraphCanvasComponent } from "./graphCanvas";
 import type { GraphNode } from "./graphNode";
 import type { NodeLink } from "./nodeLink";
 import type { FramePortData } from "./types/framePortData";
-import localStyles from "./graphNode.module.scss";
+import * as localStyles from "./graphNode.module.scss";
 
 export const IsFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
     if (variableToCheck) {
