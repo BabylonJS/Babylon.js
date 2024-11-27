@@ -4,22 +4,14 @@ import { MonacoComponent } from "./components/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
-import { HeaderComponent } from "./components/headerComponent";
 import { SaveManager } from "./tools/saveManager";
 import { LoadManager } from "./tools/loadManager";
 import { WaitRingComponent } from "./components/waitRingComponent";
-import { MetadataComponent } from "./components/metadataComponent";
-import { HamburgerMenuComponent } from "./components/hamburgerMenu";
 import { Utilities } from "./tools/utilities";
 import { ShortcutManager } from "./tools/shortcutManager";
 import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
-import { ExamplesComponent } from "./components/examplesComponent";
-import { QRCodeComponent } from "./components/qrCodeComponent";
-import { SplitContainer } from "shared-ui-components/split/splitContainer";
-import { Splitter } from "shared-ui-components/split/splitter";
 
 import "./scss/main.scss";
-import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
