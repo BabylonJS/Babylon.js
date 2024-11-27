@@ -130,8 +130,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
 
-        // SH
-        defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
+        // SH is disabled for webGL1
+        if (engine.version > 1 || engine.isWebGPU) {
+            defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
+        }
 
         // Get correct effect
         if (defines.isDirty) {
