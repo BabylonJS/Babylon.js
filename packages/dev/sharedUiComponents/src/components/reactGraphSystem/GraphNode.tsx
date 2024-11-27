@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { useDrag } from "react-dnd";
 import { ClassNames } from "../classNames";
 import { GraphConnectorHandler } from "./GraphConnectorHandle";
-import style from "./GraphNode.modules.scss";
+import style from "./GraphNode.module.scss";
 import { useGraphContext } from "./useGraphContext";
 
 export interface IGraphNodeProps {

@@ -1,5 +1,5 @@
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { HasStencilAspect, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
@@ -49,10 +49,30 @@ export class RenderTargetWrapper {
     public label?: string;
 
     /**
-     * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+     * Gets the depth/stencil texture
      */
     public get depthStencilTexture() {
         return this._depthStencilTexture;
+    }
+
+    /**
+     * Sets the depth/stencil texture
+     * @param texture The depth/stencil texture to set
+     * @param disposeExisting True to dispose the existing depth/stencil texture (if any) before replacing it (default: true)
+     */
+    public setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true) {
+        if (disposeExisting && this._depthStencilTexture) {
+            this._depthStencilTexture.dispose();
+        }
+
+        this._depthStencilTexture = texture;
+
+        this._generateDepthBuffer = this._generateStencilBuffer = false;
+
+        if (texture) {
+            this._generateDepthBuffer = true;
+            this._generateStencilBuffer = HasStencilAspect(texture.format);
+        }
     }
 
     /**
@@ -101,14 +121,14 @@ export class RenderTargetWrapper {
      * Gets the width of the render target wrapper
      */
     public get width(): number {
-        return (<{ width: number; height: number }>this._size).width || <number>this._size;
+        return (<{ width: number; height: number }>this._size).width ?? <number>this._size;
     }
 
     /**
      * Gets the height of the render target wrapper
      */
     public get height(): number {
-        return (<{ width: number; height: number }>this._size).height || <number>this._size;
+        return (<{ width: number; height: number }>this._size).height ?? <number>this._size;
     }
 
     /**
@@ -154,6 +174,45 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Sets this property to true to disable the automatic MSAA resolve that happens when the render target wrapper is unbound (default is false)
+     */
+    public disableAutomaticMSAAResolve = false;
+
+    /**
+     * Indicates if MSAA color texture(s) should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is true)
+     * Note that you can trigger a MSAA resolve at any time by calling resolveMSAATextures()
+     */
+    public resolveMSAAColors = true;
+
+    /**
+     * Indicates if MSAA depth texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAADepth = false;
+
+    /**
+     * Indicates if MSAA stencil texture should be resolved when a resolve occur (either automatically by the engine or manually by the user) (default is false)
+     */
+    public resolveMSAAStencil = false;
+
+    /**
+     * Gets the base array layer of a texture in the textures array
+     * This is an number that is calculated based on the layer and face indices set for this texture at that index
+     * @param index The index of the texture in the textures array to get the base array layer for
+     * @returns the base array layer of the texture at the given index
+     */
+    public getBaseArrayLayer(index: number): number {
+        if (!this._textures) {
+            return -1;
+        }
+
+        const texture = this._textures[index];
+        const layerIndex = this._layerIndices?.[index] ?? 0;
+        const faceIndex = this._faceIndices?.[index] ?? 0;
+
+        return texture.isCube ? layerIndex * 6 + faceIndex : texture.is3D ? 0 : layerIndex;
+    }
+
+    /**
      * Gets the sample count of the render target
      */
     public get samples(): number {
@@ -177,6 +236,32 @@ export class RenderTargetWrapper {
             : this._engine.updateRenderTargetTextureSampleCount(this, value);
         this._samples = value;
         return result;
+    }
+
+    /**
+     * Resolves the MSAA textures into their non-MSAA version.
+     * Note that if samples equals 1 (no MSAA), no resolve is performed.
+     */
+    public resolveMSAATextures(): void {
+        if (this.isMulti) {
+            this._engine.resolveMultiFramebuffer(this);
+        } else {
+            this._engine.resolveFramebuffer(this);
+        }
+    }
+
+    /**
+     * Generates mipmaps for each texture of the render target
+     */
+    public generateMipMaps(): void {
+        if (this._engine._currentRenderTarget === this) {
+            this._engine.unBindFramebuffer(this, true);
+        }
+        if (this.isMulti) {
+            this._engine.generateMipMapsMultiFramebuffer(this);
+        } else {
+            this._engine.generateMipMapsFramebuffer(this);
+        }
     }
 
     /**
@@ -519,7 +604,7 @@ export class RenderTargetWrapper {
      */
     public releaseTextures(): void {
         if (this._textures) {
-            for (let i = 0; i < this._textures?.length ?? 0; ++i) {
+            for (let i = 0; i < this._textures.length; ++i) {
                 this._textures[i].dispose();
             }
         }

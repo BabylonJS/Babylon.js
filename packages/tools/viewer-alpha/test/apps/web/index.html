@@ -12,25 +12,15 @@
                 height: 100%;
                 padding: 0;
                 margin: 0;
-                overflow: hidden;
             }
 
-            .toggle-dom-button {
+            .button-container {
                 position: absolute;
-                top: 10px;
+                top: 50px;
                 right: 10px;
-            }
-
-            .toggle-engine-button {
-                position: absolute;
-                top: 40px;
-                right: 10px;
-            }
-
-            .toggle-hotspot-button {
-                position: absolute;
-                top: 70px;
-                right: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
             }
 
             .lineContainer {
@@ -48,7 +38,17 @@
                 /* --ui-foreground-color: red; */
                 /* --ui-background-hue: 200;
                 --ui-background-saturation: 70%; */
+                /* background-color: aqua; */
+                background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
+
+            /* babylon-viewer-annotation:state(back-facing) {
+                display: none;
+             } */
+            /* babylon-viewer-annotation:state(invalid) {
+                display: unset;
+                opacity: 1;
+             } */
 
             /* babylon-viewer::part(tool-bar) {
                 border-radius: 0;
@@ -60,35 +60,107 @@
                 max-width: unset;
                 transform: unset;
             } */
+
+            /* babylon-viewer::part(progress-bar) {
+                border: none;
+            } */
+
+            /* This keeps child nodes hidden while custom elements load */
+            :not(:defined) > * {
+                display: none;
+            }
         </style>
     </head>
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
-        <babylon-viewer
-            engine="WebGPU"
-            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
-            animation-speed="1.5"
-            hotspots="testHotSpot1 1 228 113 111 0.217 0.341 0.442"
-        >
-            <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
-                <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
-            </div> -->
-            <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
-                <line class="line"></line>
-            </svg>
-        </babylon-viewer>
-        <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
-        <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
-
-        <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+        <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
+        <div id="viewerContainer" style="width: 100vw; height: 100vh">
+            <babylon-viewer
+                engine="WebGPU"
+                source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+                environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
+                animation-speed="1.5"
+                selected-animation="1"
+                camera-orbit="auto auto auto"
+                camera-target="auto auto auto"
+                hotspots='{
+                    "antenna": {
+                        "type": "surface",
+                        "meshIndex": 1,
+                        "pointIndex": [94, 93, 76],
+                        "barycentric": [0.391, 0.387, 0.223],
+                        "cameraOrbit": [1.270, 1.424, 0.514]
+                    },
+                    "thruster": {
+                      "type": "surface",
+                      "meshIndex": 1,
+                      "pointIndex": [8339, 8338, 8337],
+                      "barycentric": [0.213, 0.220, 0.567],
+                      "cameraOrbit": [-5.595, 2.398, 0.787]
+                    },
+                    "hotspot 3": {
+                        "type": "surface",
+                        "meshIndex": 1,
+                        "pointIndex": [228, 113, 111],
+                        "barycentric": [0.217, 0.341, 0.442]
+                    },
+                    "poi": {
+                        "type": "world",
+                        "position": [0.374, 0.575, 0.022],
+                        "normal": [0.690, 0.443, -0.572],
+                        "cameraOrbit": [-32.108, 1.112, 1.714]
+                    }
+                }'
+            >
+                <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
+                    <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
+                </div> -->
+                <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
+                    <line class="line"></line>
+                </svg>
+                <babylon-viewer-annotation hotspot="antenna">
+                    <div>
+                        <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
+                            <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
+                        </svg>
+                    </div>
+                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="thruster">
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">Thruster</div>
+                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="poi">
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">World Space POI</div>
+                </babylon-viewer-annotation>
+            </babylon-viewer>
+        </div>
+        <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
+        <div class="button-container">
+            <button onclick="onToggleDOM()">Toggle DOM</button>
+            <button onclick="onToggleEngine()">Toggle Engine</button>
+            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+            <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
+            <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
+            <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+        </div>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
-        <script>
+        <script type="module">
+            import { Inspector } from "inspector/inspector";
+
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
 
-            let viewerDetails;
+            setInterval(() => {
+                // viewerElement.cameraAutoOrbit = !viewerElement.cameraAutoOrbit;
+                // viewerElement.viewerDetails.viewer.cameraAutoOrbit = !viewerElement.viewerDetails.viewer.cameraAutoOrbit;
+                // const color = viewerElement.viewerDetails.scene.clearColor.clone();
+                // color.r = Math.random();
+                // viewerElement.viewerDetails.scene.clearColor = color;
+                // console.log(viewerElement.clearColor);
+                // viewerElement.selectedAnimation = 1;
+            }, 3000);
+
+            let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
 
@@ -104,6 +176,13 @@
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
+
+                // setInterval(() => {
+                //     console.log(viewerElement.skyboxBlur);
+                //     viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
+                //     console.log(viewerElement.skyboxBlur);
+                // }, 16);
+
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 //viewerElement.environment = "";
@@ -113,14 +192,14 @@
                 //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
-            async function onDrop(event) {
+            globalThis.onDrop = async (event) => {
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
                     await viewerDetails.viewer.loadModel(file);
                 }
-            }
+            };
 
             // update hotspot svg
             function drawHotSpotLine(svgLine, name, rect) {
@@ -132,29 +211,57 @@
                 }
             }
 
-            // use requestAnimationFrame to update with renderer
-            const startHotSpotLinesRenderLoop = () => {
+            const updateHotSpotLines = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "testHotSpot1", hotspotBaseRect);
+                drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
+            };
+
+            globalThis.onToggleDOM = () => {
+                const viewerContainer = document.getElementById("viewerContainer");
+                isViewerConnected ? viewerContainer.removeChild(viewerElement) : viewerContainer.appendChild(viewerElement);
+                isViewerConnected = !isViewerConnected;
+            };
+
+            globalThis.onToggleEngine = () => {
+                viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
+            };
+
+            globalThis.onToggleHotSpot = () => {
+                hotspotVisible = !hotspotVisible;
+                lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
                 if (hotspotVisible) {
-                    requestAnimationFrame(startHotSpotLinesRenderLoop);
+                    viewerElement.addEventListener("viewerrender", updateHotSpotLines);
+                } else {
+                    viewerElement.removeEventListener("viewerrender", updateHotSpotLines);
                 }
             };
 
-            function onToggleDOM() {
-                isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
-                isViewerConnected = !isViewerConnected;
-            }
+            let isInspectorVisible = false;
+            globalThis.onToggleInspector = () => {
+                console.log("toggle inspector");
+                if (isInspectorVisible) {
+                    Inspector.Hide();
+                } else {
+                    console.log(viewerDetails != null);
+                    console.log(viewerDetails?.scene != null);
+                    Inspector.Show(viewerDetails.scene, {});
+                }
+                isInspectorVisible = !isInspectorVisible;
+            };
 
-            function onToggleEngine() {
-                viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
-            }
+            let isTopContentVisible = false;
+            globalThis.onToggleTopContent = () => {
+                const topContent = document.getElementById("moreUpperPageContent");
+                topContent.style.display = isTopContentVisible ? "none" : "block";
+                isTopContentVisible = !isTopContentVisible;
+            };
 
-            function onToggleHotSpot() {
-                hotspotVisible = !hotspotVisible;
-                lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
-                startHotSpotLinesRenderLoop();
-            }
+            let isBottomContentVisible = false;
+            globalThis.onToggleBottomContent = () => {
+                const bottomContent = document.getElementById("moreLowerPageContent");
+                bottomContent.style.display = isBottomContentVisible ? "none" : "block";
+                isBottomContentVisible = !isBottomContentVisible;
+            };
         </script>
     </body>
 </html>

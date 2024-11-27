@@ -1,0 +1,47 @@
+{
+    "name": "@babylonjs/node-render-graph-editor",
+    "version": "7.24.2",
+    "main": "dist/babylon.nodeRenderGraphEditor.max.js",
+    "module": "dist/babylon.nodeRenderGraphEditor.max.js",
+    "esnext": "dist/babylon.nodeRenderGraphEditor.max.js",
+    "typings": "dist/babylon.nodeRenderGraphEditor.module.d.ts",
+    "files": [
+        "dist/**/*.*",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build:dev": "webpack --env development",
+        "build:prod": "webpack --env production",
+        "build:declaration": "build-tools -c pud --config ./config.json",
+        "clean": "rimraf dist"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^7.0.0",
+        "@types/react": ">=16.7.3",
+        "@types/react-dom": ">=16.0.9"
+    },
+    "devDependencies": {
+        "@babylonjs/core": "^7.35.2",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

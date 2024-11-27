@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { TextInputWithSubmit } from "../TextInputWithSubmit";
-import style from "./OptionsLineComponent.modules.scss";
+import style from "./OptionsLineComponent.module.scss";
 
 /**
  * This components represents an options menu with optional

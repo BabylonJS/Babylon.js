@@ -101,6 +101,12 @@ export class GeometryBufferRenderer {
     public static readonly SCREENSPACE_DEPTH_TEXTURE_TYPE = 5;
 
     /**
+     * Constant used to retrieve the linear velocity texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE)
+     */
+    public static readonly VELOCITY_LINEAR_TEXTURE_TYPE = 6;
+
+    /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @internal
@@ -144,6 +150,7 @@ export class GeometryBufferRenderer {
     private _enableNormal: boolean = true;
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
+    private _enableVelocityLinear: boolean = false;
     private _enableReflectivity: boolean = false;
     private _enableScreenspaceDepth: boolean = false;
     private _depthFormat: number;
@@ -152,6 +159,7 @@ export class GeometryBufferRenderer {
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
+    private _velocityLinearIndex: number = -1;
     private _reflectivityIndex: number = -1;
     private _depthIndex: number = -1;
     private _normalIndex: number = -1;
@@ -202,6 +210,7 @@ export class GeometryBufferRenderer {
         this._enablePosition = false;
         this._enableReflectivity = false;
         this._enableVelocity = false;
+        this._enableVelocityLinear = false;
         this._enableScreenspaceDepth = false;
         this._attachmentsFromPrePass = [];
     }
@@ -218,6 +227,9 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE) {
             this._velocityIndex = index;
             this._enableVelocity = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE) {
+            this._velocityLinearIndex = index;
+            this._enableVelocityLinear = true;
         } else if (geometryBufferType === GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE) {
             this._reflectivityIndex = index;
             this._enableReflectivity = true;
@@ -284,6 +296,8 @@ export class GeometryBufferRenderer {
                 return this._positionIndex;
             case GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE:
                 return this._velocityIndex;
+            case GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE:
+                return this._velocityLinearIndex;
             case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE:
                 return this._reflectivityIndex;
             case GeometryBufferRenderer.DEPTH_TEXTURE_TYPE:
@@ -378,6 +392,25 @@ export class GeometryBufferRenderer {
         }
 
         this._scene.needsPreviousWorldMatrices = enable;
+    }
+
+    /**
+     * @returns a boolean indicating if object's linear velocities are enabled for the G buffer.
+     */
+    public get enableVelocityLinear(): boolean {
+        return this._enableVelocityLinear;
+    }
+
+    /**
+     * Sets whether or not object's linear velocities are enabled for the G buffer.
+     */
+    public set enableVelocityLinear(enable: boolean) {
+        this._enableVelocityLinear = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
     }
 
     /**
@@ -531,9 +564,10 @@ export class GeometryBufferRenderer {
             }
 
             // Normal map texture
-            if (material.bumpTexture && MaterialFlags.BumpTextureEnabled) {
+            if ((material.bumpTexture || material.normalTexture) && MaterialFlags.BumpTextureEnabled) {
+                const texture = material.bumpTexture || material.normalTexture;
                 defines.push("#define BUMP");
-                defines.push(`#define BUMP_UV${material.bumpTexture.coordinatesIndex + 1}`);
+                defines.push(`#define BUMP_UV${texture.coordinatesIndex + 1}`);
                 needUv = true;
             }
 
@@ -697,6 +731,14 @@ export class GeometryBufferRenderer {
             }
         }
 
+        if (this._enableVelocityLinear) {
+            defines.push("#define VELOCITY_LINEAR");
+            defines.push("#define VELOCITY_LINEAR_INDEX " + this._velocityLinearIndex);
+            if (this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1) {
+                defines.push("#define BONES_VELOCITY_ENABLED");
+            }
+        }
+
         if (this._enableReflectivity) {
             defines.push("#define REFLECTIVITY");
             defines.push("#define REFLECTIVITY_INDEX " + this._reflectivityIndex);
@@ -752,7 +794,7 @@ export class GeometryBufferRenderer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            PushAttributesForInstances(attribs, this._enableVelocity);
+            PushAttributesForInstances(attribs, this._enableVelocity || this._enableVelocityLinear);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -862,6 +904,13 @@ export class GeometryBufferRenderer {
             count++;
             textureNames.push("gBuffer_Velocity");
             textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE]);
+        }
+
+        if (this._enableVelocityLinear) {
+            this._velocityLinearIndex = count;
+            count++;
+            textureNames.push("gBuffer_VelocityLinear");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE]);
         }
 
         if (this._enableReflectivity) {
@@ -981,7 +1030,7 @@ export class GeometryBufferRenderer {
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             // Velocity
-            if (this._enableVelocity && !this._previousTransformationMatrices[effectiveMesh.uniqueId]) {
+            if ((this._enableVelocity || this._enableVelocityLinear) && !this._previousTransformationMatrices[effectiveMesh.uniqueId]) {
                 this._previousTransformationMatrices[effectiveMesh.uniqueId] = {
                     world: Matrix.Identity(),
                     viewProjection: scene.getTransformMatrix(),
@@ -1054,10 +1103,11 @@ export class GeometryBufferRenderer {
                 }
 
                 // Bump
-                if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
-                    effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
-                    effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
-                    effect.setTexture("bumpSampler", material.bumpTexture);
+                if ((material.bumpTexture || material.normalTexture) && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
+                    const texture = material.bumpTexture || material.normalTexture;
+                    effect.setFloat3("vBumpInfos", texture.coordinatesIndex, 1.0 / texture.level, material.parallaxScaleBias);
+                    effect.setMatrix("bumpMatrix", texture.getTextureMatrix());
+                    effect.setTexture("bumpSampler", texture);
                     effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
                 }
 
@@ -1158,7 +1208,7 @@ export class GeometryBufferRenderer {
                         effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                     }
 
-                    if (this._enableVelocity) {
+                    if (this._enableVelocity || this._enableVelocityLinear) {
                         effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
                     }
                 }
@@ -1170,7 +1220,7 @@ export class GeometryBufferRenderer {
                 }
 
                 // Velocity
-                if (this._enableVelocity) {
+                if (this._enableVelocity || this._enableVelocityLinear) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
                 }
@@ -1188,7 +1238,7 @@ export class GeometryBufferRenderer {
             }
 
             // Velocity
-            if (this._enableVelocity) {
+            if (this._enableVelocity || this._enableVelocityLinear) {
                 this._previousTransformationMatrices[effectiveMesh.uniqueId].world = world.clone();
                 this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection = this._scene.getTransformMatrix().clone();
                 if (renderingMesh.skeleton) {

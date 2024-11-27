@@ -15,7 +15,7 @@ import { PreviewAreaComponent } from "./components/preview/previewAreaComponent"
 import { SerializationTools } from "./serializationTools";
 import * as ReactDOM from "react-dom";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
-import { Popup } from "./sharedComponents/popup";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
@@ -28,6 +28,9 @@ import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock
 import type { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { HistoryStack } from "shared-ui-components/historyStack";
+import { SplitContainer } from "shared-ui-components/split/splitContainer";
+import { Splitter } from "shared-ui-components/split/splitter";
+import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -51,15 +54,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: React.RefObject<HTMLDivElement>;
     private _graphCanvas: GraphCanvasComponent;
-    private _diagramContainer: HTMLDivElement;
 
     private _historyStack: HistoryStack;
-
-    private _startX: number;
-    private _moveInProgress: boolean;
-
-    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
-    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _previewManager: PreviewManager;
     private _mouseLocationX = 0;
@@ -110,6 +106,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Create the stack
         this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        this._historyStack.isEnabled = DataStorage.ReadBoolean("UndoRedo", true);
         globalState.stateManager.historyStack = this._historyStack;
 
         // Connect to relevant events
@@ -135,7 +132,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
-            this._diagramContainer = this._diagramContainerRef.current!;
             this.prepareHistoryStack();
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
@@ -188,8 +184,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             let targetY = eventData.targetY;
 
             if (eventData.needRepositioning) {
-                targetX = targetX - this._diagramContainer.offsetLeft;
-                targetY = targetY - this._diagramContainer.offsetTop;
+                const container = this._diagramContainerRef.current!;
+                targetX = targetX - container.offsetLeft;
+                targetY = targetY - container.offsetTop;
             }
 
             const selectedLink = this._graphCanvas.selectedLink;
@@ -360,17 +357,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.hideWaitScreen();
     }
 
-    onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        this._startX = evt.clientX;
-        this._moveInProgress = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    }
-
-    onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        this._moveInProgress = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    }
-
     onWheel = (evt: WheelEvent) => {
         if (this.props.globalState.pointerOverCanvas) {
             return evt.preventDefault();
@@ -390,34 +376,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return evt.preventDefault();
         }
     };
-
-    resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
-        if (!this._moveInProgress) {
-            return;
-        }
-
-        const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-geometry-editor-graph-root") as HTMLDivElement;
-
-        if (forLeft) {
-            this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
-            DataStorage.WriteNumber("LeftWidth", this._leftWidth);
-        } else {
-            this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
-            DataStorage.WriteNumber("RightWidth", this._rightWidth);
-            rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
-        }
-
-        rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-
-        this._startX = evt.clientX;
-    }
-
-    buildColumnLayout() {
-        return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
-    }
 
     emitNewBlock(blockType: string, targetX: number, targetY: number) {
         let newNode: GraphNode;
@@ -479,7 +437,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
             }
 
-            block.autoConfigure();
+            block.autoConfigure(this.props.globalState.nodeGeometry);
             newNode = this.appendBlock(block);
             newNode.addClassToVisual(block.getClassName());
         }
@@ -504,7 +462,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
         const data = event.dataTransfer.getData("babylonjs-geometry-node") as string;
 
-        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
+        const container = this._diagramContainerRef.current!;
+        this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
     }
 
     handlePopUp = () => {
@@ -519,7 +478,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewManager) {
             this._previewManager.dispose();
         }
-        this._popUpWindow.close();
+        this._popUpWindow?.close();
         this.setState(
             {
                 showPreviewPopUp: false,
@@ -546,63 +505,31 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             embedHostWidth: "100%",
             ...userOptions,
         };
-        const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
-        if (popUpWindow) {
-            popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-            const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
-            this.createPreviewMeshControlHost(options, parentControl);
-            this.createPreviewHost(options, parentControl);
-            if (parentControl) {
-                this.fixPopUpStyles(parentControl.ownerDocument!);
-                this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
-            }
-        }
-    };
 
-    createPopupWindow = (title: string, windowVariableName: string, width = 500, height = 500): Window | null => {
-        const windowCreationOptionsList = {
-            width: width,
-            height: height,
-            top: (this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
-            left: (this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX,
-        };
-
-        const windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
-            .join(",");
-
-        const popupWindow = this.props.globalState.hostWindow.open("", title, windowCreationOptions);
-        if (!popupWindow) {
-            return null;
-        }
-
-        const parentDocument = popupWindow.document;
-
-        parentDocument.title = title;
-        parentDocument.body.style.width = "100%";
-        parentDocument.body.style.height = "100%";
-        parentDocument.body.style.margin = "0";
-        parentDocument.body.style.padding = "0";
-
-        const parentControl = parentDocument.createElement("div");
-        parentControl.style.width = "100%";
-        parentControl.style.height = "100%";
-        parentControl.style.margin = "0";
-        parentControl.style.padding = "0";
-        parentControl.style.display = "grid";
-        parentControl.style.gridTemplateRows = "40px auto";
-        parentControl.id = "node-geometry-editor-graph-root";
-        parentControl.className = "nge-right-panel popup";
-
-        popupWindow.document.body.appendChild(parentControl);
-
-        Popup._CopyStyles(this.props.globalState.hostWindow.document, parentDocument);
-
-        (this as any)[windowVariableName] = popupWindow;
-
-        this._popUpWindow = popupWindow;
-
-        return popupWindow;
+        let popUpWindow: Nullable<Window> = null;
+        CreatePopup("PREVIEW AREA", {
+            width: 500,
+            height: 500,
+            onParentControlCreateCallback: (parentControl) => {
+                parentControl.style.display = "grid";
+                parentControl.style.gridTemplateRows = "40px auto";
+                parentControl.id = "node-geometry-editor-graph-root";
+                parentControl.className = "nge-right-panel popup";
+            },
+            onWindowCreateCallback: (w) => {
+                popUpWindow = w;
+                if (popUpWindow) {
+                    popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
+                    const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
+                    this.createPreviewMeshControlHost(options, parentControl);
+                    this.createPreviewHost(options, parentControl);
+                    if (parentControl) {
+                        this.fixPopUpStyles(parentControl.ownerDocument!);
+                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+                    }
+                }
+            },
+        });
     };
 
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
@@ -648,7 +575,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewHost) {
             const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
-                width: 200,
             });
             ReactDOM.render(previewAreaComponentHost, this._previewHost);
         }
@@ -659,6 +585,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (previewContainer) {
             previewContainer.style.height = "auto";
             previewContainer.style.gridRow = "1";
+            previewContainer.style.aspectRatio = "unset";
         }
         const previewConfigBar = document.getElementById("preview-config-bar");
         if (previewConfigBar) {
@@ -677,16 +604,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     override render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div
+                <SplitContainer
                     id="node-geometry-editor-graph-root"
-                    style={{
-                        gridTemplateColumns: this.buildColumnLayout(),
-                    }}
-                    onMouseMove={(evt) => {
+                    direction={SplitDirection.Horizontal}
+                    onPointerMove={(evt) => {
                         this._mouseLocationX = evt.pageX;
                         this._mouseLocationY = evt.pageY;
                     }}
-                    onMouseDown={(evt) => {
+                    onPointerDown={(evt) => {
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {
                             return;
                         }
@@ -696,17 +621,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 
-                    <div
-                        id="leftGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt)}
-                    ></div>
+                    <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
 
                     {/* The node graph diagram */}
-                    <div
+                    <SplitContainer
+                        direction={SplitDirection.Vertical}
                         className="diagram-container"
-                        ref={this._diagramContainerRef}
+                        containerRef={this._diagramContainerRef}
                         onDrop={(event) => {
                             this.dropNewBlock(event);
                         }}
@@ -721,24 +642,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 return this.appendBlock(nodeData.data as NodeGeometryBlock);
                             }}
                         />
-                    </div>
+                        <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
+                        <LogComponent globalState={this.props.globalState} />
+                    </SplitContainer>
 
-                    <div
-                        id="rightGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt, false)}
-                    ></div>
-
+                    <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
                     {/* Property tab */}
                     <div className="nge-right-panel">
                         <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
                         {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
-                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}
+                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
                     </div>
-
-                    <LogComponent globalState={this.props.globalState} />
-                </div>
+                </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Geometry Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>

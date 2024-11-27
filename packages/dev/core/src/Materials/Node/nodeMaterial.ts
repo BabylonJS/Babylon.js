@@ -1008,7 +1008,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Runs an otpimization phase to try to improve the shader code
+     * Runs an optimization phase to try to improve the shader code
      */
     public optimize() {
         for (const optimizer of this._optimizers) {
@@ -1742,6 +1742,9 @@ export class NodeMaterial extends PushMaterial {
      * Get a string representing the shaders built by the current node graph
      */
     public get compiledShaders() {
+        if (!this._buildWasSuccessful) {
+            this.build();
+        }
         return `// Vertex shader\n${this._vertexCompilationState.compilationString}\n\n// Fragment shader\n${this._fragmentCompilationState.compilationString}`;
     }
 
@@ -2392,6 +2395,7 @@ export class NodeMaterial extends PushMaterial {
                 blockId: number;
                 x: number;
                 y: number;
+                isCollapsed: boolean;
             }[] = source.locations || source.editorData.locations;
 
             for (const location of locations) {

@@ -124,8 +124,17 @@ export class NodeGeometryConnectionPoint {
                 return this._connectedPoint.type;
             }
 
-            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-                return this._linkedConnectionSource.type;
+            if (this._linkedConnectionSource) {
+                if (this._linkedConnectionSource.isConnected) {
+                    return this._linkedConnectionSource.type;
+                }
+                if (this._linkedConnectionSource._defaultConnectionPointType) {
+                    return this._linkedConnectionSource._defaultConnectionPointType;
+                }
+            }
+
+            if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
             }
         }
 

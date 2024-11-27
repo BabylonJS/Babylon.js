@@ -462,6 +462,8 @@ export class FluidRenderingTextures {
             this.onDisposeObservable.notifyObservers(this);
         }
 
+        this.onDisposeObservable.clear();
+
         this._rt?.dispose();
         this._rt = null;
         this._texture?.dispose();

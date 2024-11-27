@@ -9,7 +9,7 @@ import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyComman
 import { ColorPickerLine } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
-import copyIcon from "./copy.svg";
+import copyIcon from "../imgs/copy.svg";
 
 const emptyColor = new Color4(0, 0, 0, 0);
 

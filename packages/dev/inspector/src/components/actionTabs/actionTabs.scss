@@ -216,6 +216,7 @@ $line-padding-left: 2px;
                         opacity: 0.7;
                         transition: opacity 0.2s;
                     }
+
                     .range::-webkit-slider-thumb {
                         -webkit-appearance: none;
                         appearance: none;
@@ -279,6 +280,21 @@ $line-padding-left: 2px;
                     border-left: greenyellow 3px solid;
                     margin-left: 5px;
                     padding-left: 5px !important;
+                }
+
+                .tagContainer {
+                    display: flex;
+                    min-height: 20px;
+                    padding: 4px;
+                    width: calc(100% - 8px);
+                    flex-wrap: wrap;
+
+                    .tag {
+                        border: 1px solid white;
+                        border-radius: 6px;
+                        padding: 1px 4px;
+                        margin: 2px;
+                    }
                 }
 
                 .underline {
@@ -1081,6 +1097,10 @@ $line-padding-left: 2px;
                             outline: none;
                             opacity: 0.7;
                             transition: opacity 0.2s;
+
+                            &.overflow {
+                                background-color: red;
+                            }
                         }
 
                         .range:hover {

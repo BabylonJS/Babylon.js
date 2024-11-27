@@ -10,8 +10,8 @@ import { FrameNodePort } from "./frameNodePort";
 import type { NodeLink } from "./nodeLink";
 import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
-import styles from "./graphFrame.modules.scss";
-import commonStyles from "./common.modules.scss";
+import styles from "./graphFrame.module.scss";
+import commonStyles from "./common.module.scss";
 import { ClassNames } from "../components/classNames";
 
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
@@ -676,7 +676,7 @@ export class GraphFrame {
         this._portContainer.appendChild(this._outputPortContainer);
 
         this._inputPortContainer = root.ownerDocument!.createElement("div");
-        this._inputPortContainer.classList.add(commonStyles["inputsContainer"]);
+        this._inputPortContainer.classList.add(commonStyles["inputsContainer"], commonStyles["inputsContainerUp"]);
         this._portContainer.appendChild(this._inputPortContainer);
 
         this.name = "Frame";

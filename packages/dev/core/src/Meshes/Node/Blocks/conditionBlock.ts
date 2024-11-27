@@ -6,6 +6,8 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
+import { GeometryInputBlock } from "./geometryInputBlock";
+import type { NodeGeometry } from "../nodeGeometry";
 
 /**
  * Conditions supported by the condition block
@@ -40,6 +42,7 @@ export class ConditionBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("Test", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "Equal", value: ConditionBlockTests.Equal },
             { label: "NotEqual", value: ConditionBlockTests.NotEqual },
@@ -116,6 +119,24 @@ export class ConditionBlock extends NodeGeometryBlock {
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
+    }
+
+    public override autoConfigure(nodeGeometry: NodeGeometry) {
+        if (!this.ifTrue.isConnected) {
+            const minInput =
+                (nodeGeometry.getBlockByPredicate((b) => b.isInput && (b as GeometryInputBlock).value === 1 && b.name === "True") as GeometryInputBlock) ||
+                new GeometryInputBlock("True");
+            minInput.value = 1;
+            minInput.output.connectTo(this.ifTrue);
+        }
+
+        if (!this.ifFalse.isConnected) {
+            const maxInput =
+                (nodeGeometry.getBlockByPredicate((b) => b.isInput && (b as GeometryInputBlock).value === 0 && b.name === "False") as GeometryInputBlock) ||
+                new GeometryInputBlock("False");
+            maxInput.value = 0;
+            maxInput.output.connectTo(this.ifFalse);
+        }
     }
 
     protected override _buildBlock() {

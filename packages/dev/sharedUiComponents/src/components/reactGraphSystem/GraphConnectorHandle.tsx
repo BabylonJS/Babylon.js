@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { useDrag, useDrop } from "react-dnd";
 import { ClassNames } from "../classNames";
-import style from "./GraphConnectorHandle.modules.scss";
+import style from "./GraphConnectorHandle.module.scss";
 import { useGraphContext } from "./useGraphContext";
 
 /**

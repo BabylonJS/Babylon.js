@@ -40,6 +40,19 @@ declare module "../../abstractEngine" {
         updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
 
         /**
+         * Generates mipmaps for the texture of the (multi) render target
+         * @param texture The render target containing the textures to generate the mipmaps for
+         */
+        generateMipMapsMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
+         * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
+         * Note that if "texture" is not a MSAA render target, no resolve is performed.
+         * @param texture The render target texture containing the MSAA textures to resolve
+         */
+        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -75,16 +88,10 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         onBeforeUnbind();
     }
 
-    const attachments = rtWrapper._attachments!;
-    const count = attachments.length;
-
     this._endCurrentRenderPass();
 
-    for (let i = 0; i < count; i++) {
-        const texture = rtWrapper.textures![i];
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube && !texture.is3D) {
-            this._generateMipmaps(texture);
-        }
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsMultiFramebuffer(rtWrapper);
     }
 
     this._currentRenderTarget = null;
@@ -101,8 +108,9 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let generateDepthTexture = false;
     let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
     let textureCount = 1;
+    let samples = 1;
 
-    const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    const defaultType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
@@ -117,52 +125,47 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let layerIndex: number[] = [];
     let layers: number[] = [];
     let labels: string[] = [];
+    let creationFlags: number[] = [];
+    let dontCreateTextures = false;
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
     if (options !== undefined) {
-        generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
-        generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-        generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
-        generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
-        textureCount = options.textureCount || 1;
+        generateMipMaps = options.generateMipMaps ?? false;
+        generateDepthBuffer = options.generateDepthBuffer ?? true;
+        generateStencilBuffer = options.generateStencilBuffer ?? false;
+        generateDepthTexture = options.generateDepthTexture ?? false;
+        textureCount = options.textureCount ?? 1;
         depthTextureFormat = options.depthTextureFormat ?? Constants.TEXTUREFORMAT_DEPTH16;
-
-        if (options.types) {
-            types = options.types;
-        }
-        if (options.samplingModes) {
-            samplingModes = options.samplingModes;
-        }
-        if (options.useSRGBBuffers) {
-            useSRGBBuffers = options.useSRGBBuffers;
-        }
-        if (options.formats) {
-            formats = options.formats;
-        }
-        if (options.targetTypes) {
-            targets = options.targetTypes;
-        }
-        if (options.faceIndex) {
-            faceIndex = options.faceIndex;
-        }
-        if (options.layerIndex) {
-            layerIndex = options.layerIndex;
-        }
-        if (options.layerCounts) {
-            layers = options.layerCounts;
-        }
-
-        labels = options.labels ?? labels;
+        types = options.types || types;
+        samplingModes = options.samplingModes || samplingModes;
+        useSRGBBuffers = options.useSRGBBuffers || useSRGBBuffers;
+        formats = options.formats || formats;
+        targets = options.targetTypes || targets;
+        faceIndex = options.faceIndex || faceIndex;
+        layerIndex = options.layerIndex || layerIndex;
+        layers = options.layerCounts || layers;
+        labels = options.labels || labels;
+        creationFlags = options.creationFlags || creationFlags;
+        samples = options.samples ?? samples;
+        dontCreateTextures = options.dontCreateTextures ?? false;
     }
 
+    const width = (<{ width: number; height: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number }>size).height ?? <number>size;
+
+    const textures: InternalTexture[] = [];
+    const attachments: number[] = [];
+    const defaultAttachments: number[] = [];
+
     rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
+    rtWrapper._generateDepthBuffer = generateDepthBuffer;
+    rtWrapper._generateStencilBuffer = generateStencilBuffer;
+    rtWrapper._attachments = attachments;
+    rtWrapper._defaultAttachments = defaultAttachments;
 
-    const width = (<{ width: number; height: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number }>size).height || <number>size;
-
-    let depthStencilTexture = null;
-    if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+    let depthStencilTexture: Nullable<InternalTexture> = null;
+    if ((generateDepthBuffer || generateStencilBuffer || generateDepthTexture) && !dontCreateTextures) {
         if (!generateDepthTexture) {
             // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
             // So, we will align with what the WebGL engine does
@@ -174,17 +177,10 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
                 depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
             }
         }
-        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, "MultipleRenderTargetDepthStencil");
+        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, rtWrapper.label + "-DepthStencil");
     }
 
-    const textures: InternalTexture[] = [];
-    const attachments: number[] = [];
-    const defaultAttachments: number[] = [];
-
-    rtWrapper._generateDepthBuffer = generateDepthBuffer;
-    rtWrapper._generateStencilBuffer = generateStencilBuffer;
-    rtWrapper._attachments = attachments;
-    rtWrapper._defaultAttachments = defaultAttachments;
+    const mipmapsCreationOnly = options !== undefined && typeof options === "object" && options.createMipMaps && !generateMipMaps;
 
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
@@ -195,6 +191,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
         const target = targets[i] || defaultTarget;
         const layerCount = layers[i] ?? 1;
+        const creationFlag = creationFlags[i];
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -212,7 +209,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         attachments.push(i + 1);
         defaultAttachments.push(initializeBuffers ? i + 1 : i === 0 ? 1 : 0);
 
-        if (target === -1) {
+        if (target === -1 || dontCreateTextures) {
             continue;
         }
 
@@ -246,11 +243,20 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.format = format;
-        texture.label = labels[i];
+        texture.label = labels[i] ?? rtWrapper.label + "-Texture" + i;
 
         this._internalTexturesCache.push(texture);
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture);
+        if (mipmapsCreationOnly) {
+            // createGPUTextureForInternalTexture will only create a texture with mipmaps if generateMipMaps is true, as InternalTexture has no createMipMaps property, separate from generateMipMaps.
+            texture.generateMipMaps = true;
+        }
+
+        this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, creationFlag, true);
+
+        if (mipmapsCreationOnly) {
+            texture.generateMipMaps = false;
+        }
     }
 
     if (depthStencilTexture) {
@@ -262,11 +268,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     rtWrapper.setTextures(textures);
     rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
+    if (!dontCreateTextures) {
+        this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
+    } else {
+        rtWrapper._samples = samples;
+    }
+
     return rtWrapper;
 };
 
 WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
-    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures[0].samples === samples) {
+    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures.length === 0 || rtWrapper.textures[0].samples === samples) {
         return samples;
     }
 
@@ -282,7 +294,7 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         const texture = rtWrapper.textures[i];
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        gpuTextureWrapper?.releaseMSAATexture();
+        gpuTextureWrapper?.releaseMSAATexture(rtWrapper.getBaseArrayLayer(i));
     }
 
     // Note that rtWrapper.textures can't have null textures, lastTextureIsDepthTexture can't be true if rtWrapper._depthStencilTexture is null
@@ -290,7 +302,7 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
 
     for (let i = 0; i < count; ++i) {
         const texture = rtWrapper.textures[i];
-        this._textureHelper.createMSAATexture(texture, samples, false, i === count - 1 && lastTextureIsDepthTexture ? 0 : i);
+        this._textureHelper.createMSAATexture(texture, samples, false, rtWrapper.getBaseArrayLayer(i));
         texture.samples = samples;
     }
 
@@ -302,7 +314,31 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         rtWrapper._depthStencilTexture.samples = samples;
     }
 
+    rtWrapper._samples = samples;
+
     return samples;
+};
+
+WebGPUEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGPURenderTargetWrapper;
+
+    if (!rtWrapper.isMulti) {
+        return;
+    }
+
+    const attachments = rtWrapper._attachments!;
+    const count = attachments.length;
+
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
+        if (texture.generateMipMaps && !texture.isCube && !texture.is3D) {
+            this._generateMipmaps(texture);
+        }
+    }
+};
+
+WebGPUEngine.prototype.resolveMultiFramebuffer = function (_texture: RenderTargetWrapper): void {
+    throw new Error("resolveMultiFramebuffer is not yet implemented in WebGPU!");
 };
 
 WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void {

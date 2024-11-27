@@ -108,7 +108,14 @@ import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerProperty
 import type { EffectLayer } from "core/Layers/effectLayer";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
+import type { SkyMaterial } from "materials/sky/skyMaterial";
+import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
+import { Tags } from "core/Misc/tags";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
+/**
+ *
+ */
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
@@ -392,6 +399,19 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as PBRSpecularGlossinessMaterial;
                 return (
                     <PBRSpecularGlossinessMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "SkyMaterial") {
+                const material = entity as SkyMaterial;
+                return (
+                    <SkyMaterialPropertyGridComponent
                         globalState={this.props.globalState}
                         material={material}
                         lockObject={this._lockObject}
@@ -711,12 +731,29 @@ export class PropertyGridTabComponent extends PaneComponent {
         return null;
     }
 
+    renderTags() {
+        const tags = Object.keys(Tags.GetTags(this.props.selectedEntity, false));
+
+        return tags.map((tag: string, i: number) => {
+            return (
+                <div className="tag" key={"tag" + i}>
+                    {tag}
+                </div>
+            );
+        });
+    }
+
     override render() {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (
             <div className="pane">
                 {this.renderContent()}
+                {Tags.HasTags(entity) && (
+                    <LineContainerComponent title="TAGS" selection={this.props.globalState}>
+                        <div className="tagContainer">{this.renderTags()}</div>
+                    </LineContainerComponent>
+                )}
                 {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
             </div>
         );

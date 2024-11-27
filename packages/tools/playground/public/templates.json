@@ -36,10 +36,6 @@
         "insertText": "// Load the spritesheet (with appropriate settings) associated with the JSON Atlas.\nlet spriteSheet = new BABYLON.Texture(\"textures/spriteMap/none_trimmed/Legends_Level_A.png\", scene,\n    false, //NoMipMaps\n    false, //InvertY usually false if exported from TexturePacker\n    BABYLON.Texture.NEAREST_NEAREST, //Sampling Mode\n    null, //Onload, you could spin up the sprite map in a function nested here\n    null, //OnError\n    null, //CustomBuffer\n    false, //DeleteBuffer\n    BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA\n);\n// Create an assets manager to load the JSON file\nconst assetsManager = new BABYLON.AssetsManager(scene);\nconst textTask = assetsManager.addTextFileTask(\"text task\", \"textures/spriteMap/none_trimmed/Legends_Level_A.json\");\n// Create the sprite map on succeful loading\ntextTask.onSuccess = (task) => {\n    let background = new BABYLON.SpriteMap(\"background\", JSON.parse(task.text), spriteSheet, {\n            stageSize: new BABYLON.Vector2(2, 2),\n            flipU: true //Sometimes you need to flip, depending on the sprite format.\n        }, scene);\n    // Set 4 sprites one per tile.\n    for (let i = 0; i < 4; i++) {\n        background.changeTiles(0, new BABYLON.Vector2(i % 2, Math.floor(i / 2)), 9 * i + 9);\n    }\n};\n//load the assets manager\nassetsManager.load();"
     },
 
-
-
-
-
     {
         "label": "Add Camera : Arc Rotate Camera w/Radians",
         "key": "Arc Rotate (Rad)",
@@ -65,10 +61,6 @@
         "insertText": "var camera = new BABYLON.FreeCamera(\"${1:camera}\", new BABYLON.Vector3(8, 3, 0), scene);\ncamera.setTarget(BABYLON.Vector3.Zero());\ncamera.attachControl(canvas, true);\n/*scene.createDefaultXRExperienceAsync({}).then((defaultXRExperience) => {\n    // Make sure hardware is OK for XR context${2}\n})*/;"
     },
 
-
-
-
-
     {
         "label": "Add Light : Hemispheric light",
         "key": "Hemispheric",
@@ -77,7 +69,7 @@
     },
     {
         "label": "Add Light : Directional light",
-        "key": "Directionnal",
+        "key": "Directional",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-directional-light",
         "insertText": "var light = new BABYLON.DirectionalLight(\"${1:dirLight}\", new BABYLON.Vector3(${2:-1},${3:-2},${4:-1}), scene);\nlight.position = new BABYLON.Vector3(${5:4},${6:8},${7:4});"
     },
@@ -99,10 +91,6 @@
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-spot-light",
         "insertText": "//red spot\nvar light = new BABYLON.SpotLight(\"spotLight\", new BABYLON.Vector3(-Math.cos(Math.PI/6), 4 , -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight.diffuse = new BABYLON.Color3(1, 0, 0);\n\n//green spot\nvar light1 = new BABYLON.SpotLight(\"spotLight1\", new BABYLON.Vector3(0, 4, 1 - Math.sin(Math.PI / 6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight1.diffuse = new BABYLON.Color3(0, 1, 0);\n\n//blue spot\nvar light2 = new BABYLON.SpotLight(\"spotLight2\", new BABYLON.Vector3(Math.cos(Math.PI/6), 4, -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight2.diffuse = new BABYLON.Color3(0, 0, 1);"
     },
-
-
-
-
 
     {
         "label": "Build a ground plane",
@@ -129,10 +117,6 @@
         "insertText": "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);\ncylinder.position.y = 1;"
     },
 
-
-
-
-
     {
         "label": "Import a Mesh",
         "key": "Import Mesh",
@@ -151,10 +135,6 @@
         "documentation": "https://doc.babylonjs.com/extensions/gltfexporter#exporting-a-scene-to-gltf",
         "insertText": "BABYLON.GLTF2Export.GLTFAsync(scene, \"${1:fileName}\").then((gltf) => {\n     gltf.downloadFiles();\n});"
     },
-
-
-
-
 
     {
         "label": "Import animated character : Dude",
@@ -175,11 +155,6 @@
         "insertText": "BABYLON.SceneLoader.ImportMesh(\"\", \"https://assets.babylonjs.com/meshes/\", \"HVGirl.glb\", scene, function (newMeshes, particleSystems, skeletons) {\n    var hero = newMeshes[0];\n    hero.scaling.scaleInPlace(0.08);\n    const sambaAnim = scene.getAnimationGroupByName(\"Samba\");\n    sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);\n    hero.position.x = 2;\n});"
     },
 
-
-
-
-
-
     {
         "label": "Create a particle system (simple)",
         "key": "Simple",
@@ -198,11 +173,6 @@
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/shape_emitters",
         "insertText": "// Create a particle system\nvar particleSystem = new BABYLON.ParticleSystem(\"particles\", 2000, scene);\n// Texture of each particle\nparticleSystem.particleTexture = new BABYLON.Texture(\"/textures/flare.png\", scene);\n// Where the particles come from\nparticleSystem.emitter = BABYLON.Vector3.Zero(); // the starting location\n// Colors of particles over time\nparticleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);\nparticleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);\nparticleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);\n// Size of each particle (random between...)\nparticleSystem.minSize = 0.1;\nparticleSystem.maxSize = 0.5;\n// Life time of each particle (random between...)\nparticleSystem.minLifeTime = 0.3;\nparticleSystem.maxLifeTime = 1.5;\n// Emission rate\nparticleSystem.emitRate = 1000;\n// Emission space\nparticleSystem.createPointEmitter(new BABYLON.Vector3(-7, 8, 3), new BABYLON.Vector3(7, 8, -3));\n// Speed\nparticleSystem.minEmitPower = 1;\nparticleSystem.maxEmitPower = 3;\nparticleSystem.updateSpeed = 0.005;\n// Start the particle system\nparticleSystem.start();"
     },
-
-
-
-
-
 
     {
         "label": "Load from Snippet : Particle System",

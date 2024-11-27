@@ -27,6 +27,7 @@ export class MappingBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("Mapping", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "Spherical", value: MappingTypes.Spherical },
             { label: "Cylindrical", value: MappingTypes.Cylindrical },

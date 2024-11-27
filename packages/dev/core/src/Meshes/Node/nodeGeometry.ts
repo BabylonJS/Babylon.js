@@ -229,7 +229,7 @@ export class NodeGeometry {
     }
 
     /**
-     * Build the final geometry
+     * Build the final geometry. Please note that the geometry MAY not be ready until the onBuildObservable is raised.
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
@@ -245,16 +245,33 @@ export class NodeGeometry {
         // Initialize blocks
         this._initializeBlock(this.outputBlock, autoConfigure);
 
+        // Check async states
+        const promises: Promise<void>[] = [];
+        for (const block of this.attachedBlocks) {
+            if (block._isReadyState) {
+                promises.push(block._isReadyState);
+            }
+        }
+
+        if (promises.length) {
+            Promise.all(promises).then(() => {
+                this.build(verbose, updateBuildId, autoConfigure);
+            });
+            return;
+        }
+
         // Build
         const state = new NodeGeometryBuildState();
 
         state.buildId = this._buildId;
         state.verbose = verbose;
 
-        this.outputBlock.build(state);
-
-        if (updateBuildId) {
-            this._buildId = NodeGeometry._BuildIdGenerator++;
+        try {
+            this.outputBlock.build(state);
+        } finally {
+            if (updateBuildId) {
+                this._buildId = NodeGeometry._BuildIdGenerator++;
+            }
         }
 
         this._buildExecutionTime = PrecisionDate.Now - now;
@@ -316,7 +333,7 @@ export class NodeGeometry {
     private _initializeBlock(node: NodeGeometryBlock, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
-            node.autoConfigure();
+            node.autoConfigure(this);
         }
         node._preparationId = this._buildId;
 
@@ -422,6 +439,7 @@ export class NodeGeometry {
                 blockId: number;
                 x: number;
                 y: number;
+                isCollapsed: boolean;
             }[] = source.locations || source.editorData.locations;
 
             for (const location of locations) {

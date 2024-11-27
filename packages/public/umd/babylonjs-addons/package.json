@@ -1,0 +1,46 @@
+{
+    "name": "babylonjs-addons",
+    "version": "7.35.2",
+    "main": "babylonjs.addons.js",
+    "types": "babylonjs.addons.module.d.ts",
+    "files": [
+        "*"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build:dev": "webpack --env development",
+        "build:prod": "webpack --env production",
+        "build:declaration": "build-tools -c pud --config ./config.json",
+        "clean": "rimraf dist && rimraf babylon*.* -g",
+        "test:escheck": "es-check es6 ./babylonjs.addons.js"
+    },
+    "dependencies": {
+        "babylonjs": "^7.35.2"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "1.0.0",
+        "@dev/core": "1.0.0",
+        "source-map-loader": "^4.0.0",
+        "ts-loader": "^9.2.6",
+        "webpack": "^5.73.0",
+        "webpack-cli": "^5.1.0",
+        "webpack-merge": "^5.8.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

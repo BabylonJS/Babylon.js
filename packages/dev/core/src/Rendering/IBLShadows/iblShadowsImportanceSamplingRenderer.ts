@@ -226,7 +226,6 @@ export class _IblShadowsImportanceSamplingRenderer {
         this._icdfyPT?.dispose();
         this._cdfxPT?.dispose();
         this._icdfxPT?.dispose();
-        this._iblSource?.dispose();
     }
 
     private _createDebugPass() {
@@ -298,5 +297,6 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
+        this.onReadyObservable.clear();
     }
 }

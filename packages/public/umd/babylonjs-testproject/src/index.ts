@@ -6,6 +6,7 @@
 /// <reference path="../../babylonjs-inspector/babylon.inspector.module.d.ts" />
 /// <reference path="../../babylonjs-node-editor/babylon.nodeEditor.module.d.ts" />
 /// <reference path="../../babylonjs-node-geometry-editor/babylon.nodeGeometryEditor.module.d.ts" />
+/// <reference path="../../babylonjs-node-render-graph-editor/babylon.nodeRenderGraphEditor.module.d.ts" />
 
 import * as BABYLON from "babylonjs";
 import * as BABYLONGUI from "babylonjs-gui";
@@ -15,3 +16,4 @@ import * as SERIALIZERS from "babylonjs-serializers";
 import * as INSPECTOR from "babylonjs-inspector";
 import * as NODEMATERIAL from "babylonjs-node-editor";
 import * as NGE from "babylonjs-node-geometry-editor";
+import * as NRGE from "babylonjs-node-render-graph-editor";

@@ -1805,11 +1805,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /**
      * Disposes the material
-     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     * @param _forceDisposeEffect kept for backward compat. We reference count the effect now.
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+    public dispose(_forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
         const scene = this.getScene();
         // Animations
         scene.stopAnimation(this);
@@ -1835,16 +1835,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 for (const meshId in this.meshMap) {
                     const mesh = this.meshMap[meshId];
                     if (mesh) {
+                        this.releaseVertexArrayObject(mesh, true);
                         mesh.material = null; // will set the entry in the map to undefined
-                        this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
                 }
             } else {
                 const meshes = scene.meshes;
                 for (const mesh of meshes) {
                     if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
+                        this.releaseVertexArrayObject(mesh, true);
                         mesh.material = null;
-                        this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
                 }
             }
@@ -1853,7 +1853,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._drawWrapper.effect) {
+        if (this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
                 this._drawWrapper.effect.dispose();
             }

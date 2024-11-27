@@ -6,6 +6,7 @@ import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
+import { IsDocumentAvailable } from "core/Misc/domManagement";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -124,22 +125,31 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         scene.getEngine()._internalTexturesCache.push(texture);
         this._texture = texture;
 
-        const canvas = document.createElement("canvas");
         LoadImage(
             this.url,
             (image) => {
                 this._width = image.width;
                 this._height = image.height;
-                canvas.width = this._width;
-                canvas.height = this._height;
+                let canvas: HTMLCanvasElement | OffscreenCanvas;
 
-                const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+                if (IsDocumentAvailable()) {
+                    canvas = document.createElement("canvas");
+                    canvas.width = this._width;
+                    canvas.height = this._height;
+                } else {
+                    // Canvas is not available in the current environment
+                    canvas = new OffscreenCanvas(this._width, this._height);
+                }
+
+                const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
                 ctx.drawImage(image, 0, 0);
 
                 const imageData = ctx.getImageData(0, 0, image.width, image.height);
                 this._buffer = imageData.data.buffer as ArrayBuffer;
 
-                canvas.remove();
+                if ((canvas as HTMLCanvasElement).remove) {
+                    (canvas as HTMLCanvasElement).remove();
+                }
                 loadTextureCallback();
             },
             (_, e) => {

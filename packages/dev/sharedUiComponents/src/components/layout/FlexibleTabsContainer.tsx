@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { useContext } from "react";
 import { FlexibleTab } from "./FlexibleTab";
 import { LayoutContext } from "./LayoutContext";
-import style from "./FlexibleTabsContainer.modules.scss";
+import style from "./FlexibleTabsContainer.module.scss";
 
 import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 import { getPosInLayout, removeLayoutRowAndRedistributePercentages } from "./utils";

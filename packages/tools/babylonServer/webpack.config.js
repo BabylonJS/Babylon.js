@@ -96,7 +96,9 @@ module.exports = (env) => {
             "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
+            "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
+            "addons/babylonjs.addons.min": `./src/addons/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
         },
@@ -114,8 +116,10 @@ module.exports = (env) => {
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
+                "node-render-graph-editor": path.resolve(basePathForTools, "nodeRenderGraphEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
+                addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],
@@ -170,6 +174,10 @@ module.exports = (env) => {
             to: "/materialsLibrary/babylonjs.materials.min.js",
         },
         {
+            from: "/addons/babylonjs.addons.js",
+            to: "/addons/babylonjs.addons.min.js",
+        },
+        {
             from: "/postProcessesLibrary/babylonjs.postProcess.js",
             to: "/postProcessesLibrary/babylonjs.postProcess.min.js",
         },
@@ -210,6 +218,14 @@ module.exports = (env) => {
             to: "/node-geometry-editor.d.ts",
         },
         {
+            from: "/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js",
+            to: "/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min.js",
+        },
+        {
+            from: "/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.d.ts",
+            to: "/node-render-graph-editor.d.ts",
+        },
+        {
             from: "/guiEditor/babylon.guiEditor.js",
             to: "/guiEditor/babylon.guiEditor.min.js",
         },
@@ -248,6 +264,10 @@ module.exports = (env) => {
         {
             from: "/serializers/babylonjs.serializers.d.ts",
             to: "/serializers.d.ts",
+        },
+        {
+            from: "/addons/babylonjs.addons.d.ts",
+            to: "/addons.d.ts",
         },
     ];
     commonConfig.devServer.historyApiFallback = {

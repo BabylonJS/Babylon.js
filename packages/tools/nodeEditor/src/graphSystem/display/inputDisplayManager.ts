@@ -8,7 +8,7 @@ import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import styles from "./inputDisplayManager.modules.scss";
+import styles from "./inputDisplayManager.module.scss";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
     position2d: "position",

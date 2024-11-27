@@ -263,11 +263,20 @@ export class NodeMaterialConnectionPoint {
                 return this._connectedPoint.type;
             }
 
-            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-                if (this._linkedConnectionSource.connectedPoint!._redirectedSource && this._linkedConnectionSource.connectedPoint!._redirectedSource.isConnected) {
-                    return this._linkedConnectionSource.connectedPoint!._redirectedSource.type;
+            if (this._linkedConnectionSource) {
+                if (this._linkedConnectionSource.isConnected) {
+                    if (this._linkedConnectionSource.connectedPoint!._redirectedSource && this._linkedConnectionSource.connectedPoint!._redirectedSource.isConnected) {
+                        return this._linkedConnectionSource.connectedPoint!._redirectedSource.type;
+                    }
+                    return this._linkedConnectionSource.type;
                 }
-                return this._linkedConnectionSource.type;
+                if (this._linkedConnectionSource._defaultConnectionPointType) {
+                    return this._linkedConnectionSource._defaultConnectionPointType;
+                }
+            }
+
+            if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
             }
         }
 

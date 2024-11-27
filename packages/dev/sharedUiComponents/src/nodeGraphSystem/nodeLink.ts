@@ -7,8 +7,8 @@ import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
-import commonStyles from "./common.modules.scss";
-import styles from "./nodeLink.modules.scss";
+import commonStyles from "./common.module.scss";
+import styles from "./nodeLink.module.scss";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -21,6 +21,7 @@ export class NodeLink {
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _isVisible = true;
     private _isTargetCandidate = false;
+    private _gradient: Nullable<SVGLinearGradientElement>;
 
     public onDisposedObservable = new Observable<NodeLink>();
 
@@ -130,7 +131,52 @@ export class NodeLink {
             this._path.setAttribute("d", `M${startX},${startY} C${startX + tangentLength},${startY} ${endX - tangentLength},${endY} ${endX},${endY}`);
             this._selectionPath.setAttribute("d", `M${startX},${startY} C${startX + tangentLength},${startY} ${endX - tangentLength},${endY} ${endX},${endY}`);
         }
-        this._path.setAttribute("stroke", this._portA.element.style.backgroundColor!);
+
+        // No red as it means no type yet
+        let extractedColorB = "";
+        if (this._portB) {
+            extractedColorB = this._portB?.element.style.backgroundColor.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/, "$1_$2_$3");
+            const splitComponents = extractedColorB.split("_").map((v) => parseInt(v));
+            if (splitComponents[0] > 0 && splitComponents[1] === 0 && splitComponents[2] === 0) {
+                extractedColorB = "";
+            }
+        }
+
+        if (extractedColorB && this._portA.element.style.backgroundColor !== this._portB?.element.style.backgroundColor) {
+            // Gradient
+            const svg = this._graphCanvas.svgCanvas;
+            const defs = svg.querySelector("defs") || svg.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "defs"));
+
+            if (!this._gradient) {
+                this._gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+                defs.appendChild(this._gradient);
+                const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+                this._gradient.appendChild(stop1);
+                const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+                this._gradient.appendChild(stop2);
+            }
+
+            const stop1 = this._gradient.children[0] as SVGStopElement;
+            const stop2 = this._gradient.children[1] as SVGStopElement;
+
+            const gradientId = `linkGradient_${this._portA.element.style.backgroundColor.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/, "$1_$2_$3")}_${extractedColorB}`;
+            this._gradient.id = gradientId;
+
+            this._gradient.setAttribute("x1", startX < endX ? "0" : "1");
+            this._gradient.setAttribute("y1", "0");
+            this._gradient.setAttribute("x2", startX < endX ? "1" : "0");
+            this._gradient.setAttribute("y2", "0");
+
+            stop1.setAttribute("offset", "0%");
+            stop1.setAttribute("stop-color", this._portA.element.style.backgroundColor!);
+
+            stop2.setAttribute("offset", "100%");
+            stop2.setAttribute("stop-color", this._portB?.element.style.backgroundColor!);
+
+            this._path.setAttribute("stroke", `url(#${gradientId})`);
+        } else {
+            this._path.setAttribute("stroke", this._portA.element.style.backgroundColor!);
+        }
     }
 
     public get path() {
@@ -256,6 +302,12 @@ export class NodeLink {
 
         if (this._selectionPath.parentElement) {
             this._selectionPath.parentElement.removeChild(this._selectionPath);
+        }
+
+        if (this._gradient) {
+            if (this._gradient.parentElement) {
+                this._gradient.parentElement.removeChild(this._gradient);
+            }
         }
 
         if (this._nodeB) {

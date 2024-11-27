@@ -13,6 +13,11 @@ export class HistoryStack implements IDisposable {
     private _applyUpdate: (data: any) => void;
 
     /**
+     * Gets or sets a boolean indicating if the stack is enabled
+     */
+    public isEnabled = true;
+
+    /**
      * Constructor
      * @param dataProvider defines the data provider function
      * @param applyUpdate defines the code to execute when undo/redo operation is required
@@ -28,6 +33,10 @@ export class HistoryStack implements IDisposable {
      * @returns true if the event was processed
      */
     processKeyEvent(evt: KeyboardEvent): boolean {
+        if (!this.isEnabled) {
+            return false;
+        }
+
         if (evt.ctrlKey || evt.metaKey) {
             if (evt.key === "z" || evt.key === "Z") {
                 if (evt.shiftKey) {
@@ -171,7 +180,7 @@ export class HistoryStack implements IDisposable {
      * Stores the current state
      */
     public store() {
-        if (this._locked) {
+        if (this._locked || !this.isEnabled) {
             return;
         }
 

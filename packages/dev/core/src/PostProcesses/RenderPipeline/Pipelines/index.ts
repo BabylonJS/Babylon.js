@@ -19,3 +19,6 @@ export * from "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
 export * from "../../../ShadersWGSL/screenSpaceReflection2.fragment";
 export * from "../../../ShadersWGSL/screenSpaceReflection2Blur.fragment";
 export * from "../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment";
+
+import "../../../Shaders/taa.fragment";
+import "../../../ShadersWGSL/taa.fragment";

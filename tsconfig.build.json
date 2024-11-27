@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
         "baseUrl": "packages",
         "importHelpers": true,
         "moduleResolution": "node",
@@ -25,6 +26,7 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "materials/*": ["dev/materials/dist/*"],
+            "addons/*": ["dev/addons/dist/*"],
             "post-processes/*": ["dev/postProcesses/dist/*"],
             "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
             "loaders/*": ["dev/loaders/dist/*"],
@@ -33,6 +35,7 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-editor/*": ["tools/nodeEditor/dist/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/dist/*"],
+            "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/dist/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
             "accessibility/*": ["tools/accessibility/dist/*"],
             "viewer/*": ["tools/viewer/dist/*"],

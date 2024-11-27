@@ -1,11 +1,9 @@
-import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
+import { GetTypeForDepthTexture, InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
-import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import "../../AbstractEngine/abstractEngine.texture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
@@ -61,6 +59,8 @@ ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSi
         fullOptions.colorAttachment = options.colorAttachment;
         fullOptions.samples = options.samples;
         fullOptions.label = options.label;
+        fullOptions.format = options.format;
+        fullOptions.type = options.type;
     } else {
         fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
@@ -70,10 +70,11 @@ ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSi
         fullOptions.noColorAttachment = false;
     }
 
-    const texture = fullOptions.colorAttachment || (fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
+    const texture =
+        fullOptions.colorAttachment || (fullOptions.noColorAttachment ? null : this._createInternalTexture(size, fullOptions, true, InternalTextureSource.RenderTarget));
 
     rtWrapper.label = fullOptions.label ?? "RenderTargetWrapper";
-    rtWrapper._samples = fullOptions.samples ?? 1;
+    rtWrapper._samples = fullOptions.colorAttachment?.samples ?? fullOptions.samples ?? 1;
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -90,7 +91,7 @@ ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSi
         );
     }
 
-    if (texture) {
+    if (texture && !fullOptions.colorAttachment) {
         if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
             texture.generateMipMaps = true;
         }
@@ -127,15 +128,11 @@ ThinWebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureS
     internalTexture.label = options.label;
 
     internalTexture.format = internalOptions.depthTextureFormat;
+    internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
-
-    // Now that the hardware texture is created, we can retrieve the GPU format and set the right type to the internal texture
-    const gpuTextureWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
-
-    internalTexture.type = WebGPUTextureHelper.GetTextureTypeFromFormat(gpuTextureWrapper.format);
 
     this._internalTexturesCache.push(internalTexture);
 
@@ -149,8 +146,8 @@ ThinWebGPUEngine.prototype._setupDepthStencilTexture = function (
     comparisonFunction: number,
     samples = 1
 ): void {
-    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
     const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
     const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 
@@ -165,7 +162,7 @@ ThinWebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
     internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = Constants.TEXTURETYPE_FLOAT;
+    internalTexture.type = Constants.TEXTURETYPE_FLOAT; // the right type will be set later
     internalTexture._comparisonFunction = comparisonFunction;
     internalTexture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;

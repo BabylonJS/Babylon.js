@@ -1230,4 +1230,26 @@ export class Bone extends Node {
     public setCurrentPoseAsRest(): void {
         this.setRestMatrix(this.getLocalMatrix());
     }
+
+    /**
+     * Releases associated resources
+     */
+    public override dispose(): void {
+        this._linkedTransformNode = null;
+
+        const index = this._skeleton.bones.indexOf(this);
+        if (index !== -1) {
+            this._skeleton.bones.splice(index, 1);
+        }
+
+        if (this._parentNode && (this._parentNode as Bone).children) {
+            const children = (this._parentNode as Bone).children;
+            const index = children.indexOf(this);
+            if (index !== -1) {
+                children.splice(index, 1);
+            }
+        }
+
+        super.dispose();
+    }
 }

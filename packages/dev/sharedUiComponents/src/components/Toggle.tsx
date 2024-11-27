@@ -1,4 +1,4 @@
-import styles from "./Toggle.modules.scss";
+import styles from "./Toggle.module.scss";
 import { ClassNames } from "./classNames";
 
 import toggleOnIcon30px from "../imgs/toggleOnIcon_30px.svg";

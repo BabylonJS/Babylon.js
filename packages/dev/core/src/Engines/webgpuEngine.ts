@@ -95,6 +95,7 @@ import "./WebGPU/Extensions/engine.cubeTexture";
 import "./WebGPU/Extensions/engine.renderTarget";
 import "./WebGPU/Extensions/engine.renderTargetTexture";
 import "./WebGPU/Extensions/engine.renderTargetCube";
+import "./WebGPU/Extensions/engine.query";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -261,8 +262,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public _mrtAttachments: number[];
     /** @internal */
-    public _occlusionQuery: WebGPUOcclusionQuery;
-    /** @internal */
     public _compiledComputeEffects: { [key: string]: ComputeEffect } = {};
     /** @internal */
     public _counters: {
@@ -335,7 +334,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         depthTextureFormat: undefined,
     };
     /** @internal */
-    public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
+    public _pendingDebugCommands: Array<[string, Nullable<string>, number?]> = [];
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -916,7 +915,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
         this._configureContext();
         this._colorFormat = this._options.swapChainFormat!;
-        this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
+        this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture(this)];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.format = this._colorFormat;
         this._setColorFormat(this._mainRenderPassWrapper);
     }
@@ -2225,7 +2224,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /** @internal */
     public _createHardwareTexture(): HardwareTextureWrapper {
-        return new WebGPUHardwareTexture();
+        return new WebGPUHardwareTexture(this);
     }
 
     /**
@@ -2270,6 +2269,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
+            fullOptions.createMipMaps = options.createMipMaps;
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
@@ -2311,7 +2311,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         texture.depth = depth || layers;
         texture.isReady = true;
         texture.samples = fullOptions.samples;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.generateMipMaps = !!fullOptions.generateMipMaps;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
@@ -2325,7 +2325,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._internalTexturesCache.push(texture);
 
         if (!delayGPUTextureCreation) {
+            const createMipMapsOnly = !fullOptions.generateMipMaps && fullOptions.createMipMaps;
+
+            if (createMipMapsOnly) {
+                // So that the call to createGPUTextureForInternalTexture creates the mipmaps
+                texture.generateMipMaps = true;
+            }
+
             this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, layers || 1, fullOptions.creationFlags);
+
+            if (createMipMapsOnly) {
+                // So that we don't automatically generate mipmaps when the render target is unbound
+                texture.generateMipMaps = false;
+            }
         }
 
         return texture;
@@ -2461,7 +2473,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns the babylon internal texture
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
-        const hardwareTexture = new WebGPUHardwareTexture(texture);
+        const hardwareTexture = new WebGPUHardwareTexture(this, texture);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
@@ -2480,7 +2492,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+    public _getUseSRGBBuffer(useSRGBBuffer: boolean, _noMipmap: boolean): boolean {
         return useSRGBBuffer && this._caps.supportSRGBBuffers;
     }
 
@@ -3040,7 +3052,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
-        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture();
+        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(0);
 
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
@@ -3075,15 +3087,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
-                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(i);
+                    const baseArrayLayer = rtWrapper.getBaseArrayLayer(i);
+                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(baseArrayLayer);
 
-                    const layerIndex = rtWrapper.layerIndices?.[i] ?? 0;
-                    const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
-                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : mrtTexture.is3D ? 0 : layerIndex,
+                        baseArrayLayer,
                     };
                     const msaaViewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
@@ -3099,7 +3110,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        depthSlice: mrtTexture.is3D ? layerIndex : undefined,
+                        depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3122,7 +3133,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
                 }
 
-                const gpuMSAATexture = gpuWrapper.getMSAATexture();
+                const gpuMSAATexture = gpuWrapper.getMSAATexture(0);
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
@@ -3143,7 +3154,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 0);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
-            label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
+            label: (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
@@ -3395,8 +3406,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._endCurrentRenderPass();
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         this._currentRenderTarget = null;
@@ -3413,6 +3428,25 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRT([]);
         this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
+    }
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
+        }
+    }
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param _texture The render target texture containing the MSAA texture to resolve
+     */
+    public resolveFramebuffer(_texture: RenderTargetWrapper): void {
+        throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
     }
 
     /**

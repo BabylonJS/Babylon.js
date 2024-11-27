@@ -12,7 +12,11 @@ import type { InternalTexture } from "./internalTexture";
  */
 export interface IMultiRenderTargetOptions {
     /**
-     * Define if the texture needs to create mip maps after render.
+     * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
+     */
+    createMipMaps?: boolean;
+    /**
+     * Define if the texture needs to create mip maps after render (default: false).
      */
     generateMipMaps?: boolean;
     /**
@@ -28,15 +32,15 @@ export interface IMultiRenderTargetOptions {
      */
     useSRGBBuffers?: boolean[];
     /**
-     * Define if a depth buffer is required
+     * Define if a depth buffer is required (default: true)
      */
     generateDepthBuffer?: boolean;
     /**
-     * Define if a stencil buffer is required
+     * Define if a stencil buffer is required (default: false)
      */
     generateStencilBuffer?: boolean;
     /**
-     * Define if a depth texture is required instead of a depth buffer
+     * Define if a depth texture is required instead of a depth buffer (default: false)
      */
     generateDepthTexture?: boolean;
     /**
@@ -48,19 +52,23 @@ export interface IMultiRenderTargetOptions {
      */
     depthTextureFormat?: number;
     /**
-     * Define the number of desired draw buffers (render textures)
+     * Define the number of desired draw buffers (render textures). You can set it to 0 if you don't need any color attachment. (default: 1)
      */
     textureCount?: number;
     /**
-     * Define if aspect ratio should be adapted to the texture or stay the scene one
+     * Define if aspect ratio should be adapted to the texture or stay the scene one (default: true)
      */
     doNotChangeAspectRatio?: boolean;
     /**
-     * Define the default type of the buffers we are creating
+     * Define the default type of the buffers we are creating (default: Constants.TEXTURETYPE_UNSIGNED_BYTE). types[] is prioritized over defaultType if provided.
      */
     defaultType?: number;
     /**
-     * Define the default type of the buffers we are creating
+     * Defines sample count (1 by default)
+     */
+    samples?: number;
+    /**
+     * Defines if we should draw into all attachments or the first one only by default (default: false)
      */
     drawOnlyOnFirstAttachmentByDefault?: boolean;
     /**
@@ -85,6 +93,10 @@ export interface IMultiRenderTargetOptions {
      */
     layerCounts?: number[];
     /**
+     * Define the creation flags of the textures (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     */
+    creationFlags?: number[];
+    /**
      * Define the names of the textures (used for debugging purpose)
      */
     labels?: string[];
@@ -92,6 +104,11 @@ export interface IMultiRenderTargetOptions {
      * Label of the RenderTargetWrapper (used for debugging only)
      */
     label?: string;
+    /**
+     * Define if the textures should not be created by the MultiRenderTarget (default: false)
+     * If true, you will need to set the textures yourself by calling setTexture on the MultiRenderTarget.
+     */
+    dontCreateTextures?: boolean;
 }
 
 /**
@@ -199,6 +216,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+        const samples = options && options.samples ? options.samples : 1;
 
         this._multiRenderTargetOptions = {
             samplingModes: samplingModes,
@@ -210,6 +228,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             types: types,
             textureCount: count,
             useSRGBBuffers: useSRGBBuffers,
+            samples,
             formats: formats,
             targetTypes: targetTypes,
             faceIndex: faceIndex,
@@ -495,7 +514,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public override resize(size: any) {
-        this._processSizeParameter(size, false);
+        this._processSizeParameter(size);
         this._rebuild(false, undefined, this._textureNames);
     }
 

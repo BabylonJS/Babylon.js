@@ -1249,6 +1249,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
+        super.markAsDirty(property);
         this._isDirty = true;
         return this;
     }
@@ -2697,7 +2698,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             facetData.facetPositions = [] as Vector3[];
             facetData.facetNormals = [] as Vector3[];
             facetData.facetPartitioning = new Array<number[]>();
-            facetData.facetParameters = null;
+            facetData.facetParameters = {};
             facetData.depthSortedIndices = new Uint32Array(0);
         }
         return this;

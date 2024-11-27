@@ -3,6 +3,7 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Clamp } from "../Maths/math.scalar.functions";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -780,16 +781,22 @@ export class ArcRotateCamera extends TargetCamera {
     private _storedTarget: Vector3;
     private _storedTargetScreenOffset: Vector2;
 
+    private _goalAlpha: number;
+    private _goalBeta: number;
+    private _goalRadius: number;
+    private _goalTarget: Vector3;
+    private _goalTargetScreenOffset: Vector2;
+
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
      * @returns the camera itself
      */
     public override storeState(): Camera {
-        this._storedAlpha = this.alpha;
-        this._storedBeta = this.beta;
-        this._storedRadius = this.radius;
-        this._storedTarget = this._getTargetPosition().clone();
-        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
+        this._storedAlpha = this._goalAlpha = this.alpha;
+        this._storedBeta = this._goalBeta = this.beta;
+        this._storedRadius = this._goalRadius = this.radius;
+        this._storedTarget = this._goalTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this._goalTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -800,12 +807,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public override _restoreStateValues(): boolean {
         if (this.hasStateStored() && this.restoreStateInterpolationFactor > Epsilon && this.restoreStateInterpolationFactor < 1) {
-            this._progressiveRestore = true;
-            this.inertialAlphaOffset = 0;
-            this.inertialBetaOffset = 0;
-            this.inertialRadiusOffset = 0;
-            this.inertialPanningX = 0;
-            this.inertialPanningY = 0;
+            this.interpolateTo(this._storedAlpha, this._storedBeta, this._storedRadius, this._storedTarget, this._storedTargetScreenOffset);
             return true;
         }
         if (!super._restoreStateValues()) {
@@ -825,6 +827,33 @@ export class ArcRotateCamera extends TargetCamera {
         this.inertialPanningY = 0;
 
         return true;
+    }
+
+    /**
+     * Interpolates the camera to a goal state.
+     * @param alpha Defines the goal alpha.
+     * @param beta Defines the goal beta.
+     * @param radius Defines the goal radius.
+     * @param target Defines the goal target.
+     * @param targetScreenOffset Defines the goal target screen offset.
+     */
+    public interpolateTo(alpha = this.alpha, beta = this.beta, radius = this.radius, target = this.target, targetScreenOffset = this.targetScreenOffset): void {
+        this._progressiveRestore = true;
+        this.inertialAlphaOffset = 0;
+        this.inertialBetaOffset = 0;
+        this.inertialRadiusOffset = 0;
+        this.inertialPanningX = 0;
+        this.inertialPanningY = 0;
+
+        alpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
+        beta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
+        radius = Clamp(radius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
+
+        this._goalAlpha = alpha;
+        this._goalBeta = beta;
+        this._goalRadius = radius;
+        this._goalTarget = target;
+        this._goalTargetScreenOffset = targetScreenOffset;
     }
 
     // Synchronized
@@ -935,10 +964,10 @@ export class ArcRotateCamera extends TargetCamera {
             const t = 1 - Math.pow(2, -dt / this.restoreStateInterpolationFactor);
 
             // can't use tmp vector here because of assignment
-            this.setTarget(Vector3.Lerp(this.getTarget(), this._storedTarget, t));
+            this.setTarget(Vector3.Lerp(this.getTarget(), this._goalTarget, t));
 
             // Using quaternion for smoother interpolation (and no Euler angles modulo)
-            Quaternion.RotationAlphaBetaGammaToRef(this._storedAlpha, this._storedBeta, 0, TmpVectors.Quaternion[0]);
+            Quaternion.RotationAlphaBetaGammaToRef(this._goalAlpha, this._goalBeta, 0, TmpVectors.Quaternion[0]);
             Quaternion.RotationAlphaBetaGammaToRef(this.alpha, this.beta, 0, TmpVectors.Quaternion[1]);
             Quaternion.SlerpToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0], t, TmpVectors.Quaternion[2]);
             TmpVectors.Quaternion[2].normalize();
@@ -946,15 +975,15 @@ export class ArcRotateCamera extends TargetCamera {
             this.alpha = TmpVectors.Vector3[0].x;
             this.beta = TmpVectors.Vector3[0].y;
 
-            this.radius += (this._storedRadius - this.radius) * t;
-            Vector2.LerpToRef(this.targetScreenOffset, this._storedTargetScreenOffset, t, this.targetScreenOffset);
+            this.radius += (this._goalRadius - this.radius) * t;
+            Vector2.LerpToRef(this.targetScreenOffset, this._goalTargetScreenOffset, t, this.targetScreenOffset);
 
-            // stop restoring when wihtin close range or when user starts interacting
+            // stop restoring when within close range or when user starts interacting
             if (
-                (Vector3.DistanceSquared(this.getTarget(), this._storedTarget) < Epsilon &&
+                (Vector3.DistanceSquared(this.getTarget(), this._goalTarget) < Epsilon &&
                     TmpVectors.Quaternion[2].equalsWithEpsilon(TmpVectors.Quaternion[0]) &&
-                    Math.pow(this._storedRadius - this.radius, 2) < Epsilon &&
-                    Vector2.Distance(this.targetScreenOffset, this._storedTargetScreenOffset) < Epsilon) ||
+                    Math.pow(this._goalRadius - this.radius, 2) < Epsilon &&
+                    Vector2.Distance(this.targetScreenOffset, this._goalTargetScreenOffset) < Epsilon) ||
                 this.inertialAlphaOffset !== 0 ||
                 this.inertialBetaOffset !== 0 ||
                 this.inertialRadiusOffset !== 0 ||

@@ -15,8 +15,8 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import { PortDataDirection } from "./interfaces/portData";
 import type { INodeContainer } from "./interfaces/nodeContainer";
-import styles from "./graphCanvas.modules.scss";
-import commonStyles from "./common.modules.scss";
+import styles from "./graphCanvas.module.scss";
+import commonStyles from "./common.module.scss";
 
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
@@ -1446,6 +1446,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     if (data && data.uniqueId === location.blockId) {
                         node.x = location.x;
                         node.y = location.y;
+                        if (location.isCollapsed) {
+                            node.collapse();
+                        }
                         node.cleanAccumulation();
                         break;
                     }

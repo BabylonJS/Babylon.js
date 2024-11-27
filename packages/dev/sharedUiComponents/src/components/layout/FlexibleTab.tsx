@@ -3,7 +3,7 @@ import { useDrag, useDrop } from "react-dnd";
 import { ClassNames } from "../classNames";
 import { ElementTypes } from "./types";
 import type { TabDrag } from "./types";
-import style from "./FlexibleTab.modules.scss";
+import style from "./FlexibleTab.module.scss";
 
 /**
  * Arguments for the FlexibleTab component.
