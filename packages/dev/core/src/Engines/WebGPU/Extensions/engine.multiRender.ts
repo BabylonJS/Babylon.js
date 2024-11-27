@@ -40,6 +40,19 @@ declare module "../../abstractEngine" {
         updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
 
         /**
+         * Generates mipmaps for the texture of the (multi) render target
+         * @param texture The render target containing the textures to generate the mipmaps for
+         */
+        generateMipMapsMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
+         * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
+         * Note that if "texture" is not a MSAA render target, no resolve is performed.
+         * @param texture The render target texture containing the MSAA textures to resolve
+         */
+        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -75,16 +88,10 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         onBeforeUnbind();
     }
 
-    const attachments = rtWrapper._attachments!;
-    const count = attachments.length;
-
     this._endCurrentRenderPass();
 
-    for (let i = 0; i < count; i++) {
-        const texture = rtWrapper.textures![i];
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube && !texture.is3D) {
-            this._generateMipmaps(texture);
-        }
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsMultiFramebuffer(rtWrapper);
     }
 
     this._currentRenderTarget = null;
@@ -119,6 +126,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let layers: number[] = [];
     let labels: string[] = [];
     let creationFlags: number[] = [];
+    let dontCreateTextures = false;
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -140,6 +148,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         labels = options.labels || labels;
         creationFlags = options.creationFlags || creationFlags;
         samples = options.samples ?? samples;
+        dontCreateTextures = options.dontCreateTextures ?? false;
     }
 
     const width = (<{ width: number; height: number }>size).width ?? <number>size;
@@ -156,7 +165,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     rtWrapper._defaultAttachments = defaultAttachments;
 
     let depthStencilTexture: Nullable<InternalTexture> = null;
-    if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+    if ((generateDepthBuffer || generateStencilBuffer || generateDepthTexture) && !dontCreateTextures) {
         if (!generateDepthTexture) {
             // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
             // So, we will align with what the WebGL engine does
@@ -200,7 +209,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         attachments.push(i + 1);
         defaultAttachments.push(initializeBuffers ? i + 1 : i === 0 ? 1 : 0);
 
-        if (target === -1) {
+        if (target === -1 || dontCreateTextures) {
             continue;
         }
 
@@ -259,13 +268,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     rtWrapper.setTextures(textures);
     rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
-    this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
+    if (!dontCreateTextures) {
+        this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
+    } else {
+        rtWrapper._samples = samples;
+    }
 
     return rtWrapper;
 };
 
 WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
-    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures[0].samples === samples) {
+    if (!rtWrapper || !rtWrapper.textures || rtWrapper.textures.length === 0 || rtWrapper.textures[0].samples === samples) {
         return samples;
     }
 
@@ -304,6 +317,28 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     rtWrapper._samples = samples;
 
     return samples;
+};
+
+WebGPUEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGPURenderTargetWrapper;
+
+    if (!rtWrapper.isMulti) {
+        return;
+    }
+
+    const attachments = rtWrapper._attachments!;
+    const count = attachments.length;
+
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
+        if (texture.generateMipMaps && !texture.isCube && !texture.is3D) {
+            this._generateMipmaps(texture);
+        }
+    }
+};
+
+WebGPUEngine.prototype.resolveMultiFramebuffer = function (_texture: RenderTargetWrapper): void {
+    throw new Error("resolveMultiFramebuffer is not yet implemented in WebGPU!");
 };
 
 WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void {

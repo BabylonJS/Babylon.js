@@ -54,6 +54,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     /**
      * The output texture.
+     * This texture will point to the same texture than the destinationTexture property if it is set.
+     * Note, however, that the handle itself will be different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -64,8 +66,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      */
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
-    protected _scene: Scene;
-    protected _renderer: ObjectRenderer;
+    protected readonly _scene: Scene;
+    protected readonly _renderer: ObjectRenderer;
     protected _textureWidth: number;
     protected _textureHeight: number;
 
@@ -107,8 +109,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             }
         });
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
-        this.outputDepthTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
@@ -120,7 +122,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
         let depthEnabled = false;
 
@@ -136,7 +138,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 );
             }
 
-            const depthTextureDescription = this._frameGraph.getTextureDescription(this.depthTexture);
+            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
                 throw new Error(`FrameGraphObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
@@ -144,9 +146,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             depthEnabled = true;
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
         if (this.depthTexture !== undefined) {
-            this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
         this._textureWidth = outputTextureDescription.size.width;
@@ -155,9 +157,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
-        if (this.depthTexture !== undefined) {
-            pass.setRenderTargetDepth(this.depthTexture);
-        }
+        pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
@@ -178,9 +178,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(this.destinationTexture);
-            if (this.depthTexture !== undefined) {
-                passDisabled.setRenderTargetDepth(this.depthTexture);
-            }
+            passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
 
             if (this.dependencies !== undefined) {
