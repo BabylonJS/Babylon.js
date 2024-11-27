@@ -139,25 +139,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
             );
         }
 
-        return (
-            <div id="pg-root">
-                <HeaderComponent globalState={this._globalState} />
-                <SplitContainer id="pg-split" direction={SplitDirection.Horizontal} containerRef={this._splitContainerRef}>
-                    <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
-                    <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} refObject={this._splitterRef} />
-                    <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
-                        <RenderingComponent globalState={this._globalState} />
-                    </div>
-                </SplitContainer>
-                {window.innerWidth < 1140 && <HamburgerMenuComponent globalState={this._globalState} />}
-                <ExamplesComponent globalState={this._globalState} />
-                <FooterComponent globalState={this._globalState} />
-                <QRCodeComponent globalState={this._globalState} />
-                <ErrorDisplayComponent globalState={this._globalState} />
-                <WaitRingComponent globalState={this._globalState} />
-                <MetadataComponent globalState={this._globalState} />
-            </div>
-        );
+        return <div id="pg-root"></div>;
     }
 
     public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
