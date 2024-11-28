@@ -358,7 +358,8 @@ export class GaussianSplattingMesh extends Mesh {
         return true;
     }
 
-    protected _postToWorker(forced = false): void {
+    /** @internal */
+    public _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
         if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
