@@ -1,6 +1,5 @@
 import type { Nullable } from "../types";
 
-type WeakReference<T extends Function> = any;
 declare const WeakRef: any;
 
 const isWeakRefSupported = typeof WeakRef !== "undefined";
