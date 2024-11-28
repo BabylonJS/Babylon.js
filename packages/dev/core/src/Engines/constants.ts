@@ -230,7 +230,7 @@ export class Constants {
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
-    /** UNSIGNED_BYTE (2nd reference) */
+    /** @deprecated use more explicit TEXTURETYPE_UNSIGNED_BYTE instead. Use TEXTURETYPE_UNSIGNED_INTEGER for 32bits values.*/
     public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
     /** FLOAT */
     public static readonly TEXTURETYPE_FLOAT = 1;

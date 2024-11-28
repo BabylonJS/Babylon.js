@@ -1166,7 +1166,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): Nullable<PostProcess> {
         if (this.mode !== NodeMaterialModes.PostProcess) {
@@ -1191,7 +1191,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): PostProcess {
         let tempName = this.name + this._buildId;

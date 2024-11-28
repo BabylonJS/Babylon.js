@@ -449,7 +449,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
                 this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
             }
         } else {
-            this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
         // Attach

@@ -100,7 +100,7 @@ export class ColorGradingTexture extends BaseTexture {
                 false,
                 Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                 null,
-                Constants.TEXTURETYPE_UNSIGNED_INT
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
         } else {
             texture = engine.createRawTexture3D(
@@ -113,7 +113,7 @@ export class ColorGradingTexture extends BaseTexture {
                 false,
                 Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                 null,
-                Constants.TEXTURETYPE_UNSIGNED_INT
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
         }
 

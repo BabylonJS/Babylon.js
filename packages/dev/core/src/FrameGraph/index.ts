@@ -30,6 +30,7 @@ export * from "./frameGraph";
 export * from "./frameGraphContext";
 export * from "./frameGraphObjectList";
 export * from "./frameGraphRenderContext";
+export * from "./frameGraphRenderTarget";
 export * from "./frameGraphTask";
 export * from "./frameGraphTextureManager";
 export * from "./frameGraphTypes";

@@ -28,7 +28,7 @@ export class RawTexture2DArray extends Texture {
      * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
      * @param invertY defines if texture must be stored with Y axis inverted
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
@@ -42,7 +42,7 @@ export class RawTexture2DArray extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);
@@ -86,7 +86,7 @@ export class RawTexture2DArray extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ): RawTexture2DArray {
         return new RawTexture2DArray(data, width, height, depth, Constants.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
     }

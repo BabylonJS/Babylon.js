@@ -1,5 +1,77 @@
 # Changelog
 
+## 7.36.0
+
+### Core
+
+- WebGPU: Fix iridescence in PBR material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15902](https://github.com/BabylonJS/Babylon.js/pull/15902))
+- Chakra support for weakref as strongref - by [sebavan](https://github.com/sebavan) ([#15894](https://github.com/BabylonJS/Babylon.js/pull/15894))
+- Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes - by [Popov72](https://github.com/Popov72) ([#15874](https://github.com/BabylonJS/Babylon.js/pull/15874))
+- fix: Load boundingInfo when use KHR_draco_mesh_compression - by [Starryi](https://github.com/Starryi) ([#15882](https://github.com/BabylonJS/Babylon.js/pull/15882))
+- MSAA render targets: Resolve the depth texture (if any) and allow for manual resolve - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15888](https://github.com/BabylonJS/Babylon.js/pull/15888))
+- WebGPU: Fix crash when using depth bias with line and point topology - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15896](https://github.com/BabylonJS/Babylon.js/pull/15896))
+- Allow node editors to let the properties be injected onto the nodes - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15890](https://github.com/BabylonJS/Babylon.js/pull/15890))
+
+### GUI
+
+- Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes - by [Popov72](https://github.com/Popov72) ([#15874](https://github.com/BabylonJS/Babylon.js/pull/15874))
+
+### Loaders
+
+- fix: Load boundingInfo when use KHR_draco_mesh_compression - by [Starryi](https://github.com/Starryi) ([#15882](https://github.com/BabylonJS/Babylon.js/pull/15882))
+
+### Node Editor
+
+- Solve preview height issue - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15891](https://github.com/BabylonJS/Babylon.js/pull/15891))
+
+### Playground
+
+- Allow overriding the playground URL for testing - by [RaananW](https://github.com/RaananW) ([#15901](https://github.com/BabylonJS/Babylon.js/pull/15901))
+- Preparation for playground snapshots and testing - by [RaananW](https://github.com/RaananW) ([#15889](https://github.com/BabylonJS/Babylon.js/pull/15889))
+
+## 7.35.2
+
+### Core
+
+- New visual clue for type conversions - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15887](https://github.com/BabylonJS/Babylon.js/pull/15887))
+- facetParameters disableFacetData() doesn't block reuse of updateFacet… - by [ricardovg4](https://github.com/ricardovg4) ([#15885](https://github.com/BabylonJS/Babylon.js/pull/15885))
+- Allow EquiRectangularCuteTexture to work in a Worker environment - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15886](https://github.com/BabylonJS/Babylon.js/pull/15886))
+- WebGPU: Fix glow layer when using opacity - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15883](https://github.com/BabylonJS/Babylon.js/pull/15883))
+- Weak ref - by [deltakosh](https://github.com/deltakosh) ([#15863](https://github.com/BabylonJS/Babylon.js/pull/15863))
+- Fix LatticePluginMaterial TypeScript error - by [AmoebaChant](https://github.com/AmoebaChant) ([#15881](https://github.com/BabylonJS/Babylon.js/pull/15881))
+- Misc viewer related fixes - by [ryantrem](https://github.com/ryantrem) ([#15879](https://github.com/BabylonJS/Babylon.js/pull/15879))
+
+## 7.35.1
+
+### Core
+
+- add forcedExtension to ITextureCreationOptions - by [noname0310](https://github.com/noname0310) ([#15872](https://github.com/BabylonJS/Babylon.js/pull/15872))
+- CSG2: make FromMesh return CSG2 - by [kzhsw](https://github.com/kzhsw) ([#15873](https://github.com/BabylonJS/Babylon.js/pull/15873))
+- Detect invalid hotspots - by [ryantrem](https://github.com/ryantrem) ([#15865](https://github.com/BabylonJS/Babylon.js/pull/15865))
+- Fixes AnimationGroup isPlaying when mask is applied & played more than once - by [s207152](https://github.com/s207152) ([#15862](https://github.com/BabylonJS/Babylon.js/pull/15862))
+
+### GUI Editor
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
+### Materials
+
+- Clipping for GridMaterial - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15866](https://github.com/BabylonJS/Babylon.js/pull/15866))
+
+### Node Editor
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
+### Playground
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
 ## 7.35.0
 
 ### Core

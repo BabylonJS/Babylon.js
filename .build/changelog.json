@@ -1,33 +1,743 @@
 {
-    "fromTag": "7.34.4",
+    "fromTag": "7.35.2",
     "changelog": {
-        "7.34.4": [
+        "7.35.2": [
             {
-                "pr": "15857",
-                "title": "Fix rgba",
+                "pr": "15887",
+                "title": "New visual clue for type conversions",
+                "description": "![Screenshot 2024-11-25 092933](https://github.com/user-attachments/assets/df928f17-f568-4ed7-94cc-c18845aa33d5)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15885",
+                "title": "facetParameters disableFacetData() doesn't block reuse of updateFacet…",
+                "description": "mesh.disableFacetData() sets the facetParameters to null, which doesn't allow updateFacetData() to be run again. This clears the object instead.  As the type  of facetParameters is already any, there is no change for the user other than being able to enable/ disable the feature.\r\n\r\nhttps://playground.babylonjs.com/#8EWBO5",
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15886",
+                "title": "Allow EquiRectangularCuteTexture to work in a Worker environment",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    ".build/config.json",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss"
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15883",
+                "title": "WebGPU: Fix glow layer when using opacity",
+                "description": "See https://forum.babylonjs.com/t/error-with-babylon-7-0-and-webgpu-using-glowlayer-and-advanceddynamictexture/54982",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15863",
+                "title": "Weak ref",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/scene.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15856",
-                "title": "Some small Viewer bug fixes",
-                "description": "This PR includes a few small bug fixes:\r\n1. `computeMaxExtents` changes the current animation frame to do its calculations, but it doesn't restore the original value. This was causing the Viewer to start at the wrong animation frame when first starting an animation and when switching animations. I think it's best to fix this in the `computeMaxExtents` function so it leaves the animation in the state it found it in.\r\n2. When switching animations, we reset to the first animation frame, and we need to fire one onAnimationProgressChanged event so the animation timeline properly syncs to the animation state.\r\n3. The viewer HTML element should set overflow to hidden by default, otherwise if a child annotation is pulled out of view (e.g. through an animation or panning the camera) it will overflow and show scroll bars. Instead we just want the annotation to go out of view along with the model.",
+                "pr": "15881",
+                "title": "Fix LatticePluginMaterial TypeScript error",
+                "description": "Seeing this TypeScript error when consuming the latest Babylon core package when using strict TS:\r\n\r\nProperty 'getUniforms' in type 'LatticePluginMaterial' is not assignable to the same property in base type 'MaterialPluginBase'.\r\n\r\nType '(shaderLanguage: ShaderLanguage) => { ubo: { name: string; size: number; type: string; }[]; vertex?: undefined; } | { ubo: { name: string; size: number; type: string; }[]; vertex: string; }' is not assignable to type '(_shaderLanguage?: ShaderLanguage | undefined) => { ubo?: { name: string; size?: number; type?: string; arraySize?: number; }[]; vertex?: string; fragment?: string; }'.\r\n\r\nWith this change, the param becomes optional with the same default as the base class.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/lattice.material.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15879",
+                "title": "Misc viewer related fixes",
+                "description": "Three small fixes:\r\n1. When an environment fails to load, roll back any related state mutations (especially scene autoclear).\r\n2. Add a 1px border to the default progress bar since by default the background will typically be white, which makes the progress bar hard to see. Users can always apply custom styles to the progress bar as well.\r\n3. Dynamically import DDSTools so we don't pay the bundle cost when its not needed.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
                     "packages/tools/viewer-alpha/src/viewer.ts",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            }
+        ],
+        "7.36.0": [
+            {
+                "pr": "15901",
+                "title": "Allow overriding the playground URL for testing",
+                "description": "This will be used by the CI",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/User-can-interact-with-the-playground-1.png"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15902",
+                "title": "WebGPU: Fix iridescence in PBR material",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15889",
+                "title": "Preparation for playground snapshots and testing",
+                "description": "This PG does the following:\n\n1. restructure the playwright configuration and test detection. From now on any test file throughout the repository matched by the specific playwright project matcher will be included in the tests of this specific project.\n2. Added playground test project as a preparation for playground user interaction testing\n3. Prepare the playground to a full snapshot deployment and testing.\n\nThe next steps (after this is merged) are:\n\n1. Build the playground as part of the standard CI\n2. Deploy this to a snapshot directory so we can test the actual playground (and not only the default playground with CDN snapshots)\n3. Run the playground tests as part of this CI step. Fail if the playground doesn't work correctly.\n\nNote that I opted-out of snapshot testing for the actual website. Mainly because of different rendering cross OSes AND the fact that we have a constant version changing, which will require either not rendering this part or ignoring a lot of pixel changes, which will render snapshot testing useless.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/playground/public/index.html",
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/tests/browserstack.config.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/playwright.config.ts",
+                    "packages/tools/tests/test/playwright/performance.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/User-can-interact-with-the-playground-1.png",
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts",
+                    "packages/tools/tests/test/visualization/webgpu.json",
+                    "playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15894",
+                "title": "Chakra support for weakref as strongref",
+                "description": "cc @bghgary to validate if needed",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15874",
+                "title": "Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes",
+                "description": "I've made a few changes so that I can create an empty `RenderTargetWrapper` and “connect” the render textures + depth texture later:\r\n* New `dontCreateTextures` options in `IMultiRenderTargetOptions`. This way, `Engine.createMultipleRenderTarget` will not create textures (color/depth).\r\n* New `createMSAATexture` options in `InternalTextureCreationOptions`. This option allows `Engine._createInternalTexture` to immediately create the MSAA texture (`WebGLRenderBuffer` in WebGL) associated with the internal texture. For the moment, these textures are only created when you call `updateRenderTargetTextureSampleCount` or `updateMultipleRenderTargetTextureSampleCount`, in conjunction with a `RenderTargetWrapper`. Note that this option is not used in WebGPU, as this is already the way it works now.\r\n* New setter `RenderTargetWrapper.depthStencilTexture` (we already have a getter), to be able to define the depth/stencil texture of a `RenderTargetWrapper` from an existing texture.\r\n* `Engine._createInternalTexture` is now able to create a depth/stencil texture. Previously, you could only create one by calling `Engine._createDepthStencilTexture`, and it was automatically associated with a `RenderTargetWrapper`.\r\n\r\nWith these changes, it's easy to create all color/depth textures by calling `Engine._createInternalTexture`, and combine them as you wish in a `RenderTargetWrapper` to create a render target (this is what a frame graph render pass does - see the new `FrameGraphRenderTarget` class).\r\n\r\nOther changes:\r\n* I've put `IsDepthTexture`, `GetTypeForDepthTexture` and `HasStencilAspect` in `internalTexture.ts`. I don't know if there's a better place... I tried to put them in `Misc/textureTools.ts` first, but there was a problem with the imports because I need to use these functions in `thinEngine.ts`.\r\n* I removed the functions in `FrameGraph.ts` that only redirected to the corresponding functions in `FrameGraphTextureManager`.\r\n* The NRG `Clear` block can now clear a color and depth texture at the same time.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/cullObjectsTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/generateMipMapsTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderTarget.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
+                    "packages/dev/gui/src/2D/FrameGraph/guiTask.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15882",
+                "title": "fix: Load boundingInfo when use KHR_draco_mesh_compression",
+                "description": "https://forum.babylonjs.com/t/khr-draco-mesh-compression-increase-glb-file-load-time/54931/",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15888",
+                "title": "MSAA render targets: Resolve the depth texture (if any) and allow for manual resolve",
+                "description": "Note that this is not yet implemented in WebGPU (it's a little more difficult than in WebGL, where ANGLE supports depth texture resolve, which you have to do manually in WebGPU).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15896",
+                "title": "WebGPU: Fix crash when using depth bias with line and point topology",
+                "description": "See https://forum.babylonjs.com/t/im-having-some-problems-with-oit-using-webgpu-mode/54999",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15892",
+                "title": "V8 performance hack fix",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15890",
+                "title": "Allow node editors to let the properties be injected onto the nodes",
+                "description": "\r\n![image](https://github.com/user-attachments/assets/09b6d929-2162-43a1-b4e1-aa0157032d1d)\r\n\r\nhttps://github.com/user-attachments/assets/fa944a7d-abe9-47df-bc19-4c37f691a910\r\n\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/conditionalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationXBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationYBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationZBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/latticeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryNLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryReplaceColorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryRotate2dBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometrySmoothStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/portData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/tools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDefaultInput.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15891",
+                "title": "Solve preview height issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "7.35.1": [
+            {
+                "pr": "15880",
+                "title": "Disabled flaky test",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/interaction.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15876",
+                "title": "Revert \"SCSS - run an update of dependencies, move to modern API\"",
+                "description": "Reverts BabylonJS/Babylon.js#15867",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/custom.d.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/package.json",
+                    "packages/tools/nodeRenderGraphEditor/src/custom.d.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/src/components/NodeListComponent.tsx",
+                    "packages/tools/vsm/src/customDeclarations.d.ts",
+                    "packages/tools/vsm/src/workbench.tsx",
+                    "tsconfig.build.json",
+                    "tsconfig.devpackages.json",
+                    "tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15872",
+                "title": "add forcedExtension to ITextureCreationOptions",
+                "description": "  The forcedExtension option seems to be missing from ITextureCreationOptions.\r\n\r\n\r\nCurrently I am using the ITextureCreationOptions to create the texture:\r\n```typescript\r\nconst tex = new Texture(\r\n    \"url...\",\r\n    scene,\r\n    {\r\n        noMipmap: true,\r\n        invertY: false,\r\n        samplingMode: Texture.NEAREST_SAMPLINGMODE,\r\n        onLoad: (): void => {\r\n            // do something\r\n        }\r\n    }\r\n);\r\n```\r\n\r\nBut in order to use forcedExtension here, the code should look like this:\r\n```typescript\r\nconst tex = new Texture(\r\n    \"url...\",\r\n    scene,\r\n    {\r\n        noMipmap: true,\r\n        invertY: false,\r\n        samplingMode: Texture.NEAREST_SAMPLINGMODE,\r\n        onLoad: (): void => {\r\n            // do something\r\n        }\r\n    },\r\n    undefined, // invertY\r\n    undefined, // samplingMode\r\n    undefined, // onLoad\r\n    undefined, // onError\r\n    undefined, // buffer\r\n    undefined, // deleteBuffer\r\n    undefined, // format\r\n    undefined, // mimeType\r\n    undefined, // loaderOptions\r\n    undefined, // creationFlags\r\n    \".bmp\" // forcedExtension\r\n);\r\n```\r\n\r\nI guess this is not the intended design. That's why this change is proposed.",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15867",
+                "title": "SCSS - run an update of dependencies, move to modern API",
+                "description": "This will remove the annoying warnings when building some of the tools.\r\n\r\nNote that the large amount of files changed is due to the updated dependency that doesn't support default import. Named exports are now being used, so this had to be changed for the entire framework. It's mostly changing everything from `import styles from...` to `import * as styles from...`",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/custom.d.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/package.json",
+                    "packages/tools/nodeRenderGraphEditor/src/custom.d.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/src/components/NodeListComponent.tsx",
+                    "packages/tools/vsm/src/customDeclarations.d.ts",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15868",
+                "title": "Testing interaction tests using playwright",
+                "description": "This removes the forced browserstack dependency on our testing suite. \nNow BrowserStack will only be used for webgl2 and webgpu on the CI.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/tests/playwright.config.ts",
+                    "packages/tools/tests/test/interactions/safari.test.ts",
+                    "packages/tools/tests/test/playwright/interaction.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15873",
+                "title": "CSG2: make FromMesh return CSG2",
+                "description": "## Background\r\n\r\nCurrently `CSG2.FromMesh` return `any` type, makes it harder to inference type of returned value, and make it harder for devs to get type hints compared to the old CSG.\r\nAfter looking into the [doc](https://doc.babylonjs.com/typedoc/classes/BABYLON.CSG2), `FromVertexData` and other instance methods implicitly return `CSG2` type.\r\n\r\n## Proposal\r\n\r\nMake `CSG2.FromMesh` method return `CSG2` type instead of any.\r\n\r\n## Risks\r\n\r\nSince CSG2 is already released with any type, narrowing the type to CSG2 could be breaking for typescript users.\r\n\r\n## References\r\n\r\nForum post: <https://forum.babylonjs.com/t/csg2-should-return-csg2-type-instead-of-any/54897>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15871",
+                "title": "Remove customStateSet.d.ts",
+                "description": "We are on TS 5.5.4 now so we don't need this d.ts file anymore.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/customStateSet.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15867",
+                "title": "SCSS - run an update of dependencies, move to modern API",
+                "description": "This will remove the annoying warnings when building some of the tools.\r\n\r\nNote that the large amount of files changed is due to the updated dependency that doesn't support default import. Named exports are now being used, so this had to be changed for the entire framework. It's mostly changing everything from `import styles from...` to `import * as styles from...`",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/gradientDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/imageSourceDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/remapDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/custom.d.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/package.json",
+                    "packages/tools/nodeRenderGraphEditor/src/custom.d.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/elbowDisplayManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/src/components/NodeListComponent.tsx",
+                    "packages/tools/vsm/src/customDeclarations.d.ts",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15865",
+                "title": "Detect invalid hotspots",
+                "description": "There was previously guards in place to detect when a hotspot vertex index was out of range, and so it would just return NaN position/normal data. This change just makes sure the core hotspot functions return false when an index is out of range, and then the viewer checks the return value. Annotation elements associated with invalid hotspots are not displayed (previous logic).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15866",
+                "title": "Clipping for GridMaterial",
+                "description": "follow up https://forum.babylonjs.com/t/gridmaterial-clipplane-not-work/54903/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/materials/src/grid/grid.fragment.fx",
+                    "packages/dev/materials/src/grid/grid.vertex.fx",
+                    "packages/dev/materials/src/grid/gridMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15862",
+                "title": "Fixes AnimationGroup isPlaying when mask is applied & played more than once",
+                "description": "A followup fix of #15836 and forum issue:\r\nhttps://forum.babylonjs.com/t/animationgroup-isplaying-is-always-true-if-animationgroupmask-is-applied/54799\r\n\r\nWhen `AnimationGroupMask` is applied, `isPlaying` will set to `false` on the first time, which works as expected.\r\n\r\nHowever if the animation group is played more than once, `isPlaying` will still be `true` after the animation has ended (can be reproduced on the playground provided in the forum issue).\r\n\r\nIt is due to `AnimationGroup._animatables.length` being assumed to be 0 when the animation has ended.\r\nSo explicitly clear `AnimationGroup._animatables` should finally fix the issue.",
+                "author": {
+                    "name": "s207152",
+                    "url": "https://github.com/s207152"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
                 ],
                 "tags": []
             }
@@ -114,6 +824,37 @@
                     "bug",
                     "rendering engine"
                 ]
+            }
+        ],
+        "7.34.4": [
+            {
+                "pr": "15857",
+                "title": "Fix rgba",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15856",
+                "title": "Some small Viewer bug fixes",
+                "description": "This PR includes a few small bug fixes:\r\n1. `computeMaxExtents` changes the current animation frame to do its calculations, but it doesn't restore the original value. This was causing the Viewer to start at the wrong animation frame when first starting an animation and when switching animations. I think it's best to fix this in the `computeMaxExtents` function so it leaves the animation in the state it found it in.\r\n2. When switching animations, we reset to the first animation frame, and we need to fire one onAnimationProgressChanged event so the animation timeline properly syncs to the animation state.\r\n3. The viewer HTML element should set overflow to hidden by default, otherwise if a child annotation is pulled out of view (e.g. through an animation or panning the camera) it will overflow and show scroll bars. Instead we just want the annotation to go out of view along with the model.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
             }
         ],
         "7.34.3": [

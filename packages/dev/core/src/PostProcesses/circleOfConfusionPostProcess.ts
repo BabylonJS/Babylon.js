@@ -98,7 +98,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
         const localOptions = {
