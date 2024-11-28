@@ -213,7 +213,7 @@ void main(void) {
     vMainUV2 = uv2Updated;
 #endif
 
-    #include<uvVariableDeclaration>[2..7]
+    #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)

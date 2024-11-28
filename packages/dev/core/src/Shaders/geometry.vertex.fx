@@ -154,7 +154,7 @@ void main(void)
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#else
-			vUV = uv;
+			vUV = uvUpdated;
 			#endif
 
 			#ifdef BUMP_UV1
