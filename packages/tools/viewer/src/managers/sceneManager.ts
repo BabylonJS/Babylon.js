@@ -1470,11 +1470,11 @@ export class SceneManager {
             this._defaultHighpTextureType = Constants.TEXTURETYPE_FLOAT;
             this._shadowGeneratorBias = 0.001;
         } else {
-            this._defaultHighpTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            this._defaultHighpTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             this._shadowGeneratorBias = 0.001;
         }
 
-        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : Constants.TEXTURETYPE_UNSIGNED_INT;
+        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : Constants.TEXTURETYPE_UNSIGNED_BYTE;
     }
 
     /**

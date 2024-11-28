@@ -136,13 +136,13 @@ export class PrePassRenderer {
         },
         {
             purpose: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Velocity",
         },
         {
             purpose: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Reflectivity",
         },
@@ -166,13 +166,13 @@ export class PrePassRenderer {
         },
         {
             purpose: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Albedo",
         },
         {
             purpose: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_WorldNormal",
         },
@@ -342,7 +342,7 @@ export class PrePassRenderer {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene, {
             generateMipMaps: false,
             generateStencilBuffer: this._engine.isStencilEnable,
-            defaultType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            defaultType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             types: [],
             drawOnlyOnFirstAttachmentByDefault: true,
         });

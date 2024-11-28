@@ -12,7 +12,7 @@ var diffuseSampler: texture_2d<f32>;
 varying vUVOpacity: vec2f;
 var opacitySamplerSampler: sampler;
 var opacitySampler: texture_2d<f32>;
-uniform var opacityIntensity: f32;
+uniform opacityIntensity: f32;
 #endif
 
 #ifdef EMISSIVE
@@ -66,7 +66,7 @@ var finalColor: vec4f = uniforms.glowColor;
         finalColor = vec4f(finalColor.rgb, finalColor.a * opacityMap.a);
     #endif
 
-    finalColor = vec4f(finalColor.rgb, finalColor.a * opacityIntensity);
+    finalColor = vec4f(finalColor.rgb, finalColor.a * uniforms.opacityIntensity);
 #endif
 
 #ifdef VERTEXALPHA

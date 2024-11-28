@@ -853,7 +853,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             height: this.scene.getEngine().getRenderHeight(),
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine: this.scene.getEngine(),
-            textureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             textureFormat: Constants.TEXTUREFORMAT_RGBA,
             uniforms: ["sizeParams"],
             samplers: textureNames,

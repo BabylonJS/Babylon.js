@@ -9,13 +9,14 @@ import type {
     FrameGraphTextureManager,
     ObjectRenderer,
     Scene,
+    FrameGraphRenderTarget,
+    InternalTexture,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import { FrameGraphContext } from "./frameGraphContext";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 
 /**
  * Frame graph context used render passes.
@@ -23,7 +24,7 @@ import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } fro
  */
 export class FrameGraphRenderContext extends FrameGraphContext {
     private readonly _effectRenderer: EffectRenderer;
-    private _currentRenderTargetHandle: FrameGraphTextureHandle;
+    private _currentRenderTarget: FrameGraphRenderTarget | undefined;
     private _debugMessageWhenTargetBound: string | undefined;
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
@@ -37,12 +38,11 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     constructor(
         private readonly _engine: AbstractEngine,
         private readonly _textureManager: FrameGraphTextureManager,
-        private readonly _scene?: Scene
+        private readonly _scene: Scene
     ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
         this._copyTexture = new CopyTextureToTexture(this._engine);
-        this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
     /**
@@ -70,6 +70,22 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      */
     public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
         return this._textureManager.isBackbufferDepthStencil(handle);
+    }
+
+    /**
+     * Creates a (frame graph) render target wrapper
+     * Note that renderTargets or renderTargetDepth can be undefined, but not both at the same time!
+     * @param name Name of the render target wrapper
+     * @param renderTargets Render target handles (textures) to use
+     * @param renderTargetDepth Render target depth handle (texture) to use
+     * @returns The created render target wrapper
+     */
+    public createRenderTarget(
+        name: string,
+        renderTargets?: FrameGraphTextureHandle | FrameGraphTextureHandle[],
+        renderTargetDepth?: FrameGraphTextureHandle
+    ): FrameGraphRenderTarget {
+        return this._textureManager.createRenderTarget(name, renderTargets, renderTargetDepth);
     }
 
     /**
@@ -108,18 +124,23 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Generates mipmaps for the current render target
      */
     public generateMipMaps(): void {
-        const texture = this._textureManager.getTextureFromHandle(this._currentRenderTargetHandle);
-        if (!texture) {
-            // Texture is backbuffer, no need to generate mipmaps
+        if (this._currentRenderTarget?.renderTargetWrapper === undefined) {
             return;
         }
-        if (this._renderTargetIsBound) {
-            // we can't generate the mipmaps if the texture is bound as a render target
+
+        if (this._renderTargetIsBound && this._engine._currentRenderTarget) {
+            // we can't generate the mipmaps if the render target is bound
             this._flushDebugMessages();
-            this._engine.unBindFramebuffer(texture);
+            this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             this._renderTargetIsBound = false;
         }
-        this._engine.generateMipmaps(texture.texture!);
+
+        const textures = this._currentRenderTarget.renderTargetWrapper.textures;
+        if (textures) {
+            for (const texture of textures) {
+                this._engine.generateMipmaps(texture);
+            }
+        }
     }
 
     /**
@@ -128,7 +149,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param samplingMode Sampling mode to set
      */
     public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
-        const internalTexture = this._textureManager.getTextureFromHandle(handle)?.texture!;
+        const internalTexture = this._textureManager.getTextureFromHandle(handle);
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
@@ -141,10 +162,24 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param handle The handle of the texture to bind
      */
     public bindTextureHandle(effect: Effect, name: string, handle: FrameGraphTextureHandle): void {
-        const texture = this._textureManager.getTextureFromHandle(handle);
-        if (texture) {
-            effect._bindTexture(name, texture.texture!);
+        let texture: Nullable<InternalTexture>;
+
+        const historyEntry = this._textureManager._historyTextures.get(handle);
+        if (historyEntry) {
+            texture = historyEntry.textures[historyEntry.index]; // texture we write to in this frame
+            if (
+                this._currentRenderTarget !== undefined &&
+                this._currentRenderTarget.renderTargetWrapper !== undefined &&
+                this._currentRenderTarget.renderTargetWrapper.textures!.includes(texture!)
+            ) {
+                // If the current render target renders to the history write texture, we bind the read texture instead
+                texture = historyEntry.textures[historyEntry.index ^ 1];
+            }
+        } else {
+            texture = this._textureManager._textures.get(handle)!.texture;
         }
+
+        effect._bindTexture(name, texture);
     }
 
     /**
@@ -200,7 +235,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this.bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!.texture!);
+        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!);
     }
 
     /**
@@ -212,8 +247,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public render(object: Layer | ObjectRenderer, viewportWidth?: number, viewportHeight?: number): void {
         if (FrameGraphRenderContext._IsObjectRenderer(object)) {
             if (object.shouldRender()) {
-                this._scene?.incrementRenderId();
-                this._scene?.resetCachedMaterial();
+                this._scene.incrementRenderId();
+                this._scene.resetCachedMaterial();
 
                 object.prepareRenderList();
                 object.initRender(viewportWidth!, viewportHeight!);
@@ -233,11 +268,14 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Binds a render target texture so that upcoming draw calls will render to it
      * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
-     * @param renderTargetHandle The handle of the render target texture to bind (default: backbufferColorTextureHandle)
+     * @param renderTarget The handle of the render target texture to bind (default: undefined, meaning "back buffer"). Pass an array for MRT rendering.
      * @param debugMessage Optional debug message to display when the render target is bound (visible in PIX, for example)
      */
-    public bindRenderTarget(renderTargetHandle: FrameGraphTextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
-        if (renderTargetHandle === this._currentRenderTargetHandle) {
+    public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, debugMessage?: string) {
+        if (
+            (renderTarget?.renderTargetWrapper === undefined && this._currentRenderTarget === undefined) ||
+            (renderTarget && this._currentRenderTarget && renderTarget.equals(this._currentRenderTarget))
+        ) {
             this._flushDebugMessages();
             if (debugMessage !== undefined) {
                 this._engine._debugPushGroup?.(debugMessage, 2);
@@ -246,7 +284,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             }
             return;
         }
-        this._currentRenderTargetHandle = renderTargetHandle;
+        this._currentRenderTarget = renderTarget?.renderTargetWrapper === undefined ? undefined : renderTarget;
         this._debugMessageWhenTargetBound = debugMessage;
         this._renderTargetIsBound = false;
     }
@@ -259,41 +297,22 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
-    /** @internal */
-    public _shareDepth(srcRenderTargetHandle: FrameGraphTextureHandle, dstRenderTargetHandle: FrameGraphTextureHandle) {
-        const srcTexture = this._textureManager.getTextureFromHandle(srcRenderTargetHandle);
-        const dstTexture = this._textureManager.getTextureFromHandle(dstRenderTargetHandle);
-
-        if (srcTexture && dstTexture) {
-            srcTexture.shareDepth(dstTexture);
-        }
-    }
-
     private _applyRenderTarget() {
         if (this._renderTargetIsBound) {
             return;
         }
 
-        const handle = this._currentRenderTargetHandle;
-        const textureSlot = this._textureManager._textures.get(handle)!;
-
-        let renderTarget = textureSlot.texture;
-
-        if (textureSlot.creationOptions.isHistoryTexture) {
-            const historyEntry = this._textureManager._historyTextures.get(textureSlot.refHandle ?? handle)!;
-            renderTarget = historyEntry.textures[historyEntry.index];
-        }
-
         this._flushDebugMessages();
 
-        if (!renderTarget) {
-            if (handle === backbufferColorTextureHandle || textureSlot.refHandle === backbufferColorTextureHandle) {
-                this._engine.restoreDefaultFramebuffer();
-            } else if (handle === backbufferDepthStencilTextureHandle || textureSlot.refHandle === backbufferDepthStencilTextureHandle) {
-                this._engine.restoreDefaultFramebuffer();
-            }
+        const renderTargetWrapper = this._currentRenderTarget?.renderTargetWrapper;
+
+        if (renderTargetWrapper === undefined) {
+            this._engine.restoreDefaultFramebuffer();
         } else {
-            this._engine.bindFramebuffer(renderTarget);
+            if (this._engine._currentRenderTarget) {
+                this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
+            }
+            this._engine.bindFramebuffer(renderTargetWrapper);
         }
 
         if (this._debugMessageWhenTargetBound !== undefined) {
@@ -303,6 +322,11 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         this._renderTargetIsBound = true;
+    }
+
+    /** @internal */
+    public _isReady(): boolean {
+        return this._copyTexture.isReady();
     }
 
     /** @internal */

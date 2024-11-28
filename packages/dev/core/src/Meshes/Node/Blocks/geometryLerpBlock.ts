@@ -16,7 +16,7 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
 
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("gradient", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("gradient", NodeGeometryBlockConnectionPointTypes.Float, true, 0, 0, 1);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -64,7 +64,7 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock() {
-        if (!this.left.isConnected || !this.right.isConnected || !this.gradient.isConnected) {
+        if (!this.left.isConnected || !this.right.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;

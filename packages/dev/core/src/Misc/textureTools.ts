@@ -58,7 +58,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
         useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE,
         engine,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT
+        Constants.TEXTURETYPE_UNSIGNED_BYTE
     );
     passPostProcess.externalTextureSamplerBinding = true;
     passPostProcess.onEffectCreatedObservable.addOnce((e) => {

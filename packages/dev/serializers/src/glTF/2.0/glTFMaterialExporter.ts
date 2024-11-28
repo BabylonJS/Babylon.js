@@ -430,7 +430,7 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private async _getImageDataAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
-        const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+        const textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
         const hostingScene = this._exporter._babylonScene;
         const engine = hostingScene.getEngine();
@@ -1057,7 +1057,7 @@ export class _GLTFMaterialExporter {
 
     private _getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
         const pixels =
-            babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT
+            babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
                 ? (babylonTexture.readPixels() as Promise<Uint8Array>)
                 : (babylonTexture.readPixels() as Promise<Float32Array>);
         return pixels;
