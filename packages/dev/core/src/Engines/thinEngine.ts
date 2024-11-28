@@ -32,6 +32,7 @@ import {
     getStateObject,
     _createShaderProgram,
     deleteStateObject,
+    _isRenderingStateCompiled,
 } from "./thinEngine.functions";
 
 import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
@@ -2152,16 +2153,10 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-        if (this._isDisposed || webGLPipelineContext._isDisposed) {
+        if (this._isDisposed) {
             return false;
         }
-        if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
-            this._finalizePipelineContext(webGLPipelineContext);
-            return true;
-        }
-
-        return false;
+        return _isRenderingStateCompiled(pipelineContext, this._gl, this.validateShaderPrograms);
     }
 
     /**
