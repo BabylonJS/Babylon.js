@@ -14,6 +14,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Engine } from "../Engines/engine";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -27,7 +28,7 @@ export class ImportanceSamplingRenderer {
     private _cdfxPT: ProceduralTexture;
     private _icdfxPT: ProceduralTexture;
     private _iblSource: BaseTexture;
-
+    private _dummyTexture: RawTexture;
     /**
      * Gets the IBL source texture being used by the importance sampling renderer
      */
@@ -83,7 +84,7 @@ export class ImportanceSamplingRenderer {
      * @returns Return the cumulative distribution function (CDF) Y texture
      */
     public getIcdfyTexture(): Texture {
-        return this._icdfyPT;
+        return this._icdfyPT ? this._icdfyPT : this._dummyTexture;
     }
 
     /**
@@ -91,7 +92,7 @@ export class ImportanceSamplingRenderer {
      * @returns Return the cumulative distribution function (CDF) X texture
      */
     public getIcdfxTexture(): Texture {
-        return this._icdfxPT;
+        return this._icdfxPT ? this._icdfxPT : this._dummyTexture;
     }
 
     /** Enable the debug view for this pass */
@@ -137,6 +138,8 @@ export class ImportanceSamplingRenderer {
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        const blackPixels = new Uint8Array([0, 0, 0, 255]);
+        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
     }
 
     /**
@@ -292,6 +295,7 @@ export class ImportanceSamplingRenderer {
      */
     public dispose() {
         this._disposeTextures();
+        this._dummyTexture.dispose();
         if (this._debugPass) {
             this._debugPass.dispose();
         }
