@@ -23,13 +23,13 @@ struct Splat {
     vec4 color;
     vec4 covA;
     vec4 covB;
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     uvec4 sh0; // 4 * 32bits uint
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     uvec4 sh1;
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     uvec4 sh2;
 #endif
 };
@@ -43,13 +43,13 @@ Splat readSplat(float splatIndex)
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     splat.sh1 = texelFetch(shTexture1, splatUVint, 0);
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
 
@@ -130,7 +130,7 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     
     sh[0] = color;
 
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
     vec4 sh01 = decompose(splat.sh0.y);
     vec4 sh02 = decompose(splat.sh0.z);
@@ -139,7 +139,7 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     sh[2] = vec3(sh00.w, sh01.x, sh01.y);
     sh[3] = vec3(sh01.z, sh01.w, sh02.x);
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     vec4 sh03 = decompose(splat.sh0.w);
     vec4 sh04 = decompose(splat.sh1.x);
     vec4 sh05 = decompose(splat.sh1.y);
@@ -150,7 +150,7 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     sh[7] = vec3(sh04.z, sh04.w, sh05.x);
     sh[8] = vec3(sh05.y, sh05.z, sh05.w);
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     vec4 sh06 = decompose(splat.sh1.z);
     vec4 sh07 = decompose(splat.sh1.w);
     vec4 sh08 = decompose(splat.sh2.x);

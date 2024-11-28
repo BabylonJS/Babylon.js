@@ -9,13 +9,13 @@ struct Splat {
     color: vec4f,
     covA: vec4f,
     covB: vec4f,
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     sh0: vec4<u32>,
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     sh1: vec4<u32>,
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     sh2: vec4<u32>,
 #endif
 };
@@ -28,13 +28,13 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
     splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
     splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     splat.sh0 = textureLoad(shTexture0, splatUVi32, 0);
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     splat.sh1 = textureLoad(shTexture1, splatUVi32, 0);
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
 #endif
     return splat;
@@ -117,7 +117,7 @@ fn computeSH(splat: Splat, color: vec3f, dir: vec3f) -> vec3f
     
     sh[0] = color;
 
-#if SH_DEGREE >= 1
+#if SH_DEGREE > 0
     let sh00: vec4f = decompose(splat.sh0.x);
     let sh01: vec4f = decompose(splat.sh0.y);
     let sh02: vec4f = decompose(splat.sh0.z);
@@ -126,7 +126,7 @@ fn computeSH(splat: Splat, color: vec3f, dir: vec3f) -> vec3f
     sh[2] = vec3f(sh00.w, sh01.x, sh01.y);
     sh[3] = vec3f(sh01.z, sh01.w, sh02.x);
 #endif
-#if SH_DEGREE >= 2
+#if SH_DEGREE > 1
     let sh03: vec4f = decompose(splat.sh0.w);
     let sh04: vec4f = decompose(splat.sh1.x);
     let sh05: vec4f = decompose(splat.sh1.y);
@@ -137,7 +137,7 @@ fn computeSH(splat: Splat, color: vec3f, dir: vec3f) -> vec3f
     sh[7] = vec3f(sh04.z, sh04.w, sh05.x);
     sh[8] = vec3f(sh05.y, sh05.z, sh05.w);
 #endif
-#if SH_DEGREE == 3
+#if SH_DEGREE > 2
     let sh06: vec4f = decompose(splat.sh1.z);
     let sh07: vec4f = decompose(splat.sh1.w);
     let sh08: vec4f = decompose(splat.sh2.x);

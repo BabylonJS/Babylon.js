@@ -41,7 +41,7 @@ void main () {
     vColor = splat.color;
     vPosition = position;
 
-#if SH_DEGREE
+#if SH_DEGREE > 0
     vec3 dir = normalize(worldPos.xyz - vEyePosition.xyz);
     vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif

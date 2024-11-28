@@ -41,7 +41,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     vertexOutputs.vPosition = input.position;
 
-#if SH_DEGREE
+#if SH_DEGREE > 0
     let dir: vec3f = normalize(worldPos.xyz - uniforms.vEyePosition.xyz);
     vertexOutputs.vColor = vec4f(computeSH(splat, splat.color.xyz, dir), 1.0);
 #else
