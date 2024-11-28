@@ -84,7 +84,7 @@ export class Observer<T> {
      * It will be set by the observable that the observer belongs to.
      * @internal
      */
-    public _remove: Nullable<WeakReference<() => void>> = null;
+    public _remove: Nullable<() => void> = null;
 
     /**
      * Creates a new observer
@@ -113,10 +113,7 @@ export class Observer<T> {
      */
     public remove() {
         if (this._remove) {
-            const remove = this._remove.deref();
-            if (remove) {
-                remove();
-            }
+            this._remove();
         }
     }
 }
@@ -242,11 +239,15 @@ export class Observable<T> {
                 this.notifyObserver(observer, this._lastNotifiedValue);
             }
         }
+
         // attach the remove function to the observer
-        const deref = () => {
-            this.remove(observer);
+        const observableWeakRef = isWeakRefSupported ? new WeakRef(this) : { deref: () => this };
+        observer._remove = () => {
+            const observable = observableWeakRef.deref();
+            if (observable) {
+                observable._remove(observer);
+            }
         };
-        observer._remove = isWeakRefSupported ? new WeakRef(deref) : { deref };
 
         return observer;
     }
