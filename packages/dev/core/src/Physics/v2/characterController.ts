@@ -1450,4 +1450,91 @@ export class PhysicsCharacterController {
 
         this._velocity.copyFrom(newVelocity);
     }
+
+    /**
+     * Helper function
+     * @param deltaTime
+     * @param forwardWorld
+     * @param surfaceNormal
+     * @param currentVelocity
+     * @param surfaceVelocity
+     * @param desiredVelocity
+     * @param upWorld
+     * @returns
+     */
+    public calculateMovement(
+        deltaTime: number,
+        forwardWorld: Vector3,
+        surfaceNormal: Vector3,
+        currentVelocity: Vector3,
+        surfaceVelocity: Vector3,
+        desiredVelocity: Vector3,
+        upWorld: Vector3
+    ): Vector3 {
+        const eps = 1e-5;
+        let binorm = forwardWorld.cross(upWorld);
+        if (binorm.lengthSquared() < eps) {
+            return Vector3.ZeroReadOnly;
+        }
+        binorm.normalize();
+        const tangent = binorm.cross(surfaceNormal);
+        tangent.normalize();
+        binorm = tangent.cross(surfaceNormal);
+        binorm.normalize();
+
+        const surfaceFrame = Matrix.FromValues(
+            tangent.x,
+            tangent.y,
+            tangent.z,
+            0,
+            binorm.x,
+            binorm.y,
+            binorm.z,
+            0,
+            surfaceNormal.x,
+            surfaceNormal.y,
+            surfaceNormal.z,
+            0,
+            0,
+            0,
+            0,
+            1
+        );
+        const invSurfaceFrame = surfaceFrame.clone().invert();
+        const relative = Vector3.TransformNormal(currentVelocity.subtract(surfaceVelocity), invSurfaceFrame);
+
+        const sideVec = upWorld.cross(forwardWorld);
+        const fwd = desiredVelocity.dot(forwardWorld);
+        const side = desiredVelocity.dot(sideVec);
+        const len = desiredVelocity.length();
+
+        const desiredVelocitySF = new Vector3(-fwd, side, 0);
+        desiredVelocitySF.normalize();
+        desiredVelocitySF.scaleInPlace(len);
+        const diff = desiredVelocitySF.subtract(relative);
+
+        // Clamp it by maxVelocityDelta and limit it by gain.
+        {
+            const lenSq = diff.lengthSquared();
+            const gain = 0.05;
+            const maxVelocityDelta = 50.0 * deltaTime;
+            let tmp: number;
+            if (lenSq * gain * gain > maxVelocityDelta * maxVelocityDelta) {
+                tmp = maxVelocityDelta / Math.sqrt(lenSq);
+            } else {
+                tmp = gain;
+            }
+            diff.scaleInPlace(tmp);
+        }
+
+        relative.addInPlace(diff);
+
+        // Transform back to world space and apply
+        const velocityOut = Vector3.TransformNormal(relative, surfaceFrame);
+
+        // Add back in the surface velocity
+        velocityOut.addInPlace(surfaceVelocity);
+
+        return velocityOut;
+    }
 }
