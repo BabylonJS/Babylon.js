@@ -153,6 +153,22 @@ export class Constants {
     public static readonly TEXTUREFORMAT_RED = 6;
     /** RED (2nd reference) */
     public static readonly TEXTUREFORMAT_R = 6;
+    /** RED unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_R16_UNORM = 0x822a;
+    /** RG unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_UNORM = 0x822c;
+    /** RGB unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_UNORM = 0x8054;
+    /** RGBA unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_UNORM = 0x805b;
+    /** RED signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_R16_SNORM = 0x8f98;
+    /** RG signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_SNORM = 0x8f99;
+    /** RGB signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_SNORM = 0x8f9a;
+    /** RGBA signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_SNORM = 0x8f9b;
     /** RG */
     public static readonly TEXTUREFORMAT_RG = 7;
     /** RED_INTEGER */
