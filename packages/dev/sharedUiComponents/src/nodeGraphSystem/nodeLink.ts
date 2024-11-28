@@ -164,8 +164,8 @@ export class NodeLink {
 
             this._gradient.setAttribute("x1", startX < endX ? "0" : "1");
             this._gradient.setAttribute("y1", "0");
-            this._gradient.setAttribute("x2", startX < endX ? "1" : "0");
-            this._gradient.setAttribute("y2", "0");
+            this._gradient.setAttribute("x2", startX < endX ? "1" : "0.001");
+            this._gradient.setAttribute("y2", "0.1"); // this is to avoid 0,0 -> 0,0 gradient
 
             stop1.setAttribute("offset", "0%");
             stop1.setAttribute("stop-color", this._portA.element.style.backgroundColor!);
