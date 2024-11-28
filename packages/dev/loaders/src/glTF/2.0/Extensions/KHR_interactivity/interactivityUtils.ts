@@ -322,6 +322,23 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/ge": getSimpleInputMapping(FlowGraphBlockNames.GreaterThanOrEqual, ["a", "b"]),
     "math/isnan": getSimpleInputMapping(FlowGraphBlockNames.IsNaN),
     "math/isinf": getSimpleInputMapping(FlowGraphBlockNames.IsInfinity),
+    "math/select": {
+        blocks: [FlowGraphBlockNames.Conditional],
+        configuration: {},
+        inputs: {
+            values: {
+                condition: { name: "condition" },
+                // Should we validate those have the same type here, or assume it is already validated?
+                a: { name: "onTrue" },
+                b: { name: "onFalse" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "output" },
+            },
+        },
+    },
     "math/sin": getSimpleInputMapping(FlowGraphBlockNames.Sin),
     "math/cos": getSimpleInputMapping(FlowGraphBlockNames.Cos),
     "math/tan": getSimpleInputMapping(FlowGraphBlockNames.Tan),
