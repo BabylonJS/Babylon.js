@@ -7,8 +7,8 @@ import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
-import commonStyles from "./common.module.scss";
-import styles from "./nodeLink.module.scss";
+import * as commonStyles from "./common.module.scss";
+import * as styles from "./nodeLink.module.scss";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -118,6 +118,11 @@ export class NodeLink {
             const rectB = this._portB.element.getBoundingClientRect();
             endX = (rectB.left - xOffset + 0.5 * rectB.width) / zoom;
             endY = (rectB.top - yOffset + 0.5 * rectB.height) / zoom;
+        }
+
+        // We need a volume to allow gradient to work
+        if (startY === endY) {
+            endY += 0.01;
         }
 
         if (straight) {

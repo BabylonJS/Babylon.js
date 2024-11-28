@@ -78,7 +78,7 @@ export class EdgeDetectionPostProcess extends PostProcess {
         camera: Nullable<Camera>,
         samplingMode?: number,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
         super(
             name,

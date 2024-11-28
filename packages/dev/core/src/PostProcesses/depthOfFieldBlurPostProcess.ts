@@ -54,7 +54,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {

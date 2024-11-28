@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.35.1",
+    "fromTag": "7.35.2",
     "changelog": {
         "7.35.2": [
             {
@@ -109,6 +109,261 @@
                     "packages/tools/viewer-alpha/test/apps/web/index.html"
                 ],
                 "tags": []
+            }
+        ],
+        "7.36.0": [
+            {
+                "pr": "15901",
+                "title": "Allow overriding the playground URL for testing",
+                "description": "This will be used by the CI",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/User-can-interact-with-the-playground-1.png"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15902",
+                "title": "WebGPU: Fix iridescence in PBR material",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15889",
+                "title": "Preparation for playground snapshots and testing",
+                "description": "This PG does the following:\n\n1. restructure the playwright configuration and test detection. From now on any test file throughout the repository matched by the specific playwright project matcher will be included in the tests of this specific project.\n2. Added playground test project as a preparation for playground user interaction testing\n3. Prepare the playground to a full snapshot deployment and testing.\n\nThe next steps (after this is merged) are:\n\n1. Build the playground as part of the standard CI\n2. Deploy this to a snapshot directory so we can test the actual playground (and not only the default playground with CDN snapshots)\n3. Run the playground tests as part of this CI step. Fail if the playground doesn't work correctly.\n\nNote that I opted-out of snapshot testing for the actual website. Mainly because of different rendering cross OSes AND the fact that we have a constant version changing, which will require either not rendering this part or ignoring a lot of pixel changes, which will render snapshot testing useless.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/playground/public/index.html",
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/tests/browserstack.config.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/playwright.config.ts",
+                    "packages/tools/tests/test/playwright/performance.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/User-can-interact-with-the-playground-1.png",
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts",
+                    "packages/tools/tests/test/visualization/webgpu.json",
+                    "playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15894",
+                "title": "Chakra support for weakref as strongref",
+                "description": "cc @bghgary to validate if needed",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15874",
+                "title": "Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes",
+                "description": "I've made a few changes so that I can create an empty `RenderTargetWrapper` and “connect” the render textures + depth texture later:\r\n* New `dontCreateTextures` options in `IMultiRenderTargetOptions`. This way, `Engine.createMultipleRenderTarget` will not create textures (color/depth).\r\n* New `createMSAATexture` options in `InternalTextureCreationOptions`. This option allows `Engine._createInternalTexture` to immediately create the MSAA texture (`WebGLRenderBuffer` in WebGL) associated with the internal texture. For the moment, these textures are only created when you call `updateRenderTargetTextureSampleCount` or `updateMultipleRenderTargetTextureSampleCount`, in conjunction with a `RenderTargetWrapper`. Note that this option is not used in WebGPU, as this is already the way it works now.\r\n* New setter `RenderTargetWrapper.depthStencilTexture` (we already have a getter), to be able to define the depth/stencil texture of a `RenderTargetWrapper` from an existing texture.\r\n* `Engine._createInternalTexture` is now able to create a depth/stencil texture. Previously, you could only create one by calling `Engine._createDepthStencilTexture`, and it was automatically associated with a `RenderTargetWrapper`.\r\n\r\nWith these changes, it's easy to create all color/depth textures by calling `Engine._createInternalTexture`, and combine them as you wish in a `RenderTargetWrapper` to create a render target (this is what a frame graph render pass does - see the new `FrameGraphRenderTarget` class).\r\n\r\nOther changes:\r\n* I've put `IsDepthTexture`, `GetTypeForDepthTexture` and `HasStencilAspect` in `internalTexture.ts`. I don't know if there's a better place... I tried to put them in `Misc/textureTools.ts` first, but there was a problem with the imports because I need to use these functions in `thinEngine.ts`.\r\n* I removed the functions in `FrameGraph.ts` that only redirected to the corresponding functions in `FrameGraphTextureManager`.\r\n* The NRG `Clear` block can now clear a color and depth texture at the same time.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/cullObjectsTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/generateMipMapsTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderTarget.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
+                    "packages/dev/gui/src/2D/FrameGraph/guiTask.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15882",
+                "title": "fix: Load boundingInfo when use KHR_draco_mesh_compression",
+                "description": "https://forum.babylonjs.com/t/khr-draco-mesh-compression-increase-glb-file-load-time/54931/",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15888",
+                "title": "MSAA render targets: Resolve the depth texture (if any) and allow for manual resolve",
+                "description": "Note that this is not yet implemented in WebGPU (it's a little more difficult than in WebGL, where ANGLE supports depth texture resolve, which you have to do manually in WebGPU).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15896",
+                "title": "WebGPU: Fix crash when using depth bias with line and point topology",
+                "description": "See https://forum.babylonjs.com/t/im-having-some-problems-with-oit-using-webgpu-mode/54999",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15892",
+                "title": "V8 performance hack fix",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15890",
+                "title": "Allow node editors to let the properties be injected onto the nodes",
+                "description": "\r\n![image](https://github.com/user-attachments/assets/09b6d929-2162-43a1-b4e1-aa0157032d1d)\r\n\r\nhttps://github.com/user-attachments/assets/fa944a7d-abe9-47df-bc19-4c37f691a910\r\n\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/conditionalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationXBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationYBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/rotationZBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/latticeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryNLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryReplaceColorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryRotate2dBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometrySmoothStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/portData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/tools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDefaultInput.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15891",
+                "title": "Solve preview height issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "7.35.1": [

@@ -240,7 +240,7 @@ export function CreateScreenshotUsingRenderTarget(
         scene,
         false,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT,
+        Constants.TEXTURETYPE_UNSIGNED_BYTE,
         false,
         Texture.BILINEAR_SAMPLINGMODE,
         undefined,

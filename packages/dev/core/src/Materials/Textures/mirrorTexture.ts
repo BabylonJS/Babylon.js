@@ -159,7 +159,7 @@ export class MirrorTexture extends RenderTargetTexture {
         size: number | { width: number; height: number } | { ratio: number },
         scene?: Scene,
         generateMipMaps?: boolean,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true
     ) {

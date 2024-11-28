@@ -166,7 +166,7 @@ export class ProceduralTexture extends Texture {
         fallbackTexture: Nullable<Texture> | IProceduralTextureCreationOptions = null,
         generateMipMaps = true,
         isCube = false,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
         super(null, scene, !generateMipMaps);
 
