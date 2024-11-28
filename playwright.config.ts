@@ -85,6 +85,11 @@ export default defineConfig({
             testMatch: "**/*.playground.test.ts",
             use: getUseDefinition("Playground"),
         },
+        {
+            name: "sandbox",
+            testMatch: "**/*.sandbox.test.ts",
+            use: getUseDefinition("Sandbox"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
