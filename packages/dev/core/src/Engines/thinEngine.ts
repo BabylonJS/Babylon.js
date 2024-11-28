@@ -2870,7 +2870,7 @@ export class ThinEngine extends AbstractEngine {
     ): InternalTexture {
         let generateMipMaps = false;
         let createMipMaps = false;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
@@ -2881,7 +2881,7 @@ export class ThinEngine extends AbstractEngine {
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
             createMipMaps = !!options.createMipMaps;
-            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
@@ -2903,7 +2903,7 @@ export class ThinEngine extends AbstractEngine {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
