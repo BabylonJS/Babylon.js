@@ -120,6 +120,11 @@ export class NodeLink {
             endY = (rectB.top - yOffset + 0.5 * rectB.height) / zoom;
         }
 
+        // We need a volume to allow gradient to work
+        if (startY === endY) {
+            endY += 0.01;
+        }
+
         if (straight) {
             this._path.setAttribute("d", `M${startX},${startY} L${endX},${endY}`);
             this._path.setAttribute("stroke-dasharray", "10, 10");
@@ -164,8 +169,8 @@ export class NodeLink {
 
             this._gradient.setAttribute("x1", startX < endX ? "0" : "1");
             this._gradient.setAttribute("y1", "0");
-            this._gradient.setAttribute("x2", startX < endX ? "1" : "0.001");
-            this._gradient.setAttribute("y2", "0.1"); // this is to avoid 0,0 -> 0,0 gradient
+            this._gradient.setAttribute("x2", startX < endX ? "1" : "0");
+            this._gradient.setAttribute("y2", "0");
 
             stop1.setAttribute("offset", "0%");
             stop1.setAttribute("stop-color", this._portA.element.style.backgroundColor!);
