@@ -26,7 +26,7 @@ declare module "../../abstractEngine" {
          * @param format defines the format of the data
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          */
         updateRawTexture(
@@ -44,7 +44,7 @@ declare module "../../abstractEngine" {
          * @param data defines the array of data to use to create each face
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
          * @param generateMipMaps  defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
@@ -67,7 +67,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          */
         updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
@@ -77,7 +77,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          */
@@ -88,7 +88,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          * @param level defines which level of the texture to update
@@ -101,7 +101,7 @@ declare module "../../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -128,7 +128,7 @@ declare module "../../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -169,7 +169,7 @@ declare module "../../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
          */
         updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
 
@@ -189,7 +189,7 @@ declare module "../../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
          */
         updateRawTexture2DArray(
             texture: InternalTexture,
@@ -211,7 +211,7 @@ ThinWebGPUEngine.prototype.createRawTexture = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     creationFlags: number = 0,
     useSRGBBuffer: boolean = false
 ): InternalTexture {
@@ -248,7 +248,7 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
@@ -464,7 +464,7 @@ ThinWebGPUEngine.prototype.createRawTexture3D = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     creationFlags: number = 0
 ): InternalTexture {
     const source = InternalTextureSource.Raw3D;
@@ -502,7 +502,7 @@ ThinWebGPUEngine.prototype.updateRawTexture3D = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
 ): void {
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
@@ -540,7 +540,7 @@ ThinWebGPUEngine.prototype.createRawTexture2DArray = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     creationFlags: number = 0
 ): InternalTexture {
     const source = InternalTextureSource.Raw2DArray;
@@ -578,7 +578,7 @@ ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
 ): void {
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;

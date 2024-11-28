@@ -164,7 +164,7 @@ export class Engine extends ThinEngine {
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-    /** UNSIGNED_BYTE (2nd reference) */
+    /** @deprecated use more explicit TEXTURETYPE_UNSIGNED_BYTE instead. Use TEXTURETYPE_UNSIGNED_INTEGER for 32bits values.*/
     public static readonly TEXTURETYPE_UNSIGNED_INT = Constants.TEXTURETYPE_UNSIGNED_INT;
     /** FLOAT */
     public static readonly TEXTURETYPE_FLOAT = Constants.TEXTURETYPE_FLOAT;

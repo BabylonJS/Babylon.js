@@ -143,7 +143,7 @@ export interface IHighlightLayerOptions {
     renderingGroupId: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
      */
     mainTextureType: number;
 
@@ -327,7 +327,7 @@ export class HighlightLayer extends EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             forceGLSL: false,
             ...options,
         };
@@ -412,7 +412,7 @@ export class HighlightLayer extends EffectLayer {
         if (this._engine.getCaps().textureHalfFloatRender) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
         this._blurTexture = new RenderTargetTexture(

@@ -389,7 +389,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;

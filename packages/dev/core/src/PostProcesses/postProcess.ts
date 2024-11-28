@@ -143,7 +143,7 @@ export type PostProcessOptions = EffectWrapperCreationOptions & {
      */
     reusable?: boolean;
     /**
-     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_INT)
+     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
     textureType?: number;
     /**
@@ -602,7 +602,7 @@ export class PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
@@ -623,7 +623,7 @@ export class PostProcess {
             engine = options.engine;
             reusable = options.reusable;
             defines = Array.isArray(options.defines) ? options.defines.join("\n") : (options.defines ?? null);
-            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;

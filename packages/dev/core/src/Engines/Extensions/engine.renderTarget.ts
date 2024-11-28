@@ -311,7 +311,7 @@ ThinEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
     internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+    internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
     internalTexture._comparisonFunction = comparisonFunction;
 
     const gl = this._gl;

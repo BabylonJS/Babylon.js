@@ -1656,7 +1656,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): InternalTexture {
@@ -1696,7 +1696,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
 
@@ -1732,7 +1732,7 @@ export class NativeEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         useSRGBBuffer: boolean = false
     ): void {
         if (!texture) {
@@ -2129,7 +2129,7 @@ export class NativeEngine extends Engine {
                 const imageData = CreateImageDataArrayBufferViews(data, info);
 
                 texture.format = Constants.TEXTUREFORMAT_RGBA;
-                texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
@@ -2227,7 +2227,7 @@ export class NativeEngine extends Engine {
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         let generateMipMaps = false;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
@@ -2235,7 +2235,7 @@ export class NativeEngine extends Engine {
         let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
-            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
@@ -2255,7 +2255,7 @@ export class NativeEngine extends Engine {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
