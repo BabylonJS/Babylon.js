@@ -4037,7 +4037,7 @@ export class ThinEngine extends AbstractEngine {
         const keys = Object.keys(this._compiledEffects);
         for (const name of keys) {
             const effect = this._compiledEffects[name];
-            effect.dispose();
+            effect.dispose(true);
         }
 
         this._compiledEffects = {};
