@@ -2,10 +2,30 @@ import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector
 import type { Scene } from "../../scene";
 import type { DeepImmutableObject } from "../../types";
 import type { PhysicsBody } from "./physicsBody";
-import type { PhysicsShape } from "./physicsShape";
+import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
 
+/**
+ * Shape properties for the character controller
+ */
+export interface CharacterShapeOptions {
+    /**
+     * optional shape used for collision detection
+     */
+    shape?: PhysicsShape;
+    /**
+     * capsule height for the capsule shape if no shape is provided
+     */
+    capsuleHeight?: number;
+    /**
+     * capsule radius for the capsule shape if no shape is provided
+     */
+    capsuleRadius?: number;
+}
+/**
+ * State of the character on the surface
+ */
 export enum CharacterSupportedState {
     UNSUPPORTED,
     SLIDING,
@@ -13,65 +33,51 @@ export enum CharacterSupportedState {
 }
 
 /**
- *
+ * Surface information computed by checkSupport method
  */
 export class CharacterSurfaceInfo {
     /**
-     *
+     * Indicates whether the surface is dynamic.
+     * A dynamic surface is one that can change its properties over time,
+     * such as moving platforms or surfaces that can be affected by external forces.
      */
     public isSurfaceDynamic: boolean;
     /**
-     *
+     * The supported state of the character on the surface.
      */
     public supportedState: CharacterSupportedState;
     /**
-     *
+     * The average normal vector of the surface.
+     * This vector is perpendicular to the surface and points outwards.
      */
     public averageSurfaceNormal: Vector3;
     /**
-     *
+     * The average velocity of the surface.
+     * This vector represents the speed and direction in which the surface is moving.
      */
     public averageSurfaceVelocity: Vector3;
     /**
-     *
+     * The average angular velocity of the surface.
      */
     public averageAngularSurfaceVelocity: Vector3;
 }
 
+/** @internal */
 class Contact {
-    /**
-     *
-     */
+    /** @internal */
     public position: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public normal: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public distance: number;
-    /**
-     *
-     */
+    /** @internal */
     public fraction: number;
-    /**
-     *
-     */
+    /** @internal */
     public bodyB: { body: PhysicsBody; index: number };
-    /**
-     *
-     */
+    /** @internal */
     public allowedPenetration: number;
 
-    /**
-     *
-     * @param hp
-     * @param cp
-     * @param hitDistance
-     * @param keepDistance
-     * @returns
-     */
+    /** @internal */
     static FromProximity(hp: HavokPlugin, cp: any /*ContactPoint*/, hitDistance: number, keepDistance: number): Contact {
         //@ts-ignore
         const bodyMap = hp._bodies;
@@ -85,15 +91,7 @@ class Contact {
         };
     }
 
-    /**
-     *
-     * @param hp
-     * @param cp
-     * @param castPath
-     * @param hitFraction
-     * @param keepDistance
-     * @returns
-     */
+    /** @internal */
     static FromCast(hp: HavokPlugin, cp: any /*ContactPoint*/, castPath: Vector3, hitFraction: number, keepDistance: number): Contact {
         //@ts-ignore
         const bodyMap = hp._bodies;
@@ -111,111 +109,71 @@ class Contact {
     }
 }
 
+/** @internal */
 class SurfaceConstraintInfo {
-    /**
-     *
-     */
+    /** @internal */
     public planeNormal: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public planeDistance: number;
-    /**
-     *
-     */
+    /** @internal */
     public velocity: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public angularVelocity: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public staticFriction: number;
-    /**
-     *
-     */
+    /** @internal */
     public extraUpStaticFriction: number;
-    /**
-     *
-     */
+    /** @internal */
     public extraDownStaticFriction: number;
-    /**
-     *
-     */
+    /** @internal */
     public dynamicFriction: number;
-    /**
-     *
-     */
+    /** @internal */
     public priority: number;
 }
 
+/** @internal */
 const enum SurfaceConstraintInteractionStatus {
     OK,
     FAILURE_3D,
     FAILURE_2D,
 }
 
+/** @internal */
 class SurfaceConstraintInteraction {
-    /**
-     *
-     */
+    /** @internal */
     public touched: boolean = false;
-    /**
-     *
-     */
+    /** @internal */
     public stopped: boolean = false;
-    /**
-     *
-     */
+    /** @internal */
     public surfaceTime: number = 0;
-    /**
-     *
-     */
+    /** @internal */
     public penaltyDistance: number = 0;
-    /**
-     *
-     */
+    /** @internal */
     public status: SurfaceConstraintInteractionStatus = SurfaceConstraintInteractionStatus.OK;
 }
 
+/** @internal */
 class SimplexSolverOutput {
-    /**
-     *
-     */
+    /** @internal */
     public position: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public velocity: Vector3;
-    /**
-     *
-     */
+    /** @internal */
     public deltaTime: number;
-    /**
-     *
-     */
+    /** @internal */
     public planeInteractions: SurfaceConstraintInteraction[];
 }
 
+/** @internal */
 class SimplexSolverActivePlanes {
-    /**
-     *
-     */
+    /** @internal */
     public index: number;
-    /**
-     *
-     */
+    /** @internal */
     public constraint: SurfaceConstraintInfo;
-    /**
-     *
-     */
+    /** @internal */
     public interaction: SurfaceConstraintInteraction;
 
-    /**
-     *
-     * @param other
-     */
+    /** @internal */
     public copyFrom(other: SimplexSolverActivePlanes) {
         this.index = other.index;
         this.constraint = other.constraint;
@@ -223,40 +181,26 @@ class SimplexSolverActivePlanes {
     }
 }
 
+/** @internal */
 class SimplexSolverInfo {
-    /**
-     *
-     */
+    /** @internal */
     public supportPlanes: Array<SimplexSolverActivePlanes> = new Array<SimplexSolverActivePlanes>(4);
-    /**
-     *
-     */
+    /** @internal */
     public numSupportPlanes: number = 0;
-    /**
-     *
-     */
+    /** @internal */
     public currentTime: number = 0;
-    /**
-     *
-     */
+    /** @internal */
     public inputConstraints: SurfaceConstraintInfo[];
-    /**
-     *
-     */
+    /** @internal */
     public outputInteractions: SurfaceConstraintInteraction[];
-
-    /**
-     *
-     * @param constraint
-     * @returns
-     */
+    /** @internal */
     public getOutput(constraint: SurfaceConstraintInfo): SurfaceConstraintInteraction {
         return this.outputInteractions[this.inputConstraints.indexOf(constraint)]; //<todo.eoin This is O(1) in C++! Equivalent in TS?
     }
 }
 
 /**
- *
+ * Character controller using physics
  */
 export class PhysicsCharacterController {
     private _position: Vector3;
@@ -271,47 +215,58 @@ export class PhysicsCharacterController {
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
     /**
-     *
+     * minimum distance to make contact
+     * default 0.05
      */
     public keepDistance: number = 0.05;
     /**
-     *
+     * maximum distance to keep contact
+     * default 0.1
      */
     public keepContactTolerance: number = 0.1;
     /**
-     *
+     * maximum number of raycast per integration starp
+     * default 10
      */
     public maxCastIterations: number = 10;
     /**
-     *
+     * speed when recovery from penetration
+     * default 1.0
      */
     public penetrationRecoverySpeed = 1.0;
     /**
-     *
+     * friction with static surfaces
+     * default 0
      */
     public staticFriction = 0;
     /**
-     *
+     * friction with dynamic surfaces
+     * default 1
      */
     public dynamicFriction = 1;
     /**
-     *
+     * cosine value of slop angle that can be climbed
+     * computed as `Math.cos(Math.PI * (angleInDegree / 180.0));`
+     * default 0.5
      */
     public maxSlopeCosine = Math.cos(Math.PI * (60.0 / 180.0));
     /**
-     *
+     * character maximum speed
+     * default 10
      */
     public maxCharacterSpeedForSolver = 10.0;
     /**
-     *
+     * up vector
      */
     public up = new Vector3(0, 1, 0);
     /**
-     *
+     * Strength when pushing other bodies
+     * default 1e38
      */
     public characterStrength = 1e38;
     /**
-     *
+     * character mass
+     * default 0
      */
     public characterMass = 0;
     private _startCollector;
@@ -319,15 +274,17 @@ export class PhysicsCharacterController {
 
     /**
      * instanciate a new characterController
-     * @param position
-     * @param shape
-     * @param scene
+     * @param position Initial position
+     * @param characterShapeOptions character physics shape options
+     * @param scene Scene
      */
-    public constructor(position: Vector3, shape: PhysicsShape, scene: Scene) {
+    public constructor(position: Vector3, characterShapeOptions: CharacterShapeOptions, scene: Scene) {
         this._position = position.clone();
         this._velocity = Vector3.Zero();
         this._lastVelocity = Vector3.Zero();
-        this._shape = shape;
+        const r = characterShapeOptions.capsuleRadius ?? 0.6;
+        const h = characterShapeOptions.capsuleHeight ?? 1.8;
+        this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(new Vector3(0, h * 0.5 - r, 0), new Vector3(0, -h * 0.5 + r, 0), r, scene);
         this._lastInvDeltaTime = 1.0 / 60.0;
         this._lastDisplacement = Vector3.Zero();
         this._scene = scene;
@@ -340,27 +297,27 @@ export class PhysicsCharacterController {
     }
 
     /**
-     *
-     * @returns
+     * Character position
+     * @returns Character position
      */
     public getPosition(): Vector3 {
         return this._position;
     }
 
     /**
-     *
-     * @returns
+     * Character velocity
+     * @returns Character velocity vector
      */
     public getVelocity(): Vector3 {
         return this._velocity;
     }
 
     /**
-     *
-     * @param v
+     * Set velocity vector
+     * @param velocity vector
      */
-    public setVelocity(v: Vector3) {
-        this._velocity.copyFrom(v);
+    public setVelocity(velocity: Vector3) {
+        this._velocity.copyFrom(velocity);
     }
 
     protected _validateManifold() {
@@ -407,14 +364,7 @@ export class PhysicsCharacterController {
         return bestIdx;
     }
 
-    /**
-     *
-     * @param startCollector
-     * @param castCollector
-     * @param castPath
-     * @returns
-     */
-    public updateManifold(startCollector: any /*HP_CollectorId*/, castCollector: any /*HP_CollectorId*/, castPath: Vector3): number {
+    public _updateManifold(startCollector: any /*HP_CollectorId*/, castCollector: any /*HP_CollectorId*/, castPath: Vector3): number {
         const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
         const hknp = hk._hknp;
 
@@ -1132,10 +1082,10 @@ export class PhysicsCharacterController {
     }
 
     /**
-     *
-     * @param deltaTime
-     * @param direction
-     * @returns
+     * Compute a CharacterSurfaceInfo from current state and a direction
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param direction direction to check, usually gravity direction
+     * @returns CharacterSurfaceInfo
      */
     public checkSupport(deltaTime: number, direction: Vector3): CharacterSurfaceInfo {
         const eps = 1e-4;
@@ -1340,10 +1290,10 @@ export class PhysicsCharacterController {
     }
 
     /**
-     *
-     * @param deltaTime
-     * @param surfaceInfo
-     * @param gravity
+     * Update internal state. Must be called once per frame
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param surfaceInfo surface information returned by checkSupport
+     * @param gravity gravity applied to the character. Can be different that world gravity
      */
     public integrate(deltaTime: number, surfaceInfo: CharacterSurfaceInfo, gravity: Vector3) {
         const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
@@ -1388,7 +1338,7 @@ export class PhysicsCharacterController {
 
         for (let iter = 0; iter < this.maxCastIterations && remainingTime > 1e-5; iter++) {
             this._castWithCollectors(this._position, this._position.add(this._lastDisplacement), this._castCollector, this._startCollector);
-            const updateResult = this.updateManifold(this._startCollector, this._castCollector, this._lastDisplacement);
+            const updateResult = this._updateManifold(this._startCollector, this._castCollector, this._lastDisplacement);
 
             // Create surface constraints from the manifold contacts.
             const constraints = this._createConstraintsFromManifold(deltaTime, deltaTime - remainingTime);
@@ -1452,15 +1402,15 @@ export class PhysicsCharacterController {
     }
 
     /**
-     * Helper function
-     * @param deltaTime
-     * @param forwardWorld
-     * @param surfaceNormal
-     * @param currentVelocity
-     * @param surfaceVelocity
-     * @param desiredVelocity
-     * @param upWorld
-     * @returns
+     * Helper function to calculate velocity based on surface informations and current velocity state and target
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param forwardWorld character forward in world coordinates
+     * @param surfaceNormal surface normal direction
+     * @param currentVelocity current velocity
+     * @param surfaceVelocity velocity induced by the surface
+     * @param desiredVelocity desired character velocity
+     * @param upWorld up vector in world space
+     * @returns a new velocity vector
      */
     public calculateMovement(
         deltaTime: number,
