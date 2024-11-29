@@ -40,14 +40,12 @@ Splat readSplat(float splatIndex)
 {
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
-#if SH_DEGREE > 0
-    ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
-#endif
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #if SH_DEGREE > 0
+    ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
     splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
 #if SH_DEGREE > 1
@@ -83,7 +81,7 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
     SH_C3[5] = 1.445305721;
     SH_C3[6] = -0.59004358;
 
-	vec3 result = SH_C0 * sh[0];
+	vec3 result = /*SH_C0 * */sh[0];
 
 #if SH_DEGREE > 0
     float x = dir.x;
@@ -171,7 +169,7 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     sh[15] = vec3(sh10.z, sh10.w, sh11.x);    
 #endif
 
-    return color + computeColorFromSHDegree(dir, sh);
+    return computeColorFromSHDegree(dir, sh);
 }
 #else
 vec3 computeSH(Splat splat, vec3 color, vec3 dir)

@@ -13,7 +13,6 @@ attribute position: vec2f;
 uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
-uniform vEyePosition: vec4f;
 
 // textures
 var covariancesATexture: texture_2d<f32>;
@@ -47,7 +46,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vPosition = input.position;
 
 #if SH_DEGREE > 0
-    let dir: vec3f = normalize(worldPos.xyz - uniforms.vEyePosition.xyz);
+    let dir: vec3f = normalize(worldPos.xyz - scene.vEyePosition.xyz);
     vertexOutputs.vColor = vec4f(computeSH(splat, splat.color.xyz, dir), 1.0);
 #else
     vertexOutputs.vColor = splat.color;

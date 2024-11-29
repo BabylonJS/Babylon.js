@@ -62,7 +62,7 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 16>) -> vec3f
         -0.59004358
     );
 
-	var result: vec3f = SH_C0 * sh[0];
+	var result: vec3f = /*SH_C0 * */sh[0];
 
 #if SH_DEGREE > 0
     let x: f32 = dir.x;
