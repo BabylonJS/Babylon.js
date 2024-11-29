@@ -21,9 +21,15 @@ uniform sampler2D covariancesBTexture;
 uniform sampler2D centersTexture;
 uniform sampler2D colorsTexture;
 
+#if SH_DEGREE > 0
 uniform highp usampler2D shTexture0;
+#endif
+#if SH_DEGREE > 1
 uniform highp usampler2D shTexture1;
+#endif
+#if SH_DEGREE > 2
 uniform highp usampler2D shTexture2;
+#endif
 
 // Output
 varying vec4 vColor;
