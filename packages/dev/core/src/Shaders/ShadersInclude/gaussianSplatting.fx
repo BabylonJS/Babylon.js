@@ -12,7 +12,7 @@ vec2 getDataUV(float index, vec2 textureSize) {
     return vec2((x + 0.5) / textureSize.x, (y + 0.5) / textureSize.y);
 }
 
-#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+#if SH_DEGREE > 0
 ivec2 getDataUVint(float index, vec2 textureSize) {
     float y = floor(index / textureSize.x);
     float x = index - y * textureSize.x;
@@ -40,7 +40,9 @@ Splat readSplat(float splatIndex)
 {
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
+#if SH_DEGREE > 0
     ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
+#endif
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
