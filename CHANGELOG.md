@@ -1,5 +1,31 @@
 # Changelog
 
+## 7.37.0
+
+### Core
+
+- Snapshot rendering helper: add support for gaussian splatting meshes - by [Popov72](https://github.com/Popov72) ([#15906](https://github.com/BabylonJS/Babylon.js/pull/15906))
+- feat: add normed 16 bit texture formats - by [pohlt](https://github.com/pohlt) ([#15895](https://github.com/BabylonJS/Babylon.js/pull/15895))
+- Parallel Compilation with no engine - by [RaananW](https://github.com/RaananW) ([#15898](https://github.com/BabylonJS/Babylon.js/pull/15898))
+
+### GUI Editor
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Node Editor
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Playground
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Serializers
+
+
+### Viewer
+
+
 ## 7.36.0
 
 ### Core
