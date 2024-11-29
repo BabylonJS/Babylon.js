@@ -57,16 +57,21 @@ export class DrawWrapper {
 
     /**
      * Dispose the effect wrapper and its resources
+     * @param immediate if the effect should be disposed immediately or on the next frame.
+     * If dispose() is not called during a scene or engine dispose, we want to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
-    public dispose(): void {
+    public dispose(immediate = false): void {
         if (this.effect) {
-            // We want to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
             const effect = this.effect;
-            TimingTools.SetImmediate(() => {
-                effect.getEngine().onEndFrameObservable.addOnce(() => {
-                    effect.dispose();
+            if (immediate) {
+                effect.dispose();
+            } else {
+                TimingTools.SetImmediate(() => {
+                    effect.getEngine().onEndFrameObservable.addOnce(() => {
+                        effect.dispose();
+                    });
                 });
-            });
+            }
             this.effect = null;
         }
         this.drawContext?.dispose();

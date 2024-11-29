@@ -2180,13 +2180,14 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
-     * Disposes all the submeshes of the current meshnp
+     * Disposes all the submeshes of the current mesh
+     * @param immediate should dispose the effects immediately or not
      * @returns the current mesh
      */
-    public releaseSubMeshes(): AbstractMesh {
+    public releaseSubMeshes(immediate = false): AbstractMesh {
         if (this.subMeshes) {
             while (this.subMeshes.length) {
-                this.subMeshes[0].dispose();
+                this.subMeshes[0].dispose(immediate);
             }
         } else {
             this.subMeshes = [] as SubMesh[];
@@ -2283,7 +2284,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         // SubMeshes
         if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {
-            this.releaseSubMeshes();
+            this.releaseSubMeshes(true);
         }
 
         // Query

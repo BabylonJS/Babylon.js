@@ -195,6 +195,13 @@ export class Effect implements IDisposable {
 
     private _isDisposed = false;
 
+    /**
+     * Gets a boolean indicating that the effect was already disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
+
     /** @internal */
     public _refCount = 1;
 
