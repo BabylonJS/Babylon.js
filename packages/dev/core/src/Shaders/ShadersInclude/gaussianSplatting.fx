@@ -12,11 +12,13 @@ vec2 getDataUV(float index, vec2 textureSize) {
     return vec2((x + 0.5) / textureSize.x, (y + 0.5) / textureSize.y);
 }
 
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 ivec2 getDataUVint(float index, vec2 textureSize) {
     float y = floor(index / textureSize.x);
     float x = index - y * textureSize.x;
     return ivec2(uint(x + 0.5), uint(y + 0.5));
 }
+#endif
 
 struct Splat {
     vec4 center;
@@ -167,7 +169,7 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     sh[15] = vec3(sh10.z, sh10.w, sh11.x);    
 #endif
 
-    return computeColorFromSHDegree(dir, sh);
+    return color + computeColorFromSHDegree(dir, sh);
 }
 #else
 vec3 computeSH(Splat splat, vec3 color, vec3 dir)
