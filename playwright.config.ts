@@ -90,6 +90,11 @@ export default defineConfig({
             testMatch: "**/*.sandbox.test.ts",
             use: getUseDefinition("Sandbox"),
         },
+        {
+            name: "graphTools",
+            testMatch: "**/*.tools.test.ts",
+            use: getUseDefinition("Graph Tools"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
