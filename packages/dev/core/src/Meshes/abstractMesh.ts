@@ -670,7 +670,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return;
         }
 
-        this.resetDrawCache();
+        this.resetDrawCache(undefined, value == null);
         this._unBindEffect();
     }
 
@@ -1257,14 +1257,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
      * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
+     * @param immediate If true, the effect will be released immediately, otherwise it will be released at the next frame
      */
-    public resetDrawCache(passId?: number): void {
+    public resetDrawCache(passId?: number, immediate = false): void {
         if (!this.subMeshes) {
             return;
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache(passId, true);
+            subMesh.resetDrawCache(passId, immediate);
         }
     }
 
