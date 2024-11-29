@@ -120,6 +120,11 @@ export class NodeLink {
             endY = (rectB.top - yOffset + 0.5 * rectB.height) / zoom;
         }
 
+        // We need a volume to allow gradient to work
+        if (startY === endY) {
+            endY += 0.01;
+        }
+
         if (straight) {
             this._path.setAttribute("d", `M${startX},${startY} L${endX},${endY}`);
             this._path.setAttribute("stroke-dasharray", "10, 10");

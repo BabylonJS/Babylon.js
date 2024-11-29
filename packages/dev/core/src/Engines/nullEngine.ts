@@ -169,6 +169,7 @@ export class NullEngine extends Engine {
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: 128,
             disableMorphTargetTexture: false,
+            textureNorm16: false,
         };
 
         this._features = {

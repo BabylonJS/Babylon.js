@@ -874,6 +874,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             textureMaxLevel: true,
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
             disableMorphTargetTexture: false,
+            textureNorm16: false, // in the works: https://github.com/gpuweb/gpuweb/issues/3001
         };
 
         this._features = {
