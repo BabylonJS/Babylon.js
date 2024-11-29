@@ -61,9 +61,9 @@ export class SubMesh implements ICullable {
     /**
      * @internal
      */
-    public _removeDrawWrapper(passId: number, disposeWrapper = true): void {
+    public _removeDrawWrapper(passId: number, disposeWrapper = true, immediate = false): void {
         if (disposeWrapper) {
-            this._drawWrappers[passId]?.dispose();
+            this._drawWrappers[passId]?.dispose(immediate);
         }
         this._drawWrappers[passId] = undefined as any;
     }
@@ -119,7 +119,7 @@ export class SubMesh implements ICullable {
     public resetDrawCache(passId?: number, immediate = false): void {
         if (this._drawWrappers) {
             if (passId !== undefined) {
-                this._removeDrawWrapper(passId);
+                this._removeDrawWrapper(passId, true, immediate);
                 return;
             } else {
                 for (const drawWrapper of this._drawWrappers) {
