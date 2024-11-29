@@ -5,6 +5,7 @@ import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "./effect";
 import type { MaterialDefines } from "./materialDefines";
+import { TimingTools } from "core/Misc/timingTools";
 
 /** @internal */
 export class DrawWrapper {
@@ -56,12 +57,17 @@ export class DrawWrapper {
 
     /**
      * Dispose the effect wrapper and its resources
-     * @param disposeEffect true by default to dispose the underlying effect
+     * @param delayDisposeEffect false by default to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
-    public dispose(disposeEffect = true): void {
+    public dispose(delayDisposeEffect = false): void {
         if (this.effect) {
-            if (disposeEffect) {
+            if (!delayDisposeEffect) {
                 this.effect.dispose();
+            } else {
+                const effect = this.effect;
+                TimingTools.SetImmediate(() => {
+                    effect.dispose();
+                });
             }
             this.effect = null;
         }

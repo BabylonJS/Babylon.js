@@ -61,9 +61,9 @@ export class SubMesh implements ICullable {
     /**
      * @internal
      */
-    public _removeDrawWrapper(passId: number, disposeWrapper = true, disposeEffect = true): void {
+    public _removeDrawWrapper(passId: number, disposeWrapper = true, delaydisposeEffect = false): void {
         if (disposeWrapper) {
-            this._drawWrappers[passId]?.dispose(disposeEffect);
+            this._drawWrappers[passId]?.dispose(delaydisposeEffect);
         }
         this._drawWrappers[passId] = undefined as any;
     }
@@ -114,16 +114,16 @@ export class SubMesh implements ICullable {
     /**
      * Resets the draw wrappers cache
      * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
-     * @param disposeEffect If true, the effect will be disposed
+     * @param delayDisposeEffect false by default to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
-    public resetDrawCache(passId?: number, disposeEffect = true): void {
+    public resetDrawCache(passId?: number, delayDisposeEffect = false): void {
         if (this._drawWrappers) {
             if (passId !== undefined) {
-                this._removeDrawWrapper(passId, true, disposeEffect);
+                this._removeDrawWrapper(passId, true, delayDisposeEffect);
                 return;
             } else {
                 for (const drawWrapper of this._drawWrappers) {
-                    drawWrapper?.dispose(disposeEffect);
+                    drawWrapper?.dispose(delayDisposeEffect);
                 }
             }
         }
@@ -698,9 +698,9 @@ export class SubMesh implements ICullable {
 
     /**
      * Release associated resources
-     * @param disposeEffects defines if effects should be disposed as well
+     * @param delayDisposeEffects false by default to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
-    public dispose(disposeEffects = true): void {
+    public dispose(delayDisposeEffects = false): void {
         if (this._linesIndexBuffer) {
             this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
             this._linesIndexBuffer = null;
@@ -710,7 +710,7 @@ export class SubMesh implements ICullable {
         const index = this._mesh.subMeshes.indexOf(this);
         this._mesh.subMeshes.splice(index, 1);
 
-        this.resetDrawCache(undefined, disposeEffects);
+        this.resetDrawCache(undefined, delayDisposeEffects);
     }
 
     /**
