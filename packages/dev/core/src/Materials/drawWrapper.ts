@@ -66,7 +66,9 @@ export class DrawWrapper {
             } else {
                 const effect = this.effect;
                 TimingTools.SetImmediate(() => {
-                    effect.dispose();
+                    this.effect?.getEngine().onEndFrameObservable.addOnce(() => {
+                        effect.dispose();
+                    });
                 });
             }
             this.effect = null;

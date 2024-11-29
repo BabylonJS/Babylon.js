@@ -1466,9 +1466,14 @@ export class Effect implements IDisposable {
 
     /**
      * Release all associated resources.
+     * @param force specifies if the effect must be released no matter what
      **/
-    public dispose() {
-        this._refCount--;
+    public dispose(force = false) {
+        if (force) {
+            this._refCount = 0;
+        } else {
+            this._refCount--;
+        }
 
         if (this._refCount > 0 || this._isDisposed) {
             // Others are still using the effect or the effect was already disposed
