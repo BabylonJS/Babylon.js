@@ -2181,12 +2181,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     /**
      * Disposes all the submeshes of the current meshnp
+     * @param disposeEffects If the effects should be disposed as well
      * @returns the current mesh
      */
-    public releaseSubMeshes(): AbstractMesh {
+    public releaseSubMeshes(disposeEffects = true): AbstractMesh {
         if (this.subMeshes) {
             while (this.subMeshes.length) {
-                this.subMeshes[0].dispose();
+                this.subMeshes[0].dispose(disposeEffects);
             }
         } else {
             this.subMeshes = [] as SubMesh[];

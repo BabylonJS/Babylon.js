@@ -54,9 +54,15 @@ export class DrawWrapper {
         }
     }
 
-    public dispose(): void {
+    /**
+     * Dispose the effect wrapper and its resources
+     * @param disposeEffect true by default to dispose the underlying effect
+     */
+    public dispose(disposeEffect = true): void {
         if (this.effect) {
-            this.effect.dispose();
+            if (disposeEffect) {
+                this.effect.dispose();
+            }
             this.effect = null;
         }
         this.drawContext?.dispose();

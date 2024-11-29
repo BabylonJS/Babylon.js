@@ -1533,7 +1533,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        this.releaseSubMeshes();
+        // We do not want to wipe the shader cache here
+        // The shader will be reused or dispose if a new one is required
+        this.releaseSubMeshes(false);
         return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
     }
 
