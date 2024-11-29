@@ -118,7 +118,7 @@ export class SubMesh implements ICullable {
     public resetDrawCache(passId?: number): void {
         if (this._drawWrappers) {
             if (passId !== undefined) {
-                this._removeDrawWrapper(passId, true);
+                this._removeDrawWrapper(passId);
                 return;
             } else {
                 for (const drawWrapper of this._drawWrappers) {
