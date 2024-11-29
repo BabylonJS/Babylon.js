@@ -285,6 +285,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             },
             false
         );
+        this._colorShader.setDefine("INSTANCES", this._useInstances);
         this._colorShader.doNotSerialize = true;
 
         this._colorShader.reservedDataStore = {
