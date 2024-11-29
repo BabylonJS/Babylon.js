@@ -2181,13 +2181,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     /**
      * Disposes all the submeshes of the current meshnp
-     * @param delayDisposeEffects false by default to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      * @returns the current mesh
      */
-    public releaseSubMeshes(delayDisposeEffects = false): AbstractMesh {
+    public releaseSubMeshes(): AbstractMesh {
         if (this.subMeshes) {
             while (this.subMeshes.length) {
-                this.subMeshes[0].dispose(delayDisposeEffects);
+                this.subMeshes[0].dispose();
             }
         } else {
             this.subMeshes = [] as SubMesh[];

@@ -57,20 +57,16 @@ export class DrawWrapper {
 
     /**
      * Dispose the effect wrapper and its resources
-     * @param delayDisposeEffect false by default to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
-    public dispose(delayDisposeEffect = false): void {
+    public dispose(): void {
         if (this.effect) {
-            if (!delayDisposeEffect) {
-                this.effect.dispose();
-            } else {
-                const effect = this.effect;
-                TimingTools.SetImmediate(() => {
-                    this.effect?.getEngine().onEndFrameObservable.addOnce(() => {
-                        effect.dispose();
-                    });
+            // We want to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
+            const effect = this.effect;
+            TimingTools.SetImmediate(() => {
+                this.effect?.getEngine().onEndFrameObservable.addOnce(() => {
+                    effect.dispose();
                 });
-            }
+            });
             this.effect = null;
         }
         this.drawContext?.dispose();
