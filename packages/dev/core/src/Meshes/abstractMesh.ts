@@ -1264,7 +1264,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache(passId);
+            subMesh.resetDrawCache(passId, true);
         }
     }
 
