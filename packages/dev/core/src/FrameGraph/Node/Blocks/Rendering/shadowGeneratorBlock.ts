@@ -5,6 +5,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphShadowGeneratorTask } from "../../../Tasks/Rendering/shadowGeneratorTask";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
 
 /**
  * Block that generate shadows through a shadow generator
@@ -76,6 +77,37 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.useRedTextureFormat = value;
     }
 
+    /** Sets the bias */
+    @editableInPropertyPage("Bias", PropertyTypeForEdition.Float, "PROPERTIES")
+    public get bias() {
+        return this._frameGraphTask.bias;
+    }
+
+    public set bias(value: number) {
+        this._frameGraphTask.bias = value;
+    }
+
+    /** Sets the filter method */
+    @editableInPropertyPage("Filter", PropertyTypeForEdition.List, "PROPERTIES", {
+        options: [
+            { label: "None", value: ShadowGenerator.FILTER_NONE },
+            { label: "Exponential", value: ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP },
+            { label: "Poisson Sampling", value: ShadowGenerator.FILTER_POISSONSAMPLING },
+            { label: "Blur exponential", value: ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP },
+            { label: "Close exponential", value: ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP },
+            { label: "Blur close exponential", value: ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP },
+            { label: "PCF", value: ShadowGenerator.FILTER_PCF },
+            { label: "PCSS", value: ShadowGenerator.FILTER_PCSS },
+        ],
+    })
+    public get filter() {
+        return this._frameGraphTask.filter;
+    }
+
+    public set filter(value: number) {
+        this._frameGraphTask.filter = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -124,6 +156,8 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.mapSize = ${this.mapSize};`);
         codes.push(`${this._codeVariableName}.useFloat32TextureType = ${this.useFloat32TextureType};`);
         codes.push(`${this._codeVariableName}.useRedTextureFormat = ${this.useRedTextureFormat};`);
+        codes.push(`${this._codeVariableName}.bias = ${this.bias};`);
+        codes.push(`${this._codeVariableName}.filter = ${this.filter};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -132,6 +166,8 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
         serializationObject.mapSize = this.mapSize;
         serializationObject.useFloat32TextureType = this.useFloat32TextureType;
         serializationObject.useRedTextureFormat = this.useRedTextureFormat;
+        serializationObject.bias = this.bias;
+        serializationObject.filter = this.filter;
         return serializationObject;
     }
 
@@ -140,6 +176,8 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
         this.mapSize = serializationObject.mapSize;
         this.useFloat32TextureType = serializationObject.useFloat32TextureType;
         this.useRedTextureFormat = serializationObject.useRedTextureFormat;
+        this.bias = serializationObject.bias;
+        this.filter = serializationObject.filter;
     }
 }
 

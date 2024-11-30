@@ -80,6 +80,44 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         this._createShadowGenerator();
     }
 
+    private _bias = 0.01;
+    /**
+     * The bias to apply to the shadow map.
+     */
+    public get bias() {
+        return this._bias;
+    }
+
+    public set bias(value: number) {
+        if (value === this._bias) {
+            return;
+        }
+
+        this._bias = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.bias = value;
+        }
+    }
+
+    private _filter = ShadowGenerator.FILTER_PCF;
+    /**
+     * The filter to apply to the shadow map.
+     */
+    public get filter() {
+        return this._filter;
+    }
+
+    public set filter(value: number) {
+        if (value === this._filter) {
+            return;
+        }
+
+        this._filter = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.filter = value;
+        }
+    }
+
     /**
      * The output shadow generator.
      */
@@ -92,6 +130,8 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         this._shadowGenerator = undefined;
         if (this._light !== undefined) {
             this._shadowGenerator = new ShadowGenerator(this._mapSize, this._light, this._useFloat32TextureType, undefined, this._useRedTextureFormat);
+            this._shadowGenerator.bias = this._bias;
+            this._shadowGenerator.filter = this._filter;
             this._shadowGenerator.getShadowMap()!._disableEngineStages = true;
             (this.outputShadowGenerator as WritableObject<ShadowGenerator>) = this._shadowGenerator;
         }
