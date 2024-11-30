@@ -23,9 +23,11 @@ import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { BoundingBox } from "core/Culling/boundingBox";
 
 const useWebGPU = false;
 const debugTextures = false;
+const logErrorTrace = true;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -182,6 +184,14 @@ export class PreviewManager {
             new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
         }
 
+        const worldExtends = this._scene.getWorldExtends();
+        const diag = worldExtends.max.subtract(worldExtends.min).length();
+
+        const findLightPosition = (lightDir: Vector3) => {
+            const bb = new BoundingBox(worldExtends.min, worldExtends.max);
+            return bb.center.add(lightDir.scale(-diag * 0.5));
+        };
+
         if (this._globalState.directionalLight0) {
             const dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
             dir0.intensity = 0.9;
@@ -189,8 +199,8 @@ export class PreviewManager {
             dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.parent = this._lightParent;
             dir0.shadowMinZ = 0;
-            dir0.shadowMaxZ = 3;
-            dir0.position.scaleInPlace(1.5);
+            dir0.shadowMaxZ = diag;
+            dir0.position = findLightPosition(dir0.direction);
         }
 
         if (this._globalState.directionalLight1) {
@@ -200,8 +210,8 @@ export class PreviewManager {
             dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.parent = this._lightParent;
             dir1.shadowMinZ = 0;
-            dir1.shadowMaxZ = 3;
-            dir1.position.scaleInPlace(1.5);
+            dir1.shadowMaxZ = diag;
+            dir1.position = findLightPosition(dir1.direction);
         }
 
         this._scene.meshes.forEach((m) => {
@@ -351,6 +361,9 @@ export class PreviewManager {
             await this._nodeRenderGraph.whenReadyAsync();
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
+            if (logErrorTrace) {
+                (console as any).log(err);
+            }
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
         }
     }
