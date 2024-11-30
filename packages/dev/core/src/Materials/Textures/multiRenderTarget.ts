@@ -263,7 +263,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
             } else {
-                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
+                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_BYTE);
             }
 
             if (options && options.samplingModes && options.samplingModes[i] !== undefined) {

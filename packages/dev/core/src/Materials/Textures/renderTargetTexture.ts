@@ -553,7 +553,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         isCube = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true,

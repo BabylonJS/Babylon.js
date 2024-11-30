@@ -874,6 +874,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             textureMaxLevel: true,
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
             disableMorphTargetTexture: false,
+            textureNorm16: false, // in the works: https://github.com/gpuweb/gpuweb/issues/3001
         };
 
         this._features = {
@@ -2270,7 +2271,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.createMipMaps = options.createMipMaps;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
@@ -2279,7 +2280,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fullOptions.label = options.label;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
             fullOptions.samples = 1;
@@ -2293,7 +2294,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
@@ -3406,8 +3407,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._endCurrentRenderPass();
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         this._currentRenderTarget = null;
@@ -3424,6 +3429,25 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRT([]);
         this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
+    }
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture.texture);
+        }
+    }
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param _texture The render target texture containing the MSAA texture to resolve
+     */
+    public resolveFramebuffer(_texture: RenderTargetWrapper): void {
+        throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
     }
 
     /**

@@ -231,7 +231,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
         texture.textureType !== Constants.TEXTURETYPE_FLOAT &&
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE &&
-        texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT &&
+        texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE &&
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INTEGER &&
         texture.textureType !== -1
     ) {

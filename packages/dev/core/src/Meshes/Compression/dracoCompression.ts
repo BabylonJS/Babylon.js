@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { BoundingInfo } from "../../Culling/boundingInfo";
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
 import type { Nullable } from "../../types";
@@ -428,10 +429,15 @@ export class DracoCompression implements IDisposable {
         scene: Scene,
         data: ArrayBuffer | ArrayBufferView,
         attributes: { [kind: string]: number },
-        gltfNormalizedOverride: { [kind: string]: boolean }
+        gltfNormalizedOverride: { [kind: string]: boolean },
+        boundingInfo: Nullable<BoundingInfo>
     ): Promise<Geometry> {
         const meshData = await this.decodeMeshToMeshDataAsync(data, attributes, gltfNormalizedOverride);
         const geometry = new Geometry(name, scene);
+        if (boundingInfo) {
+            geometry._boundingInfo = boundingInfo;
+            geometry.useBoundingInfoFromGeometry = true;
+        }
         if (meshData.indices) {
             geometry.setIndices(meshData.indices);
         }

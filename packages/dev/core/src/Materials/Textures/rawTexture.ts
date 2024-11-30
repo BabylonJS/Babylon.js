@@ -40,7 +40,7 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags?: number,
         useSRGBBuffer?: boolean
     ) {
@@ -191,7 +191,7 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
@@ -220,7 +220,7 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
@@ -248,7 +248,7 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         useSRGBBuffer: boolean = false
     ): RawTexture {
         return new RawTexture(

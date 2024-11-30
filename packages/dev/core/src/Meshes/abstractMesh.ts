@@ -670,7 +670,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return;
         }
 
-        this.resetDrawCache();
+        this.resetDrawCache(undefined, value == null);
         this._unBindEffect();
     }
 
@@ -1257,14 +1257,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
      * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
+     * @param immediate If true, the effect will be released immediately, otherwise it will be released at the next frame
      */
-    public resetDrawCache(passId?: number): void {
+    public resetDrawCache(passId?: number, immediate = false): void {
         if (!this.subMeshes) {
             return;
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache(passId);
+            subMesh.resetDrawCache(passId, immediate);
         }
     }
 
@@ -2180,13 +2181,14 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
-     * Disposes all the submeshes of the current meshnp
+     * Disposes all the submeshes of the current mesh
+     * @param immediate should dispose the effects immediately or not
      * @returns the current mesh
      */
-    public releaseSubMeshes(): AbstractMesh {
+    public releaseSubMeshes(immediate = false): AbstractMesh {
         if (this.subMeshes) {
             while (this.subMeshes.length) {
-                this.subMeshes[0].dispose();
+                this.subMeshes[0].dispose(immediate);
             }
         } else {
             this.subMeshes = [] as SubMesh[];
@@ -2283,7 +2285,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         // SubMeshes
         if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {
-            this.releaseSubMeshes();
+            this.releaseSubMeshes(true);
         }
 
         // Query
@@ -2698,7 +2700,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             facetData.facetPositions = [] as Vector3[];
             facetData.facetNormals = [] as Vector3[];
             facetData.facetPartitioning = new Array<number[]>();
-            facetData.facetParameters = null;
+            facetData.facetParameters = {};
             facetData.depthSortedIndices = new Uint32Array(0);
         }
         return this;

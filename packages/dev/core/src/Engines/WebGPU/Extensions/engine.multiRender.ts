@@ -40,6 +40,19 @@ declare module "../../abstractEngine" {
         updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
 
         /**
+         * Generates mipmaps for the texture of the (multi) render target
+         * @param texture The render target containing the textures to generate the mipmaps for
+         */
+        generateMipMapsMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
+         * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
+         * Note that if "texture" is not a MSAA render target, no resolve is performed.
+         * @param texture The render target texture containing the MSAA textures to resolve
+         */
+        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -75,16 +88,10 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         onBeforeUnbind();
     }
 
-    const attachments = rtWrapper._attachments!;
-    const count = attachments.length;
-
     this._endCurrentRenderPass();
 
-    for (let i = 0; i < count; i++) {
-        const texture = rtWrapper.textures![i];
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube && !texture.is3D) {
-            this._generateMipmaps(texture);
-        }
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsMultiFramebuffer(rtWrapper);
     }
 
     this._currentRenderTarget = null;
@@ -195,7 +202,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         }
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
@@ -310,6 +317,28 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     rtWrapper._samples = samples;
 
     return samples;
+};
+
+WebGPUEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGPURenderTargetWrapper;
+
+    if (!rtWrapper.isMulti) {
+        return;
+    }
+
+    const attachments = rtWrapper._attachments!;
+    const count = attachments.length;
+
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
+        if (texture.generateMipMaps && !texture.isCube && !texture.is3D) {
+            this._generateMipmaps(texture);
+        }
+    }
+};
+
+WebGPUEngine.prototype.resolveMultiFramebuffer = function (_texture: RenderTargetWrapper): void {
+    throw new Error("resolveMultiFramebuffer is not yet implemented in WebGPU!");
 };
 
 WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void {

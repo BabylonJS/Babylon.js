@@ -41,6 +41,19 @@ declare module "../../Engines/abstractEngine" {
         updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
 
         /**
+         * Generates mipmaps for the texture of the (multi) render target
+         * @param texture The render target containing the textures to generate the mipmaps for
+         */
+        generateMipMapsMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
+         * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
+         * Note that if "texture" is not a MSAA render target, no resolve is performed.
+         * @param texture The render target texture containing the MSAA textures to resolve
+         */
+        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+
+        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -108,43 +121,12 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
 ): void {
     this._currentRenderTarget = null;
 
-    // If MSAA, we need to bitblt back to main texture
-    const gl = this._gl;
-
-    const attachments = rtWrapper._attachments!;
-    const count = attachments.length;
-
-    if (rtWrapper._MSAAFramebuffer) {
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
-
-        for (let i = 0; i < count; i++) {
-            const texture = rtWrapper.textures![i];
-
-            for (let j = 0; j < count; j++) {
-                attachments[j] = gl.NONE;
-            }
-
-            attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-            gl.readBuffer(attachments[i]);
-            gl.drawBuffers(attachments);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
-        }
-
-        for (let i = 0; i < count; i++) {
-            attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-        }
-
-        gl.drawBuffers(attachments);
+    if (!rtWrapper.disableAutomaticMSAAResolve) {
+        this.resolveMultiFramebuffer(rtWrapper);
     }
 
-    for (let i = 0; i < count; i++) {
-        const texture = rtWrapper.textures![i];
-        if (texture?.generateMipMaps && !disableGenerateMipMaps && !texture?.isCube && !texture?.is3D) {
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
-        }
+    if (!disableGenerateMipMaps) {
+        this.generateMipMapsMultiFramebuffer(rtWrapper);
     }
 
     if (onBeforeUnbind) {
@@ -167,7 +149,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let textureCount = 1;
     let samples = 1;
 
-    const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    const defaultType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
@@ -263,7 +245,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
         const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
@@ -353,13 +335,13 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
-                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
                 glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
-                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
@@ -530,4 +512,60 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     rtWrapper._samples = samples;
 
     return samples;
+};
+
+ThinEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGLRenderTargetWrapper;
+    const gl = this._gl;
+
+    if (!rtWrapper.isMulti) {
+        return;
+    }
+
+    for (let i = 0; i < rtWrapper._attachments!.length; i++) {
+        const texture = rtWrapper.textures![i];
+        if (texture?.generateMipMaps && !texture?.isCube && !texture?.is3D) {
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+        }
+    }
+};
+
+ThinEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWrapper): void {
+    const rtWrapper = texture as WebGLRenderTargetWrapper;
+    const gl = this._gl;
+
+    if (!rtWrapper._MSAAFramebuffer || !rtWrapper.isMulti) {
+        return;
+    }
+
+    let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+    bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
+
+    const attachments = rtWrapper._attachments!;
+    const count = attachments.length;
+
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
+
+        for (let j = 0; j < count; j++) {
+            attachments[j] = gl.NONE;
+        }
+
+        attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+        gl.readBuffer(attachments[i]);
+        gl.drawBuffers(attachments);
+        gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
+    }
+
+    for (let i = 0; i < count; i++) {
+        attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+    }
+
+    gl.drawBuffers(attachments);
 };

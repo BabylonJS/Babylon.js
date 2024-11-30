@@ -366,7 +366,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#14",
+            "playgroundId": "#T90MQ4#19",
             "renderCount": 50,
             "referenceImage": "LineEdgesRenderer.png"
         },
@@ -2283,6 +2283,11 @@
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Normed 16 bits texture formats",
+            "playgroundId": "#SOCPNB#10",
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

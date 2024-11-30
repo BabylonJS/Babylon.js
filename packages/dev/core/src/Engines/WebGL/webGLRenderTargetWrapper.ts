@@ -45,26 +45,18 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      */
     public _currentLOD = 0;
 
-    public override get depthStencilTexture() {
-        return this._depthStencilTexture;
-    }
-
-    public override set depthStencilTexture(texture: Nullable<InternalTexture>) {
-        this._depthStencilTexture = texture;
-        this._generateDepthBuffer = this._generateStencilBuffer = false;
+    public override setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true) {
+        super.setDepthStencilTexture(texture, disposeExisting);
 
         if (!texture) {
             return;
         }
 
-        this._generateDepthBuffer = true;
-        this._generateStencilBuffer = HasStencilAspect(texture.format);
-
         const engine = this._engine as ThinEngine;
         const gl = this._context as WebGL2RenderingContext;
         const hardwareTexture = texture._hardwareTexture as Nullable<WebGLHardwareTexture>;
 
-        if (texture && hardwareTexture && texture._autoMSAAManagement && this._MSAAFramebuffer) {
+        if (hardwareTexture && texture._autoMSAAManagement && this._MSAAFramebuffer) {
             const currentFB = engine._currentFramebuffer;
             engine._bindUnboundFramebuffer(this._MSAAFramebuffer);
             gl.framebufferRenderbuffer(
@@ -281,6 +273,17 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         } else if (texture.isCube) {
             this._bindTextureRenderTarget(this.textures[index], index, this.faceIndices[index]);
         }
+    }
+
+    public override resolveMSAATextures(): void {
+        const engine = this._engine as ThinEngine;
+        const currentFramebuffer = engine._currentFramebuffer;
+
+        engine._bindUnboundFramebuffer(this._MSAAFramebuffer);
+
+        super.resolveMSAATextures();
+
+        engine._bindUnboundFramebuffer(currentFramebuffer);
     }
 
     public override dispose(disposeOnlyFramebuffers = this._disposeOnlyFramebuffers): void {

@@ -61,9 +61,9 @@ export class SubMesh implements ICullable {
     /**
      * @internal
      */
-    public _removeDrawWrapper(passId: number, disposeWrapper = true) {
+    public _removeDrawWrapper(passId: number, disposeWrapper = true, immediate = false): void {
         if (disposeWrapper) {
-            this._drawWrappers[passId]?.dispose();
+            this._drawWrappers[passId]?.dispose(immediate);
         }
         this._drawWrappers[passId] = undefined as any;
     }
@@ -114,15 +114,16 @@ export class SubMesh implements ICullable {
     /**
      * Resets the draw wrappers cache
      * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
+     * @param immediate If true, the draw wrapper will dispose the effect immediately (false by default)
      */
-    public resetDrawCache(passId?: number): void {
+    public resetDrawCache(passId?: number, immediate = false): void {
         if (this._drawWrappers) {
             if (passId !== undefined) {
-                this._removeDrawWrapper(passId);
+                this._removeDrawWrapper(passId, true, immediate);
                 return;
             } else {
                 for (const drawWrapper of this._drawWrappers) {
-                    drawWrapper?.dispose();
+                    drawWrapper?.dispose(immediate);
                 }
             }
         }
@@ -697,8 +698,9 @@ export class SubMesh implements ICullable {
 
     /**
      * Release associated resources
+     * @param immediate If true, the effect will be disposed immediately (false by default)
      */
-    public dispose(): void {
+    public dispose(immediate = false): void {
         if (this._linesIndexBuffer) {
             this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
             this._linesIndexBuffer = null;
@@ -708,7 +710,7 @@ export class SubMesh implements ICullable {
         const index = this._mesh.subMeshes.indexOf(this);
         this._mesh.subMeshes.splice(index, 1);
 
-        this.resetDrawCache();
+        this.resetDrawCache(undefined, immediate);
     }
 
     /**

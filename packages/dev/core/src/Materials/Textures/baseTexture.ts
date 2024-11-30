@@ -676,10 +676,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get textureType(): number {
         if (!this._texture) {
-            return Constants.TEXTURETYPE_UNSIGNED_INT;
+            return Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
-        return this._texture.type !== undefined ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_INT;
+        return this._texture.type !== undefined ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
     }
 
     /**
