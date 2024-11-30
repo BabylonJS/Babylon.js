@@ -1124,7 +1124,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
+        const eyePosition = this._forcedViewPosition
+            ? this._forcedViewPosition
+            : this._mirroredCameraPosition
+              ? this._mirroredCameraPosition
+              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 

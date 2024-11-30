@@ -446,9 +446,9 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    public override getDepthMinZ(activeCamera: Camera): number {
+    public override getDepthMinZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || 1;
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? minZ : this._scene.getEngine().isNDCHalfZRange ? 0 : minZ;
     }
@@ -458,9 +458,9 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    public override getDepthMaxZ(activeCamera: Camera): number {
+    public override getDepthMaxZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || 10000;
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }

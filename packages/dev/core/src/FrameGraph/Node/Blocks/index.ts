@@ -1,6 +1,7 @@
 export * from "./elbowBlock";
 export * from "./inputBlock";
 export * from "./outputBlock";
+export * from "./resourceContainerBlock";
 
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
@@ -12,6 +13,7 @@ export * from "./PostProcesses/extractHighlightsPostProcessBlock";
 export * from "./Rendering/cullObjectsBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
+export * from "./Rendering/shadowGeneratorBlock";
 export * from "./Rendering/taaObjectRendererBlock";
 
 export * from "./Teleport/teleportInBlock";

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, NodeRenderGraphBlock, NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphInputBlock } from "core/index";
+import type { Nullable, NodeRenderGraphBlock, NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphInputBlock, IShadowLight, ShadowGenerator } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
 
@@ -29,6 +29,33 @@ export class NodeRenderGraphConnectionPoint {
     /** Gets the direction of the point */
     public get direction() {
         return this._direction;
+    }
+
+    /**
+     * Checks if the value is a texture handle
+     * @param value The value to check
+     * @returns True if the value is a texture handle
+     */
+    public static IsTextureHandle(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
+        return Number.isFinite(value);
+    }
+
+    /**
+     * Checks if the value is a shadow generator
+     * @param value The value to check
+     * @returns True if the value is a shadow generator
+     */
+    public static IsShadowGenerator(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
+        return (value as ShadowGenerator).getShadowMap !== undefined;
+    }
+
+    /**
+     * Checks if the value is a shadow light
+     * @param value The value to check
+     * @returns True if the value is a shadow light
+     */
+    public static IsShadowLight(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
+        return (value as IShadowLight).setShadowProjectionMatrix !== undefined;
     }
 
     /**

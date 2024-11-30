@@ -107,14 +107,14 @@ export interface IShadowLight extends Light {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    getDepthMinZ(activeCamera: Camera): number;
+    getDepthMinZ(activeCamera: Nullable<Camera>): number;
 
     /**
      * Gets the maxZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    getDepthMaxZ(activeCamera: Camera): number;
+    getDepthMaxZ(activeCamera: Nullable<Camera>): number;
 }
 
 /**
@@ -360,8 +360,8 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    public getDepthMinZ(activeCamera: Camera): number {
-        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+    public getDepthMinZ(activeCamera: Nullable<Camera>): number {
+        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || 1;
     }
 
     /**
@@ -369,8 +369,8 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    public getDepthMaxZ(activeCamera: Camera): number {
-        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+    public getDepthMaxZ(activeCamera: Nullable<Camera>): number {
+        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || 10000;
     }
 
     /**

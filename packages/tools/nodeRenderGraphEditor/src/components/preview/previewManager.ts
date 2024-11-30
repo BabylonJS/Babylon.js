@@ -56,10 +56,12 @@ export class PreviewManager {
                 this._currentType = -1;
             }
             this._refreshPreviewMesh();
+            this._prepareBackgroundHDR();
         });
 
         this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
             this._prepareLights();
+            this._createNodeRenderGraph();
         });
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
@@ -120,13 +122,15 @@ export class PreviewManager {
 
         this._scene = scene;
 
+        this._prepareBackgroundHDR();
+
         this._globalState.filesInput?.dispose();
         this._globalState.filesInput = new FilesInput(
             this._engine,
             null,
             (_, scene) => {
+                this._scene.dispose();
                 this._initScene(scene);
-                this._prepareScene();
             },
             null,
             null,
@@ -136,7 +140,8 @@ export class PreviewManager {
             () => {
                 this._reset();
             },
-            false
+            false,
+            true
         );
 
         this._lightParent = new TransformNode("LightParent", this._scene);
@@ -149,6 +154,8 @@ export class PreviewManager {
                 this._scene.render();
             }
         });
+
+        this._prepareScene();
 
         this._createNodeRenderGraph();
     }
@@ -181,6 +188,9 @@ export class PreviewManager {
             dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.parent = this._lightParent;
+            dir0.shadowMinZ = 0;
+            dir0.shadowMaxZ = 3;
+            dir0.position.scaleInPlace(1.5);
         }
 
         if (this._globalState.directionalLight1) {
@@ -189,7 +199,14 @@ export class PreviewManager {
             dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.parent = this._lightParent;
+            dir1.shadowMinZ = 0;
+            dir1.shadowMaxZ = 3;
+            dir1.position.scaleInPlace(1.5);
         }
+
+        this._scene.meshes.forEach((m) => {
+            m.receiveShadows = true;
+        });
     }
 
     private _createNodeRenderGraph() {
@@ -236,6 +253,15 @@ export class PreviewManager {
         this._scene.cameras.length = 0;
         this._scene.cameraToUseForPointers = null;
 
+        const directionalLights: DirectionalLight[] = [];
+        for (const light of this._scene.lights) {
+            if (light instanceof DirectionalLight) {
+                directionalLights.push(light);
+            }
+        }
+
+        let curLightIndex = 0;
+
         // Set default external inputs
         const allInputs = this._nodeRenderGraph.getInputBlocks();
         for (const input of allInputs) {
@@ -268,6 +294,11 @@ export class PreviewManager {
                 input.value = camera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
+            } else if (input.isShadowLight()) {
+                if (curLightIndex < directionalLights.length) {
+                    input.value = directionalLights[curLightIndex++];
+                    curLightIndex = curLightIndex % directionalLights.length;
+                }
             }
         }
 
@@ -350,6 +381,40 @@ export class PreviewManager {
     }
 
     private _prepareBackgroundHDR() {
+        this._hdrTexture = null as any;
+
+        let newHDRTexture: Nullable<CubeTexture> = null;
+
+        switch (this._globalState.envType) {
+            case PreviewType.Room:
+                newHDRTexture = new CubeTexture(PreviewManager.DefaultEnvironmentURL, this._scene);
+                break;
+            case PreviewType.Custom: {
+                const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const dataurl = evt.target!.result as string;
+                    newHDRTexture = new CubeTexture(dataurl, this._scene, undefined, false, undefined, undefined, undefined, undefined, undefined, ".env");
+                };
+                reader.readAsDataURL(blob);
+                break;
+            }
+        }
+
+        if (!newHDRTexture) {
+            return;
+        }
+
+        this._hdrTexture = newHDRTexture;
+
+        newHDRTexture.onLoadObservable.add(() => {
+            if (this._hdrTexture !== newHDRTexture) {
+                // The HDR texture has been changed in the meantime, so we don't need this one anymore
+                newHDRTexture!.dispose();
+            }
+        });
+
+        this._hdrTexture = newHDRTexture;
         this._scene.environmentTexture = this._hdrTexture;
     }
 
@@ -359,32 +424,11 @@ export class PreviewManager {
         this._prepareLights();
 
         this._frameCamera();
-        this._prepareBackgroundHDR();
     }
 
     public static DefaultEnvironmentURL = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
     private _refreshPreviewMesh(force?: boolean) {
-        switch (this._globalState.envType) {
-            case PreviewType.Room:
-                this._hdrTexture = new CubeTexture(PreviewManager.DefaultEnvironmentURL, this._scene);
-                if (this._hdrTexture) {
-                    this._prepareBackgroundHDR();
-                }
-                break;
-            case PreviewType.Custom: {
-                const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const dataurl = evt.target!.result as string;
-                    this._hdrTexture = new CubeTexture(dataurl, this._scene, undefined, false, undefined, undefined, undefined, undefined, undefined, ".env");
-                    this._prepareBackgroundHDR();
-                };
-                reader.readAsDataURL(blob);
-                break;
-            }
-        }
-
         if (this._currentType === this._globalState.previewType && this._currentType !== PreviewType.Custom && !force) {
             return;
         }
@@ -399,32 +443,27 @@ export class PreviewManager {
             case PreviewType.Box:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb").then((scene) => {
                     this._initScene(scene);
-                    this._prepareScene();
                 });
                 return;
             case PreviewType.Sphere:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb").then((scene) => {
                     this._initScene(scene);
-                    this._prepareScene();
                 });
                 break;
             case PreviewType.Cylinder:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb").then((scene) => {
                     this._initScene(scene);
-                    this._prepareScene();
                 });
                 return;
             case PreviewType.Plane: {
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb").then((scene) => {
                     this._initScene(scene);
-                    this._prepareScene();
                 });
                 break;
             }
             case PreviewType.ShaderBall:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb").then((scene) => {
                     this._initScene(scene);
-                    this._prepareScene();
                 });
                 return;
             case PreviewType.Custom:

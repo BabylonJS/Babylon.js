@@ -46,6 +46,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ObjectListBlock: "List of objects (meshes, particle systems, sprites)",
         CullBlock: "Culls a list of objects",
         CameraBlock: "Camera",
+        ResourceContainerBlock: "Container of resources (textures, buffers, shadow generators)",
+        ShadowLightBlock: "Shadow light (used by the shadow generator block)",
+        ShadowGeneratorBlock: "Generates shadows through a shadow generator",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -130,12 +133,20 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock", "TextureDepthStencilBlock", "ObjectListBlock", "CameraBlock"],
+            Inputs: [
+                "TextureBlock",
+                "TextureBackBufferBlock",
+                "TextureBackBufferDepthStencilBlock",
+                "TextureDepthStencilBlock",
+                "ObjectListBlock",
+                "CameraBlock",
+                "ShadowLightBlock",
+            ],
             Post_Processes: ["BlackAndWhiteBlock", "BloomBlock", "BlurBlock", "CircleOfConfusionBlock", "DepthOfFieldBlock", "ExtractHighlightsBlock"],
-            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock"],
+            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
             Output_Nodes: ["OutputBlock"],
-            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock", "TAAObjectRendererBlock"],
+            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock", "TAAObjectRendererBlock", "ShadowGeneratorBlock"],
         };
 
         // Create node menu

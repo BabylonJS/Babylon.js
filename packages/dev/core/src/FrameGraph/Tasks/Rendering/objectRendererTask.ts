@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext, ObjectRendererOptions } from "core/index";
+import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext, ObjectRendererOptions, ShadowGenerator } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
@@ -22,6 +22,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * The dependencies of the task (optional).
      */
     public dependencies?: FrameGraphTextureHandle[] = [];
+
+    /**
+     * The shadow generators used to render the objects (optional).
+     */
+    public shadowGenerators?: ShadowGenerator[] = [];
 
     private _camera: Camera;
 

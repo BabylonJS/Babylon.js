@@ -492,6 +492,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return this._renderTarget?._depthStencilTexture ?? null;
     }
 
+    /** @internal */
+    public _disableEngineStages = false;
+
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
      * or used a shadow, depth texture...
@@ -609,8 +612,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
             // Before clear
-            for (const step of this._scene!._beforeRenderTargetClearStage) {
-                step.action(this, this._currentFaceIndex, this._currentLayer);
+            if (!this._disableEngineStages) {
+                for (const step of this._scene!._beforeRenderTargetClearStage) {
+                    step.action(this, this._currentFaceIndex, this._currentLayer);
+                }
             }
 
             // Clear
@@ -625,15 +630,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
 
             // Before Camera Draw
-            for (const step of this._scene!._beforeRenderTargetDrawStage) {
-                step.action(this, this._currentFaceIndex, this._currentLayer);
+            if (!this._disableEngineStages) {
+                for (const step of this._scene!._beforeRenderTargetDrawStage) {
+                    step.action(this, this._currentFaceIndex, this._currentLayer);
+                }
             }
         });
 
         this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
             // After Camera Draw
-            for (const step of this._scene!._afterRenderTargetDrawStage) {
-                step.action(this, this._currentFaceIndex, this._currentLayer);
+            if (!this._disableEngineStages) {
+                for (const step of this._scene!._afterRenderTargetDrawStage) {
+                    step.action(this, this._currentFaceIndex, this._currentLayer);
+                }
             }
 
             const saveGenerateMipMaps = this._texture?.generateMipMaps ?? false;
@@ -650,8 +659,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 this._scene!.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, this._currentFaceIndex);
             }
 
-            for (const step of this._scene!._afterRenderTargetPostProcessStage) {
-                step.action(this, this._currentFaceIndex, this._currentLayer);
+            if (!this._disableEngineStages) {
+                for (const step of this._scene!._afterRenderTargetPostProcessStage) {
+                    step.action(this, this._currentFaceIndex, this._currentLayer);
+                }
             }
 
             if (this._texture) {

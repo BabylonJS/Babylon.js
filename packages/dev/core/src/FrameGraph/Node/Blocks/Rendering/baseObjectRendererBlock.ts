@@ -1,5 +1,4 @@
 import type {
-    NodeRenderGraphConnectionPoint,
     Scene,
     NodeRenderGraphBuildState,
     FrameGraph,
@@ -7,11 +6,14 @@ import type {
     FrameGraphObjectList,
     Camera,
     FrameGraphObjectRendererTask,
+    NodeRenderGraphResourceContainerBlock,
+    ShadowGenerator,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 
 /**
  * @internal
@@ -40,13 +42,20 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
         this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.dependencies.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.dependencies.addAcceptedConnectionPointTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
+                NodeRenderGraphBlockConnectionPointTypes.StorageTexture |
+                NodeRenderGraphBlockConnectionPointTypes.StorageBuffer |
+                NodeRenderGraphBlockConnectionPointTypes.ResourceContainer
+        );
+        this.shadowGenerators.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
 
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -116,6 +125,13 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /**
+     * Gets the shadowGenerators input component
+     */
+    public get shadowGenerators(): NodeRenderGraphConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeRenderGraphConnectionPoint {
@@ -162,7 +178,32 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
 
         const dependenciesConnectedPoint = this.dependencies.connectedPoint;
         if (dependenciesConnectedPoint) {
-            this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
+            if (dependenciesConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = dependenciesConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                container.inputs.forEach((input) => {
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
+                        this._frameGraphTask.dependencies!.push(input.connectedPoint.value as FrameGraphTextureHandle);
+                    }
+                });
+            } else {
+                this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
+            }
+        }
+
+        this._frameGraphTask.shadowGenerators = [];
+
+        const shadowGeneratorsConnectedPoint = this.shadowGenerators.connectedPoint;
+        if (shadowGeneratorsConnectedPoint) {
+            if (shadowGeneratorsConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = shadowGeneratorsConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                container.inputs.forEach((input) => {
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsShadowGenerator(input.connectedPoint.value)) {
+                        this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as ShadowGenerator);
+                    }
+                });
+            } else {
+                this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as ShadowGenerator;
+            }
         }
     }
 
