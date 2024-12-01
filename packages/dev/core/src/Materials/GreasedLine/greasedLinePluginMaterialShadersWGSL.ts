@@ -92,8 +92,12 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     grlNormal *= uniforms.grl_projection;
 
                     #if defined(GREASED_LINE_SIZE_ATTENUATION)
-                        grlNormal.xy *= grlFinalPosition.w;
-                        grlNormal.xy /= (vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection).xy;
+                        grlNormal.x *= grlFinalPosition.w;
+                        grlNormal.y *= grlFinalPosition.w;
+
+                        let resolution = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0);
+                        grlNormal.y /= (resolution * uniforms.grl_projection).x;
+                        grlNormal.y /= (resolution * uniforms.grl_projection).y;
                     #endif
 
                     vertexOutputs.position = vec4f(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
