@@ -596,9 +596,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     let grlWidth: f32 = grlBaseWidth * input.grl_widths;
 
                     var grlDir: vec2f;
-                    if (any(grlNextP == grlCurrentP)) {
+                    if (all(grlNextP == grlCurrentP)) {
                         grlDir = normalize(grlCurrentP - grlPrevP);
-                    } else if (any(grlPrevP == grlCurrentP)) {
+                    } else if (all(grlPrevP == grlCurrentP)) {
                         grlDir = normalize(grlNextP - grlCurrentP);
                     } else {
                         let grlDir1: vec2f = normalize(grlCurrentP - grlPrevP);
