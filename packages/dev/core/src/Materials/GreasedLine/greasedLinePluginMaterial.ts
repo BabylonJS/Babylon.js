@@ -252,27 +252,21 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
         return {
             ubo,
-            vertex: this._cameraFacing
-                ? shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL
+            vertex:
+                this._cameraFacing && this._isGLSL(shaderLanguage)
                     ? `
-                uniform vec4 grl_aspect_resolution_lineWidth;
-                uniform mat4 grl_projection;
-                `
-                    : `
-   
-                    `
+        uniform vec4 grl_aspect_resolution_lineWidth;
+        uniform mat4 grl_projection;
+    `
+                    : "",
+            fragment: this._isGLSL(shaderLanguage)
+                ? `
+        uniform vec4 grl_dashOptions;
+        uniform vec2 grl_textureSize;
+        uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
+        uniform vec3 grl_singleColor;
+    `
                 : "",
-            fragment:
-                shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL
-                    ? `
-                uniform vec4 grl_dashOptions;
-                uniform vec2 grl_textureSize;
-                uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
-                uniform vec3 grl_singleColor;
-                `
-                    : `
-  
-                    `,
         };
     }
 
@@ -355,7 +349,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @returns shader code
      */
     override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        if (shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL) {
+        if (this._isGLSL(shaderLanguage)) {
             return this._getCustomCodeGLSL(shaderType);
         }
         return this._getCustomCodeWGSL(shaderType);
@@ -937,6 +931,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         dest.resolution = this.resolution;
 
         dest.markAllDefinesAsDirty();
+    }
+
+    private _isGLSL(shaderLanguage: ShaderLanguage) {
+        return shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL;
     }
 }
 
