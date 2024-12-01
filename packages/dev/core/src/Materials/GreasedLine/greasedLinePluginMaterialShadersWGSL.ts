@@ -81,12 +81,13 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                     var grlNormal: vec4f = vec4f(-grlDir.y, grlDir.x, 0.0, 1.0);
 
+                    let grlHalfWidth = 0.5 * grlWidth;
                     #if defined(GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM)
-                        grlNormal.x *= -0.5 * grlWidth;
-                        grlNormal.y *= -0.5 * grlWidth;
+                        grlNormal.x *= -grlHalfWidth;
+                        grlNormal.y *= -grlHalfWidth;
                     #else
-                        grlNormal.x *= 0.5 * grlWidth;
-                        grlNormal.y *= 0.5 * grlWidth;
+                        grlNormal.x *= grlHalfWidth;
+                        grlNormal.y *= grlHalfWidth;
                     #endif
 
                     grlNormal *= uniforms.grl_projection;
@@ -96,7 +97,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         grlNormal.y *= grlFinalPosition.w;
 
                         let resolution = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0);
-                        grlNormal.y /= (resolution * uniforms.grl_projection).x;
+                        grlNormal.x /= (resolution * uniforms.grl_projection).x;
                         grlNormal.y /= (resolution * uniforms.grl_projection).y;
                     #endif
 
