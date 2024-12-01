@@ -28,7 +28,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     }
                 #else
                     attribute vec3 grl_slopes;
-                    attribute float grl_counters;
+                    attribute f32 grl_counters;
                 #endif
 
 
@@ -55,7 +55,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlSide: f32 = input.grl_previousAndSide.w;
 
                     let grlNext: vec3f = input.grl_nextAndCounters.xyz;
-                    let grlCounters: f32 = input.grl_nextAndCounters.w;
+                    vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
                     let grlMatrix: mat4x4f = scene.viewProjection * finalWorld;
                     var grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
@@ -135,14 +135,14 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlDashOffset: f32 = uniforms.grl_dashOptions.z;
                     let grlDashRatio: f32 = uniforms.grl_dashOptions.w;
 
-
                     fragmentOutputs.color.a *= step(fragmentInputs.grlCounters, grlVisibility);
                     if (fragmentOutputs.color.a == 0.0) {
                         discard;
                     }
 
                     if (grlUseDash == 1.0) {
-                        fragmentOutputs.color.a *= ceil((fragmentInputs.grlCounters + grlDashOffset - grlDashArray * floor((fragmentInputs.grlCounters + grlDashOffset) / grlDashArray)) - (grlDashArray * grlDashRatio));
+                        let dashPosition = (fragmentInputs.grlCounters + grlDashOffset) % grlDashArray;
+                        fragmentOutputs.color.a *= ceil(dashPosition - (grlDashArray * grlDashRatio));
 
                         if (fragmentOutputs.color.a == 0.0) {
                             discard;
