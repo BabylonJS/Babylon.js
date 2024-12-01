@@ -256,14 +256,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             ubo.push({ name: "grl_projection", size: 16, type: "mat4" }, { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" });
         }
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            ubo.push({
-                name: "viewProjection",
-                size: 16,
-                type: "mat4",
-            });
-        }
-
         return {
             ubo,
             vertex: this._cameraFacing
@@ -306,7 +298,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
             if (activeCamera) {
                 uniformBuffer.updateMatrix("grl_projection", activeCamera.getProjectionMatrix());
-                uniformBuffer.updateMatrix("viewProjection", activeCamera.getTransformationMatrix());
             } else {
                 throw Error("GreasedLinePluginMaterial requires an active camera.");
             }
@@ -584,7 +575,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     let grlNext: vec3f = input.grl_nextAndCounters.xyz;
                     let grlCounters: f32 = input.grl_nextAndCounters.w;
 
-                    let grlMatrix: mat4x4f = uniforms.viewProjection * finalWorld;
+                    let grlMatrix: mat4x4f = scene.viewProjection * finalWorld;
                     var grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
                     let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
                     let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
@@ -629,7 +620,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 #endif
                 `,
             };
-            this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
+            // this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
             return obj;
         }
 
