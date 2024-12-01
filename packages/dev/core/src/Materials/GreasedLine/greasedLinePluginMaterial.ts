@@ -130,25 +130,19 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     private _forceGLSL = false;
 
     /**
-     * Gets a boolean indicating that the plugin is compatible with a given shader language.
-     * @param shaderLanguage The shader language to use.
-     * @returns true if the plugin is compatible with the shader language
+     * Gets a boolean indicating that the plugin is compatible with a given shader language
+     * @param _shaderLanguage The shader language to use
+     * @returns true if the plugin is compatible with the shader language. Return always true since both GLSL and WGSL are supported
      */
-    public override isCompatible(shaderLanguage: ShaderLanguage): boolean {
-        switch (shaderLanguage) {
-            case ShaderLanguage.GLSL:
-            case ShaderLanguage.WGSL:
-                return true;
-            default:
-                return false;
-        }
+    public override isCompatible(_shaderLanguage: ShaderLanguage): boolean {
+        return true;
     }
 
     /**
      * Creates a new instance of the GreasedLinePluginMaterial
-     * @param material base material for the plugin
-     * @param scene the scene
-     * @param options plugin options
+     * @param material Base material for the plugin
+     * @param scene The scene
+     * @param options Plugin options
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions, forceGLSL = false) {
@@ -164,7 +158,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         defines.GREASED_LINE_CAMERA_FACING = options.cameraFacing ?? true;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
-        this._forceGLSL = forceGLSL;
+        this._forceGLSL = forceGLSL || GreasedLinePluginMaterial.ForceGLSL;
 
         this._scene = scene ?? material.getScene();
         this._engine = this._scene.getEngine();
@@ -259,7 +253,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         return {
             ubo,
             vertex: this._cameraFacing
-                ? shaderLanguage === ShaderLanguage.GLSL
+                ? shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL
                     ? `
                 uniform vec4 grl_aspect_resolution_lineWidth;
                 uniform mat4 grl_projection;
@@ -269,7 +263,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     `
                 : "",
             fragment:
-                shaderLanguage === ShaderLanguage.GLSL
+                shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL
                     ? `
                 uniform vec4 grl_dashOptions;
                 uniform vec2 grl_textureSize;
@@ -361,10 +355,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @returns shader code
      */
     override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            return this._getCustomCodeWGSL(shaderType);
+        if (shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL) {
+            return this._getCustomCodeGLSL(shaderType);
         }
-        return this._getCustomCodeGLSL(shaderType);
+        return this._getCustomCodeWGSL(shaderType);
     }
 
     private _getCustomCodeGLSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
