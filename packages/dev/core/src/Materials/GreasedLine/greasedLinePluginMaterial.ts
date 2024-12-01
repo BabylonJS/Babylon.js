@@ -15,6 +15,7 @@ import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greased
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
+import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * @internal
@@ -57,6 +58,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Plugin name
      */
     public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLinePluginMaterial";
+
+    /**
+     * Force all the greased lines to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
 
     /**
      * Whether to use the colors option to colorize the line
@@ -120,13 +127,31 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     private _engine: AbstractEngine;
 
+    private _forceGLSL = false;
+
+    /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @param shaderLanguage The shader language to use.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(shaderLanguage: ShaderLanguage): boolean {
+        switch (shaderLanguage) {
+            case ShaderLanguage.GLSL:
+            case ShaderLanguage.WGSL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     /**
      * Creates a new instance of the GreasedLinePluginMaterial
      * @param material base material for the plugin
      * @param scene the scene
      * @param options plugin options
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions) {
+    constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions, forceGLSL = false) {
         options = options || {
             color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
         };
@@ -138,6 +163,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = (scene ?? material.getScene()).useRightHandedSystem;
         defines.GREASED_LINE_CAMERA_FACING = options.cameraFacing ?? true;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
+
+        this._forceGLSL = forceGLSL;
 
         this._scene = scene ?? material.getScene();
         this._engine = this._scene.getEngine();
@@ -215,9 +242,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     /**
      * Get the shader uniforms
+     * @param shaderLanguage The shader language to use
      * @returns uniforms
      */
-    override getUniforms() {
+    override getUniforms(shaderLanguage = ShaderLanguage.GLSL) {
         const ubo = [
             { name: "grl_singleColor", size: 3, type: "vec3" },
             { name: "grl_textureSize", size: 2, type: "vec2" },
@@ -228,20 +256,37 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             ubo.push({ name: "grl_projection", size: 16, type: "mat4" }, { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" });
         }
 
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            ubo.push({
+                name: "viewProjection",
+                size: 16,
+                type: "mat4",
+            });
+        }
+
         return {
             ubo,
             vertex: this._cameraFacing
-                ? `
+                ? shaderLanguage === ShaderLanguage.GLSL
+                    ? `
                 uniform vec4 grl_aspect_resolution_lineWidth;
                 uniform mat4 grl_projection;
                 `
+                    : `
+   
+                    `
                 : "",
-            fragment: `
+            fragment:
+                shaderLanguage === ShaderLanguage.GLSL
+                    ? `
                 uniform vec4 grl_dashOptions;
                 uniform vec2 grl_textureSize;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
                 uniform vec3 grl_singleColor;
-                `,
+                `
+                    : `
+  
+                    `,
         };
     }
 
@@ -321,9 +366,17 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     /**
      * Get shader code
      * @param shaderType vertex/fragment
+     * @param shaderLanguage The shader language to use
      * @returns shader code
      */
-    override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return this._getCustomCodeWGSL(shaderType);
+        }
+        return this._getCustomCodeGLSL(shaderType);
+    }
+
+    private _getCustomCodeGLSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             const obj: any = {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -472,6 +525,175 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             }
                         }
                     #endif
+
+                `,
+            };
+        }
+
+        return null;
+    }
+
+    private _getCustomCodeWGSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
+        if (shaderType === "vertex") {
+            const obj: any = {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_VERTEX_DEFINITIONS: `
+                attribute grl_widths: f32;
+                attribute grl_offsets: vec3<f32>;
+                attribute grl_colorPointers: f32;
+                varying grlCounters: f32;
+                varying grlColorPointer: f32;
+
+                #ifdef GREASED_LINE_CAMERA_FACING
+                    attribute grl_previousAndSide : vec4<f32>;
+                    attribute grl_nextAndCounters : vec4<f32>;
+
+                    fn grlFix(i: vec4<f32>, aspect: f32) -> vec2<f32> {
+                        var res = i.xy / i.w;
+                        res.x *= aspect;
+                        return res;
+                    }
+                #else
+                    attribute vec3 grl_slopes;
+                    attribute float grl_counters;
+                #endif
+
+
+                `,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_VERTEX_UPDATE_POSITION: `
+                #ifdef GREASED_LINE_CAMERA_FACING
+                    var grlPositionOffset: vec3<f32> = input.grl_offsets;
+                    positionUpdated = positionUpdated + grlPositionOffset;
+                #else
+                    positionUpdated = (positionUpdated + input.grl_offsets) + (input.grl_slopes * input.grl_widths);
+                #endif
+                `,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_VERTEX_MAIN_END: `
+                vertexOutputs.grlColorPointer = input.grl_colorPointers;
+
+                #ifdef GREASED_LINE_CAMERA_FACING
+
+                    let grlAspect: f32 = uniforms.grl_aspect_resolution_lineWidth.x;
+                    let grlBaseWidth: f32 = uniforms.grl_aspect_resolution_lineWidth.w;
+
+                    let grlPrevious: vec3<f32> = input.grl_previousAndSide.xyz;
+                    let grlSide: f32 = input.grl_previousAndSide.w;
+
+                    let grlNext: vec3<f32> = input.grl_nextAndCounters.xyz;
+                    let grlCounters: f32 = input.grl_nextAndCounters.w;
+
+                    let grlMatrix: mat4x4<f32> = uniforms.viewProjection * finalWorld;
+                    var grlFinalPosition: vec4<f32> = grlMatrix * vec4<f32>(positionUpdated, 1.0);
+                    let grlPrevPos: vec4<f32> = grlMatrix * vec4<f32>(grlPrevious + grlPositionOffset, 1.0);
+                    let grlNextPos: vec4<f32> = grlMatrix * vec4<f32>(grlNext + grlPositionOffset, 1.0);
+
+                    let grlCurrentP: vec2<f32> = grlFix(grlFinalPosition, grlAspect);
+                    let grlPrevP: vec2<f32> = grlFix(grlPrevPos, grlAspect);
+                    let grlNextP: vec2<f32> = grlFix(grlNextPos, grlAspect);
+
+                    let grlWidth: f32 = grlBaseWidth * input.grl_widths;
+
+                    var grlDir: vec2<f32>;
+                    if (any(grlNextP == grlCurrentP)) {
+                        grlDir = normalize(grlCurrentP - grlPrevP);
+                    } else if (any(grlPrevP == grlCurrentP)) {
+                        grlDir = normalize(grlNextP - grlCurrentP);
+                    } else {
+                        let grlDir1: vec2<f32> = normalize(grlCurrentP - grlPrevP);
+                        let grlDir2: vec2<f32> = normalize(grlNextP - grlCurrentP);
+                        grlDir = normalize(grlDir1 + grlDir2);
+                    }
+
+                    var grlNormal: vec4<f32> = vec4<f32>(-grlDir.y, grlDir.x, 0.0, 1.0);
+
+                    #if defined(GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM)
+                        grlNormal.x *= -0.5 * grlWidth;
+                        grlNormal.y *= -0.5 * grlWidth;
+                    #else
+                        grlNormal.x *= 0.5 * grlWidth;
+                        grlNormal.y *= 0.5 * grlWidth;
+                    #endif
+
+                    grlNormal *= uniforms.grl_projection;
+
+                    #if defined(GREASED_LINE_SIZE_ATTENUATION)
+                        grlNormal.xy *= grlFinalPosition.w;
+                        grlNormal.xy /= (vec4<f32>(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection).xy;
+                    #endif
+
+                    vertexOutputs.position = vec4<f32>(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
+                #else
+                    vertexOutputs.grlCounters = input.grl_counters;
+                #endif
+                `,
+            };
+            this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
+            return obj;
+        }
+
+        if (shaderType === "fragment") {
+            return {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_DEFINITIONS: `
+                    varying grlCounters: f32;
+                    varying grlColorPointer: 32;
+
+                    var grl_colors: texture_2d<f32>;
+                `,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_MAIN_END: `
+                    let grlColorMode: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.x;
+                    let grlVisibility: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.y;
+                    let grlColorsWidth: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.z;
+                    let grlUseColors: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.w;
+
+                    let grlUseDash: f32 = uniforms.grl_dashOptions.x;
+                    let grlDashArray: f32 = uniforms.grl_dashOptions.y;
+                    let grlDashOffset: f32 = uniforms.grl_dashOptions.z;
+                    let grlDashRatio: f32 = uniforms.grl_dashOptions.w;
+
+
+                    fragmentOutputs.color.a *= step(fragmentInputs.grlCounters, grlVisibility);
+                    if (fragmentOutputs.color.a == 0.0) {
+                        discard;
+                    }
+
+                    if (grlUseDash == 1.0) {
+                        fragmentOutputs.color.a *= ceil((fragmentInputs.grlCounters + grlDashOffset - grlDashArray * floor((fragmentInputs.grlCounters + grlDashOffset) / grlDashArray)) - (grlDashArray * grlDashRatio));
+
+                        if (fragmentOutputs.color.a == 0.0) {
+                            discard;
+                        }
+                    }
+
+                    #ifdef GREASED_LINE_HAS_COLOR
+                        if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                           fragmentOutputs.color = vec4f(uniforms.grl_singleColor, 1.0);
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                            fragmentOutputs.color = vec4<f32>(fragmentOutputs.color.rgb + uniforms.grl_singleColor, fragmentOutputs.color.a);
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                            fragmentOutputs.color = vec4<f32>(fragmentOutputs.color.rgb * uniforms.grl_singleColor, fragmentOutputs.color.a);
+                        }
+                    #else
+                        if (grlUseColors == 1.) {
+                            #ifdef GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE
+                                let grlColor: f32 = textureSample(uniforms.grl_colors, grl_ColorSampler, vec2(fragmentInputs.grlCounters, 0.), 0.);
+                            #else
+                                let lookup: vec2<f32> = vec2(fract(grlColorPointer / grl_textureSize.x), 1.0 - floor(grlColorPointer / grl_textureSize.x) / max(grl_textureSize.y - 1.0, 1.0));
+                                let grlColor: vec4<f32> = texture2D(grl_colors, lookup, 0.0);
+                            #endif
+                            if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                                fragmentOutputs.color = grlColor;
+                            } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                                fragmentOutputs.color += grlColor;
+                            } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                                fragmentOutputs.color *= grlColor;
+                            }
+                        }
+                    #endif
+
 
                 `,
             };
