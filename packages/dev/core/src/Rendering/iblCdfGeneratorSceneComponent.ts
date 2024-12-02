@@ -92,6 +92,7 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
      * Registers the component in a given scene
      */
     public register(): void {
+        this._updateIblSource();
         this._newIblObserver = this.scene.onEnvironmentTextureChangedObservable.add(this._updateIblSource.bind(this));
     }
 
