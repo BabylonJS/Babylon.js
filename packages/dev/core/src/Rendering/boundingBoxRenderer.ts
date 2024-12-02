@@ -94,6 +94,8 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
 const mat1 = Matrix.Identity();
 const vec = new Vector3(),
     vec2 = new Vector3();
+// `Matrix.asArray` returns its internal array, so it can be directly updated
+const mat1Array = mat1.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
 const dummyBoundingBox = new BoundingBox(vec, vec);
@@ -197,8 +199,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     public updatable = true;
 
-    private _drawWrapperFront: Nullable<DrawWrapper> = null;
-    private _drawWrapperBack: Nullable<DrawWrapper> = null;
+    /** @internal */
+    public _drawWrapperFront: Nullable<DrawWrapper> = null;
+    /** @internal */
+    public _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
      * Instantiates a new bounding box renderer in a scene.
@@ -569,7 +573,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * @internal
      * @param renderingGroupId defines the rendering group to render
      */
-    public _renderInstanced(renderingGroupId: number): void {
+    private _renderInstanced(renderingGroupId: number): void {
         if (this.renderList.length === 0 || !this.enabled) {
             return;
         }
@@ -603,7 +607,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const diff = max.subtractToRef(min, vec2);
             const median = min.addToRef(diff.scaleToRef(0.5, vec), vec);
 
-            const m = (mat1 as any)._m;
+            const m = mat1Array;
 
             // Directly update the matrix values in column-major order
             m[0] = diff._x; // Scale X
