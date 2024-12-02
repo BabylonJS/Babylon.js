@@ -1068,6 +1068,7 @@ export class Viewer implements IDisposable {
     private _pick(screenX: number, screenY: number): Nullable<PickingInfo> {
         if (this._details.model) {
             const model = this._details.model;
+            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
             model.meshes.forEach((mesh) => mesh.refreshBoundingInfo(true, true));
             const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
             if (pickingInfo.hit) {
