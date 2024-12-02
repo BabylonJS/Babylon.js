@@ -24,6 +24,7 @@ interface DelayedTextureUpdate {
     covB: Uint16Array;
     colors: Uint8Array;
     centers: Float32Array;
+    sh?: Uint8Array[];
 }
 
 // @internal
@@ -212,12 +213,14 @@ export class GaussianSplattingMesh extends Mesh {
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
+    private _shTextures: Nullable<BaseTexture[]> = null;
     //@ts-expect-error
     private _covariancesA: Nullable<Uint16Array> = null;
     //@ts-expect-error
     private _covariancesB: Nullable<Uint16Array> = null;
     //@ts-expect-error
     private _colors: Nullable<Uint8Array> = null;
+    private _sh: Nullable<Uint8Array[]> = null;
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
@@ -235,6 +238,14 @@ export class GaussianSplattingMesh extends Mesh {
     private static _SplatBatchSize = 327680;
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
+    private _shDegree = 0;
+
+    /**
+     * SH degree. 0 = no sh (default). 1 = 3 parameters. 2 = 8 parameters. 3 = 15 parameters.
+     */
+    public get shDegree() {
+        return this._shDegree;
+    }
 
     /**
      * Set the number of batch (a batch is 16384 splats) after which a display update is performed
@@ -268,6 +279,13 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get colorsTexture() {
         return this._colorsTexture;
+    }
+
+    /**
+     * Gets the SH textures
+     */
+    public get shTextures() {
+        return this._shTextures;
     }
 
     /**
@@ -838,11 +856,17 @@ export class GaussianSplattingMesh extends Mesh {
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
+        if (this._shTextures) {
+            this._shTextures.forEach((shTexture) => {
+                shTexture.dispose();
+            });
+        }
 
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
+        this._shTextures = null;
 
         this._worker?.terminate();
         this._worker = null;
@@ -855,6 +879,12 @@ export class GaussianSplattingMesh extends Mesh {
         this._covariancesBTexture = source.covariancesBTexture?.clone()!;
         this._centersTexture = source.centersTexture?.clone()!;
         this._colorsTexture = source.colorsTexture?.clone()!;
+        if (source._shTextures) {
+            this._shTextures = [];
+            this._shTextures.forEach((shTexture) => {
+                this._shTextures?.push(shTexture.clone()!);
+            });
+        }
     }
 
     /**
@@ -997,7 +1027,7 @@ export class GaussianSplattingMesh extends Mesh {
         colorArray[destinationIndex * 4 + 3] = uBuffer[32 * sourceIndex + 24 + 3];
     }
 
-    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
@@ -1008,6 +1038,10 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
+        const createTextureFromDataU32 = (data: Uint32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
+        };
+
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
         };
@@ -1016,9 +1050,12 @@ export class GaussianSplattingMesh extends Mesh {
             this._covariancesA = covA;
             this._covariancesB = covB;
             this._colors = colorArray;
+            if (sh) {
+                this._sh = sh;
+            }
         }
         if (this._covariancesATexture) {
-            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions! };
+            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
@@ -1034,11 +1071,21 @@ export class GaussianSplattingMesh extends Mesh {
             );
             this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            if (sh) {
+                this._shTextures = [];
+                sh.forEach((shData) => {
+                    const buffer = new Uint32Array(shData.buffer);
+                    const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                    shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._shTextures!.push(shTexture);
+                });
+            }
             this._instanciateWorker();
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[]): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1053,6 +1100,8 @@ export class GaussianSplattingMesh extends Mesh {
             this._updateSplatIndexBuffer(vertexCount);
         }
         this._vertexCount = vertexCount;
+        // degree == 1 for 1 texture (3 terms), 2 for 2 textures(8 terms) and 3 for 3 textures (15 terms)
+        this._shDegree = sh ? sh.length : 0;
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
@@ -1069,7 +1118,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
             // create textures with not filled-yet array, then update directly portions of it
-            this._updateTextures(covA, covB, colorArray);
+            this._updateTextures(covA, covB, colorArray, sh);
             this.setEnabled(true);
 
             const partCount = Math.ceil(textureSize.y / lineCountUpdate);
@@ -1100,7 +1149,7 @@ export class GaussianSplattingMesh extends Mesh {
                 }
             }
             // textures
-            this._updateTextures(covA, covB, colorArray);
+            this._updateTextures(covA, covB, colorArray, sh);
             // Update the binfo
             this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
@@ -1111,19 +1160,21 @@ export class GaussianSplattingMesh extends Mesh {
     /**
      * Update asynchronously the buffer
      * @param data array buffer containing center, color, orientation and scale of splats
+     * @param sh optional array of uint8 array for SH data
      * @returns a promise
      */
-    public async updateDataAsync(data: ArrayBuffer): Promise<void> {
-        return runCoroutineAsync(this._updateData(data, true), createYieldingScheduler());
+    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[]): Promise<void> {
+        return runCoroutineAsync(this._updateData(data, true, sh), createYieldingScheduler());
     }
 
     /**
      * @experimental
      * Update data from GS (position, orientation, color, scaling)
      * @param data array that contain all the datas
+     * @param sh optional array of uint8 array for SH data
      */
-    public updateData(data: ArrayBuffer): void {
-        runCoroutineSync(this._updateData(data, false));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[]): void {
+        runCoroutineSync(this._updateData(data, false, sh));
     }
 
     // in case size is different
@@ -1136,14 +1187,8 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = vertexCount;
     }
 
-    private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number): void {
-        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, lineStart: number, lineCount: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
-        };
-        const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, lineStart: number, lineCount: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
-        };
-        const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, lineStart: number, lineCount: number) => {
+    private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
+        const updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
             (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
         };
 
@@ -1155,10 +1200,17 @@ export class GaussianSplattingMesh extends Mesh {
         const covBView = new Uint16Array(covB.buffer, texelStart * covBSItemSize * Uint16Array.BYTES_PER_ELEMENT, texelCount * covBSItemSize);
         const colorsView = new Uint8Array(colors.buffer, texelStart * 4, texelCount * 4);
         const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
-        updateTextureFromDataF16(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
-        updateTextureFromDataF16(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
         updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
-        updateTextureFromDataU8(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        if (sh) {
+            for (let i = 0; i < sh.length; i++) {
+                const componentCount = 4;
+                const shView = new Uint8Array(this._sh![i].buffer, texelStart * componentCount, texelCount * componentCount);
+                updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
+            }
+        }
     }
     private _instanciateWorker(): void {
         if (!this._vertexCount) {
@@ -1198,7 +1250,8 @@ export class GaussianSplattingMesh extends Mesh {
                     this._delayedTextureUpdate.covB,
                     this._delayedTextureUpdate.colors,
                     0,
-                    textureSize.y
+                    textureSize.y,
+                    this._delayedTextureUpdate.sh
                 );
                 this._delayedTextureUpdate = null;
             }
