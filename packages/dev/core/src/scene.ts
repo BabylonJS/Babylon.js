@@ -258,6 +258,18 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public environmentBRDFTexture: BaseTexture;
 
     /**
+     * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
+     * The material properties need to be setup according to the type of texture in use.
+     */
+    public ltc1Texture: BaseTexture;
+
+    /**
+     * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
+     * The material properties need to be setup according to the type of texture in use.
+     */
+    public ltc2Texture: BaseTexture;
+
+    /**
      * Intensity of the environment in all pbr material.
      * This dims or reinforces the IBL lighting overall (reflection and diffuse).
      * As in the majority of the scene they are the same (exception for multi room and so on),
