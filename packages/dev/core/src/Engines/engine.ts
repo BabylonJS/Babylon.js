@@ -364,6 +364,10 @@ export class Engine extends ThinEngine {
             const canvas = <HTMLCanvasElement>canvasOrContext;
 
             this._sharedInit(canvas);
+        } else if ((<any>canvasOrContext).canvas) {
+            const context = <WebGLRenderingContext | WebGL2RenderingContext>canvasOrContext;
+
+            this._sharedInit(context.canvas as HTMLCanvasElement);
         }
     }
 
