@@ -15,11 +15,12 @@ import { Observable } from "../Misc/observable";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "../Engines/engine";
+import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
  */
-export class ImportanceSamplingRenderer {
+export class IblCdfGenerator {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
@@ -75,7 +76,7 @@ export class ImportanceSamplingRenderer {
 
         // Once the textures are generated, notify that they are ready to use.
         this._icdfxPT.onGeneratedObservable.addOnce(() => {
-            this.onReadyObservable.notifyObservers();
+            this.onGeneratedObservable.notifyObservers();
         });
     }
 
@@ -131,6 +132,13 @@ export class ImportanceSamplingRenderer {
     }
 
     /**
+     * @internal
+     */
+    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+        throw _WarnImport("IblCdfGeneratorSceneComponentSceneComponent");
+    };
+
+    /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
      * @returns The importance sampling renderer
@@ -140,12 +148,13 @@ export class ImportanceSamplingRenderer {
         this._engine = scene.getEngine();
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
         this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+        IblCdfGenerator._SceneComponentInitialization(this._scene);
     }
 
     /**
      * Observable that triggers when the importance sampling renderer is ready
      */
-    public onReadyObservable: Observable<void> = new Observable<void>();
+    public onGeneratedObservable: Observable<void> = new Observable<void>();
 
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
@@ -299,6 +308,6 @@ export class ImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
-        this.onReadyObservable.clear();
+        this.onGeneratedObservable.clear();
     }
 }

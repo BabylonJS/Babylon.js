@@ -1656,7 +1656,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         }
 
                         defines.REALTIME_FILTERING = true;
-                        if (this.getScene().useEnvironmentCDFMaps) {
+                        if (this.getScene().iblCdfGenerator) {
                             defines.IBL_CDF_FILTERING = true;
                         }
                     } else {
@@ -2304,11 +2304,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         ubo.setTexture("irradianceSampler", reflectionTexture.irradianceTexture);
                     }
 
-                    //if realtime filtering
-                    //set the needed cdf maps
-                    if (this.realTimeFiltering && this.getScene().useEnvironmentCDFMaps) {
-                        ubo.setTexture("icdfxSampler", this.getScene().importanceSamplingRenderer?.getIcdfxTexture());
-                        ubo.setTexture("icdfySampler", this.getScene().importanceSamplingRenderer?.getIcdfyTexture());
+                    //if realtime filtering and using CDF maps, set them.
+                    const cdfGenerator = this.getScene().iblCdfGenerator;
+                    if (this.realTimeFiltering && cdfGenerator) {
+                        ubo.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
+                        ubo.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
                     }
                 }
 

@@ -366,25 +366,25 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
-    public get importanceSamplingDebugEnabled(): boolean {
-        return this.scene.importanceSamplingRenderer?.debugEnabled;
+    public get cdfDebugEnabled(): boolean {
+        return this.scene.iblCdfGenerator ? this.scene.iblCdfGenerator.debugEnabled : false;
     }
 
     /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
-    public set importanceSamplingDebugEnabled(enabled: boolean) {
-        if (!this.scene.importanceSamplingRenderer) return;
+    public set cdfDebugEnabled(enabled: boolean) {
+        if (!this.scene.iblCdfGenerator) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable importance sampling debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this.scene.importanceSamplingRenderer.debugEnabled) return;
-        this.scene.importanceSamplingRenderer.debugEnabled = enabled;
+        if (enabled === this.scene.iblCdfGenerator.debugEnabled) return;
+        this.scene.iblCdfGenerator.debugEnabled = enabled;
         if (enabled) {
-            this._enableEffect(this.scene.importanceSamplingRenderer.debugPassName, this.cameras);
+            this._enableEffect(this.scene.iblCdfGenerator.debugPassName, this.cameras);
         } else {
-            this._disableEffect(this.scene.importanceSamplingRenderer.debugPassName, this.cameras);
+            this._disableEffect(this.scene.iblCdfGenerator.debugPassName, this.cameras);
         }
     }
 
@@ -618,11 +618,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     public set allowDebugPasses(value: boolean) {
         if (this._allowDebugPasses === value) return;
         this._allowDebugPasses = value;
-        if (value) {
-            if (this.scene.importanceSamplingRenderer.isReady()) {
+        if (value && this.scene.iblCdfGenerator) {
+            if (this.scene.iblCdfGenerator.isReady()) {
                 this._createDebugPasses();
             } else {
-                this.scene.importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+                this.scene.iblCdfGenerator.onGeneratedObservable.addOnce(() => {
                     this._createDebugPasses();
                 });
             }
@@ -749,7 +749,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._geometryBufferRenderer.enablePosition = true;
         this._geometryBufferRenderer.enableNormal = true;
         this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
-        this.scene.useEnvironmentCDFMaps = true;
+        this.scene.enableIblCdfGenerator();
         this.shadowOpacity = options.shadowOpacity || 0.8;
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
@@ -784,10 +784,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
 
         // Assigning the shadow texture to the materials needs to be done after the RT's are created.
-        this.scene.importanceSamplingRenderer.onReadyObservable.add(() => {
-            this._setPluginParameters();
-            this.onNewIblReadyObservable.notifyObservers();
-        });
+        if (this.scene.iblCdfGenerator) {
+            this.scene.iblCdfGenerator.onGeneratedObservable.add(() => {
+                this._setPluginParameters();
+                this.onNewIblReadyObservable.notifyObservers();
+            });
+        }
     }
 
     private _handleResize() {
@@ -844,14 +846,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     private _createDebugPasses() {
-        this._debugPasses = [
-            { pass: this.scene.importanceSamplingRenderer.getDebugPassPP(), enabled: this.importanceSamplingDebugEnabled },
+        if (this.scene.iblCdfGenerator) {
+            this._debugPasses = [{ pass: this.scene.iblCdfGenerator.getDebugPassPP(), enabled: this.cdfDebugEnabled }];
+        } else {
+            this._debugPasses = [];
+        }
+
+        this._debugPasses.push(
             { pass: this._voxelRenderer.getDebugPassPP(), enabled: this.voxelDebugEnabled },
             { pass: this._voxelTracingPass.getDebugPassPP(), enabled: this.voxelTracingDebugEnabled },
             { pass: this._spatialBlurPass.getDebugPassPP(), enabled: this.spatialBlurPassDebugEnabled },
             { pass: this._accumulationPass.getDebugPassPP(), enabled: this.accumulationPassDebugEnabled },
-            { pass: this._getGBufferDebugPass(), enabled: this.gbufferDebugEnabled },
-        ];
+            { pass: this._getGBufferDebugPass(), enabled: this.gbufferDebugEnabled }
+        );
         for (let i = 0; i < this._debugPasses.length; i++) {
             if (!this._debugPasses[i].pass) continue;
             this.addEffect(
@@ -895,7 +902,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _updateDebugPasses() {
         let count = 0;
         if (this._gbufferDebugEnabled) count++;
-        if (this.importanceSamplingDebugEnabled) count++;
+        if (this.cdfDebugEnabled) count++;
         if (this.voxelDebugEnabled) count++;
         if (this.voxelTracingDebugEnabled) count++;
         if (this.spatialBlurPassDebugEnabled) count++;
@@ -916,8 +923,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             }
         }
 
-        if (this.importanceSamplingDebugEnabled) {
-            this.scene.importanceSamplingRenderer.setDebugDisplayParams(x, y, cols, rows);
+        if (this.cdfDebugEnabled && this.scene.iblCdfGenerator) {
+            this.scene.iblCdfGenerator.setDebugDisplayParams(x, y, cols, rows);
             x -= width;
             if (x <= -1) {
                 x = 0;
@@ -1068,7 +1075,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         return (
             this._noiseTexture.isReady() &&
             this._voxelRenderer.isReady() &&
-            this.scene.importanceSamplingRenderer.isReady() &&
+            this.scene.iblCdfGenerator &&
+            this.scene.iblCdfGenerator.isReady() &&
             (!this._voxelTracingPass || this._voxelTracingPass.isReady()) &&
             (!this._spatialBlurPass || this._spatialBlurPass.isReady()) &&
             (!this._accumulationPass || this._accumulationPass.isReady())

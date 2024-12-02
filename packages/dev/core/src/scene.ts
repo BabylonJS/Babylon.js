@@ -98,7 +98,6 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
-import { ImportanceSamplingRenderer } from "./Rendering/importanceSamplingRenderer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -515,44 +514,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._environmentTexture = value;
-        if (this._importanceSamplingRenderer && value) {
-            this._importanceSamplingRenderer.iblSource = value;
-        }
+        this.onEnvironmentTextureChangedObservable.notifyObservers(value);
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _useEnvironmentCDFMaps = false;
-
-    /**
-     * Specifies whether IBL filtering will use the CDF (cumulative distribution function)
-     * maps for importance sampling.
-     */
-    public get useEnvironmentCDFMaps(): boolean {
-        return this._useEnvironmentCDFMaps;
-    }
-    public set useEnvironmentCDFMaps(value: boolean) {
-        if (this._useEnvironmentCDFMaps === value) {
-            return;
-        }
-
-        this._useEnvironmentCDFMaps = value;
-        if (this._useEnvironmentCDFMaps && !this._importanceSamplingRenderer) {
-            this._importanceSamplingRenderer = new ImportanceSamplingRenderer(this);
-        }
-        if (this._useEnvironmentCDFMaps && this.environmentTexture) {
-            this._importanceSamplingRenderer.iblSource = this.environmentTexture;
-        }
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-    }
-    private _importanceSamplingRenderer: ImportanceSamplingRenderer;
-
-    /**
-     * The renderer that creates CDF (cumulative distribution function) textures
-     * for importance sampling.
-     */
-    public get importanceSamplingRenderer(): ImportanceSamplingRenderer {
-        return this._importanceSamplingRenderer;
-    }
     /**
      * The list of postprocesses added to the scene
      */
@@ -954,6 +919,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * This Observable will when an animation file has been imported into the scene.
      */
     public onAnimationFileImportedObservable = new Observable<Scene>();
+
+    /**
+     * An event triggered when the environmentTexture is changed.
+     */
+    public onEnvironmentTextureChangedObservable = new Observable<Nullable<BaseTexture>>();
 
     /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
@@ -5179,8 +5149,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        this.importanceSamplingRenderer?.dispose();
-
         // Release animation groups
         this._disposeList(this.animationGroups);
 
@@ -5297,6 +5265,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
         this.onClearColorChangedObservable.clear();
+        this.onEnvironmentTextureChangedObservable.clear();
         this._isDisposed = true;
     }
 
