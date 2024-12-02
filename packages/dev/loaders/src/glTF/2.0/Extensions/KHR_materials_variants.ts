@@ -10,20 +10,12 @@ import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { GLTFLoaderExtensionOptions } from "../../glTFFileLoader";
 
 const NAME = "KHR_materials_variants";
 
-export type MaterialVariantsController = {
-    /**
-     * The list of available variant names for this asset.
-     */
-    readonly variants: string[];
-
-    /**
-     * Gets or sets the selected variant.
-     */
-    selectedVariant: string;
-};
+// NOTE: This "backward" type definition is needed due to the way namespaces are handled in the UMD bundle.
+export type MaterialVariantsController = Parameters<Required<GLTFLoaderExtensionOptions[typeof NAME]>["onLoaded"]>[0];
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -35,8 +27,19 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_variants"]: Partial<{
             /**
              * Defines a callback that will be called if material variants are loaded.
+             * @experimental
              */
-            onLoaded: (controller: MaterialVariantsController) => void;
+            onLoaded: (controller: {
+                /**
+                 * The list of available variant names for this asset.
+                 */
+                readonly variants: readonly string[];
+
+                /**
+                 * Gets or sets the selected variant.
+                 */
+                selectedVariant: string;
+            }) => void;
         }>;
     }
 }
