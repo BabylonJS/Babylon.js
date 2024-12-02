@@ -33,7 +33,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
 
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_VERTEX_UPDATE_POSITION: `
                 #ifdef GREASED_LINE_CAMERA_FACING
                     var grlPositionOffset: vec3f = input.grl_offsets;
@@ -42,7 +41,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     positionUpdated = (positionUpdated + input.grl_offsets) + (input.grl_slopes * input.grl_widths);
                 #endif
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_VERTEX_MAIN_END: `
                 vertexOutputs.grlColorPointer = input.grl_colorPointers;
 
@@ -116,7 +114,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
     if (shaderType === "fragment") {
         return {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_DEFINITIONS: `
                     varying grlCounters: f32;
                     varying grlColorPointer: 32;
@@ -124,7 +121,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     var grl_colors: texture_2d<f32>;
                     var grl_colorsSampler: sampler;
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_MAIN_END: `
                     let grlColorMode: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.x;
                     let grlVisibility: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.y;

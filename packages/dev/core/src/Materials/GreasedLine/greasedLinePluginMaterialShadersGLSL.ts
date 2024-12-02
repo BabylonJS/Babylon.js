@@ -10,7 +10,6 @@ import { GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullable<{ [pointName: string]: string }> {
     if (shaderType === "vertex") {
         const obj: any = {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_VERTEX_DEFINITIONS: `
                 attribute float grl_widths;
                 attribute vec3 grl_offsets;
@@ -32,7 +31,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     attribute float grl_counters;
                 #endif
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_VERTEX_UPDATE_POSITION: `
                 #ifdef GREASED_LINE_CAMERA_FACING
                     vec3 grlPositionOffset = grl_offsets;
@@ -41,7 +39,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     positionUpdated = (positionUpdated + grl_offsets) + (grl_slopes * grl_widths);
                 #endif
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_VERTEX_MAIN_END: `
                 grlColorPointer = grl_colorPointers;
 
@@ -107,13 +104,11 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
     if (shaderType === "fragment") {
         return {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_DEFINITIONS: `
                     varying float grlCounters;
                     varying float grlColorPointer;
                     uniform sampler2D grl_colors;
                 `,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_MAIN_END: `
                     float grlColorMode = grl_colorMode_visibility_colorsWidth_useColors.x;
                     float grlVisibility = grl_colorMode_visibility_colorsWidth_useColors.y;
@@ -158,7 +153,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                             }
                         }
                     #endif
-
                 `,
         };
     }
