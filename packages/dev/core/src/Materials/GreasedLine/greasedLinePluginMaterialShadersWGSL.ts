@@ -55,7 +55,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlNext: vec3f = input.grl_nextAndCounters.xyz;
                     vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
-                    let grlMatrix: mat4x4f = scene.viewProjection * finalWorld;
+                    let grlMatrix: mat4x4f = uniforms.viewProjection * finalWorld;
                     var grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
                     let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
                     let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
