@@ -2,10 +2,10 @@ import type { Nullable } from "../../types";
 import { GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 
 /**
- * Returns GLSL custom shader code
+ * Returns WGSL custom shader code
  * @param shaderType vertex or fragment
  * @param cameraFacing is in camera facing mode?
- * @returns GLSL custom shader code
+ * @returns WGSL custom shader code
  */
 export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullable<{ [pointName: string]: string }> {
     if (shaderType === "vertex") {
@@ -152,7 +152,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                     #ifdef GREASED_LINE_HAS_COLOR
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                           fragmentOutputs.color = vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            fragmentOutputs.color = vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
                             fragmentOutputs.color += vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {

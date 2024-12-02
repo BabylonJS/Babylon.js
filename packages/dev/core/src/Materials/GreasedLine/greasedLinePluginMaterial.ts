@@ -12,6 +12,7 @@ import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { BaseTexture } from "../Textures/baseTexture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { ShaderLanguage } from "../shaderLanguage";
+
 import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
@@ -196,20 +197,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         this._engine.onDisposeObservable.add(() => {
             GreasedLineTools.DisposeEmptyColorsTexture();
         });
-
-        // this._initCustomShaderCode(material.shaderLanguage);
     }
-
-    // private _customShaderCodeGetter: (shaderType: string, cameraFacing: boolean) => Nullable<{ [pointName: string]: string }>;
-
-    // private async _initCustomShaderCode(shaderLanguage: ShaderLanguage) {
-    //     const customShaderCodeSuffix = this._isGLSL(shaderLanguage) ? "GL" : "WG";
-    //     this._customShaderCodeGetter = (await import(`./greasedLinePluginMaterialShaders${customShaderCodeSuffix}SL`)).getCustomCode;
-    //     this.markAllDefinesAsDirty();
-    //     this._enable(true); // always enabled
-    //     Logger.Log("Enabling plugin");
-    //     this._material.markAsDirty(Material.AllDirtyFlag);
-    // }
 
     /**
      * Get the shader attributes
