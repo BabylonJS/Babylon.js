@@ -155,7 +155,7 @@ export type ViewerDetails = {
      * @param screenY The y coordinate in screen space.
      * @returns A PickingInfo if an object was picked, otherwise null.
      */
-    pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
+    pick(screenX: number, screenY: number): Nullable<PickingInfo>;
 };
 
 export type ViewerOptions = Partial<
@@ -372,9 +372,9 @@ export class Viewer implements IDisposable {
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
 
-            scene.onPointerObservable.add(async (pointerInfo) => {
+            scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                    const pickingInfo = this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
                     if (pickingInfo?.pickedPoint) {
                         camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
                     } else {
@@ -1065,21 +1065,17 @@ export class Viewer implements IDisposable {
         this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
     }
 
-    private _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
-        return new Promise((resolve) => {
-            this._details.scene.onAfterRenderObservable.addOnce(() => {
-                if (this._details.model) {
-                    const model = this._details.model;
-                    model.meshes.forEach((mesh) => mesh.refreshBoundingInfo(true, true));
-                    const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
-                    if (pickingInfo.hit) {
-                        resolve(pickingInfo);
-                    }
-                }
+    private _pick(screenX: number, screenY: number): Nullable<PickingInfo> {
+        if (this._details.model) {
+            const model = this._details.model;
+            model.meshes.forEach((mesh) => mesh.refreshBoundingInfo(true, true));
+            const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
+            if (pickingInfo.hit) {
+                return pickingInfo;
+            }
+        }
 
-                resolve(null);
-            });
-        });
+        return null;
     }
 
     /**
