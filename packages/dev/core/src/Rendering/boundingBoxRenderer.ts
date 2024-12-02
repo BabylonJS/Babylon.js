@@ -182,14 +182,12 @@ export class BoundingBoxRenderer implements ISceneComponent {
     private _renderPassIdForOcclusionQuery: number;
     /**
      * Internal buffer for instanced rendering
-     * @internal
      */
     private _matrixBuffer: Nullable<Buffer> = null;
     private _matrices: Nullable<Float32Array> = null;
 
     /**
      * Internal state of whether instanced rendering enabled
-     * @internal
      */
     protected _useInstances = false;
     /**
