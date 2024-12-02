@@ -1,6 +1,7 @@
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
+import type { IShadowLight } from "core/Lights/shadowLight";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
@@ -95,6 +96,7 @@ export class PreviewManager {
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
+            this._engine.getCaps().parallelShaderCompile = undefined;
         }
 
         const canvas = this._engine.getRenderingCanvas();
@@ -178,6 +180,10 @@ export class PreviewManager {
         for (const light of currentLights) {
             light.dispose();
         }
+
+        // Create a dummy light, which will be used for a ShadowLight input in case no directional light is selected in the UI
+        const dummyLight = new DirectionalLight("dummy", new Vector3(0, 1, 0), this._scene);
+        dummyLight.intensity = 0.0;
 
         // Create new lights based on settings
         if (this._globalState.hemisphericLight) {
@@ -263,9 +269,11 @@ export class PreviewManager {
         this._scene.cameras.length = 0;
         this._scene.cameraToUseForPointers = null;
 
+        const dummyLight = this._scene.getLightByName("dummy") as IShadowLight;
+
         const directionalLights: DirectionalLight[] = [];
         for (const light of this._scene.lights) {
-            if (light instanceof DirectionalLight) {
+            if (light instanceof DirectionalLight && light.name !== "dummy") {
                 directionalLights.push(light);
             }
         }
@@ -308,6 +316,8 @@ export class PreviewManager {
                 if (curLightIndex < directionalLights.length) {
                     input.value = directionalLights[curLightIndex++];
                     curLightIndex = curLightIndex % directionalLights.length;
+                } else {
+                    input.value = dummyLight;
                 }
             }
         }
