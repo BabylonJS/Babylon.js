@@ -57,11 +57,11 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     grlCounters = grl_nextAndCounters.w;
 
                     mat4 grlMatrix = viewProjection * finalWorld;
-                    vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0 );
-                    vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
-                    vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );
+                    vec4 grlFinalPosition = grlMatrix * vec4(positionUpdated, 1.0);
+                    vec4 grlPrevPos = grlMatrix * vec4(grlPrevious + grlPositionOffset, 1.0);
+                    vec4 grlNextPos = grlMatrix * vec4(grlNext + grlPositionOffset, 1.0);
 
-                    vec2 grlCurrentP = grlFix( grlFinalPosition, grlAspect);
+                    vec2 grlCurrentP = grlFix(grlFinalPosition, grlAspect);
                     vec2 grlPrevP = grlFix(grlPrevPos, grlAspect);
                     vec2 grlNextP = grlFix(grlNextPos, grlAspect);
 
@@ -89,7 +89,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
                         grlNormal.xy *= grlFinalPosition.w;
-                        grlNormal.xy /= ( vec4( grl_aspect_resolution_lineWidth.yz, 0., 1. ) * grl_projection ).xy;
+                        grlNormal.xy /= (vec4(grl_aspect_resolution_lineWidth.yz, 0., 1.) * grl_projection).xy;
                     #endif
 
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
@@ -126,7 +126,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     float grlDashRatio = grl_dashOptions.w;
 
                     gl_FragColor.a *= step(grlCounters, grlVisibility);
-                    if( gl_FragColor.a == 0. ) discard;
+                    if(gl_FragColor.a == 0.) discard;
 
                     if(grlUseDash == 1.){
                         gl_FragColor.a *= ceil(mod(grlCounters + grlDashOffset, grlDashArray) - (grlDashArray * grlDashRatio));

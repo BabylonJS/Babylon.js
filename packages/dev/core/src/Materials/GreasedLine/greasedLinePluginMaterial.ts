@@ -11,13 +11,14 @@ import { MaterialDefines } from "../materialDefines";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { BaseTexture } from "../Textures/baseTexture";
 import { RegisterClass } from "../../Misc/typeStore";
+import { ShaderLanguage } from "../shaderLanguage";
 import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import { ShaderLanguage } from "../shaderLanguage";
 import { getCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
 import { getCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
+
 /**
  * @internal
  */
@@ -261,21 +262,29 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             ubo.push({ name: "grl_projection", size: 16, type: "mat4" }, { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" });
         }
 
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            ubo.push({
+                name: "viewProjection",
+                size: 16,
+                type: "mat4",
+            });
+        }
+
         return {
             ubo,
             vertex:
                 this._cameraFacing && this._isGLSL(shaderLanguage)
                     ? `
-        uniform vec4 grl_aspect_resolution_lineWidth;
-        uniform mat4 grl_projection;
+                    uniform vec4 grl_aspect_resolution_lineWidth;
+                    uniform mat4 grl_projection;
     `
                     : "",
             fragment: this._isGLSL(shaderLanguage)
                 ? `
-        uniform vec4 grl_dashOptions;
-        uniform vec2 grl_textureSize;
-        uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
-        uniform vec3 grl_singleColor;
+                    uniform vec4 grl_dashOptions;
+                    uniform vec2 grl_textureSize;
+                    uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
+                    uniform vec3 grl_singleColor;
     `
                 : "",
         };
@@ -297,6 +306,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
             if (activeCamera) {
                 uniformBuffer.updateMatrix("grl_projection", activeCamera.getProjectionMatrix());
+                uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
             } else {
                 throw Error("GreasedLinePluginMaterial requires an active camera.");
             }

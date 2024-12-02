@@ -57,7 +57,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlNext: vec3f = input.grl_nextAndCounters.xyz;
                     vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
-                    let grlMatrix: mat4x4f = scene.viewProjection * finalWorld;
+                    let grlMatrix: mat4x4f = uniforms.viewProjection * finalWorld;
                     var grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
                     let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
                     let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
@@ -81,7 +81,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                     var grlNormal: vec4f = vec4f(-grlDir.y, grlDir.x, 0.0, 1.0);
 
-                    let grlHalfWidth = 0.5 * grlWidth;
+                    let grlHalfWidth: f32 = 0.5 * grlWidth;
                     #if defined(GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM)
                         grlNormal.x *= -grlHalfWidth;
                         grlNormal.y *= -grlHalfWidth;
@@ -96,13 +96,13 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         grlNormal.x *= grlFinalPosition.w;
                         grlNormal.y *= grlFinalPosition.w;
 
-                        let pr = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
+                        let pr: f32 = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
                         grlNormal.x /= pr.x;
                         grlNormal.y /= pr.y;
                     #endif
 
                     vertexOutputs.position = vec4f(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
-                    vertexOutputs.vPositionW = vec3f(vertexOutputs.position.xyz);
+                    vertexOutputs.vPositionW = vertexOutputs.position.xyz;
                 
                 #else
                     vertexOutputs.grlCounters = input.grl_counters;
@@ -110,8 +110,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                 `,
         };
 
-        // TODO:
-        // this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
+        cameraFacing && (obj["!vertexOutputs\\.position\\s=\\sscene\\.viewProjection\\s\\*\\sworldPos;"] = "//"); // not needed for camera facing GRL
         return obj;
     }
 
