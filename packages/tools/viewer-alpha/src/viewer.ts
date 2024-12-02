@@ -12,10 +12,12 @@ import type {
     Mesh,
     Nullable,
     Observer,
+    PickingInfo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -146,6 +148,14 @@ export type ViewerDetails = {
      * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
      */
     suspendRendering(): IDisposable;
+
+    /**
+     * Picks the object at the given screen coordinates.
+     * @param screenX The x coordinate in screen space.
+     * @param screenY The y coordinate in screen space.
+     * @returns A PickingInfo if an object was picked, otherwise null.
+     */
+    pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
 export type ViewerOptions = Partial<
@@ -360,12 +370,26 @@ export class Viewer implements IDisposable {
             });
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
+            camera.useInputToRestoreState = false;
+
+            scene.onPointerObservable.add(async (pointerInfo) => {
+                if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
+                    const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                    if (pickingInfo?.pickedPoint) {
+                        camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
+                    } else {
+                        camera.restoreState();
+                    }
+                }
+            });
+
             this._details = {
                 viewer: this,
                 scene,
                 camera,
                 model: null,
-                suspendRendering: this._suspendRendering.bind(this),
+                suspendRendering: () => this._suspendRendering(),
+                pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
             };
         }
         this._details.scene.skipFrustumClipping = true;
@@ -919,6 +943,11 @@ export class Viewer implements IDisposable {
         if (!this._renderLoopController) {
             const render = () => {
                 this._details.scene.render();
+
+                // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                this._details.camera.panningSensibility = 10000 / this._details.camera.radius;
+                this._details.camera.speed = this._details.camera.radius * 0.2;
+
                 if (this.isAnimationPlaying) {
                     this.onAnimationProgressChanged.notifyObservers();
                     this._autoRotationBehavior.resetLastInteractionTime();
@@ -941,11 +970,12 @@ export class Viewer implements IDisposable {
     }
 
     private _updateCamera(interpolate = false): void {
-        // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
+
+        this._details.camera.useAutoRotationBehavior = true;
 
         const currentAlpha = this._details.camera.alpha;
         const currentBeta = this._details.camera.beta;
@@ -980,18 +1010,14 @@ export class Viewer implements IDisposable {
 
             goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
-        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
         this._details.camera.radius = goalRadius;
         this._details.camera.target = goalTarget;
-        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.001;
+        this._details.camera.upperRadiusLimit = goalRadius * 5;
+        this._details.camera.minZ = goalRadius * 0.001;
         this._details.camera.maxZ = goalRadius * 1000;
-        this._details.camera.speed = goalRadius * 0.2;
-        this._details.camera.useAutoRotationBehavior = true;
-        this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
-        this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
         this._details.camera.wheelDeltaPercentage = 0.01;
         this._details.camera.pinchDeltaPercentage = 0.01;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
@@ -1037,6 +1063,23 @@ export class Viewer implements IDisposable {
 
     private _applyAnimationSpeed() {
         this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
+    }
+
+    private _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
+        return new Promise((resolve) => {
+            this._details.scene.onAfterRenderObservable.addOnce(() => {
+                if (this._details.model) {
+                    const model = this._details.model;
+                    model.meshes.forEach((mesh) => mesh.refreshBoundingInfo(true, true));
+                    const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
+                    if (pickingInfo.hit) {
+                        resolve(pickingInfo);
+                    }
+                }
+
+                resolve(null);
+            });
+        });
     }
 
     /**
