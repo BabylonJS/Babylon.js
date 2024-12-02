@@ -5149,6 +5149,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release lights
         this._disposeList(this.lights);
 
+        // Release materials
+        if (this._defaultMaterial) {
+            this._defaultMaterial.dispose();
+        }
+        this._disposeList(this.multiMaterials);
+        this._disposeList(this.materials);
+
         // Release meshes
         this._disposeList(this.meshes, (item) => item.dispose(true));
         this._disposeList(this.transformNodes, (item) => item.dispose(true));
@@ -5156,13 +5163,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release cameras
         const cameras = this.cameras;
         this._disposeList(cameras);
-
-        // Release materials
-        if (this._defaultMaterial) {
-            this._defaultMaterial.dispose();
-        }
-        this._disposeList(this.multiMaterials);
-        this._disposeList(this.materials);
 
         // Release particles
         this._disposeList(this.particleSystems);

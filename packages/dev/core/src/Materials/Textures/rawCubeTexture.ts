@@ -17,7 +17,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param data defines the array of data to use to create each face
      * @param size defines the size of the textures
      * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
      * @param generateMipMaps  defines if the engine should generate the mip levels
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
@@ -28,7 +28,7 @@ export class RawCubeTexture extends CubeTexture {
         data: Nullable<ArrayBufferView[]>,
         size: number,
         format: number = Constants.TEXTUREFORMAT_RGBA,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         generateMipMaps: boolean = false,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -43,7 +43,7 @@ export class RawCubeTexture extends CubeTexture {
      * Updates the raw cube texture.
      * @param data defines the data to store
      * @param format defines the data format
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
      */

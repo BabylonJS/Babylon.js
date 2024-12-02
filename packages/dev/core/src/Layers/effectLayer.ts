@@ -62,7 +62,7 @@ export interface IEffectLayerOptions {
     renderingGroupId: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
      */
     mainTextureType: number;
 
@@ -362,7 +362,7 @@ export abstract class EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             generateStencilBuffer: false,
             ...options,
         };

@@ -238,7 +238,7 @@ export class _IblShadowsImportanceSamplingRenderer {
             height: this._scene.getEngine().getRenderHeight(),
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine: this._engine,
-            textureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             uniforms: ["sizeParams"],
             samplers: ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"],
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",

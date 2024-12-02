@@ -104,6 +104,14 @@ export interface VectorStatic<T extends Vector<any[], _I>, _I = TensorLike<T>> e
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
 export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2Like {
+    /**
+     * If the first vector is flagged with integers (as everything is 0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent vectors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all Vector2 instances that it creates.
+     * But the original Vector2 instances are unchanged and has a "deprecated map".
+     * If we keep using the Vector2 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Vector2(0.5, 0.5) as DeepImmutable<Vector2>;
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     /**
@@ -1169,6 +1177,14 @@ Object.defineProperties(Vector2.prototype, {
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
 export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, IVector3Like {
+    /**
+     * If the first vector is flagged with integers (as everything is 0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent vectors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all Vector3 instances that it creates.
+     * But the original Vector3 instances are unchanged and has a "deprecated map".
+     * If we keep using the Vector3 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Vector3(0.5, 0.5, 0.5) as DeepImmutable<Vector3>;
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -3388,6 +3404,14 @@ Object.defineProperties(Vector3.prototype, {
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
 export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4Like {
+    /**
+     * If the first vector is flagged with integers (as everything is 0,0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent vectors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all Vector4 instances that it creates.
+     * But the original Vector4 instances are unchanged and has a "deprecated map".
+     * If we keep using the Vector4 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Vector4(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Vector4>;
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
     /**
@@ -4424,6 +4448,14 @@ Object.defineProperties(Vector4.prototype, {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
 export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuaternionLike {
+    /**
+     * If the first quaternion is flagged with integers (as everything is 0,0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
+     * If subsequent quaternion are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
+     * and henceforth it will use floating-point representation for all quaternion instances that it creates.
+     * But the original quaternion instances are unchanged and has a "deprecated map".
+     * If we keep using the quaternion instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
+     */
+    static _V8PerformanceHack = new Quaternion(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Quaternion>;
     /** @internal */
     public _x: number;
 

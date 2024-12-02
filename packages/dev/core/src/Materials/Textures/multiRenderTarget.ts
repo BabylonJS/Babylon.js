@@ -104,6 +104,11 @@ export interface IMultiRenderTargetOptions {
      * Label of the RenderTargetWrapper (used for debugging only)
      */
     label?: string;
+    /**
+     * Define if the textures should not be created by the MultiRenderTarget (default: false)
+     * If true, you will need to set the textures yourself by calling setTexture on the MultiRenderTarget.
+     */
+    dontCreateTextures?: boolean;
 }
 
 /**
@@ -258,7 +263,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
             } else {
-                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
+                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_BYTE);
             }
 
             if (options && options.samplingModes && options.samplingModes[i] !== undefined) {

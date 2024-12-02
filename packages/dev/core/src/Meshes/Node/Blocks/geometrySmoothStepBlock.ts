@@ -15,8 +15,8 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("edge0", NodeGeometryBlockConnectionPointTypes.Float);
-        this.registerInput("edge1", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("edge0", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("edge1", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -62,7 +62,7 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock() {
-        if (!this.value.isConnected || !this.edge0.isConnected || !this.edge1.isConnected) {
+        if (!this.value.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;

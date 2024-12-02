@@ -1,5 +1,17 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AbstractMesh, EffectLayer, Mesh, Nullable, Observer, Scene, WebGPUDrawContext, WebGPUShaderProcessor, WebGPUPipelineContext } from "core/index";
+import type {
+    AbstractEngine,
+    AbstractMesh,
+    EffectLayer,
+    Mesh,
+    Nullable,
+    Observer,
+    Scene,
+    WebGPUDrawContext,
+    WebGPUShaderProcessor,
+    WebGPUPipelineContext,
+    GaussianSplattingMesh,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
@@ -78,6 +90,10 @@ export class SnapshotRenderingHelper {
 
                 if (mesh.skeleton) {
                     mesh.transferToEffect(mesh.computeWorldMatrix(true));
+                }
+
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    (mesh as GaussianSplattingMesh)._postToWorker();
                 }
 
                 if (mesh.morphTargetManager && mesh.subMeshes) {

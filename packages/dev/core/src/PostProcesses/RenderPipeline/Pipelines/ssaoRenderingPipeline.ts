@@ -247,7 +247,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._blurVPostProcess = new BlurPostProcess(
             "BlurV",
@@ -258,7 +258,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
 
         this._blurHPostProcess.onActivateObservable.add(() => {

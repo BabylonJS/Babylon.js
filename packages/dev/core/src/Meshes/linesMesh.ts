@@ -105,7 +105,7 @@ export class LinesMesh extends Mesh {
             shaderLanguage: ShaderLanguage.GLSL,
         };
 
-        if (useVertexAlpha === false) {
+        if (!useVertexAlpha) {
             options.needAlphaBlending = false;
         } else {
             options.defines!.push("#define VERTEXALPHA");

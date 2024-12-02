@@ -333,7 +333,7 @@ export class NodeGeometry {
     private _initializeBlock(node: NodeGeometryBlock, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
-            node.autoConfigure();
+            node.autoConfigure(this);
         }
         node._preparationId = this._buildId;
 

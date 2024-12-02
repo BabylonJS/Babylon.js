@@ -41,6 +41,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE4 = false;
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
+    public SH_DEGREE = 0;
 
     /**
      * Constructor of the defines.
@@ -129,6 +130,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
 
+        // SH is disabled for webGL1
+        if (engine.version > 1 || engine.isWebGPU) {
+            defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
+        }
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -139,8 +145,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal"];
-            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
+            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal", "vEyePosition"];
+            const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
 
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
@@ -238,6 +244,12 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+
+            if (gsMesh.shTextures) {
+                for (let i = 0; i < gsMesh.shTextures?.length; i++) {
+                    effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
+                }
+            }
         }
     }
     /**
