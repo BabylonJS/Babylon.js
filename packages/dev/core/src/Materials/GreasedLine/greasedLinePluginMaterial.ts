@@ -199,7 +199,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         // this._initCustomShaderCode(material.shaderLanguage);
     }
 
-    private _customShaderCodeGetter: (shaderType: string, cameraFacing: boolean) => Nullable<{ [pointName: string]: string }>;
+    // private _customShaderCodeGetter: (shaderType: string, cameraFacing: boolean) => Nullable<{ [pointName: string]: string }>;
 
     // private async _initCustomShaderCode(shaderLanguage: ShaderLanguage) {
     //     const customShaderCodeSuffix = this._isGLSL(shaderLanguage) ? "GL" : "WG";

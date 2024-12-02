@@ -50,7 +50,6 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     float grlAspect = grl_aspect_resolution_lineWidth.x;
                     float grlBaseWidth = grl_aspect_resolution_lineWidth.w;
 
-
                     vec3 grlPrevious = grl_previousAndSide.xyz;
                     float grlSide = grl_previousAndSide.w;
 
@@ -62,21 +61,24 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
                     vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );
 
-                    vec2 grlCurrentP = grlFix( grlFinalPosition, grlAspect );
-                    vec2 grlPrevP = grlFix( grlPrevPos, grlAspect );
-                    vec2 grlNextP = grlFix( grlNextPos, grlAspect );
+                    vec2 grlCurrentP = grlFix( grlFinalPosition, grlAspect);
+                    vec2 grlPrevP = grlFix(grlPrevPos, grlAspect);
+                    vec2 grlNextP = grlFix(grlNextPos, grlAspect);
 
                     float grlWidth = grlBaseWidth * grl_widths;
 
                     vec2 grlDir;
-                    if( grlNextP == grlCurrentP ) grlDir = normalize( grlCurrentP - grlPrevP );
-                    else if( grlPrevP == grlCurrentP ) grlDir = normalize( grlNextP - grlCurrentP );
-                    else {
-                        vec2 grlDir1 = normalize( grlCurrentP - grlPrevP );
-                        vec2 grlDir2 = normalize( grlNextP - grlCurrentP );
-                        grlDir = normalize( grlDir1 + grlDir2 );
+                    if (grlNextP == grlCurrentP) {
+                        grlDir = normalize(grlCurrentP - grlPrevP);
+                    } else if (grlPrevP == grlCurrentP) {
+                        grlDir = normalize(grlNextP - grlCurrentP);
+                    } else {
+                        vec2 grlDir1 = normalize(grlCurrentP - grlPrevP);
+                        vec2 grlDir2 = normalize(grlNextP - grlCurrentP);
+                        grlDir = normalize(grlDir1 + grlDir2);
                     }
-                    vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
+                    vec4 grlNormal = vec4(-grlDir.y, grlDir.x, 0., 1.);
+
                     #ifdef GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM
                         grlNormal.xy *= -.5 * grlWidth;
                     #else

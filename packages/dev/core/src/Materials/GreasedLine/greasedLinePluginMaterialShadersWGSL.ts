@@ -27,8 +27,8 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         return res;
                     }
                 #else
-                    attribute vec3 grl_slopes;
-                    attribute f32 grl_counters;
+                    attribute grl_slopes: f32;
+                    attribute grl_counters: f32;
                 #endif
 
 
@@ -37,7 +37,7 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
             CUSTOM_VERTEX_UPDATE_POSITION: `
                 #ifdef GREASED_LINE_CAMERA_FACING
                     var grlPositionOffset: vec3f = input.grl_offsets;
-                    positionUpdated = positionUpdated + grlPositionOffset;
+                    positionUpdated += grlPositionOffset;
                 #else
                     positionUpdated = (positionUpdated + input.grl_offsets) + (input.grl_slopes * input.grl_widths);
                 #endif
@@ -96,12 +96,14 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         grlNormal.x *= grlFinalPosition.w;
                         grlNormal.y *= grlFinalPosition.w;
 
-                        let resolution = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0);
-                        grlNormal.x /= (resolution * uniforms.grl_projection).x;
-                        grlNormal.y /= (resolution * uniforms.grl_projection).y;
+                        let pr = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
+                        grlNormal.x /= pr.x;
+                        grlNormal.y /= pr.y;
                     #endif
 
                     vertexOutputs.position = vec4f(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
+                    vertexOutputs.vPositionW = vec3f(vertexOutputs.position.xyz);
+                
                 #else
                     vertexOutputs.grlCounters = input.grl_counters;
                 #endif
@@ -151,11 +153,11 @@ export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                     #ifdef GREASED_LINE_HAS_COLOR
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                           fragmentOutputs.color = vec4f(uniforms.grl_singleColor, 1.0);
+                           fragmentOutputs.color = vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb + uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            fragmentOutputs.color += vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb * uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            fragmentOutputs.color *= vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
                         }
                     #else
                         if (grlUseColors == 1.) {
