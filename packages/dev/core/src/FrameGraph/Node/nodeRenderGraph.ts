@@ -24,6 +24,7 @@ import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
@@ -581,17 +582,35 @@ export class NodeRenderGraph {
 
         this.editorData = null;
 
-        // Source
-        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer color", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        // Source textures
+        const colorTexture = new NodeRenderGraphInputBlock("Color Texture", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
+        colorTexture.creationOptions.options.samples = 4;
+
+        const depthTexture = new NodeRenderGraphInputBlock("Depth Texture", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        depthTexture.creationOptions.options.samples = 4;
 
         // Clear texture
         const clear = new NodeRenderGraphClearBlock("Clear", this._frameGraph, this._scene);
+        clear.clearDepth = true;
+        clear.clearStencil = true;
 
-        backBuffer.output.connectTo(clear.texture);
+        colorTexture.output.connectTo(clear.texture);
+        depthTexture.output.connectTo(clear.depth);
+
+        // Render objects
+        const camera = new NodeRenderGraphInputBlock("Camera", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
+        const objectList = new NodeRenderGraphInputBlock("Object List", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+
+        const mainRendering = new NodeRenderGraphObjectRendererBlock("Main Rendering", this._frameGraph, this._scene);
+
+        camera.output.connectTo(mainRendering.camera);
+        objectList.output.connectTo(mainRendering.objects);
+        clear.output.connectTo(mainRendering.destination);
+        clear.outputDepth.connectTo(mainRendering.depth);
 
         // Final output
         const output = new NodeRenderGraphOutputBlock("Output", this._frameGraph, this._scene);
-        clear.output.connectTo(output.texture);
+        mainRendering.output.connectTo(output.texture);
 
         this.outputBlock = output;
     }
