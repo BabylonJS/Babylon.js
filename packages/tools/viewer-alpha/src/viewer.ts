@@ -15,6 +15,8 @@ import type {
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
+import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -287,12 +289,18 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    /**
+     * Fired when the selected material variant changes.
+     */
+    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
+
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
+    private _materialVariantsController: Nullable<MaterialVariantsController> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -617,6 +625,29 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * The list of material variant names for the currently loaded model.
+     */
+    public get materialVariants(): readonly string[] {
+        return this._materialVariantsController?.variants ?? [];
+    }
+
+    /**
+     * The currently selected material variant.
+     */
+    public get selectedMaterialVariant(): Nullable<string> {
+        return this._materialVariantsController?.selectedVariant ?? null;
+    }
+
+    public set selectedMaterialVariant(value: string) {
+        if (value !== this.selectedMaterialVariant && this._materialVariantsController?.variants.includes(value)) {
+            this._snapshotHelper.disableSnapshotRendering();
+            this._materialVariantsController.selectedVariant = value;
+            this._snapshotHelper.enableSnapshotRendering();
+            this.onSelectedMaterialVariantChanged.notifyObservers();
+        }
+    }
+
+    /**
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
@@ -648,21 +679,35 @@ export class Viewer implements IDisposable {
             }
         };
 
-        // Enable transparency as coverage by default to be 3D Commerce compliant by default.
-        // https://doc.babylonjs.com/setup/support/3D_commerce_certif
-        if (!options?.pluginOptions?.gltf?.transparencyAsCoverage) {
-            options = {
-                ...options,
-                pluginOptions: {
-                    ...options?.pluginOptions,
-                    gltf: {
-                        ...options?.pluginOptions?.gltf,
-                        transparencyAsCoverage: true,
+        const originalOnMaterialVariantsLoaded = options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+        const onMaterialVariantsLoaded: typeof originalOnMaterialVariantsLoaded = (controller) => {
+            originalOnMaterialVariantsLoaded?.(controller);
+            this._materialVariantsController = controller;
+        };
+
+        options = {
+            ...options,
+            pluginOptions: {
+                ...options?.pluginOptions,
+                gltf: {
+                    // Enable transparency as coverage by default to be 3D Commerce compliant by default.
+                    // https://doc.babylonjs.com/setup/support/3D_commerce_certif
+                    transparencyAsCoverage: true,
+                    ...options?.pluginOptions?.gltf,
+                    extensionOptions: {
+                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        KHR_materials_variants: {
+                            ...options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants,
+                            // Capture the material variants controller when it is loaded.
+                            onLoaded: onMaterialVariantsLoaded,
+                        },
                     },
                 },
-                onProgress,
-            };
-        }
+            },
+            // Pass a progress callback to update the loading progress.
+            onProgress,
+        };
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
@@ -672,6 +717,8 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.disableSnapshotRendering();
             this._details.model?.dispose();
             this._details.model = null;
+            this._materialVariantsController = null;
+            this.onSelectedMaterialVariantChanged.notifyObservers();
             this.selectedAnimation = -1;
 
             try {
@@ -680,6 +727,7 @@ export class Viewer implements IDisposable {
                     this._modelLoadingProgress = 0;
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                    this.onSelectedMaterialVariantChanged.notifyObservers();
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
                         group.pause();
