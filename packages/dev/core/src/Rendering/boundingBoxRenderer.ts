@@ -197,10 +197,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     public updatable = true;
 
-    /** @internal */
-    public _drawWrapperFront: Nullable<DrawWrapper> = null;
-    /** @internal */
-    public _drawWrapperBack: Nullable<DrawWrapper> = null;
+    private _drawWrapperFront: Nullable<DrawWrapper> = null;
+    private _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
      * Instantiates a new bounding box renderer in a scene.
@@ -594,7 +592,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
         let instancesCount = 0;
 
         for (let boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
-            // p = performance.now()
             const boundingBox = this.renderList.data[boundingBoxIndex];
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
@@ -697,10 +694,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * @param buffer buffer to set
      * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set
      */
-    _createInstanceBuffer(buffer: Float32Array, staticBuffer: boolean): void {
+    private _createInstanceBuffer(buffer: Float32Array, staticBuffer: boolean): void {
         const vertexBuffers = this._vertexBuffers;
         this._cleanupInstanceBuffer();
-        // this.instancesCount = buffer.length / stride;
         const matrixBuffer = new Buffer(this.scene.getEngine(), buffer, !staticBuffer, 16, false, true);
 
         vertexBuffers.world0 = matrixBuffer.createVertexBuffer("world0", 0, 4);
@@ -715,7 +711,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * Clean up buffers for instanced rendering
      * @internal
      */
-    _cleanupInstanceBuffer(): void {
+    private _cleanupInstanceBuffer(): void {
         const vertexBuffers = this._vertexBuffers;
         if (vertexBuffers.world0) {
             vertexBuffers.world0.dispose();
@@ -744,7 +740,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * Clean up resources for instanced rendering
      * @internal
      */
-    _cleanupInstances(): void {
+    private _cleanupInstances(): void {
         this._cleanupInstanceBuffer();
         if (this._drawWrapperFront) {
             this._drawWrapperFront.dispose();
