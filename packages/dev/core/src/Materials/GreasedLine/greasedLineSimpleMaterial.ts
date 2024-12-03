@@ -16,6 +16,9 @@ import { ShaderLanguage } from "../shaderLanguage";
 // import "../../Shaders/greasedLine.vertex";
 import "../../ShadersWGSL/greasedLine.fragment";
 import "../../ShadersWGSL/greasedLine.vertex";
+import { TextureSampler } from "../Textures/textureSampler";
+import { Constants } from "../../Engines/constants";
+import { UniformBuffer } from "../uniformBuffer";
 
 /**
  * GreasedLineSimpleMaterial
@@ -73,6 +76,29 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         const engine = scene.getEngine();
         const isWGSL = engine.isWebGPU && !(options.forceGLSL || GreasedLineSimpleMaterial.ForceGLSL);
 
+        let grlUBO: Nullable<UniformBuffer> = null;
+        if (isWGSL) {
+            grlUBO = new UniformBuffer(engine);
+
+            // TODO: color mode not set - this is a vector2! fix this!
+            grlUBO.addUniform("grl_colorModeAndColorDistributionType", 1);
+            grlUBO.updateFloat("grl_colorModeAndColorDistributionType", options.colorDistributionType ?? GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT);
+
+            grlUBO.addUniform("grlWidth", 1);
+            grlUBO.updateFloat(
+                "grlWidth",
+                options.width
+                    ? options.width
+                    : options.sizeAttenuation && options.cameraFacing
+                      ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
+                      : GreasedLineMaterialDefaults.DEFAULT_WIDTH
+            );
+
+            // grlUBO.addUniform("")
+
+            grlUBO.update();
+        }
+
         super(
             name,
             scene,
@@ -81,6 +107,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 fragment: "greasedLine",
             },
             {
+                uniformBuffers: isWGSL ? ["Scene"] : undefined,
                 attributes,
                 uniforms: [
                     "world",
@@ -100,12 +127,23 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlDashRatio",
                     "grlUseDash",
                     "grlVisibility",
+                    "grlColors",
                 ],
                 samplers: isWGSL ? [] : ["grlColors"],
                 defines,
                 shaderLanguage: isWGSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             }
         );
+
+        if (isWGSL && grlUBO) {
+            const sampler = new TextureSampler();
+            sampler.setParameters(); // use the default values
+            sampler.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            this.setTextureSampler("grlColorsSampler", sampler);
+
+            this.setUniformBuffer("grlUBO", grlUBO);
+        }
+
         options = options || {
             color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
         };

@@ -1,4 +1,6 @@
 #include<instancesDeclaration>
+#include<sceneUboDeclaration>
+
 
 attribute grl_widths: f32;
 attribute grl_offsets: vec3f;
@@ -27,6 +29,13 @@ varying grlColorPointer: f32;
     attribute grl_counters: f32;
 #endif
 
+struct GrlUBO {
+    grl_colorModeAndColorDistributionType: vec2f,
+    grlWidth: f32
+};
+
+var<uniform> grlUBO: GrlUBO;
+
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
@@ -36,10 +45,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #include<instancesVertex>
 
     vertexOutputs.grlColorPointer = input.grl_colorPointers;
-    let grlMatrix: mat4x4f = viewProjection * finalWorld ;
+    let grlMatrix: mat4x4f = scene.viewProjection * finalWorld ;
 
     #ifdef GREASED_LINE_CAMERA_FACING
-        let grlBaseWidth: f32 = grlWidth;
+        let grlBaseWidth: f32 = grlUBO.grlWidth;
 
         let grlPrevious: vec3f = grl_previousAndSide.xyz;
         let grlSide: f32 = grl_previousAndSide.w;
