@@ -765,7 +765,6 @@ export class GLTFExporter {
             }
 
             const skin: ISkin = { joints: [] };
-            //this._skins.push(skin);
             this._skinMap.set(skeleton, skin);
         }
     }
