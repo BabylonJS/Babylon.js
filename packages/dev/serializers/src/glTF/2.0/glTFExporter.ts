@@ -877,7 +877,6 @@ export class GLTFExporter {
         this._listAvailableCameras();
         this._listAvailableSkeletons();
 
-        // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
         const stateLH = new ExporterState(true, false);
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, stateLH)));
         const stateRH = new ExporterState(false, false);
