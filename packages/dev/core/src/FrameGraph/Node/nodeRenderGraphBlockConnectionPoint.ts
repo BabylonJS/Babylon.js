@@ -21,6 +21,9 @@ export class NodeRenderGraphConnectionPoint {
     public _linkedConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
+    public _isMainLinkSource = false;
+
+    /** @internal */
     public _typeConnectionSource: Nullable<NodeRenderGraphConnectionPoint | (() => NodeRenderGraphConnectionPoint)> = null;
 
     /** @internal */
@@ -174,6 +177,9 @@ export class NodeRenderGraphConnectionPoint {
 
     /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
+        if (this._linkedConnectionSource && !this._isMainLinkSource && this._linkedConnectionSource.isConnected) {
+            return this.type;
+        }
         return this._type;
     }
 
