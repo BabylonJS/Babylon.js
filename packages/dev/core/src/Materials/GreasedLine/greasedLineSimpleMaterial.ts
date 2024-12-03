@@ -6,17 +6,26 @@ import type { Nullable } from "../../types";
 import { Color3 } from "../../Maths/math.color";
 import { Vector2 } from "../../Maths/math.vector";
 
-import "../../Shaders/greasedLine.fragment";
-import "../../Shaders/greasedLine.vertex";
 import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
+import { ShaderLanguage } from "../shaderLanguage";
+
+// import "../../Shaders/greasedLine.fragment";
+// import "../../Shaders/greasedLine.vertex";
+import "../../ShadersWGSL/greasedLine.fragment";
+import "../../ShadersWGSL/greasedLine.vertex";
 
 /**
  * GreasedLineSimpleMaterial
  */
 export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGreasedLineMaterial {
+    /**
+     * Force to use GLSL in WebGPU
+     */
+    public static ForceGLSL = false;
+
     private _visibility: number;
     private _width: number;
     private _useDash: boolean;
@@ -61,6 +70,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             attributes.push("grl_counters");
         }
 
+        const engine = scene.getEngine();
+        const isWGSL = engine.isWebGPU && !(options.forceGLSL || GreasedLineSimpleMaterial.ForceGLSL);
+
         super(
             name,
             scene,
@@ -89,15 +101,14 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlUseDash",
                     "grlVisibility",
                 ],
-                samplers: ["grlColors"],
+                samplers: isWGSL ? [] : ["grlColors"],
                 defines,
+                shaderLanguage: isWGSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             }
         );
         options = options || {
             color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
         };
-
-        const engine = scene.getEngine();
 
         this.visibility = options.visibility ?? 1;
         this.useDash = options.useDash ?? false;
@@ -143,6 +154,15 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this._colorsTexture?.dispose();
         super.dispose();
     }
+
+    // protected async _importShadersAsync(): Promise<void> {
+    //     if (this._shaderLanguage === ShaderLanguage.WGSL) {
+    //         await Promise.all([import("../../ShadersWGSL/greasedLine.vertex"), import("../../ShadersWGSL/greasedLine.fragment")]);
+    //     } else {
+    //         await Promise.all([import("../../Shaders/greasedLine.vertex"), import("../../Shaders/greasedLine.fragment")]);
+    //     }
+    //     this._shadersLoaded = true;
+    // }
 
     private _setColorModeAndColorDistributionType() {
         this.setVector2("grl_colorModeAndColorDistributionType", new Vector2(this._colorMode, this._colorsDistributionType));
