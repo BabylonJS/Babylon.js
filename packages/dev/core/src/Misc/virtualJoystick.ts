@@ -261,6 +261,7 @@ export class VirtualJoystick {
         VirtualJoystick.Canvas.addEventListener("pointermove", this._onPointerMoveHandlerRef, false);
         VirtualJoystick.Canvas.addEventListener("pointerup", this._onPointerUpHandlerRef, false);
         VirtualJoystick.Canvas.addEventListener("pointerout", this._onPointerUpHandlerRef, false);
+        VirtualJoystick.Canvas.addEventListener("pointercancel", this._onPointerUpHandlerRef, false);
         VirtualJoystick.Canvas.addEventListener(
             "contextmenu",
             (evt) => {
@@ -675,6 +676,7 @@ export class VirtualJoystick {
             VirtualJoystick.Canvas.removeEventListener("pointermove", this._onPointerMoveHandlerRef);
             VirtualJoystick.Canvas.removeEventListener("pointerup", this._onPointerUpHandlerRef);
             VirtualJoystick.Canvas.removeEventListener("pointerout", this._onPointerUpHandlerRef);
+            VirtualJoystick.Canvas.removeEventListener("pointercancel", this._onPointerUpHandlerRef);
             window.removeEventListener("resize", this._onResize);
             document.body.removeChild(VirtualJoystick.Canvas);
             VirtualJoystick.Canvas = null;
