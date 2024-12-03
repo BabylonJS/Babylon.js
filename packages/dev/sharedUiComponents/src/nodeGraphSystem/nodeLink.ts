@@ -139,15 +139,17 @@ export class NodeLink {
 
         // No red as it means no type yet
         let extractedColorB = "";
+        const extractedColorA = this._graphCanvas.stateManager.getPortColor(this._portA.portData);
+
         if (this._portB) {
-            extractedColorB = this._portB?.element.style.backgroundColor.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/, "$1_$2_$3");
+            extractedColorB = this._graphCanvas.stateManager.getPortColor(this._portB.portData);
             const splitComponents = extractedColorB.split("_").map((v) => parseInt(v));
             if (splitComponents[0] > 0 && splitComponents[1] === 0 && splitComponents[2] === 0) {
                 extractedColorB = "";
             }
         }
 
-        if (extractedColorB && this._portA.element.style.backgroundColor !== this._portB?.element.style.backgroundColor) {
+        if (extractedColorB && extractedColorA !== extractedColorB) {
             // Gradient
             const svg = this._graphCanvas.svgCanvas;
             const defs = svg.querySelector("defs") || svg.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "defs"));
@@ -164,7 +166,7 @@ export class NodeLink {
             const stop1 = this._gradient.children[0] as SVGStopElement;
             const stop2 = this._gradient.children[1] as SVGStopElement;
 
-            const gradientId = `linkGradient_${this._portA.element.style.backgroundColor.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/, "$1_$2_$3")}_${extractedColorB}`;
+            const gradientId = `linkGradient_${extractedColorA}_${extractedColorB}`;
             this._gradient.id = gradientId;
 
             this._gradient.setAttribute("x1", startX < endX ? "0" : "1");
@@ -173,14 +175,14 @@ export class NodeLink {
             this._gradient.setAttribute("y2", "0");
 
             stop1.setAttribute("offset", "0%");
-            stop1.setAttribute("stop-color", this._portA.element.style.backgroundColor!);
+            stop1.setAttribute("stop-color", extractedColorA);
 
             stop2.setAttribute("offset", "100%");
-            stop2.setAttribute("stop-color", this._portB?.element.style.backgroundColor!);
+            stop2.setAttribute("stop-color", extractedColorB);
 
             this._path.setAttribute("stroke", `url(#${gradientId})`);
         } else {
-            this._path.setAttribute("stroke", this._portA.element.style.backgroundColor!);
+            this._path.setAttribute("stroke", extractedColorA);
         }
     }
 

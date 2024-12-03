@@ -244,9 +244,6 @@ export class NodeMaterialConnectionPoint {
 
     /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
-        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-            return this.type;
-        }
         return this._type;
     }
 

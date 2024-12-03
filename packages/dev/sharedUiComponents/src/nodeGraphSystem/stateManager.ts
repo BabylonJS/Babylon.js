@@ -43,6 +43,8 @@ export class StateManager {
     isDebugConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
     applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
 
+    getPortColor: (portData: IPortData) => string;
+
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 
     getEditorDataMap: () => { [key: number]: number };
