@@ -1,5 +1,6 @@
 import type {
     AbstractEngine,
+    AbstractMesh,
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
@@ -7,6 +8,7 @@ import type {
     FramingBehavior,
     HotSpotQuery,
     IDisposable,
+    IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
@@ -299,6 +301,7 @@ export class Viewer implements IDisposable {
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
+    private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
@@ -696,6 +699,7 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.disableSnapshotRendering();
             this._details.model?.dispose();
             this._details.model = null;
+            this._meshDataCache.clear();
             this.selectedAnimation = -1;
 
             try {
@@ -1069,7 +1073,15 @@ export class Viewer implements IDisposable {
         if (this._details.model) {
             const model = this._details.model;
             // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            model.meshes.forEach((mesh) => mesh.refreshBoundingInfo(true, true));
+            model.meshes.forEach((mesh) => {
+                let cache = this._meshDataCache.get(mesh);
+                if (!cache) {
+                    cache = {};
+                    this._meshDataCache.set(mesh, cache);
+                }
+                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+            });
+
             const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
             if (pickingInfo.hit) {
                 return pickingInfo;
