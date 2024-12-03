@@ -552,7 +552,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * the passed bounding box has no meaning and should be ignored.
      * @param val whether to use instanced rendering
      */
-    set useInstances(val: boolean) {
+    public set useInstances(val: boolean) {
         this._useInstances = val;
         if (this._colorShader) {
             this._colorShader.setDefine("INSTANCES", val);
@@ -562,13 +562,12 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
     }
 
-    get useInstances(): boolean {
+    public get useInstances(): boolean {
         return this._useInstances;
     }
 
     /**
      * Instanced render the bounding boxes of a specific rendering group
-     * @internal
      * @param renderingGroupId defines the rendering group to render
      */
     private _renderInstanced(renderingGroupId: number): void {
@@ -692,7 +691,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     /**
      * Creates buffer for instanced rendering
-     * @internal
      * @param buffer buffer to set
      * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set
      */
@@ -711,7 +709,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     /**
      * Clean up buffers for instanced rendering
-     * @internal
      */
     private _cleanupInstanceBuffer(): void {
         const vertexBuffers = this._vertexBuffers;
@@ -740,7 +737,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     /**
      * Clean up resources for instanced rendering
-     * @internal
      */
     private _cleanupInstances(): void {
         this._cleanupInstanceBuffer();
