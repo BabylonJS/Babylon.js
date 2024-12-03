@@ -155,6 +155,7 @@ export type ViewerDetails = {
 
     /**
      * Picks the object at the given screen coordinates.
+     * @remarks This function ensures skeletal and morph target animations are up to date before picking, and typically should not be called at high frequency (e.g. every frame, on pointer move, etc.).
      * @param screenX The x coordinate in screen space.
      * @param screenY The y coordinate in screen space.
      * @returns A PickingInfo if an object was picked, otherwise null.
