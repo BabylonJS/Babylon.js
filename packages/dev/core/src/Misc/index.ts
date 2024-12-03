@@ -33,6 +33,7 @@ export * from "./logger";
 export * from "./typeStore";
 export * from "./filesInputStore";
 export * from "./deepCopier";
+export * from "./deepMerger";
 export * from "./pivotTools";
 export * from "./precisionDate";
 export * from "./screenshotTools";

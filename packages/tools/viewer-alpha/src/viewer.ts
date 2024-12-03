@@ -30,16 +30,20 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
-import { AsyncLock } from "core/Misc/asyncLock";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
-import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
+import { AsyncLock } from "core/Misc/asyncLock";
+import { deepMerge } from "core/Misc/deepMerger";
+import { Observable } from "core/Misc/observable";
+import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
+
+// Needed for picking
+import "core/Culling/ray";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -709,36 +713,35 @@ export class Viewer implements IDisposable {
                 this.onLoadingProgressChanged.notifyObservers();
             }
         };
+        delete options?.onProgress;
 
         const originalOnMaterialVariantsLoaded = options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
         const onMaterialVariantsLoaded: typeof originalOnMaterialVariantsLoaded = (controller) => {
             originalOnMaterialVariantsLoaded?.(controller);
             this._materialVariantsController = controller;
         };
+        delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
 
-        options = {
-            ...options,
+        const defaultOptions: LoadModelOptions = {
+            // Pass a progress callback to update the loading progress.
+            onProgress,
             pluginOptions: {
-                ...options?.pluginOptions,
                 gltf: {
                     // Enable transparency as coverage by default to be 3D Commerce compliant by default.
                     // https://doc.babylonjs.com/setup/support/3D_commerce_certif
                     transparencyAsCoverage: true,
-                    ...options?.pluginOptions?.gltf,
                     extensionOptions: {
-                        ...options?.pluginOptions?.gltf?.extensionOptions,
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
-                            ...options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants,
                             // Capture the material variants controller when it is loaded.
                             onLoaded: onMaterialVariantsLoaded,
                         },
                     },
                 },
             },
-            // Pass a progress callback to update the loading progress.
-            onProgress,
         };
+
+        options = deepMerge(defaultOptions, options ?? {});
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
