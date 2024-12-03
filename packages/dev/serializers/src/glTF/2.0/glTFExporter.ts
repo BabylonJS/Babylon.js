@@ -159,7 +159,7 @@ class ExporterState {
 
     public setRemappedBufferView(buffer: Buffer, vertexBuffer: VertexBuffer, bufferViewIndex: number) {
         this._remappedBufferView.set(buffer, new Map<VertexBuffer, number>());
-        this._remappedBufferView.get(buffer)?.set(vertexBuffer, bufferViewIndex);
+        this._remappedBufferView.get(buffer)!.set(vertexBuffer, bufferViewIndex);
     }
 
     public getRemappedBufferView(buffer: Buffer, vertexBuffer: VertexBuffer): number | undefined {
