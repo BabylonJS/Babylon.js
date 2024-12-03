@@ -7,7 +7,8 @@ import { GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
  * @param cameraFacing is in camera facing mode?
  * @returns GLSL custom shader code
  */
-export function getCustomCode(shaderType: string, cameraFacing: boolean): Nullable<{ [pointName: string]: string }> {
+/** @internal */
+export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullable<{ [pointName: string]: string }> {
     if (shaderType === "vertex") {
         const obj: any = {
             CUSTOM_VERTEX_DEFINITIONS: `

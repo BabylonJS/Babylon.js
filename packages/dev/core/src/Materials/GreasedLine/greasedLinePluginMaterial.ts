@@ -17,8 +17,8 @@ import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greased
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import { getCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
-import { getCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
+import { GetCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
+import { GetCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
 
 /**
  * @internal
@@ -290,14 +290,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._cameraFacing) {
-            const activeCamera = this._scene.activeCamera;
-
-            if (activeCamera) {
-                uniformBuffer.updateMatrix("grl_projection", activeCamera.getProjectionMatrix());
-                uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
-            } else {
-                throw Error("GreasedLinePluginMaterial requires an active camera.");
-            }
+            uniformBuffer.updateMatrix("grl_projection", this._scene.getProjectionMatrix());
+            uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
 
             const resolutionLineWidth = TmpVectors.Vector4[0];
             resolutionLineWidth.x = this._aspect;
@@ -358,17 +352,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @returns shader code
      */
     override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        // Logger.Log("getCustomCode" + this._customShaderCodeGetter);
-        // if (!this._customShaderCodeGetter) {
-        //     return null;
-        // }
-        // return this._customShaderCodeGetter(shaderType, this._cameraFacing);
         if (this._isGLSL(shaderLanguage)) {
             return getCustomCodeGLSL(shaderType, this._cameraFacing);
         }
         return getCustomCodeWGSL(shaderType, this._cameraFacing);
     }
-    //  * @param shaderLanguage The shader language to use
 
     /**
      * Disposes the plugin material.
