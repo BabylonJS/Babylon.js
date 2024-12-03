@@ -280,7 +280,7 @@ export function RotateNode180Y(node: INode) {
 }
 
 /**
- * Colapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
+ * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
  * @param node Target parent node.
  * @param parentNode Original GLTF node (Light or Camera).
  */
