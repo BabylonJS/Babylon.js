@@ -359,16 +359,6 @@ export class Engine extends ThinEngine {
         this._features.supportRenderPasses = true;
 
         options = this._creationOptions;
-
-        if ((<any>canvasOrContext).getContext) {
-            const canvas = <HTMLCanvasElement>canvasOrContext;
-
-            this._sharedInit(canvas);
-        } else if ((<any>canvasOrContext).canvas) {
-            const context = <WebGLRenderingContext | WebGL2RenderingContext>canvasOrContext;
-
-            this._sharedInit(context.canvas as HTMLCanvasElement);
-        }
     }
 
     protected override _initGLContext(): void {
