@@ -379,6 +379,11 @@ export class Viewer implements IDisposable {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
                     const pickingInfo = this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
                     if (pickingInfo?.pickedPoint) {
+                        const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                        // Immediately reset the target and the radius based on the distance to the picked point.
+                        // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                        camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                        camera.radius = distance;
                         camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
                     } else {
                         camera.restoreState();
@@ -949,7 +954,7 @@ export class Viewer implements IDisposable {
                 this._details.scene.render();
 
                 // Update the camera panning sensitivity related properties based on the camera's distance from the target.
-                this._details.camera.panningSensibility = 10000 / this._details.camera.radius;
+                this._details.camera.panningSensibility = 5000 / this._details.camera.radius;
                 this._details.camera.speed = this._details.camera.radius * 0.2;
 
                 if (this.isAnimationPlaying) {
@@ -1023,7 +1028,7 @@ export class Viewer implements IDisposable {
         this._details.camera.minZ = goalRadius * 0.001;
         this._details.camera.maxZ = goalRadius * 1000;
         this._details.camera.wheelDeltaPercentage = 0.01;
-        this._details.camera.pinchDeltaPercentage = 0.01;
+        this._details.camera.useNaturalPinchZoom = true;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
 
