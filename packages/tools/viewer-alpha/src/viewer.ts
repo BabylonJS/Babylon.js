@@ -384,20 +384,18 @@ export class Viewer implements IDisposable {
             camera.useInputToRestoreState = false;
 
             scene.onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    const pickingInfo = this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
-                    if (pickingInfo?.pickedPoint) {
-                        const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
-                        // Immediately reset the target and the radius based on the distance to the picked point.
-                        // This eliminates unnecessary camera movement on the local z-axis when interpolating.
-                        camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
-                        camera.radius = distance;
-                        camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
-                    } else {
-                        camera.restoreState();
-                    }
+                const pickingInfo = this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                if (pickingInfo?.pickedPoint) {
+                    const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                    // Immediately reset the target and the radius based on the distance to the picked point.
+                    // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                    camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                    camera.radius = distance;
+                    camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
+                } else {
+                    camera.restoreState();
                 }
-            });
+            }, PointerEventTypes.POINTERDOUBLETAP);
 
             this._details = {
                 viewer: this,
