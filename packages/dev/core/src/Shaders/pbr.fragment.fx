@@ -298,6 +298,10 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , icdfxSampler
+                    , icdfySampler
+                #endif
             #endif
             );
         #else
@@ -533,6 +537,10 @@ void main(void) {
                     #if defined(REALTIME_FILTERING)
                         , reflectionSampler
                         , vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , icdfxSampler
+                            , icdfySampler
+                        #endif
                     #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
