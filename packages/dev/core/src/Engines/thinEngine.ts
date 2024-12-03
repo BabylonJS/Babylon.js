@@ -283,7 +283,6 @@ export class ThinEngine extends AbstractEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
-            this._renderingCanvas = canvas;
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
@@ -398,7 +397,7 @@ export class ThinEngine extends AbstractEngine {
             }
         } else {
             this._gl = <WebGL2RenderingContext>canvasOrContext;
-            this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
+            canvas = this._gl.canvas as HTMLCanvasElement;
 
             if ((this._gl as any).renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
@@ -412,6 +411,8 @@ export class ThinEngine extends AbstractEngine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        this._sharedInit(canvas);
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
