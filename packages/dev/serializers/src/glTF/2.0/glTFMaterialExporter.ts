@@ -130,7 +130,7 @@ function ConvertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
  * @internal
  */
 export class GLTFMaterialExporter {
-    private _exporter: GLTFExporter;
+    private readonly _exporter: GLTFExporter;
 
     // Mapping to store textures
     private _textureMap = new Map<BaseTexture, ITextureInfo>();
