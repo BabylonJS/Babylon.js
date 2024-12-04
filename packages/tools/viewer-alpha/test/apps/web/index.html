@@ -144,8 +144,6 @@
         </div>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script type="module">
-            import { Inspector } from "inspector/inspector";
-
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
@@ -237,7 +235,8 @@
             };
 
             let isInspectorVisible = false;
-            globalThis.onToggleInspector = () => {
+            globalThis.onToggleInspector = async () => {
+                const { Inspector } = await import("inspector/inspector");
                 console.log("toggle inspector");
                 if (isInspectorVisible) {
                     Inspector.Hide();
