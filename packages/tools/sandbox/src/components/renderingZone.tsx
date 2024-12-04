@@ -217,15 +217,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.useAutoRotationBehavior = true;
             }
 
-            if (this.props.cameraPosition) {
-                camera.setPosition(this.props.cameraPosition);
-            }
-
             camera.pinchPrecision = 200 / camera.radius;
             camera.upperRadiusLimit = 5 * camera.radius;
 
             camera.wheelDeltaPercentage = 0.01;
             camera.pinchDeltaPercentage = 0.01;
+
+            if (this.props.cameraPosition) {
+                camera.lowerRadiusLimit = null;
+                camera.setPosition(this.props.cameraPosition);
+                camera.lowerRadiusLimit = camera.radius;
+            }
         }
 
         this._scene.activeCamera!.attachControl();
