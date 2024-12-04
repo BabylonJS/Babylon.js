@@ -24,6 +24,7 @@ import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
+import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
 function getFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -49,6 +50,7 @@ interface IRenderingZoneProps {
     assetUrl?: string;
     autoRotate?: boolean;
     cameraPosition?: Vector3;
+    toneMapping?: number;
     expanded: boolean;
     onEngineCreated?: (engine: AbstractEngine) => void;
 }
@@ -282,6 +284,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     onSceneLoaded(filename: string) {
         this._scene.skipFrustumClipping = true;
+
+        if (this.props.toneMapping !== undefined) {
+            this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            this._scene.imageProcessingConfiguration.toneMappingType = this.props.toneMapping;
+        } else if (this.props.globalState.commerceMode) {
+            this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            this._scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+        }
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
 
