@@ -38,12 +38,9 @@ export function BuildMorphTargetBuffers(
 ): IMorphTargetData {
     const result: IMorphTargetData = {
         attributes: {},
-        influence: 0,
-        name: "",
+        influence: morphTarget.influence,
+        name: morphTarget.name,
     };
-    result.influence = morphTarget.influence;
-    result.name = morphTarget.name;
-    result.attributes = {};
 
     const flipX = convertToRightHanded ? -1 : 1;
     const floatSize = 4;
