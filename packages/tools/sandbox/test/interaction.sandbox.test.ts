@@ -1,13 +1,11 @@
-import { test, expect, defineConfig } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
 import { getGlobalConfig } from "@tools/test-tools";
 import * as path from "path";
 
-export default defineConfig({
-    expect: {
-        toHaveScreenshot: { maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") },
-    },
-    timeout: 30000,
+test.beforeAll(async () => {
+    // Set timeout for this hook.
+    test.setTimeout(30000);
 });
 
 const url = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339");
@@ -23,7 +21,7 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
     // check visibility of both canvas AND the editor
     await expect(page.locator("#canvasZone")).toBeVisible();
     // check snapshot of the page
-    await expect(page).toHaveScreenshot();
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") });
 });
 
 test("dropping an image to the sandbox", async ({ page }) => {
@@ -52,7 +50,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     // check snapshot of the page
-    await expect(page).toHaveScreenshot();
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") });
 });
 
 test("loading a model using query parameters", async ({ page }) => {
@@ -67,7 +65,7 @@ test("loading a model using query parameters", async ({ page }) => {
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     // check snapshot of the page
-    await expect(page).toHaveScreenshot();
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") });
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
@@ -88,5 +86,5 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     await expect(page.locator("#inspector-host")).toBeVisible();
     await expect(page.locator("#scene-explorer-host")).toBeVisible();
     // check snapshot of the page
-    await expect(page).toHaveScreenshot();
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") });
 });
