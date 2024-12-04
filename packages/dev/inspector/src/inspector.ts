@@ -471,7 +471,7 @@ export class Inspector {
         // we need to copy the styles from the document to the parent control's root.
         if (parentControl.getRootNode() !== window.document) {
             setTimeout(() => {
-                CopyStyles(window.document, parentControl.getRootNode() as any);
+                CopyStyles(window.document, parentControl.getRootNode() as unknown as DocumentOrShadowRoot);
             }, 0);
         }
 

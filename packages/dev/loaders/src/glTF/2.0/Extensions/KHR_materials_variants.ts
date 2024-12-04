@@ -10,14 +10,28 @@ import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { GLTFLoaderExtensionOptions } from "../../glTFFileLoader";
+import type { MaterialVariantsController } from "../../glTFFileLoader";
 
 const NAME = "KHR_materials_variants";
 
-// NOTE: This "backward" type definition is needed due to the way namespaces are handled in the UMD bundle.
-export type MaterialVariantsController = Parameters<Required<GLTFLoaderExtensionOptions[typeof NAME]>["onLoaded"]>[0];
+export { MaterialVariantsController };
 
 declare module "../../glTFFileLoader" {
+    // Define options related types here so they can be referenced in the options,
+    // but export the types at the module level. This ensures the types are in the
+    // correct namespace for UMD.
+    type MaterialVariantsController = {
+        /**
+         * The list of available variant names for this asset.
+         */
+        readonly variants: readonly string[];
+
+        /**
+         * Gets or sets the selected variant.
+         */
+        selectedVariant: string;
+    };
+
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface GLTFLoaderExtensionOptions {
         /**
@@ -29,17 +43,7 @@ declare module "../../glTFFileLoader" {
              * Defines a callback that will be called if material variants are loaded.
              * @experimental
              */
-            onLoaded: (controller: {
-                /**
-                 * The list of available variant names for this asset.
-                 */
-                readonly variants: readonly string[];
-
-                /**
-                 * Gets or sets the selected variant.
-                 */
-                selectedVariant: string;
-            }) => void;
+            onLoaded: (controller: MaterialVariantsController) => void;
         }>;
     }
 }
