@@ -211,11 +211,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
 
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded);
-        instance.play(waitTime, startOffset, duration);
 
         this._soundInstances.add(instance);
 
-        this._state = SoundState.Started;
+        instance.play(waitTime, startOffset, duration);
+
+        this._state = instance.state;
     }
 
     protected _stopExcessInstances(): void {

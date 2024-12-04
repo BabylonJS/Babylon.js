@@ -167,12 +167,15 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
     private _waitTimer: Nullable<NodeJS.Timeout> = null;
 
+    private _isReady: boolean = false;
+
     private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
         this._resolveIsReadyPromise = resolve;
     });
     private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
 
     private _onCanPlayThrough: () => void = () => {
+        this._isReady = true;
         this._resolveIsReadyPromise(this.mediaElement);
         this.onReadyObservable.notifyObservers(this);
     };
@@ -320,13 +323,13 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         this._clearWaitTimer();
 
         if (waitTime && waitTime > 0) {
+            this._setState(SoundState.Starting);
+
             this._waitTimer = setTimeout(() => {
                 this._waitTimer = null;
-                this._setState(SoundState.Starting);
                 this._play();
             }, waitTime * 1000);
         } else {
-            this._setState(SoundState.Starting);
             this._play();
         }
     }
@@ -393,8 +396,13 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
     }
 
-    private async _play(): Promise<void> {
-        await this._isReadyPromise;
+    private _play(): void {
+        this._setState(SoundState.Starting);
+
+        if (!this._isReady) {
+            this._playAsync();
+            return;
+        }
 
         if (this._state !== SoundState.Starting) {
             return;
@@ -406,7 +414,15 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
             this._setState(SoundState.Started);
         } else if (this._loop) {
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
+        } else {
+            this.stop();
+            this._setState(SoundState.FailedToStart);
         }
+    }
+
+    private async _playAsync(): Promise<void> {
+        await this._isReadyPromise;
+        this._play();
     }
 
     private _stop(): void {

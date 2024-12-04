@@ -97,8 +97,6 @@ export abstract class StreamingSound extends AbstractSound {
             instance = this._createSoundInstance();
         }
 
-        this._play(instance, waitTime, startOffset, duration);
-
         const onInstanceStateChanged = () => {
             if (instance.state === SoundState.Started) {
                 this._stopExcessInstances();
@@ -106,6 +104,8 @@ export abstract class StreamingSound extends AbstractSound {
             }
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
+
+        this._play(instance, waitTime, startOffset, duration);
     }
 
     protected get _instancesPreloadedPromise() {
@@ -120,8 +120,6 @@ export abstract class StreamingSound extends AbstractSound {
         if (!this._preloadedInstancesPromises.includes(instance.preloadedPromise)) {
             this._preloadedInstancesPromises.push(instance.preloadedPromise);
         }
-
-        instance.onReadyObservable.add(this._removePreloadedInstance);
     }
 
     protected _removePreloadedInstance: (instance: _StreamingSoundInstance) => void = (instance) => {
