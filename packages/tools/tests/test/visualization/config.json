@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "IES Profile",
+            "playgroundId": "#UIAXAU#6",
+            "referenceImage": "iesprofile.png"
+        },
+        {
             "title": "Gaussian Splatting NME",
             "playgroundId": "#WXWJKN#4",
             "referenceImage": "gsplat-nme.png"
