@@ -3,11 +3,10 @@ import { AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
 import type { MorphTarget } from "core/Morph/morphTarget";
 import type { DataWriter } from "./dataWriter";
 
-import { CreateAccessor, CreateBufferView } from "./glTFUtilities";
+import { CreateAccessor, CreateBufferView, NormalizeTangent } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
-import type { Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
 /**
@@ -18,15 +17,6 @@ export interface IMorphTargetData {
     attributes: Record<string, number>;
     influence: number;
     name: string;
-}
-
-function NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
-    const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
-    if (length > 0) {
-        tangent.x /= length;
-        tangent.y /= length;
-        tangent.z /= length;
-    }
 }
 
 export function BuildMorphTargetBuffers(
@@ -127,11 +117,11 @@ export function BuildMorphTargetBuffers(
             for (let i = vertexStart; i < vertexCount; ++i) {
                 // Only read the x, y, z components and ignore w
                 const originalTangent = Vector3.FromArray(originalTangents, i * 4);
-                NormalizeTangentFromRef(originalTangent);
+                NormalizeTangent(originalTangent);
 
                 // Morph target tangents omit the w component so it won't be present in the data
                 const morphTangent = Vector3.FromArray(morphTangents, i * 3);
-                NormalizeTangentFromRef(morphTangent);
+                NormalizeTangent(morphTangent);
 
                 morphTangent.subtractToRef(originalTangent, difference);
                 dataWriter.writeFloat32(difference.x * flipX);

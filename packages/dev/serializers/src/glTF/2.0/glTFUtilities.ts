@@ -219,7 +219,7 @@ export function IsTriangleFillMode(fillMode: number): boolean {
     return false;
 }
 
-export function NormalizeTangent(tangent: Vector4) {
+export function NormalizeTangent(tangent: Vector4 | Vector3) {
     const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
     if (length > 0) {
         tangent.x /= length;
