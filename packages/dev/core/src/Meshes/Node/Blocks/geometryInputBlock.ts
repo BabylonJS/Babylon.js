@@ -25,6 +25,11 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
+    /**
+     * Gets or sets a boolean indicating that this input is displayed in the Inspector
+     */
+    public displayInInspector = true;
+
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<GeometryInputBlock>();
 
@@ -268,6 +273,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.groupInInspector = this.groupInInspector;
+        serializationObject.displayInInspector = this.displayInInspector;
 
         if (this._storedValue !== null && !this.isContextual) {
             if (this._storedValue.asArray) {
@@ -291,6 +297,9 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
         this.groupInInspector = serializationObject.groupInInspector || "";
+        if (serializationObject.displayInInspector !== undefined) {
+            this.displayInInspector = serializationObject.displayInInspector;
+        }
 
         if (!serializationObject.valueType) {
             return;
