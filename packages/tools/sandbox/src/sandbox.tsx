@@ -167,16 +167,23 @@ export class Sandbox extends React.Component<
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
             for (const param of params) {
-                const split = param.split("=", 2);
-                const name = split[0];
-                const value = split[1];
-                switch (name.toLowerCase()) {
+                const [name, value] = param.toLowerCase().split("=", 2);
+                switch (name) {
+                    case "3dcommerce": {
+                        set3DCommerceMode();
+                        break;
+                    }
+                    case "asset":
                     case "asseturl": {
                         this._assetUrl = value;
                         break;
                     }
                     case "autorotate": {
                         this._autoRotate = value === "true" ? true : false;
+                        break;
+                    }
+                    case "camera": {
+                        this._camera = +value;
                         break;
                     }
                     case "cameraposition": {
@@ -187,16 +194,41 @@ export class Sandbox extends React.Component<
                         );
                         break;
                     }
+                    case "clearcolor": {
+                        this._clearColor = value;
+                        break;
+                    }
+                    case "environment": {
+                        EnvironmentTools.SkyboxPath = value;
+                        break;
+                    }
                     case "kiosk": {
                         this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
                         break;
                     }
-                    case "reflector": {
-                        setReflectorMode();
+                    case "skybox": {
+                        this._globalState.skybox = value === "true" ? true : false;
                         break;
                     }
-                    case "3dcommerce": {
-                        set3DCommerceMode();
+                    case "tonemapping": {
+                        switch (value) {
+                            case "standard":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                                break;
+                            case "aces":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                                break;
+                            case "khr_pbr_neutral":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                                break;
+                        }
+                    }
+
+                    // --------------------------------------------
+                    // Reflector specific parameters (undocumented)
+                    // --------------------------------------------
+                    case "reflector": {
+                        setReflectorMode();
                         break;
                     }
                     case "hostname": {
@@ -210,35 +242,6 @@ export class Sandbox extends React.Component<
                             this._globalState.reflector.port = +value;
                         }
                         break;
-                    }
-                    case "environment": {
-                        EnvironmentTools.SkyboxPath = value;
-                        break;
-                    }
-                    case "skybox": {
-                        this._globalState.skybox = value === "true" ? true : false;
-                        break;
-                    }
-                    case "clearcolor": {
-                        this._clearColor = value;
-                        break;
-                    }
-                    case "camera": {
-                        this._camera = +value;
-                        break;
-                    }
-                    case "tonemapping": {
-                        switch (value.toLowerCase()) {
-                            case "standard":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
-                                break;
-                            case "aces":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_ACES;
-                                break;
-                            case "khr_pbr_neutral":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
-                                break;
-                        }
                     }
                 }
             }
