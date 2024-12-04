@@ -42,9 +42,6 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-// Needed for picking
-import "core/Culling/ray";
-
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
@@ -164,7 +161,7 @@ export type ViewerDetails = {
      * @param screenY The y coordinate in screen space.
      * @returns A PickingInfo if an object was picked, otherwise null.
      */
-    pick(screenX: number, screenY: number): Nullable<PickingInfo>;
+    pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
 export type ViewerOptions = Partial<
@@ -388,8 +385,8 @@ export class Viewer implements IDisposable {
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
 
-            scene.onPointerObservable.add((pointerInfo) => {
-                const pickingInfo = this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+            scene.onPointerObservable.add(async (pointerInfo) => {
+                const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
                 if (pickingInfo?.pickedPoint) {
                     const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
                     // Immediately reset the target and the radius based on the distance to the picked point.
@@ -1124,7 +1121,8 @@ export class Viewer implements IDisposable {
         this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
     }
 
-    private _pick(screenX: number, screenY: number): Nullable<PickingInfo> {
+    private async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
+        await import("core/Culling/ray");
         if (this._details.model) {
             const model = this._details.model;
             // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
