@@ -5,6 +5,7 @@ import type { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
+import { BuildArray } from "core/Misc/arrayTools";
 
 /**
  * Shape properties for the character controller
@@ -214,6 +215,7 @@ export class PhysicsCharacterController {
     private _lastInvDeltaTime: number;
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
+    private _tmpVecs: Vector3[] = BuildArray(6, Vector3.Zero);
     /**
      * minimum distance to make contact
      * default 0.05
@@ -284,7 +286,9 @@ export class PhysicsCharacterController {
         this._lastVelocity = Vector3.Zero();
         const r = characterShapeOptions.capsuleRadius ?? 0.6;
         const h = characterShapeOptions.capsuleHeight ?? 1.8;
-        this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(new Vector3(0, h * 0.5 - r, 0), new Vector3(0, -h * 0.5 + r, 0), r, scene);
+        this._tmpVecs[0].set(0, h * 0.5 - r, 0);
+        this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
+        this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, scene);
         this._lastInvDeltaTime = 1.0 / 60.0;
         this._lastDisplacement = Vector3.Zero();
         this._scene = scene;
@@ -698,7 +702,8 @@ export class PhysicsCharacterController {
 
                 const sVel = sci0.velocity.add(sci1.velocity);
 
-                const t = new Vector3(0.5 * axis.dot(sVel), sci0.planeNormal.dot(sci0.velocity), sci1.planeNormal.dot(sci1.velocity));
+                const t = this._tmpVecs[2];
+                t.set(0.5 * axis.dot(sVel), sci0.planeNormal.dot(sci0.velocity), sci1.planeNormal.dot(sci1.velocity));
                 const m = Matrix.FromValues(r0.x, r1.x, r2.x, 0, r0.y, r1.y, r2.y, 0, r0.z, r1.z, r2.z, 0, 0, 0, 0, 1);
                 axisVel = Vector3.TransformNormal(t, m);
                 axisVel.scaleInPlace(invAxisLen);
@@ -796,7 +801,8 @@ export class PhysicsCharacterController {
                     return;
                 }
 
-                const t = new Vector3(sci0.planeNormal.dot(sci0.velocity), sci1.planeNormal.dot(sci1.velocity), sci2.planeNormal.dot(sci2.velocity));
+                const t = this._tmpVecs[2];
+                t.set(sci0.planeNormal.dot(sci0.velocity), sci1.planeNormal.dot(sci1.velocity), sci2.planeNormal.dot(sci2.velocity));
                 const m = Matrix.FromValues(r0.x, r0.y, r0.z, 0, r1.x, r1.y, r1.z, 0, r2.x, r2.y, r2.z, 0, 0, 0, 0, 1);
                 pointVel = Vector3.TransformNormal(t, m);
                 pointVel.scaleInPlace(1 / det);
@@ -1085,7 +1091,7 @@ export class PhysicsCharacterController {
      * Compute a CharacterSurfaceInfo from current state and a direction
      * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
      * @param direction direction to check, usually gravity direction
-     * @returns CharacterSurfaceInfo
+     * @returns a new CharacterSurfaceInfo object
      */
     public checkSupport(deltaTime: number, direction: Vector3): CharacterSurfaceInfo {
         const eps = 1e-4;
@@ -1099,7 +1105,8 @@ export class PhysicsCharacterController {
             constraints[i].velocity.setAll(0);
         }
 
-        const maxSurfaceVelocity = new Vector3(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
+        const maxSurfaceVelocity = this._tmpVecs[3];
+        maxSurfaceVelocity.set(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
         const output = this._simplexSolverSolve(constraints, direction, deltaTime, deltaTime, this.up, maxSurfaceVelocity);
 
         const ground = new CharacterSurfaceInfo();
@@ -1342,7 +1349,8 @@ export class PhysicsCharacterController {
 
             // Create surface constraints from the manifold contacts.
             const constraints = this._createConstraintsFromManifold(deltaTime, deltaTime - remainingTime);
-            const maxSurfaceVelocity = new Vector3(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
+            const maxSurfaceVelocity = this._tmpVecs[3];
+            maxSurfaceVelocity.set(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
             const minDeltaTime = this._velocity.lengthSquared() == 0 ? 0.0 : (0.5 * this.keepDistance) / this._velocity.length();
             const solveResults = this._simplexSolverSolve(constraints, this._velocity, remainingTime, minDeltaTime, this.up, maxSurfaceVelocity);
             const newDisplacement = solveResults.position;
@@ -1410,21 +1418,23 @@ export class PhysicsCharacterController {
      * @param surfaceVelocity velocity induced by the surface
      * @param desiredVelocity desired character velocity
      * @param upWorld up vector in world space
-     * @returns a new velocity vector
+     * @param result resulting velocity vector
+     * @returns boolean true if result has been computed
      */
-    public calculateMovement(
+    public calculateMovementToRef(
         deltaTime: number,
         forwardWorld: Vector3,
         surfaceNormal: Vector3,
         currentVelocity: Vector3,
         surfaceVelocity: Vector3,
         desiredVelocity: Vector3,
-        upWorld: Vector3
-    ): Vector3 {
+        upWorld: Vector3,
+        result: Vector3
+    ): boolean {
         const eps = 1e-5;
         let binorm = forwardWorld.cross(upWorld);
         if (binorm.lengthSquared() < eps) {
-            return Vector3.ZeroReadOnly;
+            return false;
         }
         binorm.normalize();
         const tangent = binorm.cross(surfaceNormal);
@@ -1458,10 +1468,12 @@ export class PhysicsCharacterController {
         const side = desiredVelocity.dot(sideVec);
         const len = desiredVelocity.length();
 
-        const desiredVelocitySF = new Vector3(-fwd, side, 0);
+        const desiredVelocitySF = this._tmpVecs[4];
+        desiredVelocitySF.set(-fwd, side, 0);
         desiredVelocitySF.normalize();
         desiredVelocitySF.scaleInPlace(len);
-        const diff = desiredVelocitySF.subtract(relative);
+        const diff = this._tmpVecs[5];
+        desiredVelocitySF.subtractToRef(relative, diff);
 
         // Clamp it by maxVelocityDelta and limit it by gain.
         {
@@ -1480,11 +1492,35 @@ export class PhysicsCharacterController {
         relative.addInPlace(diff);
 
         // Transform back to world space and apply
-        const velocityOut = Vector3.TransformNormal(relative, surfaceFrame);
+        Vector3.TransformNormalToRef(relative, surfaceFrame, result);
 
         // Add back in the surface velocity
-        velocityOut.addInPlace(surfaceVelocity);
+        result.addInPlace(surfaceVelocity);
+        return true;
+    }
 
-        return velocityOut;
+    /**
+     * Helper function to calculate velocity based on surface informations and current velocity state and target
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param forwardWorld character forward in world coordinates
+     * @param surfaceNormal surface normal direction
+     * @param currentVelocity current velocity
+     * @param surfaceVelocity velocity induced by the surface
+     * @param desiredVelocity desired character velocity
+     * @param upWorld up vector in world space
+     * @returns a new velocity vector
+     */
+    public calculateMovement(
+        deltaTime: number,
+        forwardWorld: Vector3,
+        surfaceNormal: Vector3,
+        currentVelocity: Vector3,
+        surfaceVelocity: Vector3,
+        desiredVelocity: Vector3,
+        upWorld: Vector3
+    ): Vector3 {
+        const result = new Vector3(0, 0, 0);
+        this.calculateMovementToRef(deltaTime, forwardWorld, surfaceNormal, currentVelocity, surfaceVelocity, desiredVelocity, upWorld, result);
+        return result;
     }
 }
