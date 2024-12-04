@@ -152,7 +152,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
             }
             case AccessorComponentType.BYTE: {
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.writeUInt8(buffer[i] * 127);
+                    binaryWriter.writeInt8(buffer[i] * 127);
                 }
                 break;
             }
