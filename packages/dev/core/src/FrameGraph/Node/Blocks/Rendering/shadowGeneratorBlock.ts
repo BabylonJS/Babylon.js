@@ -32,7 +32,8 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
         this.registerInput("light", NodeRenderGraphBlockConnectionPointTypes.ShadowLight);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 
-        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
+        this.registerOutput("generator", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
+        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
 
         this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph, scene);
     }
@@ -131,24 +132,28 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the output component
+     * Gets the shadow generator component
+     */
+    public get generator(): NodeRenderGraphConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Gets the output texture component
      */
     public get output(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
+        return this._outputs[1];
     }
 
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        const lightConnectedPoint = this.light.connectedPoint;
-        if (lightConnectedPoint) {
-            this._frameGraphTask.light = lightConnectedPoint.value as IShadowLight;
-        }
+        this._frameGraphTask.light = this.light.connectedPoint?.value as IShadowLight;
+        this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
 
-        const objectsConnectedPoint = this.objects.connectedPoint;
-        if (objectsConnectedPoint) {
-            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
-        }
+        // Important: the shadow generator object is created by the task when we set the light, that's why we must set generator.value after setting the light!
+        this.generator.value = this._frameGraphTask.outputShadowGenerator;
+        this.output.value = this._frameGraphTask.outputTexture;
     }
 
     protected override _dumpPropertiesCode() {

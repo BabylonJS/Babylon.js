@@ -1,5 +1,17 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext, ObjectRendererOptions, ShadowGenerator } from "core/index";
+import type {
+    FrameGraph,
+    FrameGraphTextureHandle,
+    Scene,
+    Camera,
+    FrameGraphObjectList,
+    FrameGraphRenderContext,
+    ObjectRendererOptions,
+    ShadowGenerator,
+    Light,
+    Nullable,
+    Observer,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
@@ -161,6 +173,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._textureWidth = outputTextureDescription.size.width;
         this._textureHeight = outputTextureDescription.size.height;
 
+        this._setLightsForShadow();
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
@@ -199,5 +213,37 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public override dispose(): void {
         this._renderer.dispose();
         super.dispose();
+    }
+
+    private _setLightsForShadow() {
+        const lightsForShadow: Set<Light> = new Set();
+        const shadowEnabled: Map<Light, boolean> = new Map();
+
+        if (this.shadowGenerators) {
+            for (const shadowGenerator of this.shadowGenerators) {
+                const light = shadowGenerator.getLight();
+                if (light.isEnabled() && light.shadowEnabled) {
+                    lightsForShadow.add(light);
+                    light._shadowGenerators!.set(null, shadowGenerator);
+                }
+            }
+        }
+
+        this._renderer.onBeforeRenderObservable.remove(this._onBeforeRenderObservable);
+        this._onBeforeRenderObservable = this._renderer.onBeforeRenderObservable.add(() => {
+            for (let i = 0; i < this._scene.lights.length; i++) {
+                const light = this._scene.lights[i];
+                shadowEnabled.set(light, light.shadowEnabled);
+                light.shadowEnabled = lightsForShadow.has(light);
+            }
+        });
+
+        this._renderer.onAfterRenderObservable.remove(this._onAfterRenderObservable);
+        this._onAfterRenderObservable = this._renderer.onAfterRenderObservable.add(() => {
+            for (let i = 0; i < this._scene.lights.length; i++) {
+                const light = this._scene.lights[i];
+                light.shadowEnabled = shadowEnabled.get(light)!;
+            }
+        });
     }
 }

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, AbstractEngine } from "core/index";
+import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, AbstractEngine, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
@@ -123,6 +123,11 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
      */
     public readonly outputShadowGenerator: ShadowGenerator;
 
+    /**
+     * The shadow map texture.
+     */
+    public readonly outputTexture: FrameGraphTextureHandle;
+
     private _shadowGenerator: ShadowGenerator | undefined;
 
     private _createShadowGenerator() {
@@ -142,6 +147,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
     }
 
     private _engine: AbstractEngine;
+    private _scene: Scene;
 
     /**
      * Creates a new shadow generator task.
@@ -153,6 +159,9 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         super(name, frameGraph);
 
         this._engine = scene.getEngine();
+        this._scene = scene;
+
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public record() {
@@ -160,9 +169,17 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             throw new Error(`FrameGraphShadowGeneratorTask ${this.name}: light and objectList are required`);
         }
 
+        const shadowMap = this._frameGraph.textureManager.importTexture(`${this.name} shadowmap`, this._shadowGenerator!.getShadowMap()!.getInternalTexture()!);
+
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, shadowMap);
+
         const pass = this._frameGraph.addPass(this.name);
 
         pass.setExecuteFunc((_context) => {
+            if (!this.light.isEnabled() || !this.light.shadowEnabled) {
+                return;
+            }
+
             const shadowMap = this._shadowGenerator!.getShadowMap()!;
 
             shadowMap.renderList = this.objectList.meshes;
@@ -170,9 +187,10 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
 
             const currentRenderTarget = this._engine._currentRenderTarget;
 
-            if (this.light.isEnabled() && this.light.shadowEnabled) {
-                shadowMap.render();
-            }
+            this._scene.incrementRenderId();
+            this._scene.resetCachedMaterial();
+
+            shadowMap.render();
 
             if (this._engine._currentRenderTarget !== currentRenderTarget) {
                 if (!currentRenderTarget) {
