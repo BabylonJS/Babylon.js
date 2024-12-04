@@ -1,5 +1,3 @@
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Lerp } from "core/Maths/math.scalar.functions";
 
 interface IIESData {
@@ -90,18 +88,31 @@ function interpolateCandelaValues(data: IIESData, phi: number, theta: number): n
 
     return v;
 }
+/**
+ * Interface for IES texture data.
+ */
+export interface IIESTextureData {
+    /** The width of the texture */
+    width: number;
+    /** The height of the texture */
+    height: number;
+    /** The data of the texture */
+    data: Float32Array;
+}
 
 /**
- * Generates an IES texture from a string representing the IES data.
- * @param source defines a string representing the IES data
- * @param engine defines the engine to use
- * @returns the IES texture
+ * Generates IES data buffer from a string representing the IES data.
+ * @param uint8Array defines the IES data
+ * @returns the IES data buffer
  * @see https://ieslibrary.com/browse
- * #UQGPDT
+ * #UQGPDT#1
  */
-export function LoadIESData(source: string, engine: AbstractEngine): RawTexture {
+export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
+    const decoder = new TextDecoder("utf-8");
+    const source = decoder.decode(uint8Array);
+
     // Read data
-    const dataPointer = {
+    const dataPointer: IDataPointer = {
         lines: source.split("\n"),
         index: 0,
     };
@@ -177,8 +188,6 @@ export function LoadIESData(source: string, engine: AbstractEngine): RawTexture 
     const width = height * 2;
     const size = width * height;
     const arrayBuffer = new Float32Array(width * height);
-    const texture = RawTexture.CreateRTexture(arrayBuffer, width, height, engine);
-    texture.name = "IES-Data";
 
     // Fill the texture
     const startTheta = data.horizontalAngles[0];
@@ -198,5 +207,9 @@ export function LoadIESData(source: string, engine: AbstractEngine): RawTexture 
         arrayBuffer[phi + theta * height] = interpolateCandelaValues(data, phi, theta);
     }
 
-    return texture;
+    return {
+        width: width,
+        height: height,
+        data: arrayBuffer,
+    };
 }
