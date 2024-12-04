@@ -130,20 +130,16 @@ function ConvertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
  * @internal
  */
 export class GLTFMaterialExporter {
-    private readonly _exporter: GLTFExporter;
-
     // Mapping to store textures
     private _textureMap = new Map<BaseTexture, ITextureInfo>();
 
     // Mapping of internal textures to images to avoid exporting duplicate images
     private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: Promise<number> } } = {};
 
-    constructor(exporter: GLTFExporter) {
-        this._exporter = exporter;
-    }
+    constructor(private readonly _exporter: GLTFExporter) {}
 
     public getTextureInfo(babylonTexture: Nullable<BaseTexture>): Nullable<ITextureInfo> {
-        return babylonTexture ? this._textureMap.get(babylonTexture) ?? null : null;
+        return babylonTexture ? (this._textureMap.get(babylonTexture) ?? null) : null;
     }
 
     public async exportStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasUVs: boolean): Promise<number> {
