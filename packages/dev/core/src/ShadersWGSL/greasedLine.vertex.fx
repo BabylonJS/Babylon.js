@@ -1,13 +1,12 @@
 #include<instancesDeclaration>
 #include<sceneUboDeclaration>
-
+#include<meshUboDeclaration>
 
 attribute grl_widths: f32;
 attribute grl_offsets: vec3f;
 attribute grl_colorPointers: f32;
 attribute position: vec3f;
-uniform viewProjection: mat4x4f;
-uniform projection: mat4x4f;
+
 varying grlCounters: f32;
 varying grlColorPointer: f32;
 
@@ -29,13 +28,6 @@ varying grlColorPointer: f32;
     attribute grl_counters: f32;
 #endif
 
-struct GrlUBO {
-    grl_colorModeAndColorDistributionType: vec2f,
-    grlWidth: f32
-};
-
-var<uniform> grlUBO: GrlUBO;
-
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
@@ -45,26 +37,25 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #include<instancesVertex>
 
     vertexOutputs.grlColorPointer = input.grl_colorPointers;
-    let grlMatrix: mat4x4f = scene.viewProjection * finalWorld ;
+    let grlMatrix: mat4x4f = scene.viewProjection * mesh.world ;
 
     #ifdef GREASED_LINE_CAMERA_FACING
-        let grlBaseWidth: f32 = grlUBO.grlWidth;
+        let grlBaseWidth: f32 = uniforms.grlWidth;
 
-        let grlPrevious: vec3f = grl_previousAndSide.xyz;
-        let grlSide: f32 = grl_previousAndSide.w;
+        let grlPrevious: vec3f = input.grl_previousAndSide.xyz;
+        let grlSide: f32 = input.grl_previousAndSide.w;
 
-        let grlNext: vec3f = grl_nextAndCounters.xyz;
-        vertexOutputs.grlCounters = grl_nextAndCounters.w;
-
+        let grlNext: vec3f = input.grl_nextAndCounters.xyz;
+        vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
         let grlPositionOffset: vec3f = input.grl_offsets;
-        let grlFinalPosition: vec4f = grlMatrix * vec4f(position + grlPositionOffset , 1.0);
+        let grlFinalPosition: vec4f = grlMatrix * vec4f(vertexInputs.position + grlPositionOffset , 1.0);
         let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
         let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
 
-        let grlCurrentP: vec2f = grlFix(grlFinalPosition, grlAspect);
-        let grlPrevP: vec2f = grlFix(grlPrevPos, grlAspect);
-        let grlNextP: vec2f= grlFix(grlNextPos, grlAspect);
+        let grlCurrentP: vec2f = grlFix(grlFinalPosition, uniforms.grlAspect);
+        let grlPrevP: vec2f = grlFix(grlPrevPos, uniforms.grlAspect);
+        let grlNextP: vec2f= grlFix(grlNextPos, uniforms.grlAspect);
 
         let grlWidth:f32 = grlBaseWidth * input.grl_widths;
 
@@ -90,20 +81,20 @@ fn main(input : VertexInputs) -> FragmentInputs {
             grlNormal.y *= grlHalfWidth;
         #endif
 
-        grlNormal *= uniforms.projection;
+        grlNormal *= scene.projection;
 
-        if (grlSizeAttenuation == 1.) {
+        if (uniforms.grlSizeAttenuation == 1.) {
             grlNormal.x *= grlFinalPosition.w;
             grlNormal.y *= grlFinalPosition.w;
 
-            let pr: f32 = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
+            let pr = vec4f(uniforms.grlResolution, 0.0, 1.0) * scene.projection;
             grlNormal.x /= pr.x;
             grlNormal.y /= pr.y;
         }
         vertexOutputs.position = vec4f(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
     #else
-        vertexOutputs.grlCounters = grl_counters;
-        vertexOutputs.position = grlMatrix * vec4( (position + input.grl_offsets) + grl_slopes * input.grl_widths , 1.0 ) ;
+        vertexOutputs.grlCounters = input.grl_counters;
+        vertexOutputs.position = grlMatrix * vec4f((vertexInputs.position + input.grl_offsets) + input.grl_slopes * input.grl_widths, 1.0) ;
     #endif
 
     #define CUSTOM_VERTEX_MAIN_END

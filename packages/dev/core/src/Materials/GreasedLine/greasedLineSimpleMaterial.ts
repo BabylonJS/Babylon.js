@@ -1,24 +1,16 @@
 import type { Scene } from "../../scene";
 import { RawTexture } from "../Textures/rawTexture";
-
 import { ShaderMaterial } from "../shaderMaterial";
 import type { Nullable } from "../../types";
 import { Color3 } from "../../Maths/math.color";
 import { Vector2 } from "../../Maths/math.vector";
+import { ShaderLanguage } from "../shaderLanguage";
+import { TextureSampler } from "../Textures/textureSampler";
 
 import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
-import { ShaderLanguage } from "../shaderLanguage";
-
-// import "../../Shaders/greasedLine.fragment";
-// import "../../Shaders/greasedLine.vertex";
-import "../../ShadersWGSL/greasedLine.fragment";
-import "../../ShadersWGSL/greasedLine.vertex";
-import { TextureSampler } from "../Textures/textureSampler";
-import { Constants } from "../../Engines/constants";
-import { UniformBuffer } from "../uniformBuffer";
 
 /**
  * GreasedLineSimpleMaterial
@@ -54,6 +46,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
+        const engine = scene.getEngine();
+        const isWGSL = engine.isWebGPU && !(options.forceGLSL || GreasedLineSimpleMaterial.ForceGLSL);
+
         const defines = [
             `COLOR_DISTRIBUTION_TYPE_LINE ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE}.`,
             `COLOR_DISTRIBUTION_TYPE_SEGMENT ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT}.`,
@@ -61,9 +56,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             `COLOR_MODE_ADD ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.`,
             `COLOR_MODE_MULTIPLY ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.`,
         ];
-        const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
-
         scene.useRightHandedSystem && defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
+
+        const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
 
         if (options.cameraFacing) {
             defines.push("GREASED_LINE_CAMERA_FACING");
@@ -73,30 +68,25 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             attributes.push("grl_counters");
         }
 
-        const engine = scene.getEngine();
-        const isWGSL = engine.isWebGPU && !(options.forceGLSL || GreasedLineSimpleMaterial.ForceGLSL);
+        const uniforms = [
+            "grlColorsWidth",
+            "grlUseColors",
+            "grlWidth",
+            "grlColor",
+            "grl_colorModeAndColorDistributionType",
+            "grlResolution",
+            "grlAspect",
+            "grlAizeAttenuation",
+            "grlDashArray",
+            "grlDashOffset",
+            "grlDashRatio",
+            "grlUseDash",
+            "grlVisibility",
+            "grlColors",
+        ];
 
-        let grlUBO: Nullable<UniformBuffer> = null;
-        if (isWGSL) {
-            grlUBO = new UniformBuffer(engine);
-
-            // TODO: color mode not set - this is a vector2! fix this!
-            grlUBO.addUniform("grl_colorModeAndColorDistributionType", 1);
-            grlUBO.updateFloat("grl_colorModeAndColorDistributionType", options.colorDistributionType ?? GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT);
-
-            grlUBO.addUniform("grlWidth", 1);
-            grlUBO.updateFloat(
-                "grlWidth",
-                options.width
-                    ? options.width
-                    : options.sizeAttenuation && options.cameraFacing
-                      ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
-                      : GreasedLineMaterialDefaults.DEFAULT_WIDTH
-            );
-
-            // grlUBO.addUniform("")
-
-            grlUBO.update();
+        if (!isWGSL) {
+            uniforms.push("world", "viewProjection", "view", "projection");
         }
 
         super(
@@ -107,42 +97,21 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 fragment: "greasedLine",
             },
             {
-                uniformBuffers: isWGSL ? ["Scene"] : undefined,
+                uniformBuffers: isWGSL ? ["Scene", "Mesh"] : undefined,
                 attributes,
-                uniforms: [
-                    "world",
-                    "viewProjection",
-                    "view",
-                    "projection",
-                    "grlColorsWidth",
-                    "grlUseColors",
-                    "grlWidth",
-                    "grlColor",
-                    "grl_colorModeAndColorDistributionType",
-                    "grlResolution",
-                    "grlAspect",
-                    "grlAizeAttenuation",
-                    "grlDashArray",
-                    "grlDashOffset",
-                    "grlDashRatio",
-                    "grlUseDash",
-                    "grlVisibility",
-                    "grlColors",
-                ],
+                uniforms,
                 samplers: isWGSL ? [] : ["grlColors"],
                 defines,
+                extraInitializationsAsync: async () => {
+                    if (isWGSL) {
+                        await Promise.all([import("../../ShadersWGSL/greasedLine.vertex"), import("../../ShadersWGSL/greasedLine.fragment")]);
+                    } else {
+                        await Promise.all([import("../../Shaders/greasedLine.vertex"), import("../../Shaders/greasedLine.fragment")]);
+                    }
+                },
                 shaderLanguage: isWGSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             }
         );
-
-        if (isWGSL && grlUBO) {
-            const sampler = new TextureSampler();
-            sampler.setParameters(); // use the default values
-            sampler.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-            this.setTextureSampler("grlColorsSampler", sampler);
-
-            this.setUniformBuffer("grlUBO", grlUBO);
-        }
 
         options = options || {
             color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
@@ -180,6 +149,13 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             }
         }
 
+        if (isWGSL) {
+            const sampler = new TextureSampler();
+            sampler.setParameters(); // use the default values
+            sampler.samplingMode = this.colorsSampling;
+            this.setTextureSampler("grlColorsSampler", sampler);
+        }
+
         engine.onDisposeObservable.add(() => {
             GreasedLineTools.DisposeEmptyColorsTexture();
         });
@@ -192,15 +168,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this._colorsTexture?.dispose();
         super.dispose();
     }
-
-    // protected async _importShadersAsync(): Promise<void> {
-    //     if (this._shaderLanguage === ShaderLanguage.WGSL) {
-    //         await Promise.all([import("../../ShadersWGSL/greasedLine.vertex"), import("../../ShadersWGSL/greasedLine.fragment")]);
-    //     } else {
-    //         await Promise.all([import("../../Shaders/greasedLine.vertex"), import("../../Shaders/greasedLine.fragment")]);
-    //     }
-    //     this._shadersLoaded = true;
-    // }
 
     private _setColorModeAndColorDistributionType() {
         this.setVector2("grl_colorModeAndColorDistributionType", new Vector2(this._colorMode, this._colorsDistributionType));
@@ -523,7 +490,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param _rootUrl root url for textures
      */
     public parse(source: any, scene: Scene, _rootUrl: string): void {
-        // TODO: super.parse?
         const greasedLineMaterialOptions = <GreasedLineMaterialOptions>source.greasedLineMaterialOptions;
 
         this._colorsTexture?.dispose();
