@@ -246,9 +246,6 @@ export function ConvertToRightHandedNode(value: INode) {
     translation = ConvertToRightHandedPosition(translation);
     rotation = ConvertToRightHandedRotation(rotation);
 
-    value.rotation = rotation.asArray();
-    value.translation = translation.asArray();
-
     if (translation.equalsToFloats(0, 0, 0)) {
         delete value.translation;
     } else {
