@@ -4,7 +4,8 @@
         {
             "title": "IES Profile",
             "playgroundId": "#UIAXAU#6",
-            "referenceImage": "iesprofile.png"
+            "referenceImage": "iesprofile.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Gaussian Splatting NME",
