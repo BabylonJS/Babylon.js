@@ -37,6 +37,9 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
         extension = ".ktx";
     }
     if (!_registeredTextureLoaders.has(extension)) {
+        if (extension.endsWith(".ies")) {
+            registerTextureLoader(".ies", () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
+        }
         if (extension.endsWith(".dds")) {
             registerTextureLoader(".dds", () => import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
         }
