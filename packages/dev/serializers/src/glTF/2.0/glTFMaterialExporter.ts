@@ -80,8 +80,8 @@ export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecul
     const a = dielectricSpecular.r;
     const b = (diffuse * oneMinusSpecularStrength) / (1.0 - dielectricSpecular.r) + specular - 2.0 * dielectricSpecular.r;
     const c = dielectricSpecular.r - specular;
-    const D = b * b - 4.0 * a * c;
-    return Scalar.Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
+    const d = b * b - 4.0 * a * c;
+    return Scalar.Clamp((-b + Math.sqrt(d)) / (2.0 * a), 0, 1);
 }
 
 /**
