@@ -91,14 +91,14 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
     configurable: true,
 });
 
-const mat1 = Matrix.Identity();
-const vec = new Vector3(),
-    vec2 = new Vector3();
+const tempMatrix = Matrix.Identity();
+const tempVec1 = new Vector3(),
+    tempVec2 = new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
-const mat1Array = mat1.asArray();
+const tempMatrixArray = tempMatrix.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
-const dummyBoundingBox = new BoundingBox(vec, vec);
+const dummyBoundingBox = new BoundingBox(tempVec1, tempVec1);
 
 /**
  * Component responsible of rendering the bounding box of the meshes in a scene.
@@ -190,12 +190,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * Internal state of whether instanced rendering enabled
      */
     protected _useInstances = false;
-    /**
-     * Choose whether dynamic vertex buffer should be used for instanced rendering.
-     * If true, the buffer would be updated instead of recreated when rendering a frame,
-     * this could reduce memory pressure.
-     */
-    public updatable = true;
 
     /** @internal */
     public _drawWrapperFront: Nullable<DrawWrapper> = null;
@@ -601,10 +595,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const min = boundingBox.minimum;
             const max = boundingBox.maximum;
 
-            const diff = max.subtractToRef(min, vec2);
-            const median = min.addToRef(diff.scaleToRef(0.5, vec), vec);
+            const diff = max.subtractToRef(min, tempVec2);
+            const median = min.addToRef(diff.scaleToRef(0.5, tempVec1), tempVec1);
 
-            const m = mat1Array;
+            const m = tempMatrixArray;
 
             // Directly update the matrix values in column-major order
             m[0] = diff._x; // Scale X
@@ -615,7 +609,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             m[10] = diff._z; // Scale Z
             m[11] = median._z; // Translate Z
-            mat1.multiplyToArray(boundingBox.getWorldMatrix(), matrices, instancesCount * 16);
+            tempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, instancesCount * 16);
 
             instancesCount++;
         }
@@ -626,10 +620,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
         const depthWrite = engine.getDepthWrite();
         engine.setDepthWrite(false);
         const matrixBuffer = this._matrixBuffer;
-        if (this.updatable && matrixBuffer?.isUpdatable() && matrixBuffer.getData() === matrices) {
+        if (matrixBuffer?.isUpdatable() && matrixBuffer.getData() === matrices) {
             matrixBuffer.update(matrices);
         } else {
-            this._createInstanceBuffer(matrices, !this.updatable);
+            this._createInstanceBuffer(matrices);
         }
 
         this._createWrappersForBoundingBox(this);
@@ -692,12 +686,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
     /**
      * Creates buffer for instanced rendering
      * @param buffer buffer to set
-     * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set
      */
-    private _createInstanceBuffer(buffer: Float32Array, staticBuffer: boolean): void {
+    private _createInstanceBuffer(buffer: Float32Array): void {
         const vertexBuffers = this._vertexBuffers;
         this._cleanupInstanceBuffer();
-        const matrixBuffer = new Buffer(this.scene.getEngine(), buffer, !staticBuffer, 16, false, true);
+        const matrixBuffer = new Buffer(this.scene.getEngine(), buffer, true, 16, false, true);
 
         vertexBuffers.world0 = matrixBuffer.createVertexBuffer("world0", 0, 4);
         vertexBuffers.world1 = matrixBuffer.createVertexBuffer("world1", 4, 4);
