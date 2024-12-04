@@ -207,9 +207,10 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
         arrayBuffer[phi + theta * height] = interpolateCandelaValues(data, phi, theta);
     }
 
+    // So far we only need the first half of the first row of the texture as we only support IES for spot light. We can add support for other types later.
     return {
-        width: width,
-        height: height,
+        width: width / 2,
+        height: 1,
         data: arrayBuffer,
     };
 }
