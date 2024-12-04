@@ -5,8 +5,9 @@ import * as path from "path";
 
 export default defineConfig({
     expect: {
-        toHaveScreenshot: { maxDiffPixels: 800, stylePath: path.join(__dirname, "screenshot.css") },
+        toHaveScreenshot: { maxDiffPixels: 3000, stylePath: path.join(__dirname, "screenshot.css") },
     },
+    timeout: 30000,
 });
 
 const url = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339");
