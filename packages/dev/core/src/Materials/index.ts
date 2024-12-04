@@ -48,3 +48,9 @@ export * from "../Shaders/default.fragment";
 export * from "../Shaders/default.vertex";
 export * from "../ShadersWGSL/default.fragment";
 export * from "../ShadersWGSL/default.vertex";
+
+// GreasedLineSimplMaterial
+export * from "../Shaders/greasedLine.fragment";
+export * from "../Shaders/greasedLine.vertex";
+export * from "../ShadersWGSL/greasedLine.fragment";
+export * from "../ShadersWGSL/greasedLine.vertex";
