@@ -33,6 +33,7 @@ export class PreviewManager {
     private _onBuildObserver: Nullable<Observer<NodeGeometry>>;
 
     private _onFrameObserver: Nullable<Observer<void>>;
+    private _onAxisObserver: Nullable<Observer<void>>;
     private _onExportToGLBObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
@@ -70,6 +71,12 @@ export class PreviewManager {
                 this._mesh!.material = currentMat;
                 glb.downloadFiles();
             });
+        });
+
+        let axisTopRight = true;
+
+        this._onAxisObserver = this._globalState.onAxis.add(() => {
+            axisTopRight = !axisTopRight;
         });
 
         this._onFrameObserver = this._globalState.onFrame.add(() => {
@@ -192,10 +199,15 @@ export class PreviewManager {
         zPlane.position.z = 1;
         zPlane.position.y = 0.3;
 
-        const targetPosition = new Vector3(3.5, 3.6, 13);
+        let targetPosition = new Vector3(3.5, 3.6, 13);
         const tempMat = Matrix.Identity();
 
         this._scene.onBeforeCameraRenderObservable.add(() => {
+            if (axisTopRight) {
+                targetPosition = new Vector3(3.5, 3.6, 13);
+            } else {
+                targetPosition = new Vector3(0, 0, 10);
+            }
             this._scene.getViewMatrix().invertToRef(tempMat);
             Vector3.TransformCoordinatesToRef(targetPosition, tempMat, dummy.position);
         });
@@ -348,6 +360,7 @@ export class PreviewManager {
 
     public dispose() {
         this._globalState.onFrame.remove(this._onFrameObserver);
+        this._onAxisObserver?.remove();
         this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onPreviewModeChanged.remove(this._onPreviewChangedObserver);
