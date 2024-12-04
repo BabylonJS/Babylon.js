@@ -111,13 +111,13 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // glTF lights have variable rotation and constant direction. Therefore,
             // compute a quaternion that aligns the Babylon light's direction with glTF's constant one.
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
-                const direction = babylonNode.direction.normalizeToNew();
+                const direction = babylonNode.direction.normalizeToRef(TmpVectors.Vector3[0]);
                 if (convertToRightHanded) {
                     ConvertToRightHandedPosition(direction);
                 }
                 const angle = Math.acos(Vector3.Dot(LIGHTDIRECTION, direction));
                 const axis = Vector3.Cross(LIGHTDIRECTION, direction);
-                const lightRotationQuaternion = Quaternion.RotationAxis(axis, angle);
+                const lightRotationQuaternion = Quaternion.RotationAxisToRef(axis, angle, TmpVectors.Quaternion[0]);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
                     node.rotation = lightRotationQuaternion.asArray();
                 }
