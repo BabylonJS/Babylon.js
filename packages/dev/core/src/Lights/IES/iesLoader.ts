@@ -126,7 +126,7 @@ export function LoadIESData(source: string, engine: AbstractEngine): RawTexture 
     data.candelaMultiplier = header[2];
     data.numberOfVerticalAngles = header[3];
     data.numberOfHorizontalAngles = header[4];
-    data.photometricType = header[5];
+    data.photometricType = header[5]; // We ignore cylindrical type for now. Will add support later if needed
     data.unitsType = header[6];
     data.width = header[7];
     data.length = header[8];
@@ -172,9 +172,9 @@ export function LoadIESData(source: string, engine: AbstractEngine): RawTexture 
         }
     }
 
-    // Create the texture
-    const width = 360;
+    // Create the cylindrical texture
     const height = 180;
+    const width = height * 2;
     const size = width * height;
     const arrayBuffer = new Float32Array(width * height);
     const texture = RawTexture.CreateRTexture(arrayBuffer, width, height, engine);
