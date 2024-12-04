@@ -98,7 +98,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
             if (subSurface.refractionIntensityTexture) {
                 if (subSurface.useGltfStyleTextures) {
-                    const transmissionTexture = await this._exporter._materialExporter._exportTextureAsync(subSurface.refractionIntensityTexture, ImageMimeType.PNG);
+                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture, ImageMimeType.PNG);
                     if (transmissionTexture) {
                         volumeInfo.transmissionTexture = transmissionTexture;
                     }

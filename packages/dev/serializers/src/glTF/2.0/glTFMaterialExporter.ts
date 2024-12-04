@@ -159,7 +159,7 @@ export class GLTFMaterialExporter {
             const diffuseTexture = babylonStandardMaterial.diffuseTexture;
             if (diffuseTexture) {
                 promises.push(
-                    this._exportTextureAsync(diffuseTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(diffuseTexture, mimeType).then((textureInfo) => {
                         if (textureInfo) {
                             pbrMetallicRoughness.baseColorTexture = textureInfo;
                         }
@@ -170,7 +170,7 @@ export class GLTFMaterialExporter {
             const bumpTexture = babylonStandardMaterial.bumpTexture;
             if (bumpTexture) {
                 promises.push(
-                    this._exportTextureAsync(bumpTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(bumpTexture, mimeType).then((textureInfo) => {
                         if (textureInfo) {
                             material.normalTexture = textureInfo;
                             if (bumpTexture.level !== 1) {
@@ -186,7 +186,7 @@ export class GLTFMaterialExporter {
                 material.emissiveFactor = [1.0, 1.0, 1.0];
 
                 promises.push(
-                    this._exportTextureAsync(emissiveTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(emissiveTexture, mimeType).then((textureInfo) => {
                         if (textureInfo) {
                             material.emissiveTexture = textureInfo;
                         }
@@ -197,7 +197,7 @@ export class GLTFMaterialExporter {
             const ambientTexture = babylonStandardMaterial.ambientTexture;
             if (ambientTexture) {
                 promises.push(
-                    this._exportTextureAsync(ambientTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(ambientTexture, mimeType).then((textureInfo) => {
                         if (textureInfo) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: textureInfo.index,
@@ -292,7 +292,7 @@ export class GLTFMaterialExporter {
         const promises: Array<Promise<Nullable<ITextureInfo>>> = [];
 
         for (const texture of textures) {
-            promises.push(this._exportTextureAsync(texture, mimeType));
+            promises.push(this.exportTextureAsync(texture, mimeType));
         }
 
         await Promise.all(promises);
@@ -588,7 +588,7 @@ export class GLTFMaterialExporter {
             const albedoTexture = babylonPBRMaterial._albedoTexture;
             if (albedoTexture) {
                 promises.push(
-                    this._exportTextureAsync(babylonPBRMaterial._albedoTexture!, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(babylonPBRMaterial._albedoTexture!, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
@@ -598,7 +598,7 @@ export class GLTFMaterialExporter {
             const metallicTexture = babylonPBRMaterial._metallicTexture;
             if (metallicTexture) {
                 promises.push(
-                    this._exportTextureAsync(metallicTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(metallicTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                         }
@@ -829,7 +829,7 @@ export class GLTFMaterialExporter {
             const bumpTexture = babylonPBRMaterial._bumpTexture;
             if (bumpTexture) {
                 promises.push(
-                    this._exportTextureAsync(bumpTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(bumpTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.normalTexture = glTFTexture;
                             if (bumpTexture.level !== 1) {
@@ -843,7 +843,7 @@ export class GLTFMaterialExporter {
             const ambientTexture = babylonPBRMaterial._ambientTexture;
             if (ambientTexture) {
                 promises.push(
-                    this._exportTextureAsync(ambientTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(ambientTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
@@ -864,7 +864,7 @@ export class GLTFMaterialExporter {
             const emissiveTexture = babylonPBRMaterial._emissiveTexture;
             if (emissiveTexture) {
                 promises.push(
-                    this._exportTextureAsync(emissiveTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(emissiveTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.emissiveTexture = glTFTexture;
                         }
@@ -894,7 +894,7 @@ export class GLTFMaterialExporter {
         return pixels;
     }
 
-    public async _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
+    public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
         if (!extensionPromise) {
             return this._exportTextureInfoAsync(babylonTexture, mimeType);
