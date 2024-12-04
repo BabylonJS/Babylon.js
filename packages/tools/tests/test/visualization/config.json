@@ -853,29 +853,29 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, once)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#77",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#77",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "iterations = 1, iterations = 2",
+            "replace": "//options//, iterations = 2;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, once)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#76",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+            "replace": "//options//, useRightHandedSystem = true;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, twice)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#76",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true, iterations = 1, iterations = 2",
+            "replace": "//options//, useRightHandedSystem = true; iterations = 2;",
             "errorRatio": 1.1
         },
         {
@@ -911,6 +911,42 @@
             "title": "GLTF Serializer KHR gpu instancing",
             "playgroundId": "#1Q2BWN#10",
             "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },
+        {
+            "title": "GLTF Serializer KHR punctual light, left-handed",
+            "playgroundId": "#FLXW8B#25",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
+        },
+        {
+            "title": "GLTF Serializer KHR punctual light, right-handed",
+            "playgroundId": "#FLXW8B#25",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, left-handed",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerCameraLeftHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, right-handed",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCameraRightHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, left-handed, round trip twice",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerCameraLeftHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, right-handed, round trip twice",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",

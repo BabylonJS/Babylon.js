@@ -1,6 +1,6 @@
 import type { IMaterial, IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -23,9 +23,9 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -62,19 +62,20 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                 const sheenInfo: IKHRMaterialsSheen = {
                     sheenColorFactor: babylonMaterial.sheen.color.asArray(),
                     sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0,
-                    hasTextures: () => {
-                        return sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null;
-                    },
                 };
 
+                if (sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+
                 if (babylonMaterial.sheen.texture) {
-                    sheenInfo.sheenColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
+                    sheenInfo.sheenColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
                 }
 
                 if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.textureRoughness) ?? undefined;
+                    sheenInfo.sheenRoughnessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.sheen.textureRoughness) ?? undefined;
                 } else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
+                    sheenInfo.sheenRoughnessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
                 }
 
                 node.extensions[NAME] = sheenInfo;
@@ -84,4 +85,4 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_sheen(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_sheen(exporter));
