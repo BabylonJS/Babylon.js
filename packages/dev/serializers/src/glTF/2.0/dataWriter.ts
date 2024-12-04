@@ -4,7 +4,7 @@
 export class DataWriter {
     private _data: Uint8Array;
     private _dataView: DataView;
-    private _byteOffset: number;
+    private readonly _byteOffset: number;
 
     public constructor(byteLength: number) {
         this._data = new Uint8Array(byteLength);
