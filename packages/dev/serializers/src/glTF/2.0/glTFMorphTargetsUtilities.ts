@@ -14,7 +14,7 @@ import type { Vector4 } from "core/Maths/math.vector";
  * @internal
  */
 export interface IMorphTargetData {
-    attributes: { [name: string]: number };
+    attributes: Record<string, number>;
     influence: number;
     name: string;
 }
