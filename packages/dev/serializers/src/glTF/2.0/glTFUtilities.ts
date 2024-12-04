@@ -20,6 +20,11 @@ const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
 
+// Default values for comparison.
+const epsilon = 1e-6;
+const defaultTranslation = Vector3.Zero();
+const defaultScale = Vector3.One();
+
 /**
  * Creates a buffer view based on the supplied arguments
  * @param bufferIndex index value of the specified buffer
@@ -246,7 +251,7 @@ export function ConvertToRightHandedNode(value: INode) {
     translation = ConvertToRightHandedPosition(translation);
     rotation = ConvertToRightHandedRotation(rotation);
 
-    if (translation.equalsToFloats(0, 0, 0)) {
+    if (translation.equalsWithEpsilon(defaultTranslation, epsilon)) {
         delete value.translation;
     } else {
         value.translation = translation.asArray();
@@ -295,7 +300,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
     parentMatrix.multiplyToRef(matrix, matrix);
     matrix.decompose(parentScale, parentRotation, parentTranslation);
 
-    if (parentTranslation.equalsToFloats(0, 0, 0)) {
+    if (parentTranslation.equalsWithEpsilon(defaultTranslation, epsilon)) {
         delete parentNode.translation;
     } else {
         parentNode.translation = parentTranslation.asArray();
@@ -307,7 +312,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsToFloats(1, 1, 1)) {
+    if (parentScale.equalsWithEpsilon(defaultScale, epsilon)) {
         delete parentNode.scale;
     } else {
         parentNode.scale = parentScale.asArray();
