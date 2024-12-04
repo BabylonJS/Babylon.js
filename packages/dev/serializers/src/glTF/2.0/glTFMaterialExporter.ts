@@ -143,7 +143,7 @@ export class GLTFMaterialExporter {
     }
 
     public getTextureInfo(babylonTexture: Nullable<BaseTexture>): Nullable<ITextureInfo> {
-        return babylonTexture ? this._textureMap.get(babylonTexture) || null : null;
+        return babylonTexture ? this._textureMap.get(babylonTexture) ?? null : null;
     }
 
     public async exportStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasUVs: boolean): Promise<number> {
