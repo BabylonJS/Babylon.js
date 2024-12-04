@@ -53,8 +53,8 @@ export function BuildMorphTargetBuffers(
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;
         const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
-        const min = new Array<number>(3).fill(Infinity);
-        const max = new Array<number>(3).fill(-Infinity);
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
         vertexCount = originalPositions.length / 3;
         byteOffset = dataWriter.byteOffset;
         vertexStart = 0;
