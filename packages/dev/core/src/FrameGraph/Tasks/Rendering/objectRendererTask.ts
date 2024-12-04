@@ -71,11 +71,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      */
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
-    protected readonly _scene: Scene;
-    protected readonly _renderer: ObjectRenderer;
-    protected _textureWidth: number;
-    protected _textureHeight: number;
-
     /**
      * The object renderer used to render the objects.
      */
@@ -93,6 +88,13 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.name = value;
         }
     }
+
+    protected readonly _scene: Scene;
+    protected readonly _renderer: ObjectRenderer;
+    protected _textureWidth: number;
+    protected _textureHeight: number;
+    protected _onBeforeRenderObservable: Nullable<Observer<number>> = null;
+    protected _onAfterRenderObservable: Nullable<Observer<number>> = null;
 
     /**
      * Constructs a new object renderer task.

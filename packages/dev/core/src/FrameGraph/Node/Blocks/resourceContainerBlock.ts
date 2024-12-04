@@ -148,10 +148,6 @@ export class NodeRenderGraphResourceContainerBlock extends NodeRenderGraphBlock 
     public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-    }
 }
 
 RegisterClass("BABYLON.NodeRenderGraphResourceContainerBlock", NodeRenderGraphResourceContainerBlock);
