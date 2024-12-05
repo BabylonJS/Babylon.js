@@ -22,6 +22,16 @@ export interface IWebAudioEngineOptions {
      * Set to `true` to automatically resume the audio context when the user interacts with the page; otherwise `false`. Default is `true`.
      */
     resumeOnInteraction?: boolean;
+
+    /**
+     * Set to `true` to automatically resume the audio context when the browser pauses audio playback. Default is `true`.
+     */
+    resumeOnPause?: boolean;
+
+    /**
+     * The interval in milliseconds to try resuming audio playback when `resumeOnPause` is `true`. Default is `1000`.
+     */
+    resumeOnPauseRetryInterval?: number;
 }
 
 /**
@@ -104,12 +114,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     private _onAudioContextStateChange = () => {
         if (this.state === "running") {
+            clearInterval(this._resumeOnPauseTimerId);
             this._audioContextStarted = true;
             document.removeEventListener("click", this._onUserInteraction);
         }
         if (this.state === "suspended" || this.state === "interrupted") {
             if (this._resumeOnInteraction) {
                 document.addEventListener("click", this._onUserInteraction, { once: true });
+            if (this._audioContextStarted && this._resumeOnPause) {
+                clearInterval(this._resumeOnPauseTimerId);
+
+                this._resumeOnPauseTimerId = setInterval(() => {
+                    this.audioContext.resume();
+                }, this._resumeOnPauseRetryInterval);
             }
         }
 
@@ -117,6 +134,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
     };
 
     private _resumeOnInteraction = true;
+    private _resumeOnPause = true;
+    private _resumeOnPauseRetryInterval = 1000;
+    private _resumeOnPauseTimerId: any = null;
 
     /** @internal */
     public get audioContext(): AudioContext | OfflineAudioContext {
@@ -168,6 +188,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         this._audioContext = options?.audioContext ?? null;
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
+        this._resumeOnPause = options?.resumeOnPause ?? true;
+        this._resumeOnPauseRetryInterval = options?.resumeOnPauseRetryInterval ?? 1000;
 
         await this._initAudioContext();
         this._resolveIsReadyPromise();
