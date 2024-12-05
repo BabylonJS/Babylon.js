@@ -167,8 +167,8 @@ export class Sandbox extends React.Component<
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
             for (const param of params) {
-                const [name, value] = param.toLowerCase().split("=", 2);
-                switch (name) {
+                const [name, value] = param.split("=", 2);
+                switch (name.toLowerCase()) {
                     case "3dcommerce": {
                         set3DCommerceMode();
                         break;
@@ -179,7 +179,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "autorotate": {
-                        this._autoRotate = value === "true" ? true : false;
+                        this._autoRotate = value.toLowerCase() === "true" ? true : false;
                         break;
                     }
                     case "camera": {
@@ -203,15 +203,15 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "" };
                         break;
                     }
                     case "skybox": {
-                        this._globalState.skybox = value === "true" ? true : false;
+                        this._globalState.skybox = value.toLowerCase() === "true" ? true : false;
                         break;
                     }
                     case "tonemapping": {
-                        switch (value) {
+                        switch (value.toLowerCase()) {
                             case "standard":
                                 this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
                                 break;
