@@ -373,8 +373,7 @@ export class PhysicsCharacterController {
             let minDistance = 1e38;
             const bodyMap = (<any>hk)._bodies;
             for (let i = 0; i < numProximityHits; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const [distance, _contactLocal, contactWorld] = hknp.HP_QueryCollector_GetShapeProximityResult(startCollector, i)[1];
+                const [distance, , contactWorld] = hknp.HP_QueryCollector_GetShapeProximityResult(startCollector, i)[1];
                 minDistance = Math.min(minDistance, distance);
                 newContacts.push({
                     position: Vector3.FromArray(contactWorld[3]),
@@ -424,8 +423,7 @@ export class PhysicsCharacterController {
         if (numCastHits > 0) {
             let closestHitBody = null;
             for (let i = 0; i < numCastHits; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const [fraction, _hitLocal, hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(castCollector, i)[1];
+                const [fraction, , hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(castCollector, i)[1];
                 if (closestHitBody == null) {
                     const contact = contactFromCast(hk, hitWorld, castPath, fraction, this.keepDistance);
                     closestHitBody = hitWorld[0][0];
