@@ -16,7 +16,7 @@ export interface IWebAudioEngineOptions {
     /**
      * The audio context to be used by the engine.
      */
-    audioContext?: AudioContext | OfflineAudioContext;
+    audioContext?: AudioContext;
 
     /**
      * Set to `true` to automatically resume the audio context when the user interacts with the page. Default is `true`.
@@ -40,7 +40,7 @@ export interface IWebAudioEngineOptions {
  * @returns A promise that resolves with the created audio engine.
  */
 export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AudioEngineV2> {
-    const engine = new _WebAudioEngine();
+    const engine = new _WebAudioEngine(options ?? {});
     await engine.init(options);
     return engine;
 }
@@ -59,14 +59,17 @@ const formatMimeTypeMap = new Map<string, string>([
 
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
-    private _audioContext: Nullable<AudioContext | OfflineAudioContext>;
     private _audioContextStarted = false;
+    private _resumePromise: Nullable<Promise<void>> = null;
 
     private _mainOutput: Nullable<_WebAudioMainOutput> = null;
 
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
     private _volume = 1;
+
+    /** @internal */
+    public readonly audioContext: AudioContext;
 
     /** @internal */
     public get isWebAudio(): boolean {
@@ -82,7 +85,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get currentTime(): number {
-        return this._audioContext?.currentTime ?? 0;
+        return this.audioContext.currentTime ?? 0;
     }
 
     /** @internal */
@@ -91,16 +94,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     private _initAudioContext: () => Promise<void> = async () => {
-        if (!this._audioContext) {
-            return;
-        }
-
-        this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
-
-        if (this.state !== "running" && this._resumeOnInteraction) {
-            document.addEventListener("click", this._onUserInteraction, { once: true });
-            this._audioContext.resume();
-        }
+        this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         this._mainOutput = await _CreateMainAudioOutputAsync(this);
         this._mainOutput.volume = this._volume;
@@ -130,13 +124,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
         if (this.state === "running") {
             clearInterval(this._resumeOnPauseTimerId);
             this._audioContextStarted = true;
+            this._resumePromise = null;
         }
         if (this.state === "suspended" || this.state === "interrupted") {
             if (this._audioContextStarted && this._resumeOnPause) {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
-                    this.audioContext.resume();
+                    this.resume();
                 }, this._resumeOnPauseRetryInterval);
             }
         }
@@ -152,18 +147,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _soundInstancesToStartOnNextUserInteraction = new Set<_AbstractSoundInstance>();
 
     /** @internal */
-    public get audioContext(): AudioContext | OfflineAudioContext {
-        if (!this._audioContext) {
-            this._audioContext = new AudioContext();
-            this._initAudioContext();
-        }
-
-        return this._audioContext!;
-    }
-
-    /** @internal */
     public get state(): string {
-        return this._audioContext?.state ?? "uninitialized";
+        return this.audioContext.state;
     }
 
     /** @internal */
@@ -188,18 +173,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._volume = value;
 
         if (this._mainOutput) {
-            this._mainOutput.volume;
+            this._mainOutput.volume = value;
         }
     }
 
     /** @internal */
-    public constructor() {
+    public constructor(options: IWebAudioEngineOptions) {
         super();
+
+        this.audioContext = options?.audioContext ?? new AudioContext();
     }
 
     /** @internal */
     public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
-        this._audioContext = options?.audioContext ?? null;
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
         this._resumeOnPause = options?.resumeOnPause ?? true;
         this._resumeOnPauseRetryInterval = options?.resumeOnPauseRetryInterval ?? 1000;
@@ -214,12 +200,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public override dispose(): void {
         super.dispose();
 
-        if (this._audioContext instanceof AudioContext && this._audioContext.state !== "closed") {
-            this._audioContext.close();
+        if (this.audioContext.state !== "closed") {
+            this.audioContext.close();
         }
 
         document.removeEventListener("click", this._onUserInteraction);
-        this._audioContext?.removeEventListener("statechange", this._onAudioContextStateChange);
+        this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
     }
 
     /** @internal */
@@ -254,25 +240,17 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override async pause(waitTime: Nullable<number> = null): Promise<void> {
-        if (this._audioContext instanceof AudioContext) {
-            await this._audioContext.suspend();
-        } else if (this._audioContext instanceof OfflineAudioContext) {
-            return this._audioContext.suspend(waitTime ?? 0);
-        }
+    public override async pause(): Promise<void> {
+        await this.audioContext.suspend();
     }
 
     /** @internal */
     public override async resume(): Promise<void> {
-        const audioContext = this.audioContext;
-
-        if (audioContext instanceof AudioContext) {
-            return audioContext.resume();
-        } else if (audioContext instanceof OfflineAudioContext) {
-            if (this._audioContextStarted) {
-                return audioContext.resume();
-            }
+        if (this._resumePromise) {
+            return this._resumePromise;
         }
+
+        this._resumePromise = this.audioContext.resume();
     }
 
     /** @internal */

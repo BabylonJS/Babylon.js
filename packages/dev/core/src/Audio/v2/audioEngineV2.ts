@@ -120,10 +120,9 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
 
     /**
      * Pauses the audio engine if it is running.
-     * @param waitTime The time in seconds to wait before pausing the audio engine.
      * @returns A promise that resolves when the audio engine is paused.
      */
-    public abstract pause(waitTime?: Nullable<number>): Promise<void>;
+    public abstract pause(): Promise<void>;
 
     /**
      * Resumes the audio engine if it is not running.
