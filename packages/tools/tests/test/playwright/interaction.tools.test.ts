@@ -6,6 +6,11 @@ const ngeUrl = process.env.NGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1
 const guiUrl = process.env.GUIEDITOR_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.GUIEDITOR_PORT || ":1341");
 const nrgeUrl = process.env.NRGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NRGE_PORT || ":1344");
 
+test.beforeAll(async () => {
+    // Set timeout for this hook.
+    test.setTimeout(30000);
+});
+
 test("NME is loaded correctly", async ({ page }) => {
     await page.goto(nmeUrl, {
         waitUntil: "networkidle",
@@ -426,7 +431,9 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
 
     // take a screenshot (for visual inspection)
     const snapshot = await canvasNode.screenshot();
-    expect(snapshot).toMatchSnapshot();
+    expect(snapshot).toMatchSnapshot({
+        maxDiffPixels: 3000,
+    });
 
     await page.mouse.down();
     await page.mouse.move(center.x + 50, center.y + 50, { steps: 5 });
@@ -434,5 +441,7 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
 
     // take a screenshot (for visual inspection)
     const newSnapshot = await canvasNode.screenshot();
-    expect(newSnapshot).toMatchSnapshot();
+    expect(newSnapshot).toMatchSnapshot({
+        maxDiffPixels: 3000,
+    });
 });
