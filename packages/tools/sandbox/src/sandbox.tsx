@@ -222,6 +222,7 @@ export class Sandbox extends React.Component<
                                 this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
                                 break;
                         }
+                        break;
                     }
 
                     // --------------------------------------------
