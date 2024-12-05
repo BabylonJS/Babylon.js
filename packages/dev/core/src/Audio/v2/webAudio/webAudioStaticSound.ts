@@ -1,7 +1,8 @@
 import type { Nullable } from "../../../types";
-import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
+import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
@@ -216,6 +217,8 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     private async _initFromUrl(url: string): Promise<void> {
+        // TODO: Maybe use the existing file loading tools here.
+        url = _cleanUrl(url);
         await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
     }
 

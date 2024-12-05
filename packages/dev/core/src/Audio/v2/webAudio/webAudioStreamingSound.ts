@@ -1,8 +1,9 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
-import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
+import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
@@ -234,7 +235,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     }
 
     private _initFromUrl(url: string): void {
-        const audio = new Audio(url);
+        // TODO: Maybe use the existing file loading tools to clean the URL.
+        const audio = new Audio(_cleanUrl(url));
         this._initFromMediaElement(audio);
     }
 
@@ -243,7 +245,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
         for (const url of urls) {
             const source = document.createElement("source");
-            source.src = url;
+            // TODO: Maybe use the existing file loading tools to clean the URL.
+            source.src = _cleanUrl(url);
             audio.appendChild(source);
         }
 
