@@ -216,7 +216,6 @@ export class PhysicsCharacterController {
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
     private _tmpVecs: Vector3[] = BuildArray(7, Vector3.Zero);
-    private _tmpConstraint = new SurfaceConstraintInfo();
 
     /**
      * minimum distance to make contact
