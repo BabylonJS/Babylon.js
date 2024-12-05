@@ -48,9 +48,9 @@ fn getAttenuation(cosAngle: f32, exponent: f32) -> f32 {
 	return max(0., pow(cosAngle, exponent));
 }
 
-fn getIESAttenuation(cosAngle: f32, iesLighttexture: texture_2d<f32>) -> f32 {
+fn getIESAttenuation(cosAngle: f32, iesLightTexture: texture_2d<f32>) -> f32 {
 	var angle = acos(cosAngle) / PI;
-	return textureLoad(iesLighttexture, vec2u(u32(angle * 180), 0), 0).r;
+	return textureLoad(iesLightTexture, vec2u(u32(angle * 180), 0), 0).r;
 }
 
 fn computeBasicSpotLighting(viewDirectionW: vec3f, lightVectorW: vec3f, vNormal: vec3f, attenuation: f32, diffuseColor: vec3f, specularColor: vec3f, glossiness: f32) -> lightingInfo {
