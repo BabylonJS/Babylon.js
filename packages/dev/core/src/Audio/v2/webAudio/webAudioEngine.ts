@@ -118,8 +118,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     private _resumeOnInteraction = true;
 
-    // TODO: Make this return the audio context directly, not a Promise.
-    // TODO: Consider waiting for a click in init to avoid the console warning, but stop waiting and create the audio context immediately if this member gets accessed, which will trigger the console warning.
     /** @internal */
     public get audioContext(): AudioContext | OfflineAudioContext {
         if (!this._audioContext) {
