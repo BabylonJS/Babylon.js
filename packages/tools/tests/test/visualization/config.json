@@ -9,7 +9,7 @@
         },
         {
             "title": "IES Profile2",
-            "playgroundId": "#UIAXAU#14",
+            "playgroundId": "#UIAXAU#15",
             "referenceImage": "iesprofile2.png",
             "excludedEngines": ["webgl1"]
         },
