@@ -8,6 +8,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "IES Profile2",
+            "playgroundId": "#UIAXAU#14",
+            "referenceImage": "iesprofile2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Gaussian Splatting NME",
             "playgroundId": "#WXWJKN#4",
             "referenceImage": "gsplat-nme.png"

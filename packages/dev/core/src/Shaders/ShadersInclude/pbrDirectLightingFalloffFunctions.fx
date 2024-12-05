@@ -50,7 +50,7 @@ float computeDirectionalLightFalloff_IES(vec3 lightDirection, vec3 directionToLi
 {
     float cosAngle = dot(-lightDirection, directionToLightCenterW);
 	float angle = acos(cosAngle) / PI;
-	return texture2D(iesLightSampler, vec2(angle, 0.), 0.).r;
+	return texture2D(iesLightSampler, vec2(angle, 0.)).r;
 }
 
 float computeDirectionalLightFalloff_Physical(vec3 lightDirection, vec3 directionToLightCenterW, float cosHalfAngle)

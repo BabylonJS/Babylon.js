@@ -48,9 +48,9 @@ fn getAttenuation(cosAngle: f32, exponent: f32) -> f32 {
 	return max(0., pow(cosAngle, exponent));
 }
 
-fn getIESAttenuation(cosAngle: f32, iesLightTexture: texture_2d<f32>) -> f32 {
+fn getIESAttenuation(cosAngle: f32, iesLightTexture: texture_2d<f32>, iesLightTextureSampler: sampler) -> f32 {
 	var angle = acos(cosAngle) / PI;
-	return textureLoad(iesLightTexture, vec2u(u32(angle * 180), 0), 0).r;
+	return textureSampleLevel(iesLightTexture, iesLightTextureSampler, vec2f(angle, 0), 0.).r;
 }
 
 fn computeBasicSpotLighting(viewDirectionW: vec3f, lightVectorW: vec3f, vNormal: vec3f, attenuation: f32, diffuseColor: vec3f, specularColor: vec3f, glossiness: f32) -> lightingInfo {
@@ -73,7 +73,7 @@ fn computeBasicSpotLighting(viewDirectionW: vec3f, lightVectorW: vec3f, vNormal:
 	return result;
 }
 
-fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f , lightData: vec4f, lightDirection: vec4f, diffuseColor: vec3f, specularColor: vec3f, range: f32, glossiness: f32, iesLightTexture: texture_2d<f32>) -> lightingInfo {
+fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, lightDirection: vec4f, diffuseColor: vec3f, specularColor: vec3f, range: f32, glossiness: f32, iesLightTexture: texture_2d<f32>, iesLightTextureSampler: sampler) -> lightingInfo {
 	var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 	var lightVectorW: vec3f = normalize(direction);
 	var attenuation: f32 = max(0., 1.0 - length(direction) / range);
@@ -84,7 +84,7 @@ fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f , lightData: vec
 
 	if (cosAngle >= lightDirection.w)
 	{
-		attenuation *= getIESAttenuation(dotProduct, iesLightTexture);
+		attenuation *= getIESAttenuation(dotProduct, iesLightTexture, iesLightTextureSampler);
 		return computeBasicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, diffuseColor, specularColor, glossiness);
 	}
 
