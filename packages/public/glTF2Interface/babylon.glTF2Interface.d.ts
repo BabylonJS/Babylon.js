@@ -1041,12 +1041,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
-    interface IMaterialExtension {
-        hasTextures?(): boolean;
-    }
-
-    /** @internal */
-    interface IKHRMaterialsClearcoat extends IMaterialExtension {
+    interface IKHRMaterialsClearcoat {
         clearcoatFactor?: number;
         clearcoatTexture?: ITextureInfo;
         clearcoatRoughnessFactor?: number;
@@ -1055,7 +1050,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
-    interface IKHRMaterialsIridescence extends IMaterialExtension {
+    interface IKHRMaterialsIridescence {
         iridescenceFactor?: number;
         iridescenceIor?: number;
         iridescenceThicknessMinimum?: number;
@@ -1065,7 +1060,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
-    interface IKHRMaterialsAnisotropy extends IMaterialExtension {
+    interface IKHRMaterialsAnisotropy {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
         anisotropyTexture?: ITextureInfo;
@@ -1076,7 +1071,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsIor extends IMaterialExtension {
+    interface IKHRMaterialsIor {
         ior?: number;
     }
 
@@ -1085,7 +1080,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsVolume extends IMaterialExtension {
+    interface IKHRMaterialsVolume {
         thicknessFactor?: number;
         thicknessTexture?: ITextureInfo;
         attenuationDistance?: number;
@@ -1097,7 +1092,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsDispersion extends IMaterialExtension {
+    interface IKHRMaterialsDispersion {
         dispersion?: number;
     }
 
@@ -1106,7 +1101,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsSpecular extends IMaterialExtension {
+    interface IKHRMaterialsSpecular {
         specularFactor?: number;
         specularColorFactor?: number[];
         specularTexture?: ITextureInfo;
@@ -1118,7 +1113,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsTransmission extends IMaterialExtension {
+    interface IKHRMaterialsTransmission {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
     }
@@ -1128,7 +1123,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsEmissiveStrength extends IMaterialExtension {
+    interface IKHRMaterialsEmissiveStrength {
         emissiveStrength: number;
     }
 
@@ -1137,7 +1132,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsPbrSpecularGlossiness extends IMaterialExtension {
+    interface IKHRMaterialsPbrSpecularGlossiness {
         diffuseFactor: number[];
         diffuseTexture: ITextureInfo;
         specularFactor: number[];
@@ -1150,7 +1145,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsSheen extends IMaterialExtension {
+    interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
         sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
@@ -1163,7 +1158,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    interface IKHRMaterialsDiffuseTransmission extends IMaterialExtension {
+    interface IKHRMaterialsDiffuseTransmission {
         diffuseTransmissionFactor?: number;
         diffuseTransmissionTexture?: ITextureInfo;
         diffuseTransmissionColorFactor?: number[];

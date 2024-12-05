@@ -24,7 +24,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param size the size of the render target (used for each view)
      */
     constructor(scene?: Scene, size: number | { width: number; height: number } | { ratio: number } = 512) {
-        super("multiview rtt", size, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT, false, undefined, false, false, true, undefined, true);
+        super("multiview rtt", size, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_BYTE, false, undefined, false, false, true, undefined, true);
         this._renderTarget = (this.getScene()!.getEngine() as Engine).createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;

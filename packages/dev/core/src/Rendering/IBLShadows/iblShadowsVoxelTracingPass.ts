@@ -359,8 +359,11 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.setVector4("shadowOpacity", this._opacityParameters);
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
         this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!._getNoiseTexture());
-        this._outputTexture.setTexture("icdfySampler", this._renderPipeline!._getIcdfyTexture());
-        this._outputTexture.setTexture("icdfxSampler", this._renderPipeline!._getIcdfxTexture());
+        const cdfGenerator = this._scene.iblCdfGenerator;
+        if (cdfGenerator) {
+            this._outputTexture.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
+            this._outputTexture.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
+        }
         if (this._debugVoxelMarchEnabled) {
             this._outputTexture.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
@@ -395,8 +398,9 @@ export class _IblShadowsVoxelTracingPass {
         return (
             this._outputTexture.isReady() &&
             !(this._debugPassPP && !this._debugPassPP.isReady()) &&
-            this._renderPipeline!._getIcdfyTexture().isReady() &&
-            this._renderPipeline!._getIcdfxTexture().isReady() &&
+            this._scene.iblCdfGenerator &&
+            this._scene.iblCdfGenerator.getIcdfyTexture().isReady() &&
+            this._scene.iblCdfGenerator.getIcdfxTexture().isReady() &&
             this._renderPipeline!._getVoxelGridTexture().isReady()
         );
     }

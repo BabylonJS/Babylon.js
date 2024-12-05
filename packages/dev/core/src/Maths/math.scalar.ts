@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as functions from "./math.scalar.functions";
 
 const HCF: (a: number, b: number) => number = functions.HighestCommonFactor;
 
 /**
  * Scalar computation library
- * @deprecated Please use the scalar functions
  */
-/* eslint-disable @typescript-eslint/naming-convention */
 export const Scalar = {
     ...functions,
 

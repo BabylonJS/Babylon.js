@@ -273,7 +273,7 @@
             #endif
         #else
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowCube(fragmentInputs.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.depthValues);
+                shadow = computeShadowCube(fragmentInputs.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.depthValues);
             #else
                 shadow = computeShadow(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif

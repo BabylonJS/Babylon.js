@@ -13,7 +13,7 @@
         var mask: f32 = smoothstep(1.0 - frustumEdgeFalloff, 1.00000012, clamp(dot(clipSpace, clipSpace), 0., 1.));
         return mix(value, 1.0, mask);
     }
-    
+
     fn computeShadowCube(worldPos: vec3f, lightPosition: vec3f, shadowTexture: texture_cube<f32>, shadowSampler: sampler, darkness: f32, depthValues: vec2f) -> f32
     {
         var directionToLight: vec3f = worldPos - lightPosition;
@@ -30,7 +30,7 @@
             var shadow: f32 = textureSample(shadowTexture, shadowSampler, directionToLight).x;
         #endif
 
-        return select(darkness, 1.0, depth > shadow);
+        return select(1.0, darkness, depth > shadow);
     }
    
     fn computeShadowWithPoissonSamplingCube(worldPos: vec3f, lightPosition: vec3f, shadowTexture: texture_cube<f32>, shadowSampler: sampler, mapSize: f32, darkness: f32, depthValues: vec2f) -> f32

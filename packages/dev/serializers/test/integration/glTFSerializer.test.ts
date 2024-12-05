@@ -46,7 +46,7 @@ describe("Babylon glTF Serializer", () => {
                 babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
                 babylonStandardMaterial.specularPower = 64;
                 babylonStandardMaterial.alpha = 1;
-                const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(window.scene));
+                const materialExporter = new BABYLON.GLTF2.Exporter.GLTFMaterialExporter(new BABYLON.GLTF2.Exporter.GLTFExporter(window.scene));
 
                 const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
                 return {
@@ -62,15 +62,15 @@ describe("Babylon glTF Serializer", () => {
         });
         it("should solve for metallic", async () => {
             const assertionData = await page.evaluate(() => {
-                const solveZero = BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0);
-                const solveAproxOne = BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0);
+                const solveZero = BABYLON.GLTF2.Exporter._SolveMetallic(1.0, 0.0, 1.0);
+                const solveApproxOne = BABYLON.GLTF2.Exporter._SolveMetallic(0.0, 1.0, 1.0);
                 return {
                     solveZero,
-                    solveAproxOne,
+                    solveApproxOne: solveApproxOne,
                 };
             });
             expect(assertionData.solveZero).toBe(0.0);
-            expect(assertionData.solveAproxOne).toBeCloseTo(1.0, 1e-6);
+            expect(assertionData.solveApproxOne).toBeCloseTo(1.0, 1e-6);
         });
         it("should serialize empty Babylon window.scene to glTF with only asset property", async () => {
             const assertionData = await page.evaluate(() => {
@@ -534,6 +534,26 @@ describe("Babylon glTF Serializer", () => {
             expect(Object.keys(assertionData)).toHaveLength(6);
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(3);
             expect(assertionData.nodes).toHaveLength(3);
+        });
+        it("should export instances as nodes pointing to same mesh", async () => {
+            const instanceCount = 3;
+            const assertionData = await page.evaluate((instanceCount) => {
+                const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
+                for (let i = 0; i < instanceCount; i++) {
+                    mesh.createInstance("boxInstance" + i);
+                }
+                return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                    const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                    const jsonData = JSON.parse(jsonString);
+                    return jsonData;
+                });
+            }, instanceCount);
+            expect(Object.keys(assertionData)).toHaveLength(9);
+            expect(assertionData.nodes).toHaveLength(instanceCount + 1);
+            expect(assertionData.meshes).toHaveLength(1);
+            for (const node of assertionData.nodes) {
+                expect(node.mesh).toEqual(0);
+            }
         });
     });
 });

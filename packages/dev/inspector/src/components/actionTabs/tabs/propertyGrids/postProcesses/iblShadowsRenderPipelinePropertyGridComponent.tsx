@@ -48,14 +48,6 @@ export class IblShadowsRenderPipelinePropertyGridComponent extends React.Compone
                             this.props.renderPipeline.updateVoxelization();
                         }}
                     />
-                    <ButtonLineComponent
-                        label="Link IBL"
-                        onClick={() => {
-                            if (this.props.renderPipeline.scene.environmentTexture) {
-                                this.props.renderPipeline.setIblTexture(this.props.renderPipeline.scene.environmentTexture);
-                            }
-                        }}
-                    />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="Opacity"

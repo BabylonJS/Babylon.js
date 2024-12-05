@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractMesh, Nullable, PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
-import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "core/Engines/constants";
 
@@ -16,6 +17,25 @@ export type HotSpotQuery = {
      */
     barycentric: [number, number, number];
 };
+
+/**
+ * Create a HotSpotQuery from a picking info
+ * @remarks If there is no pickedMesh or the pickedMesh has no indices, null will be returned
+ * @param pickingInfo picking info to use
+ * @returns HotSpotQuery or null if it was not possible to create one
+ */
+export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): Nullable<HotSpotQuery> {
+    const indices = pickingInfo.pickedMesh?.getIndices();
+    if (indices) {
+        const base = pickingInfo.faceId * 3;
+        return {
+            pointIndex: [indices[base], indices[base + 1], indices[base + 2]],
+            barycentric: [pickingInfo.bu, pickingInfo.bv, 1 - pickingInfo.bu - pickingInfo.bv],
+        };
+    }
+
+    return null;
+}
 
 /**
  * Return a transformed local position from a mesh and vertex index

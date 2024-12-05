@@ -1,6 +1,6 @@
 import type { IMaterial, IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -21,11 +21,11 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -62,16 +62,17 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
 
-                const anisotropyTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.anisotropy.texture);
+                const anisotropyTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.anisotropy.texture);
 
                 const anisotropyInfo: IKHRMaterialsAnisotropy = {
                     anisotropyStrength: babylonMaterial.anisotropy.intensity,
                     anisotropyRotation: babylonMaterial.anisotropy.angle,
                     anisotropyTexture: anisotropyTextureInfo ?? undefined,
-                    hasTextures: () => {
-                        return anisotropyInfo.anisotropyTexture !== null;
-                    },
                 };
+
+                if (anisotropyInfo.anisotropyTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
 
                 node.extensions[NAME] = anisotropyInfo;
             }
@@ -80,4 +81,4 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_anisotropy(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_anisotropy(exporter));

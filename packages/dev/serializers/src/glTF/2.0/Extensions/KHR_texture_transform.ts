@@ -3,7 +3,7 @@ import { Tools } from "core/Misc/tools";
 import type { Texture } from "core/Materials/Textures/texture";
 import type { Nullable } from "core/types";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";
 
@@ -100,4 +100,4 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, () => new KHR_texture_transform());
+GLTFExporter.RegisterExtension(NAME, () => new KHR_texture_transform());

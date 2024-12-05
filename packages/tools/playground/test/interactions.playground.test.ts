@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
+import { getGlobalConfig } from "@tools/test-tools";
 
-const url = process.env.PLAYGROUND_BASE_URL || "https://playground.babylonjs.com/";
+const url = process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.PLAYGROUND_PORT || ":1338");
 
 test("Playground is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {

@@ -49,7 +49,7 @@ export class ConvolutionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
         this.kernel = kernel;

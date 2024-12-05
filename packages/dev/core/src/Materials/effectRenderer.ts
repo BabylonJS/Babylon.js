@@ -654,6 +654,6 @@ export class EffectWrapper {
             this._onContextRestoredObserver = null;
         }
         this.onEffectCreatedObservable.clear();
-        this.effect.dispose();
+        this._drawWrapper.dispose(true);
     }
 }

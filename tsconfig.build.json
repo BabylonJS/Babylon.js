@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
         "baseUrl": "packages",
         "importHelpers": true,
         "moduleResolution": "node",

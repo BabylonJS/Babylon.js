@@ -914,7 +914,7 @@ export class ShadowGenerator implements IShadowGenerator {
             } else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
                 this._textureType = Constants.TEXTURETYPE_FLOAT;
             } else {
-                this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             }
         } else {
             if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
@@ -922,7 +922,7 @@ export class ShadowGenerator implements IShadowGenerator {
             } else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
                 this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else {
-                this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             }
         }
 
@@ -1144,7 +1144,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._kernelBlurXPostprocess.autoClear = false;
             this._kernelBlurYPostprocess.autoClear = false;
 
-            if (this._textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
+            if (this._textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
                 (<BlurPostProcess>this._kernelBlurXPostprocess).packedFloat = true;
                 (<BlurPostProcess>this._kernelBlurYPostprocess).packedFloat = true;
             }
@@ -1492,7 +1492,7 @@ export class ShadowGenerator implements IShadowGenerator {
     private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
         defines.push("#define SM_LIGHTTYPE_" + this._light.getClassName().toUpperCase());
 
-        defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
+        defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE ? "1" : "0"));
 
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
 

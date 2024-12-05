@@ -149,6 +149,22 @@ export class Engine extends ThinEngine {
     public static readonly TEXTUREFORMAT_RED = Constants.TEXTUREFORMAT_RED;
     /** RED (2nd reference) */
     public static readonly TEXTUREFORMAT_R = Constants.TEXTUREFORMAT_R;
+    /** RED unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_R16_UNORM = Constants.TEXTUREFORMAT_R16_UNORM;
+    /** RG unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_UNORM = Constants.TEXTUREFORMAT_RG16_UNORM;
+    /** RGB unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_UNORM = Constants.TEXTUREFORMAT_RGB16_UNORM;
+    /** RGBA unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_UNORM = Constants.TEXTUREFORMAT_RGBA16_UNORM;
+    /** RED signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_R16_SNORM = Constants.TEXTUREFORMAT_R16_SNORM;
+    /** RG signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_SNORM = Constants.TEXTUREFORMAT_RG16_SNORM;
+    /** RGB signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_SNORM = Constants.TEXTUREFORMAT_RGB16_SNORM;
+    /** RGBA signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_SNORM = Constants.TEXTUREFORMAT_RGBA16_SNORM;
     /** RG */
     public static readonly TEXTUREFORMAT_RG = Constants.TEXTUREFORMAT_RG;
     /** RED_INTEGER */
@@ -164,7 +180,7 @@ export class Engine extends ThinEngine {
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-    /** UNSIGNED_BYTE (2nd reference) */
+    /** @deprecated use more explicit TEXTURETYPE_UNSIGNED_BYTE instead. Use TEXTURETYPE_UNSIGNED_INTEGER for 32bits values.*/
     public static readonly TEXTURETYPE_UNSIGNED_INT = Constants.TEXTURETYPE_UNSIGNED_INT;
     /** FLOAT */
     public static readonly TEXTURETYPE_FLOAT = Constants.TEXTURETYPE_FLOAT;
@@ -359,12 +375,6 @@ export class Engine extends ThinEngine {
         this._features.supportRenderPasses = true;
 
         options = this._creationOptions;
-
-        if ((<any>canvasOrContext).getContext) {
-            const canvas = <HTMLCanvasElement>canvasOrContext;
-
-            this._sharedInit(canvas);
-        }
     }
 
     protected override _initGLContext(): void {

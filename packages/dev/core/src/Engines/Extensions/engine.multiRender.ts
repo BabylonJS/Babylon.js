@@ -149,7 +149,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let textureCount = 1;
     let samples = 1;
 
-    const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    const defaultType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
@@ -245,7 +245,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
         const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
@@ -335,13 +335,13 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
-                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
                 glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
-                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
