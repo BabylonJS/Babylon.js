@@ -79,11 +79,12 @@ fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f , lightData: vec
 	var attenuation: f32 = max(0., 1.0 - length(direction) / range);
 
 	// diffuse
-	var cosAngle: f32 = max(0., dot(lightDirection.xyz, -lightVectorW));
+	var dotProduct = dot(lightDirection.xyz, -lightVectorW);
+	var cosAngle: f32 = max(0., dotProduct);
 
 	if (cosAngle >= lightDirection.w)
 	{
-		attenuation *= getIESAttenuation(cosAngle, iesLightTexture);
+		attenuation *= getIESAttenuation(dotProduct, iesLightTexture);
 		return computeBasicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, diffuseColor, specularColor, glossiness);
 	}
 

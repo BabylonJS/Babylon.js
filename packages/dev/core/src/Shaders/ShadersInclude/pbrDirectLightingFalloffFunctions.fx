@@ -48,7 +48,7 @@ float computeDirectionalLightFalloff_Standard(vec3 lightDirection, vec3 directio
 
 float computeDirectionalLightFalloff_IES(vec3 lightDirection, vec3 directionToLightCenterW, sampler2D iesLightSampler)
 {
-    float cosAngle = maxEps(dot(-lightDirection, directionToLightCenterW));
+    float cosAngle = dot(-lightDirection, directionToLightCenterW);
 	float angle = acos(cosAngle) / PI;
 	return texture2D(iesLightSampler, vec2(angle, 0.), 0.).r;
 }

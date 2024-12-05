@@ -24,7 +24,7 @@ fn computeDistanceLightFalloff_GLTF(lightDistanceSquared: f32, inverseSquaredRan
 
 fn computeDirectionalLightFalloff_IES(lightDirection: vec3f, directionToLightCenterW: vec3f, iesLightTexture: texture_2d<f32>) -> f32
 {
-    var cosAngle: f32 = maxEps(dot(-lightDirection, directionToLightCenterW));
+    var cosAngle: f32 = dot(-lightDirection, directionToLightCenterW);
 	var angle = acos(cosAngle) / PI;
 	return textureLoad(iesLightTexture, vec2u(u32(angle * 180), 0), 0).r;
 }

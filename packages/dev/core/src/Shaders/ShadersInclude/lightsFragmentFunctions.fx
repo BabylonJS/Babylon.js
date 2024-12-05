@@ -79,11 +79,12 @@ lightingInfo computeIESSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 ligh
 	float attenuation = max(0., 1.0 - length(direction) / range);
 
 	// diffuse
-	float cosAngle = max(0., dot(lightDirection.xyz, -lightVectorW));
+	float dotProduct = dot(lightDirection.xyz, -lightVectorW);
+	float cosAngle = max(0., dotProduct);
 
 	if (cosAngle >= lightDirection.w)
 	{		
-		attenuation *= getIESAttenuation(cosAngle, iesLightSampler);
+		attenuation *= getIESAttenuation(dotProduct, iesLightSampler);
 		return basicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, diffuseColor, specularColor, glossiness);
 	}
 
