@@ -215,7 +215,9 @@ export class PhysicsCharacterController {
     private _lastInvDeltaTime: number;
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
-    private _tmpVecs: Vector3[] = BuildArray(6, Vector3.Zero);
+    private _tmpVecs: Vector3[] = BuildArray(7, Vector3.Zero);
+    private _tmpConstraint = new SurfaceConstraintInfo();
+
     /**
      * minimum distance to make contact
      * default 0.05
@@ -435,7 +437,7 @@ export class PhysicsCharacterController {
                         // The closest body is static, so it cannot move away from CC and we don't need to look any further.
                         break;
                     }
-                } else if (hitWorld[0] != closestHitBody._pluginData.hpBodyId) {
+                } else if (closestHitBody._pluginData && hitWorld[0] != closestHitBody._pluginData.hpBodyId) {
                     numHitBodies++;
                     break;
                 }
@@ -536,7 +538,8 @@ export class PhysicsCharacterController {
         // If penetrating we add extra velocity to push the character back out
         const eps = 1e-6;
         if (constraint.planeDistance < -eps) {
-            constraint.velocity.subtractInPlace(constraint.planeNormal.scale(constraint.planeDistance * penetrationRecoverySpeed));
+            constraint.planeNormal.scaleToRef(constraint.planeDistance * penetrationRecoverySpeed, this._tmpVecs[6]);
+            constraint.velocity.subtractInPlace(this._tmpVecs[6]);
         }
     }
 
@@ -1094,6 +1097,18 @@ export class PhysicsCharacterController {
      * @returns a new CharacterSurfaceInfo object
      */
     public checkSupport(deltaTime: number, direction: Vector3): CharacterSurfaceInfo {
+        const surfaceInfo = new CharacterSurfaceInfo();
+        this.checkSupportToRef(deltaTime, direction, surfaceInfo);
+        return surfaceInfo;
+    }
+
+    /**
+     * Compute a CharacterSurfaceInfo from current state and a direction
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param direction direction to check, usually gravity direction
+     * @param surfaceInfo output for surface info
+     */
+    public checkSupportToRef(deltaTime: number, direction: Vector3, surfaceInfo: CharacterSurfaceInfo): void {
         const eps = 1e-4;
 
         this._validateManifold();
@@ -1109,28 +1124,27 @@ export class PhysicsCharacterController {
         maxSurfaceVelocity.set(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
         const output = this._simplexSolverSolve(constraints, direction, deltaTime, deltaTime, this.up, maxSurfaceVelocity);
 
-        const ground = new CharacterSurfaceInfo();
-        ground.averageSurfaceVelocity = Vector3.Zero();
-        ground.averageAngularSurfaceVelocity = Vector3.Zero();
-        ground.averageSurfaceNormal = Vector3.Zero();
+        surfaceInfo.averageSurfaceVelocity = Vector3.Zero();
+        surfaceInfo.averageAngularSurfaceVelocity = Vector3.Zero();
+        surfaceInfo.averageSurfaceNormal = Vector3.Zero();
 
         // If the constraints did not affect the character movement then it is unsupported and we can finish
         if (output.velocity.equalsWithEpsilon(direction, eps)) {
-            ground.supportedState = CharacterSupportedState.UNSUPPORTED;
-            return ground;
+            surfaceInfo.supportedState = CharacterSupportedState.UNSUPPORTED;
+            return;
         }
 
         // Check how was the input velocity modified to determine if the character is supported or sliding
         if (output.velocity.lengthSquared() < eps) {
-            ground.supportedState = CharacterSupportedState.SUPPORTED;
+            surfaceInfo.supportedState = CharacterSupportedState.SUPPORTED;
         } else {
             output.velocity.normalize();
             const angleSin = output.velocity.dot(direction);
             const cosSqr = 1 - angleSin * angleSin;
             if (cosSqr < this.maxSlopeCosine * this.maxSlopeCosine) {
-                ground.supportedState = CharacterSupportedState.SLIDING;
+                surfaceInfo.supportedState = CharacterSupportedState.SLIDING;
             } else {
-                ground.supportedState = CharacterSupportedState.SUPPORTED;
+                surfaceInfo.supportedState = CharacterSupportedState.SUPPORTED;
             }
         }
 
@@ -1138,20 +1152,18 @@ export class PhysicsCharacterController {
         let numTouching = 0;
         for (let i = -0; i < constraints.length; i++) {
             if (output.planeInteractions[i].touched && constraints[i].planeNormal.dot(direction) < -0.08) {
-                ground.averageSurfaceNormal.addInPlace(constraints[i].planeNormal);
-                ground.averageSurfaceVelocity.addInPlace(storedVelocities[i]);
-                ground.averageAngularSurfaceVelocity.addInPlace(constraints[i].angularVelocity);
+                surfaceInfo.averageSurfaceNormal.addInPlace(constraints[i].planeNormal);
+                surfaceInfo.averageSurfaceVelocity.addInPlace(storedVelocities[i]);
+                surfaceInfo.averageAngularSurfaceVelocity.addInPlace(constraints[i].angularVelocity);
                 numTouching++;
             }
         }
 
         if (numTouching > 0) {
-            ground.averageSurfaceNormal.normalize();
-            ground.averageSurfaceVelocity.scaleInPlace(1 / numTouching);
-            ground.averageAngularSurfaceVelocity.scaleInPlace(1 / numTouching);
+            surfaceInfo.averageSurfaceNormal.normalize();
+            surfaceInfo.averageSurfaceVelocity.scaleInPlace(1 / numTouching);
+            surfaceInfo.averageAngularSurfaceVelocity.scaleInPlace(1 / numTouching);
         }
-
-        return ground;
     }
 
     protected _castWithCollectors(startPos: Vector3, endPos: Vector3, castCollector: any /*HP_CollectorId*/, startCollector?: any /*HP_CollectorId*/) {
