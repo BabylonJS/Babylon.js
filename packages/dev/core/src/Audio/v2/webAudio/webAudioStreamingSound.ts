@@ -108,12 +108,12 @@ class WebAudioStreamingSound extends StreamingSound {
 
         this.volume = options?.volume ?? 1;
 
-        if (options?.autoplay) {
-            this.play(null, this.startOffset);
-        }
-
         if (options?.preloadCount) {
             await this.preloadInstances(options.preloadCount);
+        }
+
+        if (options?.autoplay) {
+            this.play(null, this.startOffset);
         }
     }
 
