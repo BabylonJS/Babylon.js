@@ -8,4 +8,6 @@ struct Scene {
     vEyePosition : vec4<f32>,
 };
 
+#define SCENE_UBO
+
 var<uniform> scene : Scene;
