@@ -19,7 +19,7 @@ export interface IWebAudioEngineOptions {
     audioContext?: AudioContext | OfflineAudioContext;
 
     /**
-     * Set to `true` to automatically resume the audio context when the user interacts with the page; otherwise `false`. Default is `true`.
+     * Set to `true` to automatically resume the audio context when the user interacts with the page. Default is `true`.
      */
     resumeOnInteraction?: boolean;
 
