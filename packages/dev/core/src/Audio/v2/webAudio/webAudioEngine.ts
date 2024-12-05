@@ -109,18 +109,29 @@ export class _WebAudioEngine extends AudioEngineV2 {
     };
 
     private _onUserInteraction: () => void = async () => {
-        await this.audioContext.resume();
+        if (this._resumeOnInteraction) {
+            await this.audioContext.resume();
+
+            const it = this._soundInstancesToStartOnNextUserInteraction.values();
+            let next = it.next();
+
+            while (!next.done) {
+                const instance = next.value;
+
+                instance.play();
+                this._soundInstancesToStartOnNextUserInteraction.delete(instance);
+
+                next = it.next();
+            }
+        }
     };
 
     private _onAudioContextStateChange = () => {
         if (this.state === "running") {
             clearInterval(this._resumeOnPauseTimerId);
             this._audioContextStarted = true;
-            document.removeEventListener("click", this._onUserInteraction);
         }
         if (this.state === "suspended" || this.state === "interrupted") {
-            if (this._resumeOnInteraction) {
-                document.addEventListener("click", this._onUserInteraction, { once: true });
             if (this._audioContextStarted && this._resumeOnPause) {
                 clearInterval(this._resumeOnPauseTimerId);
 
@@ -137,6 +148,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPause = true;
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
+
+    private _soundInstancesToStartOnNextUserInteraction = new Set<_AbstractSoundInstance>();
 
     /** @internal */
     public get audioContext(): AudioContext | OfflineAudioContext {
@@ -190,6 +203,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
         this._resumeOnPause = options?.resumeOnPause ?? true;
         this._resumeOnPauseRetryInterval = options?.resumeOnPauseRetryInterval ?? 1000;
+
+        document.addEventListener("click", this._onUserInteraction);
 
         await this._initAudioContext();
         this._resolveIsReadyPromise();
@@ -273,5 +288,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public addSoundInstance(soundInstance: _AbstractSoundInstance): void {
         this._addSoundInstance(soundInstance);
+    }
+
+    /** @internal */
+    public startSoundInstanceOnNextUserInteraction(soundInstance: _AbstractSoundInstance): void {
+        this._soundInstancesToStartOnNextUserInteraction.add(soundInstance);
     }
 }

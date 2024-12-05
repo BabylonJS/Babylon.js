@@ -397,7 +397,18 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
 
         if (this.engine.state === "running") {
-            this.mediaElement.play();
+            const result = this.mediaElement.play();
+
+            // It's possible that the play() method fails on Safari, even if the audio engine's state is "running".
+            // This occurs when the audio context is paused by the system (e.g. when the Vision Pro exits and enters
+            // immersive mode), and resumed automatically by the audio engine without a user interaction.
+            result.catch(() => {
+                this._setState(SoundState.FailedToStart);
+
+                if (this._loop) {
+                    this.engine.startSoundInstanceOnNextUserInteraction(this);
+                }
+            });
             this._startTime = this._source.audioContext.currentTime;
             this._setState(SoundState.Started);
         } else if (this._loop) {
