@@ -27,7 +27,7 @@ export interface CharacterShapeOptions {
 /**
  * State of the character on the surface
  */
-export enum CharacterSupportedState {
+export const enum CharacterSupportedState {
     UNSUPPORTED,
     SLIDING,
     SUPPORTED,
@@ -36,100 +36,69 @@ export enum CharacterSupportedState {
 /**
  * Surface information computed by checkSupport method
  */
-export class CharacterSurfaceInfo {
+export interface CharacterSurfaceInfo {
     /**
      * Indicates whether the surface is dynamic.
      * A dynamic surface is one that can change its properties over time,
      * such as moving platforms or surfaces that can be affected by external forces.
      */
-    public isSurfaceDynamic: boolean;
+    isSurfaceDynamic: boolean;
     /**
      * The supported state of the character on the surface.
      */
-    public supportedState: CharacterSupportedState;
+    supportedState: CharacterSupportedState;
     /**
      * The average normal vector of the surface.
      * This vector is perpendicular to the surface and points outwards.
      */
-    public averageSurfaceNormal: Vector3;
+    averageSurfaceNormal: Vector3;
     /**
      * The average velocity of the surface.
      * This vector represents the speed and direction in which the surface is moving.
      */
-    public averageSurfaceVelocity: Vector3;
+    averageSurfaceVelocity: Vector3;
     /**
      * The average angular velocity of the surface.
      */
-    public averageAngularSurfaceVelocity: Vector3;
+    averageAngularSurfaceVelocity: Vector3;
 }
 
 /** @internal */
-class Contact {
+interface Contact {
     /** @internal */
-    public position: Vector3;
+    position: Vector3;
     /** @internal */
-    public normal: Vector3;
+    normal: Vector3;
     /** @internal */
-    public distance: number;
+    distance: number;
     /** @internal */
-    public fraction: number;
+    fraction: number;
     /** @internal */
-    public bodyB: { body: PhysicsBody; index: number };
+    bodyB: { body: PhysicsBody; index: number };
     /** @internal */
-    public allowedPenetration: number;
-
-    /** @internal */
-    static FromProximity(hp: HavokPlugin, cp: any /*ContactPoint*/, hitDistance: number, keepDistance: number): Contact {
-        //@ts-ignore
-        const bodyMap = hp._bodies;
-        return {
-            position: Vector3.FromArray(cp[3]),
-            normal: Vector3.FromArray(cp[4]),
-            distance: hitDistance,
-            fraction: 0,
-            bodyB: bodyMap.get(cp[0][0])!,
-            allowedPenetration: Math.min(Math.max(keepDistance - hitDistance, 0.0), keepDistance),
-        };
-    }
-
-    /** @internal */
-    static FromCast(hp: HavokPlugin, cp: any /*ContactPoint*/, castPath: Vector3, hitFraction: number, keepDistance: number): Contact {
-        //@ts-ignore
-        const bodyMap = hp._bodies;
-
-        const normal = Vector3.FromArray(cp[4]);
-        const dist = -hitFraction * castPath.dot(normal);
-        return {
-            position: Vector3.FromArray(cp[3]),
-            normal: normal,
-            distance: dist,
-            fraction: hitFraction,
-            bodyB: bodyMap.get(cp[0][0])!,
-            allowedPenetration: Math.min(Math.max(keepDistance - dist, 0.0), keepDistance),
-        };
-    }
+    allowedPenetration: number;
 }
 
 /** @internal */
-class SurfaceConstraintInfo {
+interface SurfaceConstraintInfo {
     /** @internal */
-    public planeNormal: Vector3;
+    planeNormal: Vector3;
     /** @internal */
-    public planeDistance: number;
+    planeDistance: number;
     /** @internal */
-    public velocity: Vector3;
+    velocity: Vector3;
     /** @internal */
-    public angularVelocity: Vector3;
+    angularVelocity: Vector3;
     /** @internal */
-    public staticFriction: number;
+    staticFriction: number;
     /** @internal */
-    public extraUpStaticFriction: number;
+    extraUpStaticFriction: number;
     /** @internal */
-    public extraDownStaticFriction: number;
+    extraDownStaticFriction: number;
     /** @internal */
-    public dynamicFriction: number;
+    dynamicFriction: number;
     /** @internal */
-    public priority: number;
+    priority: number;
 }
 
 /** @internal */
@@ -140,17 +109,17 @@ const enum SurfaceConstraintInteractionStatus {
 }
 
 /** @internal */
-class SurfaceConstraintInteraction {
+interface SurfaceConstraintInteraction {
     /** @internal */
-    public touched: boolean = false;
+    touched: boolean;
     /** @internal */
-    public stopped: boolean = false;
+    stopped: boolean;
     /** @internal */
-    public surfaceTime: number = 0;
+    surfaceTime: number;
     /** @internal */
-    public penaltyDistance: number = 0;
+    penaltyDistance: number;
     /** @internal */
-    public status: SurfaceConstraintInteractionStatus = SurfaceConstraintInteractionStatus.OK;
+    status: SurfaceConstraintInteractionStatus;
 }
 
 /** @internal */
@@ -200,6 +169,23 @@ class SimplexSolverInfo {
     }
 }
 
+/** @internal */
+function contactFromCast(hp: HavokPlugin, cp: any /*ContactPoint*/, castPath: Vector3, hitFraction: number, keepDistance: number): Contact {
+    //@ts-ignore
+    const bodyMap = hp._bodies;
+
+    const normal = Vector3.FromArray(cp[4]);
+    const dist = -hitFraction * castPath.dot(normal);
+    return {
+        position: Vector3.FromArray(cp[3]),
+        normal: normal,
+        distance: dist,
+        fraction: hitFraction,
+        bodyB: bodyMap.get(cp[0][0])!,
+        allowedPenetration: Math.min(Math.max(keepDistance - dist, 0.0), keepDistance),
+    };
+}
+
 /**
  * Character controller using physics
  */
@@ -215,7 +201,7 @@ export class PhysicsCharacterController {
     private _lastInvDeltaTime: number;
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
-    private _tmpVecs: Vector3[] = BuildArray(7, Vector3.Zero);
+    private _tmpVecs: Vector3[] = BuildArray(31, Vector3.Zero);
 
     /**
      * minimum distance to make contact
@@ -250,9 +236,9 @@ export class PhysicsCharacterController {
     /**
      * cosine value of slop angle that can be climbed
      * computed as `Math.cos(Math.PI * (angleInDegree / 180.0));`
-     * default 0.5
+     * default 0.5 (value for a 60deg angle)
      */
-    public maxSlopeCosine = Math.cos(Math.PI * (60.0 / 180.0));
+    public maxSlopeCosine = 0.5;
     /**
      * character maximum speed
      * default 10
@@ -335,22 +321,30 @@ export class PhysicsCharacterController {
         this._manifold = newManifold;
     }
 
-    private _getPointVelocity(body: { body: PhysicsBody; index: number }, pointWorld: Vector3) {
+    private _getPointVelocityToRef(body: { body: PhysicsBody; index: number }, pointWorld: Vector3, result: Vector3) {
         //<todo does this really not exist in body interface?
-        const comWorld = this._getComWorld(body);
-        const relPos = pointWorld.subtract(comWorld);
-        const av = body.body.getAngularVelocity(body.index);
-        const arm = av.cross(relPos);
-        return arm.add(body.body.getLinearVelocity(body.index));
+        const comWorld = this._tmpVecs[10];
+        this._getComWorldToRef(body, comWorld);
+        const relPos = this._tmpVecs[11];
+        pointWorld.subtractToRef(comWorld, relPos);
+        const av = this._tmpVecs[12];
+        body.body.getAngularVelocityToRef(av, body.index);
+        const arm = this._tmpVecs[13];
+        Vector3.CrossToRef(av, relPos, arm);
+        arm.addToRef(body.body.getLinearVelocity(body.index), result);
     }
 
     protected _compareContacts(contactA: Contact, contactB: Contact): number {
         const angSquared = (1.0 - contactA.normal.dot(contactB.normal)) * this._contactAngleSensitivity * this._contactAngleSensitivity;
         const planeDistSquared = (contactA.distance - contactB.distance) * (contactA.distance * contactB.distance);
 
-        const p1Vel = this._getPointVelocity(contactA.bodyB, contactA.position);
-        const p2Vel = this._getPointVelocity(contactB.bodyB, contactB.position);
-        const velocityDiffSquared = p1Vel.subtract(p2Vel).lengthSquared();
+        const p1Vel = this._tmpVecs[7];
+        this._getPointVelocityToRef(contactA.bodyB, contactA.position, p1Vel);
+        const p2Vel = this._tmpVecs[8];
+        this._getPointVelocityToRef(contactB.bodyB, contactB.position, p2Vel);
+        const velocityDiff = this._tmpVecs[9];
+        p1Vel.subtractToRef(p2Vel, velocityDiff);
+        const velocityDiffSquared = velocityDiff.lengthSquared();
 
         const fitness = angSquared * 10.0 + velocityDiffSquared * 0.1 + planeDistSquared;
         return fitness;
@@ -375,13 +369,21 @@ export class PhysicsCharacterController {
 
         const numProximityHits = hknp.HP_QueryCollector_GetNumHits(startCollector)[1];
         if (numProximityHits > 0) {
-            const newContacts: Contact[] = [];
+            const newContacts = [];
             let minDistance = 1e38;
+            const bodyMap = (<any>hk)._bodies;
             for (let i = 0; i < numProximityHits; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const [distance, _contactLocal, contactWorld] = hknp.HP_QueryCollector_GetShapeProximityResult(startCollector, i)[1];
                 minDistance = Math.min(minDistance, distance);
-                newContacts.push(Contact.FromProximity(hk, contactWorld, distance, this.keepDistance));
+                newContacts.push({
+                    position: Vector3.FromArray(contactWorld[3]),
+                    normal: Vector3.FromArray(contactWorld[4]),
+                    distance: distance,
+                    fraction: 0,
+                    bodyB: bodyMap.get(contactWorld[0][0])!,
+                    allowedPenetration: Math.min(Math.max(this.keepDistance - distance, 0.0), this.keepDistance),
+                });
             }
 
             for (let i = this._manifold.length - 1; i >= 0; i--) {
@@ -425,7 +427,7 @@ export class PhysicsCharacterController {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const [fraction, _hitLocal, hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(castCollector, i)[1];
                 if (closestHitBody == null) {
-                    const contact = Contact.FromCast(hk, hitWorld, castPath, fraction, this.keepDistance);
+                    const contact = contactFromCast(hk, hitWorld, castPath, fraction, this.keepDistance);
                     closestHitBody = hitWorld[0][0];
                     const bestMatch = this._findContact(contact, this._manifold, 0.1);
                     if (bestMatch == -1) {
@@ -459,18 +461,18 @@ export class PhysicsCharacterController {
     }
 
     protected _createSurfaceConstraint(contact: Contact, timeTravelled: number): SurfaceConstraintInfo {
-        const constraint = new SurfaceConstraintInfo();
-
-        //let distance = contact.distance - this.keepDistance;
-        constraint.planeNormal = contact.normal.clone();
-        constraint.planeDistance = contact.distance;
-        constraint.staticFriction = this.staticFriction;
-        constraint.dynamicFriction = this.dynamicFriction;
-        constraint.extraUpStaticFriction = 0;
-        constraint.extraDownStaticFriction = 0;
-        constraint.velocity = Vector3.Zero();
-        constraint.angularVelocity = Vector3.Zero();
-        constraint.priority = 0;
+        const constraint = {
+            //let distance = contact.distance - this.keepDistance;
+            planeNormal: contact.normal.clone(),
+            planeDistance: contact.distance,
+            staticFriction: this.staticFriction,
+            dynamicFriction: this.dynamicFriction,
+            extraUpStaticFriction: 0,
+            extraDownStaticFriction: 0,
+            velocity: Vector3.Zero(),
+            angularVelocity: Vector3.Zero(),
+            priority: 0,
+        };
 
         const maxSlopeCosEps = 0.1;
         const maxSlopeCosine = Math.max(this.maxSlopeCosine, maxSlopeCosEps);
@@ -479,7 +481,8 @@ export class PhysicsCharacterController {
         const contactPosition = contact.position.clone();
         if (normalDotUp > maxSlopeCosine) {
             const com = this.getPosition();
-            const contactArm = contact.position.subtract(com);
+            const contactArm = this._tmpVecs[20];
+            contact.position.subtractToRef(com, contactArm);
             const scale = contact.normal.dot(contactArm);
             contactPosition.x = com.x + this.up.x * scale;
             contactPosition.y = com.y + this.up.y * scale;
@@ -506,16 +509,17 @@ export class PhysicsCharacterController {
     protected _addMaxSlopePlane(maxSlopeCos: number, up: Vector3, index: number, constraints: SurfaceConstraintInfo[], allowedPenetration: number): boolean {
         const verticalComponent = constraints[index].planeNormal.dot(up);
         if (verticalComponent > 0.01 && verticalComponent < maxSlopeCos) {
-            const newConstraint = new SurfaceConstraintInfo();
-            newConstraint.planeNormal = constraints[index].planeNormal.clone();
-            newConstraint.planeDistance = constraints[index].planeDistance;
-            newConstraint.velocity = constraints[index].velocity.clone();
-            newConstraint.angularVelocity = constraints[index].angularVelocity.clone();
-            newConstraint.priority = constraints[index].priority;
-            newConstraint.dynamicFriction = constraints[index].dynamicFriction;
-            newConstraint.staticFriction = constraints[index].staticFriction;
-            newConstraint.extraDownStaticFriction = constraints[index].extraDownStaticFriction;
-            newConstraint.extraUpStaticFriction = constraints[index].extraUpStaticFriction;
+            const newConstraint = {
+                planeNormal: constraints[index].planeNormal.clone(),
+                planeDistance: constraints[index].planeDistance,
+                velocity: constraints[index].velocity.clone(),
+                angularVelocity: constraints[index].angularVelocity.clone(),
+                priority: constraints[index].priority,
+                dynamicFriction: constraints[index].dynamicFriction,
+                staticFriction: constraints[index].staticFriction,
+                extraDownStaticFriction: constraints[index].extraDownStaticFriction,
+                extraUpStaticFriction: constraints[index].extraUpStaticFriction,
+            };
             const distance = newConstraint.planeDistance;
             newConstraint.planeNormal.subtractInPlace(up.scale(verticalComponent));
             newConstraint.planeNormal.normalize();
@@ -578,7 +582,9 @@ export class PhysicsCharacterController {
     protected _simplexSolverSolve1d(info: SimplexSolverInfo, sci: SurfaceConstraintInfo, velocityIn: Vector3, velocityOut: Vector3) {
         const eps = 1e-5;
         const groundVelocity = sci.velocity;
-        const relativeVelocity = velocityIn.subtract(groundVelocity);
+        const relativeVelocity = this._tmpVecs[22];
+        velocityIn.subtractToRef(groundVelocity, relativeVelocity);
+
         const planeVel = relativeVelocity.dot(sci.planeNormal);
 
         const origVelocity2 = relativeVelocity.lengthSquared();
@@ -657,7 +663,8 @@ export class PhysicsCharacterController {
 
     protected _simplexSolverSolveTest1d(sci: SurfaceConstraintInfo, velocityIn: Vector3): boolean {
         const eps = 1e-3;
-        const relativeVelocity = velocityIn.subtract(sci.velocity);
+        const relativeVelocity = this._tmpVecs[23];
+        velocityIn.subtractToRef(sci.velocity, relativeVelocity);
         return relativeVelocity.dot(sci.planeNormal) < -eps;
     }
 
@@ -719,7 +726,8 @@ export class PhysicsCharacterController {
         }
 
         const groundVelocity = axisVel;
-        const relativeVelocity = velocityIn.subtract(groundVelocity);
+        const relativeVelocity = this._tmpVecs[24];
+        velocityIn.subtractToRef(groundVelocity, relativeVelocity);
 
         const vel2 = relativeVelocity.lengthSquared();
         const axisVert = this.up.dot(axis);
@@ -1001,7 +1009,13 @@ export class PhysicsCharacterController {
         let remainingTime = deltaTime;
 
         for (let i = 0; i < constraints.length; i++) {
-            output.planeInteractions.push(new SurfaceConstraintInteraction());
+            output.planeInteractions.push({
+                touched: false,
+                stopped: false,
+                surfaceTime: 0,
+                penaltyDistance: 0,
+                status: SurfaceConstraintInteractionStatus.OK,
+            });
         }
 
         const info = new SimplexSolverInfo();
@@ -1027,7 +1041,8 @@ export class PhysicsCharacterController {
 
                 // Try to find the plane with the shortest time to move
                 const sci = constraints[i];
-                const relativeVel = output.velocity.subtract(sci.velocity);
+                const relativeVel = this._tmpVecs[25];
+                output.velocity.subtractToRef(sci.velocity, relativeVel);
                 const relativeProjectedVel = -relativeVel.dot(sci.planeNormal);
                 // if projected velocity is pointing away skip it
                 if (relativeProjectedVel <= 0) {
@@ -1035,7 +1050,9 @@ export class PhysicsCharacterController {
                 }
 
                 //  Calculate the time of impact
-                const relativePos = output.position.subtract(sci.velocity.scale(info.currentTime));
+                const relativePos = this._tmpVecs[26];
+                sci.velocity.scaleToRef(info.currentTime, this._tmpVecs[27]);
+                output.position.subtractToRef(this._tmpVecs[27], relativePos);
                 let projectedPos = sci.planeNormal.dot(relativePos);
 
                 // treat penetrations
@@ -1093,10 +1110,16 @@ export class PhysicsCharacterController {
      * Compute a CharacterSurfaceInfo from current state and a direction
      * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
      * @param direction direction to check, usually gravity direction
-     * @returns a new CharacterSurfaceInfo object
+     * @returns a CharacterSurfaceInfo object
      */
     public checkSupport(deltaTime: number, direction: Vector3): CharacterSurfaceInfo {
-        const surfaceInfo = new CharacterSurfaceInfo();
+        const surfaceInfo = {
+            isSurfaceDynamic: false,
+            supportedState: CharacterSupportedState.UNSUPPORTED,
+            averageSurfaceNormal: Vector3.Zero(),
+            averageSurfaceVelocity: Vector3.Zero(),
+            averageAngularSurfaceVelocity: Vector3.Zero(),
+        };
         this.checkSupportToRef(deltaTime, direction, surfaceInfo);
         return surfaceInfo;
     }
@@ -1123,9 +1146,9 @@ export class PhysicsCharacterController {
         maxSurfaceVelocity.set(this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver, this.maxCharacterSpeedForSolver);
         const output = this._simplexSolverSolve(constraints, direction, deltaTime, deltaTime, this.up, maxSurfaceVelocity);
 
-        surfaceInfo.averageSurfaceVelocity = Vector3.Zero();
-        surfaceInfo.averageAngularSurfaceVelocity = Vector3.Zero();
-        surfaceInfo.averageSurfaceNormal = Vector3.Zero();
+        surfaceInfo.averageSurfaceVelocity.setAll(0);
+        surfaceInfo.averageAngularSurfaceVelocity.setAll(0);
+        surfaceInfo.averageSurfaceNormal.setAll(0);
 
         // If the constraints did not affect the character movement then it is unsupported and we can finish
         if (output.velocity.equalsWithEpsilon(direction, eps)) {
@@ -1223,7 +1246,9 @@ export class PhysicsCharacterController {
                 const outputImpulsePosition = contact.position;
 
                 // Calculate relative normal velocity of the contact point in the contacted body
-                const pointRelVel = this._getPointVelocity(bodyB, contact.position).subtract(this._velocity);
+                const pointRelVel = this._tmpVecs[19];
+                this._getPointVelocityToRef(bodyB, contact.position, pointRelVel);
+                pointRelVel.subtractInPlace(this._velocity);
                 const inputProjectedVelocity = pointRelVel.dot(contact.normal);
                 const dampFactor = 0.9;
 
@@ -1240,10 +1265,14 @@ export class PhysicsCharacterController {
                 if (deltaVelocity < 0) {
                     //  Calculate the impulse magnitude
                     const invInertia = this._getInverseInertiaWorld(bodyB);
-                    const comWorld = this._getComWorld(bodyB);
-                    const r = contact.position.subtract(comWorld);
-                    const jacAng = r.cross(contact.normal);
-                    const rc = Vector3.TransformNormal(jacAng, invInertia);
+                    const comWorld = this._tmpVecs[15];
+                    this._getComWorldToRef(bodyB, comWorld);
+                    const r = this._tmpVecs[16];
+                    contact.position.subtractToRef(comWorld, r);
+                    const jacAng = this._tmpVecs[17];
+                    Vector3.CrossToRef(r, contact.normal, jacAng);
+                    const rc = this._tmpVecs[18];
+                    Vector3.TransformNormalToRef(jacAng, invInertia, rc);
                     inputObjectMassInv = rc.dot(jacAng) + this._getInvMass(bodyB);
                     inputObjectImpulse = deltaVelocity / inputObjectMassInv;
 
@@ -1298,9 +1327,9 @@ export class PhysicsCharacterController {
         return this._tmpMatrix;
     }
 
-    protected _getComWorld(body: { body: PhysicsBody; index: number }): Vector3 {
+    protected _getComWorldToRef(body: { body: PhysicsBody; index: number }, result: Vector3) {
         const mp = body.body.getMassProperties(body.index);
-        return Vector3.TransformCoordinates(mp.centerOfMass!, body.body.transformNode.getWorldMatrix());
+        Vector3.TransformCoordinatesToRef(mp.centerOfMass!, body.body.transformNode.getWorldMatrix(), result);
     }
 
     protected _getInvMass(body: { body: PhysicsBody; index: number }): number {
@@ -1335,7 +1364,8 @@ export class PhysicsCharacterController {
             } else {
                 const displacementVelocity = this._velocity;
                 if (surfaceInfo.supportedState == CharacterSupportedState.SUPPORTED) {
-                    const relativeVelocity = this._velocity.subtract(surfaceInfo.averageSurfaceVelocity);
+                    const relativeVelocity = this._tmpVecs[28];
+                    this._velocity.subtractToRef(surfaceInfo.averageSurfaceVelocity, relativeVelocity);
                     const normalDotVelocity = surfaceInfo.averageSurfaceNormal.dot(relativeVelocity);
                     if (normalDotVelocity < 0) {
                         relativeVelocity.subtractInPlace(surfaceInfo.averageSurfaceNormal.scale(normalDotVelocity));
@@ -1386,7 +1416,7 @@ export class PhysicsCharacterController {
                     for (let i = 0; i < numCastHits; i++) {
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const [fraction, _hitLocal, hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(this._castCollector, i)[1];
-                        const newContact = Contact.FromCast(hk, hitWorld, newDisplacement, fraction, this.keepDistance);
+                        const newContact = contactFromCast(hk, hitWorld, newDisplacement, fraction, this.keepDistance);
                         if (this._findContact(newContact, this._manifold, 0.1) == -1) {
                             //<todo fireContactAdded
                             newContactIndex = this._manifold.length;
@@ -1472,7 +1502,10 @@ export class PhysicsCharacterController {
             1
         );
         const invSurfaceFrame = surfaceFrame.clone().invert();
-        const relative = Vector3.TransformNormal(currentVelocity.subtract(surfaceVelocity), invSurfaceFrame);
+
+        currentVelocity.subtractToRef(surfaceVelocity, this._tmpVecs[29]);
+        const relative = this._tmpVecs[30];
+        Vector3.TransformNormalToRef(this._tmpVecs[29], invSurfaceFrame, relative);
 
         const sideVec = upWorld.cross(forwardWorld);
         const fwd = desiredVelocity.dot(forwardWorld);
