@@ -107,15 +107,6 @@ class WebAudioStreamingSound extends StreamingSound {
 
         this.volume = options?.volume ?? 1;
 
-        await new Promise<void>((resolve) => {
-            const timer = setInterval(() => {
-                if (document.body) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 100);
-        });
-
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
@@ -271,8 +262,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
         mediaElement.load();
 
-        document.body.appendChild(mediaElement);
-
         this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: mediaElement });
         this._connect(this._source);
 
@@ -287,10 +276,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         this._clearWaitTimer();
 
         this.sourceNode = null;
-
-        if (document.body.contains(this.mediaElement)) {
-            document.body.removeChild(this.mediaElement);
-        }
 
         this.mediaElement.removeEventListener("ended", this._onEnded);
         this.mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
