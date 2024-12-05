@@ -16,6 +16,9 @@
 		vec4 shadowsInfo;
 		vec2 depthValues;
 	} light{X};
+#ifdef IESLIGHTTEXTURE{X}
+	uniform sampler2D iesLightTexture{X};
+#endif
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightTexture{X};
