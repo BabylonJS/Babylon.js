@@ -432,7 +432,7 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
     // take a screenshot (for visual inspection)
     const snapshot = await canvasNode.screenshot();
     expect(snapshot).toMatchSnapshot({
-        maxDiffPixels: 2000,
+        maxDiffPixelRatio: 0.02,
     });
 
     await page.mouse.down();
@@ -442,6 +442,6 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
     // take a screenshot (for visual inspection)
     const newSnapshot = await canvasNode.screenshot();
     expect(newSnapshot).toMatchSnapshot({
-        maxDiffPixels: 2000,
+        maxDiffPixelRatio: 0.02,
     });
 });
