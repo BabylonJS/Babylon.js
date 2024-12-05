@@ -26,7 +26,7 @@ fn computeDirectionalLightFalloff_IES(lightDirection: vec3f, directionToLightCen
 {
     var cosAngle: f32 = dot(-lightDirection, directionToLightCenterW);
 	var angle = acos(cosAngle) / PI;
-	return textureSample(iesLightTexture, iesLightTextureSampler, vec2f(angle, 0)).r;
+	return textureSampleLevel(iesLightTexture, iesLightTextureSampler, vec2f(angle, 0), 0.).r;
 }
 
 fn computeDistanceLightFalloff(lightOffset: vec3f, lightDistanceSquared: f32, range: f32, inverseSquaredRange: f32) -> f32
