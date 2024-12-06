@@ -1,4 +1,4 @@
-import { GetDefaultNumWorkers, type IDracoCodecConfiguration } from "./dracoCodec";
+import { _GetDefaultNumWorkers, type IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
@@ -74,7 +74,7 @@ export class DracoCompression extends DracoDecoder {
     /**
      * Default number of workers to create when creating the draco compression object.
      */
-    public static DefaultNumWorkers = GetDefaultNumWorkers();
+    public static DefaultNumWorkers = _GetDefaultNumWorkers();
 
     /**
      * Constructor

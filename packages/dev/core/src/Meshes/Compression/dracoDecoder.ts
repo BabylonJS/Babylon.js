@@ -51,9 +51,7 @@ export class DracoDecoder extends DracoCodec<DecoderModule> {
      * Default instance for the DracoDecoder.
      */
     public static get Default(): DracoDecoder {
-        if (!DracoDecoder._Default) {
-            DracoDecoder._Default = new DracoDecoder();
-        }
+        DracoDecoder._Default ??= new DracoDecoder();
         return DracoDecoder._Default;
     }
 
@@ -74,12 +72,9 @@ export class DracoDecoder extends DracoCodec<DecoderModule> {
         return typeof DracoDecoderModule !== "undefined";
     }
 
-    protected override _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: DecoderModule }> {
-        return new Promise((resolve) => {
-            ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary }).then((module) => {
-                resolve({ module });
-            });
-        });
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: DecoderModule }> {
+        const module = await ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary });
+        return { module };
     }
 
     protected override _getWorkerContent(): string {

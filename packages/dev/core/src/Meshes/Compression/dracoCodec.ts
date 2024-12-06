@@ -50,7 +50,7 @@ export interface IDracoCodecConfiguration {
 /**
  * @internal
  */
-export function GetDefaultNumWorkers(): number {
+export function _GetDefaultNumWorkers(): number {
     if (typeof navigator !== "object" || !navigator.hardwareConcurrency) {
         return 1;
     }
@@ -82,7 +82,8 @@ export abstract class DracoCodec<M> implements IDisposable {
 
     /**
      * The default draco compression object
-     * Subclasses should override this value with a valid instance.
+     * Subclasses should override this value using the narrowed type of the subclass,
+     * and define a public `get Default()` that returns the narrowed instance.
      */
     protected static _Default: Nullable<DracoCodec<unknown>>;
 
@@ -121,7 +122,7 @@ export abstract class DracoCodec<M> implements IDisposable {
      * @param _config The configuration for the DracoCodec instance.
      */
     constructor(_config: IDracoCodecConfiguration) {
-        const config = { numWorkers: GetDefaultNumWorkers(), ..._config };
+        const config = { numWorkers: _GetDefaultNumWorkers(), ..._config };
         // check if the decoder binary and worker pool was injected
         // Note - it is expected that the developer checked if WebWorker, WebAssembly and the URL object are available
         if (config.workerPool) {
@@ -168,7 +169,7 @@ export abstract class DracoCodec<M> implements IDisposable {
                         await Tools.LoadBabylonScriptAsync(codecInfo.url);
                     }
                 }
-                return /*await*/ this._createModuleAsync(wasmBinary as ArrayBuffer, config.jsModule);
+                return this._createModuleAsync(wasmBinary as ArrayBuffer, config.jsModule);
             });
         }
     }
