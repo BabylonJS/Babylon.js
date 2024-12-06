@@ -514,6 +514,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._environmentTexture = value;
+        this.onEnvironmentTextureChangedObservable.notifyObservers(value);
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -918,6 +919,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * This Observable will when an animation file has been imported into the scene.
      */
     public onAnimationFileImportedObservable = new Observable<Scene>();
+
+    /**
+     * An event triggered when the environmentTexture is changed.
+     */
+    public onEnvironmentTextureChangedObservable = new Observable<Nullable<BaseTexture>>();
 
     /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
@@ -5263,6 +5269,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
         this.onClearColorChangedObservable.clear();
+        this.onEnvironmentTextureChangedObservable.clear();
         this._isDisposed = true;
     }
 

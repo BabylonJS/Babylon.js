@@ -222,6 +222,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }}
                         />
                     )}
+                    {!inputBlock.isContextual && (
+                        <CheckBoxLineComponent label="Display in the Inspector" target={inputBlock} propertyName={"displayInInspector"}></CheckBoxLineComponent>
+                    )}
                     {!inputBlock.isContextual && <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>}
                 </LineContainerComponent>
             </div>

@@ -1,6 +1,6 @@
 import type { IMaterial, IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -22,11 +22,11 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
     /** Defines whether this extension is required */
     public required = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -98,19 +98,21 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
                 const subs = babylonMaterial.subSurface;
 
                 const diffuseTransmissionFactor = subs.translucencyIntensity == 1 ? undefined : subs.translucencyIntensity;
-                const diffuseTransmissionTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.translucencyIntensityTexture) ?? undefined;
+                const diffuseTransmissionTexture = this._exporter._materialExporter.getTextureInfo(subs.translucencyIntensityTexture) ?? undefined;
                 const diffuseTransmissionColorFactor = !subs.translucencyColor || subs.translucencyColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : subs.translucencyColor.asArray();
-                const diffuseTransmissionColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.translucencyColorTexture) ?? undefined;
+                const diffuseTransmissionColorTexture = this._exporter._materialExporter.getTextureInfo(subs.translucencyColorTexture) ?? undefined;
 
                 const diffuseTransmissionInfo: IKHRMaterialsDiffuseTransmission = {
                     diffuseTransmissionFactor,
                     diffuseTransmissionTexture,
                     diffuseTransmissionColorFactor,
                     diffuseTransmissionColorTexture,
-                    hasTextures: () => {
-                        return this._hasTexturesExtension(babylonMaterial);
-                    },
                 };
+
+                if (this._hasTexturesExtension(babylonMaterial)) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = diffuseTransmissionInfo;
             }
@@ -119,4 +121,4 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_diffuse_transmission(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_diffuse_transmission(exporter));

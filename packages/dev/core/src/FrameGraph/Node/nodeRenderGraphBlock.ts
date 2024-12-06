@@ -350,6 +350,7 @@ export class NodeRenderGraphBlock {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
         } else {
             this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+            this._inputs[inputIndex0]._isMainLinkSource = true;
         }
 
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
