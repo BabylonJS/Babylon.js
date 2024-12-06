@@ -1,4 +1,5 @@
-import { _GetDefaultNumWorkers, type IDracoCodecConfiguration } from "./dracoCodec";
+import { _GetDefaultNumWorkers } from "./dracoCodec";
+import type { IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";

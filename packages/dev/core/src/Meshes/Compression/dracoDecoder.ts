@@ -1,4 +1,5 @@
-import { type DecoderModule, DracoDecoderModule } from "draco3dgltf";
+import { DracoDecoderModule } from "draco3dgltf";
+import type { DecoderModule } from "draco3dgltf";
 import { DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
 import { Tools } from "../../Misc/tools";
 import { Geometry } from "../geometry";
@@ -7,7 +8,8 @@ import { Logger } from "../../Misc/logger";
 import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
-import { decodeMesh, type AttributeData, type Message, workerFunction } from "./dracoCompressionWorker";
+import { decodeMesh, workerFunction } from "./dracoCompressionWorker";
+import type { AttributeData, Message } from "./dracoCompressionWorker";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
