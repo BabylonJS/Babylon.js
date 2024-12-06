@@ -665,7 +665,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _transparencyShadow = false;
 
-    /** Gets or sets the ability to have transparent shadow  */
+    /** Gets or sets the ability to have transparent shadow */
     public get transparencyShadow() {
         return this._transparencyShadow;
     }

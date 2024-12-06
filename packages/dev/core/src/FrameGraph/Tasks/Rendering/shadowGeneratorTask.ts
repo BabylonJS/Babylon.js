@@ -8,7 +8,7 @@ import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
  */
 export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
     /**
-     * The object list to cull.
+     * The object list that generates shadows.
      */
     public objectList: FrameGraphObjectList;
 
@@ -26,7 +26,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._light = value;
-        this._createShadowGenerator();
+        this._setupShadowGenerator();
     }
 
     private _mapSize = 1024;
@@ -43,7 +43,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._mapSize = value;
-        this._createShadowGenerator();
+        this._setupShadowGenerator();
     }
 
     private _useFloat32TextureType = false;
@@ -60,7 +60,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._useFloat32TextureType = value;
-        this._createShadowGenerator();
+        this._setupShadowGenerator();
     }
 
     private _useRedTextureFormat = true;
@@ -77,7 +77,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._useRedTextureFormat = value;
-        this._createShadowGenerator();
+        this._setupShadowGenerator();
     }
 
     private _bias = 0.01;
@@ -96,6 +96,101 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         this._bias = value;
         if (this._shadowGenerator) {
             this._shadowGenerator.bias = value;
+        }
+    }
+
+    private _normalBias = 0;
+    /**
+     * The normal bias to apply to the shadow map.
+     */
+    public get normalBias() {
+        return this._normalBias;
+    }
+
+    public set normalBias(value: number) {
+        if (value === this._normalBias) {
+            return;
+        }
+
+        this._normalBias = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.normalBias = value;
+        }
+    }
+
+    private _darkness = 0;
+    /**
+     * The darkness of the shadows.
+     */
+    public get darkness() {
+        return this._darkness;
+    }
+
+    public set darkness(value: number) {
+        if (value === this._darkness) {
+            return;
+        }
+
+        this._darkness = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.darkness = value;
+        }
+    }
+
+    private _transparencyShadow = false;
+    /**
+     * Gets or sets the ability to have transparent shadow
+     */
+    public get transparencyShadow() {
+        return this._transparencyShadow;
+    }
+
+    public set transparencyShadow(value: boolean) {
+        if (value === this._transparencyShadow) {
+            return;
+        }
+
+        this._transparencyShadow = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.transparencyShadow = value;
+        }
+    }
+
+    private _enableSoftTransparentShadow = false;
+    /**
+     * Enables or disables shadows with varying strength based on the transparency
+     */
+    public get enableSoftTransparentShadow() {
+        return this._enableSoftTransparentShadow;
+    }
+
+    public set enableSoftTransparentShadow(value: boolean) {
+        if (value === this._enableSoftTransparentShadow) {
+            return;
+        }
+
+        this._enableSoftTransparentShadow = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.enableSoftTransparentShadow = value;
+        }
+    }
+
+    private _useOpacityTextureForTransparentShadow = false;
+    /**
+     * If this is true, use the opacity texture's alpha channel for transparent shadows instead of the diffuse one
+     */
+    public get useOpacityTextureForTransparentShadow() {
+        return this._useOpacityTextureForTransparentShadow;
+    }
+
+    public set useOpacityTextureForTransparentShadow(value: boolean) {
+        if (value === this._useOpacityTextureForTransparentShadow) {
+            return;
+        }
+
+        this._useOpacityTextureForTransparentShadow = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.useOpacityTextureForTransparentShadow = value;
         }
     }
 
@@ -118,27 +213,60 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
     }
 
+    private _filteringQuality = ShadowGenerator.QUALITY_HIGH;
     /**
-     * The output shadow generator.
+     * The filtering quality to apply to the filter.
      */
-    public readonly outputShadowGenerator: ShadowGenerator;
+    public get filteringQuality() {
+        return this._filteringQuality;
+    }
+
+    public set filteringQuality(value: number) {
+        if (value === this._filteringQuality) {
+            return;
+        }
+
+        this._filteringQuality = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.filteringQuality = value;
+        }
+    }
+
+    /**
+     * The shadow generator.
+     */
+    public readonly shadowGenerator: ShadowGenerator;
 
     /**
      * The shadow map texture.
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    private _shadowGenerator: ShadowGenerator | undefined;
+    protected _shadowGenerator: ShadowGenerator | undefined;
 
-    private _createShadowGenerator() {
+    protected _createShadowGenerator() {
+        this._shadowGenerator = new ShadowGenerator(this._mapSize, this._light, this._useFloat32TextureType, undefined, this._useRedTextureFormat);
+    }
+
+    protected _setupShadowGenerator() {
         this._shadowGenerator?.dispose();
         this._shadowGenerator = undefined;
         if (this._light !== undefined) {
-            this._shadowGenerator = new ShadowGenerator(this._mapSize, this._light, this._useFloat32TextureType, undefined, this._useRedTextureFormat);
-            this._shadowGenerator.bias = this._bias;
-            this._shadowGenerator.filter = this._filter;
-            this._shadowGenerator.getShadowMap()!._disableEngineStages = true;
-            (this.outputShadowGenerator as WritableObject<ShadowGenerator>) = this._shadowGenerator;
+            this._createShadowGenerator();
+            const shadowGenerator = this._shadowGenerator as ShadowGenerator | undefined;
+            if (shadowGenerator === undefined) {
+                return;
+            }
+            shadowGenerator.bias = this._bias;
+            shadowGenerator.normalBias = this._normalBias;
+            shadowGenerator.darkness = this._darkness;
+            shadowGenerator.transparencyShadow = this._transparencyShadow;
+            shadowGenerator.enableSoftTransparentShadow = this._enableSoftTransparentShadow;
+            shadowGenerator.useOpacityTextureForTransparentShadow = this._useOpacityTextureForTransparentShadow;
+            shadowGenerator.filter = this._filter;
+            shadowGenerator.filteringQuality = this._filteringQuality;
+            shadowGenerator.getShadowMap()!._disableEngineStages = true;
+            (this.shadowGenerator as WritableObject<ShadowGenerator | undefined>) = shadowGenerator;
         }
     }
 

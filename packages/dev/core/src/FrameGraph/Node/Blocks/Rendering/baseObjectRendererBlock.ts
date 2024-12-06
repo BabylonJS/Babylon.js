@@ -7,7 +7,7 @@ import type {
     Camera,
     FrameGraphObjectRendererTask,
     NodeRenderGraphResourceContainerBlock,
-    ShadowGenerator,
+    FrameGraphShadowGeneratorTask,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
@@ -181,11 +181,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
                 const container = shadowGeneratorsConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
                 container.inputs.forEach((input) => {
                     if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsShadowGenerator(input.connectedPoint.value)) {
-                        this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as ShadowGenerator);
+                        this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
                     }
                 });
             } else {
-                this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as ShadowGenerator;
+                this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as FrameGraphShadowGeneratorTask;
             }
         }
     }

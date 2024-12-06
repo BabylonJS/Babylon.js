@@ -67,10 +67,6 @@ export class PreviewManager {
             this._createNodeRenderGraph();
         });
 
-        this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._createNodeRenderGraph();
-        });
-
         this._onRebuildRequiredObserver = globalState.stateManager.onRebuildRequiredObservable.add(() => {
             this._createNodeRenderGraph();
         });
@@ -200,7 +196,7 @@ export class PreviewManager {
 
         if (this._globalState.directionalLight0) {
             const dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
-            dir0.intensity = 0.9;
+            dir0.intensity = 0.7;
             dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.parent = this._lightParent;
@@ -211,7 +207,7 @@ export class PreviewManager {
 
         if (this._globalState.directionalLight1) {
             const dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
-            dir1.intensity = 1.2;
+            dir1.intensity = 0.7;
             dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.parent = this._lightParent;
@@ -393,6 +389,7 @@ export class PreviewManager {
                 arcRotateCamera.lowerRadiusLimit = null;
                 arcRotateCamera.upperRadiusLimit = null;
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                arcRotateCamera.maxZ = worldExtends.max.subtract(worldExtends.min).length() * 2;
             }
 
             arcRotateCamera.pinchPrecision = 200 / arcRotateCamera.radius;

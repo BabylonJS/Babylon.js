@@ -49,6 +49,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ResourceContainerBlock: "Container of resources (textures, buffers, shadow generators)",
         ShadowLightBlock: "Shadow light (used by the shadow generator block)",
         ShadowGeneratorBlock: "Generates shadows through a shadow generator",
+        CascadedShadowGeneratorBlock: "Generates shadows through a cascaded shadow generator",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -146,7 +147,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
             Output_Nodes: ["OutputBlock"],
-            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock", "TAAObjectRendererBlock", "ShadowGeneratorBlock"],
+            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock", "TAAObjectRendererBlock", "ShadowGeneratorBlock", "CascadedShadowGeneratorBlock"],
         };
 
         // Create node menu

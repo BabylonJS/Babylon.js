@@ -36,6 +36,16 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
         this._additionalConstructionParameters = [value];
     }
 
+    /** Indicates if shadows must be enabled or disabled */
+    @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get disableShadows() {
+        return this._frameGraphTask.disableShadows;
+    }
+
+    public set disableShadows(value: boolean) {
+        this._frameGraphTask.disableShadows = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name

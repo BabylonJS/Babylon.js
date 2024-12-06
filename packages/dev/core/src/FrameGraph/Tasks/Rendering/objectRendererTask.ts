@@ -6,15 +6,16 @@ import type {
     FrameGraphObjectList,
     FrameGraphRenderContext,
     ObjectRendererOptions,
-    ShadowGenerator,
     Light,
     Nullable,
     Observer,
+    FrameGraphShadowGeneratorTask,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
+import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 
 /**
  * Task used to render objects to a texture.
@@ -38,7 +39,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     /**
      * The shadow generators used to render the objects (optional).
      */
-    public shadowGenerators?: ShadowGenerator[] = [];
+    public shadowGenerators?: FrameGraphShadowGeneratorTask[] = [];
 
     private _camera: Camera;
 
@@ -68,6 +69,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * If depth writing should be enabled (default is true).
      */
     public depthWrite = true;
+
+    /**
+     * If shadows should be disabled (default is false).
+     */
+    public disableShadows = false;
 
     /**
      * The output texture.
@@ -220,11 +226,16 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         const shadowEnabled: Map<Light, boolean> = new Map();
 
         if (this.shadowGenerators) {
-            for (const shadowGenerator of this.shadowGenerators) {
+            for (const shadowGeneratorTask of this.shadowGenerators) {
+                const shadowGenerator = shadowGeneratorTask.shadowGenerator;
                 const light = shadowGenerator.getLight();
                 if (light.isEnabled() && light.shadowEnabled) {
                     lightsForShadow.add(light);
-                    light._shadowGenerators!.set(null, shadowGenerator);
+                    if (FrameGraphCascadedShadowGeneratorTask.IsCascadedShadowGenerator(shadowGeneratorTask)) {
+                        light._shadowGenerators!.set(shadowGeneratorTask.camera, shadowGenerator);
+                    } else {
+                        light._shadowGenerators!.set(null, shadowGenerator);
+                    }
                 }
             }
         }
@@ -234,7 +245,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             for (let i = 0; i < this._scene.lights.length; i++) {
                 const light = this._scene.lights[i];
                 shadowEnabled.set(light, light.shadowEnabled);
-                light.shadowEnabled = lightsForShadow.has(light);
+                light.shadowEnabled = !this.disableShadows && lightsForShadow.has(light);
             }
         });
 

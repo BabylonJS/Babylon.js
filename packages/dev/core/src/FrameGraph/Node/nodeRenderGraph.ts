@@ -10,6 +10,7 @@ import type {
     INodeRenderGraphEditorOptions,
     Scene,
     WritableObject,
+    IShadowLight,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -302,7 +303,16 @@ export class NodeRenderGraph {
 
     private _autoFillExternalInputs() {
         const allInputs = this.getInputBlocks();
+
+        const shadowLights: IShadowLight[] = [];
+        for (const light of this._scene.lights) {
+            if ((light as IShadowLight).setShadowProjectionMatrix !== undefined) {
+                shadowLights.push(light as IShadowLight);
+            }
+        }
+
         let cameraIndex = 0;
+        let lightIndex = 0;
         for (const input of allInputs) {
             if (!input.isExternal) {
                 continue;
@@ -321,6 +331,11 @@ export class NodeRenderGraph {
                 input.value = camera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
+            } else if (input.isShadowLight()) {
+                if (lightIndex < shadowLights.length) {
+                    input.value = shadowLights[lightIndex++];
+                    lightIndex = lightIndex % shadowLights.length;
+                }
             }
         }
     }

@@ -1,5 +1,12 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, NodeRenderGraphBlock, NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphInputBlock, IShadowLight, ShadowGenerator } from "core/index";
+import type {
+    Nullable,
+    NodeRenderGraphBlock,
+    NodeRenderGraphBlockConnectionPointValueType,
+    NodeRenderGraphInputBlock,
+    IShadowLight,
+    FrameGraphShadowGeneratorTask,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
 
@@ -41,12 +48,12 @@ export class NodeRenderGraphConnectionPoint {
     }
 
     /**
-     * Checks if the value is a shadow generator
+     * Checks if the value is a shadow generator task
      * @param value The value to check
      * @returns True if the value is a shadow generator
      */
     public static IsShadowGenerator(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
-        return (value as ShadowGenerator).getShadowMap !== undefined;
+        return (value as FrameGraphShadowGeneratorTask).mapSize !== undefined;
     }
 
     /**

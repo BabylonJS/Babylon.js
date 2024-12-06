@@ -21,6 +21,7 @@ import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
 import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Blocks/resourceContainerBlock";
 import { NodeRenderGraphShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock";
+import { NodeRenderGraphCascadedShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
@@ -109,6 +110,9 @@ export class BlockTools {
             }
             case "ShadowGeneratorBlock": {
                 return new NodeRenderGraphShadowGeneratorBlock("Shadow Generator", frameGraph, scene);
+            }
+            case "CascadedShadowGeneratorBlock": {
+                return new NodeRenderGraphCascadedShadowGeneratorBlock("Cascaded Shadow Generator", frameGraph, scene);
             }
         }
 
