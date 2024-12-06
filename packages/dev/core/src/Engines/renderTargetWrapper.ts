@@ -55,17 +55,6 @@ export class RenderTargetWrapper {
         return this._depthStencilTexture;
     }
 
-    public set depthStencilTexture(texture: Nullable<InternalTexture>) {
-        this._depthStencilTexture = texture;
-
-        this._generateDepthBuffer = this._generateStencilBuffer = false;
-
-        if (texture) {
-            this._generateDepthBuffer = true;
-            this._generateStencilBuffer = HasStencilAspect(texture.format);
-        }
-    }
-
     /**
      * Sets the depth/stencil texture
      * @param texture The depth/stencil texture to set
