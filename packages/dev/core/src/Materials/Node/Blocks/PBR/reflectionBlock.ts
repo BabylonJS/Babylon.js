@@ -461,6 +461,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${isWebGPU ? `, icdfxSamplerSampler` : ""}
                     , icdfySampler         // ** not handled **
                     ${isWebGPU ? `, icdfySamplerSampler` : ""}
+                    , pdfSampler         // ** not handled **
+                    ${isWebGPU ? `, pdfSamplerSampler` : ""}
                 #endif
             #endif
             );

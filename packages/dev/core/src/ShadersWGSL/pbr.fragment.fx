@@ -294,6 +294,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     , uniforms.icdfxSamplerSampler
                     , uniforms.icdfySampler
                     , uniforms.icdfySamplerSampler
+                    , uniforms.pdfSampler
+                    , uniforms.pdfSamplerSampler
                 #endif
             #endif
             );
@@ -542,6 +544,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                             , uniforms.icdfxSamplerSampler
                             , uniforms.icdfySampler
                             , uniforms.icdfySamplerSampler
+                            , uniforms.pdfSampler
+                            , uniforms.pdfSamplerSampler
                         #endif
                     #endif
                 #endif

@@ -301,6 +301,7 @@ void main(void) {
                 #ifdef IBL_CDF_FILTERING
                     , icdfxSampler
                     , icdfySampler
+                    , pdfSampler
                 #endif
             #endif
             );
@@ -540,6 +541,7 @@ void main(void) {
                         #ifdef IBL_CDF_FILTERING
                             , icdfxSampler
                             , icdfySampler
+                            , pdfSampler
                         #endif
                     #endif
                 #endif

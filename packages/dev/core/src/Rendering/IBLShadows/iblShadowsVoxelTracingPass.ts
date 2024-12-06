@@ -10,6 +10,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -343,7 +344,11 @@ export class _IblShadowsVoxelTracingPass {
 
         this._frameId++;
 
-        let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
+        let rotation = 0.0;
+        if (this._scene.environmentTexture) {
+            rotation = (this._scene.environmentTexture as CubeTexture).rotationY;
+        }
+        rotation = this._scene.useRightHandedSystem ? -(rotation + 0.5 * Math.PI) : rotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
         this._shadowParameters.set(this._sampleDirections, this._frameId, 1.0, rotation);
         this._outputTexture.setVector4("shadowParameters", this._shadowParameters);

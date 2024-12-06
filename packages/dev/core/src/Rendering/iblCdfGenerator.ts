@@ -28,6 +28,8 @@ export class IblCdfGenerator {
     private _icdfyPT: ProceduralTexture;
     private _cdfxPT: ProceduralTexture;
     private _icdfxPT: ProceduralTexture;
+    private _normalizationPT: ProceduralTexture;
+    private _pdfPT: ProceduralTexture;
     private _iblSource: BaseTexture;
     private _dummyTexture: RawTexture;
     /**
@@ -75,7 +77,7 @@ export class IblCdfGenerator {
         }
 
         // Once the textures are generated, notify that they are ready to use.
-        this._icdfxPT.onGeneratedObservable.addOnce(() => {
+        this._pdfPT.onGeneratedObservable.addOnce(() => {
             this.onGeneratedObservable.notifyObservers();
         });
     }
@@ -94,6 +96,14 @@ export class IblCdfGenerator {
      */
     public getIcdfxTexture(): Texture {
         return this._icdfxPT ? this._icdfxPT : this._dummyTexture;
+    }
+
+    /**
+     * Return the cumulative distribution function (CDF) X texture
+     * @returns Return the cumulative distribution function (CDF) X texture
+     */
+    public getPdfTexture(): Texture {
+        return this._pdfPT ? this._pdfPT : this._dummyTexture;
     }
 
     /** Enable the debug view for this pass */
@@ -118,7 +128,7 @@ export class IblCdfGenerator {
     public get debugPassName(): string {
         return this._debugPassName;
     }
-    private _debugPassName: string = "Importance Sample Debug";
+    private _debugPassName: string = "CDF Debug";
 
     /**
      * Gets the debug pass post process
@@ -188,9 +198,19 @@ export class IblCdfGenerator {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment")]);
+                    await Promise.all([
+                        import("../ShadersWGSL/iblCdfx.fragment"),
+                        import("../ShadersWGSL/iblCdfy.fragment"),
+                        import("../ShadersWGSL/iblPdf.fragment"),
+                        import("../ShadersWGSL/iblNormalization.fragment"),
+                    ]);
                 } else {
-                    await Promise.all([import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment")]);
+                    await Promise.all([
+                        import("../Shaders/iblCdfx.fragment"),
+                        import("../Shaders/iblCdfy.fragment"),
+                        import("../Shaders/iblPdf.fragment"),
+                        import("../Shaders/iblNormalization.fragment"),
+                    ]);
                 }
             },
         };
@@ -213,22 +233,43 @@ export class IblCdfGenerator {
         this._cdfyPT.autoClear = false;
         this._cdfyPT.setTexture("iblSource", this._iblSource as Texture);
         this._cdfyPT.setInt("iblHeight", size.height);
-        if (this._iblSource.isCube) {
-            this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
-        }
+        this._cdfyPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._cdfyPT.refreshRate = 0;
         this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblIcdfy", this._scene, icdfOptions, false, false);
         this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
         this._icdfyPT.refreshRate = 0;
+        this._icdfyPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblCdfx", this._scene, cdfOptions, false, false);
         this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
         this._cdfxPT.refreshRate = 0;
+        this._cdfxPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._icdfxPT = new ProceduralTexture("icdfxTexture", { width: size.width, height: 1 }, "iblIcdfx", this._scene, icdfOptions, false, false);
         this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
         this._icdfxPT.refreshRate = 0;
+        this._icdfxPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+
+        this._normalizationPT = new ProceduralTexture("normalizationTexture", { width: 1, height: 1 }, "iblNormalization", this._scene, cdfOptions, false, false);
+        this._normalizationPT.autoClear = false;
+        this._normalizationPT.setTexture("iblSource", this._iblSource as Texture);
+        this._normalizationPT.setInt("iblHeight", size.height);
+        this._normalizationPT.setInt("iblWidth", size.width);
+        this._normalizationPT.refreshRate = 0;
+
+        this._pdfPT = new ProceduralTexture("pdfTexture", { width: size.width, height: size.height }, "iblPdf", this._scene, cdfOptions, false, false);
+        this._pdfPT.autoClear = false;
+        this._pdfPT.setTexture("iblSource", this._iblSource as Texture);
+        this._pdfPT.setTexture("normalizationSampler", this._normalizationPT);
+        this._pdfPT.refreshRate = 0;
+        this._pdfPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+
+        if (this._iblSource.isCube) {
+            this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
+            this._normalizationPT.defines = "#define IBL_USE_CUBE_MAP\n";
+            this._pdfPT.defines = "#define IBL_USE_CUBE_MAP\n";
+        }
     }
 
     private _disposeTextures() {
@@ -236,6 +277,8 @@ export class IblCdfGenerator {
         this._icdfyPT?.dispose();
         this._cdfxPT?.dispose();
         this._icdfxPT?.dispose();
+        this._pdfPT?.dispose();
+        this._normalizationPT?.dispose();
     }
 
     private _createDebugPass() {
@@ -250,7 +293,7 @@ export class IblCdfGenerator {
             engine: this._engine,
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             uniforms: ["sizeParams"],
-            samplers: ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"],
+            samplers: ["cdfy", "icdfy", "cdfx", "icdfx", "pdf", "iblSource"],
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
@@ -274,6 +317,7 @@ export class IblCdfGenerator {
             effect.setTexture("icdfy", this._icdfyPT);
             effect.setTexture("cdfx", this._cdfxPT);
             effect.setTexture("icdfx", this._icdfxPT);
+            effect.setTexture("pdf", this._pdfPT);
             effect.setTexture("iblSource", this._iblSource);
             effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
         });
@@ -295,7 +339,11 @@ export class IblCdfGenerator {
             this._cdfxPT &&
             this._cdfxPT.isReady() &&
             this._icdfxPT &&
-            this._icdfxPT.isReady()
+            this._icdfxPT.isReady() &&
+            this._pdfPT &&
+            this._pdfPT.isReady() &&
+            this._normalizationPT &&
+            this._normalizationPT.isReady()
         );
     }
 

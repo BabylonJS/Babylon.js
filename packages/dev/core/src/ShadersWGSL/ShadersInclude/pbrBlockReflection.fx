@@ -235,6 +235,8 @@
             , icdfxSamplerSampler: sampler
             , icdfySampler: texture_2d<f32>
             , icdfySamplerSampler: sampler
+            , pdfSampler: texture_2d<f32>
+            , pdfSamplerSampler: sampler
         #endif
     #endif
     ) -> reflectionOutParams
@@ -316,6 +318,8 @@
                         , icdfxSamplerSampler
                         , icdfySampler
                         , icdfySamplerSampler
+                        , pdfSampler
+                        , pdfSamplerSampler
                     #endif
                     );
                 #else

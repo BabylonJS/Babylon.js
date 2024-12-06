@@ -36,6 +36,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         fragmentOutputs.color =  vec4f(1.0);
     } else {
         var targetValue: f32 = fetchCDF(cdfHeight - 1, currentPixel.x) * input.vUV.y;
-        fragmentOutputs.color =  vec4f( vec3f(bisect(cdfHeight, targetValue, currentPixel.x)), 1.0);
+        fragmentOutputs.color =  vec4f( vec3f(max(bisect(cdfHeight, targetValue, currentPixel.x), 0.0)), 1.0);
     }
 }

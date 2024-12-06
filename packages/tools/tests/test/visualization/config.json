@@ -1277,6 +1277,18 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "Realtime Filtering Irradiance",
+            "playgroundId": "#FEEK7G#1089",
+            "renderCount": 5,
+            "referenceImage": "realtimeFilteringIrradiance.png"
+        },
+        {
+            "title": "Realtime Filtering Irradiance with CDF",
+            "playgroundId": "#FEEK7G#1087",
+            "renderCount": 5,
+            "referenceImage": "realtimeFilteringIrradianceCDF.png"
+        },
+        {
             "title": "OBJ loader test (legacy)",
             "playgroundId": "#SYQW69#1213",
             "referenceImage": "objTestLoaderLegacy.png"

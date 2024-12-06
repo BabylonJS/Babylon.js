@@ -207,6 +207,7 @@
         #ifdef IBL_CDF_FILTERING
             , in sampler2D icdfxSampler
             , in sampler2D icdfySampler
+            , in sampler2D pdfSampler
         #endif
     #endif
     )
@@ -282,7 +283,7 @@
                 #if defined(REALTIME_FILTERING)
                     environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo
                     #ifdef IBL_CDF_FILTERING
-                        , icdfxSampler, icdfySampler
+                        , icdfxSampler, icdfySampler, pdfSampler
                     #endif
                     );
                 #else
