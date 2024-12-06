@@ -35,6 +35,6 @@ void main(void) {
         gl_FragColor = vec4(1.0);
     } else {
         float targetValue = fetchCDF(cdfHeight - 1, currentPixel.x) * vUV.y;
-        gl_FragColor = vec4(vec3(bisect(cdfHeight, targetValue, currentPixel.x)), 1.0);
+        gl_FragColor = vec4(vec3(max(bisect(cdfHeight, targetValue, currentPixel.x), 0.0)), 1.0);
     }
 }

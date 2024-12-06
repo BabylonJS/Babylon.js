@@ -183,6 +183,7 @@ struct subSurfaceOutParams
                     #ifdef IBL_CDF_FILTERING
                         , in sampler2D icdfxSampler
                         , in sampler2D icdfySampler
+                        , in sampler2D pdfSampler
                     #endif
                 #endif
             #endif
