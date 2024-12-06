@@ -79,6 +79,7 @@ import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtensio
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
 import { objectModelMapping } from "./Extensions/objectModelMapping";
+import { deepMerge } from "core/Misc/deepMerger";
 export { GLTFFileLoader };
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -100,28 +101,6 @@ interface ILoaderProperty extends IProperty {
 interface IWithMetadata {
     metadata: any;
     _internalMetadata: any;
-}
-
-// https://stackoverflow.com/a/48218209
-function mergeDeep(...objects: any[]): any {
-    const isObject = (obj: any) => obj && typeof obj === "object";
-
-    return objects.reduce((prev, obj) => {
-        Object.keys(obj).forEach((key) => {
-            const pVal = prev[key];
-            const oVal = obj[key];
-
-            if (Array.isArray(pVal) && Array.isArray(oVal)) {
-                prev[key] = pVal.concat(...oVal);
-            } else if (isObject(pVal) && isObject(oVal)) {
-                prev[key] = mergeDeep(pVal, oVal);
-            } else {
-                prev[key] = oVal;
-            }
-        });
-
-        return prev;
-    }, {});
 }
 
 /**
@@ -908,7 +887,7 @@ export class GLTFLoader implements IGLTFLoader {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
                         // Merge the metadata from the skin node to the skinned mesh in case a loader extension added metadata.
-                        babylonTransformNode.metadata = mergeDeep(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
+                        babylonTransformNode.metadata = deepMerge(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(

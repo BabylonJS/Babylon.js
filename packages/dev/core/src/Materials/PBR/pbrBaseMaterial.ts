@@ -80,6 +80,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
+    public IBL_CDF_FILTERING = false;
 
     public MAINUV1 = false;
     public MAINUV2 = false;
@@ -1488,6 +1489,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
+            "icdfxSampler",
+            "icdfySampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -1653,6 +1656,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         }
 
                         defines.REALTIME_FILTERING = true;
+                        if (this.getScene().iblCdfGenerator) {
+                            defines.IBL_CDF_FILTERING = true;
+                        }
                     } else {
                         defines.REALTIME_FILTERING = false;
                     }
@@ -2296,6 +2302,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (defines.USEIRRADIANCEMAP) {
                         ubo.setTexture("irradianceSampler", reflectionTexture.irradianceTexture);
+                    }
+
+                    //if realtime filtering and using CDF maps, set them.
+                    const cdfGenerator = this.getScene().iblCdfGenerator;
+                    if (this.realTimeFiltering && cdfGenerator) {
+                        ubo.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
+                        ubo.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
                     }
                 }
 

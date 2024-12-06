@@ -312,6 +312,7 @@ export class NativeEngine extends Engine {
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
             disableMorphTargetTexture: false,
             parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
+            textureNorm16: false,
         };
 
         this._features = {

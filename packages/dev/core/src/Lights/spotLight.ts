@@ -45,6 +45,30 @@ export class SpotLight extends ShadowLight {
     private _lightAngleScale: number;
     private _lightAngleOffset: number;
 
+    private _iesProfileTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Gets or sets the IES profile texture used to create the spotlight
+     * #UIAXAU#1
+     */
+    public get iesProfileTexture(): Nullable<BaseTexture> {
+        return this._iesProfileTexture;
+    }
+
+    public set iesProfileTexture(value: Nullable<BaseTexture>) {
+        if (this._iesProfileTexture === value) {
+            return;
+        }
+
+        this._iesProfileTexture = value;
+
+        if (this._iesProfileTexture && SpotLight._IsTexture(this._iesProfileTexture)) {
+            this._iesProfileTexture.onLoadObservable.addOnce(() => {
+                this._markMeshesAsLightDirty();
+            });
+        }
+    }
+
     /**
      * Gets the cone angle of the spot light in Radians.
      */
@@ -385,6 +409,10 @@ export class SpotLight extends ShadowLight {
             effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
             effect.setTexture("projectionLightTexture" + lightIndex, this.projectionTexture);
         }
+
+        if (this._iesProfileTexture && this._iesProfileTexture.isReady()) {
+            effect.setTexture("iesLightTexture" + lightIndex, this._iesProfileTexture);
+        }
         return this;
     }
 
@@ -439,6 +467,10 @@ export class SpotLight extends ShadowLight {
         if (this._projectionTexture) {
             this._projectionTexture.dispose();
         }
+        if (this._iesProfileTexture) {
+            this._iesProfileTexture.dispose();
+            this._iesProfileTexture = null;
+        }
     }
 
     /**
@@ -473,6 +505,7 @@ export class SpotLight extends ShadowLight {
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["SPOTLIGHT" + lightIndex] = true;
         defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
+        defines["IESLIGHTTEXTURE" + lightIndex] = this._iesProfileTexture && this._iesProfileTexture.isReady() ? true : false;
     }
 }
 

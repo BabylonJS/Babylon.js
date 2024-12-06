@@ -283,7 +283,6 @@ export class ThinEngine extends AbstractEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
-            this._renderingCanvas = canvas;
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
@@ -398,7 +397,7 @@ export class ThinEngine extends AbstractEngine {
             }
         } else {
             this._gl = <WebGL2RenderingContext>canvasOrContext;
-            this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
+            canvas = this._gl.canvas as HTMLCanvasElement;
 
             if ((this._gl as any).renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
@@ -412,6 +411,8 @@ export class ThinEngine extends AbstractEngine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        this._sharedInit(canvas);
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
@@ -549,6 +550,7 @@ export class ThinEngine extends AbstractEngine {
             textureMaxLevel: this._webGLVersion > 1,
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
+            textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -601,6 +603,17 @@ export class ThinEngine extends AbstractEngine {
         this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
         this._caps.textureHalfFloatLinearFiltering =
             this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension("OES_texture_half_float_linear")) ? true : false;
+
+        if (this._caps.textureNorm16) {
+            this._gl.R16_EXT = 0x822a;
+            this._gl.RG16_EXT = 0x822c;
+            this._gl.RGB16_EXT = 0x8054;
+            this._gl.RGBA16_EXT = 0x805b;
+            this._gl.R16_SNORM_EXT = 0x8f98;
+            this._gl.RG16_SNORM_EXT = 0x8f99;
+            this._gl.RGB16_SNORM_EXT = 0x8f9a;
+            this._gl.RGBA16_SNORM_EXT = 0x8f9b;
+        }
 
         // Compressed formats
         if (this._caps.astc) {
@@ -4025,7 +4038,7 @@ export class ThinEngine extends AbstractEngine {
         const keys = Object.keys(this._compiledEffects);
         for (const name of keys) {
             const effect = this._compiledEffects[name];
-            effect.dispose();
+            effect.dispose(true);
         }
 
         this._compiledEffects = {};
@@ -4241,15 +4254,23 @@ export class ThinEngine extends AbstractEngine {
                 internalFormat = this._gl.LUMINANCE_ALPHA;
                 break;
             case Constants.TEXTUREFORMAT_RED:
+            case Constants.TEXTUREFORMAT_R16_UNORM:
+            case Constants.TEXTUREFORMAT_R16_SNORM:
                 internalFormat = this._gl.RED;
                 break;
             case Constants.TEXTUREFORMAT_RG:
+            case Constants.TEXTUREFORMAT_RG16_UNORM:
+            case Constants.TEXTUREFORMAT_RG16_SNORM:
                 internalFormat = this._gl.RG;
                 break;
             case Constants.TEXTUREFORMAT_RGB:
+            case Constants.TEXTUREFORMAT_RGB16_UNORM:
+            case Constants.TEXTUREFORMAT_RGB16_SNORM:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 break;
             case Constants.TEXTUREFORMAT_RGBA:
+            case Constants.TEXTUREFORMAT_RGBA16_UNORM:
+            case Constants.TEXTUREFORMAT_RGBA16_SNORM:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
                 break;
         }
@@ -4345,6 +4366,14 @@ export class ThinEngine extends AbstractEngine {
                 switch (format) {
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R16I;
+                    case Constants.TEXTUREFORMAT_R16_SNORM:
+                        return this._gl.R16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RG16_SNORM:
+                        return this._gl.RG16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RGB16_SNORM:
+                        return this._gl.RGB16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RGBA16_SNORM:
+                        return this._gl.RGBA16_SNORM_EXT;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
                         return this._gl.RG16I;
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:
@@ -4358,6 +4387,14 @@ export class ThinEngine extends AbstractEngine {
                 switch (format) {
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R16UI;
+                    case Constants.TEXTUREFORMAT_R16_UNORM:
+                        return this._gl.R16_EXT;
+                    case Constants.TEXTUREFORMAT_RG16_UNORM:
+                        return this._gl.RG16_EXT;
+                    case Constants.TEXTUREFORMAT_RGB16_UNORM:
+                        return this._gl.RGB16_EXT;
+                    case Constants.TEXTUREFORMAT_RGBA16_UNORM:
+                        return this._gl.RGBA16_EXT;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
                         return this._gl.RG16UI;
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:

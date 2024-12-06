@@ -104,6 +104,12 @@ export const enum TextureFormat {
     RG8Snorm = "rg8snorm", // Red and green channels. 8 bit integer per channel. [-127, 127] converted to/from float [-1, 1] in shader.
     RG8Uint = "rg8uint", // Red and green channels. 8 bit integer per channel. Unsigned in shader.
     RG8Sint = "rg8sint", // Red and green channels. 8 bit integer per channel. Signed in shader.
+    R16Unorm = "r16unorm", // Red channel only. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
+    R16Snorm = "r16snorm", // Red channel only. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
+    RG16Unorm = "rg16unorm", // Red and green channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
+    RG16Snorm = "rg16snorm", // Red and green channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
+    RGBA16Unorm = "rgba16unorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
+    RGBA16Snorm = "rgba16snorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
 
     // 32-bit formats
     R32Uint = "r32uint", // Red channel only. 32 bit integer per channel. Unsigned in shader.

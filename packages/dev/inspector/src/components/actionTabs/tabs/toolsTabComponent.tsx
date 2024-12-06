@@ -283,17 +283,17 @@ export class ToolsTabComponent extends PaneComponent {
             return true;
         };
 
-        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) }).then(
-            (glb: GLTFData) => {
+        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) })
+            .then((glb: GLTFData) => {
                 this._isExportingGltf = false;
                 this.forceUpdate();
                 glb.downloadFiles();
-            },
-            () => {
+            })
+            .catch((reason) => {
+                Logger.Error(`Failed to export GLB: ${reason}`);
                 this._isExportingGltf = false;
                 this.forceUpdate();
-            }
-        );
+            });
     }
 
     exportBabylon() {

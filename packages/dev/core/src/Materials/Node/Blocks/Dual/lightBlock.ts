@@ -242,7 +242,15 @@ export class LightBlock extends NodeMaterialBlock {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+            PrepareUniformsAndSamplersForLight(
+                lightIndex,
+                state.uniforms,
+                state.samplers,
+                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
+                uniformBuffers,
+                onlyUpdateBuffersList,
+                defines["IESLIGHTTEXTURE" + lightIndex]
+            );
         }
     }
 

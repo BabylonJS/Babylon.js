@@ -33,5 +33,6 @@
     "[css]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "jest.runMode": "on-demand"
 }

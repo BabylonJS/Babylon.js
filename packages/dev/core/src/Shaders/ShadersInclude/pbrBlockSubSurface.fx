@@ -180,6 +180,10 @@ struct subSurfaceOutParams
                 #if defined(REALTIME_FILTERING)
                     , in samplerCube reflectionSampler
                     , in vec2 vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , in sampler2D icdfxSampler
+                        , in sampler2D icdfySampler
+                    #endif
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
@@ -490,7 +494,11 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , icdfxSampler, icdfySampler
+                #endif
+                );
             #else
                 vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
             #endif

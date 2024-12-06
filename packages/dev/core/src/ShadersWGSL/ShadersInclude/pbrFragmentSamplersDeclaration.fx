@@ -124,3 +124,10 @@
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity,_SAMPLERNAME_,translucencyIntensity)
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYCOLOR_TEXTURE,_VARYINGNAME_,TranslucencyColor,_SAMPLERNAME_,translucencyColor)
 #endif
+
+#ifdef IBL_CDF_FILTERING
+    var icdfxSamplerSampler: sampler;
+    var icdfxSampler: texture_2d<f32>;
+    var icdfySamplerSampler: sampler;
+    var icdfySampler: texture_2d<f32>;
+#endif
