@@ -205,11 +205,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return null;
         }
 
-        const it = this._soundInstances.values();
-        let instance = it.next().value;
+        let instance: Nullable<_AbstractSoundInstance> = null;
 
-        for (const nextInstance of it) {
-            instance = nextInstance;
+        const it = this._soundInstances.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            instance = next.value;
         }
 
         return instance;
