@@ -42,6 +42,12 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             KHR_node_visibility: {
                 visible: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
             };
+            KHR_node_hoverability: {
+                hoverable: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
+            };
+            KHR_node_selectability: {
+                selectable: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
+            };
         };
     };
 }
@@ -352,6 +358,44 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     },
                     getTarget: (node: INode) => node._babylonTransformNode,
                     getPropertyName: [() => "isVisible"],
+                    type: "boolean",
+                },
+            },
+            KHR_node_hoverability: {
+                hoverable: {
+                    get: (node: INode) => {
+                        const tn = node._babylonTransformNode as any;
+                        if (tn && tn.pointerOverDisableMeshTesting !== undefined) {
+                            return tn.pointerOverDisableMeshTesting;
+                        }
+                        return true;
+                    },
+                    set: (value: boolean, node: INode) => {
+                        node._primitiveBabylonMeshes?.forEach((mesh) => {
+                            mesh.pointerOverDisableMeshTesting = !value;
+                        });
+                    },
+                    getTarget: (node: INode) => node._babylonTransformNode,
+                    getPropertyName: [() => "pointerOverDisableMeshTesting"],
+                    type: "boolean",
+                },
+            },
+            KHR_node_selectability: {
+                selectable: {
+                    get: (node: INode) => {
+                        const tn = node._babylonTransformNode as any;
+                        if (tn && tn.isPickable !== undefined) {
+                            return tn.isPickable;
+                        }
+                        return true;
+                    },
+                    set: (value: boolean, node: INode) => {
+                        node._primitiveBabylonMeshes?.forEach((mesh) => {
+                            mesh.isPickable = value;
+                        });
+                    },
+                    getTarget: (node: INode) => node._babylonTransformNode,
+                    getPropertyName: [() => "isPickable"],
                     type: "boolean",
                 },
             },
