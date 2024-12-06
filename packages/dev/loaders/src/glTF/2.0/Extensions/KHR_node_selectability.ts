@@ -69,7 +69,7 @@ updateInteractivity();
  * Loader extension for KHR_selectability
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class KHR_selectability implements IGLTFLoaderExtension {
+export class KHR_node_selectability implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -91,7 +91,7 @@ export class KHR_selectability implements IGLTFLoaderExtension {
 
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
-            if (node.extensions?.KHR_selectability && node.extensions?.KHR_selectability.selectable === false) {
+            if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
                 // TODO - this works on load, but will not work if a pointer changes the value in real time
                 node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
                     mesh.isPickable = false;
@@ -106,4 +106,4 @@ export class KHR_selectability implements IGLTFLoaderExtension {
 }
 
 unregisterGLTFExtension(NAME);
-registerGLTFExtension(NAME, true, (loader) => new KHR_selectability(loader));
+registerGLTFExtension(NAME, true, (loader) => new KHR_node_selectability(loader));
