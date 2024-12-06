@@ -9,6 +9,8 @@ var cdfxSampler: sampler;
 var cdfx: texture_2d<f32>;
 var icdfxSampler: sampler;
 var icdfx: texture_2d<f32>;
+var pdfSampler: sampler;
+var pdf: texture_2d<f32>;
 #ifdef IBL_USE_CUBE_MAP
 var iblSourceSampler: sampler;
 var iblSource: texture_cube<f32>;
@@ -18,7 +20,7 @@ var iblSource: texture_2d<f32>;
 #endif
 var textureSamplerSampler: sampler;
 var textureSampler: texture_2d<f32>;
-#define cdfyVSize 0.4
+#define cdfyVSize (0.8 / 3.0)
 #define cdfxVSize 0.1
 #define cdfyHSize 0.5
 
@@ -44,9 +46,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var backgroundColour: vec3f = textureSample(textureSampler, textureSamplerSampler, input.vUV).rgb;
 
   const iblStart: f32 = 1.0 - cdfyVSize;
-  const cdfyStart: f32 = 1.0 - 2.0 * cdfyVSize;
-  const cdfxStart: f32 = 1.0 - 2.0 * cdfyVSize - cdfxVSize;
-  const icdfxStart: f32 = 1.0 - 2.0 * cdfyVSize - 2.0 * cdfxVSize;
+  const pdfStart: f32 = 1.0 - 2.0 * cdfyVSize;
+  const cdfyStart: f32 = 1.0 - 3.0 * cdfyVSize;
+  const cdfxStart: f32 = 1.0 - 3.0 * cdfyVSize - cdfxVSize;
+  const icdfxStart: f32 = 1.0 - 3.0 * cdfyVSize - 2.0 * cdfxVSize;
   // ***** Display all slices as a grid *******
 #ifdef IBL_USE_CUBE_MAP
 
@@ -58,6 +61,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                              vec2f(1.0, 1.0 / cdfyVSize))
                        .rgb;
 #endif
+  var pdfColour: vec3f =
+      textureSample(pdf, pdfSampler, (uv -  vec2f(0.0, pdfStart)) *  vec2f(1.0, 1.0 / cdfyVSize)).rrr;
   var cdfyColour: f32 =
       textureSample(cdfy, cdfySampler, (uv -  vec2f(0.0, cdfyStart)) *  vec2f(2.0, 1.0 / cdfyVSize)).r;
   var icdfyColour: f32 =
@@ -71,6 +76,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     colour = backgroundColour;
   } else if (uv.y > iblStart) {
     colour += iblColour;
+  } else if (uv.y > pdfStart) {
+    colour += pdfColour;
   } else if (uv.y > cdfyStart && uv.x < 0.5) {
     colour.r += 0.003 * cdfyColour;
   } else if (uv.y > cdfyStart && uv.x > 0.5) {

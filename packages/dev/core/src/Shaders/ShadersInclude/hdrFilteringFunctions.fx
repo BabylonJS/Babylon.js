@@ -186,7 +186,7 @@
         #define inline
         vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
         #ifdef IBL_CDF_FILTERING
-        , sampler2D icdfxSampler, sampler2D icdfySampler
+        , sampler2D icdfxSampler, sampler2D icdfySampler, sampler2D pdfSampler
         #endif
         )
         {
@@ -214,10 +214,9 @@
 
                 #ifdef IBL_CDF_FILTERING
                     vec2 T;
-                    T.x = textureCubeLodEXT(icdfxSampler, vec2(Xi.x, 0.0), 0.0).x;
-                    T.y = textureCubeLodEXT(icdfySampler, vec2(T.x, Xi.y), 0.0).x;
-                    T.x = 1.0 - fract(T.x + 0.25);
-                    vec3 Ls = uv_to_normal(T);
+                    T.x = textureLod(icdfxSampler, vec2(Xi.x, 0.0), 0.0).x;
+                    T.y = textureLod(icdfySampler, vec2(T.x, Xi.y), 0.0).x;
+                    vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                 #else
                     vec3 Ls = hemisphereCosSample(Xi);
@@ -227,15 +226,14 @@
                 #endif
 
                 if (NoL > 0.) {
-                    float pdf_inversed = PI / NoL;
-
-                    float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
-                    float l = log4(omegaS) - log4(omegaP) + log4(K);
-                    float mipLevel = clamp(l, 0.0, maxLevel);
-
                     #ifdef IBL_CDF_FILTERING
-                        vec3 c = textureCubeLodEXT(inputTexture, Ls, mipLevel).rgb;
+                        float pdf = textureLod(pdfSampler, T, 0.0).x;
+                        vec3 c = textureCubeLodEXT(inputTexture, Ls, 0.0).rgb;
                     #else
+                        float pdf_inversed = PI / NoL;
+                        float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
+                        float l = log4(omegaS) - log4(omegaP) + log4(K);
+                        float mipLevel = clamp(l, 0.0, maxLevel);
                         vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
                     #endif
                     #ifdef GAMMA_INPUT
@@ -243,7 +241,8 @@
                     #endif
 
                     #ifdef IBL_CDF_FILTERING
-                        result += c * NoL;
+                        vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(1.0) / vec3(pdf) * c;
+                        result += NoL * light;
                     #else
                         result += c;
                     #endif
