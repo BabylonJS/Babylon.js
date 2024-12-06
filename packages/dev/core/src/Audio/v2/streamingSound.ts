@@ -78,11 +78,10 @@ export abstract class StreamingSound extends AbstractSound {
 
     /**
      * Plays the sound.
-     * @param waitTime - The time to wait before playing the sound in seconds.
      * @param startOffset - The time within the sound source to start playing the sound in seconds.
      * @param duration - How long to play the sound in seconds.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    public play(startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this._isPaused && this._soundInstances.size > 0) {
             this.resume();
             return;
@@ -105,7 +104,24 @@ export abstract class StreamingSound extends AbstractSound {
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
 
-        this._play(instance, waitTime, startOffset, duration);
+        this._beforePlay(instance);
+        instance.play(startOffset, duration);
+        this._afterPlay(instance);
+    }
+
+    /**
+     * Stops the sound.
+     */
+    public stop(): void {
+        this._setState(SoundState.Stopped);
+
+        if (!this._soundInstances) {
+            return;
+        }
+
+        for (const instance of Array.from(this._soundInstances)) {
+            instance.stop();
+        }
     }
 
     protected get _instancesPreloadedPromise() {

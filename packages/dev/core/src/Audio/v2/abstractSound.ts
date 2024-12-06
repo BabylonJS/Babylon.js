@@ -145,6 +145,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected abstract _createSoundInstance(): _AbstractSoundInstance;
 
+    public abstract play(startOffset?: Nullable<number>, duration?: Nullable<number>): void;
+
     /**
      * Pauses the sound.
      */
@@ -179,28 +181,14 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this._state = SoundState.Started;
     }
 
-    /**
-     * Stops the sound.
-     * @param waitTime - The time to wait before stopping the sound in seconds.
-     */
-    public stop(waitTime: Nullable<number> = null): void {
-        if (waitTime && 0 < waitTime) {
-            this._state = SoundState.Stopping;
-        } else {
-            this._state = SoundState.Stopped;
-        }
-
-        if (!this._soundInstances) {
-            return;
-        }
-
-        for (const instance of Array.from(this._soundInstances)) {
-            instance.stop(waitTime);
-        }
-    }
+    public abstract stop(): void;
 
     protected get _isPaused(): boolean {
         return this._state === SoundState.Paused && this._soundInstances.size > 0;
+    }
+
+    protected _setState(state: SoundState): void {
+        this._state = state;
     }
 
     protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
@@ -227,18 +215,17 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     };
 
-    protected _play(instance: _AbstractSoundInstance, waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    protected _beforePlay(instance: _AbstractSoundInstance): void {
         if (this.state === SoundState.Paused && this._soundInstances.size > 0) {
             this.resume();
             return;
         }
 
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded);
-
         this._soundInstances.add(instance);
+    }
 
-        instance.play(waitTime, startOffset, duration);
-
+    protected _afterPlay(instance: _AbstractSoundInstance): void {
         this._state = instance.state;
     }
 

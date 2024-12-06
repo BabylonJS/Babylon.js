@@ -152,8 +152,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     private _loop: boolean = false;
     private _preloadType: "" | "none" | "metadata" | "auto" = "auto";
 
-    private _waitTimer: Nullable<NodeJS.Timeout> = null;
-
     private _isReady: boolean = false;
 
     private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
@@ -208,7 +206,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
 
         if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._enginePlayTime, this._startOffset);
+            this.play(this._startOffset);
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -271,7 +269,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         super.dispose();
 
         this.stop();
-        this._clearWaitTimer();
 
         this.sourceNode = null;
 
@@ -285,14 +282,13 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     }
 
     /** @internal */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null): void {
+    public play(startOffset: Nullable<number> = null): void {
         if (this._state === SoundState.Started) {
             return;
         }
 
         if (this._state === SoundState.Paused) {
             startOffset = this.currentTime + this._startOffset;
-            waitTime = 0;
         } else if (startOffset) {
             this._startOffset = startOffset;
         } else {
@@ -303,18 +299,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
             this.mediaElement.currentTime = startOffset;
         }
 
-        this._clearWaitTimer();
-
-        if (waitTime && waitTime > 0) {
-            this._setState(SoundState.Starting);
-
-            this._waitTimer = setTimeout(() => {
-                this._waitTimer = null;
-                this._play();
-            }, waitTime * 1000);
-        } else {
-            this._play();
-        }
+        this._play();
     }
 
     /** @internal */
@@ -337,21 +322,12 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     }
 
     /** @internal */
-    public override stop(waitTime: Nullable<number> = null): void {
+    public override stop(): void {
         if (this._state === SoundState.Stopped) {
             return;
         }
 
-        this._clearWaitTimer();
-
-        if (waitTime && waitTime > 0) {
-            this._waitTimer = setTimeout(() => {
-                this._waitTimer = null;
-                this._stop();
-            }, waitTime * 1000);
-        } else {
-            this._stop();
-        }
+        this._stop();
     }
 
     /** @internal */
@@ -425,12 +401,5 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         this._setState(SoundState.Stopped);
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
-    }
-
-    private _clearWaitTimer(): void {
-        if (this._waitTimer) {
-            clearTimeout(this._waitTimer);
-            this._waitTimer = null;
-        }
     }
 }
