@@ -81,6 +81,14 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public onEndedObservable = new Observable<AbstractSound>();
 
     /**
+     * The current playback time of the sound in seconds.
+     */
+    public get currentTime(): number {
+        const instance = this._getNewestInstance();
+        return instance ? instance.currentTime : 0;
+    }
+
+    /**
      * The state of the sound.
      */
     public get state(): SoundState {
@@ -193,6 +201,21 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected get _isPaused(): boolean {
         return this._state === SoundState.Paused && this._soundInstances.size > 0;
+    }
+
+    protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
+        if (this._soundInstances.size === 0) {
+            return null;
+        }
+
+        const it = this._soundInstances.values();
+        let instance = it.next().value;
+
+        for (const nextInstance of it) {
+            instance = nextInstance;
+        }
+
+        return instance;
     }
 
     protected _onSoundInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {

@@ -259,8 +259,8 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
     private _duration: Nullable<number> = null;
     private _loop: boolean = false;
 
-    private _currentTime: number = 0;
-    private _startTime: number = 0;
+    private _enginePlayTime: number = 0;
+    private _enginePauseTime: number = 0;
 
     /** @internal */
     get startTime(): number {
@@ -268,7 +268,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
             return 0;
         }
 
-        return this._startTime;
+        return this._enginePlayTime;
     }
 
     /** @internal */
@@ -277,8 +277,8 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
             return 0;
         }
 
-        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._startTime;
-        return this._currentTime + timeSinceLastStart;
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
+        return this._enginePauseTime + timeSinceLastStart + this._startOffset;
     }
 
     private _onEngineStateChanged = () => {
@@ -287,7 +287,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
         }
 
         if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._startTime, this._startOffset, this._duration);
+            this.play(this._enginePlayTime, this._startOffset, this._duration);
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -333,13 +333,13 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
             startOffset = this._startOffset;
         }
 
-        this._startTime = this.engine.currentTime + (waitTime ?? 0);
+        this._enginePlayTime = this.engine.currentTime + (waitTime ?? 0);
 
         this._initSourceNode();
 
         if (this.engine.state === "running") {
             this._setState(SoundState.Started);
-            this.sourceNode?.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
+            this.sourceNode?.start(this._enginePlayTime, startOffset ?? 0, duration === null ? undefined : duration);
         } else if (this._loop) {
             this._setState(SoundState.Starting);
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
@@ -353,7 +353,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
         }
 
         this._setState(SoundState.Paused);
-        this._currentTime += this.engine.currentTime - this._startTime;
+        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
         this.sourceNode?.stop();
         this._deinitSourceNode();
@@ -385,7 +385,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
     }
 
     protected _onEnded = () => {
-        this._startTime = 0;
+        this._enginePlayTime = 0;
 
         this.onEndedObservable.notifyObservers(this);
         this._deinitSourceNode();

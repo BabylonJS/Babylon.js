@@ -76,11 +76,6 @@ class WebAudioStreamingSound extends StreamingSound {
     }
 
     /** @internal */
-    public get currentTime(): number {
-        return 0;
-    }
-
-    /** @internal */
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
@@ -185,8 +180,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
 
-    private _currentTime: number = 0;
-    private _startTime: number = Infinity;
+    private _enginePlayTime: number = Infinity;
+    private _enginePauseTime: number = 0;
 
     /** @internal */
     get currentTime(): number {
@@ -194,8 +189,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
             return 0;
         }
 
-        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._startTime;
-        return this._currentTime + timeSinceLastStart;
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
+        return this._enginePauseTime + timeSinceLastStart + this._startOffset;
     }
 
     /** @internal */
@@ -204,7 +199,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
             return 0;
         }
 
-        return this._startTime;
+        return this._enginePlayTime;
     }
 
     private _onEngineStateChanged = () => {
@@ -213,7 +208,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
 
         if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._startTime, this._startOffset);
+            this.play(this._enginePlayTime, this._startOffset);
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -329,7 +324,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
 
         this._setState(SoundState.Paused);
-        this._currentTime += this.engine.currentTime - this._startTime;
+        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
         this.mediaElement.pause();
     }
@@ -399,6 +394,9 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         if (this.engine.state === "running") {
             const result = this.mediaElement.play();
 
+            this._enginePlayTime = this.engine.currentTime;
+            this._setState(SoundState.Started);
+
             // It's possible that the play() method fails on Safari, even if the audio engine's state is "running".
             // This occurs when the audio context is paused by the system (e.g. when the Vision Pro exits and enters
             // immersive mode), and resumed automatically by the audio engine without a user interaction.
@@ -409,8 +407,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
                     this.engine.startSoundInstanceOnNextUserInteraction(this);
                 }
             });
-            this._startTime = this._source.audioContext.currentTime;
-            this._setState(SoundState.Started);
         } else if (this._loop) {
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
         } else {
