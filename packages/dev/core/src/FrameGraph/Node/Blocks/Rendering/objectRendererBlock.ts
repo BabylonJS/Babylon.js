@@ -53,6 +53,26 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
     public override getClassName() {
         return "NodeRenderGraphObjectRendererBlock";
     }
+
+    protected override _dumpPropertiesCode() {
+        const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.doNotChangeAspectRatio = ${this.doNotChangeAspectRatio};`);
+        codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
+        return super._dumpPropertiesCode() + codes.join("\n");
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.doNotChangeAspectRatio = this.doNotChangeAspectRatio;
+        serializationObject.disableShadows = this.disableShadows;
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+        this.doNotChangeAspectRatio = serializationObject.doNotChangeAspectRatio;
+        this.disableShadows = serializationObject.disableShadows;
+    }
 }
 
 RegisterClass("BABYLON.NodeRenderGraphObjectRendererBlock", NodeRenderGraphObjectRendererBlock);
