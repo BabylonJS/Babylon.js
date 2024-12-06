@@ -83,11 +83,11 @@ export class FlowGraphInteger {
 
     /**
      * Parses a FlowGraphInteger from a serialization object.
-     * @param serializationObject
+     * @param value te number to parse
      * @returns
      */
-    public static Parse(serializationObject: any): FlowGraphInteger {
-        return new FlowGraphInteger(serializationObject.value);
+    public static FromValue(value: number): FlowGraphInteger {
+        return new FlowGraphInteger(value);
     }
 }
 RegisterClass("FlowGraphInteger", FlowGraphInteger);

@@ -1,7 +1,10 @@
+import type { IAssetContainer } from "core/IAssetContainer";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
 
 function isMeshClassName(className: string) {
     return (
@@ -17,21 +20,35 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClassName(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion" || className === "Color3" || className === "Color4";
+    return (
+        className === FlowGraphTypes.Vector2 ||
+        className === FlowGraphTypes.Vector3 ||
+        className === FlowGraphTypes.Vector4 ||
+        className === FlowGraphTypes.Quaternion ||
+        className === FlowGraphTypes.Color3 ||
+        className === FlowGraphTypes.Color4
+    );
 }
 
-function parseVector(className: string, value: Array<number>) {
-    if (className === "Vector2") {
+function parseVector(className: string, value: Array<number>, flipHandedness = false) {
+    if (className === FlowGraphTypes.Vector2) {
         return Vector2.FromArray(value);
-    } else if (className === "Vector3") {
+    } else if (className === FlowGraphTypes.Vector3) {
+        if (flipHandedness) {
+            value[2] *= -1;
+        }
         return Vector3.FromArray(value);
-    } else if (className === "Vector4") {
+    } else if (className === FlowGraphTypes.Vector4) {
         return Vector4.FromArray(value);
-    } else if (className === "Quaternion") {
+    } else if (className === FlowGraphTypes.Quaternion) {
+        if (flipHandedness) {
+            value[2] *= -1;
+            value[3] *= -1;
+        }
         return Quaternion.FromArray(value);
-    } else if (className === "Color3") {
+    } else if (className === FlowGraphTypes.Color3) {
         return new Color3(value[0], value[1], value[2]);
-    } else if (className === "Color4") {
+    } else if (className === FlowGraphTypes.Color4) {
         return new Color4(value[0], value[1], value[2], value[3]);
     } else {
         throw new Error(`Unknown vector class name ${className}`);
@@ -46,18 +63,26 @@ function parseVector(className: string, value: Array<number>) {
  */
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
     const className = value?.getClassName?.() ?? "";
-    if (isMeshClassName(className)) {
-        serializationObject[key] = {
-            name: value.name,
-            className,
-        };
-    } else if (isVectorClassName(className)) {
+    if (isVectorClassName(className)) {
         serializationObject[key] = {
             value: value.asArray(),
             className,
         };
     } else {
-        serializationObject[key] = value;
+        if (className && (value.id || value.name)) {
+            serializationObject[key] = {
+                id: value.id,
+                name: value.name,
+                className,
+            };
+        } else {
+            // only if it is not an object
+            if (typeof value !== "object") {
+                serializationObject[key] = value;
+            } else {
+                throw new Error(`Could not serialize value ${value}`);
+            }
+        }
     }
 }
 
@@ -65,25 +90,39 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * The default function that parses values stored in a serialization object
  * @param key the key to the value that will be parsed
  * @param serializationObject the object that will be parsed
+ * @param assetsContainer the assets container that will be used to find the objects
  * @param scene
  * @returns
  */
-export function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
+export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(intermediateValue.name);
+        finalValue = intermediateValue.id ? (scene.getMeshById(intermediateValue.id) ?? scene.getNodeById(intermediateValue.id)) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
-    } else if (className === "Matrix") {
+    } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {
-        finalValue = FlowGraphInteger.Parse(intermediateValue);
+        finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {
-        finalValue = intermediateValue;
+        if (Array.isArray(intermediateValue)) {
+            // configuration data of an event
+            finalValue = intermediateValue.reduce((acc, val) => {
+                if (!val.eventData) {
+                    return acc;
+                }
+                acc[val.id] = {
+                    type: getRichTypeByFlowGraphType(val.className),
+                };
+                return acc;
+            }, {});
+        } else {
+            finalValue = intermediateValue;
+        }
     }
     return finalValue;
 }
@@ -98,5 +137,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
     // that jest didn't like!
-    return className === "FGSetPropertyBlock" || className === "FGGetPropertyBlock" || className === "FGPlayAnimationBlock" || className === "FGMeshPickEventBlock";
+    return className === FlowGraphBlockNames.JsonPointerParser;
 }
