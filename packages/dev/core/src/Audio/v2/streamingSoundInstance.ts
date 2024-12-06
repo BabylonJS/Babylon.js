@@ -2,18 +2,16 @@ import { Observable } from "../../Misc/observable";
 import type { AbstractSound } from "./abstractSound";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
 
-/**
- * A streaming sound instance.
- */
+/** @internal */
 export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     protected _resolvePreloadedPromise: () => void;
 
-    /** Promise that is resolved when the instance is preloaded */
+    /** @internal */
     public readonly preloadedPromise = new Promise<void>((resolve) => {
         this._resolvePreloadedPromise = resolve;
     });
 
-    /** Observable triggered when the instance is ready to play */
+    /** @internal */
     public onReadyObservable = new Observable<_StreamingSoundInstance>();
 
     protected constructor(source: AbstractSound) {
@@ -27,9 +25,7 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
         this._startOffset = value;
     }
 
-    /**
-     * Dispose the instance and release its resources.
-     */
+    /** @internal */
     public override dispose(): void {
         super.dispose();
 
