@@ -22,6 +22,11 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
         this.onReadyObservable.add(this._resolvePreloadedPromise);
     }
 
+    /** @internal */
+    set startOffset(value: number) {
+        this._startOffset = value;
+    }
+
     /**
      * Dispose the instance and release its resources.
      */

@@ -281,6 +281,21 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
         return this._enginePauseTime + timeSinceLastStart + this._startOffset;
     }
 
+    set currentTime(value: number) {
+        const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
+
+        if (restart) {
+            this.stop();
+            this._deinitSourceNode();
+        }
+
+        this._startOffset = value;
+
+        if (restart) {
+            this.play();
+        }
+    }
+
     private _onEngineStateChanged = () => {
         if (this.engine.state !== "running") {
             return;

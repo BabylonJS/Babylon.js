@@ -88,6 +88,15 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         return instance ? instance.currentTime : 0;
     }
 
+    public set currentTime(value: number) {
+        this.startOffset = value;
+
+        const instance = this._getNewestInstance();
+        if (instance) {
+            instance.currentTime = value;
+        }
+    }
+
     /**
      * The state of the sound.
      */

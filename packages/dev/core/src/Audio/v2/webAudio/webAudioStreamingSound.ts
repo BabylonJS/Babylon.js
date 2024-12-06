@@ -181,6 +181,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
 
+    private _currentTimeChangedWhilePaused = false;
+
     /** @internal */
     get currentTime(): number {
         if (this._state === SoundState.Stopped) {
@@ -189,6 +191,23 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
         return this._enginePauseTime + timeSinceLastStart + this._startOffset;
+    }
+
+    set currentTime(value: number) {
+        const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
+
+        if (restart) {
+            this.mediaElement.pause();
+            this._setState(SoundState.Stopped);
+        }
+
+        this._startOffset = value;
+
+        if (restart) {
+            this.play();
+        } else if (this._state === SoundState.Paused) {
+            this._currentTimeChangedWhilePaused = true;
+        }
     }
 
     /** @internal */
@@ -287,7 +306,10 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
             return;
         }
 
-        if (this._state === SoundState.Paused) {
+        if (this._currentTimeChangedWhilePaused) {
+            startOffset = this._startOffset;
+            this._currentTimeChangedWhilePaused = false;
+        } else if (this._state === SoundState.Paused) {
             startOffset = this.currentTime + this._startOffset;
         } else if (startOffset) {
             this._startOffset = startOffset;
@@ -318,6 +340,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
     public resume(): void {
         if (this._state === SoundState.Paused) {
             this.play();
+        } else if (this._currentTimeChangedWhilePaused) {
+            this.play(this._startOffset);
         }
     }
 

@@ -91,6 +91,7 @@ export abstract class StreamingSound extends AbstractSound {
 
         if (this.preloadedInstanceCount > 0) {
             instance = this._preloadedInstances[0];
+            instance.startOffset = this.startOffset;
             this._removePreloadedInstance(instance);
         } else {
             instance = this._createSoundInstance();
