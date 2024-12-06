@@ -67,7 +67,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         let generator = (light.getShadowGenerator(camera) as ShadowGenerator | CascadedShadowGenerator) || null;
         if (generator === null) {
-            // try to gt the first shadow generator
+            // try to get the first shadow generator
             const shadowGenerators = light.getShadowGenerators();
             if (shadowGenerators && shadowGenerators.size > 0) {
                 generator = shadowGenerators.values().next().value as ShadowGenerator | CascadedShadowGenerator;

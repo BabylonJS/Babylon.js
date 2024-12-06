@@ -66,7 +66,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureLocalPosition = 0x00004000,
     /** Linear velocity geometry texture */
     TextureLinearVelocity = 0x00008000,
-    /** Linear velocity geometry texture */
+    /** Storage texture */
     StorageTexture = 0x00010000,
 
     /** Bit field for all textures but back buffer depth/stencil */
