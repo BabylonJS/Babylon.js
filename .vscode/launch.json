@@ -284,28 +284,6 @@
             "url": "http://localhost:1344",
             "preLaunchTask": "Node Render Graph Editor Serve for core (Dev)"
         },
-        // {
-        //     /*
-        //     Launch the playground to be use to test changes in dev packages
-        //     */
-        //     "type": "msedge",
-        //     "request": "launch",
-        //     "name": "Run and Watch Dev host (ES6-Dev)",
-        //     "url": "http://localhost:1338",
-        //     "outFiles": ["!**/node_modules/**"],
-        //     "preLaunchTask": "Run and Watch Dev host (Dev)"
-        // },
-        // {
-        //     /*
-        //     Launch the playground to be use to test changes in dev packages
-        //     */
-        //     "type": "msedge",
-        //     "request": "launch",
-        //     "name": "Run and Watch Dev host - SSL (ES6-Dev)",
-        //     "url": "https://localhost:1338",
-        //     "outFiles": ["!**/node_modules/**"],
-        //     "preLaunchTask": "Run and Watch Dev host (Dev)"
-        // },
         {
             /*
             Launch tests
