@@ -19,6 +19,8 @@ interface MeshData {
 }
 
 /**
+ * @experimental This class is an experimental version of `DracoCompression` and is subject to change.
+ *
  * Draco compression (https://google.github.io/draco/)
  *
  * This class wraps the Draco decoder module.

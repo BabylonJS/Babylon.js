@@ -19,23 +19,56 @@ export interface IDracoCompressionConfiguration {
 export interface IDracoCompressionOptions extends Pick<IDracoCodecConfiguration, "numWorkers" | "wasmBinary" | "workerPool"> {}
 
 /**
- * @deprecated Use {@link DracoDecoder} instead.
+ * Draco compression (https://google.github.io/draco/)
+ *
+ * This class wraps the Draco module.
+ *
+ * **Encoder**
+ *
+ * The encoder is not currently implemented.
+ *
+ * **Decoder**
+ *
+ * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ *
+ * To update the configuration, use the following code:
+ * ```javascript
+ *     DracoCompression.Configuration = {
+ *         decoder: {
+ *             wasmUrl: "<url to the WebAssembly library>",
+ *             wasmBinaryUrl: "<url to the WebAssembly binary>",
+ *             fallbackUrl: "<url to the fallback JavaScript library>",
+ *         }
+ *     };
+ * ```
+ *
+ * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support WebAssembly or only support the JavaScript version.
+ * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
+ * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
+ *
+ * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshToGeometryAsync:
+ * ```javascript
+ *     var geometry = await DracoCompression.Default.decodeMeshToGeometryAsync(data);
+ * ```
+ *
+ * @see https://playground.babylonjs.com/#DMZIBD#0
  */
 export class DracoCompression extends DracoDecoder {
     /**
-     * The configuration for the Draco compression.
-     * WARNING: This is a reference to `DracoDecoder.Config`.
+     * The configuration. Defaults to the following urls:
+     * - wasmUrl: "https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"
+     * - wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm"
+     * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
      */
     public static Configuration: IDracoCompressionConfiguration = {
-        decoder: DracoDecoder.Config,
+        decoder: DracoDecoder.Config, // TODO: Remove this reference or update the JSDoc with warning.
     };
 
     /**
      * Returns true if the decoder configuration is available.
-     * WARNING: This is a reference to `DracoDecoder.Available`.
      */
     public static get DecoderAvailable(): boolean {
-        return DracoDecoder.Available;
+        return DracoDecoder.Available; // TODO: Remove this reference or update the JSDoc with warning.
     }
 
     /**
