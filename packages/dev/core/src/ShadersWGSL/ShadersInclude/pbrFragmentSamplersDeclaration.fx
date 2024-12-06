@@ -130,4 +130,6 @@
     var icdfxSampler: texture_2d<f32>;
     var icdfySamplerSampler: sampler;
     var icdfySampler: texture_2d<f32>;
+    var pdfSamplerSampler: sampler;
+    var pdfSampler: texture_2d<f32>;
 #endif
