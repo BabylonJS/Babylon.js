@@ -9,6 +9,7 @@ import { ShadowLight } from "./shadowLight";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
+import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
@@ -261,8 +262,8 @@ export class DirectionalLight extends ShadowLight {
         const xOffset = this._orthoRight - this._orthoLeft;
         const yOffset = this._orthoTop - this._orthoBottom;
 
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || 1;
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || 10000;
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || Constants.ShadowMinZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || Constants.ShadowMaxZ;
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 

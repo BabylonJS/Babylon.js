@@ -10,6 +10,7 @@ import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
 import type { Scene } from "../scene";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Class used to render a debug view of the frustum for a directional light
@@ -159,8 +160,16 @@ export class DirectionalLightFrustumViewer {
         this._oldMinZ = this._light.shadowMinZ;
         this._oldMaxZ = this._light.shadowMaxZ;
 
-        TmpVectors.Vector3[0].set(this._light.orthoLeft, this._light.orthoBottom, this._light.shadowMinZ !== undefined ? this._light.shadowMinZ : (this._camera?.minZ ?? 1)); // min light extents
-        TmpVectors.Vector3[1].set(this._light.orthoRight, this._light.orthoTop, this._light.shadowMaxZ !== undefined ? this._light.shadowMaxZ : (this._camera?.maxZ ?? 10000)); // max light extents
+        TmpVectors.Vector3[0].set(
+            this._light.orthoLeft,
+            this._light.orthoBottom,
+            this._light.shadowMinZ !== undefined ? this._light.shadowMinZ : (this._camera?.minZ ?? Constants.ShadowMinZ)
+        ); // min light extents
+        TmpVectors.Vector3[1].set(
+            this._light.orthoRight,
+            this._light.orthoTop,
+            this._light.shadowMaxZ !== undefined ? this._light.shadowMaxZ : (this._camera?.maxZ ?? Constants.ShadowMaxZ)
+        ); // max light extents
 
         const invLightView = this._getInvertViewMatrix();
 

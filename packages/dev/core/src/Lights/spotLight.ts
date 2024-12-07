@@ -12,6 +12,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Camera } from "../Cameras/camera";
 import { RegisterClass } from "../Misc/typeStore";
+import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -480,7 +481,7 @@ export class SpotLight extends ShadowLight {
      */
     public override getDepthMinZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || 1;
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : (activeCamera?.minZ ?? Constants.ShadowMinZ);
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? minZ : this._scene.getEngine().isNDCHalfZRange ? 0 : minZ;
     }
@@ -492,7 +493,7 @@ export class SpotLight extends ShadowLight {
      */
     public override getDepthMaxZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || 10000;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : (activeCamera?.maxZ ?? Constants.ShadowMaxZ);
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }

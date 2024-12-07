@@ -6,6 +6,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
 import type { Nullable } from "core/types";
+import { Constants } from "core/Engines/constants";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
  * This helps both the shadow generator and materials to generate the corresponding shadow maps
@@ -361,7 +362,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @returns the depth min z
      */
     public getDepthMinZ(activeCamera: Nullable<Camera>): number {
-        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || 1;
+        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || Constants.ShadowMinZ;
     }
 
     /**
@@ -370,7 +371,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @returns the depth max z
      */
     public getDepthMaxZ(activeCamera: Nullable<Camera>): number {
-        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || 10000;
+        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || Constants.ShadowMaxZ;
     }
 
     /**
