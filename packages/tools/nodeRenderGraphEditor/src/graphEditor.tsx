@@ -31,6 +31,7 @@ import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
+import type { IShadowLight } from "core/Lights";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -268,6 +269,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: [], particleSystems: [] };
+            } else if (input.isShadowLight()) {
+                input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }
         }
     }

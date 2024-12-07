@@ -6,6 +6,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
 import type { Nullable } from "core/types";
+import { Constants } from "core/Engines/constants";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
  * This helps both the shadow generator and materials to generate the corresponding shadow maps
@@ -107,14 +108,14 @@ export interface IShadowLight extends Light {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    getDepthMinZ(activeCamera: Camera): number;
+    getDepthMinZ(activeCamera: Nullable<Camera>): number;
 
     /**
      * Gets the maxZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    getDepthMaxZ(activeCamera: Camera): number;
+    getDepthMaxZ(activeCamera: Nullable<Camera>): number;
 }
 
 /**
@@ -360,8 +361,8 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    public getDepthMinZ(activeCamera: Camera): number {
-        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+    public getDepthMinZ(activeCamera: Nullable<Camera>): number {
+        return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera?.minZ || Constants.ShadowMinZ;
     }
 
     /**
@@ -369,8 +370,8 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    public getDepthMaxZ(activeCamera: Camera): number {
-        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+    public getDepthMaxZ(activeCamera: Nullable<Camera>): number {
+        return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera?.maxZ || Constants.ShadowMaxZ;
     }
 
     /**

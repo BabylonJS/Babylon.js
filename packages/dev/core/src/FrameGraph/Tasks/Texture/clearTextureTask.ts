@@ -64,11 +64,20 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture and depthTexture can't both be undefined.`);
         }
 
+        let textureSamples = 0;
+        let depthSamples = 0;
+
         if (this.destinationTexture !== undefined) {
+            textureSamples = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture).options.samples || 1;
             this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
         }
         if (this.depthTexture !== undefined) {
+            depthSamples = this._frameGraph.textureManager.getTextureDescription(this.depthTexture).options.samples || 1;
             this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+        }
+
+        if (textureSamples !== depthSamples && textureSamples !== 0 && depthSamples !== 0) {
+            throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the output texture must have the same number of samples.`);
         }
 
         const pass = this._frameGraph.addRenderPass(this.name);

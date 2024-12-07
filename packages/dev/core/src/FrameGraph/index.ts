@@ -21,9 +21,11 @@ export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";
 export * from "./Tasks/Texture/copyToTextureTask";
 
+export * from "./Tasks/Rendering/csmShadowGeneratorTask";
 export * from "./Tasks/Rendering/cullObjectsTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
+export * from "./Tasks/Rendering/shadowGeneratorTask";
 export * from "./Tasks/Rendering/taaObjectRendererTask";
 
 export * from "./frameGraph";

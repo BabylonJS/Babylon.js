@@ -568,4 +568,5 @@ ThinEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWr
     }
 
     gl.drawBuffers(attachments);
+    gl.bindFramebuffer(this._gl.FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
 };
