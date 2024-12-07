@@ -1272,6 +1272,24 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMorphTarget.setTangents(tangents);
         });
 
+        loadAttribute("TEXCOORD_0", VertexBuffer.UVKind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUVs(uvs);
+        });
+
+        loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUV2s(uvs);
+        });
+
         return Promise.all(promises).then(() => {});
     }
 
