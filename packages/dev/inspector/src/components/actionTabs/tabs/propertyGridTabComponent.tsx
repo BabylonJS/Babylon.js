@@ -314,6 +314,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                         light={pointLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     />
                 );
             }

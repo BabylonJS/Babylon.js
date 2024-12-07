@@ -10,12 +10,14 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../../globalState";
+import { TextureLinkLineComponent } from "../../../../../components/actionTabs/lines/textureLinkLineComponent";
 
 interface ISpotLightPropertyGridComponentProps {
     globalState: GlobalState;
     light: SpotLight;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onSelectionChangedObservable?: Observable<any>;
 }
 
 export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPropertyGridComponentProps> {
@@ -86,6 +88,10 @@ export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPr
                         propertyName="exponent"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+
+                    {light.iesProfileTexture && (
+                        <TextureLinkLineComponent label="IES Profile" texture={light.iesProfileTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                    )}
                 </LineContainerComponent>
                 <CommonShadowLightPropertyGridComponent
                     globalState={this.props.globalState}

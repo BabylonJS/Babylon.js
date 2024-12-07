@@ -658,6 +658,9 @@ export class InputManager {
 
             let needToIgnoreNext = false;
 
+            // Never pick if this is a multi-touch gesture (e.g. pinch)
+            checkPicking = checkPicking && !this._isMultiTouchGesture;
+
             if (checkPicking) {
                 const btn = evt.button;
                 clickInfo.hasSwiped = this._isPointerSwiping();

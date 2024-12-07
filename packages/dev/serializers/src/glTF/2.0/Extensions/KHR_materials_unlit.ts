@@ -1,6 +1,6 @@
 import type { IMaterial } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
@@ -57,4 +57,4 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, () => new KHR_materials_unlit());
+GLTFExporter.RegisterExtension(NAME, () => new KHR_materials_unlit());
