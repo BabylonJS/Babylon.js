@@ -1896,7 +1896,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                     for (const subMesh of mesh.subMeshes) {
                         geometry._releaseVertexArrayObject(subMesh.effect);
                         if (forceDisposeEffect && subMesh.effect) {
-                            subMesh._drawWrapper.dispose();
+                            subMesh.effect.dispose();
                         }
                     }
                 }
