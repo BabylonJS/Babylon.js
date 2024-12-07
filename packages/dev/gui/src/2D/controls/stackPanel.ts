@@ -16,6 +16,8 @@ export class StackPanel extends Container {
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
     private _spacing = 0;
+    private _lastStackWidth: string | number = -1;
+    private _lastStackHeight: string | number = -1;
 
     /**
      * Gets or sets a boolean indicating that layout warnings should be ignored
@@ -156,8 +158,9 @@ export class StackPanel extends Container {
             }
 
             if (this._isVertical) {
-                if (child.top !== stackHeight + "px") {
+                if (child.top !== this._lastStackHeight) {
                     child.top = stackHeight + "px";
+                    this._lastStackHeight = child.top;
                     this._rebuildLayout = true;
                     child._top.ignoreAdaptiveScaling = true;
                 }
@@ -168,8 +171,9 @@ export class StackPanel extends Container {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             } else {
-                if (child.left !== stackWidth + "px") {
+                if (child.left !== this._lastStackWidth) {
                     child.left = stackWidth + "px";
+                    this._lastStackWidth = child.left;
                     this._rebuildLayout = true;
                     child._left.ignoreAdaptiveScaling = true;
                 }

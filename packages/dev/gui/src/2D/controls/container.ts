@@ -37,6 +37,8 @@ export class Container extends Control {
     protected _renderToIntermediateTexture: boolean = false;
     /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
+    private _lastComputeWidth = -1;
+    private _lastComputedHeight = -1;
 
     /**
      * Gets or sets a boolean indicating that the container will let internal controls handle picking instead of doing it directly using its bounding info
@@ -468,7 +470,8 @@ export class Container extends Control {
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
                     computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
-                    if (this.width !== computedWidth + "px") {
+                    if (this._lastComputeWidth !== computedWidth) {
+                        this._lastComputeWidth = computedWidth;
                         this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
                         this._width.ignoreAdaptiveScaling = true;
@@ -477,7 +480,8 @@ export class Container extends Control {
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
                     computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
-                    if (this.height !== computedHeight + "px") {
+                    if (this._lastComputedHeight !== computedHeight) {
+                        this._lastComputedHeight = computedHeight;
                         this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
                         this._height.ignoreAdaptiveScaling = true;
