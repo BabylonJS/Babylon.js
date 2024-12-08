@@ -35,11 +35,13 @@ export class TargetCamera extends Camera {
     public cameraRotation = new Vector2(0, 0);
 
     /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
+    @serialize()
     public ignoreParentScaling = false;
 
     /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
      */
+    @serialize()
     public updateUpVectorFromRotation = false;
     private _tmpQuaternion = new Quaternion();
 

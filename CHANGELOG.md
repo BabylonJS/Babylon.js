@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.39.0
+
+### Core
+
+- Fix an issue with effect reference counting - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15964](https://github.com/BabylonJS/Babylon.js/pull/15964))
+- Physics Character Controller - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15897](https://github.com/BabylonJS/Babylon.js/pull/15897))
+- WebGPU: fix crash when enabling fog - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15955](https://github.com/BabylonJS/Babylon.js/pull/15955))
+
+### Inspector
+
+
 ## 7.38.0
 
 ## 7.37.2
