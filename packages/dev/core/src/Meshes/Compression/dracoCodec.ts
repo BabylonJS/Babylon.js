@@ -161,7 +161,7 @@ export abstract class DracoCodec implements IDisposable {
             });
         } else {
             this._modulePromise = codecInfo.wasmBinaryPromise.then(async (wasmBinary) => {
-                if (this._isModuleAvailable()) {
+                if (!this._isModuleAvailable()) {
                     if (!config.jsModule) {
                         if (!codecInfo.url) {
                             throw new Error("Draco codec module is not available");
