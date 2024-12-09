@@ -33,15 +33,15 @@ export class IblCdfGenerator {
     private _iblSource: BaseTexture;
     private _dummyTexture: RawTexture;
     /**
-     * Gets the IBL source texture being used by the importance sampling renderer
+     * Gets the IBL source texture being used by the CDF renderer
      */
     public get iblSource(): BaseTexture {
         return this._iblSource;
     }
 
     /**
-     * Sets the IBL source texture to be used by the importance sampling renderer.
-     * This will trigger recreation of the importance sampling assets.
+     * Sets the IBL source texture to be used by the CDF renderer.
+     * This will trigger recreation of the CDF assets.
      */
     public set iblSource(source: BaseTexture) {
         if (this._iblSource === source) {
@@ -149,9 +149,9 @@ export class IblCdfGenerator {
     };
 
     /**
-     * Instanciates the importance sampling renderer
+     * Instanciates the CDF renderer
      * @param scene Scene to attach to
-     * @returns The importance sampling renderer
+     * @returns The CDF renderer
      */
     constructor(scene: Scene) {
         this._scene = scene;
@@ -162,7 +162,7 @@ export class IblCdfGenerator {
     }
 
     /**
-     * Observable that triggers when the importance sampling renderer is ready
+     * Observable that triggers when the CDF renderer is ready
      */
     public onGeneratedObservable: Observable<void> = new Observable<void>();
 
@@ -298,13 +298,13 @@ export class IblCdfGenerator {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
                 if (useWebGPU) {
-                    list.push(import("../ShadersWGSL/importanceSamplingDebug.fragment"));
+                    list.push(import("../ShadersWGSL/iblCdfDebug.fragment"));
                 } else {
-                    list.push(import("../Shaders/importanceSamplingDebug.fragment"));
+                    list.push(import("../Shaders/iblCdfDebug.fragment"));
                 }
             },
         };
-        this._debugPass = new PostProcess(this._debugPassName, "importanceSamplingDebug", debugOptions);
+        this._debugPass = new PostProcess(this._debugPassName, "iblCdfDebug", debugOptions);
         const debugEffect = this._debugPass.getEffect();
         if (debugEffect) {
             debugEffect.defines = this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "";
@@ -324,8 +324,8 @@ export class IblCdfGenerator {
     }
 
     /**
-     * Checks if the importance sampling renderer is ready
-     * @returns true if the importance sampling renderer is ready
+     * Checks if the CDF renderer is ready
+     * @returns true if the CDF renderer is ready
      */
     public isReady() {
         return (
@@ -348,7 +348,7 @@ export class IblCdfGenerator {
     }
 
     /**
-     * Disposes the importance sampling renderer and associated resources
+     * Disposes the CDF renderer and associated resources
      */
     public dispose() {
         this._disposeTextures();
