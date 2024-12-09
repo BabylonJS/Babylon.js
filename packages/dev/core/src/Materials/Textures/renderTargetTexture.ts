@@ -493,7 +493,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /** @internal */
-    public _disableEngineStages = false;
+    public _disableEngineStages = false; // TODO: remove this when the shadow generator task (frame graph) is reworked (see https://github.com/BabylonJS/Babylon.js/pull/15962#discussion_r1874417607)
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
