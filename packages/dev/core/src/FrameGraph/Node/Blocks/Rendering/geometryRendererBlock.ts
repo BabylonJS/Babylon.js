@@ -323,8 +323,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             throw new Error("NodeRenderGraphGeometryRendererBlock: At least one output geometry buffer must be connected");
         }
 
-        this._frameGraphTask.name = this.name;
-
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
         this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTexture;
@@ -337,20 +335,9 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.geomVelocity.value = this._frameGraphTask.geometryVelocityTexture;
         this.geomLinearVelocity.value = this._frameGraphTask.geometryLinearVelocityTexture;
 
-        const depthConnectedPoint = this.depth.connectedPoint;
-        if (depthConnectedPoint) {
-            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const cameraConnectedPoint = this.camera.connectedPoint;
-        if (cameraConnectedPoint) {
-            this._frameGraphTask.camera = cameraConnectedPoint.value as Camera;
-        }
-
-        const objectsConnectedPoint = this.objects.connectedPoint;
-        if (objectsConnectedPoint) {
-            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
-        }
+        this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
+        this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
 
         this._frameGraphTask.textureDescriptions = [];
 

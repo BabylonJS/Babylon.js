@@ -665,7 +665,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _transparencyShadow = false;
 
-    /** Gets or sets the ability to have transparent shadow  */
+    /** Gets or sets the ability to have transparent shadow */
     public get transparencyShadow() {
         return this._transparencyShadow;
     }
@@ -1288,9 +1288,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             const camera = this._getCamera();
-            if (camera) {
-                effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera));
-            }
+            effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera));
 
             if (isTransparent && this.enableSoftTransparentShadow) {
                 effect.setFloat2("softTransparentShadowSM", effectiveMesh.visibility * material.alpha, this._opacityTexture?.getAlphaFromRGB ? 1 : 0);
@@ -1830,10 +1828,6 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         const camera = this._getCamera();
-        if (!camera) {
-            return;
-        }
-
         const shadowMap = this.getShadowMap();
 
         if (!shadowMap) {

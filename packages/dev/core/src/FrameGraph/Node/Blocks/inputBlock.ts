@@ -10,6 +10,7 @@ import type {
     FrameGraphTextureCreationOptions,
     FrameGraphTextureHandle,
     FrameGraphObjectList,
+    IShadowLight,
 } from "core/index";
 import { Observable } from "../../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
@@ -19,7 +20,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorat
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
 
-export type NodeRenderGraphValueType = InternalTexture | Camera | FrameGraphObjectList;
+export type NodeRenderGraphValueType = InternalTexture | Camera | FrameGraphObjectList | IShadowLight;
 
 export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptions;
 
@@ -211,6 +212,14 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         return (this.type & NodeRenderGraphBlockConnectionPointTypes.ObjectList) !== 0;
     }
 
+    /**
+     * Check if the block is a shadow light
+     * @returns true if the block is a shadow light
+     */
+    public isShadowLight(): boolean {
+        return (this.type & NodeRenderGraphBlockConnectionPointTypes.ShadowLight) !== 0;
+    }
+
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
@@ -223,6 +232,8 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 this.output.value = this.getTypedValue<Camera>();
             } else if (this.isObjectList()) {
                 this.output.value = this.getTypedValue<FrameGraphObjectList>();
+            } else if (this.isShadowLight()) {
+                this.output.value = this.getTypedValue<IShadowLight>();
             } else {
                 if (this._storedValue === undefined || this._storedValue === null) {
                     throw new Error(`NodeRenderGraphInputBlock: External input "${this.name}" is not set`);
@@ -265,6 +276,8 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
             codes.push(`${this._codeVariableName}.value = EXTERNAL_CAMERA; // TODO: set the external camera`);
         } else if (this.isObjectList()) {
             codes.push(`${this._codeVariableName}.value = EXTERNAL_OBJECT_LIST; // TODO: set the external object list`);
+        } else if (this.isShadowLight()) {
+            codes.push(`${this._codeVariableName}.value = EXTERNAL_SHADOW_LIGHT; // TODO: set the external shadow light`);
         }
         return super._dumpPropertiesCode() + codes.join("\n");
     }

@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import type { Camera } from "../Cameras/camera";
 import type { DirectionalLight } from "../Lights/directionalLight";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -9,6 +10,7 @@ import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
 import type { Scene } from "../scene";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Class used to render a debug view of the frustum for a directional light
@@ -18,7 +20,7 @@ import type { Scene } from "../scene";
 export class DirectionalLightFrustumViewer {
     private _scene: Scene;
     private _light: DirectionalLight;
-    private _camera: Camera;
+    private _camera: Nullable<Camera>;
     private _inverseViewMatrix: Matrix;
     private _visible: boolean;
 
@@ -101,7 +103,7 @@ export class DirectionalLightFrustumViewer {
      * @param light directional light to display the frustum for
      * @param camera camera used to retrieve the minZ / maxZ values if the shadowMinZ/shadowMaxZ values of the light are not setup
      */
-    constructor(light: DirectionalLight, camera: Camera) {
+    constructor(light: DirectionalLight, camera: Nullable<Camera> = null) {
         this._scene = light.getScene();
         this._light = light;
         this._camera = camera;
@@ -158,8 +160,16 @@ export class DirectionalLightFrustumViewer {
         this._oldMinZ = this._light.shadowMinZ;
         this._oldMaxZ = this._light.shadowMaxZ;
 
-        TmpVectors.Vector3[0].set(this._light.orthoLeft, this._light.orthoBottom, this._light.shadowMinZ !== undefined ? this._light.shadowMinZ : this._camera.minZ); // min light extents
-        TmpVectors.Vector3[1].set(this._light.orthoRight, this._light.orthoTop, this._light.shadowMaxZ !== undefined ? this._light.shadowMaxZ : this._camera.maxZ); // max light extents
+        TmpVectors.Vector3[0].set(
+            this._light.orthoLeft,
+            this._light.orthoBottom,
+            this._light.shadowMinZ !== undefined ? this._light.shadowMinZ : (this._camera?.minZ ?? Constants.ShadowMinZ)
+        ); // min light extents
+        TmpVectors.Vector3[1].set(
+            this._light.orthoRight,
+            this._light.orthoTop,
+            this._light.shadowMaxZ !== undefined ? this._light.shadowMaxZ : (this._camera?.maxZ ?? Constants.ShadowMaxZ)
+        ); // max light extents
 
         const invLightView = this._getInvertViewMatrix();
 
