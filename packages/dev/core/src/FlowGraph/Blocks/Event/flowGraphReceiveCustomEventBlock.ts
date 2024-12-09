@@ -3,9 +3,10 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
-import { RichTypeAny } from "../../flowGraphRichTypes";
+import type { RichType } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
@@ -13,13 +14,14 @@ import { RegisterClass } from "../../../Misc/typeStore";
 export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The id of the event to receive.
+     * This event id is unique to the environment (not the context).
      */
     eventId: string;
     /**
      * The names of the data outputs for that event. Should be in the same order as the event data in
      * SendCustomEvent
      */
-    eventData: string[];
+    eventData: { [key: string]: { type: RichType<any> } };
 }
 
 /**
@@ -27,6 +29,7 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
  * A block that receives a custom event. It saves the data sent in the eventData output.
  */
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
+    public override initPriority: number = 1;
     private _eventObserver: Nullable<Observer<any>>;
 
     constructor(
@@ -36,17 +39,17 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         public override config: IFlowGraphReceiveCustomEventBlockConfiguration
     ) {
         super(config);
-        for (let i = 0; i < this.config.eventData.length; i++) {
-            const dataName = this.config.eventData[i];
-            this.registerDataOutput(dataName, RichTypeAny);
+        // use event data to register data outputs
+        for (const key in this.config.eventData) {
+            this.registerDataOutput(key, this.config.eventData[key].type);
         }
     }
 
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
-        this._eventObserver = observable.add((eventDatas: any[]) => {
-            for (let i = 0; i < eventDatas.length; i++) {
-                this.dataOutputs[i].setValue(eventDatas[i], context);
+        this._eventObserver = observable.add((eventData: any[]) => {
+            for (let i = 0; i < eventData.length; i++) {
+                this.dataOutputs[i].setValue(eventData[i], context);
             }
             this._execute(context);
         });
@@ -64,22 +67,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphReceiveCustomEventBlock.ClassName;
-    }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGReceiveCustomEventBlock";
-
-    /**
-     * Serializes this block
-     * @param serializationObject the object to serialize to
-     */
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.eventId = this.config.eventId;
-        serializationObject.eventData = this.config.eventData;
+        return FlowGraphBlockNames.ReceiveCustomEvent;
     }
 }
-RegisterClass(FlowGraphReceiveCustomEventBlock.ClassName, FlowGraphReceiveCustomEventBlock);
+RegisterClass(FlowGraphBlockNames.ReceiveCustomEvent, FlowGraphReceiveCustomEventBlock);

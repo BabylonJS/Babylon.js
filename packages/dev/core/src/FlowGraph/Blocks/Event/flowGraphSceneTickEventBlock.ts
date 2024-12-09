@@ -1,44 +1,56 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Block that triggers on scene tick (before each render).
  */
 export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
-     * @internal
+     * the time in seconds since the scene started.
      */
-    public _preparePendingTasks(context: FlowGraphContext): void {
-        if (!context._getExecutionVariable(this, "sceneBeforeRender")) {
-            const scene = context.configuration.scene;
-            const contextObserver = scene.onBeforeRenderObservable.add(() => {
-                this._execute(context);
-            });
-            context._setExecutionVariable(this, "sceneBeforeRender", contextObserver);
-        }
+    public readonly timeSinceStart: FlowGraphDataConnection<number>;
+
+    /**
+     * the time in seconds since the last frame.
+     */
+    public readonly deltaTime: FlowGraphDataConnection<number>;
+
+    constructor() {
+        super();
+        this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber);
+        this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber);
     }
 
     /**
      * @internal
      */
-    public _cancelPendingTasks(context: FlowGraphContext) {
-        const contextObserver = context._getExecutionVariable(this, "sceneBeforeRender");
-        const scene = context.configuration.scene;
-        scene.onBeforeRenderObservable.remove(contextObserver);
-        context._deleteExecutionVariable(this, "sceneBeforeRender");
+    public override _preparePendingTasks(_context: FlowGraphContext): void {
+        // no-op
+    }
+
+    /**
+     * @internal
+     */
+    public override _executeOnFrame(context: FlowGraphContext): void {
+        this._execute(context);
+    }
+
+    /**
+     * @internal
+     */
+    public _cancelPendingTasks(_context: FlowGraphContext) {
+        // no-op
     }
 
     /**
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSceneTickEventBlock.ClassName;
+        return FlowGraphBlockNames.SceneTickEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSceneTickEventBlock";
 }
-RegisterClass(FlowGraphSceneTickEventBlock.ClassName, FlowGraphSceneTickEventBlock);
+RegisterClass(FlowGraphBlockNames.SceneTickEvent, FlowGraphSceneTickEventBlock);

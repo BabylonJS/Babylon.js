@@ -1,8 +1,9 @@
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import type { RichType } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -11,12 +12,13 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The id of the event to send.
+     * Note - in the glTF specs this is an index to the event array (i.e. - a number)
      */
     eventId: string;
     /**
      * The names of the data inputs for that event.
      */
-    eventData: string[];
+    eventData: { [key: string]: { type: RichType<any>; value?: any } };
 }
 /**
  * @experimental
@@ -29,17 +31,16 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         public override config: IFlowGraphSendCustomEventBlockConfiguration
     ) {
         super(config);
-        for (let i = 0; i < this.config.eventData.length; i++) {
-            const dataName = this.config.eventData[i];
-            this.registerDataInput(dataName, RichTypeAny);
+        for (const key in this.config.eventData) {
+            this.registerDataInput(key, this.config.eventData[key].type, this.config.eventData[key].value);
         }
     }
 
     public _execute(context: FlowGraphContext): void {
         const eventId = this.config.eventId;
-        const eventDatas = this.dataInputs.map((port) => port.getValue(context));
+        const eventData = this.dataInputs.map((port) => port.getValue(context));
 
-        context.configuration.coordinator.notifyCustomEvent(eventId, eventDatas);
+        context.configuration.coordinator.notifyCustomEvent(eventId, eventData);
 
         this.out._activateSignal(context);
     }
@@ -48,12 +49,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSendCustomEventBlock.ClassName;
+        return FlowGraphBlockNames.ReceiveCustomEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSendCustomEventBlock";
 }
-RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);
+RegisterClass(FlowGraphBlockNames.ReceiveCustomEvent, FlowGraphSendCustomEventBlock);

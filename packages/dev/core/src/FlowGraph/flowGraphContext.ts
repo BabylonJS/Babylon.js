@@ -5,10 +5,17 @@ import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBloc
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraph } from "./flowGraph";
-import type { ISerializedFlowGraphContext } from "./typeDefinitions";
-import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import { defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
+import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
+import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
+import type { IAssetContainer } from "core/IAssetContainer";
+import type { Nullable } from "core/types";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
+import { _isADescendantOf } from "./utils";
 
 /**
  * Construction parameters for the context.
@@ -23,6 +30,12 @@ export interface IFlowGraphContextConfiguration {
      * The event coordinator used by the flow graph context.
      */
     readonly coordinator: FlowGraphCoordinator;
+
+    /**
+     * The assets context used by the flow graph context.
+     * If none is provided, a default one will be created.
+     */
+    readonly assetsContext?: IAssetContainer;
 }
 
 /**
@@ -37,7 +50,7 @@ export interface IFlowGraphContextParseOptions {
      * @param scene the current scene
      * @returns
      */
-    readonly valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    readonly valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
     /**
      * The graph that the context is being parsed in.
      */
@@ -64,6 +77,11 @@ export class FlowGraphContext {
      * These are the variables set by the blocks.
      */
     private _executionVariables: { [key: string]: any } = {};
+
+    /**
+     * A context-specific global variables, available to all blocks in the context.
+     */
+    private _globalContextVariables: { [key: string]: any } = {};
     /**
      * These are the values for the data connection points
      */
@@ -86,8 +104,22 @@ export class FlowGraphContext {
      */
     public onNodeExecutedObservable: Observable<FlowGraphBlock> = new Observable<FlowGraphBlock>();
 
+    /**
+     * The assets context used by the flow graph context.
+     * Note that it can be shared between flow graph contexts.
+     */
+    public assetsContext: IAssetContainer;
+
+    /**
+     * Whether to treat data as right-handed.
+     * This is used when serializing data from a right-handed system, while running the context in a left-handed system, for example in glTF parsing.
+     * Default is false.
+     */
+    public treatDataAsRightHanded = false;
+
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
+        this.assetsContext = params.assetsContext ?? params.scene;
     }
 
     /**
@@ -109,6 +141,16 @@ export class FlowGraphContext {
     }
 
     /**
+     * Get an assets from the assets context based on its type and index in the array
+     * @param type The type of the asset
+     * @param index The index of the asset
+     * @returns The asset or null if not found
+     */
+    public getAsset<T extends FlowGraphAssetType>(type: T, index: number): Nullable<AssetType<T>> {
+        return GetFlowGraphAssetWithType(this.assetsContext, type, index);
+    }
+
+    /**
      * Get a user-defined variable.
      * @param name the name of the variable
      * @returns the value of the variable
@@ -124,8 +166,59 @@ export class FlowGraphContext {
         return this._userVariables;
     }
 
+    /**
+     * Get the scene that the context belongs to.
+     * @returns the scene
+     */
+    public getScene() {
+        return this._configuration.scene;
+    }
+
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
         return `${obj.uniqueId}_${name}`;
+    }
+
+    /**
+     * @internal
+     * @param name name of the variable
+     * @param defaultValue default value to return if the variable is not defined
+     * @returns the variable value or the default value if the variable is not defined
+     */
+    public _getGlobalContextVariable<T>(name: string, defaultValue: T): T {
+        if (this._hasGlobalContextVariable(name)) {
+            return this._globalContextVariables[name];
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Set a global context variable
+     * @internal
+     * @param name the name of the variable
+     * @param value the value of the variable
+     */
+    public _setGlobalContextVariable<T>(name: string, value: T) {
+        this._globalContextVariables[name] = value;
+    }
+
+    /**
+     * Delete a global context variable
+     * @internal
+     * @param name the name of the variable
+     */
+    public _deleteGlobalContextVariable(name: string) {
+        delete this._globalContextVariables[name];
+    }
+
+    /**
+     * Check if a global context variable is defined
+     * @internal
+     * @param name the name of the variable
+     * @returns true if the variable is defined
+     */
+    public _hasGlobalContextVariable(name: string) {
+        return name in this._globalContextVariables;
     }
 
     /**
@@ -144,7 +237,7 @@ export class FlowGraphContext {
      * @param name
      * @returns
      */
-    public _getExecutionVariable(block: FlowGraphBlock, name: string, defaultValue?: any): any {
+    public _getExecutionVariable<T>(block: FlowGraphBlock, name: string, defaultValue: T): T {
         if (this._hasExecutionVariable(block, name)) {
             return this._executionVariables[this._getUniqueIdPrefixedName(block, name)];
         } else {
@@ -194,6 +287,16 @@ export class FlowGraphContext {
     }
 
     /**
+     * Set a connection value by key
+     * @internal
+     * @param key the key of the connection value
+     * @param value the value of the connection
+     */
+    public _setConnectionValueByKey<T>(key: string, value: T) {
+        this._connectionValues[key] = value;
+    }
+
+    /**
      * Get a connection value
      * @internal
      * @param connectionPoint
@@ -215,11 +318,55 @@ export class FlowGraphContext {
 
     /**
      * Add a block to the list of blocks that have pending tasks.
+     * TODO - it is possible that the same block is executed twice. This should be handled.
      * @internal
      * @param block
      */
     public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
         this._pendingBlocks.push(block);
+        // sort pending blocks by priority
+        this._pendingBlocks.sort((a, b) => a.priority - b.priority);
+    }
+
+    /**
+     * Notify all pending blocks that they should execute their on-tick tasks.
+     * // TODO - if we need execution sorting of the synchronous tasks it can be done here.
+     * @internal
+     */
+    public _notifyPendingBlocksOnTick() {
+        for (const block of this._pendingBlocks) {
+            block._executeOnFrame(this);
+        }
+    }
+
+    /** @internal */
+    public _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
+        const order: FlowGraphAsyncExecutionBlock[] = [];
+        // TODO - improve pick sorting
+        for (const block1 of this._pendingBlocks) {
+            // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
+            if (block1.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+                const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+                let i = 0;
+                for (; i < order.length; i++) {
+                    const block2 = order[i];
+                    if (block2.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+                        const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+                        if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+                            break;
+                        }
+                    }
+                }
+                order.splice(i, 0, block1);
+            } else {
+                order.push(block1);
+            }
+        }
+        for (const block of order) {
+            if (!block._executeOnPicked(this, pointerInfo)) {
+                return;
+            }
+        }
     }
 
     /**
@@ -283,34 +430,29 @@ export class FlowGraphContext {
         for (const key in this._connectionValues) {
             valueSerializationFunction(key, this._connectionValues[key], serializationObject._connectionValues);
         }
+        // serialize assets context, if not scene
+        if (this.assetsContext !== this.getScene()) {
+            serializationObject._assetsContext = {
+                meshes: this.assetsContext.meshes.map((m) => m.id),
+                materials: this.assetsContext.materials.map((m) => m.id),
+                textures: this.assetsContext.textures.map((m) => m.name),
+                animations: this.assetsContext.animations.map((m) => m.name),
+                lights: this.assetsContext.lights.map((m) => m.id),
+                cameras: this.assetsContext.cameras.map((m) => m.id),
+                sounds: this.assetsContext.sounds?.map((m) => m.name),
+                skeletons: this.assetsContext.skeletons.map((m) => m.id),
+                particleSystems: this.assetsContext.particleSystems.map((m) => m.name),
+                geometries: this.assetsContext.geometries.map((m) => m.id),
+                multiMaterials: this.assetsContext.multiMaterials.map((m) => m.id),
+                transformNodes: this.assetsContext.transformNodes.map((m) => m.id),
+            };
+        }
     }
 
     /**
      * @returns the class name of the object.
      */
     public getClassName() {
-        return "FGContext";
-    }
-
-    /**
-     * Parses a context
-     * @param serializationObject the object containing the context serialization values
-     * @param options the options for parsing the context
-     * @returns
-     */
-    public static Parse(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
-        const result = options.graph.createContext();
-        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-        result.uniqueId = serializationObject.uniqueId;
-        for (const key in serializationObject._userVariables) {
-            const value = valueParseFunction(key, serializationObject._userVariables, result._configuration.scene);
-            result._userVariables[key] = value;
-        }
-        for (const key in serializationObject._connectionValues) {
-            const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
-            result._connectionValues[key] = value;
-        }
-
-        return result;
+        return "FlowGraphContext";
     }
 }

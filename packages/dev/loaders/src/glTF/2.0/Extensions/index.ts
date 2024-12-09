@@ -1,3 +1,4 @@
+export * from "./objectModelMapping";
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
 export * from "./EXT_meshopt_compression";
@@ -30,4 +31,7 @@ export * from "./MSFT_minecraftMesh";
 export * from "./MSFT_sRGBFactors";
 export * from "./KHR_interactivity";
 export * from "./KHR_node_visibility";
+export * from "./KHR_node_selectability";
 export * from "./ExtrasAsMetadata";
+// eslint-disable-next-line import/no-internal-modules
+export * from "./KHR_interactivity/index";

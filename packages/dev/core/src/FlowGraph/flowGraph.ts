@@ -1,18 +1,15 @@
 import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { FlowGraphEventBlock } from "./flowGraphEventBlock";
+import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphContext } from "./flowGraphContext";
-import { FlowGraphBlock } from "./flowGraphBlock";
+import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
-import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
-import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { ISerializedFlowGraph, IObjectAccessor } from "./typeDefinitions";
-import { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
-import { _isADescendantOf } from "./utils";
+import type { IObjectAccessor } from "./typeDefinitions";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import { defaultValueParseFunction } from "./serialization";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 export const enum FlowGraphState {
     /**
@@ -51,7 +48,7 @@ export interface IFlowGraphParseOptions {
      * @param serializationObject the object to read the value from
      * @param scene the scene to read the value from
      */
-    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
     /**
      * The flow graph coordinator.
      */
@@ -72,6 +69,8 @@ export class FlowGraph {
     /** @internal */
     public _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+    private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _meshPickedObserver: Nullable<Observer<PointerInfo>>;
     /**
      * @internal
      */
@@ -91,7 +90,26 @@ export class FlowGraph {
     public constructor(params: IFlowGraphParams) {
         this._scene = params.scene;
         this._coordinator = params.coordinator;
+        this._initializeGlobalEvents();
+    }
+
+    private _initializeGlobalEvents() {
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
+        this._sceneOnBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+            if (this.state === FlowGraphState.Started) {
+                for (const context of this._executionContexts) {
+                    context._notifyPendingBlocksOnTick();
+                }
+            }
+        });
+
+        this._meshPickedObserver = this._scene.onPointerObservable.add((pointerInfo) => {
+            if (this.state === FlowGraphState.Started && pointerInfo.pickInfo?.pickedMesh) {
+                for (const context of this._executionContexts) {
+                    context._notifyPendingBlocksOnPointer(pointerInfo);
+                }
+            }
+        });
     }
 
     /**
@@ -120,6 +138,10 @@ export class FlowGraph {
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
         this._eventBlocks.push(block);
+        // if already started, sort and add to the pending
+        if (this.state === FlowGraphState.Started) {
+            this._startPendingEvents();
+        }
     }
 
     /**
@@ -133,6 +155,10 @@ export class FlowGraph {
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
+        this._startPendingEvents();
+    }
+
+    private _startPendingEvents() {
         for (const context of this._executionContexts) {
             const contextualOrder = this._getContextualOrder();
             for (const block of contextualOrder) {
@@ -142,26 +168,7 @@ export class FlowGraph {
     }
 
     private _getContextualOrder(): FlowGraphEventBlock[] {
-        const order: FlowGraphEventBlock[] = [];
-
-        for (const block1 of this._eventBlocks) {
-            // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
-            if (block1.getClassName() === FlowGraphMeshPickEventBlock.ClassName) {
-                const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh();
-                let i = 0;
-                for (; i < order.length; i++) {
-                    const block2 = order[i];
-                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh();
-                    if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
-                        break;
-                    }
-                }
-                order.splice(i, 0, block1);
-            } else {
-                order.push(block1);
-            }
-        }
-        return order;
+        return this._eventBlocks.sort((a, b) => b.initPriority - a.initPriority);
     }
 
     /**
@@ -178,6 +185,8 @@ export class FlowGraph {
         this._executionContexts.length = 0;
         this._eventBlocks.length = 0;
         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+        this._scene.onBeforeRenderObservable.remove(this._sceneOnBeforeRenderObserver);
+        this._scene.onPointerObservable.remove(this._meshPickedObserver);
         this._sceneDisposeObserver = null;
     }
 
@@ -236,82 +245,5 @@ export class FlowGraph {
             context.serialize(serializedContext, valueSerializeFunction);
             serializationObject.executionContexts.push(serializedContext);
         }
-    }
-
-    /**
-     * Given a list of blocks, find an output data connection that has a specific unique id
-     * @param blocks a list of flow graph blocks
-     * @param uniqueId the unique id of a connection
-     * @returns the connection that has this unique id. throws an error if none was found
-     */
-    public static GetDataOutConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphDataConnection<any> {
-        for (const block of blocks) {
-            for (const dataOut of block.dataOutputs) {
-                if (dataOut.uniqueId === uniqueId) {
-                    return dataOut;
-                }
-            }
-        }
-        throw new Error("Could not find data out connection with unique id " + uniqueId);
-    }
-
-    /**
-     * Given a list of blocks, find an input signal connection that has a specific unique id
-     * @param blocks a list of flow graph blocks
-     * @param uniqueId the unique id of a connection
-     * @returns the connection that has this unique id. throws an error if none was found
-     */
-    public static GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphSignalConnection {
-        for (const block of blocks) {
-            if (block instanceof FlowGraphExecutionBlock) {
-                for (const signalIn of block.signalInputs) {
-                    if (signalIn.uniqueId === uniqueId) {
-                        return signalIn;
-                    }
-                }
-            }
-        }
-        throw new Error("Could not find signal in connection with unique id " + uniqueId);
-    }
-
-    /**
-     * Parses a graph from a given serialization object
-     * @param serializationObject the object where the values are written
-     * @param options options for parsing the graph
-     * @returns the parsed graph
-     */
-    public static Parse(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): FlowGraph {
-        const graph = options.coordinator.createGraph();
-        const blocks: FlowGraphBlock[] = [];
-        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-        // Parse all blocks
-        for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock, { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, valueParseFunction });
-            blocks.push(block);
-            if (block instanceof FlowGraphEventBlock) {
-                graph.addEventBlock(block);
-            }
-        }
-        // After parsing all blocks, connect them
-        for (const block of blocks) {
-            for (const dataIn of block.dataInputs) {
-                for (const serializedConnection of dataIn.connectedPointIds) {
-                    const connection = FlowGraph.GetDataOutConnectionByUniqueId(blocks, serializedConnection);
-                    dataIn.connectTo(connection);
-                }
-            }
-            if (block instanceof FlowGraphExecutionBlock) {
-                for (const signalOut of block.signalOutputs) {
-                    for (const serializedConnection of signalOut.connectedPointIds) {
-                        const connection = FlowGraph.GetSignalInConnectionByUniqueId(blocks, serializedConnection);
-                        signalOut.connectTo(connection);
-                    }
-                }
-            }
-        }
-        for (const serializedContext of serializationObject.executionContexts) {
-            FlowGraphContext.Parse(serializedContext, { graph, valueParseFunction });
-        }
-        return graph;
     }
 }

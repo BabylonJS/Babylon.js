@@ -2,11 +2,11 @@
  * A container with an original object and information about that object.
  * on some other object.
  */
-export interface IObjectInfo<T> {
+export interface IObjectInfo<T, O = any> {
     /**
      * The original object.
      */
-    object: any;
+    object: O;
     /**
      * Information about the object.
      */

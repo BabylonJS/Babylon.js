@@ -5,6 +5,7 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -45,7 +46,7 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGBranchBlock";
+        return FlowGraphBlockNames.Branch;
     }
 }
-RegisterClass("FGBranchBlock", FlowGraphBranchBlock);
+RegisterClass(FlowGraphBlockNames.Branch, FlowGraphBranchBlock);

@@ -3,10 +3,11 @@ import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraph } from "core/FlowGraph/flowGraph";
-import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
-import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
+import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
+import { convertGLTFToSerializedFlowGraph } from "./KHR_interactivity/interactivityFunctions";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import { objectModelMapping } from "./objectModelMapping";
 
 const NAME = "KHR_interactivity";
 
@@ -34,7 +35,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: InteractivityPathToObjectConverter;
+    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
 
     /**
      * @internal
@@ -42,7 +43,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
+        this._pathConverter = new GLTFPathToObjectConverter(this._loader.gltf, objectModelMapping);
     }
 
     public dispose() {
@@ -50,16 +51,20 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._pathConverter;
     }
 
-    public onReady(): void {
+    public async onReady(): Promise<void> {
         if (!this._loader.babylonScene || !this._pathConverter) {
             return;
         }
         const scene = this._loader.babylonScene;
         const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+        if (!interactivityDefinition) {
+            // This can technically throw, but it's not a critical error
+            return;
+        }
 
-        const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
+        const json = convertGLTFToSerializedFlowGraph(interactivityDefinition, this._loader.gltf);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter: this._pathConverter });
 
         coordinator.start();
     }
