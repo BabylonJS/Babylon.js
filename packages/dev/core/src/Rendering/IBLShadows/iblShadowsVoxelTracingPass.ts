@@ -346,7 +346,7 @@ export class _IblShadowsVoxelTracingPass {
 
         let rotation = 0.0;
         if (this._scene.environmentTexture) {
-            rotation = (this._scene.environmentTexture as CubeTexture).rotationY;
+            rotation = (this._scene.environmentTexture as CubeTexture).rotationY ?? 0;
         }
         rotation = this._scene.useRightHandedSystem ? -(rotation + 0.5 * Math.PI) : rotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
