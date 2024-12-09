@@ -1,14 +1,14 @@
-import { RGBE_ReadHeader, RGBE_ReadPixels } from "../../../Misc/HighDynamicRange/hdr";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../internalTexture";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { Constants } from "../../../Engines/constants";
+import { LoadIESData } from "core/Lights/IES/iesLoader";
 
 /**
- * Implementation of the HDR Texture Loader.
+ * Implementation of the IES Texture Loader.
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class _HDRTextureLoader implements IInternalTextureLoader {
+export class _IESTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
      */
@@ -16,11 +16,10 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
-     * Cube texture are not supported by .hdr files
      */
     public loadCubeData(): void {
         // eslint-disable-next-line no-throw-literal
-        throw ".hdr not supported in Cube.";
+        throw ".ies not supported in Cube.";
     }
 
     /**
@@ -35,24 +34,15 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
     ): void {
         const uint8array = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        const hdrInfo = RGBE_ReadHeader(uint8array);
-        const pixelsDataRGB32 = RGBE_ReadPixels(uint8array, hdrInfo);
 
-        const pixels = hdrInfo.width * hdrInfo.height;
-        const pixelsDataRGBA32 = new Float32Array(pixels * 4);
-        for (let i = 0; i < pixels; i += 1) {
-            pixelsDataRGBA32[i * 4] = pixelsDataRGB32[i * 3];
-            pixelsDataRGBA32[i * 4 + 1] = pixelsDataRGB32[i * 3 + 1];
-            pixelsDataRGBA32[i * 4 + 2] = pixelsDataRGB32[i * 3 + 2];
-            pixelsDataRGBA32[i * 4 + 3] = 1;
-        }
+        const textureData = LoadIESData(uint8array);
 
-        callback(hdrInfo.width, hdrInfo.height, texture.generateMipMaps, false, () => {
+        callback(textureData.width, textureData.height, false, false, () => {
             const engine = texture.getEngine();
             texture.type = Constants.TEXTURETYPE_FLOAT;
-            texture.format = Constants.TEXTUREFORMAT_RGBA;
+            texture.format = Constants.TEXTUREFORMAT_R;
             texture._gammaSpace = false;
-            engine._uploadDataToTextureDirectly(texture, pixelsDataRGBA32);
+            engine._uploadDataToTextureDirectly(texture, textureData.data);
         });
     }
 }

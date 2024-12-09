@@ -7,3 +7,4 @@ export * from "./hemisphericLight";
 export * from "./pointLight";
 export * from "./spotLight";
 export * from "./areaLights";
+export * from "./IES/iesLoader";

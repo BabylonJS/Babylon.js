@@ -79,11 +79,13 @@
 	#elif defined(HEMILIGHT{X})
 		uniform vec3 vLightGround{X};
     #endif
-    #if defined(AREALIGHT{X})
+    #ifdef AREALIGHT{X}
         uniform vec4 vLightWidth{X};
         uniform vec4 vLightHeight{X};
-    #endif
-    #else
+	#endif
+	#ifdef IESLIGHTTEXTURE{X}
+		uniform sampler2D iesLightTexture{X};
+	#endif
 	#ifdef PROJECTEDLIGHTTEXTURE{X}
 		uniform mat4 textureProjectionMatrix{X};
 		uniform sampler2D projectionLightTexture{X};

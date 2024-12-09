@@ -931,18 +931,20 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformsList The uniform list
  * @param samplersList The sampler list
  * @param projectedLightTexture defines if projected texture must be used
- * @param areaLightTextures defines if area light texture must be used
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
+ * @param iesLightTexture defines if IES texture must be used
+ * @param areaLightTextures defines if area light texture must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
     uniformsList: string[],
     samplersList: string[],
     projectedLightTexture?: any,
-    areaLightTextures?: any,
     uniformBuffersList: Nullable<string[]> = null,
-    updateOnlyBuffersList = false
+    updateOnlyBuffersList = false,
+    iesLightTexture = false,
+    areaLightTextures = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -985,6 +987,10 @@ export function PrepareUniformsAndSamplersForLight(
         samplersList.push("areaLightsLTC1" + lightIndex);
         samplersList.push("areaLightsLTC2" + lightIndex);
     }
+
+    if (iesLightTexture) {
+        samplersList.push("iesLightTexture" + lightIndex);
+    }
 }
 
 /**
@@ -1021,8 +1027,10 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             uniformsList,
             samplersList,
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
-            defines["AREALIGHT" + lightIndex],
-            uniformBuffersList
+            uniformBuffersList,
+            false,
+            defines["IESLIGHTTEXTURE" + lightIndex],
+            defines["AREALIGHT" + lightIndex]
         );
     }
 

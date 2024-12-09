@@ -167,16 +167,23 @@ export class Sandbox extends React.Component<
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
             for (const param of params) {
-                const split = param.split("=", 2);
-                const name = split[0];
-                const value = split[1];
+                const [name, value] = param.split("=", 2);
                 switch (name.toLowerCase()) {
+                    case "3dcommerce": {
+                        set3DCommerceMode();
+                        break;
+                    }
+                    case "asset":
                     case "asseturl": {
                         this._assetUrl = value;
                         break;
                     }
                     case "autorotate": {
-                        this._autoRotate = value === "true" ? true : false;
+                        this._autoRotate = value.toLowerCase() === "true" ? true : false;
+                        break;
+                    }
+                    case "camera": {
+                        this._camera = +value;
                         break;
                     }
                     case "cameraposition": {
@@ -187,44 +194,20 @@ export class Sandbox extends React.Component<
                         );
                         break;
                     }
-                    case "kiosk": {
-                        this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
-                        break;
-                    }
-                    case "reflector": {
-                        setReflectorMode();
-                        break;
-                    }
-                    case "3dcommerce": {
-                        set3DCommerceMode();
-                        break;
-                    }
-                    case "hostname": {
-                        if (this._globalState.reflector) {
-                            this._globalState.reflector.hostname = value;
-                        }
-                        break;
-                    }
-                    case "port": {
-                        if (this._globalState.reflector) {
-                            this._globalState.reflector.port = +value;
-                        }
+                    case "clearcolor": {
+                        this._clearColor = value;
                         break;
                     }
                     case "environment": {
                         EnvironmentTools.SkyboxPath = value;
                         break;
                     }
+                    case "kiosk": {
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "" };
+                        break;
+                    }
                     case "skybox": {
-                        this._globalState.skybox = value === "true" ? true : false;
-                        break;
-                    }
-                    case "clearcolor": {
-                        this._clearColor = value;
-                        break;
-                    }
-                    case "camera": {
-                        this._camera = +value;
+                        this._globalState.skybox = value.toLowerCase() === "true" ? true : false;
                         break;
                     }
                     case "tonemapping": {
@@ -239,6 +222,27 @@ export class Sandbox extends React.Component<
                                 this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
                                 break;
                         }
+                        break;
+                    }
+
+                    // --------------------------------------------
+                    // Reflector specific parameters (undocumented)
+                    // --------------------------------------------
+                    case "reflector": {
+                        setReflectorMode();
+                        break;
+                    }
+                    case "hostname": {
+                        if (this._globalState.reflector) {
+                            this._globalState.reflector.hostname = value;
+                        }
+                        break;
+                    }
+                    case "port": {
+                        if (this._globalState.reflector) {
+                            this._globalState.reflector.port = +value;
+                        }
+                        break;
                     }
                 }
             }

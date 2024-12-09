@@ -266,9 +266,10 @@ export class MaterialHelper {
         uniformsList: string[],
         samplersList: string[],
         projectedLightTexture?: any,
-        areaLightTextures?: any,
         uniformBuffersList?: Nullable<string[]>,
-        updateOnlyBuffersList?: boolean
+        updateOnlyBuffersList?: boolean,
+        iesLightTexture?: boolean,
+        areaLightTextures?: boolean
     ) => void = PrepareUniformsAndSamplersForLight;
 
     /**

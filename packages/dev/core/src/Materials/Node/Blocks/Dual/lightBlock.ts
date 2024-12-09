@@ -247,9 +247,10 @@ export class LightBlock extends NodeMaterialBlock {
                 state.uniforms,
                 state.samplers,
                 defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
-                defines["AREALIGHT" + lightIndex],
                 uniformBuffers,
-                onlyUpdateBuffersList
+                onlyUpdateBuffersList,
+                defines["IESLIGHTTEXTURE" + lightIndex],
+                defines["AREALIGHT" + lightIndex]
             );
         }
     }
