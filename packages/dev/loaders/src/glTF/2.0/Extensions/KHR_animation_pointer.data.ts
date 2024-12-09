@@ -276,6 +276,14 @@ const extensionsTree = {
             },
         },
     },
+    EXT_lights_ies: {
+        lights: {
+            __array__: {
+                __target__: true,
+                color: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)],
+            },
+        },
+    },
 };
 
 /** @internal */
