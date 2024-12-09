@@ -117,12 +117,12 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: Readonly<[2]>;
+    declare public readonly dimension: Readonly<[2]>;
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -1199,12 +1199,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: Readonly<[3]>;
+    declare public readonly dimension: Readonly<[3]>;
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /** @internal */
     public _x: number;
@@ -3417,12 +3417,12 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: Readonly<[4]>;
+    declare public readonly dimension: Readonly<[4]>;
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4514,12 +4514,12 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: Readonly<[4]>;
+    declare public readonly dimension: Readonly<[4]>;
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /**
      * Creates a new Quaternion from the given floats
@@ -6026,12 +6026,12 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: Readonly<[4, 4]>;
+    declare public readonly dimension: Readonly<[4, 4]>;
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 2;
+    declare public readonly rank: 2;
 
     /**
      * Gets the precision of matrix computations

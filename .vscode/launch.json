@@ -367,7 +367,7 @@
             "request": "launch",
             "runtimeExecutable": "npx",
             "name": "Update single validation test - WebGL2 (Dev)",
-            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "-project", "webgl2", "-g", "${input:testName}", "--update-snapshots"],
+            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "webgl2", "-g", "${input:testName}", "--update-snapshots"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,

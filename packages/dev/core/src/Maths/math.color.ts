@@ -43,12 +43,12 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: [3];
+    declare public readonly dimension: [3];
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
@@ -1028,12 +1028,12 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
     /**
      * @see Tensor.dimension
      */
-    public declare readonly dimension: [4];
+    declare public readonly dimension: [4];
 
     /**
      * @see Tensor.rank
      */
-    public declare readonly rank: 1;
+    declare public readonly rank: 1;
 
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
