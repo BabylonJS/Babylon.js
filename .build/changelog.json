@@ -1,20 +1,53 @@
 {
-    "fromTag": "7.38.0",
+    "fromTag": "7.39.0",
     "changelog": {
-        "7.38.0": [
+        "7.39.1": [
             {
-                "pr": "15954",
-                "title": "Fix sandbox regressions",
-                "description": "🤦‍♂️",
+                "pr": "15967",
+                "title": "Material: Fix disposing resources when disposing of a material",
+                "description": "Follow up to #15964\r\n\r\nTest PG: https://playground.babylonjs.com/#6JQCUT#8\r\n\r\nNote that this PG works without the PR because the current code is bugged (`meshMap` is not correctly updated by `AbstractMesh.setMaterialForRenderPass`)!",
                 "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/tools/sandbox/src/sandbox.tsx"
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15968",
+                "title": "Keep splats datas in ram",
+                "description": "so user can modify and save splats.\r\n\r\nhttps://forum.babylonjs.com/t/downloading-gaussian-splat-file/55226\r\n\r\nhttps://github.com/BabylonJS/Documentation/pull/1242\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15965",
+                "title": "Fix camera serialization",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],
@@ -156,6 +189,23 @@
                 "tags": [
                     "bug",
                     "WebGPU"
+                ]
+            }
+        ],
+        "7.38.0": [
+            {
+                "pr": "15954",
+                "title": "Fix sandbox regressions",
+                "description": "🤦‍♂️",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/sandbox.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
