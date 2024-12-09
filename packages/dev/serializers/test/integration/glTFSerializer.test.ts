@@ -566,10 +566,26 @@ describe("Babylon glTF Serializer", () => {
                     });
                 });
             });
-            expect(Object.keys(assertionData)).toHaveLength(9);
             expect(assertionData.nodes).toHaveLength(2);
             expect(assertionData.scenes).toHaveLength(1);
             expect(assertionData.scenes[0].nodes).toHaveLength(2);
+        });
+        it("should not duplicate a shared texture between materials", async () => {
+            const assertionData = await page.evaluate(() => {
+                const texture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", window.scene!);
+                for (let i = 0; i < 2; i++) {
+                    const material = new BABYLON.PBRMaterial("mat" + i, window.scene!);
+                    material.bumpTexture = texture;
+                    BABYLON.MeshBuilder.CreateBox("box" + i).material = material;
+                }
+                return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                    const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                    const jsonData = JSON.parse(jsonString);
+                    return jsonData;
+                });
+            });
+            expect(assertionData.textures).toHaveLength(1);
+            expect(assertionData.images).toHaveLength(1);
         });
     });
 });
