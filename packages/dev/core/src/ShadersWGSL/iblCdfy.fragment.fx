@@ -1,5 +1,6 @@
-#define PI 3.1415927
-varying vUV: vec2f;
+varying vUV : vec2f;
+
+#include <helperFunctions>
 
 #ifdef IBL_USE_CUBE_MAP
 var iblSourceSampler: sampler;
@@ -11,26 +12,18 @@ var iblSource: texture_2d<f32>;
 uniform iblHeight: i32;
 
 #ifdef IBL_USE_CUBE_MAP
-fn equirectangularToCubemapDirection(uv: vec2f) -> vec3f {
-  var longitude: f32 = uv.x * 2.0 * PI - PI;
-  var latitude: f32 = PI * 0.5 - uv.y * PI;
-  var direction: vec3f;
-  direction.x = cos(latitude) * sin(longitude);
-  direction.y = sin(latitude);
-  direction.z = cos(latitude) * cos(longitude);
-  return direction;
-}
-
 fn fetchCube(uv: vec2f) -> f32 {
   var direction: vec3f = equirectangularToCubemapDirection(uv);
-  return sin(PI * uv.y) * dot(textureSampleLevel(iblSource, iblSourceSampler, direction, 0.0).rgb,
-                               vec3f(0.3, 0.6, 0.1));
+  return sin(PI * uv.y) *
+         dot(textureSampleLevel(iblSource, iblSourceSampler, direction, 0.0)
+                 .rgb,
+             LuminanceEncodeApprox);
 }
 #else
 
 fn fetchPanoramic(Coords: vec2i, envmapHeight: f32) -> f32 {
-  return sin(PI * ( f32(Coords.y) + 0.5) / envmapHeight) *
-         dot(textureLoad(iblSource, Coords, 0).rgb,  vec3f(0.3, 0.6, 0.1));
+  return sin(PI * (f32(Coords.y) + 0.5) / envmapHeight) *
+         dot(textureLoad(iblSource, Coords, 0).rgb, LuminanceEncodeApprox);
 }
 #endif
 

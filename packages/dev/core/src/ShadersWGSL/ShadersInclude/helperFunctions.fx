@@ -207,3 +207,13 @@ fn parallaxCorrectNormal(vertexPos: vec3<f32>, origVec: vec3<f32>, cubeSize: vec
 	// Get corrected vector
 	return intersectPositionWS - cubePos;
 }
+
+fn equirectangularToCubemapDirection(uv : vec2f)->vec3f {
+  var longitude : f32 = uv.x * 2.0 * PI - PI;
+  var latitude : f32 = PI * 0.5 - uv.y * PI;
+  var direction : vec3f;
+  direction.x = cos(latitude) * sin(longitude);
+  direction.y = sin(latitude);
+  direction.z = cos(latitude) * cos(longitude);
+  return direction;
+}
