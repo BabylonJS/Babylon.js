@@ -62,14 +62,15 @@ export class DracoCompression extends DracoDecoder {
      * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
      */
     public static Configuration: IDracoCompressionConfiguration = {
-        decoder: DracoDecoder.Config, // TODO: Remove this reference or update the JSDoc with warning.
+        decoder: DracoDecoder.Config,
     };
 
     /**
      * Returns true if the decoder configuration is available.
      */
     public static get DecoderAvailable(): boolean {
-        return DracoDecoder.Available; // TODO: Remove this reference or update the JSDoc with warning.
+        const decoder = DracoCompression.Configuration.decoder;
+        return !!((decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") || decoder.fallbackUrl);
     }
 
     /**
@@ -82,7 +83,10 @@ export class DracoCompression extends DracoDecoder {
      * @param numWorkersOrConfig The number of workers for async operations or a config object. Specify `0` to disable web workers and run synchronously in the current context.
      */
     constructor(numWorkersOrConfig: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
-        const config = typeof numWorkersOrConfig === "number" ? { ...DracoDecoder.Config, numWorkers: numWorkersOrConfig } : { ...DracoDecoder.Config, ...numWorkersOrConfig };
+        const config =
+            typeof numWorkersOrConfig === "number"
+                ? { ...DracoCompression.Configuration.decoder, numWorkers: numWorkersOrConfig }
+                : { ...DracoCompression.Configuration.decoder, ...numWorkersOrConfig };
         super(config);
     }
 
