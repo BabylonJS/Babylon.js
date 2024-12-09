@@ -555,5 +555,21 @@ describe("Babylon glTF Serializer", () => {
                 expect(node.mesh).toEqual(0);
             }
         });
+        it("should not export a root conversion node", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.AppendAsync("https://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", window.scene).then((scene) => {
+                    scene.getMeshByName("__root__")!.name = "renamedRoot";
+                    return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                        const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                        const jsonData = JSON.parse(jsonString);
+                        return jsonData;
+                    });
+                });
+            });
+            expect(Object.keys(assertionData)).toHaveLength(9);
+            expect(assertionData.nodes).toHaveLength(2);
+            expect(assertionData.scenes).toHaveLength(1);
+            expect(assertionData.scenes[0].nodes).toHaveLength(2);
+        });
     });
 });
