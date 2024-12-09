@@ -231,7 +231,7 @@ export class IblCdfGenerator {
         };
         this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
-        this._cdfyPT.setTexture("iblSource", this._iblSource as Texture);
+        this._cdfyPT.setTexture("iblSource", this._iblSource);
         this._cdfyPT.setInt("iblHeight", size.height);
         this._cdfyPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._cdfyPT.refreshRate = 0;
@@ -253,14 +253,14 @@ export class IblCdfGenerator {
 
         this._normalizationPT = new ProceduralTexture("normalizationTexture", { width: 1, height: 1 }, "iblNormalization", this._scene, cdfOptions, false, false);
         this._normalizationPT.autoClear = false;
-        this._normalizationPT.setTexture("iblSource", this._iblSource as Texture);
+        this._normalizationPT.setTexture("iblSource", this._iblSource);
         this._normalizationPT.setInt("iblHeight", size.height);
         this._normalizationPT.setInt("iblWidth", size.width);
         this._normalizationPT.refreshRate = 0;
 
         this._pdfPT = new ProceduralTexture("pdfTexture", { width: size.width, height: size.height }, "iblPdf", this._scene, cdfOptions, false, false);
         this._pdfPT.autoClear = false;
-        this._pdfPT.setTexture("iblSource", this._iblSource as Texture);
+        this._pdfPT.setTexture("iblSource", this._iblSource);
         this._pdfPT.setTexture("normalizationSampler", this._normalizationPT);
         this._pdfPT.refreshRate = 0;
         this._pdfPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
