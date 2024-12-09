@@ -1,5 +1,4 @@
 import { DracoDecoderModule } from "draco3dgltf";
-import type { DecoderModule } from "draco3dgltf";
 import { DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
 import { Tools } from "../../Misc/tools";
 import { Geometry } from "../geometry";
@@ -47,7 +46,7 @@ interface MeshData {
  *     var geometry = await DracoDecoder.Default.decodeMeshToGeometryAsync(data);
  * ```
  */
-export class DracoDecoder extends DracoCodec<DecoderModule> {
+export class DracoDecoder extends DracoCodec {
     protected static override _Default: Nullable<DracoDecoder> = null;
     /**
      * Default instance for the DracoDecoder.
@@ -74,7 +73,7 @@ export class DracoDecoder extends DracoCodec<DecoderModule> {
         return typeof DracoDecoderModule !== "undefined";
     }
 
-    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: DecoderModule }> {
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** DecoderModule */ }> {
         const module = await ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary });
         return { module };
     }

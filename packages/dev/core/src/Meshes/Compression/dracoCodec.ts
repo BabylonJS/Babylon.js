@@ -63,9 +63,9 @@ export function _GetDefaultNumWorkers(): number {
  * Base class for a Draco codec.
  * @internal
  */
-export abstract class DracoCodec<M> implements IDisposable {
+export abstract class DracoCodec implements IDisposable {
     protected _workerPoolPromise?: Promise<AutoReleaseWorkerPool>;
-    protected _modulePromise?: Promise<{ module: M }>;
+    protected _modulePromise?: Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
 
     /**
      * The configuration for the Draco codec.
@@ -85,7 +85,7 @@ export abstract class DracoCodec<M> implements IDisposable {
      * Subclasses should override this value using the narrowed type of the subclass,
      * and define a public `get Default()` that returns the narrowed instance.
      */
-    protected static _Default: Nullable<DracoCodec<unknown>>;
+    protected static _Default: Nullable<DracoCodec>;
 
     /**
      * Reset the default draco compression object to null and disposing the removed default instance.
@@ -110,7 +110,7 @@ export abstract class DracoCodec<M> implements IDisposable {
     /**
      * Creates the JS Module for the corresponding wasm.
      */
-    protected abstract _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: M }>;
+    protected abstract _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
 
     /**
      * Returns the worker content.
