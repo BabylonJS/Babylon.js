@@ -658,6 +658,15 @@ export class ObjectRenderer {
      * Dispose the renderer and release its associated resources.
      */
     public dispose(): void {
+        const renderList = this.renderList ? this.renderList : this._scene.getActiveMeshes().data;
+        if (renderList) {
+            for (const mesh of renderList) {
+                if (mesh.getMaterialForRenderPass(this.renderPassId) !== undefined) {
+                    mesh.setMaterialForRenderPass(this.renderPassId, undefined);
+                }
+            }
+        }
+
         this.onBeforeRenderObservable.clear();
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderingManagerRenderObservable.clear();

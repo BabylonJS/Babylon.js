@@ -693,7 +693,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
             this._internalAbstractMeshDataInfo._materialForRenderPass = [];
         }
+        const currentMaterial = this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId];
+        if (currentMaterial?.meshMap?.[this.uniqueId]) {
+            currentMaterial.meshMap[this.uniqueId] = undefined;
+        }
+
         this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId] = material;
+        if (material && material.meshMap) {
+            material.meshMap[this.uniqueId] = this;
+        }
     }
 
     /**
