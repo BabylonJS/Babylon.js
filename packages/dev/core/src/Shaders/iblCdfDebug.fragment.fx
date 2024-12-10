@@ -54,8 +54,8 @@ void main(void) {
                                             vec2(1.0, 1.0 / cdfyVSize))
                        .rgb;
 #endif
-  vec3 pdfColour = texture(pdf, (uv - vec2(0.0, pdfStart)) *
-                                            vec2(1.0, 1.0 / cdfyVSize)).rrr;
+  vec3 pdfColour = texture(icdf, (uv - vec2(0.0, pdfStart)) *
+                                            vec2(1.0, 1.0 / cdfyVSize)).zzz;
   float cdfyColour =
       texture2D(cdfy, (uv - vec2(0.0, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
           .r;

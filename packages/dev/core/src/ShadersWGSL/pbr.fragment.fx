@@ -292,8 +292,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 #ifdef IBL_CDF_FILTERING
                     , uniforms.icdfSampler
                     , uniforms.icdfSamplerSampler
-                    , uniforms.pdfSampler
-                    , uniforms.pdfSamplerSampler
                 #endif
             #endif
             );
@@ -540,8 +538,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                         #ifdef IBL_CDF_FILTERING
                             , uniforms.icdfSampler
                             , uniforms.icdfSamplerSampler
-                            , uniforms.pdfSampler
-                            , uniforms.pdfSamplerSampler
                         #endif
                     #endif
                 #endif

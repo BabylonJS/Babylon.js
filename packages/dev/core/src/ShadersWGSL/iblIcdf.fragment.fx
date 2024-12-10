@@ -1,8 +1,29 @@
-#define PI 3.1415927
+#include<helperFunctions>
+
 varying vUV: vec2f;
 
+#ifdef IBL_USE_CUBE_MAP
+var iblSourceSampler: sampler;
+var iblSource: texture_cube<f32>;
+#else
+var iblSourceSampler: sampler;
+var iblSource: texture_2d<f32>;
+#endif
+var normalizationSamplerSampler: sampler;
+var normalizationSampler: texture_2d<f32>;
 var cdfx: texture_2d<f32>;
 var cdfy: texture_2d<f32>;
+
+fn fetchLuminance(coords: vec2f) -> f32 {
+    #ifdef IBL_USE_CUBE_MAP
+        var direction: vec3f = equirectangularToCubemapDirection(coords);
+        var color: vec3f = textureSampleLevel(iblSource, iblSourceSampler, direction, 0.0).rgb;
+    #else
+        var color: vec3f = textureSampleLevel(iblSource, iblSourceSampler, coords, 0.0).rgb;
+    #endif
+    // apply same luminance computation as in the CDF shader
+    return dot(color, LuminanceEncodeApprox);
+}
 
 fn fetchCDFx(x: u32) -> f32 {
     return textureLoad(cdfx,  vec2u(x, 0), 0).x;
@@ -51,6 +72,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var icdfWidth: u32 = cdfWidth - 1;
     var currentPixel: vec2u =  vec2u(fragmentInputs.position.xy);
 
+    // icdfx - stores a mapping from the [0, 1] range to an X offset in the CDF.
+    // A random value, r, translates to an offset in the CDF where r% of the 
+    // cummulative luminance is below that offset. This way, random values will
+    // concentrate in the areas of the IBL with higher luminance.
     var outputColor: vec3f = vec3f(1.0);
     if (currentPixel.x == 0)
     {
@@ -63,6 +88,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         outputColor.x =  bisectx(cdfWidth, targetValue);
     }
 
+    // icdfy - stores a mapping from the [0, 1] range to a Y offset in the CDF.
     var cdfySize: vec2u = textureDimensions(cdfy, 0);
     var cdfHeight: u32 = cdfySize.y;
     
@@ -75,5 +101,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var targetValue: f32 = fetchCDFy(cdfHeight - 1, currentPixel.x) * input.vUV.y;
         outputColor.y =  max(bisecty(cdfHeight, targetValue, currentPixel.x), 0.0);
     }
+
+    // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
+    var normalization: f32 = textureSampleLevel(normalizationSampler, normalizationSamplerSampler, vec2f(0.0), 0.0).r;
+    var pixelLuminance: f32 = fetchLuminance(input.vUV);
+    outputColor.z = pixelLuminance * normalization;
+
     fragmentOutputs.color = vec4( outputColor, 1.0);
 }

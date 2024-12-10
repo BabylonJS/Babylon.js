@@ -7,8 +7,6 @@ var cdfxSampler: sampler;
 var cdfx: texture_2d<f32>;
 var icdfSampler: sampler;
 var icdf: texture_2d<f32>;
-var pdfSampler: sampler;
-var pdf: texture_2d<f32>;
 #ifdef IBL_USE_CUBE_MAP
 var iblSourceSampler: sampler;
 var iblSource: texture_cube<f32>;
@@ -60,7 +58,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                        .rgb;
 #endif
   var pdfColour: vec3f =
-      textureSample(pdf, pdfSampler, (uv -  vec2f(0.0, pdfStart)) *  vec2f(1.0, 1.0 / cdfyVSize)).rrr;
+      textureSample(icdf, icdfSampler, (uv -  vec2f(0.0, pdfStart)) *  vec2f(1.0, 1.0 / cdfyVSize)).zzz;
   var cdfyColour: f32 =
       textureSample(cdfy, cdfySampler, (uv -  vec2f(0.0, cdfyStart)) *  vec2f(2.0, 1.0 / cdfyVSize)).r;
   var icdfyColour: f32 =

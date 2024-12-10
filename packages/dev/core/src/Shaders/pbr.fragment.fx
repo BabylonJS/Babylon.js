@@ -300,7 +300,6 @@ void main(void) {
                 , vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
-                    , pdfSampler
                 #endif
             #endif
             );
@@ -539,7 +538,6 @@ void main(void) {
                         , vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
                             , icdfSampler
-                            , pdfSampler
                         #endif
                     #endif
                 #endif

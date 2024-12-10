@@ -1,10 +1,31 @@
 //
 precision highp sampler2D;
-#define PI 3.1415927
+#include<helperFunctions>
+
 varying vec2 vUV;
+
+#ifdef IBL_USE_CUBE_MAP
+uniform samplerCube iblSource;
+#else
+uniform sampler2D iblSource;
+#endif
+uniform sampler2D normalizationSampler;
+uniform int iblWidth;
+uniform int iblHeight;
 
 uniform sampler2D cdfx;
 uniform sampler2D cdfy;
+
+float fetchLuminance(vec2 coords) {
+    #ifdef IBL_USE_CUBE_MAP
+        vec3 direction = equirectangularToCubemapDirection(coords);
+        vec3 color = textureCubeLodEXT(iblSource, direction, 0.0).rgb;
+    #else
+        vec3 color = textureLod(iblSource, coords, 0.0).rgb;
+    #endif
+    // apply same luminance computation as in the CDF shader
+    return dot(color, LuminanceEncodeApprox);
+}
 
 float fetchCDFx(int x) { return texelFetch(cdfx, ivec2(x, 0), 0).x; }
 
@@ -48,6 +69,10 @@ void main(void) {
   int icdfWidth = cdfWidth - 1;
   ivec2 currentPixel = ivec2(gl_FragCoord.xy);
 
+  // icdfx - stores a mapping from the [0, 1] range to an X offset in the CDF.
+  // A random value, r, translates to an offset in the CDF where r% of the 
+  // cummulative luminance is below that offset. This way, random values will
+  // concentrate in the areas of the IBL with higher luminance.
   vec3 outputColor = vec3(1.0);
   if (currentPixel.x == 0) {
     outputColor.x = 0.0;
@@ -57,9 +82,10 @@ void main(void) {
     float targetValue = fetchCDFx(cdfWidth - 1) * vUV.x;
     outputColor.x = bisectx(cdfWidth, targetValue);
   }
+
+  // icdfy - stores a mapping from the [0, 1] range to a Y offset in the CDF.
   ivec2 cdfySize = textureSize(cdfy, 0);
   int cdfHeight = cdfySize.y;
-
   if (currentPixel.y == 0) {
     outputColor.y = 0.0;
   } else if (currentPixel.y == cdfHeight - 2) {
@@ -68,5 +94,11 @@ void main(void) {
     float targetValue = fetchCDFy(cdfHeight - 1, currentPixel.x) * vUV.y;
     outputColor.y = max(bisecty(cdfHeight, targetValue, currentPixel.x), 0.0);
   }
+
+  // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
+  float normalization = texture(normalizationSampler, vec2(0.0)).r;
+  float pixelLuminance = fetchLuminance(vUV);
+  outputColor.z = pixelLuminance * normalization;
+
   gl_FragColor = vec4(outputColor, 1.0);
 }
