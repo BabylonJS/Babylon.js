@@ -95,7 +95,7 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
 
                 babylonSpotLight.falloffType = Light.FALLOFF_GLTF;
                 babylonSpotLight.diffuse = extension.color ? Color3.FromArray(extension.color) : Color3.White();
-                babylonSpotLight.intensity = 1;
+                babylonSpotLight.intensity = extension.multiplier || 1;
                 babylonSpotLight.range = Number.MAX_VALUE;
                 babylonSpotLight.parent = babylonMesh;
 
