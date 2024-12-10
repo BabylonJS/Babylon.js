@@ -472,7 +472,14 @@ export class HTML3DElement extends LitElement {
     /**
      * The engine to use for rendering.
      */
-    @property({ reflect: true })
+    @property({
+        converter: (value: string | null): HTML3DElement["engine"] => {
+            if (value === "WebGL" || value === "WebGPU") {
+                return value;
+            }
+            return getDefaultEngine();
+        },
+    })
     public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
