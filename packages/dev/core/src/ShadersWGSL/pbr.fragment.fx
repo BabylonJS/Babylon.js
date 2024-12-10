@@ -290,8 +290,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #ifdef REALTIME_FILTERING
                 , uniforms.vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , uniforms.icdfSampler
-                    , uniforms.icdfSamplerSampler
+                    , icdfSampler
+                    , icdfSamplerSampler
                 #endif
             #endif
             );
@@ -536,8 +536,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                         , reflectionSamplerSampler
                         , vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
-                            , uniforms.icdfSampler
-                            , uniforms.icdfSamplerSampler
+                            , icdfSampler
+                            , icdfSamplerSampler
                         #endif
                     #endif
                 #endif
