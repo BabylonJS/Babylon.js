@@ -118,6 +118,5 @@
 #endif
 
 #ifdef IBL_CDF_FILTERING
-    uniform sampler2D icdfxSampler;
-    uniform sampler2D icdfySampler;
+    uniform sampler2D icdfSampler;
 #endif
