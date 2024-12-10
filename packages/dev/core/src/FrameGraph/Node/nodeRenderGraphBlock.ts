@@ -284,11 +284,15 @@ export class NodeRenderGraphBlock {
     protected _addDependenciesInput() {
         this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
 
-        this.getInputByName("dependencies")!.addAcceptedConnectionPointTypes(
+        const dependencies = this.getInputByName("dependencies")!;
+
+        dependencies.addAcceptedConnectionPointTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
                 NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
         );
+
+        return dependencies;
     }
 
     protected _buildBlock(_state: NodeRenderGraphBuildState) {
