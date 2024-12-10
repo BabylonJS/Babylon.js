@@ -123,20 +123,11 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this._propagateInputValueToOutput(this.texture, this.output);
         this._propagateInputValueToOutput(this.depth, this.outputDepth);
 
-        const textureConnectedPoint = this.texture.connectedPoint;
-        if (textureConnectedPoint) {
-            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const depthConnectedPoint = this.depth.connectedPoint;
-        if (depthConnectedPoint) {
-            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.destinationTexture = this.texture.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
     }
 
     protected override _dumpPropertiesCode() {

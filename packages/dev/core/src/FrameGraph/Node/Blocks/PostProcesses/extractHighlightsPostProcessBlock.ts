@@ -94,19 +94,10 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
-        const sourceConnectedPoint = this.source.connectedPoint;
-        if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.sourceTexture = this.source.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
     }
 
     protected override _dumpPropertiesCode() {
