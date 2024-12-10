@@ -46,9 +46,8 @@ describe("Babylon glTF Serializer", () => {
                 babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
                 babylonStandardMaterial.specularPower = 64;
                 babylonStandardMaterial.alpha = 1;
-                const materialExporter = new BABYLON.GLTF2.Exporter.GLTFMaterialExporter(new BABYLON.GLTF2.Exporter.GLTFExporter(window.scene));
 
-                const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
+                const metalRough = BABYLON.GLTF2.Exporter._ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
                 return {
                     baseColor: metalRough.baseColorFactor,
                     metallic: metalRough.metallicFactor,
