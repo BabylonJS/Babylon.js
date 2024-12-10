@@ -3,6 +3,7 @@ import type { IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
+import type { Nullable } from "core/types";
 
 /**
  * Configuration for Draco compression
@@ -34,18 +35,16 @@ export interface IDracoCompressionOptions extends Pick<IDracoCodecConfiguration,
  *
  * To update the configuration, use the following code:
  * ```javascript
- *     DracoCompression.Configuration = {
- *         decoder: {
- *             wasmUrl: "<url to the WebAssembly library>",
- *             wasmBinaryUrl: "<url to the WebAssembly binary>",
- *             fallbackUrl: "<url to the fallback JavaScript library>",
- *         }
+ *     DracoCompression.DefaultConfiguration = {
+ *        wasmUrl: "<url to the WebAssembly library>",
+ *        wasmBinaryUrl: "<url to the WebAssembly binary>",
+ *        fallbackUrl: "<url to the fallback JavaScript library>",
  *     };
  * ```
  *
  * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support WebAssembly or only support the JavaScript version.
  * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
- * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
+ * Use `DracoCompression.DefaultAvailable` to determine if the decoder configuration is available for the current context.
  *
  * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshToGeometryAsync:
  * ```javascript
@@ -56,21 +55,38 @@ export interface IDracoCompressionOptions extends Pick<IDracoCodecConfiguration,
  */
 export class DracoCompression extends DracoDecoder {
     /**
-     * The configuration. Defaults to the following urls:
-     * - wasmUrl: "https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"
-     * - wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm"
-     * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
+     * Default configuration for the DracoCompression. Defaults to the following:
+     * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
+     * - wasmUrl: `"https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"`
+     * - wasmBinaryUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.wasm"`
+     * - fallbackUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.js"`
      */
-    public static Configuration: IDracoCompressionConfiguration = {
-        decoder: DracoDecoder.Config,
-    };
+    public static override DefaultConfiguration: IDracoCodecConfiguration = { ...DracoDecoder.DefaultConfiguration }; // Use copy
 
     /**
-     * Returns true if the decoder configuration is available.
+     * @deprecated See {@link DracoCompression.DefaultConfiguration}
+     */
+    public static get Configuration(): IDracoCompressionConfiguration {
+        return { decoder: DracoCompression.DefaultConfiguration };
+    }
+    public static set Configuration(config: IDracoCompressionConfiguration) {
+        DracoCompression.DefaultConfiguration = config.decoder;
+    }
+
+    /**
+     * @deprecated See {@link DracoCompression.DefaultAvailable}
      */
     public static get DecoderAvailable(): boolean {
-        const decoder = DracoCompression.Configuration.decoder;
-        return !!((decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") || decoder.fallbackUrl);
+        return DracoCompression.DefaultAvailable;
+    }
+
+    protected static override _Default: Nullable<DracoCompression> = null;
+    /**
+     * Default instance for the DracoCompression.
+     */
+    public static override get Default(): DracoCompression {
+        DracoCompression._Default ??= new DracoCompression();
+        return DracoCompression._Default;
     }
 
     /**
@@ -79,15 +95,17 @@ export class DracoCompression extends DracoDecoder {
     public static DefaultNumWorkers = _GetDefaultNumWorkers();
 
     /**
-     * Constructor
-     * @param numWorkersOrConfig The number of workers for async operations or a config object. Specify `0` to disable web workers and run synchronously in the current context.
+     * Creates a new DracoCompression object.
+     * @param numWorkersOrOptions Overrides for the DefaultConfiguration. Either:
+     * - The number of workers for async operations or a config object. Specify `0` to disable web workers and run synchronously in the current context.
+     * - An options object
      */
-    constructor(numWorkersOrConfig: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
-        const config =
-            typeof numWorkersOrConfig === "number"
-                ? { ...DracoCompression.Configuration.decoder, numWorkers: numWorkersOrConfig }
-                : { ...DracoCompression.Configuration.decoder, ...numWorkersOrConfig };
-        super(config);
+    constructor(numWorkersOrOptions: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
+        const configuration =
+            typeof numWorkersOrOptions === "number"
+                ? { ...DracoCompression.DefaultConfiguration, numWorkers: numWorkersOrOptions }
+                : { ...DracoCompression.DefaultConfiguration, ...numWorkersOrOptions };
+        super(configuration);
     }
 
     /**

@@ -30,7 +30,7 @@ interface MeshData {
  *
  * To update the configuration, use the following code:
  * ```javascript
- *     DracoDecoder.Config = {
+ *     DracoDecoder.DefaultConfiguration = {
  *          wasmUrl: "<url to the WebAssembly library>",
  *          wasmBinaryUrl: "<url to the WebAssembly binary>",
  *          fallbackUrl: "<url to the fallback JavaScript library>",
@@ -39,7 +39,7 @@ interface MeshData {
  *
  * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support WebAssembly or only support the JavaScript version.
  * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
- * Use `DracoDecoder.Available` to determine if the decoder configuration is available for the current context.
+ * Use `DracoDecoder.DefaultAvailable` to determine if the decoder configuration is available for the current context.
  *
  * To decode Draco compressed data, get the default DracoDecoder object and call decodeMeshToGeometryAsync:
  * ```javascript
@@ -47,6 +47,19 @@ interface MeshData {
  * ```
  */
 export class DracoDecoder extends DracoCodec {
+    /**
+     * Default configuration for the DracoDecoder. Defaults to the following:
+     * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
+     * - wasmUrl: `"https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"`
+     * - wasmBinaryUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.wasm"`
+     * - fallbackUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.js"`
+     */
+    public static override DefaultConfiguration: IDracoCodecConfiguration = {
+        wasmUrl: `${Tools._DefaultCdnUrl}/draco_wasm_wrapper_gltf.js`,
+        wasmBinaryUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.wasm`,
+        fallbackUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.js`,
+    };
+
     protected static override _Default: Nullable<DracoDecoder> = null;
     /**
      * Default instance for the DracoDecoder.
@@ -55,19 +68,6 @@ export class DracoDecoder extends DracoCodec {
         DracoDecoder._Default ??= new DracoDecoder();
         return DracoDecoder._Default;
     }
-
-    /**
-     * Configuration for the DracoDecoder. Defaults to the following:
-     * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
-     * - wasmUrl: `"https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"`
-     * - wasmBinaryUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.wasm"`
-     * - fallbackUrl: `"https://cdn.babylonjs.com/draco_decoder_gltf.js"`
-     */
-    public static override Config: IDracoCodecConfiguration = {
-        wasmUrl: `${Tools._DefaultCdnUrl}/draco_wasm_wrapper_gltf.js`,
-        wasmBinaryUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.wasm`,
-        fallbackUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.js`,
-    };
 
     protected override _isModuleAvailable(): boolean {
         return typeof DracoDecoderModule !== "undefined";
@@ -84,11 +84,10 @@ export class DracoDecoder extends DracoCodec {
 
     /**
      * Creates a new Draco decoder.
-     * @param config Optional override of the configuration for the DracoDecoder. If not provided, defaults to `DracoDecoder.Config`.
+     * @param configuration Optional override of the configuration for the DracoDecoder. If not provided, defaults to {@link DracoDecoder.DefaultConfiguration}.
      */
-    constructor(config?: IDracoCodecConfiguration) {
-        // Order of final config will be config > DracoDecoder.Config.
-        super({ ...DracoDecoder.Config, ...(config ?? {}) });
+    constructor(configuration: IDracoCodecConfiguration = DracoDecoder.DefaultConfiguration) {
+        super(configuration);
     }
 
     /**

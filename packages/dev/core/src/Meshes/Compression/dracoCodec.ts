@@ -71,21 +71,22 @@ export abstract class DracoCodec implements IDisposable {
      * The configuration for the Draco codec.
      * Subclasses should override this value with a valid configuration.
      */
-    public static Config: IDracoCodecConfiguration;
+    public static DefaultConfiguration: IDracoCodecConfiguration;
 
     /**
-     * Returns true if the codec's `Configuration` is available.
-     */
-    public static get Available(): boolean {
-        return !!((this.Config.wasmUrl && this.Config.wasmBinaryUrl && typeof WebAssembly === "object") || this.Config.fallbackUrl);
-    }
-
-    /**
-     * The default draco compression object
+     * The default draco codec object
      * Subclasses should override this value using the narrowed type of the subclass,
      * and define a public `get Default()` that returns the narrowed instance.
      */
     protected static _Default: Nullable<DracoCodec>;
+
+    /**
+     * Returns true if the Default's codec's `Configuration` is available.
+     */
+    public static get DefaultAvailable(): boolean {
+        // `this` will point to subclass
+        return !!((this.DefaultConfiguration.wasmUrl && this.DefaultConfiguration.wasmBinaryUrl && typeof WebAssembly === "object") || this.DefaultConfiguration.fallbackUrl);
+    }
 
     /**
      * Reset the default draco compression object to null and disposing the removed default instance.
@@ -94,6 +95,7 @@ export abstract class DracoCodec implements IDisposable {
      * @param skipDispose set to true to not dispose the removed default instance
      */
     public static ResetDefault(skipDispose?: boolean): void {
+        // `this` will point to subclass
         if (this._Default) {
             if (!skipDispose) {
                 this._Default.dispose();
@@ -119,10 +121,10 @@ export abstract class DracoCodec implements IDisposable {
 
     /**
      * Constructor
-     * @param _config The configuration for the DracoCodec instance.
+     * @param configuration The configuration for the DracoCodec instance.
      */
-    constructor(_config: IDracoCodecConfiguration) {
-        const config = { numWorkers: _GetDefaultNumWorkers(), ..._config };
+    constructor(configuration: IDracoCodecConfiguration) {
+        const config = { numWorkers: _GetDefaultNumWorkers(), ...configuration };
         // check if the decoder binary and worker pool was injected
         // Note - it is expected that the developer checked if WebWorker, WebAssembly and the URL object are available
         if (config.workerPool) {
