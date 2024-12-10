@@ -299,8 +299,7 @@ void main(void) {
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
+                    , icdfSampler
                     , pdfSampler
                 #endif
             #endif
@@ -539,8 +538,7 @@ void main(void) {
                         , reflectionSampler
                         , vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
-                            , icdfxSampler
-                            , icdfySampler
+                            , icdfSampler
                             , pdfSampler
                         #endif
                     #endif

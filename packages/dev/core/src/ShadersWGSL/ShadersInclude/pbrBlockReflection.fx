@@ -231,10 +231,8 @@
     #ifdef REALTIME_FILTERING
         , vReflectionFilteringInfo: vec2f
         #ifdef IBL_CDF_FILTERING
-            , icdfxSampler: texture_2d<f32>
-            , icdfxSamplerSampler: sampler
-            , icdfySampler: texture_2d<f32>
-            , icdfySamplerSampler: sampler
+            , icdfSampler: texture_2d<f32>
+            , icdfSamplerSampler: sampler
             , pdfSampler: texture_2d<f32>
             , pdfSamplerSampler: sampler
         #endif
@@ -314,10 +312,8 @@
                 #if defined(REALTIME_FILTERING)
                     environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo
                     #ifdef IBL_CDF_FILTERING
-                        , icdfxSampler
-                        , icdfxSamplerSampler
-                        , icdfySampler
-                        , icdfySamplerSampler
+                        , icdfSampler
+                        , icdfSamplerSampler
                         , pdfSampler
                         , pdfSamplerSampler
                     #endif
