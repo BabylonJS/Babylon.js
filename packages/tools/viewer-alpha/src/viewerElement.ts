@@ -457,6 +457,7 @@ export class HTML3DElement extends LitElement {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query && this._viewerDetails) {
+            this._viewerDetails.viewer.pauseAnimation();
             const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
             this._viewerDetails.camera.interpolateTo(
                 cameraOrbit[0],
