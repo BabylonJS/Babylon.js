@@ -1,4 +1,4 @@
-﻿import type { Nullable } from "core/types";
+﻿import type { Nullable, WithRequiredProperty } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { Material } from "core/Materials/material";
@@ -214,3 +214,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      */
     loadBufferAsync?(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
 }
+
+export type IGLTFLoaderExtensionFunctionName = keyof IGLTFLoaderExtension;
+
+export type IGLTFLoaderExtensionWithRequireFunction<F extends IGLTFLoaderExtensionFunctionName> = WithRequiredProperty<IGLTFLoaderExtension, F>;
