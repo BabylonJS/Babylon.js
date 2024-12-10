@@ -457,6 +457,7 @@ export class HTML3DElement extends LitElement {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query && this._viewerDetails) {
+            this._viewerDetails.viewer.pauseAnimation();
             const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
             this._viewerDetails.camera.interpolateTo(
                 cameraOrbit[0],
@@ -472,7 +473,14 @@ export class HTML3DElement extends LitElement {
     /**
      * The engine to use for rendering.
      */
-    @property({ reflect: true })
+    @property({
+        converter: (value: string | null): HTML3DElement["engine"] => {
+            if (value === "WebGL" || value === "WebGPU") {
+                return value;
+            }
+            return getDefaultEngine();
+        },
+    })
     public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
