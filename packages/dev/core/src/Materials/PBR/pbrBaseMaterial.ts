@@ -1490,7 +1490,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "oitDepthSampler",
             "oitFrontColorSampler",
             "icdfSampler",
-            "pdfSampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -2308,7 +2307,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     const cdfGenerator = this.getScene().iblCdfGenerator;
                     if (this.realTimeFiltering && cdfGenerator) {
                         ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
-                        ubo.setTexture("pdfSampler", cdfGenerator.getPdfTexture());
                     }
                 }
 

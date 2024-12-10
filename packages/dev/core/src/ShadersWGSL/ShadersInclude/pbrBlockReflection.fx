@@ -233,8 +233,6 @@
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>
             , icdfSamplerSampler: sampler
-            , pdfSampler: texture_2d<f32>
-            , pdfSamplerSampler: sampler
         #endif
     #endif
     ) -> reflectionOutParams
@@ -314,8 +312,6 @@
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                         , icdfSamplerSampler
-                        , pdfSampler
-                        , pdfSamplerSampler
                     #endif
                     );
                 #else

@@ -145,7 +145,7 @@
 
         fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
         #ifdef IBL_CDF_FILTERING
-            , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler, pdfSampler: texture_2d<f32>, pdfSamplerSampler: sampler
+            , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
         ) -> vec3f
         {
@@ -183,7 +183,7 @@
                 if (NoL > 0.) {
                     
                     #ifdef IBL_CDF_FILTERING
-                        var pdf: f32 = textureSampleLevel(pdfSampler, pdfSamplerSampler, T, 0.0).x;
+                        var pdf: f32 = textureSampleLevel(icdfSampler, icdfSamplerSampler, T, 0.0).z;
                         var c: vec3f = textureSampleLevel(inputTexture, inputSampler, Ls, mipLevel).rgb;
                     #else
                         var pdf_inversed: f32 = PI / NoL;

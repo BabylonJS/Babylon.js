@@ -186,7 +186,7 @@
         #define inline
         vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
         #ifdef IBL_CDF_FILTERING
-        , sampler2D icdfSampler, sampler2D pdfSampler
+        , sampler2D icdfSampler
         #endif
         )
         {
@@ -227,7 +227,7 @@
 
                 if (NoL > 0.) {
                     #ifdef IBL_CDF_FILTERING
-                        float pdf = textureLod(pdfSampler, T, 0.0).x;
+                        float pdf = textureLod(icdfSampler, T, 0.0).z;
                         vec3 c = textureCubeLodEXT(inputTexture, Ls, 0.0).rgb;
                     #else
                         float pdf_inversed = PI / NoL;
