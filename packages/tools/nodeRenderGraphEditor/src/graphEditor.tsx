@@ -32,6 +32,7 @@ import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import type { IShadowLight } from "core/Lights";
+import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -282,6 +283,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (!this.props.globalState.noAutoFillExternalInputs) {
             this._setExternalInputs();
+
+            // Set default node values
+            const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
+            const allBlocks = nodeRenderGraph.attachedBlocks;
+            for (const block of allBlocks) {
+                if (block.getClassName() === "NodeRenderGraphExecuteBlock") {
+                    (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
+                }
+            }
         }
 
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;

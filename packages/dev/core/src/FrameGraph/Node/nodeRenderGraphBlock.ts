@@ -281,6 +281,16 @@ export class NodeRenderGraphBlock {
         return this;
     }
 
+    protected _addDependenciesInput() {
+        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+
+        this.getInputByName("dependencies")!.addAcceptedConnectionPointTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
+                NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
+                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+    }
+
     protected _buildBlock(_state: NodeRenderGraphBuildState) {
         // Empty. Must be defined by child nodes
     }

@@ -29,6 +29,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         super(name, frameGraph, scene);
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
+        this._addDependenciesInput();
 
         this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
     }

@@ -66,8 +66,6 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureLocalPosition = 0x00004000,
     /** Linear velocity geometry texture */
     TextureLinearVelocity = 0x00008000,
-    /** Storage texture */
-    StorageTexture = 0x00010000,
 
     /** Bit field for all textures but back buffer depth/stencil */
     TextureAllButBackBufferDepthStencil = 0x000ffffb,
@@ -82,8 +80,6 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     ShadowGenerator = 0x00200000,
     /** Light */
     ShadowLight = 0x00400000,
-    /** Storage Buffer */
-    StorageBuffer = 0x00800000,
     /** Camera */
     Camera = 0x01000000,
     /** List of objects (meshes, particle systems, sprites) */

@@ -41,7 +41,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
-        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this._addDependenciesInput();
         this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -49,12 +49,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.dependencies.addAcceptedConnectionPointTypes(
-            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
-                NodeRenderGraphBlockConnectionPointTypes.StorageTexture |
-                NodeRenderGraphBlockConnectionPointTypes.StorageBuffer |
-                NodeRenderGraphBlockConnectionPointTypes.ResourceContainer
-        );
         this.shadowGenerators.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
 
         this.output._typeConnectionSource = this.destination;
@@ -168,7 +162,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
                         this._frameGraphTask.dependencies!.push(input.connectedPoint.value as FrameGraphTextureHandle);
                     }
                 });
-            } else {
+            } else if (NodeRenderGraphConnectionPoint.IsTextureHandle(dependenciesConnectedPoint.value)) {
                 this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
             }
         }
@@ -184,7 +178,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
                         this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
                     }
                 });
-            } else {
+            } else if (NodeRenderGraphConnectionPoint.IsShadowGenerator(shadowGeneratorsConnectedPoint.value)) {
                 this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as FrameGraphShadowGeneratorTask;
             }
         }

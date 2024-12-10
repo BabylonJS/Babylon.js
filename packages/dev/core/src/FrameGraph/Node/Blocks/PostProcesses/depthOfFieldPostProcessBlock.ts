@@ -37,6 +37,7 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         this.registerInput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
+        this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);

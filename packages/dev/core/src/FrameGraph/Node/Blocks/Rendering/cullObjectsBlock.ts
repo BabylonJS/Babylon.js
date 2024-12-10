@@ -31,6 +31,7 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 

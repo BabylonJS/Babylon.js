@@ -46,8 +46,8 @@ export class NodeRenderGraphConnectionPoint {
      * @param value The value to check
      * @returns True if the value is a texture handle
      */
-    public static IsTextureHandle(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
-        return Number.isFinite(value);
+    public static IsTextureHandle(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && Number.isFinite(value);
     }
 
     /**
@@ -55,8 +55,8 @@ export class NodeRenderGraphConnectionPoint {
      * @param value The value to check
      * @returns True if the value is a shadow generator
      */
-    public static IsShadowGenerator(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
-        return (value as FrameGraphShadowGeneratorTask).mapSize !== undefined;
+    public static IsShadowGenerator(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && (value as FrameGraphShadowGeneratorTask).mapSize !== undefined;
     }
 
     /**
@@ -64,8 +64,8 @@ export class NodeRenderGraphConnectionPoint {
      * @param value The value to check
      * @returns True if the value is a shadow light
      */
-    public static IsShadowLight(value: NodeRenderGraphBlockConnectionPointValueType): boolean {
-        return (value as IShadowLight).setShadowProjectionMatrix !== undefined;
+    public static IsShadowLight(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && (value as IShadowLight).setShadowProjectionMatrix !== undefined;
     }
 
     /**
