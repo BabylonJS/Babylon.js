@@ -587,5 +587,60 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.textures).toHaveLength(1);
             expect(assertionData.images).toHaveLength(1);
         });
+        it("should not convert right-handed node transformations", async () => {
+            const transformsRH = {
+                translation: [0.2, 0.3, 0.4],
+                scale: [0.5, 0.6, 0.7],
+                rotation: [0.5, 0.5, 0.5, 0.5],
+            };
+            const assertionData = await page.evaluate((transformsRH) => {
+                window.scene!.useRightHandedSystem = true;
+                const parent = BABYLON.MeshBuilder.CreateBox("box");
+                BABYLON.Vector3.FromArrayToRef(transformsRH.translation, 0, parent.position);
+                BABYLON.Vector3.FromArrayToRef(transformsRH.scale, 0, parent.scaling);
+                parent.rotationQuaternion = BABYLON.Quaternion.FromArray(transformsRH.rotation);
+                parent.clone("child").parent = parent;
+                return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                    const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                    const jsonData = JSON.parse(jsonString);
+                    return jsonData;
+                });
+            }, transformsRH);
+            expect(assertionData.nodes).toHaveLength(2);
+            assertionData.nodes.forEach((node: any) => {
+                expect(node.translation).toEqual(transformsRH.translation);
+                expect(node.scale).toEqual(transformsRH.scale);
+                expect(node.rotation).toEqual(transformsRH.rotation);
+            });
+        });
+        it("should consistently convert left-handed node transformations", async () => {
+            const transformsLH = {
+                translation: [0.2, 0.3, 0.4],
+                scale: [0.5, 0.6, 0.7],
+                rotation: [0.5, 0.5, 0.5, 0.5],
+            };
+            const transformsRH = {
+                translation: [-0.2, 0.3, 0.4],
+                rotation: [-0.5, -0.5, 0.5, 0.5],
+            };
+            const assertionData = await page.evaluate((transformsLH) => {
+                const parent = BABYLON.MeshBuilder.CreateBox("box");
+                BABYLON.Vector3.FromArrayToRef(transformsLH.translation, 0, parent.position);
+                BABYLON.Vector3.FromArrayToRef(transformsLH.scale, 0, parent.scaling);
+                parent.rotationQuaternion = BABYLON.Quaternion.FromArray(transformsLH.rotation);
+                parent.clone("child").parent = parent;
+                return BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test").then((glTFData) => {
+                    const jsonString = glTFData.glTFFiles["test.gltf"] as string;
+                    const jsonData = JSON.parse(jsonString);
+                    return jsonData;
+                });
+            }, transformsLH);
+            expect(assertionData.nodes).toHaveLength(2);
+            assertionData.nodes.forEach((node: any) => {
+                expect(node.translation).toEqual(transformsRH.translation);
+                expect(node.scale).toEqual(transformsLH.scale);
+                expect(node.rotation).toEqual(transformsRH.rotation);
+            });
+        });
     });
 });
