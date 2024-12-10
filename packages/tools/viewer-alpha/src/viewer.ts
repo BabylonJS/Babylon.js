@@ -173,7 +173,7 @@ export type ViewerOptions = Partial<
     }>
 >;
 
-export type EnvironmentOptions = Partial<Readonly<{}>>;
+export type LoadEnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -792,7 +792,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
@@ -804,7 +804,7 @@ export class Viewer implements IDisposable {
         await this._updateEnvironment(undefined, undefined, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
