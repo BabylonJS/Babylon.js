@@ -1,6 +1,197 @@
 {
-    "fromTag": "7.37.2",
+    "fromTag": "7.39.0",
     "changelog": {
+        "7.39.1": [
+            {
+                "pr": "15967",
+                "title": "Material: Fix disposing resources when disposing of a material",
+                "description": "Follow up to #15964\r\n\r\nTest PG: https://playground.babylonjs.com/#6JQCUT#8\r\n\r\nNote that this PG works without the PR because the current code is bugged (`meshMap` is not correctly updated by `AbstractMesh.setMaterialForRenderPass`)!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15968",
+                "title": "Keep splats datas in ram",
+                "description": "so user can modify and save splats.\r\n\r\nhttps://forum.babylonjs.com/t/downloading-gaussian-splat-file/55226\r\n\r\nhttps://github.com/BabylonJS/Documentation/pull/1242\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15965",
+                "title": "Fix camera serialization",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "7.39.0": [
+            {
+                "pr": "15964",
+                "title": "Fix an issue with effect reference counting",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15897",
+                "title": "Physics Character Controller",
+                "description": "WIP\r\n\r\n- [x] Document public methods\r\n- [x] Character Input class with helper function to move and slide character\r\n- [x] Split Eoin's character input into CharacterInput and CharacterState. CharacterState is part of PG\r\n- [x] Test/Example PG: https://playground.babylonjs.com/?snapshot=refs/pull/15897/merge#WO0H1U#12\r\n- [x] Documentation page https://github.com/BabylonJS/Documentation/pull/1239\r\n\r\nNOTE: there are a few things I'll address in a second PR like references to Havok plugin.\r\n\r\n![image](https://github.com/user-attachments/assets/4f19c874-d050-4603-a866-5c3a9f17bcd8)\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts",
+                    "packages/dev/core/src/Physics/v2/index.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15957",
+                "title": "Update launch to match the repo",
+                "description": "This PR updates launch.json to match the current tools we are using.\n\nWebGL2 and WebGPU tests have moved to playwright. Both all and single test are supported. Note that I am still stronglyr ecommend to use the playwright vscode extension instead of running tests like that, as it is simpler to evaluate, easier to use, and faster.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/settings.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15959",
+                "title": "Add IES to inspector",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15958",
+                "title": "doc fix: links in readme of loader package",
+                "description": "Although old links can redirect to new one, the document page for loader usage is better for \"Loading Any File Type\", I think (and I fixed a link for ES6 usage page while at it).",
+                "author": {
+                    "name": "drumath2237",
+                    "url": "https://github.com/drumath2237"
+                },
+                "files": [
+                    "packages/public/@babylonjs/loaders/readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15952",
+                "title": "IES shader",
+                "description": "Associated with #15000 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/spotLight.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/hdrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/iesTextureLoader.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFalloffFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFalloffFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/iesprofile.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/iesprofile2.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15956",
+                "title": "Graph tools tests",
+                "description": "The graph tools tests will run if any of the 4 editors (NME, NGE, NRGE, GUI) is changed. Snapshots will be generated and a simple test to check the basic functionality of the editors will run.\r\n\r\nTest results should be published if tests fail (NGE is forced to fail here on the CI level on the first run)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/interaction.tools.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15955",
+                "title": "WebGPU: fix crash when enabling fog",
+                "description": "See https://forum.babylonjs.com/t/webgpu-and-cascaded-shadow-map/55161/9",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fogVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/sceneUboDeclaration.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            }
+        ],
         "7.38.0": [
             {
                 "pr": "15954",
