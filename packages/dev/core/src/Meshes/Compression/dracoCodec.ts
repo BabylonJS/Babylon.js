@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
+import type { WorkerPool } from "../../Misc/workerPool";
 import type { IDisposable } from "../../scene";
 import { initializeWebWorker } from "./dracoCompressionWorker";
 
@@ -33,7 +34,7 @@ export interface IDracoCodecConfiguration {
      * If provided, numWorkers will be ignored and the worker pool will be used instead.
      * If provided the draco script will not be loaded from the DracoConfiguration.
      */
-    workerPool?: AutoReleaseWorkerPool;
+    workerPool?: WorkerPool;
 
     /**
      * Optional ArrayBuffer of the WebAssembly binary.
@@ -64,7 +65,7 @@ export function _GetDefaultNumWorkers(): number {
  * @internal
  */
 export abstract class DracoCodec implements IDisposable {
-    protected _workerPoolPromise?: Promise<AutoReleaseWorkerPool>;
+    protected _workerPoolPromise?: Promise<WorkerPool>;
     protected _modulePromise?: Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
 
     /**
