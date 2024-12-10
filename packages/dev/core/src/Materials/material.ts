@@ -1931,7 +1931,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         if (this.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                if (!plugin.doNotSerialize) {
+                    serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                }
             }
         }
     }
