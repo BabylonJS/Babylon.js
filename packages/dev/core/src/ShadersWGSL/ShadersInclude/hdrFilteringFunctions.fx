@@ -22,6 +22,20 @@
         return log2(x) / 2.;
     }
 
+    
+    fn uv_to_normal(uv: vec2f) -> vec3f {
+        var N: vec3f;
+
+        var uvRange: vec2f = uv;
+        var theta: f32 = uvRange.x * 2.0 * PI;
+        var phi: f32 = uvRange.y * PI;
+
+        N.x = cos(theta) * sin(phi);
+        N.z = sin(theta) * sin(phi);
+        N.y = cos(phi);
+        return N;
+    }
+
         const NUM_SAMPLES_FLOAT: f32 =  f32(NUM_SAMPLES);
         const NUM_SAMPLES_FLOAT_INVERSED: f32 = 1. / NUM_SAMPLES_FLOAT;
 
@@ -171,8 +185,8 @@
                     var T: vec2f;
                     T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
                     T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
-                    vec3 Ls = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
-                    float NoL = dot(n, Ls);
+                    var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
+                    var NoL: f32 = dot(n, Ls);
                 #else
                     var Ls: vec3f = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
@@ -184,7 +198,7 @@
                     
                     #ifdef IBL_CDF_FILTERING
                         var pdf: f32 = textureSampleLevel(icdfSampler, icdfSamplerSampler, T, 0.0).z;
-                        var c: vec3f = textureSampleLevel(inputTexture, inputSampler, Ls, mipLevel).rgb;
+                        var c: vec3f = textureSampleLevel(inputTexture, inputSampler, Ls, 0.0).rgb;
                     #else
                         var pdf_inversed: f32 = PI / NoL;
 
@@ -198,7 +212,10 @@
                     #endif
 
                     #ifdef IBL_CDF_FILTERING
-                        var light: vec3f = pdf < 1e-6 ? vec3f(0.0) : vec3f(1.0) / vec3f(pdf) * c;
+                        var light: vec3f = vec3f(0.0);
+                        if (pdf > 1e-6) {
+                            light = vec3f(1.0) / vec3f(pdf) * c;
+                        }
                         result += NoL * light;
                     #else
                         result += c;
