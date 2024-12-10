@@ -3,9 +3,8 @@ precision highp samplerCube;
 varying vec2 vUV;
 
 uniform sampler2D cdfy;
-uniform sampler2D icdfy;
 uniform sampler2D cdfx;
-uniform sampler2D icdfx;
+uniform sampler2D icdf;
 uniform sampler2D pdf;
 #ifdef IBL_USE_CUBE_MAP
 uniform samplerCube iblSource;
@@ -61,12 +60,12 @@ void main(void) {
       texture2D(cdfy, (uv - vec2(0.0, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
           .r;
   float icdfyColour =
-      texture2D(icdfy, (uv - vec2(0.5, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
-          .r;
+      texture2D(icdf, (uv - vec2(0.5, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
+          .g;
   float cdfxColour =
       texture2D(cdfx, (uv - vec2(0.0, cdfxStart)) * vec2(1.0, 1.0 / cdfxVSize))
           .r;
-  float icdfxColour = texture2D(icdfx, (uv - vec2(0.0, icdfxStart)) *
+  float icdfxColour = texture2D(icdf, (uv - vec2(0.0, icdfxStart)) *
                                            vec2(1.0, 1.0 / cdfxVSize))
                           .r;
 

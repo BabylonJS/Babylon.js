@@ -145,7 +145,7 @@
 
         fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
         #ifdef IBL_CDF_FILTERING
-            , icdfxSampler: texture_2d<f32>, icdfxSamplerSampler: sampler, icdfySampler: texture_2d<f32>, icdfySamplerSampler: sampler, pdfSampler: texture_2d<f32>, pdfSamplerSampler: sampler
+            , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler, pdfSampler: texture_2d<f32>, pdfSamplerSampler: sampler
         #endif
         ) -> vec3f
         {
@@ -169,8 +169,8 @@
 
                 #ifdef IBL_CDF_FILTERING
                     var T: vec2f;
-                    T.x = textureSampleLevel(icdfxSampler, icdfxSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
-                    T.y = textureSampleLevel(icdfySampler, icdfySamplerSampler, vec2(T.x, Xi.y), 0.0).x;
+                    T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
+                    T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
                     vec3 Ls = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                 #else

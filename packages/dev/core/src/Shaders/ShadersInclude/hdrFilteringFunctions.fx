@@ -186,7 +186,7 @@
         #define inline
         vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
         #ifdef IBL_CDF_FILTERING
-        , sampler2D icdfxSampler, sampler2D icdfySampler, sampler2D pdfSampler
+        , sampler2D icdfSampler, sampler2D pdfSampler
         #endif
         )
         {
@@ -214,8 +214,8 @@
 
                 #ifdef IBL_CDF_FILTERING
                     vec2 T;
-                    T.x = textureLod(icdfxSampler, vec2(Xi.x, 0.0), 0.0).x;
-                    T.y = textureLod(icdfySampler, vec2(T.x, Xi.y), 0.0).x;
+                    T.x = textureLod(icdfSampler, vec2(Xi.x, 0.0), 0.0).x;
+                    T.y = textureLod(icdfSampler, vec2(T.x, Xi.y), 0.0).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                 #else

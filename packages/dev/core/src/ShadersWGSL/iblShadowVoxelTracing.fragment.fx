@@ -7,10 +7,8 @@ var depthSampler: texture_2d<f32>;
 var worldNormalSampler : texture_2d<f32>;
 var blueNoiseSampler: texture_2d<f32>;
 // Importance sampling
-var icdfxSamplerSampler: sampler;
-var icdfxSampler: texture_2d<f32>;
-var icdfySamplerSampler: sampler;
-var icdfySampler: texture_2d<f32>;
+var icdfSamplerSampler: sampler;
+var icdfSampler: texture_2d<f32>;
 var voxelGridSamplerSampler: sampler;
 var voxelGridSampler: texture_3d<f32>;
 
@@ -438,8 +436,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       var r: vec2f = plasticSequence(frameId * nbDirs + i);
       r = fract(r +  vec2f(2.0) * abs(noise.xy -  vec2f(0.5)));
       var T: vec2f;
-      T.x = textureSampleLevel(icdfxSampler, icdfxSamplerSampler, vec2f(r.x, 0.0), 0.0).x;
-      T.y = textureSampleLevel(icdfySampler, icdfySamplerSampler, vec2f(T.x, r.y), 0.0).x;
+      T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2f(r.x, 0.0), 0.0).x;
+      T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2f(T.x, r.y), 0.0).y;
       T.x -= normalizedRotation;
       L =  vec4f(uv_to_normal(T), 0);
 #ifndef RIGHT_HANDED
