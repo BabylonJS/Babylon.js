@@ -926,6 +926,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onEnvironmentTextureChangedObservable = new Observable<Nullable<BaseTexture>>();
 
     /**
+     * An event triggered when the state of mesh under pointer, for a specific pointerId, changes.
+     */
+    public onMeshUnderPointerUpdatedObservable = new Observable<{ mesh: Nullable<AbstractMesh>; pointerId: number }>();
+
+    /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
@@ -5266,6 +5271,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onScenePerformancePriorityChangedObservable.clear();
         this.onClearColorChangedObservable.clear();
         this.onEnvironmentTextureChangedObservable.clear();
+        this.onMeshUnderPointerUpdatedObservable.clear();
         this._isDisposed = true;
     }
 
