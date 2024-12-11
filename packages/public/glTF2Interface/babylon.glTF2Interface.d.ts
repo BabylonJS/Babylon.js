@@ -1015,6 +1015,7 @@ declare module BABYLON.GLTF2 {
     interface IEXTLightsIES_LightReference {
         light: number;
         color?: number[];
+        multiplier?: number;
     }
 
     /** @internal */
