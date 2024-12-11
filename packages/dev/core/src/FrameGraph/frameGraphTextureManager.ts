@@ -566,7 +566,10 @@ export class FrameGraphTextureManager {
 
         const textureName = creationOptions.isHistoryTexture ? `${name} ping` : name;
 
-        const label = creationOptions.options.labels?.[textureIndex] ?? "";
+        let label = creationOptions.options.labels?.[textureIndex] ?? "";
+        if (label === textureName) {
+            label = "";
+        }
 
         const textureEntry: TextureEntry = {
             texture,

@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "EXT_lights_ies",
+            "playgroundId": "#UIAXAU#19",
+            "referenceImage": "ext_lights_ies.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "IES Profile",
             "playgroundId": "#UIAXAU#6",
             "referenceImage": "iesprofile.png",

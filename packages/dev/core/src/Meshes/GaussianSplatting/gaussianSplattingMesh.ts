@@ -214,12 +214,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
     private _shTextures: Nullable<BaseTexture[]> = null;
-    //@ts-expect-error
-    private _covariancesA: Nullable<Uint16Array> = null;
-    //@ts-expect-error
-    private _covariancesB: Nullable<Uint16Array> = null;
-    //@ts-expect-error
-    private _colors: Nullable<Uint8Array> = null;
+    private _splatsData: Nullable<ArrayBuffer> = null;
     private _sh: Nullable<Uint8Array[]> = null;
     private readonly _keepInRam: boolean = false;
 
@@ -245,6 +240,13 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get shDegree() {
         return this._shDegree;
+    }
+
+    /**
+     * returns the splats data array buffer that contains in order : postions (3 floats), size (3 floats), color (4 bytes), orientation quaternion (4 bytes)
+     */
+    public get splatsData() {
+        return this._splatsData;
     }
 
     /**
@@ -1046,14 +1048,6 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
         };
 
-        if (this._keepInRam) {
-            this._covariancesA = covA;
-            this._covariancesB = covB;
-            this._colors = colorArray;
-            if (sh) {
-                this._sh = sh;
-            }
-        }
         if (this._covariancesATexture) {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
@@ -1094,6 +1088,13 @@ export class GaussianSplattingMesh extends Mesh {
         // Parse the data
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
+
+        if (this._keepInRam) {
+            this._splatsData = data;
+            if (sh) {
+                this._sh = sh;
+            }
+        }
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
         if (vertexCount != this._vertexCount) {
