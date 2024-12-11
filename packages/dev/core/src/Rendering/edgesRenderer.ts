@@ -271,6 +271,11 @@ export class EdgesRenderer implements IEdgesRenderer {
             shader.checkReadyOnEveryCall = scene.getEngine().isWebGPU;
 
             scene._edgeRenderLineShader = shader;
+
+            scene.onDisposeObservable.add(() => {
+                scene._edgeRenderLineShader!.dispose();
+                scene._edgeRenderLineShader = null;
+            });
         }
 
         return scene._edgeRenderLineShader;
@@ -371,7 +376,6 @@ export class EdgesRenderer implements IEdgesRenderer {
         if (this._ib) {
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
         }
-        this._lineShader.dispose();
 
         this._drawWrapper?.dispose();
     }

@@ -31,6 +31,8 @@ import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
+import type { IShadowLight } from "core/Lights";
+import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -268,6 +270,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: [], particleSystems: [] };
+            } else if (input.isShadowLight()) {
+                input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }
         }
     }
@@ -279,6 +283,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (!this.props.globalState.noAutoFillExternalInputs) {
             this._setExternalInputs();
+
+            // Set default node values
+            const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
+            const allBlocks = nodeRenderGraph.attachedBlocks;
+            for (const block of allBlocks) {
+                if (block.getClassName() === "NodeRenderGraphExecuteBlock") {
+                    (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
+                }
+            }
         }
 
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
@@ -643,11 +656,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
                     {/* Property tab */}
-                    <div className="nrge-right-panel">
+                    <SplitContainer direction={SplitDirection.Vertical} className="nrge-right-panel">
                         <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
-                        {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
-                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
-                    </div>
+                        <Splitter size={8} minSize={200} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+                        <div className="ngre-preview-part">
+                            {!this.state.showPreviewPopUp ? (
+                                <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} />
+                            ) : null}
+                            {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
+                        </div>
+                    </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Render Graph Editor runs only on desktop</div>

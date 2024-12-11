@@ -56,6 +56,11 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_lights(loader);
     });
 
+    registerGLTFExtension("EXT_lights_ies", true, async (loader) => {
+        const { EXT_lights_ies } = await import("./EXT_lights_ies");
+        return new EXT_lights_ies(loader);
+    });
+
     registerGLTFExtension("KHR_materials_anisotropy", true, async (loader) => {
         const { KHR_materials_anisotropy } = await import("./KHR_materials_anisotropy");
         return new KHR_materials_anisotropy(loader);
@@ -169,5 +174,10 @@ export function registerBuiltInGLTFExtensions() {
     registerGLTFExtension("KHR_node_visibility", true, async (loader) => {
         const { KHR_node_visibility } = await import("./KHR_node_visibility");
         return new KHR_node_visibility(loader);
+    });
+
+    registerGLTFExtension("KHR_node_hoverability", true, async (loader) => {
+        const { KHR_node_hoverability } = await import("./KHR_node_hoverability");
+        return new KHR_node_hoverability(loader);
     });
 }

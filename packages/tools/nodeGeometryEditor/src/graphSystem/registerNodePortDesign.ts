@@ -5,6 +5,9 @@ import type { ConnectionPointPortData } from "./connectionPointPortData";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
+    stateManager.getPortColor = (portData: IPortData) => {
+        return BlockTools.GetColorFromConnectionNodeType((portData as ConnectionPointPortData).data.type);
+    };
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => {
         const connectionPortData = portData as ConnectionPointPortData;
         const point = connectionPortData.data;

@@ -1,5 +1,6 @@
 import type {
     AbstractEngine,
+    AbstractMesh,
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
@@ -7,15 +8,20 @@ import type {
     FramingBehavior,
     HotSpotQuery,
     IDisposable,
+    IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
     Nullable,
     Observer,
+    PickingInfo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
+import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -24,16 +30,17 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
-import { AsyncLock } from "core/Misc/asyncLock";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
-import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
+import { AsyncLock } from "core/Misc/asyncLock";
+import { deepMerge } from "core/Misc/deepMerger";
+import { Observable } from "core/Misc/observable";
+import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -146,6 +153,15 @@ export type ViewerDetails = {
      * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
      */
     suspendRendering(): IDisposable;
+
+    /**
+     * Picks the object at the given screen coordinates.
+     * @remarks This function ensures skeletal and morph target animations are up to date before picking, and typically should not be called at high frequency (e.g. every frame, on pointer move, etc.).
+     * @param screenX The x coordinate in screen space.
+     * @param screenY The y coordinate in screen space.
+     * @returns A PickingInfo if an object was picked, otherwise null.
+     */
+    pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
 export type ViewerOptions = Partial<
@@ -157,7 +173,7 @@ export type ViewerOptions = Partial<
     }>
 >;
 
-export type EnvironmentOptions = Partial<Readonly<{}>>;
+export type LoadEnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -287,12 +303,19 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    /**
+     * Fired when the selected material variant changes.
+     */
+    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
+
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
+    private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
+    private _materialVariantsController: Nullable<MaterialVariantsController> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -360,15 +383,34 @@ export class Viewer implements IDisposable {
             });
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
+            camera.useInputToRestoreState = false;
+
+            scene.onPointerObservable.add(async (pointerInfo) => {
+                const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                if (pickingInfo?.pickedPoint) {
+                    const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                    // Immediately reset the target and the radius based on the distance to the picked point.
+                    // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                    camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                    camera.radius = distance;
+                    camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
+                } else {
+                    camera.restoreState();
+                }
+            }, PointerEventTypes.POINTERDOUBLETAP);
+
             this._details = {
                 viewer: this,
                 scene,
                 camera,
                 model: null,
-                suspendRendering: this._suspendRendering.bind(this),
+                suspendRendering: () => this._suspendRendering(),
+                pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
             };
         }
         this._details.scene.skipFrustumClipping = true;
+        this._details.scene.skipPointerDownPicking = true;
+        this._details.scene.skipPointerUpPicking = true;
         this._details.scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._details.camera.attachControl();
@@ -617,6 +659,29 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * The list of material variant names for the currently loaded model.
+     */
+    public get materialVariants(): readonly string[] {
+        return this._materialVariantsController?.variants ?? [];
+    }
+
+    /**
+     * The currently selected material variant.
+     */
+    public get selectedMaterialVariant(): Nullable<string> {
+        return this._materialVariantsController?.selectedVariant ?? null;
+    }
+
+    public set selectedMaterialVariant(value: string) {
+        if (value !== this.selectedMaterialVariant && this._materialVariantsController?.variants.includes(value)) {
+            this._snapshotHelper.disableSnapshotRendering();
+            this._materialVariantsController.selectedVariant = value;
+            this._snapshotHelper.enableSnapshotRendering();
+            this.onSelectedMaterialVariantChanged.notifyObservers();
+        }
+    }
+
+    /**
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
@@ -647,22 +712,35 @@ export class Viewer implements IDisposable {
                 this.onLoadingProgressChanged.notifyObservers();
             }
         };
+        delete options?.onProgress;
 
-        // Enable transparency as coverage by default to be 3D Commerce compliant by default.
-        // https://doc.babylonjs.com/setup/support/3D_commerce_certif
-        if (!options?.pluginOptions?.gltf?.transparencyAsCoverage) {
-            options = {
-                ...options,
-                pluginOptions: {
-                    ...options?.pluginOptions,
-                    gltf: {
-                        ...options?.pluginOptions?.gltf,
-                        transparencyAsCoverage: true,
+        const originalOnMaterialVariantsLoaded = options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+        const onMaterialVariantsLoaded: typeof originalOnMaterialVariantsLoaded = (controller) => {
+            originalOnMaterialVariantsLoaded?.(controller);
+            this._materialVariantsController = controller;
+        };
+        delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+
+        const defaultOptions: LoadModelOptions = {
+            // Pass a progress callback to update the loading progress.
+            onProgress,
+            pluginOptions: {
+                gltf: {
+                    // Enable transparency as coverage by default to be 3D Commerce compliant by default.
+                    // https://doc.babylonjs.com/setup/support/3D_commerce_certif
+                    transparencyAsCoverage: true,
+                    extensionOptions: {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        KHR_materials_variants: {
+                            // Capture the material variants controller when it is loaded.
+                            onLoaded: onMaterialVariantsLoaded,
+                        },
                     },
                 },
-                onProgress,
-            };
-        }
+            },
+        };
+
+        options = deepMerge(defaultOptions, options ?? {});
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
@@ -672,6 +750,9 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.disableSnapshotRendering();
             this._details.model?.dispose();
             this._details.model = null;
+            this._meshDataCache.clear();
+            this._materialVariantsController = null;
+            this.onSelectedMaterialVariantChanged.notifyObservers();
             this.selectedAnimation = -1;
 
             try {
@@ -680,6 +761,7 @@ export class Viewer implements IDisposable {
                     this._modelLoadingProgress = 0;
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                    this.onSelectedMaterialVariantChanged.notifyObservers();
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
                         group.pause();
@@ -712,7 +794,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
@@ -724,7 +806,7 @@ export class Viewer implements IDisposable {
         await this._updateEnvironment(undefined, undefined, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -919,6 +1001,11 @@ export class Viewer implements IDisposable {
         if (!this._renderLoopController) {
             const render = () => {
                 this._details.scene.render();
+
+                // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                this._details.camera.panningSensibility = 5000 / this._details.camera.radius;
+                this._details.camera.speed = this._details.camera.radius * 0.2;
+
                 if (this.isAnimationPlaying) {
                     this.onAnimationProgressChanged.notifyObservers();
                     this._autoRotationBehavior.resetLastInteractionTime();
@@ -941,11 +1028,12 @@ export class Viewer implements IDisposable {
     }
 
     private _updateCamera(interpolate = false): void {
-        // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
+
+        this._details.camera.useAutoRotationBehavior = true;
 
         const currentAlpha = this._details.camera.alpha;
         const currentBeta = this._details.camera.beta;
@@ -980,20 +1068,16 @@ export class Viewer implements IDisposable {
 
             goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
-        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
         this._details.camera.radius = goalRadius;
         this._details.camera.target = goalTarget;
-        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.001;
+        this._details.camera.upperRadiusLimit = goalRadius * 5;
+        this._details.camera.minZ = goalRadius * 0.001;
         this._details.camera.maxZ = goalRadius * 1000;
-        this._details.camera.speed = goalRadius * 0.2;
-        this._details.camera.useAutoRotationBehavior = true;
-        this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
-        this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
         this._details.camera.wheelDeltaPercentage = 0.01;
-        this._details.camera.pinchDeltaPercentage = 0.01;
+        this._details.camera.useNaturalPinchZoom = true;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
 
@@ -1037,6 +1121,29 @@ export class Viewer implements IDisposable {
 
     private _applyAnimationSpeed() {
         this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
+    }
+
+    private async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
+        await import("core/Culling/ray");
+        if (this._details.model) {
+            const model = this._details.model;
+            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
+            model.meshes.forEach((mesh) => {
+                let cache = this._meshDataCache.get(mesh);
+                if (!cache) {
+                    cache = {};
+                    this._meshDataCache.set(mesh, cache);
+                }
+                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+            });
+
+            const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
+            if (pickingInfo.hit) {
+                return pickingInfo;
+            }
+        }
+
+        return null;
     }
 
     /**

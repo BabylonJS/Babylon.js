@@ -5,6 +5,9 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { ConnectionPointPortData } from "./connectionPointPortData";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
+    stateManager.getPortColor = (portData: IPortData) => {
+        return BlockTools.GetColorFromConnectionNodeType((portData as ConnectionPointPortData).data.type);
+    };
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {
         const type = (portData as ConnectionPointPortData).data.type;
 

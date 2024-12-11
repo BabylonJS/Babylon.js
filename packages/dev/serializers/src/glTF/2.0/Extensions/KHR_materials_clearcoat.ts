@@ -1,6 +1,6 @@
 import type { IMaterial, IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -23,11 +23,11 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -70,12 +70,12 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
 
-                const clearCoatTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
+                const clearCoatTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.texture);
                 let clearCoatTextureRoughnessInfo;
                 if (babylonMaterial.clearCoat.useRoughnessFromMainTexture) {
-                    clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.texture);
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.texture);
                 } else {
-                    clearCoatTextureRoughnessInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
                 }
 
                 if (babylonMaterial.clearCoat.isTintEnabled) {
@@ -86,7 +86,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     Tools.Warn(`Clear Color F0 remapping is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
                 }
 
-                const clearCoatNormalTextureInfo = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
+                const clearCoatNormalTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
 
                 const clearCoatInfo: IKHRMaterialsClearcoat = {
                     clearcoatFactor: babylonMaterial.clearCoat.intensity,
@@ -94,10 +94,11 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     clearcoatRoughnessFactor: babylonMaterial.clearCoat.roughness,
                     clearcoatRoughnessTexture: clearCoatTextureRoughnessInfo ?? undefined,
                     clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
-                    hasTextures: () => {
-                        return clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null;
-                    },
                 };
+
+                if (clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
 
                 node.extensions[NAME] = clearCoatInfo;
             }
@@ -106,4 +107,4 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat(exporter));

@@ -48,6 +48,11 @@ export class MaterialPluginBase {
     @serialize()
     public registerForExtraEvents: boolean = false;
 
+    /**
+     * Specifies if the material plugin should be serialized, `true` to skip serialization
+     */
+    public doNotSerialize = false;
+
     protected _material: Material;
     protected _pluginManager: MaterialPluginManager;
     protected _pluginDefineNames?: { [name: string]: any };

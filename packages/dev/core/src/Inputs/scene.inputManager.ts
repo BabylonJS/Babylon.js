@@ -658,6 +658,9 @@ export class InputManager {
 
             let needToIgnoreNext = false;
 
+            // Never pick if this is a multi-touch gesture (e.g. pinch)
+            checkPicking = checkPicking && !this._isMultiTouchGesture;
+
             if (checkPicking) {
                 const btn = evt.button;
                 clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1133,7 +1136,7 @@ export class InputManager {
     }
 
     /**
-     * Force the value of meshUnderPointer
+     * Set the value of meshUnderPointer for a given pointerId
      * @param mesh - defines the mesh to use
      * @param pointerId - optional pointer id when using more than one pointer. Defaults to 0
      * @param pickResult - optional pickingInfo data used to find mesh
@@ -1165,6 +1168,13 @@ export class InputManager {
         } else {
             delete this._meshUnderPointerId[pointerId];
             this._pointerOverMesh = null;
+        }
+        // if we reached this point, meshUnderPointerId has been updated. We need to notify observers that are registered.
+        if (this._scene.onMeshUnderPointerUpdatedObservable.hasObservers()) {
+            this._scene.onMeshUnderPointerUpdatedObservable.notifyObservers({
+                mesh,
+                pointerId,
+            });
         }
     }
 

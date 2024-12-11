@@ -1129,7 +1129,7 @@ async function appendAsync(
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  */
-export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<void> {
+export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }

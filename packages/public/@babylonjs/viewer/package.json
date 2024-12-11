@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "7.37.0",
+    "version": "7.39.2",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,10 +18,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "dependencies": {
-        "@babylonjs/core": "^7.37.0",
-        "@babylonjs/loaders": "^7.37.0",
-        "babylonjs-gltf2interface": "^7.37.0",
-        "babylonjs-viewer-assets": "^7.37.0",
+        "@babylonjs/core": "^7.39.2",
+        "@babylonjs/loaders": "^7.39.2",
+        "babylonjs-gltf2interface": "^7.39.2",
+        "babylonjs-viewer-assets": "^7.39.2",
         "deepmerge": "~4.2.2",
         "handlebars": "~4.7.7",
         "pepjs": "~0.5.3",

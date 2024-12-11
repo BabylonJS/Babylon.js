@@ -12,6 +12,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Camera } from "../Cameras/camera";
 import { RegisterClass } from "../Misc/typeStore";
+import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -44,6 +45,30 @@ export class SpotLight extends ShadowLight {
 
     private _lightAngleScale: number;
     private _lightAngleOffset: number;
+
+    private _iesProfileTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Gets or sets the IES profile texture used to create the spotlight
+     * #UIAXAU#1
+     */
+    public get iesProfileTexture(): Nullable<BaseTexture> {
+        return this._iesProfileTexture;
+    }
+
+    public set iesProfileTexture(value: Nullable<BaseTexture>) {
+        if (this._iesProfileTexture === value) {
+            return;
+        }
+
+        this._iesProfileTexture = value;
+
+        if (this._iesProfileTexture && SpotLight._IsTexture(this._iesProfileTexture)) {
+            this._iesProfileTexture.onLoadObservable.addOnce(() => {
+                this._markMeshesAsLightDirty();
+            });
+        }
+    }
 
     /**
      * Gets the cone angle of the spot light in Radians.
@@ -385,6 +410,10 @@ export class SpotLight extends ShadowLight {
             effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
             effect.setTexture("projectionLightTexture" + lightIndex, this.projectionTexture);
         }
+
+        if (this._iesProfileTexture && this._iesProfileTexture.isReady()) {
+            effect.setTexture("iesLightTexture" + lightIndex, this._iesProfileTexture);
+        }
         return this;
     }
 
@@ -439,6 +468,10 @@ export class SpotLight extends ShadowLight {
         if (this._projectionTexture) {
             this._projectionTexture.dispose();
         }
+        if (this._iesProfileTexture) {
+            this._iesProfileTexture.dispose();
+            this._iesProfileTexture = null;
+        }
     }
 
     /**
@@ -446,9 +479,9 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    public override getDepthMinZ(activeCamera: Camera): number {
+    public override getDepthMinZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : (activeCamera?.minZ ?? Constants.ShadowMinZ);
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? minZ : this._scene.getEngine().isNDCHalfZRange ? 0 : minZ;
     }
@@ -458,9 +491,9 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    public override getDepthMaxZ(activeCamera: Camera): number {
+    public override getDepthMaxZ(activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : (activeCamera?.maxZ ?? Constants.ShadowMaxZ);
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }
@@ -473,6 +506,7 @@ export class SpotLight extends ShadowLight {
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["SPOTLIGHT" + lightIndex] = true;
         defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
+        defines["IESLIGHTTEXTURE" + lightIndex] = this._iesProfileTexture && this._iesProfileTexture.isReady() ? true : false;
     }
 }
 

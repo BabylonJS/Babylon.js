@@ -44,12 +44,13 @@
 
     .nrge-right-panel {
         height: 100%;
-        overflow-y: auto;
+        overflow: hidden;
     }
 
     #propertyTab {
         grid-row: 1;
         grid-column: 1;
+        overflow-y: auto;
     }
 
     .button {
@@ -75,6 +76,11 @@
             justify-content: stretch;
             text-align: center;
         }
+    }
+
+    .ngre-preview-part {
+        display: grid;
+        grid-template-rows: 40px 1fr 40px;
     }
 
     #preview-mesh-bar {
@@ -264,7 +270,7 @@
 
     #preview {
         border-top: 1px solid rgb(85, 85, 85);
-        grid-row: 3;
+        grid-row: 2;
         grid-column: 1;
         width: 100%;
         display: grid;
@@ -274,8 +280,7 @@
         padding: 0 !important;
         user-select: none;
         overflow: hidden;
-        aspect-ratio: 1 / 1;
-        height: auto;
+        height: 100%;
 
         #preview-canvas {
             width: 100%;
