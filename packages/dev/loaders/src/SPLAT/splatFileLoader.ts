@@ -258,8 +258,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const ny = y / 127.5 - 1;
             const nz = z / 127.5 - 1;
             rot[i * 32 + 28 + 1] = x;
-            rot[i * 32 + 28 + 2] = y;
-            rot[i * 32 + 28 + 3] = z;
+            rot[i * 32 + 28 + 2] = -ny * 127.5 + 127.5;
+            rot[i * 32 + 28 + 3] = -nz * 127.5 + 127.5;
             rot[i * 32 + 28 + 0] = (1 - Math.sqrt(nx * nx + ny * ny + nz * nz)) * 127.5 + 127.5;
             byteOffset += 3;
         }
