@@ -251,6 +251,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._resumePromise = this.audioContext.resume();
+        return this._resumePromise;
     }
 
     /** @internal */
