@@ -987,10 +987,10 @@ export class GaussianSplattingMesh extends Mesh {
         maximum.maximizeInPlaceFromFloats(x, y, z);
 
         quaternion.set(
-            (uBuffer[32 * sourceIndex + 28 + 1] - 128) / 128,
-            (uBuffer[32 * sourceIndex + 28 + 2] - 128) / 128,
-            (uBuffer[32 * sourceIndex + 28 + 3] - 128) / 128,
-            -(uBuffer[32 * sourceIndex + 28 + 0] - 128) / 128
+            (uBuffer[32 * sourceIndex + 28 + 1] - 127.5) / 127.5,
+            (uBuffer[32 * sourceIndex + 28 + 2] - 127.5) / 127.5,
+            (uBuffer[32 * sourceIndex + 28 + 3] - 127.5) / 127.5,
+            -(uBuffer[32 * sourceIndex + 28 + 0] - 127.5) / 127.5
         );
         quaternion.toRotationMatrix(matrixRotation);
 

@@ -233,10 +233,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         }
 
         // colors
+        const SH_C0 = 0.282;
         for (let i = 0; i < splatCount; i++) {
-            rgba[i * 32 + 24 + 0] = ubuf[byteOffset + splatCount + i * 3 + 0];
-            rgba[i * 32 + 24 + 1] = ubuf[byteOffset + splatCount + i * 3 + 1];
-            rgba[i * 32 + 24 + 2] = ubuf[byteOffset + splatCount + i * 3 + 2];
+            const r = ubuf[byteOffset + splatCount + i * 3 + 0];
+            const g = ubuf[byteOffset + splatCount + i * 3 + 1];
+            const b = ubuf[byteOffset + splatCount + i * 3 + 2];
+
+            rgba[i * 32 + 24 + 0] = Math.max(Math.min((r / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
+            rgba[i * 32 + 24 + 1] = Math.max(Math.min((g / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
+            rgba[i * 32 + 24 + 2] = Math.max(Math.min((b / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
             rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
         }
         byteOffset += splatCount * 4;
@@ -260,7 +265,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             rot[i * 32 + 28 + 1] = x;
             rot[i * 32 + 28 + 2] = y;
             rot[i * 32 + 28 + 3] = z;
-            rot[i * 32 + 28 + 0] = (1 - Math.sqrt(nx * nx + ny * ny + nz * nz)) * 127.5 + 127.5;
+            const v = 1 - (nx * nx + ny * ny + nz * nz);
+            rot[i * 32 + 28 + 0] = 127.5 - Math.sqrt(v < 0 ? 0 : v) * 127.5;
             byteOffset += 3;
         }
 
