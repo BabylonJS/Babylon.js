@@ -228,7 +228,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         for (let i = 0; i < splatCount; i++) {
             position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
             position[i * 8 + 1] = -read24bComponent(ubuf, byteOffset + 3);
-            position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
+            position[i * 8 + 2] = -read24bComponent(ubuf, byteOffset + 6);
             byteOffset += 9;
         }
 
