@@ -10,7 +10,7 @@ import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePlugin";
-import type { IPhysicsEnginePluginV2, PhysicsMassProperties } from "../Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode, type IPhysicsEnginePluginV2, type PhysicsMassProperties } from "../Physics/v2/IPhysicsEnginePlugin";
 import { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
@@ -278,6 +278,20 @@ export class PhysicsViewer {
                 Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
                 childTransformNode.rotationQuaternion!
             );
+
+            // align distance constraints
+            // mesh to align
+            const directDescendants = parentCoordSystemNode.parent?.getDescendants(true);
+            if (directDescendants && directDescendants?.length >= 2) {
+                const descendants = parentCoordSystemNode.parent?.getDescendants(true);
+                const constraintA = descendants![0] as TransformNode;
+                // second child transform
+                const constraintB = descendants![1] as TransformNode;
+                if (constraintA && constraintB) {
+                    constraintA.lookAt(constraintB.absolutePosition);
+                    constraintA.position.copyFrom(parentCoordSystemNode.position);
+                }
+            }
         });
     }
 
@@ -626,6 +640,20 @@ export class PhysicsViewer {
         return this._debugInertiaMaterial;
     }
 
+    private _getDebugAxisColoredMaterial(axisNumber: number, scene: Scene): Material {
+        const material = new StandardMaterial("", scene);
+        material.emissiveColor = axisNumber == 0 ? Color3.Red() : axisNumber == 1 ? Color3.Green() : Color3.Blue();
+        material.disableLighting = true;
+        return material;
+    }
+
+    private _getDebugConstaintVisMaterial(color: Color3, scene: Scene): Material {
+        const material = new StandardMaterial("", scene);
+        material.emissiveColor = color;
+        material.disableLighting = true;
+        return material;
+    }
+
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
         if (!this._debugBoxMesh) {
             this._debugBoxMesh = CreateBox("physicsBodyBoxViewMesh", { size: 1 }, scene);
@@ -668,6 +696,37 @@ export class PhysicsViewer {
         }
 
         return this._debugCylinderMesh.createInstance("physicsBodyCylinderViewInstance");
+    }
+
+    private _createDistanceMinMax(
+        parent: TransformNode,
+        constraintFrom: TransformNode,
+        constraintTo: TransformNode,
+        minLimit: number,
+        maxLimit: number,
+        scene: Scene
+    ): [AbstractMesh, AbstractMesh] {
+        const preMeshTransform = new TransformNode("preMinMaxTransform", scene);
+        preMeshTransform.parent = constraintFrom;
+        //preMeshTransform.position.copyFrom(constraintFrom.position);
+
+        const minCylinderMesh = CreateCylinder("minDistanceCylinderMesh", { diameterTop: 0.01, diameterBottom: 0.01, height: 1 }, scene);
+        minCylinderMesh.rotation.x = Math.PI * 0.5;
+        minCylinderMesh.position.z = minLimit * 0.5;
+        minCylinderMesh.scaling.y = minLimit;
+        minCylinderMesh.material = this._getDebugConstaintVisMaterial(Color3.Yellow(), scene);
+        minCylinderMesh.setEnabled(true);
+        minCylinderMesh.parent = preMeshTransform;
+
+        const maxCylinderMesh = CreateCylinder("maxDistanceCylinderMesh", { diameterTop: 0.01, diameterBottom: 0.01, height: 1 }, scene);
+        maxCylinderMesh.rotation.x = Math.PI * 0.5;
+        maxCylinderMesh.position.z = (minLimit + maxLimit) * 0.5;
+        maxCylinderMesh.scaling.y = maxLimit - minLimit;
+        maxCylinderMesh.material = this._getDebugConstaintVisMaterial(Color3.Green(), scene);
+        maxCylinderMesh.setEnabled(true);
+        maxCylinderMesh.parent = preMeshTransform;
+
+        return [minCylinderMesh, maxCylinderMesh];
     }
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
@@ -873,6 +932,32 @@ export class PhysicsViewer {
         }
     }
 
+    private _createAngularConstraintMesh(minLimit: number, maxLimit: number, axisNumber: number, parent: TransformNode, scene: Scene): AbstractMesh {
+        const arcAngle = (maxLimit - minLimit) / (Math.PI * 2);
+        const mesh = MeshBuilder.CreateCylinder("cone", { height: 0.01, diameter: 1, arc: arcAngle }, scene);
+        mesh.material = this._getDebugAxisColoredMaterial(axisNumber, scene);
+        mesh.parent = parent;
+        switch (axisNumber) {
+            case 0:
+                mesh.rotation.z = Math.PI * 0.5;
+                break;
+            case 1:
+                break;
+            case 2:
+                mesh.rotation.x = Math.PI * 0.5;
+                break;
+        }
+
+        return mesh;
+    }
+
+    private _createAngularFreeConstraintMesh(parent: TransformNode, scene: Scene): AbstractMesh {
+        const mesh = MeshBuilder.CreateSphere("axisFreeConstraint", { diameter: 0.3 }, scene);
+        mesh.material = this._getDebugConstaintVisMaterial(Color3.Purple(), scene);
+        mesh.parent = parent;
+        return mesh;
+    }
+
     private _getDebugConstraintMesh(constraint: PhysicsConstraint): Nullable<AbstractMesh> {
         if (!this._utilityLayer) {
             return null;
@@ -949,6 +1034,42 @@ export class PhysicsViewer {
             childAxes.xAxis.parent = childTransformNode;
             childAxes.yAxis.parent = childTransformNode;
             childAxes.zAxis.parent = childTransformNode;
+
+            // constrain vis
+            const engine = this._physicsEnginePlugin! as IPhysicsEnginePluginV2;
+
+            const constraintAxis = [PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxis.ANGULAR_Y, PhysicsConstraintAxis.ANGULAR_Z];
+            // count axis
+            let lockcount = 0;
+            const freeAxis = [];
+            for (let axis = 0; axis < 3; axis++) {
+                const constraintAxisValue = constraintAxis[axis];
+                const axisMode = engine.getAxisMode(constraint, constraintAxisValue);
+                if (axisMode == PhysicsConstraintAxisLimitMode.LOCKED) {
+                    lockcount++;
+                } else {
+                    freeAxis.push(axis);
+                }
+            }
+
+            if (lockcount == 0) {
+                // render as sphere
+                this._createAngularFreeConstraintMesh(parentTransformNode, utilityLayerScene);
+            } else {
+                for (let axisIndex = 0; axisIndex < 3 - lockcount; axisIndex++) {
+                    const axis = freeAxis[axisIndex];
+                    const minLimit = engine.getAxisMinLimit(constraint, axis);
+                    const maxLimit = engine.getAxisMaxLimit(constraint, axis);
+                    this._createAngularConstraintMesh(minLimit!, maxLimit!, axis, parentTransformNode, utilityLayerScene);
+                }
+            }
+
+            // distance
+            if (engine.getAxisMode(constraint, PhysicsConstraintAxis.LINEAR_DISTANCE) == PhysicsConstraintAxisLimitMode.LIMITED) {
+                const minLimit = engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_DISTANCE);
+                const maxLimit = engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_DISTANCE);
+                /*const distanceMinMax = */ this._createDistanceMinMax(parentOfPair, parentTransformNode, childTransformNode, minLimit!, maxLimit!, utilityLayerScene);
+            }
         }
 
         return parentingMesh;
