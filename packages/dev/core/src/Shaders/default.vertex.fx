@@ -1,4 +1,6 @@
-﻿#include<__decl__defaultVertex>
+﻿#define CUSTOM_VERTEX_EXTENSION
+
+#include<__decl__defaultVertex>
 // Attributes
 
 #define CUSTOM_VERTEX_BEGIN
