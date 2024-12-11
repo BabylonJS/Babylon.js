@@ -1,5 +1,7 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./Interfaces/IAudioEngine";
 export * from "./Interfaces/ISoundOptions";
+export * from "./v2/index";
 export * from "./analyser";
 export * from "./audioEngine";
 export * from "./audioSceneComponent";
