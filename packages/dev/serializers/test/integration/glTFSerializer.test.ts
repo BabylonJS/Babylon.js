@@ -60,7 +60,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.roughness).toBeCloseTo(0.328809, 1e-6);
         });
         it("should solve for metallic", async () => {
-            const assertionData = await page.evaluate(async () => {
+            const assertionData = await page.evaluate(() => {
                 const solveZero = BABYLON.GLTF2.Exporter._SolveMetallic(1.0, 0.0, 1.0);
                 const solveApproxOne = BABYLON.GLTF2.Exporter._SolveMetallic(0.0, 1.0, 1.0);
                 return {
