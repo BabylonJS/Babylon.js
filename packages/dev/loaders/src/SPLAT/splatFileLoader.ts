@@ -238,7 +238,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const r = ubuf[byteOffset + splatCount + i * 3 + 0];
             const g = ubuf[byteOffset + splatCount + i * 3 + 1];
             const b = ubuf[byteOffset + splatCount + i * 3 + 2];
-
+            // color boost:
+            // not exactly what is computed with Niantic version but close enough
+            // remap color value from [0..1] to [-SH_C0..1-SH_C0] then scale by 1. + 4*SH_C0
+            // and clamp/remap result back to [0..255]
             rgba[i * 32 + 24 + 0] = Math.max(Math.min((r / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
             rgba[i * 32 + 24 + 1] = Math.max(Math.min((g / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
             rgba[i * 32 + 24 + 2] = Math.max(Math.min((b / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
