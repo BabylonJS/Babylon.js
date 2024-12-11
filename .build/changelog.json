@@ -1,54 +1,33 @@
 {
-    "fromTag": "7.39.1",
+    "fromTag": "7.39.2",
     "changelog": {
-        "7.39.1": [
+        "7.39.3": [
             {
-                "pr": "15967",
-                "title": "Material: Fix disposing resources when disposing of a material",
-                "description": "Follow up to #15964\r\n\r\nTest PG: https://playground.babylonjs.com/#6JQCUT#8\r\n\r\nNote that this PG works without the PR because the current code is bugged (`meshMap` is not correctly updated by `AbstractMesh.setMaterialForRenderPass`)!",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Meshes/abstractMesh.ts",
-                    "packages/dev/core/src/Rendering/objectRenderer.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "15968",
-                "title": "Keep splats datas in ram",
-                "description": "so user can modify and save splats.\r\n\r\nhttps://forum.babylonjs.com/t/downloading-gaussian-splat-file/55226\r\n\r\nhttps://github.com/BabylonJS/Documentation/pull/1242\r\n\r\n",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
-                ],
-                "tags": [
-                    "enhancement"
-                ]
-            },
-            {
-                "pr": "15965",
-                "title": "Fix camera serialization",
+                "pr": "15990",
+                "title": "Fix leaking state on context lost",
                 "description": null,
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                    "packages/dev/core/src/Engines/thinEngine.ts"
                 ],
-                "tags": [
-                    "bug"
-                ]
+                "tags": []
+            },
+            {
+                "pr": "15989",
+                "title": "Small Viewer fixes",
+                "description": "1. Disable pick on pointer down/up (not just move). Picking handled explicitly.\r\n2. Hotspots default UI tries to use a <select> element like a menu (no \"selected\" item). To do this, I was adding a hidden option that is selected. I found though that this doesn't work in some browsers, in that it just shows the hidden option. I tried a new approach here that just programmatically clears the selected value after it changes, which works on all browsers except chromium (Chrome/Edge) on Mac, where the only thing that doesn't work correctly is that it shows a check mark by the first item when there is no selected value. I will probably need to replace the use of <select> with a custom dropdown, but that will come later. For now, this is still an improvement.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
             }
         ],
         "7.39.2": [
@@ -407,6 +386,56 @@
                 ],
                 "tags": [
                     "new feature"
+                ]
+            }
+        ],
+        "7.39.1": [
+            {
+                "pr": "15967",
+                "title": "Material: Fix disposing resources when disposing of a material",
+                "description": "Follow up to #15964\r\n\r\nTest PG: https://playground.babylonjs.com/#6JQCUT#8\r\n\r\nNote that this PG works without the PR because the current code is bugged (`meshMap` is not correctly updated by `AbstractMesh.setMaterialForRenderPass`)!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15968",
+                "title": "Keep splats datas in ram",
+                "description": "so user can modify and save splats.\r\n\r\nhttps://forum.babylonjs.com/t/downloading-gaussian-splat-file/55226\r\n\r\nhttps://github.com/BabylonJS/Documentation/pull/1242\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15965",
+                "title": "Fix camera serialization",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],

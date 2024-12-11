@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.39.3
+
+### Core
+
+- Fix leaking state on context lost - by [sebavan](https://github.com/sebavan) ([#15990](https://github.com/BabylonJS/Babylon.js/pull/15990))
+
 ## 7.39.2
 
 ### Core
