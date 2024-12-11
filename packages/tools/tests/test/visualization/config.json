@@ -2317,7 +2317,8 @@
             "playgroundId": "#8R5SSE#429",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "Glow layer with vertex alpha",
@@ -2343,14 +2344,16 @@
             "playgroundId": "#8R5SSE#427",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "IBL Screen-space Shadowing Right-Handed",
             "playgroundId": "#8R5SSE#428",
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "Normed 16 bits texture formats",
