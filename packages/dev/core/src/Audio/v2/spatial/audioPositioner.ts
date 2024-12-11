@@ -1,7 +1,7 @@
-import type { Quaternion, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
-import type { Nullable } from "../../types";
-import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Nullable } from "../../../types";
+import { AbstractAudioNode, AudioNodeType } from "../abstractAudioNode";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
@@ -69,7 +69,7 @@ export abstract class AudioPositioner extends AbstractAudioNode {
     }
 
     /**
-     * The scale of the audio positioner.
+     * The attached transform node of the audio positioner.
      */
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._spatialTransform.attachedTransformNode;

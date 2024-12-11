@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
-import type { AudioPositioner } from "../audioPositioner";
+import type { AudioPositioner } from "../spatial/audioPositioner";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 import { _CreateAudioPositionerAsync } from "./webAudioPositioner";

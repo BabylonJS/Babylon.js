@@ -1,8 +1,8 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { IAudioPositionerOptions } from "../audioPositioner";
-import { AudioPositioner } from "../audioPositioner";
-import type { ISpatialAudioTransformOptions } from "../spatialAudioTransform";
+import type { IAudioPositionerOptions } from "../spatial/audioPositioner";
+import { AudioPositioner } from "../spatial/audioPositioner";
+import type { ISpatialAudioTransformOptions } from "../spatial/spatialAudioTransform";
 
 /** @internal */
 export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {}

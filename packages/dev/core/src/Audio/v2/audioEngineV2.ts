@@ -4,7 +4,7 @@ import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSound } from "./abstractSound";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
-import type { SpatialAudioListener } from "./spatialAudioListener";
+import type { SpatialAudioListener } from "./spatial/spatialAudioListener";
 
 const instances: AudioEngineV2[] = [];
 
