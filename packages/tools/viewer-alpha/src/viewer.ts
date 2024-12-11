@@ -409,6 +409,8 @@ export class Viewer implements IDisposable {
             };
         }
         this._details.scene.skipFrustumClipping = true;
+        this._details.scene.skipPointerDownPicking = true;
+        this._details.scene.skipPointerUpPicking = true;
         this._details.scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._details.camera.attachControl();
