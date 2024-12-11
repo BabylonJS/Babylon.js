@@ -1,4 +1,5 @@
 export * from "./elbowBlock";
+export * from "./executeBlock";
 export * from "./inputBlock";
 export * from "./outputBlock";
 export * from "./resourceContainerBlock";

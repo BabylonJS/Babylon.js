@@ -31,6 +31,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);

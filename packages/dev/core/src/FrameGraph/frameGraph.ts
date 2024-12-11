@@ -12,7 +12,6 @@ enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
     Cull = 2,
-    Compute = 3,
 }
 
 /**
@@ -83,8 +82,8 @@ export class FrameGraph {
      * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
      * @returns The render pass created
      */
-    public addPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
-        return this._addPass(name, FrameGraphPassType.Normal, whenTaskDisabled) as FrameGraphRenderPass;
+    public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
+        return this._addPass(name, FrameGraphPassType.Normal, whenTaskDisabled) as FrameGraphPass<FrameGraphContext>;
     }
 
     /**

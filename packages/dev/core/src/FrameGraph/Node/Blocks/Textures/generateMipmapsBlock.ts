@@ -28,6 +28,7 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
         super(name, frameGraph, scene);
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);

@@ -31,6 +31,7 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);

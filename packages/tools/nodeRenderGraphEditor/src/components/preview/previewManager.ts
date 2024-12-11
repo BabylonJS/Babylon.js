@@ -25,6 +25,7 @@ import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { BoundingBox } from "core/Culling/boundingBox";
+import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 
 const useWebGPU = false;
 const debugTextures = false;
@@ -315,6 +316,14 @@ export class PreviewManager {
                 } else {
                     input.value = dummyLight;
                 }
+            }
+        }
+
+        // Set default node values
+        const allBlocks = this._nodeRenderGraph.attachedBlocks;
+        for (const block of allBlocks) {
+            if (block.getClassName() === "NodeRenderGraphExecuteBlock") {
+                (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
             }
         }
 
