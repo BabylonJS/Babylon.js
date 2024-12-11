@@ -897,6 +897,13 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Resets the camera to its initial pose.
+     */
+    public resetCamera() {
+        this._details.camera.restoreState();
+    }
+
+    /**
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
