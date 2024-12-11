@@ -485,11 +485,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       shadowAccum += min(1.0 - opacity, cosNL);
       sampleWeight += cosNL;
       // spec shadow
-      var VR : vec3f = -(uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz;
-      #ifdef RIGHT_HANDED
-        VR.z *= -1.0;
-      #endif
-      specShadowAccum += 1.0;//max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
+      var VR : vec3f = abs((uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz);
+      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
     }
     noise.z = fract(noise.z + GOLD);
   }
