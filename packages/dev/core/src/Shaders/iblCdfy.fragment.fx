@@ -1,5 +1,8 @@
 precision highp sampler2D;
 precision highp samplerCube;
+
+#include<helperFunctions>
+
 #define PI 3.1415927
 varying vec2 vUV;
 
@@ -11,26 +14,15 @@ uniform sampler2D iblSource;
 uniform int iblHeight;
 
 #ifdef IBL_USE_CUBE_MAP
-vec3 equirectangularToCubemapDirection(vec2 uv) {
-  float longitude = uv.x * 2.0 * PI - PI;
-  float latitude = PI * 0.5 - uv.y * PI;
-  vec3 direction;
-  direction.x = cos(latitude) * sin(longitude);
-  direction.y = sin(latitude);
-  direction.z = cos(latitude) * cos(longitude);
-  return direction;
-}
-
 float fetchCube(vec2 uv) {
   vec3 direction = equirectangularToCubemapDirection(uv);
-  return sin(PI * uv.y) * dot(textureCubeLodEXT(iblSource, direction, 0.0).rgb,
-                              vec3(0.3, 0.6, 0.1));
+  return sin(PI * uv.y) * dot(textureCubeLodEXT(iblSource, direction, 0.0).rgb, LuminanceEncodeApprox);
 }
 #else
 
 float fetchPanoramic(ivec2 Coords, float envmapHeight) {
   return sin(PI * (float(Coords.y) + 0.5) / envmapHeight) *
-         dot(texelFetch(iblSource, Coords, 0).rgb, vec3(0.3, 0.6, 0.1));
+         dot(texelFetch(iblSource, Coords, 0).rgb, LuminanceEncodeApprox);
 }
 #endif
 

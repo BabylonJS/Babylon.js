@@ -1489,8 +1489,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
-            "icdfxSampler",
-            "icdfySampler",
+            "icdfSampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -2307,8 +2306,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     //if realtime filtering and using CDF maps, set them.
                     const cdfGenerator = this.getScene().iblCdfGenerator;
                     if (this.realTimeFiltering && cdfGenerator) {
-                        ubo.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
-                        ubo.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
+                        ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
                     }
                 }
 

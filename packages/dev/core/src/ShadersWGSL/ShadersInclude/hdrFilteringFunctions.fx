@@ -22,6 +22,20 @@
         return log2(x) / 2.;
     }
 
+    
+    fn uv_to_normal(uv: vec2f) -> vec3f {
+        var N: vec3f;
+
+        var uvRange: vec2f = uv;
+        var theta: f32 = uvRange.x * 2.0 * PI;
+        var phi: f32 = uvRange.y * PI;
+
+        N.x = cos(theta) * sin(phi);
+        N.z = sin(theta) * sin(phi);
+        N.y = cos(phi);
+        return N;
+    }
+
         const NUM_SAMPLES_FLOAT: f32 =  f32(NUM_SAMPLES);
         const NUM_SAMPLES_FLOAT_INVERSED: f32 = 1. / NUM_SAMPLES_FLOAT;
 
@@ -145,7 +159,7 @@
 
         fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
         #ifdef IBL_CDF_FILTERING
-            , icdfxSampler: texture_2d<f32>, icdfxSamplerSampler: sampler, icdfySampler: texture_2d<f32>, icdfySamplerSampler: sampler
+            , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
         ) -> vec3f
         {
@@ -169,11 +183,10 @@
 
                 #ifdef IBL_CDF_FILTERING
                     var T: vec2f;
-                    T.x = textureSampleLevel(icdfxSampler, icdfxSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
-                    T.y = textureSampleLevel(icdfySampler, icdfySamplerSampler, vec2(T.x, Xi.y), 0.0).x;
-                    T.x = 1.0 - fract(T.x + 0.25);
-                    vec3 Ls = uv_to_normal(T);
-                    float NoL = dot(n, Ls);
+                    T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
+                    T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
+                    var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
+                    var NoL: f32 = dot(n, Ls);
                 #else
                     var Ls: vec3f = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
@@ -182,15 +195,16 @@
                 #endif
 
                 if (NoL > 0.) {
-                    var pdf_inversed: f32 = PI / NoL;
-
-                    var omegaS: f32 = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
-                    var l: f32 = log4(omegaS) - log4(omegaP) + log4(K);
-                    var mipLevel: f32 = clamp(l, 0.0, maxLevel);
-
+                    
                     #ifdef IBL_CDF_FILTERING
-                        var c: vec3f = textureSampleLevel(inputTexture, inputSampler, Ls, mipLevel).rgb;
+                        var pdf: f32 = textureSampleLevel(icdfSampler, icdfSamplerSampler, T, 0.0).z;
+                        var c: vec3f = textureSampleLevel(inputTexture, inputSampler, Ls, 0.0).rgb;
                     #else
+                        var pdf_inversed: f32 = PI / NoL;
+
+                        var omegaS: f32 = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
+                        var l: f32 = log4(omegaS) - log4(omegaP) + log4(K);
+                        var mipLevel: f32 = clamp(l, 0.0, maxLevel);
                         var c: vec3f = textureSampleLevel(inputTexture, inputSampler, tbn * Ls, mipLevel).rgb;
                     #endif
                     #ifdef GAMMA_INPUT
@@ -198,7 +212,11 @@
                     #endif
 
                     #ifdef IBL_CDF_FILTERING
-                        result += c * NoL;
+                        var light: vec3f = vec3f(0.0);
+                        if (pdf > 1e-6) {
+                            light = vec3f(1.0) / vec3f(pdf) * c;
+                        }
+                        result += NoL * light;
                     #else
                         result += c;
                     #endif

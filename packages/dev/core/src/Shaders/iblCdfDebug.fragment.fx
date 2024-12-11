@@ -3,16 +3,16 @@ precision highp samplerCube;
 varying vec2 vUV;
 
 uniform sampler2D cdfy;
-uniform sampler2D icdfy;
 uniform sampler2D cdfx;
-uniform sampler2D icdfx;
+uniform sampler2D icdf;
+uniform sampler2D pdf;
 #ifdef IBL_USE_CUBE_MAP
 uniform samplerCube iblSource;
 #else
 uniform sampler2D iblSource;
 #endif
 uniform sampler2D textureSampler;
-#define cdfyVSize 0.4
+#define cdfyVSize (0.8 / 3.0)
 #define cdfxVSize 0.1
 #define cdfyHSize 0.5
 
@@ -39,9 +39,10 @@ void main(void) {
   vec3 backgroundColour = texture2D(textureSampler, vUV).rgb;
 
   const float iblStart = 1.0 - cdfyVSize;
-  const float cdfyStart = 1.0 - 2.0 * cdfyVSize;
-  const float cdfxStart = 1.0 - 2.0 * cdfyVSize - cdfxVSize;
-  const float icdfxStart = 1.0 - 2.0 * cdfyVSize - 2.0 * cdfxVSize;
+  const float pdfStart = 1.0 - 2.0 * cdfyVSize;
+  const float cdfyStart = 1.0 - 3.0 * cdfyVSize;
+  const float cdfxStart = 1.0 - 3.0 * cdfyVSize - cdfxVSize;
+  const float icdfxStart = 1.0 - 3.0 * cdfyVSize - 2.0 * cdfxVSize;
   // ***** Display all slices as a grid *******
 #ifdef IBL_USE_CUBE_MAP
 
@@ -53,16 +54,18 @@ void main(void) {
                                             vec2(1.0, 1.0 / cdfyVSize))
                        .rgb;
 #endif
+  vec3 pdfColour = texture(icdf, (uv - vec2(0.0, pdfStart)) *
+                                            vec2(1.0, 1.0 / cdfyVSize)).zzz;
   float cdfyColour =
       texture2D(cdfy, (uv - vec2(0.0, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
           .r;
   float icdfyColour =
-      texture2D(icdfy, (uv - vec2(0.5, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
-          .r;
+      texture2D(icdf, (uv - vec2(0.5, cdfyStart)) * vec2(2.0, 1.0 / cdfyVSize))
+          .g;
   float cdfxColour =
       texture2D(cdfx, (uv - vec2(0.0, cdfxStart)) * vec2(1.0, 1.0 / cdfxVSize))
           .r;
-  float icdfxColour = texture2D(icdfx, (uv - vec2(0.0, icdfxStart)) *
+  float icdfxColour = texture2D(icdf, (uv - vec2(0.0, icdfxStart)) *
                                            vec2(1.0, 1.0 / cdfxVSize))
                           .r;
 
@@ -70,6 +73,8 @@ void main(void) {
     colour = backgroundColour;
   } else if (uv.y > iblStart) {
     colour += iblColour;
+  } else if (uv.y > pdfStart) {
+    colour += pdfColour;
   } else if (uv.y > cdfyStart && uv.x < 0.5) {
     colour.r += 0.003 * cdfyColour;
   } else if (uv.y > cdfyStart && uv.x > 0.5) {
