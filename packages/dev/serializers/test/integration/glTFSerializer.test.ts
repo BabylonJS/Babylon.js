@@ -40,7 +40,7 @@ describe("Babylon glTF Serializer", () => {
      */
     describe("#GLTF Serializer", () => {
         it("should convert Babylon standard material to metallic roughness", async () => {
-            const assertionData = await page.evaluate(async () => {
+            const assertionData = await page.evaluate(() => {
                 const babylonStandardMaterial = new BABYLON.StandardMaterial("specGloss");
                 babylonStandardMaterial.diffuseColor = BABYLON.Color3.White();
                 babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
