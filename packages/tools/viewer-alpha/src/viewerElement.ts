@@ -730,6 +730,9 @@ export class HTML3DElement extends LitElement {
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
 
+    @query("#materialSelect")
+    private _materialSelect: HTMLSelectElement | undefined;
+
     /**
      * Toggles the play/pause animation state if there is a selected animation.
      */
@@ -752,6 +755,10 @@ export class HTML3DElement extends LitElement {
     // eslint-disable-next-line babylonjs/available
     override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
+
+        if (this._materialSelect) {
+            this._materialSelect.value = "";
+        }
 
         if (changedProperties.get("engine")) {
             this._tearDownViewer();
@@ -841,8 +848,7 @@ export class HTML3DElement extends LitElement {
             if (this._hasHotSpots) {
                 toolbarControls.push(html`
                     <div class="select-container">
-                        <select aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
-                            <option value="" hidden selected></option>
+                        <select id="materialSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
                             <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
                             ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
                         </select>
