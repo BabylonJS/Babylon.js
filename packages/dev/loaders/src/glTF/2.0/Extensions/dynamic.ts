@@ -175,4 +175,9 @@ export function registerBuiltInGLTFExtensions() {
         const { KHR_node_visibility } = await import("./KHR_node_visibility");
         return new KHR_node_visibility(loader);
     });
+
+    registerGLTFExtension("KHR_node_hoverability", true, async (loader) => {
+        const { KHR_node_hoverability } = await import("./KHR_node_hoverability");
+        return new KHR_node_hoverability(loader);
+    });
 }
