@@ -12,7 +12,7 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { _retryWithInterval } from "../Materials/effect.functions";
+import { _retryWithInterval } from "./timingTools";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -287,8 +287,7 @@ export function CreateScreenshotUsingRenderTarget(
                 camera.getProjectionMatrix(true); // Force cache refresh;
             },
             () => {},
-            16,
-            2000 /* 2 seconds */
+            16
         );
     };
 

@@ -10,6 +10,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -295,25 +296,20 @@ export class ComputeEffect {
         });
 
         if (!this._pipelineContext || this._pipelineContext.isAsync) {
-            setTimeout(() => {
-                this._checkIsReady(null);
-            }, 16);
+            this._checkIsReady(null);
         }
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IComputePipelineContext>) {
-        try {
-            if (this._isReadyInternal()) {
-                return;
+        _retryWithInterval(
+            () => this._isReadyInternal(),
+            () => {
+                // no-op, all work is done in _isReadyInternal
+            },
+            (e) => {
+                this._processCompilationErrors(e, previousPipelineContext);
             }
-        } catch (e) {
-            this._processCompilationErrors(e, previousPipelineContext);
-            return;
-        }
-
-        setTimeout(() => {
-            this._checkIsReady(previousPipelineContext);
-        }, 16);
+        );
     }
 
     private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
