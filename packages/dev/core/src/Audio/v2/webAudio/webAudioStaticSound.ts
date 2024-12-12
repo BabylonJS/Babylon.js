@@ -8,8 +8,8 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import type { _VolumeWebAudioComponent } from "./components/volumeWebAudioComponent";
-import { _CreateVolumeAudioComponentAsync } from "./components/volumeWebAudioComponent";
+import type { _WebAudioComponentGraph } from "./components/webAudioComponentGraph";
+import { _CreateAudioComponentGraphAsync } from "./components/webAudioComponentGraph";
 import type { _WebAudioBus } from "./webAudioBus";
 import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
 import type { _WebAudioEngine } from "./webAudioEngine";
@@ -91,25 +91,25 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
         return this._buffer;
     }
 
-    private _volumeComponent: _VolumeWebAudioComponent;
+    private _componentGraph: _WebAudioComponentGraph;
 
     /** @internal */
     public get volume(): number {
-        return this._volumeComponent.volume;
+        return this._componentGraph.volume;
     }
 
     public set volume(value: number) {
-        this._volumeComponent.volume = value;
+        this._componentGraph.volume = value;
     }
 
     /** @internal */
     public get webAudioInputNode() {
-        return this._volumeComponent.node;
+        return this._componentGraph.webAudioInputNode;
     }
 
     /** @internal */
     public get webAudioOutputNode() {
-        return this._volumeComponent.node;
+        return this._componentGraph.webAudioOutputNode;
     }
 
     /** @internal */
@@ -127,7 +127,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
 
-        this._volumeComponent = await _CreateVolumeAudioComponentAsync(this, options);
+        this._componentGraph = await _CreateAudioComponentGraphAsync(this, options);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
@@ -142,6 +142,16 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     /** @internal */
+    public get downstreamNodes(): Set<AbstractAudioNode> | undefined {
+        return this._connectedDownstreamNodes;
+    }
+
+    /** @internal */
+    public get upstreamNodes(): Set<AbstractAudioNode> | undefined {
+        return this._connectedUpstreamNodes;
+    }
+
+    /** @internal */
     public getClassName(): string {
         return "WebAudioStaticSound";
     }
@@ -153,11 +163,11 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     protected override _onComponentAdded(component: AbstractAudioComponent): void {
-        //
+        this._componentGraph.onComponentAdded(component);
     }
 
     protected override _onComponentRemoved(component: AbstractAudioComponent): void {
-        //
+        this._componentGraph.onComponentRemoved(component);
     }
 
     protected override _connect(node: AbstractAudioNode): void {
