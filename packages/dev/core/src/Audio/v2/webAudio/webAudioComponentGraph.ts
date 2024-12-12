@@ -1,13 +1,13 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioComponent } from "../../components/abstractAudioComponent";
-import { _AbstractAudioComponentGraph } from "../../components/abstractAudioComponentGraph";
-import type { IStereoAudioOptions } from "../../components/stereoAudioComponent";
-import type { IVolumeAudioOptions } from "../../components/volumeAudioComponent";
-import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
-import type { _StereoWebAudioComponent } from "./stereoWebAudioComponent";
-import { _CreateStereoAudioComponentAsync } from "./stereoWebAudioComponent";
-import type { _VolumeWebAudioComponent } from "./volumeWebAudioComponent";
-import { _CreateVolumeAudioComponentAsync } from "./volumeWebAudioComponent";
+import { _AbstractAudioComponentGraph } from "../abstractAudioComponentGraph";
+import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
+import type { IStereoAudioOptions } from "../components/stereoAudioComponent";
+import type { IVolumeAudioOptions } from "../components/volumeAudioComponent";
+import type { _StereoWebAudioComponent } from "./components/stereoWebAudioComponent";
+import { _CreateStereoAudioComponentAsync } from "./components/stereoWebAudioComponent";
+import type { _VolumeWebAudioComponent } from "./components/volumeWebAudioComponent";
+import { _CreateVolumeAudioComponentAsync } from "./components/volumeWebAudioComponent";
+import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
 
 /** @internal */
 export interface IWebAudioComponentGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}
