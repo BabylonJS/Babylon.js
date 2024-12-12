@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
-import type { AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
+import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { IStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "../subNodes/volumeAudioSubNode";
 import type { _StereoWebAudioSubNode } from "./subNodes/stereoWebAudioSubNode";

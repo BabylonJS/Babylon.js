@@ -1,13 +1,13 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
-import type { AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
 

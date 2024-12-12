@@ -1,8 +1,8 @@
 import type { Nullable } from "../../types";
 import type { AudioNodeType } from "./abstractAudioNode";
 import { AbstractAudioNode } from "./abstractAudioNode";
+import type { AbstractAudioSubNode } from "./abstractAudioSubNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { AbstractAudioSubNode } from "./subNodes/abstractAudioSubNode";
 
 /**
  * Abstract class for an audio node containing audio components.

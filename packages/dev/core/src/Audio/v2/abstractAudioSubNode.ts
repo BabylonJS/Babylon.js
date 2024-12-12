@@ -1,6 +1,6 @@
-import type { Nullable } from "../../../types";
-import { AbstractAudioNode, AudioNodeType } from "../abstractAudioNode";
-import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { Nullable } from "../../types";
+import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import type { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 
 /** */
 export abstract class AbstractAudioSubNode extends AbstractAudioNode {

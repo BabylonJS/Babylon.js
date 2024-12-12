@@ -1,5 +1,5 @@
+import { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
-import { AbstractAudioSubNode } from "./abstractAudioSubNode";
 
 /**
  *
