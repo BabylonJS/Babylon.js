@@ -1,5 +1,6 @@
-import type { AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { AudioEngineV2 } from "../audioEngineV2";
+import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import { MainAudioBus } from "../mainAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
@@ -48,6 +49,14 @@ export class _WebAudioMainBus extends MainAudioBus {
     /** @internal */
     public getClassName(): string {
         return "_WebAudioMainBus";
+    }
+
+    protected override _onComponentAdded(component: AbstractAudioComponent): void {
+        //
+    }
+
+    protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+        //
     }
 
     protected override _connect(node: AbstractAudioNode): void {

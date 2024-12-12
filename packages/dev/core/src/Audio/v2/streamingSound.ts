@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { ISoundOptions } from "./abstractSound";
+import type { IAbstractSoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
@@ -10,7 +10,7 @@ export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 /**
  * Options for creating a new streaming sound.
  */
-export interface IStreamingSoundOptions extends ISoundOptions {
+export interface IStreamingSoundOptions extends IAbstractSoundOptions {
     /** The number of instances to preload */
     preloadCount?: number;
 

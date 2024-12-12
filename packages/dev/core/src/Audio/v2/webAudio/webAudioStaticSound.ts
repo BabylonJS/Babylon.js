@@ -1,13 +1,17 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
+import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
+import type { _VolumeWebAudioComponent } from "./components/volumeWebAudioComponent";
+import { _CreateVolumeAudioComponentAsync } from "./components/volumeWebAudioComponent";
 import type { _WebAudioBus } from "./webAudioBus";
+import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainBus } from "./webAudioMainBus";
 
@@ -73,14 +77,12 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound {
-    private _gainNode: GainNode;
-
+class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext | BaseAudioContext;
+    public audioContext: AudioContext | OfflineAudioContext;
 
     private _buffer: WebAudioStaticSoundBuffer;
 
@@ -89,23 +91,25 @@ class WebAudioStaticSound extends StaticSound {
         return this._buffer;
     }
 
+    private _volumeComponent: _VolumeWebAudioComponent;
+
     /** @internal */
     public get volume(): number {
-        return this._gainNode.gain.value;
+        return this._volumeComponent.volume;
     }
 
     public set volume(value: number) {
-        this._gainNode.gain.value = value;
+        this._volumeComponent.volume = value;
     }
 
     /** @internal */
     public get webAudioInputNode() {
-        return this._gainNode;
+        return this._volumeComponent.node;
     }
 
     /** @internal */
     public get webAudioOutputNode() {
-        return this._gainNode;
+        return this._volumeComponent.node;
     }
 
     /** @internal */
@@ -117,13 +121,13 @@ class WebAudioStaticSound extends StaticSound {
     public async init(source: StaticSoundSourceType, options: Nullable<IStaticSoundOptions> = null): Promise<void> {
         this.audioContext = this.engine.audioContext;
 
-        this._gainNode = new GainNode(this.audioContext);
-
         if (source instanceof WebAudioStaticSoundBuffer) {
             this._buffer = source as WebAudioStaticSoundBuffer;
         } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
+
+        this._volumeComponent = await _CreateVolumeAudioComponentAsync(this, options);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
@@ -131,8 +135,6 @@ class WebAudioStaticSound extends StaticSound {
             await this.engine.isReadyPromise;
             this.outputBus = this.engine.defaultMainBus;
         }
-
-        this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
             this.play(this.startOffset, this.duration > 0 ? this.duration : null);
@@ -148,6 +150,14 @@ class WebAudioStaticSound extends StaticSound {
         const soundInstance = new WebAudioStaticSoundInstance(this);
         this.engine.addSoundInstance(soundInstance);
         return soundInstance;
+    }
+
+    protected override _onComponentAdded(component: AbstractAudioComponent): void {
+        //
+    }
+
+    protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+        //
     }
 
     protected override _connect(node: AbstractAudioNode): void {

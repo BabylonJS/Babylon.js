@@ -193,18 +193,3 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         this._connectedUpstreamNodes?.delete(node);
     }
 }
-
-/**
- * Abstract class for an audio node with a name.
- */
-export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
-    /**
-     * The name of the audio node.
-     */
-    public name: string;
-
-    constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
-        super(engine, nodeType);
-        this.name = name;
-    }
-}

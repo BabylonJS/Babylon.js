@@ -2,7 +2,6 @@ import type { Nullable } from "../../types";
 import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { AudioPositioner } from "./spatial/audioPositioner";
 import type { AudioSender } from "./audioSender";
 
 /**
@@ -23,7 +22,6 @@ export interface IAuxilliaryAudioBusOptions extends IAbstractAudioBusOptions {
  * Abstract class representing an auxilliary audio bus in the audio engine.
  */
 export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
-    private _positioner: Nullable<AudioPositioner> = null;
     private _outputBus: Nullable<AbstractAudioBus> = null;
 
     /**
@@ -35,34 +33,11 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
     constructor(name: string, engine: AudioEngineV2, options: Nullable<IAuxilliaryAudioBusOptions> = null) {
         super(name, engine);
 
-        if (options?.enablePositioner) {
-            this.enablePositioner();
-        }
-
         this.sender = {} as any; //engine.createSender(this);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
         }
-    }
-
-    /**
-     * The positioner for the auxilliary audio bus.
-     */
-    public get positioner(): Nullable<AudioPositioner> {
-        return this._positioner;
-    }
-
-    /**
-     * Enables the positioner for the auxilliary audio bus.
-     * @returns A promise that resolves when the positioner is enabled.
-     */
-    public async enablePositioner() {
-        if (this._positioner) {
-            return;
-        }
-
-        this._positioner = await this._createPositioner();
     }
 
     /**
@@ -87,6 +62,4 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
             this._connect(this._outputBus);
         }
     }
-
-    protected abstract _createPositioner(): Promise<AudioPositioner>;
 }

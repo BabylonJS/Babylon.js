@@ -4,7 +4,6 @@ import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSound } from "./abstractSound";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
-import type { SpatialAudioListener } from "./spatial/spatialAudioListener";
 
 const instances: AudioEngineV2[] = [];
 
@@ -37,11 +36,6 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _soundInstances = new Set<_AbstractSoundInstance>();
-
-    /**
-     * The spatial audio listeners.
-     */
-    public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
@@ -97,13 +91,6 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
         }
 
         this._soundInstances.clear();
-
-        if (this.listeners) {
-            for (const listener of Array.from(this.listeners)) {
-                listener.dispose();
-            }
-            this.listeners.clear();
-        }
 
         for (const source of Array.from(this._sounds)) {
             source.dispose();

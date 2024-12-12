@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { ISoundOptions } from "./abstractSound";
+import type { IAbstractSoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
@@ -9,7 +9,7 @@ import type { _StaticSoundInstance } from "./staticSoundInstance";
 /**
  * Options for creating a new static sound.
  */
-export interface IStaticSoundOptions extends ISoundOptions {
+export interface IStaticSoundOptions extends IAbstractSoundOptions {
     /**
      * How long to play the sound in seconds.
      */

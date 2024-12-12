@@ -2,10 +2,9 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
-import type { AudioPositioner } from "../spatial/audioPositioner";
+import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
-import { _CreateAudioPositionerAsync } from "./webAudioPositioner";
 
 /**
  * Options for creating a new WebAudio bus.
@@ -41,8 +40,12 @@ export class _WebAudioBus extends AudioBus {
         return "_WebAudioBus";
     }
 
-    protected override _createPositioner(): Promise<AudioPositioner> {
-        return _CreateAudioPositionerAsync(this);
+    protected override _onComponentAdded(component: AbstractAudioComponent): void {
+        //
+    }
+
+    protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+        //
     }
 
     protected override _connect(node: AbstractAudioNode): void {

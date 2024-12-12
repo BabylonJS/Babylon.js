@@ -1,15 +1,19 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
+import { AudioNodeType } from "./abstractAudioNode";
+import { AbstractAudioComponentOwner } from "./abstractAudioComponentOwner";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
+import type { AudioEngineV2 } from "./audioEngineV2";
+import type { ISpatialAudioOptions } from "./components/spatialAudioComponent";
+import type { IStereoAudioOptions } from "./components/stereoAudioComponent";
+import type { IVolumeAudioOptions } from "./components/volumeAudioComponent";
 import { SoundState } from "./soundState";
 
 /**
  * Options for creating a new sound.
  */
-export interface ISoundOptions {
+export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {
     /**
      * Whether the sound should start playing immediately.
      */
@@ -23,10 +27,6 @@ export interface ISoundOptions {
      */
     maxInstances?: number;
     /**
-     * The volume of the sound.
-     */
-    volume?: number;
-    /**
      * The output bus for the sound.
      */
     outputBus?: AbstractPrimaryAudioBus;
@@ -39,7 +39,7 @@ export interface ISoundOptions {
 /**
  * Abstract class representing a sound in the audio engine.
  */
-export abstract class AbstractSound extends AbstractNamedAudioNode {
+export abstract class AbstractSound extends AbstractAudioComponentOwner {
     private _state: SoundState = SoundState.Stopped;
 
     // Owned by AbstractAudioEngine.
@@ -128,7 +128,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<ISoundOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
