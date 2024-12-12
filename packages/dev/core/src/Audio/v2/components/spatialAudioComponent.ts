@@ -58,10 +58,6 @@ export interface ISpatialAudioOptions {
  */
 export abstract class SpatialAudioComponent extends AbstractAudioComponent {
     protected constructor(owner: AbstractAudioComponentOwner) {
-        super(owner);
-    }
-
-    public _getComponentTypeName(): string {
-        return "Spatial";
+        super("Spatial", owner);
     }
 }

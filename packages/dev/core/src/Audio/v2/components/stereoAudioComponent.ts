@@ -16,13 +16,9 @@ export interface IStereoAudioOptions {
  */
 export abstract class StereoAudioComponent extends AbstractAudioComponent {
     protected constructor(owner: AbstractAudioComponentOwner) {
-        super(owner);
+        super("Stereo", owner);
     }
 
     abstract get pan(): number;
     abstract set pan(value: number);
-
-    public _getComponentTypeName(): string {
-        return "Stereo";
-    }
 }

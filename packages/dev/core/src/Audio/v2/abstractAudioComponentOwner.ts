@@ -24,11 +24,11 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
     protected abstract _onComponentRemoved(component: AbstractAudioComponent): void;
 
     protected _addComponent(component: AbstractAudioComponent): void {
-        let componentSet = this._components.get(component._getComponentTypeName());
+        let componentSet = this._components.get(component.name);
 
         if (!componentSet) {
             componentSet = new Set<AbstractAudioComponent>();
-            this._components.set(component._getComponentTypeName(), componentSet);
+            this._components.set(component.name, componentSet);
         }
 
         if (componentSet.has(component)) {
@@ -40,7 +40,7 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
     }
 
     protected _removeComponent(component: AbstractAudioComponent): void {
-        const componentSet = this._components.get(component._getComponentTypeName());
+        const componentSet = this._components.get(component.name);
 
         if (!componentSet) {
             return;
@@ -54,8 +54,8 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
         this._onComponentRemoved(component);
     }
 
-    protected _getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
-        const componentSet = this._components.get(componentClassName);
+    protected _getComponent(name: string): Nullable<AbstractAudioComponent> {
+        const componentSet = this._components.get(name);
 
         if (!componentSet) {
             return null;
@@ -64,8 +64,8 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
         return componentSet.values().next().value;
     }
 
-    protected _getComponents(componentClassName: string): Nullable<Array<AbstractAudioComponent>> {
-        const componentSet = this._components.get(componentClassName);
+    protected _getComponents(name: string): Nullable<Array<AbstractAudioComponent>> {
+        const componentSet = this._components.get(name);
 
         if (!componentSet) {
             return null;

@@ -16,13 +16,9 @@ export interface IVolumeAudioOptions {
  */
 export abstract class VolumeAudioComponent extends AbstractAudioComponent {
     protected constructor(owner: AbstractAudioComponentOwner) {
-        super(owner);
+        super("Volume", owner);
     }
 
     abstract get volume(): number;
     abstract set volume(value: number);
-
-    public _getComponentTypeName(): string {
-        return "Volume";
-    }
 }
