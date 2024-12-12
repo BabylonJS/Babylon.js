@@ -18,20 +18,33 @@ export class TimingTools {
     }
 }
 
+function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void) {
+    try {
+        if (condition()) {
+            onSuccess();
+            return true;
+        }
+    } catch (e) {
+        onError?.(e);
+        return true;
+    }
+    return false;
+}
+
 /**
  * @internal
  */
-export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 2000) => {
-    const int = setInterval(() => {
-        try {
-            if (condition()) {
-                clearInterval(int);
-                onSuccess();
-            }
-        } catch (e) {
-            clearInterval(int);
-            onError?.(e);
+export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 2000, checkConditionOnCall?: boolean) => {
+    // if checkConditionOnCall is true, we check the condition immediately. If it is true, run everything synchronously
+    if (checkConditionOnCall) {
+        // that means that one of the two happened - either the condition is true or an exception was thrown when checking the condition
+        if (_runWithCondition(condition, onSuccess, onError)) {
+            // don't schedule the interval, no reason to check it again.
+            return;
         }
+    }
+    const int = setInterval(() => {
+        _runWithCondition(condition, onSuccess, onError);
         maxTimeout -= step;
         if (maxTimeout < 0) {
             clearInterval(int);
