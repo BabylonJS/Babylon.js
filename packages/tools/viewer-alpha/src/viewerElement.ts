@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues, TemplateResult } from "lit";
-import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -490,7 +490,7 @@ export class HTML3DElement extends LitElement {
     /**
      * The model URL.
      */
-    @property({ reflect: true })
+    @property()
     public source: Nullable<string> = null;
 
     /**
@@ -498,14 +498,36 @@ export class HTML3DElement extends LitElement {
      * @remarks
      * If this property is not set, the extension will be inferred from the model URL when possible.
      */
-    @property({ reflect: true })
+    @property()
     public extension: Nullable<string> = null;
 
     /**
-     * The environment URL.
+     * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
-    @property({ reflect: true })
-    public environment: Nullable<string> = null;
+    @property({
+        hasChanged: (newValue: HTML3DElement["environment"], oldValue: HTML3DElement["environment"]) => {
+            return newValue.lighting !== oldValue.lighting || newValue.skybox !== oldValue.skybox;
+        },
+    })
+    public get environment(): { lighting: Nullable<string>; skybox: Nullable<string> } {
+        return { lighting: this.environmentLighting, skybox: this.environmentSkybox };
+    }
+    public set environment(url: string) {
+        this.environmentLighting = url;
+        this.environmentSkybox = url;
+    }
+
+    /**
+     * The texture URL for lighting.
+     */
+    @property({ attribute: "environment-lighting" })
+    public environmentLighting: Nullable<string> = null;
+
+    /**
+     * The texture URL for the skybox.
+     */
+    @property({ attribute: "environment-skybox" })
+    public environmentSkybox: Nullable<string> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -751,20 +773,20 @@ export class HTML3DElement extends LitElement {
         this._viewerDetails?.viewer.resetCamera();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override connectedCallback(): void {
+    /** @internal */
+    public override connectedCallback(): void {
         super.connectedCallback();
         this._setupViewer();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override disconnectedCallback(): void {
+    /** @internal */
+    public override disconnectedCallback(): void {
         super.disconnectedCallback();
         this._tearDownViewer();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override update(changedProperties: PropertyValues<this>): void {
+    /** @internal */
+    public override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
         if (this._materialSelect) {
@@ -781,14 +803,17 @@ export class HTML3DElement extends LitElement {
                 this._updateModel();
             }
 
-            if (changedProperties.has("environment")) {
-                this._updateEnv();
+            if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
+                this._updateEnv({
+                    lighting: changedProperties.has("environmentLighting"),
+                    skybox: changedProperties.has("environmentSkybox"),
+                });
             }
         }
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override render() {
+    /** @internal */
+    public override render() {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
@@ -1083,7 +1108,7 @@ export class HTML3DElement extends LitElement {
                         });
 
                         this._updateModel();
-                        this._updateEnv();
+                        this._updateEnv({ lighting: true, skybox: true });
 
                         this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1124,14 +1149,29 @@ export class HTML3DElement extends LitElement {
         }
     }
 
-    private async _updateEnv() {
+    private async _updateEnv(options: EnvironmentOptions) {
         if (this._viewerDetails) {
             try {
-                if (this.environment) {
-                    await this._viewerDetails.viewer.loadEnvironment(this.environment);
+                const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
+
+                if (options.lighting && options.skybox && this.environmentLighting === this.environmentSkybox) {
+                    updates.push([this.environmentLighting, { lighting: true, skybox: true }]);
                 } else {
-                    await this._viewerDetails.viewer.resetEnvironment();
+                    if (options.lighting) {
+                        updates.push([this.environmentLighting, { lighting: true }]);
+                    }
+                    if (options.skybox) {
+                        updates.push([this.environmentSkybox, { skybox: true }]);
+                    }
                 }
+
+                updates.forEach(async ([url, options]) => {
+                    if (url) {
+                        await this._viewerDetails?.viewer.loadEnvironment(url, options);
+                    } else {
+                        await this._viewerDetails?.viewer.resetEnvironment(options);
+                    }
+                });
             } catch (error) {
                 Logger.Log(error);
             }

@@ -101,13 +101,13 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
+function createSkybox(scene: Scene, camera: Camera, reflectionTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
     hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
     hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
     if (hdrSkyboxMaterial.reflectionTexture) {
         hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
     }
@@ -173,7 +173,24 @@ export type ViewerOptions = Partial<
     }>
 >;
 
-export type LoadEnvironmentOptions = Partial<Readonly<{}>>;
+export type EnvironmentOptions = Partial<
+    Readonly<{
+        /**
+         * Whether to use the environment for lighting (e.g. IBL).
+         */
+        lighting: boolean;
+
+        /**
+         * Whether to use the environment for the skybox.
+         */
+        skybox: boolean;
+    }>
+>;
+
+const defaultLoadEnvironmentOptions = {
+    lighting: true,
+    skybox: true,
+} as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -229,14 +246,6 @@ export class ViewerHotSpotResult {
  * Provides an experience for viewing a single 3D model.
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
- * Includes (or will include) support for common model viewing requirements such as:
- * - Loading different model formats.
- * - Setting up a camera and providing default behaviors like auto orbit and pose interpolation.
- * - Framing the loaded model in the camera's view.
- * - Setting up the environment, lighting, and tone mapping.
- * - Enumerating and playing (or auto playing) animations.
- * - Enumerating and switching between material variants.
- * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
     static {
@@ -331,8 +340,10 @@ export class Viewer implements IDisposable {
     private _loadModelAbortController: Nullable<AbortController> = null;
 
     private readonly _loadEnvironmentLock = new AsyncLock();
-    private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+
+    private readonly _loadSkyboxLock = new AsyncLock();
+    private _loadSkyboxAbortController: Nullable<AbortController> = null;
 
     private _isLoadingModel = false;
     private _modelLoadingProgress: Nullable<number> = null;
@@ -794,65 +805,85 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
      * Unloads the current environment if one is loaded.
+     * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
-    public async resetEnvironment(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, undefined, abortSignal);
+    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironment(undefined, options, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
-        const abortController = (this._loadEnvironmentAbortController = new AbortController());
+        options = options ?? defaultLoadEnvironmentOptions;
+        if (!options.lighting && !options.skybox) {
+            return;
+        }
 
-        await this._loadEnvironmentLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, abortController.signal);
+        const locks: AsyncLock[] = [];
+        if (options.lighting) {
+            this._loadEnvironmentAbortController?.abort("New environment lighting is being loaded before previous environment lighting finished loading.");
+            locks.push(this._loadEnvironmentLock);
+        }
+        if (options.skybox) {
+            this._loadSkyboxAbortController?.abort("New environment skybox is being loaded before previous environment skybox finished loading.");
+            locks.push(this._loadSkyboxLock);
+        }
+
+        const environmentAbortController = (this._loadEnvironmentAbortController = options.lighting ? new AbortController() : null);
+        const skyboxAbortController = (this._loadSkyboxAbortController = options.skybox ? new AbortController() : null);
+
+        await AsyncLock.LockAsync(async () => {
+            throwIfAborted(abortSignal, environmentAbortController?.signal, skyboxAbortController?.signal);
             this._snapshotHelper.disableSnapshotRendering();
-            this._environment?.dispose();
-            this._environment = null;
-            this._details.scene.autoClear = true;
 
-            const disposeActions: (() => void)[] = [];
+            const dispose = () => {
+                if (options.lighting) {
+                    this._details.scene.environmentTexture?.dispose();
+                    this._details.scene.environmentTexture = null;
+                }
+                if (options.skybox) {
+                    this._skybox?.dispose(undefined, true);
+                    this._skybox = null;
+                    this._details.scene.autoClear = true;
+                }
+            };
+
+            // First dispose the current environment and/or skybox.
+            dispose();
+
             try {
                 if (url) {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
-                    disposeActions.push(() => cubeTexture.dispose());
 
-                    const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
-                    disposeActions.push(() => skybox.dispose());
-                    this._snapshotHelper.fixMeshes([skybox]);
+                    if (options.lighting) {
+                        this._details.scene.environmentTexture = cubeTexture;
+                    }
 
-                    this._details.scene.environmentTexture = cubeTexture;
-                    disposeActions.push(() => (this._details.scene.environmentTexture = null));
-                    this._skybox = skybox;
-                    disposeActions.push(() => (this._skybox = null));
+                    if (options.skybox) {
+                        const reflectionTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
+                        this._skybox = createSkybox(this._details.scene, this._details.camera, reflectionTexture, this.skyboxBlur);
+                        this._snapshotHelper.fixMeshes([this._skybox]);
+                        this._details.scene.autoClear = false;
+                    }
 
-                    this._details.scene.autoClear = false;
-                    disposeActions.push(() => (this._details.scene.autoClear = true));
-
-                    const dispose = () => disposeActions.forEach((dispose) => dispose());
-
-                    this._environment = await new Promise<IDisposable>((resolve, reject) => {
+                    await new Promise<void>((resolve, reject) => {
                         const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
-                            resolve({
-                                dispose,
-                            });
+                            resolve();
                         });
 
                         const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
                             if (texture === cubeTexture) {
                                 successObserver.remove();
                                 errorObserver.remove();
-                                dispose();
                                 reject(new Error("Failed to load environment texture."));
                             }
                         });
@@ -862,13 +893,13 @@ export class Viewer implements IDisposable {
                 this._updateLight();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
-                disposeActions.forEach((dispose) => dispose());
+                dispose();
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
             }
-        });
+        }, locks);
     }
 
     /**
@@ -1105,7 +1136,7 @@ export class Viewer implements IDisposable {
             shouldHaveDefaultLight = false;
         } else {
             const hasModelProvidedLights = this._details.model.lights.length > 0;
-            const hasImageBasedLighting = !!this._environment;
+            const hasImageBasedLighting = !!this._details.scene.environmentTexture;
             const hasMaterials = this._details.model.materials.length > 0;
             const hasNonPBRMaterials = this._details.model.materials.some((material) => !(material instanceof PBRMaterial));
 
