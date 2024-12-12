@@ -1,8 +1,12 @@
 import type { Nullable } from "core/types";
 import { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
-import type { IStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
+import type { ISpatialAudioOptions } from "../subNodes/spatialAudioSubNode";
+import { spatialAudioOptionsAreDefined } from "../subNodes/spatialAudioSubNode";
+import { stereoAudioOptionsAreDefined, type IStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "../subNodes/volumeAudioSubNode";
+import type { _SpatialWebAudioSubNode } from "./subNodes/spatialWebAudioSubNode";
+import { _CreateSpatialAudioSubNodeAsync } from "./subNodes/spatialWebAudioSubNode";
 import type { _StereoWebAudioSubNode } from "./subNodes/stereoWebAudioSubNode";
 import { _CreateStereoAudioSubNodeAsync } from "./subNodes/stereoWebAudioSubNode";
 import type { _VolumeWebAudioSubNode } from "./subNodes/volumeWebAudioSubNode";
@@ -10,7 +14,7 @@ import { _CreateVolumeAudioSubNodeAsync } from "./subNodes/volumeWebAudioSubNode
 import type { IWebAudioSuperNode } from "./webAudioSuperNode";
 
 /** @internal */
-export interface IWebAudioSubGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}
+export interface IWebAudioSubGraphOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {}
 
 /** @internal */
 export async function _CreateAudioSubGraphAsync(owner: IWebAudioSuperNode, options: Nullable<IWebAudioSubGraphOptions>): Promise<_WebAudioSubGraph> {
@@ -25,10 +29,13 @@ export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     public readonly owner: IWebAudioSuperNode;
 
     /** @internal */
-    public volumeComponent: _VolumeWebAudioSubNode;
+    public spatialComponent: Nullable<_SpatialWebAudioSubNode> = null;
 
     /** @internal */
     public stereoComponent: Nullable<_StereoWebAudioSubNode> = null;
+
+    /** @internal */
+    public volumeComponent: _VolumeWebAudioSubNode;
 
     /** @internal */
     public constructor(owner: IWebAudioSuperNode) {
@@ -41,8 +48,14 @@ export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     public async init(options: Nullable<IWebAudioSubGraphOptions>): Promise<void> {
         this.volumeComponent = await _CreateVolumeAudioSubNodeAsync(this.owner, options);
 
-        if (options?.stereoPan !== undefined) {
-            this.stereoComponent = await _CreateStereoAudioSubNodeAsync(this.owner, { stereoPan: options.stereoPan });
+        if (options) {
+            if (spatialAudioOptionsAreDefined(options)) {
+                this.spatialComponent = await _CreateSpatialAudioSubNodeAsync(this.owner, options);
+            }
+
+            if (stereoAudioOptionsAreDefined(options)) {
+                this.stereoComponent = await _CreateStereoAudioSubNodeAsync(this.owner, options);
+            }
         }
 
         this._updateComponents();
@@ -89,7 +102,11 @@ export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     public onComponentAdded(component: AbstractAudioSubNode): void {
         this._updateComponents();
 
-        if (component.getClassName() === "StereoWebAudioComponent") {
+        const className = component.getClassName();
+
+        if (className === "SpatialWebAudioSubNode") {
+            this.spatialComponent = component as _SpatialWebAudioSubNode;
+        } else if (className === "StereoWebAudioSubNode") {
             this.stereoComponent = component as _StereoWebAudioSubNode;
         }
     }
@@ -98,7 +115,11 @@ export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     public onComponentRemoved(component: AbstractAudioSubNode): void {
         this._updateComponents();
 
-        if (component.getClassName() === "StereoWebAudioComponent") {
+        const className = component.getClassName();
+
+        if (className === "SpatialWebAudioSubNode") {
+            this.spatialComponent = null;
+        } else if (className === "StereoWebAudioSubNode") {
             this.stereoComponent = null;
         }
     }

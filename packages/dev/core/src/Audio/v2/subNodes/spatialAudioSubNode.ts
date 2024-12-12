@@ -24,6 +24,10 @@ export interface ISpatialAudioOptions {
      */
     spatialDistanceModel?: "linear" | "inverse" | "exponential";
     /**
+     * Enable spatial audio. Default is false.
+     */
+    spatialEnabled?: boolean;
+    /**
      * The spatial max distance. Default is 10000.
      */
     spatialMaxDistance?: number;
@@ -51,6 +55,27 @@ export interface ISpatialAudioOptions {
      * The transform node to track spatially.
      */
     spatialTransformNode?: TransformNode;
+}
+
+/**
+ * @param options The spatial audio options to check.
+ * @returns `true` if the spatial audio options are defined, otherwise `false`.
+ */
+export function spatialAudioOptionsAreDefined(options: ISpatialAudioOptions): boolean {
+    return (
+        options.spatialEnabled ||
+        options.spatialConeInnerAngle !== undefined ||
+        options.spatialConeOuterAngle !== undefined ||
+        options.spatialConeOuterVolume !== undefined ||
+        options.spatialDistanceModel !== undefined ||
+        options.spatialMaxDistance !== undefined ||
+        options.spatialPanningModel !== undefined ||
+        options.spatialPosition !== undefined ||
+        options.spatialRefDistance !== undefined ||
+        options.spatialRolloffFactor !== undefined ||
+        options.spatialRotation !== undefined ||
+        options.spatialTransformNode !== undefined
+    );
 }
 
 /**

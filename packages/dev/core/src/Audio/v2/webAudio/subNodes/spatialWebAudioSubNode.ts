@@ -4,12 +4,12 @@ import type { IWebAudioNode } from "../webAudioNode";
 import type { IWebAudioSuperNode } from "../webAudioSuperNode";
 
 /** @internal */
-export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialoWebAudioSubNode> {
-    return new _SpatialoWebAudioSubNode(owner, options);
+export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialWebAudioSubNode> {
+    return new _SpatialWebAudioSubNode(owner, options);
 }
 
 /** @internal */
-export class _SpatialoWebAudioSubNode extends SpatialAudioSubNode {
+export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
     /** @internal */
     public readonly node: PannerNode;
 
@@ -91,7 +91,7 @@ export class _SpatialoWebAudioSubNode extends SpatialAudioSubNode {
 
     /** @internal */
     public getClassName(): string {
-        return "SpatialWebAudioComponent";
+        return "SpatialWebAudioSubNode";
     }
 
     /** @internal */

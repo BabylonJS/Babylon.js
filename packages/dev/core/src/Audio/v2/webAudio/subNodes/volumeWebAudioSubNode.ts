@@ -37,7 +37,7 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
 
     /** @internal */
     public getClassName(): string {
-        return "VolumeWebAudioComponent";
+        return "VolumeWebAudioSubNode";
     }
 
     /** @internal */

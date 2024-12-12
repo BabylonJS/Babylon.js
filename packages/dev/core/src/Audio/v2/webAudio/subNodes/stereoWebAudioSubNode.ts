@@ -37,7 +37,7 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
 
     /** @internal */
     public getClassName(): string {
-        return "StereoWebAudioComponent";
+        return "StereoWebAudioSubNode";
     }
 
     /** @internal */
