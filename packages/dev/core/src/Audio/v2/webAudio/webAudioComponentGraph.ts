@@ -36,10 +36,6 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
     public constructor(owner: IWebAudioComponentOwner) {
         super();
 
-        if (!owner.upstreamNodes || !owner.downstreamNodes) {
-            throw new Error("A WebAudio component owner must have upstreamNodes and downstreamNodes.");
-        }
-
         this.owner = owner;
     }
 

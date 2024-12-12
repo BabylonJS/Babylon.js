@@ -151,16 +151,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     /** @internal */
-    public get downstreamNodes(): Set<AbstractAudioNode> | undefined {
-        return this._connectedDownstreamNodes;
-    }
-
-    /** @internal */
-    public get upstreamNodes(): Set<AbstractAudioNode> | undefined {
-        return this._connectedUpstreamNodes;
-    }
-
-    /** @internal */
     public addComponent(component: AbstractAudioComponent): void {
         this._addComponent(component);
     }
