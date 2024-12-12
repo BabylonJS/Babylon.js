@@ -1,7 +1,7 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import type { AbstractAudioSuperNode } from "../abstractAudioComponentOwner";
-import { AbstractAudioSubNode } from "./abstractAudioComponent";
+import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import { AbstractAudioSubNode } from "./abstractAudioSubNode";
 
 /**
  *

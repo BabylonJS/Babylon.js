@@ -1,14 +1,14 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { AudioNodeType } from "./abstractAudioNode";
-import { AbstractAudioSuperNode } from "./abstractAudioComponentOwner";
+import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { ISpatialAudioOptions } from "./components/spatialAudioComponent";
-import type { IStereoAudioOptions } from "./components/stereoAudioComponent";
-import type { IVolumeAudioOptions } from "./components/volumeAudioComponent";
 import { SoundState } from "./soundState";
+import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
+import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
+import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Options for creating a new sound.

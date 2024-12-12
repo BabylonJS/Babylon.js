@@ -1,13 +1,13 @@
 import type { Nullable } from "core/types";
-import { _AbstractAudioSubGraph } from "../abstractAudioComponentGraph";
-import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
-import type { IStereoAudioOptions } from "../components/stereoAudioComponent";
-import type { IVolumeAudioOptions } from "../components/volumeAudioComponent";
-import type { _StereoWebAudioSubNode } from "./components/stereoWebAudioComponent";
-import { _CreateStereoAudioSubNodeAsync } from "./components/stereoWebAudioComponent";
-import type { _VolumeWebAudioSubNode } from "./components/volumeWebAudioComponent";
-import { _CreateVolumeAudioSubNodeAsync } from "./components/volumeWebAudioComponent";
-import type { IWebAudioSuperNode } from "./webAudioComponentOwner";
+import { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
+import type { AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
+import type { IStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
+import type { IVolumeAudioOptions } from "../subNodes/volumeAudioSubNode";
+import type { _StereoWebAudioSubNode } from "./subNodes/stereoWebAudioSubNode";
+import { _CreateStereoAudioSubNodeAsync } from "./subNodes/stereoWebAudioSubNode";
+import type { _VolumeWebAudioSubNode } from "./subNodes/volumeWebAudioSubNode";
+import { _CreateVolumeAudioSubNodeAsync } from "./subNodes/volumeWebAudioSubNode";
+import type { IWebAudioSuperNode } from "./webAudioSuperNode";
 
 /** @internal */
 export interface IWebAudioSubGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}

@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
-import type { AbstractAudioSuperNode } from "../abstractAudioComponentOwner";
-import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
+import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 
 /** @internal */
 export interface IWebAudioSuperNode extends AbstractAudioSuperNode {

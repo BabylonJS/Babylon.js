@@ -1,6 +1,6 @@
 import type { AudioEngineV2 } from "../audioEngineV2";
-import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
 import { MainAudioBus } from "../mainAudioBus";
+import type { AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
 

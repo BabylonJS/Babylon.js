@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
-import { AbstractAudioSuperNode } from "./abstractAudioComponentOwner";
 import { AudioNodeType } from "./abstractAudioNode";
+import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 /**
  * Options for creating a new audio bus node.

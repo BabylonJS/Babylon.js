@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioSubNode } from "./components/abstractAudioComponent";
+import type { AbstractAudioSubNode } from "./subNodes/abstractAudioSubNode";
 
 /** @internal */
 export abstract class _AbstractAudioSubGraph {
