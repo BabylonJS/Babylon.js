@@ -1,7 +1,38 @@
 {
-    "fromTag": "7.39.3",
+    "fromTag": "7.40.0",
     "changelog": {
         "7.40.0": [],
+        "7.40.1": [
+            {
+                "pr": "15992",
+                "title": "rgbdEncoder is needed in a different place",
+                "description": "This fixes an issue when trying to run the `EncodeTextureToRGBD` function before ever calling ExpandRGBDTexture. The shader initialization is now in the right place for both.\n\nA small improvement in error handling as well, adding an actual error to _retryWithInterval.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15991",
+                "title": "Fix camera getFrontPosition",
+                "description": "follow up https://forum.babylonjs.com/t/camera-front-position-when-camera-is-parented/55320/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "7.39.3": [
             {
                 "pr": "15990",

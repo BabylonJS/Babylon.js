@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.40.1
+
+### Core
+
+- rgbdEncoder is needed in a different place - by [RaananW](https://github.com/RaananW) ([#15992](https://github.com/BabylonJS/Babylon.js/pull/15992))
+- Fix camera getFrontPosition - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15991](https://github.com/BabylonJS/Babylon.js/pull/15991))
+
 ## 7.40.0
 
 ## 7.39.3
