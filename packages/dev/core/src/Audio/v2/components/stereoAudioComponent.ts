@@ -1,5 +1,5 @@
-import type { AbstractAudioComponentOwner } from "../abstractAudioComponentOwner";
-import { AbstractAudioComponent } from "./abstractAudioComponent";
+import type { AbstractAudioSuperNode } from "../abstractAudioComponentOwner";
+import { AbstractAudioSubNode } from "./abstractAudioComponent";
 
 /**
  *
@@ -14,8 +14,8 @@ export interface IStereoAudioOptions {
 /**
  *
  */
-export abstract class StereoAudioComponent extends AbstractAudioComponent {
-    protected constructor(owner: AbstractAudioComponentOwner) {
+export abstract class StereoAudioSubNode extends AbstractAudioSubNode {
+    protected constructor(owner: AbstractAudioSuperNode) {
         super("Stereo", owner);
     }
 

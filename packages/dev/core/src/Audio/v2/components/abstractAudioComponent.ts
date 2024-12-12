@@ -1,14 +1,14 @@
 import type { Nullable } from "../../../types";
-import type { AbstractAudioComponentOwner } from "../abstractAudioComponentOwner";
+import type { AbstractAudioSuperNode } from "../abstractAudioComponentOwner";
 import { AbstractAudioNode, AudioNodeType } from "../abstractAudioNode";
 
 /** */
-export abstract class AbstractAudioComponent extends AbstractAudioNode {
+export abstract class AbstractAudioSubNode extends AbstractAudioNode {
     /** @internal */
     public readonly name: string;
 
     /** @internal */
-    constructor(name: string, owner: AbstractAudioComponentOwner) {
+    constructor(name: string, owner: AbstractAudioSuperNode) {
         super(owner.engine, AudioNodeType.InputOutput, owner);
         this.name = name;
     }

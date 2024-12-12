@@ -2,32 +2,32 @@ import type { Nullable } from "../../types";
 import type { AudioNodeType } from "./abstractAudioNode";
 import { AbstractAudioNode } from "./abstractAudioNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { AbstractAudioComponent } from "./components/abstractAudioComponent";
+import type { AbstractAudioSubNode } from "./components/abstractAudioComponent";
 
 /**
  * Abstract class for an audio node containing audio components.
  */
-export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
+export abstract class AbstractAudioSuperNode extends AbstractAudioNode {
     /**
      * The name of the audio node.
      */
     public name: string;
 
-    private _components = new Map<string, Set<AbstractAudioComponent>>();
+    private _components = new Map<string, Set<AbstractAudioSubNode>>();
 
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }
 
-    protected abstract _onComponentAdded(component: AbstractAudioComponent): void;
-    protected abstract _onComponentRemoved(component: AbstractAudioComponent): void;
+    protected abstract _onComponentAdded(component: AbstractAudioSubNode): void;
+    protected abstract _onComponentRemoved(component: AbstractAudioSubNode): void;
 
-    protected _addComponent(component: AbstractAudioComponent): void {
+    protected _addComponent(component: AbstractAudioSubNode): void {
         let componentSet = this._components.get(component.name);
 
         if (!componentSet) {
-            componentSet = new Set<AbstractAudioComponent>();
+            componentSet = new Set<AbstractAudioSubNode>();
             this._components.set(component.name, componentSet);
         }
 
@@ -39,7 +39,7 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
         this._onComponentAdded(component);
     }
 
-    protected _removeComponent(component: AbstractAudioComponent): void {
+    protected _removeComponent(component: AbstractAudioSubNode): void {
         const componentSet = this._components.get(component.name);
 
         if (!componentSet) {
@@ -54,7 +54,7 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
         this._onComponentRemoved(component);
     }
 
-    protected _getComponent(name: string): Nullable<AbstractAudioComponent> {
+    protected _getComponent(name: string): Nullable<AbstractAudioSubNode> {
         const componentSet = this._components.get(name);
 
         if (!componentSet) {
@@ -64,7 +64,7 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
         return componentSet.values().next().value;
     }
 
-    protected _getComponents(name: string): Nullable<Array<AbstractAudioComponent>> {
+    protected _getComponents(name: string): Nullable<Array<AbstractAudioSubNode>> {
         const componentSet = this._components.get(name);
 
         if (!componentSet) {

@@ -1,16 +1,16 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
-import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
+import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import type { _WebAudioComponentGraph } from "./webAudioComponentGraph";
-import { _CreateAudioComponentGraphAsync } from "./webAudioComponentGraph";
-import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
+import type { _WebAudioSubGraph } from "./webAudioComponentGraph";
+import { _CreateAudioSubGraphAsync } from "./webAudioComponentGraph";
+import type { IWebAudioSuperNode } from "./webAudioComponentOwner";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
 
@@ -76,7 +76,7 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner, IWebAudioNode {
+class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWebAudioNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
@@ -90,7 +90,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
         return this._buffer;
     }
 
-    private _componentGraph: _WebAudioComponentGraph;
+    private _componentGraph: _WebAudioSubGraph;
 
     /** @internal */
     public get stereoPan(): number {
@@ -136,7 +136,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
 
-        this._componentGraph = await _CreateAudioComponentGraphAsync(this, options);
+        this._componentGraph = await _CreateAudioSubGraphAsync(this, options);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
@@ -151,12 +151,12 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     /** @internal */
-    public addComponent(component: AbstractAudioComponent): void {
+    public addComponent(component: AbstractAudioSubNode): void {
         this._addComponent(component);
     }
 
     /** @internal */
-    public getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
+    public getComponent(componentClassName: string): Nullable<AbstractAudioSubNode> {
         return this._getComponent(componentClassName);
     }
 
@@ -171,7 +171,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
         return soundInstance;
     }
 
-    protected override _onComponentAdded(component: AbstractAudioComponent): void {
+    protected override _onComponentAdded(component: AbstractAudioSubNode): void {
         if (!this._componentGraph) {
             return;
         }
@@ -180,7 +180,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
         this._reconnect();
     }
 
-    protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+    protected override _onComponentRemoved(component: AbstractAudioSubNode): void {
         if (!this._componentGraph) {
             return;
         }

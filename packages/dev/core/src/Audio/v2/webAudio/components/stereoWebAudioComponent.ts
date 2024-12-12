@@ -1,21 +1,21 @@
 import type { Nullable } from "core/types";
 import type { IStereoAudioOptions } from "../../components/stereoAudioComponent";
-import { StereoAudioComponent } from "../../components/stereoAudioComponent";
-import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
+import { StereoAudioSubNode } from "../../components/stereoAudioComponent";
+import type { IWebAudioSuperNode } from "../webAudioComponentOwner";
 import type { IWebAudioNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateStereoAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioComponent> {
-    return new _StereoWebAudioComponent(owner, options);
+export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioSubNode> {
+    return new _StereoWebAudioSubNode(owner, options);
 }
 
 /** @internal */
-export class _StereoWebAudioComponent extends StereoAudioComponent {
+export class _StereoWebAudioSubNode extends StereoAudioSubNode {
     /** @internal */
     public readonly node: StereoPannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioComponentOwner, options: Nullable<IStereoAudioOptions>) {
+    public constructor(owner: IWebAudioSuperNode, options: Nullable<IStereoAudioOptions>) {
         super(owner);
 
         this.node = new StereoPannerNode(owner.audioContext);

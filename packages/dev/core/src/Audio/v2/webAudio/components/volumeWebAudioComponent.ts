@@ -1,21 +1,21 @@
 import type { Nullable } from "../../../../types";
 import type { IVolumeAudioOptions } from "../../components/volumeAudioComponent";
-import { VolumeAudioComponent } from "../../components/volumeAudioComponent";
-import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
+import { VolumeAudioSubNode } from "../../components/volumeAudioComponent";
+import type { IWebAudioSuperNode } from "../webAudioComponentOwner";
 import type { IWebAudioNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateVolumeAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<IVolumeAudioOptions> = null): Promise<_VolumeWebAudioComponent> {
-    return new _VolumeWebAudioComponent(owner, options);
+export async function _CreateVolumeAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<IVolumeAudioOptions> = null): Promise<_VolumeWebAudioSubNode> {
+    return new _VolumeWebAudioSubNode(owner, options);
 }
 
 /** @internal */
-export class _VolumeWebAudioComponent extends VolumeAudioComponent {
+export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
     /** @internal */
     public readonly node: GainNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioComponentOwner, options: Nullable<IVolumeAudioOptions> = null) {
+    public constructor(owner: IWebAudioSuperNode, options: Nullable<IVolumeAudioOptions> = null) {
         super(owner);
 
         this.node = new GainNode(owner.audioContext);

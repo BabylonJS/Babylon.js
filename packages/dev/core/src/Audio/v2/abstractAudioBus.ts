@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import { AbstractAudioComponentOwner } from "./abstractAudioComponentOwner";
+import { AbstractAudioSuperNode } from "./abstractAudioComponentOwner";
 import { AudioNodeType } from "./abstractAudioNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 /**
@@ -10,7 +10,7 @@ export interface IAbstractAudioBusOptions {}
 /**
  * Abstract class representing an audio bus node with a volume control.
  */
-export abstract class AbstractAudioBus extends AbstractAudioComponentOwner {
+export abstract class AbstractAudioBus extends AbstractAudioSuperNode {
     /**
      * The volume of the audio bus.
      */

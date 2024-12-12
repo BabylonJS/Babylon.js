@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
-import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
+import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
 
@@ -39,11 +39,11 @@ export class _WebAudioBus extends AudioBus {
         return "_WebAudioBus";
     }
 
-    protected override _onComponentAdded(component: AbstractAudioComponent): void {
+    protected override _onComponentAdded(component: AbstractAudioSubNode): void {
         //
     }
 
-    protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+    protected override _onComponentRemoved(component: AbstractAudioSubNode): void {
         //
     }
 

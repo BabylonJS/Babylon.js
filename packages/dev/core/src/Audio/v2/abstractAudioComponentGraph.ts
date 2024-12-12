@@ -1,9 +1,9 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioComponent } from "./components/abstractAudioComponent";
+import type { AbstractAudioSubNode } from "./components/abstractAudioComponent";
 
 /** @internal */
-export abstract class _AbstractAudioComponentGraph {
-    protected abstract _getComponent(componentClassName: string): Nullable<AbstractAudioComponent>;
+export abstract class _AbstractAudioSubGraph {
+    protected abstract _getComponent(componentClassName: string): Nullable<AbstractAudioSubNode>;
 
     protected _updateComponents(): void {
         const stereoComponent = this._getComponent("Stereo");

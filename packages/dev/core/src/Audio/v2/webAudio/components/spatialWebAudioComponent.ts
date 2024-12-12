@@ -1,20 +1,20 @@
 import type { Nullable } from "core/types";
-import { SpatialAudioComponent, type ISpatialAudioOptions } from "../../components/spatialAudioComponent";
-import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
+import { SpatialAudioSubNode, type ISpatialAudioOptions } from "../../components/spatialAudioComponent";
+import type { IWebAudioSuperNode } from "../webAudioComponentOwner";
 import type { IWebAudioNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateSpatialAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialoWebAudioComponent> {
-    return new _SpatialoWebAudioComponent(owner, options);
+export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialoWebAudioSubNode> {
+    return new _SpatialoWebAudioSubNode(owner, options);
 }
 
 /** @internal */
-export class _SpatialoWebAudioComponent extends SpatialAudioComponent {
+export class _SpatialoWebAudioSubNode extends SpatialAudioSubNode {
     /** @internal */
     public readonly node: PannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioComponentOwner, options: Nullable<ISpatialAudioOptions>) {
+    public constructor(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions>) {
         super(owner);
 
         this.node = new PannerNode(owner.audioContext);

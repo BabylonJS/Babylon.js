@@ -1,50 +1,48 @@
 import type { Nullable } from "core/types";
-import { _AbstractAudioComponentGraph } from "../abstractAudioComponentGraph";
-import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
+import { _AbstractAudioSubGraph } from "../abstractAudioComponentGraph";
+import type { AbstractAudioSubNode } from "../components/abstractAudioComponent";
 import type { IStereoAudioOptions } from "../components/stereoAudioComponent";
 import type { IVolumeAudioOptions } from "../components/volumeAudioComponent";
-import type { _StereoWebAudioComponent } from "./components/stereoWebAudioComponent";
-import { _CreateStereoAudioComponentAsync } from "./components/stereoWebAudioComponent";
-import type { _VolumeWebAudioComponent } from "./components/volumeWebAudioComponent";
-import { _CreateVolumeAudioComponentAsync } from "./components/volumeWebAudioComponent";
-import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
+import type { _StereoWebAudioSubNode } from "./components/stereoWebAudioComponent";
+import { _CreateStereoAudioSubNodeAsync } from "./components/stereoWebAudioComponent";
+import type { _VolumeWebAudioSubNode } from "./components/volumeWebAudioComponent";
+import { _CreateVolumeAudioSubNodeAsync } from "./components/volumeWebAudioComponent";
+import type { IWebAudioSuperNode } from "./webAudioComponentOwner";
 
 /** @internal */
-export interface IWebAudioComponentGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}
+export interface IWebAudioSubGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}
 
 /** @internal */
-export async function _CreateAudioComponentGraphAsync(owner: IWebAudioComponentOwner, options: Nullable<IWebAudioComponentGraphOptions>): Promise<_WebAudioComponentGraph> {
-    const graph = new _WebAudioComponentGraph(owner);
+export async function _CreateAudioSubGraphAsync(owner: IWebAudioSuperNode, options: Nullable<IWebAudioSubGraphOptions>): Promise<_WebAudioSubGraph> {
+    const graph = new _WebAudioSubGraph(owner);
     await graph.init(options);
     return graph;
 }
 
 /** @internal */
-export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
+export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     /** @internal */
-    public readonly owner: IWebAudioComponentOwner;
+    public readonly owner: IWebAudioSuperNode;
 
     /** @internal */
-    public volumeComponent: _VolumeWebAudioComponent;
+    public volumeComponent: _VolumeWebAudioSubNode;
 
     /** @internal */
-    public stereoComponent: Nullable<_StereoWebAudioComponent> = null;
-
-    private _stereoPan: number = 0;
+    public stereoComponent: Nullable<_StereoWebAudioSubNode> = null;
 
     /** @internal */
-    public constructor(owner: IWebAudioComponentOwner) {
+    public constructor(owner: IWebAudioSuperNode) {
         super();
 
         this.owner = owner;
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioComponentGraphOptions>): Promise<void> {
-        this.volumeComponent = await _CreateVolumeAudioComponentAsync(this.owner, options);
+    public async init(options: Nullable<IWebAudioSubGraphOptions>): Promise<void> {
+        this.volumeComponent = await _CreateVolumeAudioSubNodeAsync(this.owner, options);
 
         if (options?.stereoPan !== undefined) {
-            this.stereoComponent = await _CreateStereoAudioComponentAsync(this.owner, { stereoPan: options.stereoPan });
+            this.stereoComponent = await _CreateStereoAudioSubNodeAsync(this.owner, { stereoPan: options.stereoPan });
         }
 
         this._updateComponents();
@@ -65,7 +63,7 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
 
     /** @internal */
     public get stereoPan(): number {
-        return this.stereoComponent?.pan ?? this._stereoPan;
+        return this.stereoComponent?.pan ?? 0;
     }
 
     /** @internal */
@@ -73,8 +71,7 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
         if (this.stereoComponent) {
             this.stereoComponent.pan = value;
         } else {
-            this._stereoPan = value;
-            _CreateStereoAudioComponentAsync(this.owner, { stereoPan: value });
+            _CreateStereoAudioSubNodeAsync(this.owner, { stereoPan: value });
         }
     }
 
@@ -89,16 +86,16 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
     }
 
     /** @internal */
-    public onComponentAdded(component: AbstractAudioComponent): void {
+    public onComponentAdded(component: AbstractAudioSubNode): void {
         this._updateComponents();
 
         if (component.getClassName() === "StereoWebAudioComponent") {
-            this.stereoComponent = component as _StereoWebAudioComponent;
+            this.stereoComponent = component as _StereoWebAudioSubNode;
         }
     }
 
     /** @internal */
-    public onComponentRemoved(component: AbstractAudioComponent): void {
+    public onComponentRemoved(component: AbstractAudioSubNode): void {
         this._updateComponents();
 
         if (component.getClassName() === "StereoWebAudioComponent") {
@@ -106,7 +103,7 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
         }
     }
 
-    protected override _getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
+    protected override _getComponent(componentClassName: string): Nullable<AbstractAudioSubNode> {
         return this.owner.getComponent(componentClassName);
     }
 }

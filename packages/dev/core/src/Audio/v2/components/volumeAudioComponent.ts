@@ -1,5 +1,5 @@
-import type { AbstractAudioComponentOwner } from "../abstractAudioComponentOwner";
-import { AbstractAudioComponent } from "./abstractAudioComponent";
+import type { AbstractAudioSuperNode } from "../abstractAudioComponentOwner";
+import { AbstractAudioSubNode } from "./abstractAudioComponent";
 
 /**
  *
@@ -14,8 +14,8 @@ export interface IVolumeAudioOptions {
 /**
  *
  */
-export abstract class VolumeAudioComponent extends AbstractAudioComponent {
-    protected constructor(owner: AbstractAudioComponentOwner) {
+export abstract class VolumeAudioSubNode extends AbstractAudioSubNode {
+    protected constructor(owner: AbstractAudioSuperNode) {
         super("Volume", owner);
     }
 
