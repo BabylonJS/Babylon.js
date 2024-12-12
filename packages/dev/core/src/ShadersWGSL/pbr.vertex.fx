@@ -119,6 +119,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef UV1
     var uvUpdated: vec2f = vertexInputs.uv;
 #endif
+#ifdef UV2
+    var uv2Updated: vec2f = vertexInputs.uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -199,8 +202,14 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef MAINUV1
     vertexOutputs.vMainUV1 = uvUpdated;
 #endif
+#ifndef UV2
+    var uv2Updated: vec2f =  vec2f(0., 0.);
+#endif
+#ifdef MAINUV2
+    vertexOutputs.vMainUV2 = uv2Updated;
+#endif
 
-    #include<uvVariableDeclaration>[2..7]
+    #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)

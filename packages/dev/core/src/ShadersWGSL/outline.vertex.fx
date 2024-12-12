@@ -39,6 +39,9 @@ fn main(input: VertexInputs) -> FragmentInputs {
 #ifdef UV1
     var uvUpdated: vec2f = vertexInputs.uv;
 #endif
+#ifdef UV2
+    var uv2Updated: vec2f = vertexInputs.uv2;
+#endif
     #include<morphTargetsVertexGlobal>
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
@@ -57,7 +60,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
     vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(uvUpdated, 1.0, 0.0)).xy;
 #endif
 #ifdef UV2
-    vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(vertexInputs.uv2, 1.0, 0.0)).xy;
+    vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(uv2Updated, 1.0, 0.0)).xy;
 #endif
 #endif
 #include<clipPlaneVertex>
