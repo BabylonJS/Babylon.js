@@ -13,7 +13,7 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
      */
     public name: string;
 
-    private _components: Array<AbstractAudioComponent> = new Array<AbstractAudioComponent>();
+    private _components = new Map<string, Set<AbstractAudioComponent>>();
 
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
@@ -24,42 +24,53 @@ export abstract class AbstractAudioComponentOwner extends AbstractAudioNode {
     protected abstract _onComponentRemoved(component: AbstractAudioComponent): void;
 
     protected _addComponent(component: AbstractAudioComponent): void {
-        if (this._components.includes(component)) {
+        let componentSet = this._components.get(component._getComponentTypeName());
+
+        if (!componentSet) {
+            componentSet = new Set<AbstractAudioComponent>();
+            this._components.set(component._getComponentTypeName(), componentSet);
+        }
+
+        if (componentSet.has(component)) {
             return;
         }
 
-        this._components.push(component);
+        componentSet.add(component);
         this._onComponentAdded(component);
     }
 
     protected _removeComponent(component: AbstractAudioComponent): void {
-        if (!this._components.includes(component)) {
+        const componentSet = this._components.get(component._getComponentTypeName());
+
+        if (!componentSet) {
             return;
         }
 
-        this._components.splice(this._components.indexOf(component), 1);
+        if (!componentSet.has(component)) {
+            return;
+        }
+
+        componentSet.delete(component);
         this._onComponentRemoved(component);
     }
 
     protected _getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
-        for (const component of this._components) {
-            if (component._getComponentClassName() === componentClassName) {
-                return component;
-            }
+        const componentSet = this._components.get(componentClassName);
+
+        if (!componentSet) {
+            return null;
         }
 
-        return null;
+        return componentSet.values().next().value;
     }
 
     protected _getComponents(componentClassName: string): Nullable<Array<AbstractAudioComponent>> {
-        const components = new Array<AbstractAudioComponent>();
+        const componentSet = this._components.get(componentClassName);
 
-        for (const component of this._components) {
-            if (component._getComponentClassName() === componentClassName) {
-                components.push(component);
-            }
+        if (!componentSet) {
+            return null;
         }
 
-        return components.length > 0 ? components : null;
+        return Array.from(componentSet);
     }
 }

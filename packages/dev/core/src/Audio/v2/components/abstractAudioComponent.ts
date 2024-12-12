@@ -10,7 +10,7 @@ export abstract class AbstractAudioComponent extends AbstractAudioNode {
     }
 
     /** @internal */
-    public abstract _getComponentClassName(): string;
+    public abstract _getComponentTypeName(): string;
 
     /** @internal */
     public connect(node: AbstractAudioNode): void {

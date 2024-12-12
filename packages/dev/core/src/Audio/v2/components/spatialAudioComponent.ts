@@ -61,7 +61,7 @@ export abstract class SpatialAudioComponent extends AbstractAudioComponent {
         super(owner);
     }
 
-    public _getComponentClassName(): string {
-        return "SpatialAudio";
+    public _getComponentTypeName(): string {
+        return "Spatial";
     }
 }

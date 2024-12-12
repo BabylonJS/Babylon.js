@@ -22,7 +22,7 @@ export abstract class VolumeAudioComponent extends AbstractAudioComponent {
     abstract get volume(): number;
     abstract set volume(value: number);
 
-    public _getComponentClassName(): string {
+    public _getComponentTypeName(): string {
         return "Volume";
     }
 }

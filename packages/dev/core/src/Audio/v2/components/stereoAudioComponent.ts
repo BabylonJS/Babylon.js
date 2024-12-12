@@ -22,7 +22,7 @@ export abstract class StereoAudioComponent extends AbstractAudioComponent {
     abstract get pan(): number;
     abstract set pan(value: number);
 
-    public _getComponentClassName(): string {
+    public _getComponentTypeName(): string {
         return "Stereo";
     }
 }
