@@ -1,42 +1,42 @@
-import type { Nullable } from "../../../../types";
+import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../../abstractAudioNode";
-import type { IVolumeAudioOptions } from "../../components/volumeAudioComponent";
-import { VolumeAudioComponent } from "../../components/volumeAudioComponent";
+import type { IStereoAudioOptions } from "../../components/stereoAudioComponent";
+import { StereoAudioComponent } from "../../components/stereoAudioComponent";
 import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
 
 /** @internal */
-export async function _CreateVolumeAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<IVolumeAudioOptions> = null): Promise<_VolumeWebAudioComponent> {
-    return new _VolumeWebAudioComponent(owner, options);
+export async function _CreateStereoAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioComponent> {
+    return new _StereoWebAudioComponent(owner, options);
 }
 
 /** @internal */
-export class _VolumeWebAudioComponent extends VolumeAudioComponent {
+export class _StereoWebAudioComponent extends StereoAudioComponent {
     /** @internal */
-    public readonly node: GainNode;
+    public readonly node: StereoPannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioComponentOwner, options: Nullable<IVolumeAudioOptions> = null) {
+    public constructor(owner: IWebAudioComponentOwner, options: Nullable<IStereoAudioOptions>) {
         super(owner);
 
-        this.node = new GainNode(owner.audioContext);
-        this.node.gain.value = options?.volume ?? 1;
+        this.node = new StereoPannerNode(owner.audioContext);
+        this.node.pan.value = options?.stereoPan ?? 0;
 
         owner.addComponent(this);
     }
 
     /** @internal */
-    public get volume(): number {
-        return this.node.gain.value;
+    public get pan(): number {
+        return this.node.pan.value;
     }
 
     /** @internal */
-    public set volume(value: number) {
-        this.node.gain.value = value;
+    public set pan(value: number) {
+        this.node.pan.value = value;
     }
 
     /** @internal */
     public getClassName(): string {
-        return "VolumeWebAudioComponent";
+        return "StereoWebAudioComponent";
     }
 
     /** @internal */

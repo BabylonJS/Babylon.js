@@ -1,11 +1,16 @@
 import type { Nullable } from "core/types";
 import type { AbstractAudioComponent } from "../../components/abstractAudioComponent";
+import { _AbstractAudioComponentGraph } from "../../components/abstractAudioComponentGraph";
+import type { IStereoAudioOptions } from "../../components/stereoAudioComponent";
 import type { IVolumeAudioOptions } from "../../components/volumeAudioComponent";
 import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
-import { _CreateVolumeAudioComponentAsync, type _VolumeWebAudioComponent } from "./volumeWebAudioComponent";
+import type { _StereoWebAudioComponent } from "./stereoWebAudioComponent";
+import { _CreateStereoAudioComponentAsync } from "./stereoWebAudioComponent";
+import type { _VolumeWebAudioComponent } from "./volumeWebAudioComponent";
+import { _CreateVolumeAudioComponentAsync } from "./volumeWebAudioComponent";
 
 /** @internal */
-export interface IWebAudioComponentGraphOptions extends IVolumeAudioOptions {}
+export interface IWebAudioComponentGraphOptions extends IVolumeAudioOptions, IStereoAudioOptions {}
 
 /** @internal */
 export async function _CreateAudioComponentGraphAsync(owner: IWebAudioComponentOwner, options: Nullable<IWebAudioComponentGraphOptions>): Promise<_WebAudioComponentGraph> {
@@ -15,7 +20,7 @@ export async function _CreateAudioComponentGraphAsync(owner: IWebAudioComponentO
 }
 
 /** @internal */
-export class _WebAudioComponentGraph {
+export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
     /** @internal */
     public readonly owner: IWebAudioComponentOwner;
 
@@ -23,7 +28,12 @@ export class _WebAudioComponentGraph {
     public volumeComponent: _VolumeWebAudioComponent;
 
     /** @internal */
+    public stereoComponent: Nullable<_StereoWebAudioComponent> = null;
+
+    /** @internal */
     public constructor(owner: IWebAudioComponentOwner) {
+        super();
+
         if (!owner.upstreamNodes || !owner.downstreamNodes) {
             throw new Error("A WebAudio component owner must have upstreamNodes and downstreamNodes.");
         }
@@ -34,16 +44,39 @@ export class _WebAudioComponentGraph {
     /** @internal */
     public async init(options: Nullable<IWebAudioComponentGraphOptions>): Promise<void> {
         this.volumeComponent = await _CreateVolumeAudioComponentAsync(this.owner, options);
+
+        if (options?.stereoPan !== undefined) {
+            this.stereoComponent = await _CreateStereoAudioComponentAsync(this.owner, { stereoPan: options.stereoPan });
+        }
+
+        this._updateComponents();
     }
 
     /** @internal */
     public get webAudioInputNode(): AudioNode {
+        if (this.stereoComponent) {
+            return this.stereoComponent.node;
+        }
         return this.volumeComponent.node;
     }
 
     /** @internal */
     public get webAudioOutputNode(): AudioNode {
         return this.volumeComponent.node;
+    }
+
+    /** @internal */
+    public get stereoPan(): number {
+        return this.stereoComponent?.pan ?? 0;
+    }
+
+    /** @internal */
+    public set stereoPan(value: number) {
+        if (this.stereoComponent) {
+            this.stereoComponent.pan = value;
+        } else {
+            _CreateStereoAudioComponentAsync(this.owner, { stereoPan: value });
+        }
     }
 
     /** @internal */
@@ -57,8 +90,24 @@ export class _WebAudioComponentGraph {
     }
 
     /** @internal */
-    public onComponentAdded(component: AbstractAudioComponent): void {}
+    public onComponentAdded(component: AbstractAudioComponent): void {
+        this._updateComponents();
+
+        if (component.getClassName() === "StereoWebAudioComponent") {
+            this.stereoComponent = component as _StereoWebAudioComponent;
+        }
+    }
 
     /** @internal */
-    public onComponentRemoved(component: AbstractAudioComponent): void {}
+    public onComponentRemoved(component: AbstractAudioComponent): void {
+        this._updateComponents();
+
+        if (component.getClassName() === "StereoWebAudioComponent") {
+            this.stereoComponent = null;
+        }
+    }
+
+    protected override _getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
+        return this.owner.getComponent(componentClassName);
+    }
 }

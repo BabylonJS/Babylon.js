@@ -3,7 +3,6 @@ import type { AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import { MainAudioBus } from "../mainAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 
 /**
  * Creates a new main audio bus.
@@ -62,20 +61,16 @@ export class _WebAudioMainBus extends MainAudioBus {
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node.getClassName() === "_WebAudioMainOutput" && (node as _WebAudioMainOutput).webAudioInputNode) {
-            this.webAudioOutputNode.connect((node as _WebAudioMainOutput).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
         }
     }
 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node.getClassName() === "_WebAudioMainOutput" && (node as _WebAudioMainOutput).webAudioInputNode) {
-            this.webAudioOutputNode.disconnect((node as _WebAudioMainOutput).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
         }
     }
 }

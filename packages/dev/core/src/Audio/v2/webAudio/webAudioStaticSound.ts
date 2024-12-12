@@ -94,6 +94,16 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     private _componentGraph: _WebAudioComponentGraph;
 
     /** @internal */
+    public get stereoPan(): number {
+        return this._componentGraph.stereoPan;
+    }
+
+    /** @internal */
+    public set stereoPan(value: number) {
+        this._componentGraph.stereoPan = value;
+    }
+
+    /** @internal */
     public get volume(): number {
         return this._componentGraph.volume;
     }
@@ -152,6 +162,16 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     /** @internal */
+    public addComponent(component: AbstractAudioComponent): void {
+        this._addComponent(component);
+    }
+
+    /** @internal */
+    public getComponent(componentClassName: string): Nullable<AbstractAudioComponent> {
+        return this._getComponent(componentClassName);
+    }
+
+    /** @internal */
     public getClassName(): string {
         return "WebAudioStaticSound";
     }
@@ -163,30 +183,36 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
     }
 
     protected override _onComponentAdded(component: AbstractAudioComponent): void {
+        if (!this._componentGraph) {
+            return;
+        }
+
         this._componentGraph.onComponentAdded(component);
+        this._reconnect();
     }
 
     protected override _onComponentRemoved(component: AbstractAudioComponent): void {
+        if (!this._componentGraph) {
+            return;
+        }
+
         this._componentGraph.onComponentRemoved(component);
+        this._reconnect();
     }
 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
-            this.webAudioOutputNode.connect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
         }
     }
 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
-            this.webAudioOutputNode.disconnect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
         }
     }
 }

@@ -1,5 +1,7 @@
+import type { Nullable } from "../../../types";
 import type { AbstractAudioComponentOwner } from "../abstractAudioComponentOwner";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 
 /** @internal */
 export interface IWebAudioComponentOwner extends AbstractAudioComponentOwner {
@@ -11,4 +13,10 @@ export interface IWebAudioComponentOwner extends AbstractAudioComponentOwner {
 
     /** @internal */
     get upstreamNodes(): Set<AbstractAudioNode> | undefined;
+
+    /** @internal */
+    addComponent(component: AbstractAudioComponent): void;
+
+    /** @internal */
+    getComponent(componentClassName: string): Nullable<AbstractAudioComponent>;
 }

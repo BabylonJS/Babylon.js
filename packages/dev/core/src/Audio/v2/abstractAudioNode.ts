@@ -170,6 +170,21 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         node._onDisconnect(this);
     }
 
+    protected _reconnect(): void {
+        if (this._connectedDownstreamNodes) {
+            for (const node of Array.from(this._connectedDownstreamNodes)) {
+                this._disconnect(node);
+                this._connect(node);
+            }
+        }
+        if (this._connectedUpstreamNodes) {
+            for (const node of Array.from(this._connectedUpstreamNodes)) {
+                node._disconnect(this);
+                node._connect(this);
+            }
+        }
+    }
+
     /**
      * Called when an upstream audio output node is connecting.
      * @param node - The connecting upstream audio node

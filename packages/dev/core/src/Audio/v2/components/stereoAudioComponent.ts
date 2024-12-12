@@ -19,7 +19,10 @@ export abstract class StereoAudioComponent extends AbstractAudioComponent {
         super(owner);
     }
 
+    abstract get pan(): number;
+    abstract set pan(value: number);
+
     public _getComponentClassName(): string {
-        return "StereoAudio";
+        return "Stereo";
     }
 }

@@ -58,6 +58,16 @@ class WebAudioStreamingSound extends StreamingSound {
     public audioContext: AudioContext;
 
     /** @internal */
+    public get stereoPan(): number {
+        return 0;
+    }
+
+    /** @internal */
+    public set stereoPan(value: number) {
+        //
+    }
+
+    /** @internal */
     public get volume(): number {
         return this._gainNode.gain.value;
     }
@@ -135,20 +145,16 @@ class WebAudioStreamingSound extends StreamingSound {
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
-            this.webAudioOutputNode.connect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
         }
     }
 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node.getClassName() === "_WebAudioMainBus" || node.getClassName() === "_WebAudioBus") {
-            this.webAudioOutputNode.disconnect((node as _WebAudioMainBus | _WebAudioBus).webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
+        if ("webAudioInputNode" in node) {
+            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
         }
     }
 }
@@ -373,8 +379,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
         if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
             this.sourceNode?.connect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
         }
     }
 
@@ -383,8 +387,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
 
         if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
             this.sourceNode?.disconnect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
         }
     }
 

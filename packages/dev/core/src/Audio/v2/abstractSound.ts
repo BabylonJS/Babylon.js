@@ -65,6 +65,12 @@ export abstract class AbstractSound extends AbstractAudioComponentOwner {
     public maxInstances: number;
 
     /**
+     * The stereo panning of the sound between the left and right speakers.
+     */
+    public abstract get stereoPan(): number;
+    public abstract set stereoPan(value: number);
+
+    /**
      * The volume of the sound.
      */
     public abstract get volume(): number;
