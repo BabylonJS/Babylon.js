@@ -256,6 +256,8 @@ export class WebXRCamera extends FreeCamera {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
                 this._referenceQuaternion.w *= -1;
+            } else {
+                this._referenceQuaternion.multiplyInPlace(this._rotate180);
             }
 
             if (this._firstFrame) {
