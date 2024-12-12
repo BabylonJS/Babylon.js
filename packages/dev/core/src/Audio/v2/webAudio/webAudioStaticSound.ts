@@ -8,12 +8,10 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioComponentGraph } from "./webAudioComponentGraph";
 import { _CreateAudioComponentGraphAsync } from "./webAudioComponentGraph";
 import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { _WebAudioMainBus } from "./webAudioMainBus";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 

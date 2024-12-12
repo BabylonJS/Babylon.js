@@ -8,9 +8,7 @@ import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
-import type { _WebAudioBus } from "./webAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { _WebAudioMainBus } from "./webAudioMainBus";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
