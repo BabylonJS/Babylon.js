@@ -8,39 +8,39 @@ import { AbstractAudioComponent } from "./abstractAudioComponent";
  */
 export interface ISpatialAudioOptions {
     /**
-     * The spatial cone inner angle.
+     * The spatial cone inner angle. Default is 360.
      */
     spatialConeInnerAngle?: number;
     /**
-     * The spatial cone outer angle.
+     * The spatial cone outer angle. Default is 360.
      */
     spatialConeOuterAngle?: number;
     /**
-     * The spatial cone outer gain.
+     * The spatial cone outer gain. Default is 0.
      */
-    spatialConeOuterGain?: number;
+    spatialConeOuterVolume?: number;
     /**
-     * The spatial distance model.
+     * The spatial distance model. Default is "inverse".
      */
     spatialDistanceModel?: "linear" | "inverse" | "exponential";
     /**
-     * The spatial max distance.
+     * The spatial max distance. Default is 10000.
      */
     spatialMaxDistance?: number;
     /**
-     * The spatial panning model.
+     * The spatial panning model. Default is "equalpower".
      */
     spatialPanningModel?: "equalpower" | "HRTF";
     /**
-     * The spatial position.
+     * The spatial position. Default is (0, 0, 0).
      */
     spatialPosition?: Vector3;
     /**
-     * The spatial ref distance.
+     * The spatial ref distance. Default is 1.
      */
     spatialRefDistance?: number;
     /**
-     * The spatial rolloff factor.
+     * The spatial rolloff factor. Default is 1.
      */
     spatialRolloffFactor?: number;
     /**

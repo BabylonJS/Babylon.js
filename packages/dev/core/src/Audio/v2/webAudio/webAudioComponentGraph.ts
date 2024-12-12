@@ -30,6 +30,8 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
     /** @internal */
     public stereoComponent: Nullable<_StereoWebAudioComponent> = null;
 
+    private _stereoPan: number = 0;
+
     /** @internal */
     public constructor(owner: IWebAudioComponentOwner) {
         super();
@@ -67,7 +69,7 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
 
     /** @internal */
     public get stereoPan(): number {
-        return this.stereoComponent?.pan ?? 0;
+        return this.stereoComponent?.pan ?? this._stereoPan;
     }
 
     /** @internal */
@@ -75,6 +77,7 @@ export class _WebAudioComponentGraph extends _AbstractAudioComponentGraph {
         if (this.stereoComponent) {
             this.stereoComponent.pan = value;
         } else {
+            this._stereoPan = value;
             _CreateStereoAudioComponentAsync(this.owner, { stereoPan: value });
         }
     }

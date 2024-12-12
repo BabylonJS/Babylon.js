@@ -19,7 +19,8 @@ export class _VolumeWebAudioComponent extends VolumeAudioComponent {
         super(owner);
 
         this.node = new GainNode(owner.audioContext);
-        this.node.gain.value = options?.volume ?? 1;
+
+        this.volume = options?.volume ?? 1;
 
         owner.addComponent(this);
     }

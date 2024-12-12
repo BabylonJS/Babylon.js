@@ -19,7 +19,8 @@ export class _StereoWebAudioComponent extends StereoAudioComponent {
         super(owner);
 
         this.node = new StereoPannerNode(owner.audioContext);
-        this.node.pan.value = options?.stereoPan ?? 0;
+
+        this.pan = options?.stereoPan ?? 0;
 
         owner.addComponent(this);
     }
