@@ -49,6 +49,7 @@ import {
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
 import "../Audio/audioEngine";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -1002,20 +1003,21 @@ export class Engine extends ThinEngine {
     private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
-            const check = () => {
-                const res = gl.clientWaitSync(sync, flags, 0);
-                if (res == gl.WAIT_FAILED) {
-                    reject();
-                    return;
-                }
-                if (res == gl.TIMEOUT_EXPIRED) {
-                    setTimeout(check, intervalms);
-                    return;
-                }
-                resolve();
-            };
-
-            check();
+            _retryWithInterval(
+                () => {
+                    const res = gl.clientWaitSync(sync, flags, 0);
+                    if (res == gl.WAIT_FAILED) {
+                        throw new Error("clientWaitSync failed");
+                    }
+                    if (res == gl.TIMEOUT_EXPIRED) {
+                        return false;
+                    }
+                    return true;
+                },
+                resolve,
+                reject,
+                intervalms
+            );
         });
     }
 

@@ -321,22 +321,3 @@ export const createAndPreparePipelineContext = (
         throw e;
     }
 };
-
-export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 1000) => {
-    const int = setInterval(() => {
-        try {
-            if (condition()) {
-                clearInterval(int);
-                onSuccess();
-            }
-        } catch (e) {
-            clearInterval(int);
-            onError?.(e);
-        }
-        maxTimeout -= step;
-        if (maxTimeout < 0) {
-            clearInterval(int);
-            onError?.();
-        }
-    }, step);
-};

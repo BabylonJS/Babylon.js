@@ -13,6 +13,7 @@ import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { Observer } from "../Misc/observable";
 import { RegisterClass } from "../Misc/typeStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines a sound that can be played in the application.
@@ -1116,15 +1117,18 @@ export class Sound {
     public clone(): Nullable<Sound> {
         if (!this._streaming) {
             const setBufferAndRun = () => {
-                if (this._isReadyToPlay) {
-                    clonedSound._audioBuffer = this.getAudioBuffer();
-                    clonedSound._isReadyToPlay = true;
-                    if (clonedSound.autoplay) {
-                        clonedSound.play(0, this._offset, this._length);
-                    }
-                } else {
-                    setTimeout(setBufferAndRun, 300);
-                }
+                _retryWithInterval(
+                    () => this._isReadyToPlay,
+                    () => {
+                        clonedSound._audioBuffer = this.getAudioBuffer();
+                        clonedSound._isReadyToPlay = true;
+                        if (clonedSound.autoplay) {
+                            clonedSound.play(0, this._offset, this._length);
+                        }
+                    },
+                    undefined,
+                    300
+                );
             };
 
             const currentOptions = {
@@ -1265,15 +1269,18 @@ export class Sound {
             scene.addPendingData(newSound);
         } else {
             const setBufferAndRun = () => {
-                if (sourceSound._isReadyToPlay) {
-                    newSound._audioBuffer = sourceSound.getAudioBuffer();
-                    newSound._isReadyToPlay = true;
-                    if (newSound.autoplay) {
-                        newSound.play(0, newSound._offset, newSound._length);
-                    }
-                } else {
-                    setTimeout(setBufferAndRun, 300);
-                }
+                _retryWithInterval(
+                    () => sourceSound._isReadyToPlay,
+                    () => {
+                        newSound._audioBuffer = sourceSound.getAudioBuffer();
+                        newSound._isReadyToPlay = true;
+                        if (newSound.autoplay) {
+                            newSound.play(0, newSound._offset, newSound._length);
+                        }
+                    },
+                    undefined,
+                    300
+                );
             };
 
             newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
