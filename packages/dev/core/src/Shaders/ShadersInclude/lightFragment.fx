@@ -17,7 +17,7 @@
             #elif defined(DIRLIGHT{X})
                 preInfo = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(AREALIGHT{X})
-                preInfo = computeAreaPreLightingInfo(areaLightsLTC1{X}, areaLightsLTC2{X}, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, light{X}.vLightSpecular.rgb, roughness);
+                preInfo = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, light{X}.vLightSpecular.rgb, roughness);
             #endif
 
             preInfo.NdotV = NdotV;
@@ -161,7 +161,7 @@
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
             #elif defined(AREALIGHT{X})
-                info = computeAreaLighting(areaLightsLTC1{X}, areaLightsLTC2{X}, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, vReflectionInfos.y);
+                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, vReflectionInfos.y);
             #endif
         #endif
 

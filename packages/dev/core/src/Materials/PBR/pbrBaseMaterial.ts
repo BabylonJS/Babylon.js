@@ -1491,6 +1491,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "oitFrontColorSampler",
             "icdfxSampler",
             "icdfySampler",
+            "areaLightsLTC1Sampler",
+            "areaLightsLTC2Sampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -2369,6 +2371,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
                 BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+            }
+
+            // Binds LTC textures if Area Lights are used.
+            if (defines["AREALIGHTUSED"]) {
+                Scene.BindAreaLightsTextures(scene, effect);
             }
 
             // View

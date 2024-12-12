@@ -189,6 +189,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("DefaultCollisionCoordinator");
     }
 
+    public static BindAreaLightsTextures(scene: Scene, effect: Effect): void {
+        throw _WarnImport("AreaLight");
+    }
+
     // Members
 
     /** @internal */

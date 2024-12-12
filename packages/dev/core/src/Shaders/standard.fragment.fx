@@ -108,6 +108,12 @@ uniform float scatteringPower;
 uniform sampler2D shadowMapSampler;
 uniform sampler2D positionSampler;
 
+#ifdef AREALIGHTUSED
+    uniform sampler2D areaLightsLTC1Sampler;
+    uniform sampler2D areaLightsLTC2Sampler;
+#endif
+
+
 float computeScattering(float lightDotView)
 {
 	float result = 1.0 - scatteringCoefficient * scatteringCoefficient;

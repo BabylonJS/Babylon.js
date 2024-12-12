@@ -1,4 +1,4 @@
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
@@ -110,28 +110,10 @@ export class AreaLight extends Light {
      * @returns The light
      */
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
-        const ltc1Texture = getAreaLightsLTC1Texture(this._scene);
-        const ltc2Texture = getAreaLightsLTC2Texture(this._scene);
-        effect.setTexture("areaLightsLTC1" + lightIndex, ltc1Texture);
-        effect.setTexture("areaLightsLTC2" + lightIndex, ltc2Texture);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        const ltc1Texture = getAreaLightsLTC1Texture(this._scene);
-        const ltc2Texture = getAreaLightsLTC2Texture(this._scene);
-
-        const ltc1InternalTexture = ltc1Texture?.getInternalTexture();
-
-        if (ltc1InternalTexture !== undefined) {
-            effect._bindTexture("areaLightsLTC1", ltc1InternalTexture);
-        }
-
-        const ltc2InternalTexture = ltc2Texture?.getInternalTexture();
-
-        if (ltc2InternalTexture !== undefined) {
-            effect._bindTexture("areaLightsLTC2", ltc2InternalTexture);
-        }
         return this;
     }
 
@@ -148,3 +130,10 @@ export class AreaLight extends Light {
 
 // Register Class Name
 RegisterClass("BABYLON.AreaLight", AreaLight);
+
+Scene.BindAreaLightsTextures = (scene: Scene, effect: Effect) => {
+    const ltc1Texture = getAreaLightsLTC1Texture(scene);
+    const ltc2Texture = getAreaLightsLTC2Texture(scene);
+    effect.setTexture("areaLightsLTC1Sampler", ltc1Texture);
+    effect.setTexture("areaLightsLTC2Sampler", ltc2Texture);
+};

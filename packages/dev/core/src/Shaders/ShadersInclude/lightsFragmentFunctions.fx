@@ -260,7 +260,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
 #ifdef AREALIGHTUSED
 
-lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsLTC2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float roughness ) 
+lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float roughness ) 
 {
 	lightingInfo result;
 	vec3 normal = vNormal;
@@ -276,8 +276,8 @@ lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsL
 
 	vec2 uv = LTCUv( normal, viewDir, roughness );
 
-	vec4 t1 = texture2D( areaLightsLTC1, uv );
-	vec4 t2 = texture2D( areaLightsLTC2, uv );
+	vec4 t1 = texture2D( ltc1, uv );
+	vec4 t2 = texture2D( ltc2, uv );
 
 	mat3 mInv = mat3(
 		vec3( t1.x, 0, t1.y ),

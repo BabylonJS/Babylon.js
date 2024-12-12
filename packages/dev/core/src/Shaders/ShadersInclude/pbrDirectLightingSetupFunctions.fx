@@ -187,7 +187,7 @@ vec3 LTCEvaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in ma
 	return vec3( result );
 }
 
-preLightingInfo computeAreaPreLightingInfo(sampler2D areaLightsLTC1, sampler2D areaLightsLTC2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 specularColor, float roughness ) 
+preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 specularColor, float roughness ) 
 {
 	preLightingInfo result;
     result.lightOffset = lightData.xyz - vPosition;
@@ -208,8 +208,8 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D areaLightsLTC1, sampler2D a
 
 	vec2 uv = LTCUv( normal, viewDir, roughness );
 
-	vec4 t1 = texture2D( areaLightsLTC1, uv );
-	vec4 t2 = texture2D( areaLightsLTC2, uv );
+	vec4 t1 = texture2D( ltc1, uv );
+	vec4 t2 = texture2D( ltc2, uv );
 
 	mat3 mInv = mat3(
 		vec3( t1.x, 0, t1.y ),

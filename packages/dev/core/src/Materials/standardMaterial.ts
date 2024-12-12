@@ -1418,6 +1418,8 @@ export class StandardMaterial extends PushMaterial {
                 "morphTargets",
                 "oitDepthSampler",
                 "oitFrontColorSampler",
+                "areaLightsLTC1Sampler",
+                "areaLightsLTC2Sampler",
             ];
 
             const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -1833,6 +1835,11 @@ export class StandardMaterial extends PushMaterial {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
                 BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
+            }
+
+            // Binds LTC textures if Area Lights are used.
+            if (defines["AREALIGHTUSED"]) {
+                Scene.BindAreaLightsTextures(scene, effect);
             }
 
             // View

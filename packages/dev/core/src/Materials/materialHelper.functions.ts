@@ -983,11 +983,6 @@ export function PrepareUniformsAndSamplersForLight(
         uniformsList.push("textureProjectionMatrix" + lightIndex);
     }
 
-    if (areaLightTextures) {
-        samplersList.push("areaLightsLTC1" + lightIndex);
-        samplersList.push("areaLightsLTC2" + lightIndex);
-    }
-
     if (iesLightTexture) {
         samplersList.push("iesLightTexture" + lightIndex);
     }
