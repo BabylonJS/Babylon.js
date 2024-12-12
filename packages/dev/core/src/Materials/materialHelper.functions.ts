@@ -934,7 +934,6 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
- * @param areaLightTextures defines if area light texture must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -943,8 +942,7 @@ export function PrepareUniformsAndSamplersForLight(
     projectedLightTexture?: any,
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
-    iesLightTexture = false,
-    areaLightTextures = false
+    iesLightTexture = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1024,8 +1022,7 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
             uniformBuffersList,
             false,
-            defines["IESLIGHTTEXTURE" + lightIndex],
-            defines["AREALIGHT" + lightIndex]
+            defines["IESLIGHTTEXTURE" + lightIndex]
         );
     }
 

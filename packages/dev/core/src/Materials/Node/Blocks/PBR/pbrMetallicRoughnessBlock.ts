@@ -820,8 +820,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
                 uniformBuffers,
                 onlyUpdateBuffersList,
-                defines["IESLIGHTTEXTURE" + lightIndex],
-                defines["AREALIGHT" + lightIndex]
+                defines["IESLIGHTTEXTURE" + lightIndex]
             );
         }
     }
