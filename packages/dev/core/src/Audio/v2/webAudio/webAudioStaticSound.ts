@@ -12,6 +12,7 @@ import type { _WebAudioComponentGraph } from "./webAudioComponentGraph";
 import { _CreateAudioComponentGraphAsync } from "./webAudioComponentGraph";
 import type { IWebAudioComponentOwner } from "./webAudioComponentOwner";
 import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioNode } from "./webAudioNode";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -75,7 +76,7 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner {
+class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner, IWebAudioNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
@@ -198,20 +199,14 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioComponentOwner
         this._reconnect();
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
+    protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
+    protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
     }
 }
 
@@ -455,8 +450,6 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
 
         if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
             this.sourceNode?.connect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
         }
     }
 
@@ -465,8 +458,6 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance {
 
         if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
             this.sourceNode?.disconnect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
         }
     }
 

@@ -1,12 +1,7 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../../abstractAudioNode";
 import { SpatialAudioComponent, type ISpatialAudioOptions } from "../../components/spatialAudioComponent";
 import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
-
-interface IWebAudioNode extends AbstractAudioNode {
-    webAudioInputNode: AudioNode;
-    webAudioOutputNode: AudioNode;
-}
+import type { IWebAudioNode } from "../webAudioNode";
 
 /** @internal */
 export async function _CreateSpatialAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialoWebAudioComponent> {
@@ -110,14 +105,10 @@ export class _SpatialoWebAudioComponent extends SpatialAudioComponent {
     }
 
     protected override _connect(node: IWebAudioNode): void {
-        if ("webAudioInputNode" in node) {
-            this.node.connect(node.webAudioInputNode as AudioNode);
-        }
+        this.node.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        if ("webAudioInputNode" in node) {
-            this.node.disconnect(node.webAudioInputNode as AudioNode);
-        }
+    protected override _disconnect(node: IWebAudioNode): void {
+        this.node.disconnect(node.webAudioInputNode);
     }
 }

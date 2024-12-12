@@ -1,9 +1,9 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioNode } from "./webAudioNode";
 
 /**
  * Options for creating a new WebAudio bus.
@@ -47,19 +47,11 @@ export class _WebAudioBus extends AudioBus {
         //
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
-        super._connect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
-        }
+    protected override _connect(node: IWebAudioNode): void {
+        this._gainNode.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        super._disconnect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
-        }
+    protected override _disconnect(node: IWebAudioNode): void {
+        this._gainNode.disconnect(node.webAudioInputNode);
     }
 }

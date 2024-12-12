@@ -1,8 +1,8 @@
-import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import type { AbstractAudioComponent } from "../components/abstractAudioComponent";
 import { MainAudioBus } from "../mainAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioNode } from "./webAudioNode";
 
 /**
  * Creates a new main audio bus.
@@ -21,8 +21,11 @@ export async function CreateMainAudioBusAsync(name: string, engine: AudioEngineV
 }
 
 /** @internal */
-export class _WebAudioMainBus extends MainAudioBus {
+export class _WebAudioMainBus extends MainAudioBus implements IWebAudioNode {
     private _gainNode: GainNode;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
 
     /** @internal */
     public get webAudioInputNode(): AudioNode {
@@ -58,19 +61,13 @@ export class _WebAudioMainBus extends MainAudioBus {
         //
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
+    protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
+    protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
     }
 }

@@ -1,6 +1,5 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
-import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSound } from "../abstractSound";
 import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
@@ -8,6 +7,7 @@ import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 import { _CreateMainAudioOutputAsync } from "./webAudioMainOutput";
+import type { IWebAudioNode } from "./webAudioNode";
 
 /**
  * Options for creating a new v2 audio engine that uses the WebAudio API.
@@ -89,7 +89,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get mainOutput(): Nullable<AbstractAudioNode> {
+    public get mainOutput(): Nullable<IWebAudioNode> {
         return this._mainOutput;
     }
 

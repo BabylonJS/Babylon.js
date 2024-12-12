@@ -9,6 +9,7 @@ import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioNode } from "./webAudioNode";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -43,7 +44,7 @@ export async function CreateStreamingSoundAsync(
 }
 
 /** @internal */
-class WebAudioStreamingSound extends StreamingSound {
+class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
     private _gainNode: GainNode;
 
     /** @internal */
@@ -140,20 +141,14 @@ class WebAudioStreamingSound extends StreamingSound {
         //
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
+    protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.connect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
+    protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-
-        if ("webAudioInputNode" in node) {
-            this.webAudioOutputNode.disconnect(node.webAudioInputNode as AudioNode);
-        }
+        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
     }
 }
 

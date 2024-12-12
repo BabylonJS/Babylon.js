@@ -1,8 +1,8 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../../abstractAudioNode";
 import type { IStereoAudioOptions } from "../../components/stereoAudioComponent";
 import { StereoAudioComponent } from "../../components/stereoAudioComponent";
 import type { IWebAudioComponentOwner } from "../webAudioComponentOwner";
+import type { IWebAudioNode } from "../webAudioNode";
 
 /** @internal */
 export async function _CreateStereoAudioComponentAsync(owner: IWebAudioComponentOwner, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioComponent> {
@@ -50,15 +50,11 @@ export class _StereoWebAudioComponent extends StereoAudioComponent {
         return this.node;
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
-        if ("webAudioInputNode" in node) {
-            this.node.connect(node.webAudioInputNode as AudioNode);
-        }
+    protected override _connect(node: IWebAudioNode): void {
+        this.node.connect(node.webAudioInputNode);
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        if ("webAudioInputNode" in node) {
-            this.node.disconnect(node.webAudioInputNode as AudioNode);
-        }
+    protected override _disconnect(node: IWebAudioNode): void {
+        this.node.disconnect(node.webAudioInputNode);
     }
 }
