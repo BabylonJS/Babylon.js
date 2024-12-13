@@ -34,7 +34,14 @@ function _runWithCondition(condition: () => boolean, onSuccess: () => void, onEr
 /**
  * @internal
  */
-export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 2000, checkConditionOnCall?: boolean) => {
+export const _retryWithInterval = (
+    condition: () => boolean,
+    onSuccess: () => void,
+    onError?: (e?: any) => void,
+    step = 16,
+    maxTimeout = 2000,
+    checkConditionOnCall: boolean = true
+) => {
     // if checkConditionOnCall is true, we check the condition immediately. If it is true, run everything synchronously
     if (checkConditionOnCall) {
         // that means that one of the two happened - either the condition is true or an exception was thrown when checking the condition
@@ -48,7 +55,7 @@ export const _retryWithInterval = (condition: () => boolean, onSuccess: () => vo
         maxTimeout -= step;
         if (maxTimeout < 0) {
             clearInterval(int);
-            onError?.(new Error('Operation timed out after maximum retries'));
+            onError?.(new Error("Operation timed out after maximum retries"));
         }
     }, step);
 };

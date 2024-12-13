@@ -285,9 +285,7 @@ export function CreateScreenshotUsingRenderTarget(
                 texture.render(true);
                 engine.setSize(originalSize.width, originalSize.height);
                 camera.getProjectionMatrix(true); // Force cache refresh;
-            },
-            () => {},
-            16
+            }
         );
     };
 
