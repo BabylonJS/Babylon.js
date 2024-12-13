@@ -44,7 +44,6 @@ export async function CreateSoundAsync(
 
     const sound = new WebAudioStaticSound(name, engine as _WebAudioEngine, options);
     await sound.init(source, options);
-    (engine as _WebAudioEngine).addSound(sound);
     return sound;
 }
 
@@ -157,9 +156,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWe
     }
 
     protected _createSoundInstance(): WebAudioStaticSoundInstance {
-        const soundInstance = new WebAudioStaticSoundInstance(this);
-        this.engine.addSoundInstance(soundInstance);
-        return soundInstance;
+        return new WebAudioStaticSoundInstance(this);
     }
 
     protected override _updateSubNodes(): void {

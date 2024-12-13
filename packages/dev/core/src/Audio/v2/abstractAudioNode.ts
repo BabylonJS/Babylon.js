@@ -54,10 +54,10 @@ export abstract class AbstractAudioNode {
      */
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
 
-    protected constructor(engine: Nullable<AudioEngineV2>, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNode> = null, name: Nullable<string> = null) {
+    protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNode> = null, name: Nullable<string> = null) {
         this._name = name ?? "";
 
-        this.engine = engine!;
+        this.engine = engine;
         this.parent = parent;
 
         if (nodeType | AudioNodeType.Input) {
@@ -127,7 +127,7 @@ export abstract class AbstractAudioNode {
      * The parent audio node.
      */
     public get parent(): Nullable<AbstractAudioNode> {
-        return this._parent ?? this.engine;
+        return this._parent ?? this.engine.mainOutput;
     }
 
     /**

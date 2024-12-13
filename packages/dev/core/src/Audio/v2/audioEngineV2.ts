@@ -1,8 +1,6 @@
 import type { Nullable } from "../../types";
-import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
-import type { AbstractSound } from "./abstractSound";
-import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 
 const instances: AudioEngineV2[] = [];
 
@@ -21,7 +19,7 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
 /**
  * Abstract base class for audio engines.
  */
-export abstract class AudioEngineV2 extends AbstractAudioNode {
+export abstract class AudioEngineV2 {
     // Owns top-level AbstractAudioNode objects.
     // Owns all AbstractSound objects.
 
@@ -29,17 +27,6 @@ export abstract class AudioEngineV2 extends AbstractAudioNode {
     private readonly _mainBuses = new Set<MainAudioBus>();
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
-
-    // Owned
-    private readonly _sounds = new Set<AbstractSound>();
-
-    // Not owned, but all items should be in parent's `children` container, too, which is owned.
-    private readonly _soundInstances = new Set<_AbstractSoundInstance>();
-
-    /**
-     * The audio engine this node belongs to.
-     */
-    public override readonly engine: AudioEngineV2 = this;
 
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
@@ -59,7 +46,7 @@ export abstract class AudioEngineV2 extends AbstractAudioNode {
     /**
      * The main output node.
      */
-    public abstract get mainOutput(): Nullable<AbstractAudioNode>;
+    public abstract get mainOutput(): AbstractAudioNode;
 
     /**
      * The default main bus.
@@ -77,8 +64,6 @@ export abstract class AudioEngineV2 extends AbstractAudioNode {
     }
 
     protected constructor() {
-        super(null, AudioNodeType.Output);
-
         instances.push(this);
     }
 
@@ -88,19 +73,10 @@ export abstract class AudioEngineV2 extends AbstractAudioNode {
     /**
      * Releases associated resources.
      */
-    public override dispose(): void {
-        super.dispose();
-
+    public dispose(): void {
         if (instances.includes(this)) {
             instances.splice(instances.indexOf(this), 1);
         }
-
-        this._soundInstances.clear();
-
-        for (const source of Array.from(this._sounds)) {
-            source.dispose();
-        }
-        this._sounds.clear();
     }
 
     /**
@@ -134,20 +110,6 @@ export abstract class AudioEngineV2 extends AbstractAudioNode {
         this._mainBuses.add(mainBus);
         mainBus.onDisposeObservable.addOnce(() => {
             this._mainBuses.delete(mainBus);
-        });
-    }
-
-    protected _addSound(sound: AbstractSound): void {
-        this._sounds.add(sound);
-        sound.onDisposeObservable.addOnce(() => {
-            this._sounds.delete(sound);
-        });
-    }
-
-    protected _addSoundInstance(soundInstance: _AbstractSoundInstance): void {
-        this._soundInstances.add(soundInstance);
-        soundInstance.onDisposeObservable.addOnce(() => {
-            this._soundInstances.delete(soundInstance);
         });
     }
 }

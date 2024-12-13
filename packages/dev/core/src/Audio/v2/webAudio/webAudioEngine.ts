@@ -1,13 +1,11 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
-import type { AbstractSound } from "../abstractSound";
 import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOutput } from "./webAudioMainOutput";
 import { _CreateMainAudioOutputAsync } from "./webAudioMainOutput";
-import type { IWebAudioNode } from "./webAudioNode";
 
 /**
  * Options for creating a new v2 audio engine that uses the WebAudio API.
@@ -62,7 +60,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _resumePromise: Nullable<Promise<void>> = null;
 
-    private _mainOutput: Nullable<_WebAudioMainOutput> = null;
+    private _mainOutput: _WebAudioMainOutput;
 
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
@@ -89,7 +87,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get mainOutput(): Nullable<IWebAudioNode> {
+    public get mainOutput(): _WebAudioMainOutput {
         return this._mainOutput;
     }
 
@@ -260,22 +258,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public addSound(sound: AbstractSound): void {
-        this._addSound(sound);
-    }
-
-    /** @internal */
-    public addSoundInstance(soundInstance: _AbstractSoundInstance): void {
-        this._addSoundInstance(soundInstance);
-    }
-
-    /** @internal */
     public startSoundInstanceOnNextUserInteraction(soundInstance: _AbstractSoundInstance): void {
         this._soundInstancesToStartOnNextUserInteraction.add(soundInstance);
-    }
-
-    /** @internal */
-    public override getClassName(): string {
-        return "_WebAudioEngine";
     }
 }

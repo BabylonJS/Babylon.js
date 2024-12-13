@@ -39,7 +39,6 @@ export async function CreateStreamingSoundAsync(
 
     const sound = new WebAudioStreamingSound(name, engine as _WebAudioEngine, options);
     await sound.init(source, options);
-    (engine as _WebAudioEngine).addSound(sound);
     return sound;
 }
 
@@ -111,9 +110,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
     }
 
     protected _createSoundInstance(): WebAudioStreamingSoundInstance {
-        const soundInstance = new WebAudioStreamingSoundInstance(this);
-        this.engine.addSoundInstance(soundInstance);
-        return soundInstance;
+        return new WebAudioStreamingSoundInstance(this);
     }
 
     protected override _updateSubNodes(): void {
