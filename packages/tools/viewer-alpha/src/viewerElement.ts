@@ -154,8 +154,9 @@ export class HTML3DElement extends LitElement {
         ),
     ] as const;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
-    static override styles = css`
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override styles = css`
         :host {
             --ui-foreground-color: white;
             --ui-background-hue: 233;
@@ -786,7 +787,8 @@ export class HTML3DElement extends LitElement {
     }
 
     /** @internal */
-    public override update(changedProperties: PropertyValues<this>): void {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
         if (this._materialSelect) {
@@ -813,7 +815,8 @@ export class HTML3DElement extends LitElement {
     }
 
     /** @internal */
-    public override render() {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected override render() {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
