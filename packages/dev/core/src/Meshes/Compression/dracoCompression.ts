@@ -5,7 +5,7 @@ import type { MeshData } from "./dracoDecoder";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { Nullable } from "core/types";
-import { Geometry } from "../geometry";
+import type { Geometry } from "../geometry";
 import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { Scene } from "../../scene";
 
