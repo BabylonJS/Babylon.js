@@ -13,11 +13,6 @@ export abstract class AbstractAudioSuperNode extends AbstractAudioNode {
 
     protected abstract _subNodeGraph: _AbstractAudioSubGraph;
 
-    /**
-     * The name of the audio node.
-     */
-    public name: string;
-
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;

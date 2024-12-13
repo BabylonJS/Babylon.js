@@ -273,4 +273,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public startSoundInstanceOnNextUserInteraction(soundInstance: _AbstractSoundInstance): void {
         this._soundInstancesToStartOnNextUserInteraction.add(soundInstance);
     }
+
+    /** @internal */
+    public override getClassName(): string {
+        return "_WebAudioEngine";
+    }
 }

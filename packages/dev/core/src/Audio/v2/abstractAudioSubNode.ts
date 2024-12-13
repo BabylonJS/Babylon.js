@@ -5,11 +5,8 @@ import type { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 /** */
 export abstract class AbstractAudioSubNode extends AbstractAudioNode {
     /** @internal */
-    public readonly name: string;
-
-    /** @internal */
     constructor(name: string, owner: AbstractAudioSuperNode) {
-        super(owner.engine, AudioNodeType.InputOutput, owner);
+        super(owner.engine, AudioNodeType.InputOutput, owner, name);
         this.name = name;
     }
 

@@ -1,6 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "./abstractAudioNode";
-import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
+import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSound } from "./abstractSound";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
@@ -22,7 +21,7 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
 /**
  * Abstract base class for audio engines.
  */
-export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
+export abstract class AudioEngineV2 extends AbstractAudioNode {
     // Owns top-level AbstractAudioNode objects.
     // Owns all AbstractSound objects.
 
@@ -36,6 +35,11 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _soundInstances = new Set<_AbstractSoundInstance>();
+
+    /**
+     * The audio engine this node belongs to.
+     */
+    public override readonly engine: AudioEngineV2 = this;
 
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
@@ -73,7 +77,8 @@ export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
     }
 
     protected constructor() {
-        super();
+        super(null, AudioNodeType.Output);
+
         instances.push(this);
     }
 
