@@ -1,4 +1,3 @@
-import type { Nullable } from "core/types";
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
 import type { WorkerPool } from "../../Misc/workerPool";
@@ -31,8 +30,7 @@ export interface IDracoCodecConfiguration {
 
     /**
      * Optional worker pool to use for async encoding/decoding.
-     * If provided, numWorkers will be ignored and the worker pool will be used instead.
-     * If provided the draco script will not be loaded from the DracoConfiguration.
+     * If provided, the worker pool will be used as is: no Draco scripts will be loaded, and numWorkers will be ignored.
      */
     workerPool?: WorkerPool;
 
@@ -61,49 +59,20 @@ export function _GetDefaultNumWorkers(): number {
 }
 
 /**
+ * @internal
+ */
+export function _IsConfigurationAvailable(config: IDracoCodecConfiguration): boolean {
+    return !!((config.wasmUrl && (config.wasmBinary || config.wasmBinaryUrl) && typeof WebAssembly === "object") || config.fallbackUrl);
+    // TODO: Account for jsModule
+}
+
+/**
  * Base class for a Draco codec.
  * @internal
  */
 export abstract class DracoCodec implements IDisposable {
     protected _workerPoolPromise?: Promise<WorkerPool>;
     protected _modulePromise?: Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
-
-    /**
-     * The configuration for the Draco codec.
-     * Subclasses should override this value with a valid configuration.
-     */
-    public static DefaultConfiguration: IDracoCodecConfiguration;
-
-    /**
-     * The default draco codec object
-     * Subclasses should override this value using the narrowed type of the subclass,
-     * and define a public `get Default()` that returns the narrowed instance.
-     */
-    protected static _Default: Nullable<DracoCodec>;
-
-    /**
-     * Returns true if the Default's codec's `Configuration` is available.
-     */
-    public static get DefaultAvailable(): boolean {
-        // `this` will point to subclass
-        return !!((this.DefaultConfiguration.wasmUrl && this.DefaultConfiguration.wasmBinaryUrl && typeof WebAssembly === "object") || this.DefaultConfiguration.fallbackUrl);
-    }
-
-    /**
-     * Reset the default draco compression object to null and disposing the removed default instance.
-     * Note that if the workerPool is a member of the static Configuration object it is recommended not to run dispose,
-     * unless the static worker pool is no longer needed.
-     * @param skipDispose set to true to not dispose the removed default instance
-     */
-    public static ResetDefault(skipDispose?: boolean): void {
-        // `this` will point to subclass
-        if (this._Default) {
-            if (!skipDispose) {
-                this._Default.dispose();
-            }
-            this._Default = null;
-        }
-    }
 
     /**
      * Checks if the default codec JS module is in scope.
@@ -125,30 +94,31 @@ export abstract class DracoCodec implements IDisposable {
      * @param configuration The configuration for the DracoCodec instance.
      */
     constructor(configuration: IDracoCodecConfiguration) {
-        const config = { numWorkers: _GetDefaultNumWorkers(), ...configuration };
         // check if the decoder binary and worker pool was injected
         // Note - it is expected that the developer checked if WebWorker, WebAssembly and the URL object are available
-        if (config.workerPool) {
+        if (configuration.workerPool) {
             // Set the promise accordingly
-            this._workerPoolPromise = Promise.resolve(config.workerPool);
+            this._workerPoolPromise = Promise.resolve(configuration.workerPool);
             return;
         }
 
         // to avoid making big changes to the code here, if wasmBinary is provided use it in the wasmBinaryPromise
-        const wasmBinaryProvided = config.wasmBinary;
-        const numberOfWorkers = config.numWorkers;
+        const wasmBinaryProvided = configuration.wasmBinary;
+        const numberOfWorkers = configuration.numWorkers ?? _GetDefaultNumWorkers();
         const useWorkers = numberOfWorkers && typeof Worker === "function" && typeof URL === "function";
-        const urlNeeded = useWorkers || (!useWorkers && !config.jsModule);
+        const urlNeeded = useWorkers || !configuration.jsModule;
         // code maintained here for back-compat with no changes
 
         const codecInfo: { url: string | undefined; wasmBinaryPromise: Promise<ArrayBuffer | undefined> } =
-            config.wasmUrl && config.wasmBinaryUrl && typeof WebAssembly === "object"
+            configuration.wasmUrl && configuration.wasmBinaryUrl && typeof WebAssembly === "object"
                 ? {
-                      url: urlNeeded ? Tools.GetBabylonScriptURL(config.wasmUrl, true) : "",
-                      wasmBinaryPromise: wasmBinaryProvided ? Promise.resolve(wasmBinaryProvided) : Tools.LoadFileAsync(Tools.GetBabylonScriptURL(config.wasmBinaryUrl, true)),
+                      url: urlNeeded ? Tools.GetBabylonScriptURL(configuration.wasmUrl, true) : "",
+                      wasmBinaryPromise: wasmBinaryProvided
+                          ? Promise.resolve(wasmBinaryProvided)
+                          : Tools.LoadFileAsync(Tools.GetBabylonScriptURL(configuration.wasmBinaryUrl, true)),
                   }
                 : {
-                      url: urlNeeded ? Tools.GetBabylonScriptURL(config.fallbackUrl!) : "",
+                      url: urlNeeded ? Tools.GetBabylonScriptURL(configuration.fallbackUrl!) : "",
                       wasmBinaryPromise: Promise.resolve(undefined),
                   };
         // If using workers, initialize a worker pool with either the wasm or url?
@@ -165,14 +135,14 @@ export abstract class DracoCodec implements IDisposable {
         } else {
             this._modulePromise = codecInfo.wasmBinaryPromise.then(async (wasmBinary) => {
                 if (!this._isModuleAvailable()) {
-                    if (!config.jsModule) {
+                    if (!configuration.jsModule) {
                         if (!codecInfo.url) {
                             throw new Error("Draco codec module is not available");
                         }
                         await Tools.LoadBabylonScriptAsync(codecInfo.url);
                     }
                 }
-                return this._createModuleAsync(wasmBinary as ArrayBuffer, config.jsModule);
+                return this._createModuleAsync(wasmBinary as ArrayBuffer, configuration.jsModule);
             });
         }
     }
