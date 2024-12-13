@@ -49,20 +49,20 @@ export class IblCdfGenerator {
         this._iblSource = source;
         if (source.isCube) {
             if (source.isReadyOrNotBlocking()) {
-                this._recreateAssetsFromNewIbl(source);
+                this._recreateAssetsFromNewIbl();
             } else {
                 (source as CubeTexture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
             }
         } else {
             if (source.isReadyOrNotBlocking()) {
-                this._recreateAssetsFromNewIbl(source);
+                this._recreateAssetsFromNewIbl();
             } else {
                 (source as Texture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
             }
         }
     }
 
-    private _recreateAssetsFromNewIbl(source: BaseTexture) {
+    private _recreateAssetsFromNewIbl() {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
@@ -73,11 +73,6 @@ export class IblCdfGenerator {
             // Recreate the debug pass because of the new textures
             this._createDebugPass();
         }
-
-        // Once the textures are generated, notify that they are ready to use.
-        this._icdfPT.onGeneratedObservable.addOnce(() => {
-            this.onGeneratedObservable.notifyObservers();
-        });
     }
 
     /**
@@ -138,8 +133,8 @@ export class IblCdfGenerator {
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        const blackPixels = new Uint8Array([0, 0, 0, 255]);
-        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+        const blackPixels = new Uint16Array([0, 0, 0, 255]);
+        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         IblCdfGenerator._SceneComponentInitialization(this._scene);
     }
 
@@ -149,7 +144,7 @@ export class IblCdfGenerator {
     public onGeneratedObservable: Observable<void> = new Observable<void>();
 
     private _createTextures() {
-        const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
+        const size: TextureSize = this._iblSource ? { width: this._iblSource.getSize().width, height: this._iblSource.getSize().height } : { width: 1, height: 1 };
         if (!this._iblSource) {
             this._iblSource = RawTexture.CreateRTexture(
                 new Uint8Array([255]),
@@ -207,6 +202,9 @@ export class IblCdfGenerator {
         this._cdfyPT.setInt("iblHeight", size.height);
         this._cdfyPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._cdfyPT.refreshRate = 0;
+        if (this._iblSource.isCube) {
+            this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
+        }
 
         this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblCdfx", this._scene, cdfOptions, false, false);
         this._cdfxPT.autoClear = false;
@@ -220,22 +218,31 @@ export class IblCdfGenerator {
         this._normalizationPT.setInt("iblHeight", size.height);
         this._normalizationPT.setInt("iblWidth", size.width);
         this._normalizationPT.refreshRate = 0;
-
+        if (this._iblSource.isCube) {
+            this._normalizationPT.defines = "#define IBL_USE_CUBE_MAP\n";
+        }
         this._icdfPT = new ProceduralTexture("icdfTexture", { width: size.width, height: size.height }, "iblIcdf", this._scene, icdfOptions, false, false);
         this._icdfPT.autoClear = false;
         this._icdfPT.setTexture("cdfy", this._cdfyPT);
         this._icdfPT.setTexture("cdfx", this._cdfxPT);
         this._icdfPT.setTexture("iblSource", this._iblSource);
         this._icdfPT.setTexture("normalizationSampler", this._normalizationPT);
-        this._icdfPT.refreshRate = 0;
+        this._icdfPT.refreshRate = -1;
         this._icdfPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._icdfPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-
         if (this._iblSource.isCube) {
-            this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
-            this._normalizationPT.defines = "#define IBL_USE_CUBE_MAP\n";
             this._icdfPT.defines = "#define IBL_USE_CUBE_MAP\n";
         }
+        // Once the textures are generated, notify that they are ready to use.
+        this._icdfPT.onGeneratedObservable.addOnce(() => {
+            this.onGeneratedObservable.notifyObservers();
+        });
+        this._normalizationPT.onGeneratedObservable.addOnce(() => {
+            this._engine.flushFramebuffer();
+            this._normalizationPT.readPixels()?.then(() => {
+                this._icdfPT.render();
+            });
+        });
     }
 
     private _disposeTextures() {
