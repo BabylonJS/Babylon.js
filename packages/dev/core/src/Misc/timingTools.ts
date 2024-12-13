@@ -51,11 +51,14 @@ export const _retryWithInterval = (
         }
     }
     const int = setInterval(() => {
-        _runWithCondition(condition, onSuccess, onError);
-        maxTimeout -= step;
-        if (maxTimeout < 0) {
+        if (_runWithCondition(condition, onSuccess, onError)) {
             clearInterval(int);
-            onError?.(new Error("Operation timed out after maximum retries"));
+        } else {
+            maxTimeout -= step;
+            if (maxTimeout < 0) {
+                clearInterval(int);
+                onError?.(new Error("Operation timed out after maximum retries"));
+            }
         }
     }, step);
 };
