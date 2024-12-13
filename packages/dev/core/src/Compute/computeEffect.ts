@@ -308,7 +308,10 @@ export class ComputeEffect {
             },
             (e) => {
                 this._processCompilationErrors(e, previousPipelineContext);
-            }
+            },
+            undefined,
+            undefined,
+            false
         );
     }
 

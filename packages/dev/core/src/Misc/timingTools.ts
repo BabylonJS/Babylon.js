@@ -39,7 +39,7 @@ export const _retryWithInterval = (
     onSuccess: () => void,
     onError?: (e?: any) => void,
     step = 16,
-    maxTimeout = 2000,
+    maxTimeout = 5000,
     checkConditionOnCall: boolean = true
 ) => {
     // if checkConditionOnCall is true, we check the condition immediately. If it is true, run everything synchronously
