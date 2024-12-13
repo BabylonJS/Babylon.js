@@ -1,7 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
@@ -10,6 +9,7 @@ import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
+import type { _WebAudioSubGraph } from "./webAudioSubGraph";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -47,6 +47,8 @@ export async function CreateStreamingSoundAsync(
 class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
     private _gainNode: GainNode;
 
+    protected _subNodeGraph: _WebAudioSubGraph;
+
     /** @internal */
     public source: StreamingSoundSourceType;
 
@@ -55,25 +57,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
 
     /** @internal */
     public audioContext: AudioContext;
-
-    /** @internal */
-    public get stereoPan(): number {
-        return 0;
-    }
-
-    /** @internal */
-    public set stereoPan(value: number) {
-        //
-    }
-
-    /** @internal */
-    public get volume(): number {
-        return this._gainNode.gain.value;
-    }
-
-    public set volume(value: number) {
-        this._gainNode.gain.value = value;
-    }
 
     /** @internal */
     public get webAudioInputNode() {
@@ -133,11 +116,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
         return soundInstance;
     }
 
-    protected override _onComponentAdded(component: AbstractAudioSubNode): void {
-        //
-    }
-
-    protected override _onComponentRemoved(component: AbstractAudioSubNode): void {
+    protected override _updateSubNodes(): void {
         //
     }
 

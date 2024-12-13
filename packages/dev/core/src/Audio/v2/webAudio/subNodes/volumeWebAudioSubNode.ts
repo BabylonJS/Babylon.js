@@ -22,7 +22,7 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
 
         this.volume = options?.volume ?? 1;
 
-        owner.addComponent(this);
+        owner.addSubNode(this);
     }
 
     /** @internal */

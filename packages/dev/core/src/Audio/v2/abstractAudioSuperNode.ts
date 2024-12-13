@@ -1,76 +1,82 @@
 import type { Nullable } from "../../types";
 import type { AudioNodeType } from "./abstractAudioNode";
 import { AbstractAudioNode } from "./abstractAudioNode";
+import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "./abstractAudioSubNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 /**
- * Abstract class for an audio node containing audio components.
+ * Abstract class for an audio node containing audio sub-nodes.
  */
 export abstract class AbstractAudioSuperNode extends AbstractAudioNode {
+    private _subNodes = new Map<string, AbstractAudioSubNode>();
+
+    protected abstract _subNodeGraph: _AbstractAudioSubGraph;
+
     /**
      * The name of the audio node.
      */
     public name: string;
-
-    private _components = new Map<string, Set<AbstractAudioSubNode>>();
 
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }
 
-    protected abstract _onComponentAdded(component: AbstractAudioSubNode): void;
-    protected abstract _onComponentRemoved(component: AbstractAudioSubNode): void;
+    /**
+     * The node's stereo pan.
+     */
+    public get stereoPan(): number {
+        return this._subNodeGraph.stereoPan;
+    }
 
-    protected _addComponent(component: AbstractAudioSubNode): void {
-        let componentSet = this._components.get(component.name);
+    public set stereoPan(value: number) {
+        this._subNodeGraph.stereoPan = value;
+    }
 
-        if (!componentSet) {
-            componentSet = new Set<AbstractAudioSubNode>();
-            this._components.set(component.name, componentSet);
-        }
+    /**
+     * The node's volume.
+     */
+    public get volume(): number {
+        return this._subNodeGraph.volume;
+    }
 
-        if (componentSet.has(component)) {
+    public set volume(value: number) {
+        this._subNodeGraph.volume = value;
+    }
+
+    protected abstract _updateSubNodes(): void;
+
+    protected _addSubNode(subNode: AbstractAudioSubNode): void {
+        if (this._subNodes.has(subNode.name)) {
             return;
         }
 
-        componentSet.add(component);
-        this._onComponentAdded(component);
+        this._subNodes.set(subNode.name, subNode);
+        this._updateSubNodes();
     }
 
-    protected _removeComponent(component: AbstractAudioSubNode): void {
-        const componentSet = this._components.get(component.name);
+    protected _disconnectSubNodes(): void {
+        const it = this._subNodes.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            next.value.disconnect();
+        }
+    }
 
-        if (!componentSet) {
+    protected _getSubNode(name: string): Nullable<AbstractAudioSubNode> {
+        return this._subNodes.get(name) ?? null;
+    }
+
+    protected _hasSubNode(name: string): boolean {
+        return this._subNodes.has(name);
+    }
+
+    protected _removeSubNode(subNode: AbstractAudioSubNode): void {
+        if (!this._subNodes.has(subNode.name)) {
             return;
         }
 
-        if (!componentSet.has(component)) {
-            return;
-        }
-
-        componentSet.delete(component);
-        this._onComponentRemoved(component);
-    }
-
-    protected _getComponent(name: string): Nullable<AbstractAudioSubNode> {
-        const componentSet = this._components.get(name);
-
-        if (!componentSet) {
-            return null;
-        }
-
-        return componentSet.values().next().value;
-    }
-
-    protected _getComponents(name: string): Nullable<Array<AbstractAudioSubNode>> {
-        const componentSet = this._components.get(name);
-
-        if (!componentSet) {
-            return null;
-        }
-
-        return Array.from(componentSet);
+        this._subNodes.delete(subNode.name);
+        this._updateSubNodes();
     }
 }

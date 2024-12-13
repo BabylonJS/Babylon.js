@@ -2,6 +2,7 @@ import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import { AudioSubNode } from "./audioSubNode";
 
 /**
  *
@@ -61,7 +62,7 @@ export interface ISpatialAudioOptions {
  * @param options The spatial audio options to check.
  * @returns `true` if the spatial audio options are defined, otherwise `false`.
  */
-export function spatialAudioOptionsAreDefined(options: ISpatialAudioOptions): boolean {
+export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
     return (
         options.spatialEnabled ||
         options.spatialConeInnerAngle !== undefined ||
@@ -83,6 +84,6 @@ export function spatialAudioOptionsAreDefined(options: ISpatialAudioOptions): bo
  */
 export abstract class SpatialAudioSubNode extends AbstractAudioSubNode {
     protected constructor(owner: AbstractAudioSuperNode) {
-        super("Spatial", owner);
+        super(AudioSubNode.Spatial, owner);
     }
 }

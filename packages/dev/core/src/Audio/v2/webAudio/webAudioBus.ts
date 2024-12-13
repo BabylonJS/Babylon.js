@@ -1,9 +1,9 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
+import type { _WebAudioSubGraph } from "./webAudioSubGraph";
 
 /**
  * Options for creating a new WebAudio bus.
@@ -13,6 +13,8 @@ export interface IWebAudioBusOptions extends IAudioBusOptions {}
 /** @internal */
 export class _WebAudioBus extends AudioBus {
     private _gainNode: GainNode;
+
+    protected _subNodeGraph: _WebAudioSubGraph;
 
     /** @internal */
     public get webAudioInputNode(): AudioNode {
@@ -39,11 +41,7 @@ export class _WebAudioBus extends AudioBus {
         return "_WebAudioBus";
     }
 
-    protected override _onComponentAdded(component: AbstractAudioSubNode): void {
-        //
-    }
-
-    protected override _onComponentRemoved(component: AbstractAudioSubNode): void {
+    protected override _updateSubNodes(): void {
         //
     }
 

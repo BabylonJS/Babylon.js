@@ -1,8 +1,8 @@
-import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { MainAudioBus } from "../mainAudioBus";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
+import type { _WebAudioSubGraph } from "./webAudioSubGraph";
 
 /**
  * Creates a new main audio bus.
@@ -23,6 +23,8 @@ export async function CreateMainAudioBusAsync(name: string, engine: AudioEngineV
 /** @internal */
 export class _WebAudioMainBus extends MainAudioBus implements IWebAudioNode {
     private _gainNode: GainNode;
+
+    protected _subNodeGraph: _WebAudioSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -53,11 +55,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioNode {
         return "_WebAudioMainBus";
     }
 
-    protected override _onComponentAdded(component: AbstractAudioSubNode): void {
-        //
-    }
-
-    protected override _onComponentRemoved(component: AbstractAudioSubNode): void {
+    protected override _updateSubNodes(): void {
         //
     }
 

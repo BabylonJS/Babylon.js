@@ -1,10 +1,8 @@
 import type { Nullable } from "core/types";
+import type { IAudioSubGraphOptions } from "../abstractAudioSubGraph";
 import { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
-import type { ISpatialAudioOptions } from "../subNodes/spatialAudioSubNode";
-import { spatialAudioOptionsAreDefined } from "../subNodes/spatialAudioSubNode";
-import { stereoAudioOptionsAreDefined, type IStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
-import type { IVolumeAudioOptions } from "../subNodes/volumeAudioSubNode";
+import { AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialWebAudioSubNode } from "./subNodes/spatialWebAudioSubNode";
 import { _CreateSpatialAudioSubNodeAsync } from "./subNodes/spatialWebAudioSubNode";
 import type { _StereoWebAudioSubNode } from "./subNodes/stereoWebAudioSubNode";
@@ -14,10 +12,7 @@ import { _CreateVolumeAudioSubNodeAsync } from "./subNodes/volumeWebAudioSubNode
 import type { IWebAudioSuperNode } from "./webAudioSuperNode";
 
 /** @internal */
-export interface IWebAudioSubGraphOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {}
-
-/** @internal */
-export async function _CreateAudioSubGraphAsync(owner: IWebAudioSuperNode, options: Nullable<IWebAudioSubGraphOptions>): Promise<_WebAudioSubGraph> {
+export async function _CreateAudioSubGraphAsync(owner: IWebAudioSuperNode, options: Nullable<IAudioSubGraphOptions>): Promise<_WebAudioSubGraph> {
     const graph = new _WebAudioSubGraph(owner);
     await graph.init(options);
     return graph;
@@ -29,102 +24,59 @@ export class _WebAudioSubGraph extends _AbstractAudioSubGraph {
     public readonly owner: IWebAudioSuperNode;
 
     /** @internal */
-    public spatialComponent: Nullable<_SpatialWebAudioSubNode> = null;
-
-    /** @internal */
-    public stereoComponent: Nullable<_StereoWebAudioSubNode> = null;
-
-    /** @internal */
-    public volumeComponent: _VolumeWebAudioSubNode;
-
-    /** @internal */
     public constructor(owner: IWebAudioSuperNode) {
         super();
-
         this.owner = owner;
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioSubGraphOptions>): Promise<void> {
-        this.volumeComponent = await _CreateVolumeAudioSubNodeAsync(this.owner, options);
-
-        if (options) {
-            if (spatialAudioOptionsAreDefined(options)) {
-                this.spatialComponent = await _CreateSpatialAudioSubNodeAsync(this.owner, options);
-            }
-
-            if (stereoAudioOptionsAreDefined(options)) {
-                this.stereoComponent = await _CreateStereoAudioSubNodeAsync(this.owner, options);
-            }
-        }
-
-        this._updateComponents();
+    public async init(options: Nullable<IAudioSubGraphOptions>): Promise<void> {
+        await this._init(options);
     }
 
     /** @internal */
     public get webAudioInputNode(): AudioNode {
-        if (this.stereoComponent) {
-            return this.stereoComponent.node;
+        if (this._hasSubNode(AudioSubNode.Spatial)) {
+            return this._getSubNode<_SpatialWebAudioSubNode>(AudioSubNode.Stereo)!.node;
         }
-        return this.volumeComponent.node;
+        if (this._hasSubNode(AudioSubNode.Stereo)) {
+            return this._getSubNode<_StereoWebAudioSubNode>(AudioSubNode.Stereo)!.node;
+        }
+        return this._getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume)!.node;
     }
 
     /** @internal */
     public get webAudioOutputNode(): AudioNode {
-        return this.volumeComponent.node;
+        return this._getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume)!.node;
     }
 
     /** @internal */
-    public get stereoPan(): number {
-        return this.stereoComponent?.pan ?? 0;
+    public updateSubNodes(): void {
+        this._updateSubNodes();
     }
 
-    /** @internal */
-    public set stereoPan(value: number) {
-        if (this.stereoComponent) {
-            this.stereoComponent.pan = value;
-        } else {
-            _CreateStereoAudioSubNodeAsync(this.owner, { stereoPan: value });
+    protected _createSubNode(name: string, options?: Nullable<IAudioSubGraphOptions>): Nullable<Promise<AbstractAudioSubNode>> {
+        switch (name) {
+            case AudioSubNode.Volume:
+                return _CreateVolumeAudioSubNodeAsync(this.owner, options);
+            case AudioSubNode.Spatial:
+                return _CreateSpatialAudioSubNodeAsync(this.owner, options);
+            case AudioSubNode.Stereo:
+                return _CreateStereoAudioSubNodeAsync(this.owner, options);
+            default:
+                return null;
         }
     }
 
-    /** @internal */
-    public get volume(): number {
-        return this.volumeComponent.volume;
+    protected _disconnectSubNodes(): void {
+        this.owner.disconnectSubNodes();
     }
 
-    /** @internal */
-    public set volume(value: number) {
-        this.volumeComponent.volume = value;
+    protected _getSubNode<T extends AbstractAudioSubNode = AbstractAudioSubNode>(subNodeClassName: string): Nullable<T> {
+        return this.owner.getSubNode(subNodeClassName) as T;
     }
 
-    /** @internal */
-    public onComponentAdded(component: AbstractAudioSubNode): void {
-        this._updateComponents();
-
-        const className = component.getClassName();
-
-        if (className === "SpatialWebAudioSubNode") {
-            this.spatialComponent = component as _SpatialWebAudioSubNode;
-        } else if (className === "StereoWebAudioSubNode") {
-            this.stereoComponent = component as _StereoWebAudioSubNode;
-        }
-    }
-
-    /** @internal */
-    public onComponentRemoved(component: AbstractAudioSubNode): void {
-        this._updateComponents();
-
-        const className = component.getClassName();
-
-        if (className === "SpatialWebAudioSubNode") {
-            this.spatialComponent = null;
-        } else if (className === "StereoWebAudioSubNode") {
-            this.stereoComponent = null;
-        }
-    }
-
-    protected override _getComponent(componentClassName: string): Nullable<AbstractAudioSubNode> {
-        return this.owner.getComponent(componentClassName);
+    protected _hasSubNode(name: string): boolean {
+        return this.owner.hasSubNode(name);
     }
 }

@@ -65,18 +65,6 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     public maxInstances: number;
 
     /**
-     * The stereo panning of the sound between the left and right speakers.
-     */
-    public abstract get stereoPan(): number;
-    public abstract set stereoPan(value: number);
-
-    /**
-     * The volume of the sound.
-     */
-    public abstract get volume(): number;
-    public abstract set volume(value: number);
-
-    /**
      * The sound's start offset in seconds.
      */
     public startOffset: number;
@@ -133,8 +121,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         }
     }
 
-    /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;

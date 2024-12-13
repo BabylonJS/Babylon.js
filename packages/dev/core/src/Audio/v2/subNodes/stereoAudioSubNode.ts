@@ -1,5 +1,6 @@
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import { AudioSubNode } from "./audioSubNode";
 
 /**
  *
@@ -19,7 +20,7 @@ export interface IStereoAudioOptions {
  * @param options The stereo audio options to check.
  * @returns `true` if the stereo audio options are defined, otherwise `false`.
  */
-export function stereoAudioOptionsAreDefined(options: IStereoAudioOptions): boolean {
+export function hasStereoAudioOptions(options: IStereoAudioOptions): boolean {
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 
@@ -28,7 +29,7 @@ export function stereoAudioOptionsAreDefined(options: IStereoAudioOptions): bool
  */
 export abstract class StereoAudioSubNode extends AbstractAudioSubNode {
     protected constructor(owner: AbstractAudioSuperNode) {
-        super("Stereo", owner);
+        super(AudioSubNode.Stereo, owner);
     }
 
     abstract get pan(): number;

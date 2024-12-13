@@ -67,8 +67,7 @@ export abstract class StaticSound extends AbstractSound {
 
     public abstract readonly buffer: StaticSoundBuffer;
 
-    /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<IStaticSoundOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this.duration = options?.duration ?? 0;

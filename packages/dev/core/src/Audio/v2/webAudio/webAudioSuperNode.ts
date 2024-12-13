@@ -8,8 +8,14 @@ export interface IWebAudioSuperNode extends AbstractAudioSuperNode {
     audioContext: AudioContext | OfflineAudioContext;
 
     /** @internal */
-    addComponent(component: AbstractAudioSubNode): void;
+    addSubNode(subNode: AbstractAudioSubNode): void;
 
     /** @internal */
-    getComponent(componentClassName: string): Nullable<AbstractAudioSubNode>;
+    disconnectSubNodes(): void;
+
+    /** @internal */
+    getSubNode(subNodeClassName: string): Nullable<AbstractAudioSubNode>;
+
+    /** @internal */
+    hasSubNode(name: string): boolean;
 }

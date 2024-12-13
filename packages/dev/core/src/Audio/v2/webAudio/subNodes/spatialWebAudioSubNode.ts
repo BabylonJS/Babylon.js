@@ -26,7 +26,7 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
         this.maxDistance = options?.spatialMaxDistance ?? 10000;
         this.panningModel = options?.spatialPanningModel ?? "equalpower";
 
-        owner.addComponent(this);
+        owner.addSubNode(this);
     }
 
     /** @internal */

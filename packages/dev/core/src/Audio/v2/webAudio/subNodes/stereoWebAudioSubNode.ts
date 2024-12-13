@@ -22,7 +22,7 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
 
         this.pan = options?.stereoPan ?? 0;
 
-        owner.addComponent(this);
+        owner.addSubNode(this);
     }
 
     /** @internal */
