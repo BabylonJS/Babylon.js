@@ -94,7 +94,7 @@ export abstract class DracoCodec implements IDisposable {
      * @param configuration The configuration for the DracoCodec instance.
      */
     constructor(configuration: IDracoCodecConfiguration) {
-        // check if the decoder binary and worker pool was injected
+        // check if the codec binary and worker pool was injected
         // Note - it is expected that the developer checked if WebWorker, WebAssembly and the URL object are available
         if (configuration.workerPool) {
             // Set the promise accordingly
@@ -148,7 +148,7 @@ export abstract class DracoCodec implements IDisposable {
     }
 
     /**
-     * Returns a promise that resolves when ready. Call this manually to ensure draco compression is ready before use.
+     * Returns a promise that resolves when ready. Call this manually to ensure the draco codec is ready before use.
      * @returns a promise that resolves when ready
      */
     public async whenReadyAsync(): Promise<void> {
