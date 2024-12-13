@@ -48,7 +48,7 @@ export const _retryWithInterval = (condition: () => boolean, onSuccess: () => vo
         maxTimeout -= step;
         if (maxTimeout < 0) {
             clearInterval(int);
-            onError?.(new Error("Timeout"));
+            onError?.(new Error('Operation timed out after maximum retries'));
         }
     }, step);
 };
