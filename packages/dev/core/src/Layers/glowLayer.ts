@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -14,6 +13,7 @@ import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
+import type { IEffectLayerOptions } from "./effectLayer";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
@@ -50,27 +50,11 @@ Scene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer
  * Glow layer options. This helps customizing the behaviour
  * of the glow layer.
  */
-export interface IGlowLayerOptions {
-    /**
-     * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster). Default: 0.5
-     */
-    mainTextureRatio: number;
-
-    /**
-     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
-     */
-    mainTextureFixedSize?: number;
-
+export interface IGlowLayerOptions extends Partial<IEffectLayerOptions> {
     /**
      * How big is the kernel of the blur texture. Default: 32
      */
     blurKernelSize: number;
-
-    /**
-     * The camera attached to the layer. Default: null
-     */
-    camera: Nullable<Camera>;
 
     /**
      * Enable MSAA by choosing the number of samples. Default: 1
@@ -78,29 +62,9 @@ export interface IGlowLayerOptions {
     mainTextureSamples?: number;
 
     /**
-     * The rendering group to draw the layer in. Default: -1
-     */
-    renderingGroupId: number;
-
-    /**
      * Forces the merge step to be done in ldr (clamp values > 1). Default: false
      */
     ldrMerge?: boolean;
-
-    /**
-     * Defines the blend mode used by the merge. Default: ALPHA_ADD
-     */
-    alphaBlendingMode?: number;
-
-    /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
-     */
-    mainTextureType: number;
-
-    /**
-     * Whether or not to generate a stencil buffer. Default: false
-     */
-    generateStencilBuffer: boolean;
 }
 
 /**
@@ -218,15 +182,7 @@ export class GlowLayer extends EffectLayer {
         };
 
         // Initialize the layer
-        this._init({
-            alphaBlendingMode: this._options.alphaBlendingMode,
-            camera: this._options.camera,
-            mainTextureFixedSize: this._options.mainTextureFixedSize,
-            mainTextureRatio: this._options.mainTextureRatio,
-            renderingGroupId: this._options.renderingGroupId,
-            mainTextureType: this._options.mainTextureType,
-            generateStencilBuffer: this._options.generateStencilBuffer,
-        });
+        this._init(this._options);
     }
 
     protected override async _importShadersAsync() {
