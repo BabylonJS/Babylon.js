@@ -135,10 +135,12 @@ export class TargetCamera extends Camera {
      */
     public getFrontPosition(distance: number): Vector3 {
         this.getWorldMatrix();
-        const direction = this.getTarget().subtract(this.position);
-        direction.normalize();
-        direction.scaleInPlace(distance);
-        return this.globalPosition.add(direction);
+        const worldForward = TmpVectors.Vector3[0];
+        const localForward = TmpVectors.Vector3[1];
+        localForward.set(0, 0, this._scene.useRightHandedSystem ? -1.0 : 1.0);
+        this.getDirectionToRef(localForward, worldForward);
+        worldForward.scaleInPlace(distance);
+        return this.globalPosition.add(worldForward);
     }
 
     /** @internal */
