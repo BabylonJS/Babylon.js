@@ -10,6 +10,8 @@ export * from "./Passes/cullPass";
 export * from "./Passes/pass";
 export * from "./Passes/renderPass";
 
+export * from "./Tasks/Layers/glowLayerTask";
+
 export * from "./Tasks/Misc/executeTask";
 
 export * from "./Tasks/PostProcesses/blackAndWhiteTask";

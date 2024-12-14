@@ -1,0 +1,453 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Scene } from "../scene";
+import { Vector2 } from "../Maths/math.vector";
+import { VertexBuffer } from "../Buffers/buffer";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
+import type { Texture } from "../Materials/Textures/texture";
+import type { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { ThinEffectLayer } from "./thinEffectLayer";
+import { Constants } from "../Engines/constants";
+import { Color4 } from "../Maths/math.color";
+import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { IThinEffectLayerOptions } from "./thinEffectLayer";
+import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+
+/**
+ * Glow layer options. This helps customizing the behaviour
+ * of the glow layer.
+ */
+export interface IThinGlowLayerOptions extends Partial<IThinEffectLayerOptions> {
+    /**
+     * How big is the kernel of the blur texture. Default: 32
+     */
+    blurKernelSize: number;
+
+    /**
+     * Forces the merge step to be done in ldr (clamp values > 1). Default: false
+     */
+    ldrMerge?: boolean;
+}
+
+/**
+ * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
+ *
+ * Once instantiated in a scene, by default, all the emissive meshes will glow.
+ *
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
+ */
+export class ThinGlowLayer extends ThinEffectLayer {
+    /**
+     * Effect Name of the layer.
+     */
+    public static readonly EffectName = "GlowLayer";
+
+    /**
+     * The default blur kernel size used for the glow.
+     */
+    public static DefaultBlurKernelSize = 32;
+
+    /**
+     * The clear color of the texture used to generate the glow map.
+     */
+    public neutralColor: Color4 = new Color4();
+
+    /**
+     * Sets the kernel size of the blur.
+     */
+    public set blurKernelSize(value: number) {
+        if (value === this._options.blurKernelSize) {
+            return;
+        }
+
+        this._options.blurKernelSize = value;
+
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
+        this._horizontalBlurPostprocess1.kernel = effectiveKernel;
+        this._verticalBlurPostprocess1.kernel = effectiveKernel;
+        this._horizontalBlurPostprocess2.kernel = effectiveKernel;
+        this._verticalBlurPostprocess2.kernel = effectiveKernel;
+    }
+
+    /**
+     * Gets the kernel size of the blur.
+     */
+    public get blurKernelSize(): number {
+        return this._options.blurKernelSize;
+    }
+
+    /**
+     * Sets the glow intensity.
+     */
+    public set intensity(value: number) {
+        this._intensity = value;
+    }
+
+    /**
+     * Gets the glow intensity.
+     */
+    public get intensity(): number {
+        return this._intensity;
+    }
+
+    protected override _options: Required<IThinGlowLayerOptions>;
+
+    private _intensity: number = 1.0;
+    private _horizontalBlurPostprocess1: ThinBlurPostProcess;
+    private _verticalBlurPostprocess1: ThinBlurPostProcess;
+    private _horizontalBlurPostprocess2: ThinBlurPostProcess;
+    private _verticalBlurPostprocess2: ThinBlurPostProcess;
+
+    private _includedOnlyMeshes: number[] = [];
+    private _excludedMeshes: number[] = [];
+    private _meshesUsingTheirOwnMaterials: number[] = [];
+
+    /**
+     * Callback used to let the user override the color selection on a per mesh basis
+     */
+    public customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
+    /**
+     * Callback used to let the user override the texture selection on a per mesh basis
+     */
+    public customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
+
+    /** @internal */
+    public _renderPassId = 0;
+
+    /**
+     * Instantiates a new glow Layer and references it to the scene.
+     * @param name The name of the layer
+     * @param scene The scene to use the layer in
+     * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
+     * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to false and you should call `isReady` manually before rendering to the layer.
+     */
+    constructor(name: string, scene?: Scene, options?: Partial<IThinGlowLayerOptions>, dontCheckIfReady = false) {
+        super(name, scene, false, dontCheckIfReady);
+        this.neutralColor = new Color4(0, 0, 0, 1);
+
+        // Adapt options
+        this._options = {
+            blurKernelSize: 32,
+            camera: null,
+            renderingGroupId: -1,
+            ldrMerge: false,
+            alphaBlendingMode: Constants.ALPHA_ADD,
+            ...options,
+        };
+
+        // Initialize the layer
+        this._init(this._options);
+    }
+
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../ShadersWGSL/glowMapMerge.fragment"),
+                import("../ShadersWGSL/glowMapMerge.vertex"),
+                import("../ShadersWGSL/glowBlurPostProcess.fragment"),
+            ]);
+        } else {
+            await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
+        }
+
+        await super._importShadersAsync();
+    }
+
+    /**
+     * Get the effect name of the layer.
+     * @returns The effect name
+     */
+    public getEffectName(): string {
+        return ThinGlowLayer.EffectName;
+    }
+
+    /**
+     * @internal
+     * Create the merge effect. This is the shader use to blit the information back
+     * to the main canvas at the end of the scene rendering.
+     */
+    protected _createMergeEffect(): Effect {
+        let defines = "#define EMISSIVE \n";
+        if (this._options.ldrMerge) {
+            defines += "#define LDR \n";
+        }
+
+        // Effect
+        return this._engine.createEffect(
+            "glowMapMerge",
+            [VertexBuffer.PositionKind],
+            ["offset"],
+            ["textureSampler", "textureSampler2"],
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this.shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
+        );
+    }
+
+    /**
+     * Creates the render target textures and post processes used in the glow layer.
+     */
+    protected _createTextureAndPostProcesses(): void {
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
+        this._horizontalBlurPostprocess1 = new ThinBlurPostProcess("GlowLayerHBP1", this._scene.getEngine(), new Vector2(1.0, 0), effectiveKernel);
+        this._verticalBlurPostprocess1 = new ThinBlurPostProcess("GlowLayerVBP1", this._scene.getEngine(), new Vector2(0, 1.0), effectiveKernel);
+
+        this._horizontalBlurPostprocess2 = new ThinBlurPostProcess("GlowLayerHBP2", this._scene.getEngine(), new Vector2(1.0, 0), effectiveKernel);
+        this._verticalBlurPostprocess2 = new ThinBlurPostProcess("GlowLayerVBP2", this._scene.getEngine(), new Vector2(0, 1.0), effectiveKernel);
+
+        this.postProcesses = [this._horizontalBlurPostprocess1, this._verticalBlurPostprocess1, this._horizontalBlurPostprocess2, this._verticalBlurPostprocess2];
+    }
+
+    /**
+     * @returns The blur kernel size used by the glow.
+     * Note: The value passed in the options is divided by 2 for back compatibility.
+     */
+    private _getEffectiveBlurKernelSize() {
+        return this._options.blurKernelSize / 2;
+    }
+
+    /**
+     * Checks for the readiness of the element composing the layer.
+     * @param subMesh the mesh to check for
+     * @param useInstances specify whether or not to use instances to render the mesh
+     * @returns true if ready otherwise, false
+     */
+    public isSubMeshReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        const material = subMesh.getMaterial();
+        const mesh = subMesh.getRenderingMesh();
+
+        if (!material || !mesh) {
+            return false;
+        }
+
+        const emissiveTexture = (<any>material).emissiveTexture;
+        return super._isSubMeshReady(subMesh, useInstances, emissiveTexture);
+    }
+
+    /**
+     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
+     */
+    public needStencil(): boolean {
+        return false;
+    }
+
+    /**
+     * Returns true if the mesh can be rendered, otherwise false.
+     * @param mesh The mesh to render
+     * @param material The material used on the mesh
+     * @returns true if it can be rendered otherwise false
+     */
+    protected override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+        return true;
+    }
+
+    public bindTexturesForCompose: (effect: Effect) => void;
+
+    /**
+     * Implementation specific of rendering the generating effect on the main canvas.
+     * @param effect The effect used to render through
+     */
+    protected _internalCompose(effect: Effect): void {
+        // Texture
+        this.bindTexturesForCompose(effect);
+        effect.setFloat("offset", this._intensity);
+
+        // Cache
+        const engine = this._engine;
+        const previousStencilBuffer = engine.getStencilBuffer();
+
+        // Draw order
+        engine.setStencilBuffer(false);
+
+        engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+
+        // Draw order
+        engine.setStencilBuffer(previousStencilBuffer);
+    }
+
+    /**
+     * Sets the required values for both the emissive texture and and the main color.
+     * @param mesh
+     * @param subMesh
+     * @param material
+     */
+    protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
+        let textureLevel = 1.0;
+
+        if (this.customEmissiveTextureSelector) {
+            this._emissiveTextureAndColor.texture = this.customEmissiveTextureSelector(mesh, subMesh, material);
+        } else {
+            if (material) {
+                this._emissiveTextureAndColor.texture = (<any>material).emissiveTexture;
+                if (this._emissiveTextureAndColor.texture) {
+                    textureLevel = this._emissiveTextureAndColor.texture.level;
+                }
+            } else {
+                this._emissiveTextureAndColor.texture = null;
+            }
+        }
+
+        if (this.customEmissiveColorSelector) {
+            this.customEmissiveColorSelector(mesh, subMesh, material, this._emissiveTextureAndColor.color);
+        } else {
+            if ((<any>material).emissiveColor) {
+                const emissiveIntensity = (<PBRMaterial>material).emissiveIntensity ?? 1;
+                textureLevel *= emissiveIntensity;
+                this._emissiveTextureAndColor.color.set(
+                    (<any>material).emissiveColor.r * textureLevel,
+                    (<any>material).emissiveColor.g * textureLevel,
+                    (<any>material).emissiveColor.b * textureLevel,
+                    material.alpha
+                );
+            } else {
+                this._emissiveTextureAndColor.color.set(this.neutralColor.r, this.neutralColor.g, this.neutralColor.b, this.neutralColor.a);
+            }
+        }
+    }
+
+    /**
+     * Returns true if the mesh should render, otherwise false.
+     * @param mesh The mesh to render
+     * @returns true if it should render otherwise false
+     */
+    protected override _shouldRenderMesh(mesh: Mesh): boolean {
+        return this.hasMesh(mesh);
+    }
+
+    /**
+     * Adds specific effects defines.
+     * @param defines The defines to add specifics to.
+     */
+    protected override _addCustomEffectDefines(defines: string[]): void {
+        defines.push("#define GLOW");
+    }
+
+    /**
+     * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
+     * @param mesh The mesh to exclude from the glow layer
+     */
+    public addExcludedMesh(mesh: Mesh): void {
+        if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
+            this._excludedMeshes.push(mesh.uniqueId);
+        }
+    }
+
+    /**
+     * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
+     * @param mesh The mesh to remove
+     */
+    public removeExcludedMesh(mesh: Mesh): void {
+        const index = this._excludedMeshes.indexOf(mesh.uniqueId);
+        if (index !== -1) {
+            this._excludedMeshes.splice(index, 1);
+        }
+    }
+
+    /**
+     * Add a mesh in the inclusion list to impact or being impacted by the glow layer.
+     * @param mesh The mesh to include in the glow layer
+     */
+    public addIncludedOnlyMesh(mesh: Mesh): void {
+        if (this._includedOnlyMeshes.indexOf(mesh.uniqueId) === -1) {
+            this._includedOnlyMeshes.push(mesh.uniqueId);
+        }
+    }
+
+    /**
+     * Remove a mesh from the Inclusion list to prevent it to impact or being impacted by the glow layer.
+     * @param mesh The mesh to remove
+     */
+    public removeIncludedOnlyMesh(mesh: Mesh): void {
+        const index = this._includedOnlyMeshes.indexOf(mesh.uniqueId);
+        if (index !== -1) {
+            this._includedOnlyMeshes.splice(index, 1);
+        }
+    }
+
+    /**
+     * Determine if a given mesh will be used in the glow layer
+     * @param mesh The mesh to test
+     * @returns true if the mesh will be highlighted by the current glow layer
+     */
+    public override hasMesh(mesh: AbstractMesh): boolean {
+        if (!super.hasMesh(mesh)) {
+            return false;
+        }
+
+        // Included Mesh
+        if (this._includedOnlyMeshes.length) {
+            return this._includedOnlyMeshes.indexOf(mesh.uniqueId) !== -1;
+        }
+
+        // Excluded Mesh
+        if (this._excludedMeshes.length) {
+            return this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
+        }
+
+        return true;
+    }
+
+    /**
+     * Defines whether the current material of the mesh should be use to render the effect.
+     * @param mesh defines the current mesh to render
+     * @returns true if the material of the mesh should be use to render the effect
+     */
+    protected override _useMeshMaterial(mesh: AbstractMesh): boolean {
+        if (this._meshesUsingTheirOwnMaterials.length == 0) {
+            return false;
+        }
+        return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
+    }
+
+    /**
+     * Add a mesh to be rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to use its material
+     */
+    public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
+        mesh.resetDrawCache(this._renderPassId);
+
+        this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+
+        mesh.onDisposeObservable.add(() => {
+            this._disposeMesh(mesh as Mesh);
+        });
+    }
+
+    /**
+     * Remove a mesh from being rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to not use its material
+     * @param renderPassId The render pass id used when rendering the mesh
+     */
+    public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh, renderPassId: number): void {
+        let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        while (index >= 0) {
+            this._meshesUsingTheirOwnMaterials.splice(index, 1);
+            index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        }
+        mesh.resetDrawCache(renderPassId);
+    }
+
+    /**
+     * Free any resources and references associated to a mesh.
+     * Internal use
+     * @param mesh The mesh to free.
+     * @internal
+     */
+    public _disposeMesh(mesh: Mesh): void {
+        this.removeIncludedOnlyMesh(mesh);
+        this.removeExcludedMesh(mesh);
+    }
+}
