@@ -33,7 +33,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #if LDR
-        baseColor = clamp(baseColor, 0., 1.0);
+        baseColor = clamp(baseColor, vec4f(0.), vec4f(1.0));
     #endif
 
     fragmentOutputs.color = baseColor;

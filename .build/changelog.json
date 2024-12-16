@@ -1,7 +1,40 @@
 {
-    "fromTag": "7.40.0",
+    "fromTag": "7.40.1",
     "changelog": {
-        "7.40.0": [],
+        "7.40.2": [
+            {
+                "pr": "15994",
+                "title": "Viewer: Allow environment texture and skybox to be set separately (and a couple other small changes)",
+                "description": "The main change in this PR is to allow the environment texture and the skybox to be configured separately (this has come up multiple times, including in the [forum](https://forum.babylonjs.com/t/babylon-viewer-v2/54317/37). To try to keep this simple, `Viewer.loadEnvironment` now has an options object where you can specify whether the \"environment\" should be used for lighting or skybox or both. On the html element level, the `environment` attribute behaves the same as before (sets both the env texture and the skybox), but there are also now `environment-lighting` and `environment-skybox` attributes if you want to set them separately. This makes `environment` essentially a shorthand, somewhat like `padding` relative to `padding-top`, `padding-bottom`, etc.\r\n\r\nThe other changes included in this PR are:\r\n- Adding a reset camera button (so that discovering double click/tap is not required). This change was based on feedback from @PatrickRyanMS.\r\n- If animation is playing, pause it when activating a hotspot (e.g. moving the camera to a pose associated with the hotspot). Without this, a `surface` type hotspot will almost certainly have moved by the time the camera finishes its interpolation. This change was based on feedback from @PatrickRyanMS.\r\n- Update the icons to use svg from https://iconcloud.design. This change was based on feedback from @PatrickRyanMS.\r\n- Mark various internal members as `@internal` so they don't show up in the API docs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15993",
+                "title": "Fix XR's near interaction's selection mesh positioning",
+                "description": "The temp vectors were being used by other functions, which changed the tmpVector's value.\r\nAlso added a new flag to hide the selection mesh even if it should be visible.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "7.40.1": [
             {
                 "pr": "15992",
@@ -33,6 +66,7 @@
                 ]
             }
         ],
+        "7.40.0": [],
         "7.39.3": [
             {
                 "pr": "15990",

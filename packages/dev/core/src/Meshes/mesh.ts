@@ -733,6 +733,28 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         this.skeleton = source.skeleton;
 
+        // Thin instances
+        if (source._thinInstanceDataStorage.matrixData) {
+            this.thinInstanceSetBuffer("matrix", new Float32Array(source._thinInstanceDataStorage.matrixData), 16, !source._thinInstanceDataStorage.matrixBuffer!.isUpdatable());
+            this._thinInstanceDataStorage.matrixBufferSize = source._thinInstanceDataStorage.matrixBufferSize;
+            this._thinInstanceDataStorage.instancesCount = source._thinInstanceDataStorage.instancesCount;
+        } else {
+            this._thinInstanceDataStorage.matrixBufferSize = source._thinInstanceDataStorage.matrixBufferSize;
+        }
+
+        if (source._userThinInstanceBuffersStorage) {
+            const userThinInstance = source._userThinInstanceBuffersStorage;
+            for (const kind in userThinInstance.data) {
+                this.thinInstanceSetBuffer(
+                    kind,
+                    new Float32Array(userThinInstance.data[kind]),
+                    userThinInstance.strides[kind],
+                    !userThinInstance.vertexBuffers?.[kind]?.isUpdatable()
+                );
+                this._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
+            }
+        }
+
         this.refreshBoundingInfo(true, true);
         this.computeWorldMatrix(true);
     }
@@ -4003,6 +4025,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uvs) {
                     this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
                 }
+
+                const uv2s = morphTarget.getUV2s();
+                if (uv2s) {
+                    this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
+                }
             }
         } else {
             let index = 0;
@@ -4019,6 +4046,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
                 }
                 index++;
             }

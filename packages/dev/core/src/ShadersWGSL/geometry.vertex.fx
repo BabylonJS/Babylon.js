@@ -74,6 +74,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef UV1
     var uvUpdated: vec2f = input.uv;
 #endif
+#ifdef UV2
+		var uv2Updated: vec2f = input.uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -157,7 +160,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 			#else
-			vertexOutputs.vUV = input.uv;
+			vertexOutputs.vUV = uvUpdated;
 			#endif
 
 			#ifdef BUMP_UV1
@@ -172,19 +175,19 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
-			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#else
-			vertexOutputs.vUV = input.uv2;
+			vertexOutputs.vUV = uv2Updated;
 			#endif
 
 			#ifdef BUMP_UV2
-			vertexOutputs.vBumpUV = (uniforms.bumpMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vBumpUV = (uniforms.bumpMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 			#ifdef REFLECTIVITY_UV2
-			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 			#ifdef ALBEDO_UV2
-			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 		#endif
 	#endif

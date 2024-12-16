@@ -13,8 +13,9 @@ import { ViewerHotSpotResult } from "./viewer";
  */
 @customElement("babylon-viewer-annotation")
 export class HTML3DAnnotationElement extends LitElement {
-    // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
-    static override styles = css`
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override styles = css`
         :host {
             display: inline-block;
             position: absolute;
@@ -40,8 +41,8 @@ export class HTML3DAnnotationElement extends LitElement {
     @property({ attribute: "hotspot" })
     public hotSpot: string = "";
 
-    // eslint-disable-next-line babylonjs/available
-    override connectedCallback(): void {
+    /** @internal */
+    public override connectedCallback(): void {
         super.connectedCallback();
         this._internals.states?.add("invalid");
 
@@ -79,8 +80,8 @@ export class HTML3DAnnotationElement extends LitElement {
         };
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override disconnectedCallback(): void {
+    /** @internal */
+    public override disconnectedCallback(): void {
         super.disconnectedCallback();
 
         this._viewerAttachment?.dispose();
@@ -89,6 +90,7 @@ export class HTML3DAnnotationElement extends LitElement {
         this._internals.states?.add("invalid");
     }
 
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
         return html` <slot></slot> `;
