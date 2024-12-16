@@ -1839,7 +1839,7 @@ export class StandardMaterial extends PushMaterial {
 
             // Binds LTC textures if Area Lights are used.
             if (defines["AREALIGHTUSED"]) {
-                Scene.BindAreaLightsTextures(scene, effect);
+                Scene.BindAreaLightsLTCTextures(scene, effect);
             }
 
             // View

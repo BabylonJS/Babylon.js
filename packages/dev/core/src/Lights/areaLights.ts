@@ -2,9 +2,9 @@ import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
-import type { Effect } from "../Materials/effect";
-import { RegisterClass } from "../Misc/typeStore";
-import { getAreaLightsLTC1Texture, getAreaLightsLTC2Texture } from "core/Misc/ltcTextureTool";
+import type { Effect } from "core/Materials/effect";
+import { RegisterClass } from "core/Misc/typeStore";
+import { getAreaLightsLTC1Texture, getAreaLightsLTC2Texture } from "core/Lights/LTC/ltcTextureTool";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
@@ -131,7 +131,7 @@ export class AreaLight extends Light {
 // Register Class Name
 RegisterClass("BABYLON.AreaLight", AreaLight);
 
-Scene.BindAreaLightsTextures = (scene: Scene, effect: Effect) => {
+Scene.BindAreaLightsLTCTextures = (scene: Scene, effect: Effect) => {
     const ltc1Texture = getAreaLightsLTC1Texture(scene);
     const ltc2Texture = getAreaLightsLTC2Texture(scene);
     effect.setTexture("areaLightsLTC1Sampler", ltc1Texture);
