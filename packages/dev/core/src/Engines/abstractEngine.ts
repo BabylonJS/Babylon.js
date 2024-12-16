@@ -301,6 +301,11 @@ export abstract class AbstractEngine {
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
+     * Observable event triggered each time an effect compilation fails
+     */
+    public onEffectErrorObservable = new Observable<{ effect: Effect; errors: string }>();
+
+    /**
      * Turn this value on if you want to pause FPS computation when in background
      */
     public disablePerformanceMonitorInBackground = false;
@@ -2609,6 +2614,7 @@ export abstract class AbstractEngine {
         this.onCanvasFocusObservable.clear();
         this.onCanvasPointerOutObservable.clear();
         this.onNewSceneAddedObservable.clear();
+        this.onEffectErrorObservable.clear();
 
         if (IsWindowObjectExist()) {
             window.removeEventListener("resize", this._checkForMobile);

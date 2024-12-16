@@ -609,7 +609,11 @@ export class Effect implements IDisposable {
             },
             (e) => {
                 this._processCompilationErrors(e, previousPipelineContext);
-            }
+            },
+            16,
+            30000,
+            true,
+            ` - Effect: ${typeof this.name === "string" ? this.name : this.key}`
         );
     }
 

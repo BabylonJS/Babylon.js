@@ -1908,7 +1908,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             defines,
             fallbacks,
             onCompiled,
-            onError,
+            (effect: Effect, errors: string) => {
+                if (onError) {
+                    onError(effect, errors);
+                }
+                this.onEffectErrorObservable.notifyObservers({ effect, errors });
+            },
             indexParameters,
             name,
             (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,
