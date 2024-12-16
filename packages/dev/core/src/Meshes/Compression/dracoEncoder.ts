@@ -1,0 +1,292 @@
+import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
+import { DracoAttributeName, DracoEncoderMethod } from "./dracoEncoder.types";
+import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
+import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
+import { Tools } from "../../Misc/tools";
+import { VertexBuffer } from "../buffer";
+import type { Nullable } from "../../types";
+import { Mesh } from "../mesh";
+import type { Geometry } from "../geometry";
+import { Logger } from "../../Misc/logger";
+import { deepMerge } from "../../Misc/deepMerger";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare let DracoEncoderModule: any;
+
+/**
+ * Map the Babylon.js attribute kind to the Draco attribute kind, defined by the `GeometryAttributeType` enum.
+ * @internal
+ */
+function getDracoAttributeName(kind: string): DracoAttributeName {
+    if (kind === VertexBuffer.PositionKind) {
+        return DracoAttributeName.POSITION;
+    } else if (kind === VertexBuffer.NormalKind) {
+        return DracoAttributeName.NORMAL;
+    } else if (kind === VertexBuffer.ColorKind) {
+        return DracoAttributeName.COLOR;
+    } else if (kind.startsWith(VertexBuffer.UVKind)) {
+        return DracoAttributeName.TEX_COORD;
+    }
+    return DracoAttributeName.GENERIC;
+}
+
+/**
+ * Get the indices for the geometry, if present. Eventually used as
+ * `AddFacesToMesh(mesh: Mesh, numFaces: number, faces: Uint16Array | Uint32Array)`;
+ * where `numFaces = indices.length / 3` and `faces = indices`.
+ * @internal
+ */
+function PrepareIndicesForDraco(input: Mesh | Geometry): Nullable<Uint32Array | Uint16Array> {
+    // Process indices
+    let indices = input.getIndices();
+
+    // Convert number[] to typed array, if needed
+    if (indices && !(indices instanceof Uint32Array) && !(indices instanceof Uint16Array)) {
+        indices = (indices.length > 65535 ? Uint32Array : Uint16Array).from(indices);
+    }
+
+    return indices;
+}
+
+/**
+ * Get relevant information about the geometry's vertex attributes for Draco encoding. Eventually used for each attribute as
+ * `AddFloatAttribute(mesh: Mesh, attribute: number, count: number, itemSize: number, array: TypedArray)`
+ * where `attribute = EncoderModule[<dracoAttribute>]`, `itemSize = <size>`, `array = <data>`, and count is the number of position vertices.
+ * @internal
+ */
+function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: string[]): Array<IDracoAttributeData> {
+    const attributes: Array<IDracoAttributeData> = [];
+
+    for (const kind of input.getVerticesDataKinds()) {
+        if (excludedAttributes?.includes(kind)) {
+            if (kind === VertexBuffer.PositionKind) {
+                throw new Error("Cannot exclude position attribute from Draco encoding.");
+            }
+            continue;
+        }
+
+        // Convert number[] to typed array, if needed
+        let data = input.getVerticesData(kind)!;
+        if (!(data instanceof Float32Array)) {
+            data = Float32Array.from(data!);
+        }
+        attributes.push({ babylonAttribute: kind, dracoAttribute: getDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
+    }
+
+    return attributes;
+}
+
+/**
+ * Copies `data` of each `attribute` into a single buffer for fast transfer to the worker.
+ * @internal
+ */
+function UseTransferableBuffer(attributes: Array<IDracoAttributeData>, indices: Nullable<Uint32Array | Uint16Array>): ArrayBuffer {
+    // Allocate the buffer
+    let byteSize = 0;
+    for (const attribute of attributes) {
+        byteSize += attribute.data.byteLength;
+    }
+    byteSize += indices ? indices.byteLength : 0;
+
+    const buffer = new ArrayBuffer(byteSize);
+
+    // Copy attributes and indices data into buffer, remapping attributes.data to new bufferviews for the buffer
+    let offsetBytes = 0;
+    for (const attribute of attributes) {
+        const bufferView = new Float32Array(buffer, offsetBytes, attribute.data.length);
+        bufferView.set(attribute.data);
+        attribute.data = bufferView;
+        offsetBytes += bufferView.byteLength;
+    }
+    if (indices) {
+        const bufferView = new (indices instanceof Uint32Array ? Uint32Array : Uint16Array)(buffer, offsetBytes, indices.length);
+        bufferView.set(indices);
+    }
+
+    return buffer;
+}
+
+const DefaultEncoderOptions: IDracoEncoderOptions = {
+    decodeSpeed: 5,
+    encodeSpeed: 5,
+    method: DracoEncoderMethod.EDGEBREAKER,
+    quantizationBits: {
+        [DracoAttributeName.POSITION]: 14,
+        [DracoAttributeName.NORMAL]: 10,
+        [DracoAttributeName.COLOR]: 8,
+        [DracoAttributeName.TEX_COORD]: 12,
+        [DracoAttributeName.GENERIC]: 12,
+    },
+};
+
+/**
+ * @experimental This class is subject to change.
+ *
+ * Draco Encoder (https://google.github.io/draco/)
+ *
+ * This class wraps the Draco encoder module.
+ *
+ * By default, the configuration points to a copy of the Draco encoder files from the Babylon.js preview cdn https://preview.babylonjs.com/draco_encoder_wasm_wrapper.js.
+ *
+ * To update the configuration, use the following code:
+ * ```javascript
+ *     DracoEncoder.DefaultConfiguration = {
+ *          wasmUrl: "<url to the WebAssembly library>",
+ *          wasmBinaryUrl: "<url to the WebAssembly binary>",
+ *          fallbackUrl: "<url to the fallback JavaScript library>",
+ *     };
+ * ```
+ *
+ * Draco has two versions, one for WebAssembly and one for JavaScript. The encoder configuration can be set to only support WebAssembly or only support the JavaScript version.
+ * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
+ * Use `DracoEncoder.DefaultAvailable` to determine if the encoder configuration is available for the current context.
+ *
+ * To encode Draco compressed data, get the default DracoEncoder object and call encodeMeshAsync:
+ * ```javascript
+ *     var dracoData = await DracoEncoder.Default.encodeMeshAsync(mesh);
+ * ```
+ *
+ * Currently, DracoEncoder only encodes to meshes. Encoding to point clouds is not yet supported.
+ *
+ * Only position, normal, color, and UV attributes are supported natively by the encoder. All other attributes are treated as generic. This means that,
+ * when decoding these generic attributes later, additional information about their original Babylon types will be needed to interpret the data correctly.
+ * You can use the return value of `encodeMeshAsync` to source this information, specifically the `attributes` field. E.g.,
+ * ```javascript
+ *    var dracoData = await DracoEncoder.Default.encodeMeshAsync(mesh);
+ *    var meshData = await DracoDecoder.Default.decodeMeshToMeshDataAsync(dracoData.data, dracoData.attributes);
+ * ```
+ *
+ * By default, DracoEncoder will encode all available attributes of the mesh. To exclude specific attributes, use the following code:
+ * ```javascript
+ *    var options = { excludedAttributes: [VertexBuffer.MatricesIndicesKind, VertexBuffer.MatricesWeightsKind] };
+ *    var dracoData = await DracoDecoder.Default.encodeMeshAsync(mesh, options);
+ * ```
+ */
+export class DracoEncoder extends DracoCodec {
+    /**
+     * Default configuration for the DracoEncoder. Defaults to the following:
+     * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
+     * - wasmUrl: `"https://cdn.babylonjs.com/draco_encoder_wasm_wrapper.js"`
+     * - wasmBinaryUrl: `"https://cdn.babylonjs.com/draco_encoder.wasm"`
+     * - fallbackUrl: `"https://cdn.babylonjs.com/draco_encoder.js"`
+     */
+    public static DefaultConfiguration: IDracoCodecConfiguration = {
+        wasmUrl: `${Tools._DefaultCdnUrl}/draco_encoder_wasm_wrapper.js`,
+        wasmBinaryUrl: `${Tools._DefaultCdnUrl}/draco_encoder.wasm`,
+        fallbackUrl: `${Tools._DefaultCdnUrl}/draco_encoder.js`,
+    };
+
+    /**
+     * Returns true if the encoder's `DefaultConfiguration` is available.
+     */
+    public static get DefaultAvailable(): boolean {
+        return _IsConfigurationAvailable(DracoEncoder.DefaultConfiguration);
+    }
+
+    protected static _Default: Nullable<DracoEncoder> = null;
+    /**
+     * Default instance for the DracoEncoder.
+     */
+    public static get Default(): DracoEncoder {
+        DracoEncoder._Default ??= new DracoEncoder();
+        return DracoEncoder._Default;
+    }
+
+    /**
+     * Reset the default DracoEncoder object to null and disposing the removed default instance.
+     * Note that if the workerPool is a member of the static DefaultConfiguration object it is recommended not to run dispose,
+     * unless the static worker pool is no longer needed.
+     * @param skipDispose set to true to not dispose the removed default instance
+     */
+    public static ResetDefault(skipDispose?: boolean): void {
+        if (DracoEncoder._Default) {
+            if (!skipDispose) {
+                DracoEncoder._Default.dispose();
+            }
+            DracoEncoder._Default = null;
+        }
+    }
+
+    protected override _isModuleAvailable(): boolean {
+        return typeof DracoEncoderModule !== "undefined";
+    }
+
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** EncoderModule */ }> {
+        const module = await (jsModule /*as DracoEncoderModule*/ || DracoEncoderModule)({ wasmBinary });
+        return { module };
+    }
+
+    protected override _getWorkerContent(): string {
+        return `${EncodeMesh}(${EncoderWorkerFunction})()`;
+    }
+
+    /**
+     * Creates a new Draco encoder.
+     * @param configuration Optional override of the configuration for the DracoEncoder. If not provided, defaults to {@link DracoEncoder.DefaultConfiguration}.
+     */
+    constructor(configuration: IDracoCodecConfiguration = DracoEncoder.DefaultConfiguration) {
+        super(configuration);
+    }
+
+    /**
+     * Encodes a mesh or geometry into a Draco-encoded mesh data.
+     * @param input the mesh or geometry to encode
+     * @param options options for the encoding
+     * @returns a promise that resolves to the newly-encoded data
+     */
+    public encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
+        const verticesCount = input.getTotalVertices();
+        if (verticesCount == 0) {
+            throw new Error("Cannot compress geometry with Draco. There are no vertices.");
+        }
+
+        // Prepare parameters for encoding
+        const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
+        if (input instanceof Mesh && input.morphTargetManager && mergedOptions.method === DracoEncoderMethod.EDGEBREAKER) {
+            Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
+            mergedOptions.method = DracoEncoderMethod.SEQUENTIAL;
+        }
+
+        const indices = PrepareIndicesForDraco(input);
+        const attributes = PrepareAttributesForDraco(input, mergedOptions.excludedAttributes);
+
+        if (this._workerPoolPromise) {
+            return this._workerPoolPromise.then((workerPool) => {
+                return new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
+                    workerPool.push((worker, onComplete) => {
+                        const onError = (error: ErrorEvent) => {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(error);
+                            onComplete();
+                        };
+
+                        const onMessage = (message: MessageEvent<EncoderMessage>) => {
+                            if (message.data.id === "encodeMeshDone") {
+                                worker.removeEventListener("error", onError);
+                                worker.removeEventListener("message", onMessage);
+                                resolve(message.data.encodedMeshData);
+                                onComplete();
+                            }
+                        };
+
+                        worker.addEventListener("error", onError);
+                        worker.addEventListener("message", onMessage);
+
+                        // Manually copy all of our attribute data into our own transferable buffer to ensure we're only copying what we need
+                        const buffer = UseTransferableBuffer(attributes, indices);
+                        worker.postMessage({ id: "encodeMesh", attributes: attributes, indices: indices, options: mergedOptions, buffer: buffer }, [buffer]);
+                    });
+                });
+            });
+        }
+
+        if (this._modulePromise) {
+            return this._modulePromise.then((encoder) => {
+                return EncodeMesh(encoder.module, attributes, indices, mergedOptions);
+            });
+        }
+
+        throw new Error("Draco encoder module is not available");
+    }
+}
