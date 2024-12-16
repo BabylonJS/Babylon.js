@@ -4025,6 +4025,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uvs) {
                     this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
                 }
+
+                const uv2s = morphTarget.getUV2s();
+                if (uv2s) {
+                    this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
+                }
             }
         } else {
             let index = 0;
@@ -4041,6 +4046,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
                 }
                 index++;
             }
