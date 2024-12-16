@@ -1535,6 +1535,13 @@ export class StandardMaterial extends PushMaterial {
 
         this._checkScenePerformancePriority();
 
+        if (defines["AREALIGHTUSED"]) {
+            if (!Scene.IsAreaLightsReady(scene)) {
+                Scene.LoadLTCTextures(scene);
+                return false;
+            }
+        }
+
         return true;
     }
 
