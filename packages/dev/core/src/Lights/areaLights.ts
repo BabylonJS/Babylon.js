@@ -4,7 +4,7 @@ import { Node } from "../node";
 import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
-import { getAreaLightsLTC1Texture, getAreaLightsLTC2Texture } from "core/Lights/LTC/ltcTextureTool";
+import { buildSceneLTCTextures } from "core/Lights/LTC/ltcTextureTool";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
@@ -132,8 +132,18 @@ export class AreaLight extends Light {
 RegisterClass("BABYLON.AreaLight", AreaLight);
 
 Scene.BindAreaLightsLTCTextures = (scene: Scene, effect: Effect) => {
-    const ltc1Texture = getAreaLightsLTC1Texture(scene);
-    const ltc2Texture = getAreaLightsLTC2Texture(scene);
-    effect.setTexture("areaLightsLTC1Sampler", ltc1Texture);
-    effect.setTexture("areaLightsLTC2Sampler", ltc2Texture);
+    effect.setTexture("areaLightsLTC1Sampler", scene.ltc1Texture);
+    effect.setTexture("areaLightsLTC2Sampler", scene.ltc2Texture);
+};
+
+Scene.LoadLTCTextures = async (scene: Scene) => {
+    await buildSceneLTCTextures(scene);
+};
+
+Scene.IsAreaLightsReady = (scene: Scene): boolean => {
+    if (scene.ltc1Texture && scene.ltc2Texture) {
+        return scene.ltc1Texture.isReady() && scene.ltc2Texture.isReady();
+    }
+
+    return false;
 };

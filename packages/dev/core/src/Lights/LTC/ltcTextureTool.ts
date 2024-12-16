@@ -4,19 +4,16 @@ import { Texture } from "core/Materials/Textures/texture";
 import type { Scene } from "core/scene";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
+import type { Tuple } from "core/types";
 
-const _ltc1 = new Uint16Array(64 * 64 * 4);
-const _ltc2 = new Uint16Array(64 * 64 * 4);
-let _ltcTextureDecoded = false;
+let _loadingLTC = false;
 
-async function decodeLTCTextures() {
-    if (_ltcTextureDecoded) {
-        return;
-    }
+async function decodeLTCTextures(): Promise<Tuple<Uint16Array, 2>> {
+    const _ltc1 = new Uint16Array(64 * 64 * 4);
+    const _ltc2 = new Uint16Array(64 * 64 * 4);
 
-    _ltcTextureDecoded = true;
-
-    const file = await Tools.LoadFileAsync("");
+    const ltcPath = Tools.GetBabylonScriptURL("https://cdn.babylonjs.com/areaLights/areaLightsLTC.bin", true);
+    const file = await Tools.LoadFileAsync(ltcPath);
     const ltcEncoded = new Uint16Array(file);
 
     const pixelCount = ltcEncoded.length / 8;
@@ -32,6 +29,8 @@ async function decodeLTCTextures() {
         _ltc2[pixelIndex * 4 + 2] = ltcEncoded[pixelIndex * 8 + 6];
         _ltc2[pixelIndex * 4 + 3] = ltcEncoded[pixelIndex * 8 + 7];
     }
+
+    return [_ltc1, _ltc2];
 }
 
 function getLTCTextureFromArray(ltc: ArrayBufferView, scene: Scene): BaseTexture {
@@ -63,26 +62,13 @@ function getLTCTextureFromArray(ltc: ArrayBufferView, scene: Scene): BaseTexture
  * @param scene defines the hosting scene
  * @returns the environment BRDF texture
  */
-export const getAreaLightsLTC1Texture = (scene: Scene): BaseTexture => {
-    if (!scene.ltc1Texture) {
-        decodeLTCTextures();
-        scene.ltc1Texture = getLTCTextureFromArray(_ltc1, scene);
+export const buildSceneLTCTextures = async (scene: Scene): Promise<void> => {
+    if (!_loadingLTC) {
+        _loadingLTC = true;
+        const arrayData = await decodeLTCTextures();
+        scene.ltc1Texture = getLTCTextureFromArray(arrayData[0], scene);
+        scene.ltc2Texture = getLTCTextureFromArray(arrayData[1], scene);
     }
-
-    return scene.ltc1Texture;
-};
-
-/**
- * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
- * @param scene defines the hosting scene
- * @returns the environment BRDF texture
- */
-export const getAreaLightsLTC2Texture = (scene: Scene): BaseTexture => {
-    if (!scene.ltc2Texture) {
-        decodeLTCTextures();
-        scene.ltc2Texture = getLTCTextureFromArray(_ltc2, scene);
-    }
-    return scene.ltc2Texture;
 };
 
 /**
@@ -94,6 +80,5 @@ export const LTC1TextureTools = {
      * @param scene defines the hosting scene
      * @returns the environment BRDF texture
      */
-    getAreaLightsLTC1Texture,
-    getAreaLightsLTC2Texture,
+    buildSceneLTCTextures,
 };

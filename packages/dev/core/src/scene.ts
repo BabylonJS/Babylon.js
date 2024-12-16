@@ -193,6 +193,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("AreaLight");
     }
 
+    public static LoadLTCTextures(scene: Scene): void {
+        throw _WarnImport("AreaLight");
+    }
+
+    public static IsAreaLightsReady(scene: Scene): boolean {
+        throw _WarnImport("AreaLight");
+    }
+
     // Members
 
     /** @internal */

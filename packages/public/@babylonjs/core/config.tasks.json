@@ -26,7 +26,10 @@
         {
             "command": "cp",
             "args": ["-f", "../../../tools/babylonServer/public/twgsl", "--to", "./assets/twgsl"]
+        },
+        {
+            "command": "cp",
+            "args": ["-f", "../../../tools/babylonServer/public/areaLights", "--to", "./assets/areaLights"]
         }
     ]
 }
-
