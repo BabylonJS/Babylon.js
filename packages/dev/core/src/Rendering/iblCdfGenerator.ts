@@ -27,7 +27,7 @@ export class IblCdfGenerator {
     private _cdfyPT: ProceduralTexture;
     private _cdfxPT: ProceduralTexture;
     private _icdfPT: ProceduralTexture;
-    private _normalizationPT: ProceduralTexture;
+    private _scaledLuminancePT: ProceduralTexture;
     private _iblSource: BaseTexture;
     private _dummyTexture: RawTexture;
     /**
@@ -175,9 +175,9 @@ export class IblCdfGenerator {
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblNormalization.fragment")]);
+                    await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")]);
                 } else {
-                    await Promise.all([import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment"), import("../Shaders/iblNormalization.fragment")]);
+                    await Promise.all([import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment"), import("../Shaders/iblScaledLuminance.fragment")]);
                 }
             },
         };
@@ -212,29 +212,29 @@ export class IblCdfGenerator {
         this._cdfxPT.refreshRate = 0;
         this._cdfxPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
-        this._normalizationPT = new ProceduralTexture(
-            "normalizationTexture",
+        this._scaledLuminancePT = new ProceduralTexture(
+            "iblScaledLuminance",
             { width: size.width, height: size.height },
-            "iblNormalization",
+            "iblScaledLuminance",
             this._scene,
             { ...icdfOptions, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
             true,
             false
         );
-        this._normalizationPT.autoClear = false;
-        this._normalizationPT.setTexture("iblSource", this._iblSource);
-        this._normalizationPT.setInt("iblHeight", size.height);
-        this._normalizationPT.setInt("iblWidth", size.width);
-        this._normalizationPT.refreshRate = 0;
+        this._scaledLuminancePT.autoClear = false;
+        this._scaledLuminancePT.setTexture("iblSource", this._iblSource);
+        this._scaledLuminancePT.setInt("iblHeight", size.height);
+        this._scaledLuminancePT.setInt("iblWidth", size.width);
+        this._scaledLuminancePT.refreshRate = 0;
         if (this._iblSource.isCube) {
-            this._normalizationPT.defines = "#define IBL_USE_CUBE_MAP\n";
+            this._scaledLuminancePT.defines = "#define IBL_USE_CUBE_MAP\n";
         }
         this._icdfPT = new ProceduralTexture("icdfTexture", { width: size.width, height: size.height }, "iblIcdf", this._scene, icdfOptions, false, false);
         this._icdfPT.autoClear = false;
         this._icdfPT.setTexture("cdfy", this._cdfyPT);
         this._icdfPT.setTexture("cdfx", this._cdfxPT);
         this._icdfPT.setTexture("iblSource", this._iblSource);
-        this._icdfPT.setTexture("normalizationSampler", this._normalizationPT);
+        this._icdfPT.setTexture("scaledLuminanceSampler", this._scaledLuminancePT);
         this._icdfPT.refreshRate = 0;
         this._icdfPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._icdfPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -251,7 +251,7 @@ export class IblCdfGenerator {
         this._cdfyPT?.dispose();
         this._cdfxPT?.dispose();
         this._icdfPT?.dispose();
-        this._normalizationPT?.dispose();
+        this._scaledLuminancePT?.dispose();
     }
 
     private _createDebugPass() {
@@ -309,8 +309,8 @@ export class IblCdfGenerator {
             this._icdfPT.isReady() &&
             this._cdfxPT &&
             this._cdfxPT.isReady() &&
-            this._normalizationPT &&
-            this._normalizationPT.isReady()
+            this._scaledLuminancePT &&
+            this._scaledLuminancePT.isReady()
         );
     }
 

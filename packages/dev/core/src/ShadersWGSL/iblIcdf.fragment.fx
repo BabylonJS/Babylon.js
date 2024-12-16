@@ -9,8 +9,8 @@ var iblSource: texture_cube<f32>;
 var iblSourceSampler: sampler;
 var iblSource: texture_2d<f32>;
 #endif
-var normalizationSamplerSampler: sampler;
-var normalizationSampler: texture_2d<f32>;
+var scaledLuminanceSamplerSampler : sampler;
+var scaledLuminanceSampler : texture_2d<f32>;
 var cdfx: texture_2d<f32>;
 var cdfy: texture_2d<f32>;
 
@@ -104,9 +104,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
     // We sample the highest mip, which represents the average luminance.
-    var size: vec2f = vec2f(textureDimensions(normalizationSampler, 0));
+    var size : vec2f = vec2f(textureDimensions(scaledLuminanceSampler, 0));
     var highestMip: f32 = floor(log2(size.x));
-    var normalization: f32 = textureSampleLevel(normalizationSampler, normalizationSamplerSampler, input.vUV, highestMip).r;
+    var normalization : f32 = textureSampleLevel(scaledLuminanceSampler,
+                                                 scaledLuminanceSamplerSampler,
+                                                 input.vUV, highestMip)
+                                  .r;
     var pixelLuminance: f32 = fetchLuminance(input.vUV);
     outputColor.z = pixelLuminance / (2.0 * PI * normalization);
 

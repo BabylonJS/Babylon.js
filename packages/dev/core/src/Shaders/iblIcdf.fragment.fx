@@ -9,7 +9,7 @@ uniform samplerCube iblSource;
 #else
 uniform sampler2D iblSource;
 #endif
-uniform sampler2D normalizationSampler;
+uniform sampler2D scaledLuminanceSampler;
 uniform int iblWidth;
 uniform int iblHeight;
 
@@ -97,9 +97,9 @@ void main(void) {
 
   // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
   // We sample the highest mip, which represents the average luminance.
-  vec2 size = vec2(textureSize(normalizationSampler, 0));
+  vec2 size = vec2(textureSize(scaledLuminanceSampler, 0));
   float highestMip = floor(log2(size.x));
-  float normalization = texture(normalizationSampler, vUV, highestMip).r;
+  float normalization = texture(scaledLuminanceSampler, vUV, highestMip).r;
   float pixelLuminance = fetchLuminance(vUV);
   outputColor.z = pixelLuminance / (2.0 * PI * normalization);
 
