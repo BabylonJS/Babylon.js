@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "EXT_lights_ies",
+            "playgroundId": "#UIAXAU#19",
+            "referenceImage": "ext_lights_ies.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "IES Profile",
             "playgroundId": "#UIAXAU#6",
             "referenceImage": "iesprofile.png",
@@ -2102,7 +2108,7 @@
         {
             "title": "apply-all-post-processes",
             "renderCount": 10,
-            "playgroundId": "#MJ59Y8#2"
+            "playgroundId": "#MJ59Y8#18"
         },
         {
             "title": "simple-custom-shader",

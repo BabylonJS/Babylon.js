@@ -1,5 +1,13 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphBuildState, Nullable, NodeRenderGraphInputBlock, AbstractEngine, Scene, FrameGraphTask, FrameGraph } from "core/index";
+import type {
+    NodeRenderGraphBuildState,
+    Nullable,
+    NodeRenderGraphInputBlock,
+    AbstractEngine,
+    Scene,
+    FrameGraphTask,
+    FrameGraph,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
@@ -273,6 +281,20 @@ export class NodeRenderGraphBlock {
         return this;
     }
 
+    protected _addDependenciesInput() {
+        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+
+        const dependencies = this.getInputByName("dependencies")!;
+
+        dependencies.addAcceptedConnectionPointTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
+                NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
+                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+
+        return dependencies;
+    }
+
     protected _buildBlock(_state: NodeRenderGraphBuildState) {
         // Empty. Must be defined by child nodes
     }
@@ -322,7 +344,12 @@ export class NodeRenderGraphBlock {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
+        if (this._frameGraphTask) {
+            this._frameGraphTask.name = this.name;
+        }
+
         this._buildBlock(state);
+
         if (this._frameGraphTask) {
             this._frameGraph.addTask(this._frameGraphTask);
         }

@@ -291,7 +291,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._cameraFacing) {
             uniformBuffer.updateMatrix("grl_projection", this._scene.getProjectionMatrix());
-            uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
+            !this._isGLSL(this._material.shaderLanguage) && uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
 
             const resolutionLineWidth = TmpVectors.Vector4[0];
             resolutionLineWidth.x = this._aspect;

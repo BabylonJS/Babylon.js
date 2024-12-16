@@ -124,10 +124,10 @@ objectModelMapping.materials.__array__.normalTexture.scale.interpolation = [
 objectModelMapping.materials.__array__.normalTexture.extensions.KHR_texture_transform.scale.interpolation = normalTextureInterpolation.scale;
 objectModelMapping.materials.__array__.normalTexture.extensions.KHR_texture_transform.offset.interpolation = normalTextureInterpolation.offset;
 objectModelMapping.materials.__array__.normalTexture.extensions.KHR_texture_transform.rotation.interpolation = normalTextureInterpolation.rotation;
-const occlusionTextureInterpolation = getTextureTransformTree("ambientTexture");
 objectModelMapping.materials.__array__.occlusionTexture.strength.interpolation = [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength", getFloat, () => 1),
 ];
+const occlusionTextureInterpolation = getTextureTransformTree("ambientTexture");
 objectModelMapping.materials.__array__.occlusionTexture.extensions.KHR_texture_transform.scale.interpolation = occlusionTextureInterpolation.scale;
 objectModelMapping.materials.__array__.occlusionTexture.extensions.KHR_texture_transform.offset.interpolation = occlusionTextureInterpolation.offset;
 objectModelMapping.materials.__array__.occlusionTexture.extensions.KHR_texture_transform.rotation.interpolation = occlusionTextureInterpolation.rotation;
@@ -313,3 +313,15 @@ objectModelMapping.extensions.KHR_lights_punctual.lights.__array__.spot.innerCon
 objectModelMapping.extensions.KHR_lights_punctual.lights.__array__.spot.outerConeAngle.interpolation = [
     new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1),
 ];
+
+// TODO - add ies back in
+
+//     EXT_lights_ies: {
+//         lights: {
+//             __array__: {
+//                 __target__: true,
+//                 color: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)],
+//                 multiplier: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)],
+//             },
+//         },
+//     }

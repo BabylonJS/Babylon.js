@@ -52,9 +52,9 @@ export class RGBDTextureTools {
             internalTexture.isReady = false;
 
             if (isWebGPU) {
-                await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
+                await import("../ShadersWGSL/rgbdDecode.fragment");
             } else {
-                await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
+                await import("../Shaders/rgbdDecode.fragment");
             }
 
             // Expand the texture if possible
@@ -130,7 +130,12 @@ export class RGBDTextureTools {
      * @param outputTextureType type of the texture in which the encoding is performed
      * @returns a promise with the internalTexture having its texture replaced by the result of the processing
      */
-    public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
+    public static async EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
+        if (!scene.getEngine().isWebGPU) {
+            await import("../Shaders/rgbdEncode.fragment");
+        } else {
+            await import("../ShadersWGSL/rgbdEncode.fragment");
+        }
         return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
     }
 }

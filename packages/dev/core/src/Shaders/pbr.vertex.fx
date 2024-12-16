@@ -1,3 +1,5 @@
+#define CUSTOM_VERTEX_EXTENSION
+
 precision highp float;
 
 #include<__decl__pbrVertex>

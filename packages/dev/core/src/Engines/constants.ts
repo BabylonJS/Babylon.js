@@ -982,4 +982,13 @@ export class Constants {
      * Size animation type
      */
     public static readonly ANIMATIONTYPE_SIZE = 6;
+
+    /**
+     * The default minZ value for the near plane of a frustum light
+     */
+    public static ShadowMinZ = 0;
+    /**
+     * The default maxZ value for the far plane of a frustum light
+     */
+    public static ShadowMaxZ = 10000;
 }

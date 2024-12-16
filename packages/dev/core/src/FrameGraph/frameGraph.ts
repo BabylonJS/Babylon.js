@@ -9,9 +9,9 @@ import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
 
 enum FrameGraphPassType {
-    Render = 0,
-    Cull = 1,
-    Compute = 2,
+    Normal = 0,
+    Render = 1,
+    Cull = 2,
 }
 
 /**
@@ -74,6 +74,16 @@ export class FrameGraph {
         }
 
         this._tasks.push(task);
+    }
+
+    /**
+     * Adds a pass to a task. This method can only be called during a Task.record execution.
+     * @param name The name of the pass
+     * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
+     * @returns The render pass created
+     */
+    public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
+        return this._addPass(name, FrameGraphPassType.Normal, whenTaskDisabled) as FrameGraphPass<FrameGraphContext>;
     }
 
     /**
