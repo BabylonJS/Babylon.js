@@ -21,7 +21,7 @@ declare function postMessage(message: InitDoneMessage | DecoderMessage | Encoder
  * @internal
  */
 export function EncodeMesh(
-    encoderModule: EncoderModule,
+    encoderModule: any /** EncoderModule */,
     attributes: Array<IDracoAttributeData>,
     indices: Nullable<Uint16Array | Uint32Array>,
     options: IDracoEncoderOptions,
