@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.40.1",
+    "fromTag": "7.40.2",
     "changelog": {
         "7.40.2": [
             {
@@ -32,6 +32,165 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "7.40.3": [
+            {
+                "pr": "16000",
+                "title": "Effect timeout 30 seconds for older devices",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15999",
+                "title": "WebGPU: Fix crash when using LDR merge in glow layer",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15602",
+                "title": "Add UV2 morph support and load UV and UV2 morph targets from glTF",
+                "description": "I'm opening this PR following the suggestion in https://forum.babylonjs.com/t/morph-uv2-and-import-the-morph-target-from-gltf/53558/2.\r\n\r\nThe PR adds uv2 morphing to the built-in materials as well as the morph target block in the node material. It also modifies the glTF loader to load the TEXCOORD_0 and TEXCOORD_1 morph target attributes.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/samplerVertexImplementation.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/depth.vertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/Shaders/outline.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/Shaders/shadowMap.vertex.fx",
+                    "packages/dev/core/src/Shaders/volumetricLightScatteringPass.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerVertexImplementation.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/depth.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/outline.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.vertex.fx",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/UV2-Morphing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15961",
+                "title": "Factor out DracoCompression",
+                "description": "Rather than implement the Draco encoding in DracoCompression, we think it'd be best to separate encoding from decoding functionality by creating separate classes for each. This PR factors out common methods and fields of DracoCompression in preparation to be reused for Draco encoding.\r\n\r\n- DracoDecoder: new class to supersede DracoCompression. Manages own `Default` instance and static `DefaultConfiguration`. \r\n- DracoCodec: new base class for Draco. Contains common methods and fields related to Draco module consumption, workers setup, and managing `Default` and `DefaultConfiguration`.\r\n- DracoCompression: deprecated in favor of DracoDecoder. Backwards compat is maintained. While it inherits from DracoDecoder, it maintains its own separate `Default` and `DefaultConfiguration`.\r\n",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15998",
+                "title": "Inspector: Don't display empty morph targets",
+                "description": "See https://forum.babylonjs.com/t/uv-morphing-results-in-two-textures-of-different-types-use-the-same-sampler-location/55346/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15997",
+                "title": "Mesh: loss of thin instances during mesh cloning",
+                "description": "See https://forum.babylonjs.com/t/there-is-an-issue-with-model-cloning/55387/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15996",
+                "title": "Update doc for CreateScreenshotWithResizeAsync",
+                "description": "Nit for clarity. (https://forum.babylonjs.com/t/how-should-i-use-screenshottools-create-screenshot-with-resize-async/55363)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15995",
+                "title": "Upload Draco encoder modules to CDN",
+                "description": "Will be used later by Draco encoder implementation. \r\nUploading ahead of time so I can add tests pointing to the CDN in the same PR as the implementation.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/draco_encoder.js",
+                    "packages/tools/babylonServer/public/draco_encoder.wasm",
+                    "packages/tools/babylonServer/public/draco_encoder_wasm_wrapper.js"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
