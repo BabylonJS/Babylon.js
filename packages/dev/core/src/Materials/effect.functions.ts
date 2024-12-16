@@ -322,7 +322,7 @@ export const createAndPreparePipelineContext = (
     }
 };
 
-export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 1000) => {
+export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 30000) => {
     const int = setInterval(() => {
         try {
             if (condition()) {
