@@ -51,9 +51,9 @@ export function EncodeMesh(
     }
 
     try {
-        encoder = new encoderModule.Encoder();
-        meshBuilder = new encoderModule.MeshBuilder();
-        mesh = new encoderModule.Mesh();
+        encoder = new encoderModule.Encoder() as Encoder;
+        meshBuilder = new encoderModule.MeshBuilder() as MeshBuilder;
+        mesh = new encoderModule.Mesh() as Mesh;
 
         // Add the faces
         meshBuilder.AddFacesToMesh(mesh, indices.length / 3, indices);
@@ -76,7 +76,7 @@ export function EncodeMesh(
         }
 
         // Encode to native buffer
-        encodedNativeBuffer = new encoderModule.DracoInt8Array();
+        encodedNativeBuffer = new encoderModule.DracoInt8Array() as DracoInt8Array;
         const encodedLength = encoder.EncodeMeshToDracoBuffer(mesh, encodedNativeBuffer);
         if (encodedLength <= 0) {
             throw new Error("Draco encoding failed.");
