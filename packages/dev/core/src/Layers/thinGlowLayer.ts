@@ -21,11 +21,11 @@ import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
  * Glow layer options. This helps customizing the behaviour
  * of the glow layer.
  */
-export interface IThinGlowLayerOptions extends Partial<IThinEffectLayerOptions> {
+export interface IThinGlowLayerOptions extends IThinEffectLayerOptions {
     /**
      * How big is the kernel of the blur texture. Default: 32
      */
-    blurKernelSize: number;
+    blurKernelSize?: number;
 
     /**
      * Forces the merge step to be done in ldr (clamp values > 1). Default: false
@@ -71,6 +71,13 @@ export class ThinGlowLayer extends ThinEffectLayer {
         this._verticalBlurPostprocess1.kernel = effectiveKernel;
         this._horizontalBlurPostprocess2.kernel = effectiveKernel;
         this._verticalBlurPostprocess2.kernel = effectiveKernel;
+    }
+
+    /**
+     * Gets the ldrMerge option.
+     */
+    public get ldrMerge(): boolean {
+        return this._options.ldrMerge;
     }
 
     /**
@@ -125,7 +132,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
      * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to false and you should call `isReady` manually before rendering to the layer.
      */
-    constructor(name: string, scene?: Scene, options?: Partial<IThinGlowLayerOptions>, dontCheckIfReady = false) {
+    constructor(name: string, scene?: Scene, options?: IThinGlowLayerOptions, dontCheckIfReady = false) {
         super(name, scene, false, dontCheckIfReady);
         this.neutralColor = new Color4(0, 0, 0, 1);
 

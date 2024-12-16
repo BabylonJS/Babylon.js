@@ -32,9 +32,12 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
+     * @param ldrMerge Forces the merge step to be done in ldr (clamp values &gt; 1). Default: false
      */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, ldrMerge = false) {
         super(name, frameGraph, scene);
+
+        this._additionalConstructionParameters = [ldrMerge];
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -49,7 +52,31 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
 
         this.output._typeConnectionSource = this.destination;
 
-        this._frameGraphTask = new FrameGraphGlowLayerTask(this.name, frameGraph, scene);
+        this._frameGraphTask = new FrameGraphGlowLayerTask(this.name, this._frameGraph, this._scene, { ldrMerge });
+    }
+
+    private _createTask(ldrMerge: boolean) {
+        const blurKernelSize = this.blurKernelSize;
+        const intensity = this.intensity;
+
+        this._frameGraphTask?.dispose();
+
+        this._frameGraphTask = new FrameGraphGlowLayerTask(this.name, this._frameGraph, this._scene, { ldrMerge });
+
+        this.blurKernelSize = blurKernelSize;
+        this.intensity = intensity;
+
+        this._additionalConstructionParameters = [ldrMerge];
+    }
+
+    /** Forces the merge step to be done in ldr (clamp values &gt; 1). Default: false */
+    @editableInPropertyPage("LDR merge", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get ldrMerge() {
+        return this._frameGraphTask.glowLayer.ldrMerge;
+    }
+
+    public set ldrMerge(value: boolean) {
+        this._createTask(value);
     }
 
     /** How big is the kernel of the blur texture */

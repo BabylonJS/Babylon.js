@@ -37,12 +37,12 @@ export interface IThinEffectLayerOptions {
     /**
      * The camera attached to the layer. Default: null
      */
-    camera: Nullable<Camera>;
+    camera?: Nullable<Camera>;
 
     /**
      * The rendering group to draw the layer in. Default: -1
      */
-    renderingGroupId: number;
+    renderingGroupId?: number;
 }
 
 /**
@@ -282,7 +282,7 @@ export abstract class ThinEffectLayer {
      * Initializes the effect layer with the required options.
      * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
      */
-    protected _init(options: Partial<IThinEffectLayerOptions>): void {
+    protected _init(options: IThinEffectLayerOptions): void {
         // Adapt options
         this._options = {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
