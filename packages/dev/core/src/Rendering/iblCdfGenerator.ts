@@ -212,7 +212,15 @@ export class IblCdfGenerator {
         this._cdfxPT.refreshRate = 0;
         this._cdfxPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
-        this._normalizationPT = new ProceduralTexture("normalizationTexture", { width: 1, height: 1 }, "iblNormalization", this._scene, cdfOptions, false, false);
+        this._normalizationPT = new ProceduralTexture(
+            "normalizationTexture",
+            { width: size.width, height: size.height },
+            "iblNormalization",
+            this._scene,
+            { ...icdfOptions, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
+            true,
+            false
+        );
         this._normalizationPT.autoClear = false;
         this._normalizationPT.setTexture("iblSource", this._iblSource);
         this._normalizationPT.setInt("iblHeight", size.height);
@@ -227,7 +235,7 @@ export class IblCdfGenerator {
         this._icdfPT.setTexture("cdfx", this._cdfxPT);
         this._icdfPT.setTexture("iblSource", this._iblSource);
         this._icdfPT.setTexture("normalizationSampler", this._normalizationPT);
-        this._icdfPT.refreshRate = -1;
+        this._icdfPT.refreshRate = 0;
         this._icdfPT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._icdfPT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         if (this._iblSource.isCube) {
@@ -236,12 +244,6 @@ export class IblCdfGenerator {
         // Once the textures are generated, notify that they are ready to use.
         this._icdfPT.onGeneratedObservable.addOnce(() => {
             this.onGeneratedObservable.notifyObservers();
-        });
-        this._normalizationPT.onGeneratedObservable.addOnce(() => {
-            this._engine.flushFramebuffer();
-            this._normalizationPT.readPixels()?.then(() => {
-                this._icdfPT.render();
-            });
         });
     }
 

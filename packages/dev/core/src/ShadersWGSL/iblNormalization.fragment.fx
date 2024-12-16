@@ -23,20 +23,8 @@ fn fetchLuminance(coords: vec2f) -> f32 {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    // Compute total normalized luminance of texture.
-    var normalization: f32 = 0.0;
-    var fWidth: f32 = f32(uniforms.iblWidth);
-    var fHeight: f32 = f32(uniforms.iblHeight);
-    for (var y: i32 = 0; y < uniforms.iblHeight; y++) {
-        var yCoord: f32 = (f32(y) + 0.5) / fHeight;
-        var deform: f32 = sin(yCoord * PI);
-        for (var x: i32 = 0; x < uniforms.iblWidth; x++) {
-            var xCoord: f32 = max(min((f32(x) + 0.5) / fWidth, 1.0), 0.0);
-            var luminance: f32 = fetchLuminance(vec2f(xCoord, yCoord));
-            normalization += deform * luminance;
-        }
-    }
-
-    normalization = fWidth * fHeight / (2.0 * PI * normalization);
-    fragmentOutputs.color = vec4f(vec3f(normalization), 1.0);
+    // Scale luminance to account for latitude (pixels near the pole represent less surface area of the sphere)
+    var deform: f32 = sin(input.vUV.y * PI);
+    var luminance: f32 = fetchLuminance(input.vUV);
+    fragmentOutputs.color = vec4f(vec3f(deform * luminance), 1.0);
 }

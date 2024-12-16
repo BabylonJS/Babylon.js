@@ -103,9 +103,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     }
 
     // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
-    var normalization: f32 = textureSampleLevel(normalizationSampler, normalizationSamplerSampler, vec2f(0.0), 0.0).r;
+    // We sample the highest mip, which represents the average luminance.
+    var size: vec2f = vec2f(textureDimensions(normalizationSampler, 0));
+    var highestMip: f32 = floor(log2(size.x));
+    var normalization: f32 = textureSampleLevel(normalizationSampler, normalizationSamplerSampler, input.vUV, highestMip).r;
     var pixelLuminance: f32 = fetchLuminance(input.vUV);
-    outputColor.z = pixelLuminance * normalization;
+    outputColor.z = pixelLuminance / (2.0 * PI * normalization);
 
     fragmentOutputs.color = vec4( outputColor, 1.0);
 }

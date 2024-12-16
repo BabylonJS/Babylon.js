@@ -24,22 +24,9 @@ float fetchLuminance(vec2 coords) {
     return dot(color, LuminanceEncodeApprox);
 }
 
-
 void main(void) {
-    // Compute total normalized luminance of texture.
-    float normalization = 0.0;
-    float fWidth = float(iblWidth);
-    float fHeight = float(iblHeight);
-    for (int y = 0; y < iblHeight; y++) {
-        float yCoord = (float(y) + 0.5) / fHeight;
-        float deform = sin(yCoord * PI);
-        for (int x = 0; x < iblWidth; x++) {
-            float xCoord = max(min((float(x) + 0.5) / fWidth, 1.0), 0.0);
-            float luminance = fetchLuminance(vec2(xCoord, yCoord));
-            normalization += deform * luminance;
-        }
-    }
-
-    normalization = fWidth * fHeight / (2.0 * PI * normalization);
-    gl_FragColor = vec4(vec3(normalization), 1.0);
+    // Scale luminance to account for latitude (pixels near the pole represent less surface area of the sphere)
+    float deform = sin(vUV.y * PI);
+    float luminance = fetchLuminance(vUV);
+    gl_FragColor = vec4(vec3(deform * luminance), 1.0);
 }

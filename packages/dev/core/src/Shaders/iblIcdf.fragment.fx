@@ -96,9 +96,12 @@ void main(void) {
   }
 
   // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
-  float normalization = texture(normalizationSampler, vec2(0.0)).r;
+  // We sample the highest mip, which represents the average luminance.
+  vec2 size = vec2(textureSize(normalizationSampler, 0));
+  float highestMip = floor(log2(size.x));
+  float normalization = texture(normalizationSampler, vUV, highestMip).r;
   float pixelLuminance = fetchLuminance(vUV);
-  outputColor.z = pixelLuminance * normalization;
+  outputColor.z = pixelLuminance / (2.0 * PI * normalization);
 
   gl_FragColor = vec4(outputColor, 1.0);
 }
