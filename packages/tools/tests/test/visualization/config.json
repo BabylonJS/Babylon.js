@@ -2,6 +2,16 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NME Glow Manual",
+            "playgroundId": "#7QCYPB#320",
+            "referenceImage": "nme_glow_manual.png"
+        },
+        {
+            "title": "NME Glow Automatic",
+            "playgroundId": "#7QCYPB#327",
+            "referenceImage": "nme_glow_automatic.png"
+        },
+        {
             "title": "EXT_lights_ies",
             "playgroundId": "#UIAXAU#19",
             "referenceImage": "ext_lights_ies.png",

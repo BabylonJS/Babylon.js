@@ -6,6 +6,15 @@
     "configurations": [
         {
             /*
+            Attach to Playground
+            */
+            "type": "msedge",
+            "request": "launch",
+            "name": "Attach to Playground (Edge)",
+            "url": "http://localhost:1338"
+        },
+        {
+            /*
             Launch the playground to be use to test changes in dev packages
             */
             "type": "msedge",
