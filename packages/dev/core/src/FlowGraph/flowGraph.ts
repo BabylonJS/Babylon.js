@@ -8,8 +8,10 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { IObjectAccessor } from "./typeDefinitions";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { PointerInfo } from "core/Events/pointerEvents";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { FlowGraphEventType } from "./flowGraphEventType";
+import type { IFlowGraphEventTrigger } from "./flowGraphSceneEventCoordinator";
+import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
 
 export const enum FlowGraphState {
     /**
@@ -67,16 +69,27 @@ export interface IFlowGraphParseOptions {
  */
 export class FlowGraph {
     /** @internal */
-    public _eventBlocks: FlowGraphEventBlock[] = [];
-    private _sceneDisposeObserver: Nullable<Observer<Scene>>;
-    private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private _meshPickedObserver: Nullable<Observer<PointerInfo>>;
+    public _eventBlocks: { [keyof in FlowGraphEventType]: FlowGraphEventBlock[] } = {
+        [FlowGraphEventType.SceneReady]: [],
+        [FlowGraphEventType.SceneDispose]: [],
+        [FlowGraphEventType.SceneBeforeRender]: [],
+        [FlowGraphEventType.MeshPick]: [],
+        [FlowGraphEventType.PointerDown]: [],
+        [FlowGraphEventType.PointerUp]: [],
+        [FlowGraphEventType.PointerMove]: [],
+        [FlowGraphEventType.PointerOver]: [],
+        [FlowGraphEventType.PointerOut]: [],
+        [FlowGraphEventType.SceneAfterRender]: [],
+        [FlowGraphEventType.NoTrigger]: [],
+    };
     /**
      * @internal
      */
     public readonly _scene: Scene;
     private _coordinator: FlowGraphCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
+    private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
+    private _eventObserver: Nullable<Observer<IFlowGraphEventTrigger>>;
 
     /**
      * The state of the graph
@@ -89,24 +102,16 @@ export class FlowGraph {
      */
     public constructor(params: IFlowGraphParams) {
         this._scene = params.scene;
+        this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         this._coordinator = params.coordinator;
-        this._initializeGlobalEvents();
-    }
 
-    private _initializeGlobalEvents() {
-        this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
-        this._sceneOnBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
-            if (this.state === FlowGraphState.Started) {
+        this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
+            for (const block of this._eventBlocks[event.type]) {
+                // iterate contexts
                 for (const context of this._executionContexts) {
-                    context._notifyPendingBlocksOnTick();
-                }
-            }
-        });
-
-        this._meshPickedObserver = this._scene.onPointerObservable.add((pointerInfo) => {
-            if (this.state === FlowGraphState.Started && pointerInfo.pickInfo?.pickedMesh) {
-                for (const context of this._executionContexts) {
-                    context._notifyPendingBlocksOnPointer(pointerInfo);
+                    if (!block._executeEvent(context, event.payload)) {
+                        break;
+                    }
                 }
             }
         });
@@ -137,10 +142,15 @@ export class FlowGraph {
      * @param block the event block to be added
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
-        this._eventBlocks.push(block);
+        // don't add if NoTrigger, but still start the pending tasks
+        if (block.type !== FlowGraphEventType.NoTrigger) {
+            this._eventBlocks[block.type].push(block);
+        }
         // if already started, sort and add to the pending
         if (this.state === FlowGraphState.Started) {
-            this._startPendingEvents();
+            for (const context of this._executionContexts) {
+                block._startPendingTasks(context);
+            }
         }
     }
 
@@ -160,15 +170,17 @@ export class FlowGraph {
 
     private _startPendingEvents() {
         for (const context of this._executionContexts) {
-            const contextualOrder = this._getContextualOrder();
-            for (const block of contextualOrder) {
-                block._startPendingTasks(context);
+            for (const type in this._eventBlocks) {
+                const contextualOrder = this._getContextualOrder(type as FlowGraphEventType);
+                for (const block of contextualOrder) {
+                    block._startPendingTasks(context);
+                }
             }
         }
     }
 
-    private _getContextualOrder(): FlowGraphEventBlock[] {
-        return this._eventBlocks.sort((a, b) => b.initPriority - a.initPriority);
+    private _getContextualOrder(type: FlowGraphEventType): FlowGraphEventBlock[] {
+        return this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
     }
 
     /**
@@ -183,11 +195,11 @@ export class FlowGraph {
             context._clearPendingBlocks();
         }
         this._executionContexts.length = 0;
-        this._eventBlocks.length = 0;
-        this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
-        this._scene.onBeforeRenderObservable.remove(this._sceneOnBeforeRenderObserver);
-        this._scene.onPointerObservable.remove(this._meshPickedObserver);
-        this._sceneDisposeObserver = null;
+        for (const type in this._eventBlocks) {
+            this._eventBlocks[type as FlowGraphEventType].length = 0;
+        }
+        this._eventObserver?.remove();
+        this._sceneEventCoordinator.dispose();
     }
 
     /**
@@ -197,9 +209,11 @@ export class FlowGraph {
     public visitAllBlocks(visitor: (block: FlowGraphBlock) => void) {
         const visitList: FlowGraphBlock[] = [];
         const idsAddedToVisitList = new Set<string>();
-        for (const block of this._eventBlocks) {
-            visitList.push(block);
-            idsAddedToVisitList.add(block.uniqueId);
+        for (const type in this._eventBlocks) {
+            for (const block of this._eventBlocks[type as FlowGraphEventType]) {
+                visitList.push(block);
+                idsAddedToVisitList.add(block.uniqueId);
+            }
         }
 
         while (visitList.length > 0) {

@@ -328,17 +328,6 @@ export class FlowGraphContext {
         this._pendingBlocks.sort((a, b) => a.priority - b.priority);
     }
 
-    /**
-     * Notify all pending blocks that they should execute their on-tick tasks.
-     * // TODO - if we need execution sorting of the synchronous tasks it can be done here.
-     * @internal
-     */
-    public _notifyPendingBlocksOnTick() {
-        for (const block of this._pendingBlocks) {
-            block._executeOnFrame(this);
-        }
-    }
-
     /** @internal */
     public _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
         const order: FlowGraphAsyncExecutionBlock[] = [];

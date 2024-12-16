@@ -4,6 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
  * @experimental
  * Block that triggers on scene tick (before each render).
@@ -18,6 +19,8 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
      * the time in seconds since the last frame.
      */
     public readonly deltaTime: FlowGraphDataConnection<number>;
+
+    public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneBeforeRender;
 
     constructor() {
         super();
@@ -35,8 +38,9 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public override _executeOnFrame(context: FlowGraphContext): void {
+    public override _executeEvent(context: FlowGraphContext, payload: never): boolean {
         this._execute(context);
+        return true;
     }
 
     /**

@@ -10,6 +10,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
 import type { Vector3 } from "core/Maths/math.vector";
+import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
  * @experimental
  */
@@ -59,6 +60,11 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      */
     public readonly pointerType: FlowGraphDataConnection<PointerEventTypes>;
 
+    /**
+     * the type of the event this block reacts to
+     */
+    public override readonly type = FlowGraphEventType.MeshPick;
+
     public constructor(
         /**
          * the configuration of the block
@@ -78,7 +84,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         return this.asset.getValue(context) as AbstractMesh;
     }
 
-    public override _executeOnPicked(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
+    public override _executeEvent(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
         // get the pointer type
         const pointerType = this.pointerType.getValue(context);
         if (pointerType !== pickedInfo.type) {

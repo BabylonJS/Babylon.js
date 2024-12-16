@@ -63,6 +63,10 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         }
     }
 
+    public override _executeEvent(context: FlowGraphContext, payload: any): boolean {
+        return true;
+    }
+
     /**
      * @returns class name of the block.
      */
