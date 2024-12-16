@@ -115,8 +115,8 @@ export class DracoCompression {
     constructor(numWorkersOrOptions: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
         const configuration =
             typeof numWorkersOrOptions === "number"
-                ? { ...DracoCompression.Configuration, numWorkers: numWorkersOrOptions }
-                : { ...DracoCompression.Configuration, ...numWorkersOrOptions };
+                ? { ...DracoCompression.Configuration.decoder, numWorkers: numWorkersOrOptions }
+                : { ...DracoCompression.Configuration.decoder, ...numWorkersOrOptions };
         this._decoder = new DracoDecoder(configuration);
     }
 
