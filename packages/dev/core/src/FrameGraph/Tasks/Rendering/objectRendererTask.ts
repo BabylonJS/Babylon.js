@@ -32,11 +32,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public depthTexture?: FrameGraphTextureHandle;
 
     /**
-     * The dependencies of the task (optional).
-     */
-    public dependencies?: FrameGraphTextureHandle[] = [];
-
-    /**
      * The shadow generators used to render the objects (optional).
      */
     public shadowGenerators?: FrameGraphShadowGeneratorTask[] = [];
@@ -152,6 +147,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
+        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
 
@@ -203,24 +199,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             additionalExecute?.(context);
         });
 
-        if (this.dependencies !== undefined) {
-            for (const handle of this.dependencies) {
-                pass.useTexture(handle);
-            }
-        }
-
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(this.destinationTexture);
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
-
-            if (this.dependencies !== undefined) {
-                for (const handle of this.dependencies) {
-                    passDisabled.useTexture(handle);
-                }
-            }
         }
     }
 
@@ -233,7 +217,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         super.dispose();
     }
 
-    private _setLightsForShadow() {
+    protected _setLightsForShadow() {
         const lightsForShadow: Set<Light> = new Set();
         const shadowEnabled: Map<Light, boolean> = new Map();
 

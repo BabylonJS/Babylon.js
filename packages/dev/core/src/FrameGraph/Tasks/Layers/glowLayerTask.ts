@@ -80,8 +80,13 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
             }
         }
 
-        this._clearTask.name = name + " Clear Layer";
-        this._objectRendererTask.name = name + " Render to Layer";
+        if (this._clearTask) {
+            this._clearTask.name = name + " Clear Layer";
+        }
+
+        if (this._objectRendererTask) {
+            this._objectRendererTask.name = name + " Render to Layer";
+        }
     }
 
     private readonly _engine: AbstractEngine;
@@ -216,11 +221,11 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
             textureSize.height = textureSize.height >> 1;
         }
 
+        this._internalDependencies = [this._blurY[0].outputTexture, this._blurY[1].outputTexture];
+
         // Composes the glow layer with the destination texture
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this._blurY[0].outputTexture);
-        pass.useTexture(this._blurY[1].outputTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             this.glowLayer.bindTexturesForCompose = (effect: Effect) => {

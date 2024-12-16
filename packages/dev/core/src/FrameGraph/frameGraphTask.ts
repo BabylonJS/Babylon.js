@@ -12,6 +12,7 @@ export abstract class FrameGraphTask {
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
+    protected _internalDependencies: FrameGraphTextureHandle[] = [];
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     // Same thing for the disabled property
@@ -40,6 +41,11 @@ export abstract class FrameGraphTask {
     public set disabled(value: boolean) {
         this._disabled = value;
     }
+
+    /**
+     * The (texture) dependencies of the task (optional).
+     */
+    public dependencies?: FrameGraphTextureHandle[];
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
