@@ -2347,6 +2347,11 @@
             "title": "Normed 16 bits texture formats",
             "playgroundId": "#SOCPNB#10",
             "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
+            "title": "UV2 Morphing",
+            "playgroundId": "#N5DLM7",
+            "referenceImage": "UV2-Morphing.png"
         }
     ]
 }
