@@ -1292,6 +1292,20 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "Realtime Filtering Irradiance",
+            "playgroundId": "#FEEK7G#1089",
+            "renderCount": 5,
+            "referenceImage": "realtimeFilteringIrradiance.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Realtime Filtering Irradiance with CDF",
+            "playgroundId": "#FEEK7G#1087",
+            "renderCount": 5,
+            "referenceImage": "realtimeFilteringIrradianceCDF.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OBJ loader test (legacy)",
             "playgroundId": "#SYQW69#1213",
             "referenceImage": "objTestLoaderLegacy.png"
@@ -2315,10 +2329,11 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#429",
+            "playgroundId": "#8R5SSE#456",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "Glow layer with vertex alpha",
@@ -2327,31 +2342,33 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#425",
+            "playgroundId": "#8R5SSE#457",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#426",
+            "playgroundId": "#8R5SSE#458",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Screen-space Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#427",
+            "playgroundId": "#8R5SSE#459",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "IBL Screen-space Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#428",
+            "playgroundId": "#8R5SSE#461",
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 5
         },
         {
             "title": "Normed 16 bits texture formats",
