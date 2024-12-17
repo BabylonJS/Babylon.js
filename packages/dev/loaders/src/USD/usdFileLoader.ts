@@ -11,10 +11,9 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Engine } from "core/Engines/engine";
-import { IsWindowObjectExist } from "core/Misc/domManagement";
-import { Tools } from "core/Misc/tools";
 import { Constants } from "core/Engines/constants";
 import type { USDLoadingOptions } from "./usdLoadingOptions";
+import { _LoadScriptModuleAsync } from "../shared/tools.internal";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -94,50 +93,9 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             };
         });
     }
-    private static _UniqueResolveID = 1000;
-
-    private static _LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            // Need a relay
-            let windowAsAny: any;
-            let windowString: string;
-
-            if (IsWindowObjectExist()) {
-                windowAsAny = window;
-                windowString = "window";
-            } else if (typeof self !== "undefined") {
-                windowAsAny = self;
-                windowString = "self";
-            } else {
-                reject(new Error("Cannot load script module outside of a window or a worker"));
-                return;
-            }
-
-            if (!windowAsAny._LoadScriptModuleResolve) {
-                windowAsAny._LoadScriptModuleResolve = {};
-            }
-            windowAsAny._LoadScriptModuleResolve[USDFileLoader._UniqueResolveID] = resolve;
-
-            scriptUrl += `
-                ${windowString}._LoadScriptModuleResolve[${USDFileLoader._UniqueResolveID}](returnedValue);
-                ${windowString}._LoadScriptModuleResolve[${USDFileLoader._UniqueResolveID}] = undefined;
-            `;
-            USDFileLoader._UniqueResolveID++;
-
-            Tools.LoadScript(
-                scriptUrl,
-                undefined,
-                (message, exception) => {
-                    reject(exception || new Error(message));
-                },
-                scriptId,
-                true
-            );
-        });
-    }
 
     private _initializeTinyUSDZAsync(): Promise<void> {
-        return USDFileLoader._LoadScriptModuleAsync(
+        return _LoadScriptModuleAsync(
             `
             import Module from '${this._loadingOptions.usdLoaderUrl}/tinyusdz.js';
             const returnedValue = await Module();
@@ -148,54 +106,52 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
-        return new Promise((resolve) => {
-            this._initializeTinyUSDZAsync().then((tinyusdzModule: any) => {
-                const usd = new tinyusdzModule.TinyUSDZLoader(data);
-                const textures: { [key: string]: Texture } = {};
-                for (let i = 0; i < usd.numMeshes(); i++) {
-                    const mesh = usd.getMesh(i);
-                    const customMesh = new Mesh(`usdMesh-${i}`, scene);
-                    customMesh._parentContainer = this._assetContainer;
-                    const vertexData = new VertexData();
-                    vertexData.positions = Array.from(mesh.points);
-                    // flip position x instead of changing scaling.x
-                    if (!scene.useRightHandedSystem) {
-                        for (let positionIndex = 0; positionIndex < vertexData.positions.length; positionIndex += 3) {
-                            vertexData.positions[positionIndex] *= -1;
-                        }
+        return this._initializeTinyUSDZAsync().then((tinyusdzModule: any) => {
+            const usd = new tinyusdzModule.TinyUSDZLoader(data);
+            const textures: { [key: string]: Texture } = {};
+            for (let i = 0; i < usd.numMeshes(); i++) {
+                const mesh = usd.getMesh(i);
+                const customMesh = new Mesh(`usdMesh-${i}`, scene);
+                customMesh._parentContainer = this._assetContainer;
+                const vertexData = new VertexData();
+                vertexData.positions = Array.from(mesh.points);
+                // flip position x instead of changing scaling.x
+                if (!scene.useRightHandedSystem) {
+                    for (let positionIndex = 0; positionIndex < vertexData.positions.length; positionIndex += 3) {
+                        vertexData.positions[positionIndex] *= -1;
                     }
-                    vertexData.indices = Array.from(mesh.faceVertexIndices.reverse());
-                    if (mesh.hasOwnProperty("texcoords")) {
-                        vertexData.uvs = Array.from(mesh.texcoords);
-                    }
-                    if (mesh.hasOwnProperty("normals")) {
-                        vertexData.normals = Array.from(mesh.normals);
-                    } else {
-                        vertexData.normals = [];
-                        VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals, { useRightHandedSystem: !scene.useRightHandedSystem });
-                    }
-                    vertexData.applyToMesh(customMesh);
-
-                    const usdMaterial = usd.getMaterial(mesh.materialId);
-                    if (usdMaterial.hasOwnProperty("diffuseColorTextureId")) {
-                        const material = new StandardMaterial("usdMaterial", scene);
-                        customMesh.material = material;
-
-                        if (!textures.hasOwnProperty(usdMaterial.diffuseColorTextureId)) {
-                            const diffTex = usd.getTexture(usdMaterial.diffuseColorTextureId);
-                            const img = usd.getImage(diffTex.textureImageId);
-                            const texture = new RawTexture(img.data, img.width, img.height, Engine.TEXTUREFORMAT_RGBA, scene, false, true, Texture.LINEAR_LINEAR);
-                            material.diffuseTexture = texture;
-                            textures[usdMaterial.diffuseColorTextureId] = texture;
-                            material.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
-                        } else {
-                            material.diffuseTexture = textures[usdMaterial.diffuseColorTextureId];
-                        }
-                    }
-                    babylonMeshesArray.push(mesh);
                 }
-                resolve(babylonMeshesArray);
-            });
+                vertexData.indices = Array.from(mesh.faceVertexIndices.reverse());
+                if (mesh.hasOwnProperty("texcoords")) {
+                    vertexData.uvs = Array.from(mesh.texcoords);
+                }
+                if (mesh.hasOwnProperty("normals")) {
+                    vertexData.normals = Array.from(mesh.normals);
+                } else {
+                    vertexData.normals = [];
+                    VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals, { useRightHandedSystem: !scene.useRightHandedSystem });
+                }
+                vertexData.applyToMesh(customMesh);
+
+                const usdMaterial = usd.getMaterial(mesh.materialId);
+                if (usdMaterial.hasOwnProperty("diffuseColorTextureId")) {
+                    const material = new StandardMaterial("usdMaterial", scene);
+                    customMesh.material = material;
+
+                    if (!textures.hasOwnProperty(usdMaterial.diffuseColorTextureId)) {
+                        const diffTex = usd.getTexture(usdMaterial.diffuseColorTextureId);
+                        const img = usd.getImage(diffTex.textureImageId);
+                        const texture = new RawTexture(img.data, img.width, img.height, Engine.TEXTUREFORMAT_RGBA, scene, false, true, Texture.LINEAR_LINEAR);
+                        material.diffuseTexture = texture;
+                        textures[usdMaterial.diffuseColorTextureId] = texture;
+                        material.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
+                    } else {
+                        material.diffuseTexture = textures[usdMaterial.diffuseColorTextureId];
+                    }
+                }
+                babylonMeshesArray.push(mesh);
+            }
+            return babylonMeshesArray;
         });
     }
 
