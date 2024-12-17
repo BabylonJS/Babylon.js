@@ -218,18 +218,8 @@ vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cu
 }
 
 vec3 equirectangularToCubemapDirection(vec2 uv) {
-  float longitude = uv.x * 2.0 * PI - PI;
-  float latitude = PI * 0.5 - uv.y * PI;
-  vec3 direction;
-  direction.x = cos(latitude) * sin(longitude);
-  direction.y = sin(latitude);
-  direction.z = cos(latitude) * cos(longitude);
-  return direction;
-}
-
-vec3 equirectangularToCubemapDirection(vec2 uv) {
-  float longitude = uv.x * 2.0 * PI - PI;
-  float latitude = PI * 0.5 - uv.y * PI;
+  float longitude = uv.x * TWO_PI - PI;
+  float latitude = HALF_PI - uv.y * PI;
   vec3 direction;
   direction.x = cos(latitude) * sin(longitude);
   direction.y = sin(latitude);
