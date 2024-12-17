@@ -14,6 +14,17 @@ import { Engine } from "core/Engines/engine";
 import { IsWindowObjectExist } from "core/Misc/domManagement";
 import { Tools } from "core/Misc/tools";
 import { Constants } from "core/Engines/constants";
+import type { USDLoadingOptions } from "./usdLoadingOptions";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the usd loader.
+         */
+        [USDFileLoaderMetadata.name]: Partial<USDLoadingOptions>;
+    }
+}
 
 /**
  * @experimental
@@ -28,6 +39,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
+    private readonly _loadingOptions: Readonly<USDLoadingOptions>;
     /**
      * Defines the extensions the UDS loader is able to load.
      * force data to come in as an ArrayBuffer
@@ -35,14 +47,21 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     public readonly extensions = USDFileLoaderMetadata.extensions;
 
     /**
-     * Creates loader for gaussian USD files
+     * Creates loader for USD files
+     * @param loadingOptions options for loading and parsing usdz files.
      */
-    constructor() {}
+    constructor(loadingOptions: Partial<Readonly<USDLoadingOptions>> = USDFileLoader._DefaultLoadingOptions) {
+        this._loadingOptions = loadingOptions;
+    }
 
     /** @internal */
     createPlugin(): ISceneLoaderPluginAsync {
         return new USDFileLoader();
     }
+
+    private static readonly _DefaultLoadingOptions = {
+        usdLoaderUrl: "https://lighttransport.github.io/tinyusdz/",
+    } as const satisfies USDLoadingOptions;
 
     /**
      * Imports from the loaded USD data and adds them to the scene
@@ -120,7 +139,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _initializeTinyUSDZAsync(): Promise<void> {
         return USDFileLoader._LoadScriptModuleAsync(
             `
-            import Module from 'https://lighttransport.github.io/tinyusdz/tinyusdz.js';
+            import Module from '${this._loadingOptions.usdLoaderUrl}/tinyusdz.js';
             const returnedValue = await Module();
             `
         );
