@@ -19,7 +19,7 @@ export function OptimizeIndices(indices: IndicesArray) {
         face.forEach((vertex) => {
             let face = vertexToFaceMap.get(vertex);
             if (!face) {
-                vertexToFaceMap.set(vertex, face = []);
+                vertexToFaceMap.set(vertex, (face = []));
             }
             face.push(faceIndex);
         });
