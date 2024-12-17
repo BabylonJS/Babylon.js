@@ -37,7 +37,12 @@ function getModuleDeclaration(
 ) {
     const distPosition = filename.replace(/\\/g, "/").indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    const moduleName =
+        getPublicPackageName(packageVariables[buildType], filename) +
+        filename
+            .substring(distPosition + 5)
+            .replace(".d.ts", "")
+            .replace(/\\/g, "/");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
@@ -418,14 +423,43 @@ function getPackageDeclaration(
 
     processedSource = processedSource.replace(/export const enum/g, "export enum");
 
-    processedSource = processedSource.replace(
-        / global {([^}]*)}/gm,
-        `
+    /*
+    deal with 
+ global {
+    interface Window {
+        "pointer-events-capture-debug": boolean | null;
+    }
 }
-$1
-declare module ${thisFileModuleName} {
-    `
-    );
+     - remove the declare global and the last }
+    */
+    // find the index of global {
+    const globalIndex = processedSource.indexOf(" global {");
+    if (globalIndex !== -1) {
+        // find where the ending } is. What we do is we count +1 if we find a { and -1 if we find a }. when we get to 0, this is the end of the global
+        let count = 1;
+        let i = -1;
+        for (i = globalIndex + 9; i < processedSource.length; i++) {
+            if (processedSource[i] === "{") {
+                count++;
+            } else if (processedSource[i] === "}") {
+                count--;
+            }
+            if (count === 0) {
+                break;
+            }
+        }
+        const nextIndex = i;
+        if (nextIndex !== -1) {
+            processedSource =
+                processedSource.substring(0, globalIndex) +
+                `}
+` +
+                processedSource.substring(globalIndex + 9, nextIndex) +
+                `declare module ${thisFileModuleName} {
+    ` +
+                processedSource.substring(nextIndex + 2);
+        }
+    }
 
     if (defaultModuleName !== thisFileModuleName) {
         return `

@@ -153,7 +153,8 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
 }
 
 /**
- * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+ * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+ * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
@@ -162,8 +163,7 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
  * @param mimeType defines the MIME type of the screenshot image (default: image/png).
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
- * @returns screenshot as a string of base64-encoded characters. This string can be assigned
- * to the src parameter of an <img> to display it
+ * @returns promise that resolves once the screenshot is taken
  */
 export function CreateScreenshotWithResizeAsync(engine: AbstractEngine, camera: Camera, width: number, height: number, mimeType = "image/png", quality?: number): Promise<void> {
     return new Promise((resolve) => {
@@ -240,7 +240,7 @@ export function CreateScreenshotUsingRenderTarget(
         scene,
         false,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT,
+        Constants.TEXTURETYPE_UNSIGNED_BYTE,
         false,
         Texture.BILINEAR_SAMPLINGMODE,
         undefined,

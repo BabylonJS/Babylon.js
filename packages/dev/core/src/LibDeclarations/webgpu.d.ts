@@ -33,7 +33,6 @@ interface GPUSupportedLimits {
     readonly maxBufferSize: number;
     readonly maxVertexAttributes: number;
     readonly maxVertexBufferArrayStride: number;
-    readonly maxInterStageShaderComponents: number;
     readonly maxInterStageShaderVariables: number;
     readonly maxColorAttachments: number;
     readonly maxColorAttachmentBytesPerSample: number;
@@ -92,7 +91,7 @@ declare class GPUAdapter {
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
     requiredFeatures?: GPUFeatureName[] /* default=[] */;
-    requiredLimits?: { [name: string]: GPUSize64 } /* default={} */;
+    requiredLimits?: { [name: string]: GPUSize64 | undefined } /* default={} */;
     defaultQueue?: GPUQueueDescriptor /* default={} */;
 }
 
@@ -100,14 +99,19 @@ type GPUFeatureName =
     | "depth-clip-control"
     | "depth32float-stencil8"
     | "texture-compression-bc"
+    | "texture-compression-bc-sliced-3d"
     | "texture-compression-etc2"
     | "texture-compression-astc"
+    | "texture-compression-astc-sliced-3d"
     | "timestamp-query"
     | "indirect-first-instance"
     | "shader-f16"
     | "rg11b10ufloat-renderable"
     | "bgra8unorm-storage"
-    | "float32-filterable";
+    | "float32-filterable"
+    | "float32-blendable"
+    | "clip-distances"
+    | "dual-source-blending";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     label: string | undefined;
@@ -209,6 +213,7 @@ declare class GPUTextureView implements GPUObjectBase {
 interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
     format: GPUTextureFormat;
     dimension: GPUTextureViewDimension;
+    usage?: GPUTextureUsageFlags /* default=0 */;
     aspect?: GPUTextureAspect /* default="all" */;
     baseMipLevel?: GPUIntegerCoordinate /* default=0 */;
     mipLevelCount: GPUIntegerCoordinate;
@@ -228,6 +233,12 @@ type GPUTextureFormat =
     | "r8sint"
 
     // 16-bit formats
+    | "r16unorm"
+    | "rg16unorm"
+    | "rgba16unorm"
+    | "r16snorm"
+    | "rg16snorm"
+    | "rgba16snorm"
     | "r16uint"
     | "r16sint"
     | "r16float"
@@ -465,7 +476,6 @@ declare class GPUShaderModule implements GPUObjectBase {
 
 interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     code: string | Uint32Array;
-    sourceMap?: object;
     compilationHints?: GPUShaderModuleCompilationHint[] /* default=[] */;
 }
 
@@ -513,7 +523,7 @@ interface GPUPipelineBase {
 interface GPUProgrammableStage {
     module: GPUShaderModule;
     entryPoint: string | Uint32Array;
-    constants?: { [name: string]: GPUPipelineConstantValue };
+    constants?: { [name: string]: GPUPipelineConstantValue } /* default={} */;
 }
 
 type GPUPipelineConstantValue = number; // May represent WGSL’s bool, f32, i32, u32, and f16 if enabled.
@@ -601,7 +611,11 @@ type GPUBlendFactor =
     | "one-minus-dst-alpha"
     | "src-alpha-saturated"
     | "constant"
-    | "one-minus-constant";
+    | "one-minus-constant"
+    | "src1"
+    | "one-minus-src1"
+    | "src1-alpha"
+    | "one-minus-src1-alpha";
 
 type GPUBlendOperation = "add" | "subtract" | "reverse-subtract" | "min" | "max";
 
@@ -972,10 +986,17 @@ declare class GPUCanvasContext {
     configure(configuration?: GPUCanvasConfiguration): void;
     unconfigure(): void;
 
+    getConfiguration(): GPUCanvasConfiguration | undefined;
     getCurrentTexture(): GPUTexture;
 }
 
 type GPUCanvasAlphaMode = "opaque" | "premultiplied";
+
+type GPUCanvasToneMappingMode = "standard" | "extended";
+
+interface GPUCanvasToneMapping {
+    mode?: GPUCanvasToneMappingMode /* dfault="standard" */;
+}
 
 interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
@@ -983,6 +1004,7 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     usage?: GPUTextureUsageFlags /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */;
     viewFormats?: GPUTextureFormat[] /* default=[] */;
     colorSpace?: PredefinedColorSpace /* default="srgb" */;
+    toneMapping?: GPUCanvasToneMapping /* default={} */;
     alphaMode?: GPUCanvasAlphaMode /* default="opaque" */;
 }
 

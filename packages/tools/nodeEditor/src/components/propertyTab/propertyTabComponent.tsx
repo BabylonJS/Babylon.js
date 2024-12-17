@@ -80,7 +80,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
         });
-
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
@@ -375,6 +374,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 break;
             case NodeMaterialModes.Particle:
                 this.props.globalState.previewType = PreviewType.Bubbles;
+                break;
+            case NodeMaterialModes.GaussianSplatting:
+                this.props.globalState.previewType = PreviewType.BricksSkull;
                 break;
         }
 

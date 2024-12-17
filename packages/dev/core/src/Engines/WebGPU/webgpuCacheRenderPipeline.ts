@@ -546,6 +546,14 @@ export abstract class WebGPUCacheRenderPipeline {
                 return WebGPUConstants.BlendFactor.Constant;
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
+            case Constants.GL_ALPHA_FUNCTION_SRC1_COLOR:
+                return WebGPUConstants.BlendFactor.Src1;
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR:
+                return WebGPUConstants.BlendFactor.OneMinusSrc1;
+            case Constants.GL_ALPHA_FUNCTION_SRC1_ALPHA:
+                return WebGPUConstants.BlendFactor.Src1Alpha;
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA:
+                return WebGPUConstants.BlendFactor.OneMinusSrc1Alpha;
             default:
                 return WebGPUConstants.BlendFactor.One;
         }
@@ -1009,6 +1017,8 @@ export abstract class WebGPUCacheRenderPipeline {
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */),
         };
 
+        const topologyIsTriangle = topology === WebGPUConstants.PrimitiveTopology.TriangleList || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip;
+
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
         if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
             stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
@@ -1055,8 +1065,8 @@ export abstract class WebGPUCacheRenderPipeline {
                           stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
                           stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                           depthBias: this._depthBias,
-                          depthBiasClamp: this._depthBiasClamp,
-                          depthBiasSlopeScale: this._depthBiasSlopeScale,
+                          depthBiasClamp: topologyIsTriangle ? this._depthBiasClamp : 0,
+                          depthBiasSlopeScale: topologyIsTriangle ? this._depthBiasSlopeScale : 0,
                       },
         });
     }

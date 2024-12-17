@@ -1,3 +1,4 @@
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import {
     NodeGeometryConnectionPointDirection,
@@ -10,7 +11,7 @@ import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
@@ -78,6 +79,30 @@ export class ConnectionPointPortData implements IPortData {
 
     public set connectedPort(value: Nullable<IPortData>) {
         this._connectedPort = value;
+    }
+
+    public get directValueDefinition() {
+        if (this.direction === PortDataDirection.Output) {
+            return undefined;
+        }
+
+        if (this.data.value === null || this.data.value === undefined) {
+            return undefined;
+        }
+
+        const acceptedTypes = [NodeGeometryBlockConnectionPointTypes.Float, NodeGeometryBlockConnectionPointTypes.Int];
+
+        if (acceptedTypes.indexOf(this.data.type) !== -1 || (this.data._defaultConnectionPointType && acceptedTypes.indexOf(this.data._defaultConnectionPointType) !== -1)) {
+            return {
+                source: this.data,
+                propertyName: "value",
+                valueMin: this.data.valueMin,
+                valueMax: this.data.valueMax,
+                valueType: this.data.type === NodeGeometryBlockConnectionPointTypes.Float ? PortDirectValueTypes.Float : PortDirectValueTypes.Int,
+            };
+        }
+
+        return undefined;
     }
 
     public get direction() {
@@ -150,9 +175,14 @@ export class ConnectionPointPortData implements IPortData {
 
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
-            case NodeGeometryConnectionPointCompatibilityStates.TypeIncompatible:
-                return "Cannot connect two different connection types";
+            case NodeGeometryConnectionPointCompatibilityStates.TypeIncompatible: {
+                const port = targetPort.data as NodeGeometryConnectionPoint;
+                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeGeometryBlockConnectionPointTypes[t]).join(", ");
 
+                acceptedTypes = `${NodeGeometryBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
+
+                return `Cannot connect two different connection types:\nSource is ${NodeGeometryBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+            }
             case NodeGeometryConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";
         }

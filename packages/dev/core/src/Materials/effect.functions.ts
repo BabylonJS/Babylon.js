@@ -57,6 +57,11 @@ export interface IPipelineGenerationOptions {
      * extend the pipeline generation options
      */
     extendedCreatePipelineOptions?: Partial<ICreateAndPreparePipelineContextOptions>;
+
+    /**
+     * If true, generating a new pipeline will return when the pipeline is ready to be used
+     */
+    waitForIsReady?: boolean;
 }
 
 /**
@@ -315,4 +320,23 @@ export const createAndPreparePipelineContext = (
         Logger.Error("Error compiling effect");
         throw e;
     }
+};
+
+export const _retryWithInterval = (condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void, step = 16, maxTimeout = 30000) => {
+    const int = setInterval(() => {
+        try {
+            if (condition()) {
+                clearInterval(int);
+                onSuccess();
+            }
+        } catch (e) {
+            clearInterval(int);
+            onError?.(e);
+        }
+        maxTimeout -= step;
+        if (maxTimeout < 0) {
+            clearInterval(int);
+            onError?.(new Error("Timeout"));
+        }
+    }, step);
 };

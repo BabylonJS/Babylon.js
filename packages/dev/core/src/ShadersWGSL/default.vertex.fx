@@ -87,6 +87,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef UV1
 	var uvUpdated: vec2f = vertexInputs.uv;
 #endif
+#ifdef UV2
+    var uv2Updated: vec2f = vertexInputs.uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -101,13 +104,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) && (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) || defined(PREPASS_VELOCITY_LINEAR))
-        // Compute velocity before bones computation
-        vertexOutputs.vCurrentPosition =
-            scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
-        vertexOutputs.vPreviousPosition = uniforms.previousViewProjection *
-                                          finalPreviousWorld *
-                                          vec4f(positionUpdated, 1.0);
+#if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
+    // Compute velocity before bones computation
+    vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -144,7 +144,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	vertexOutputs.vPositionW =  worldPos.xyz;
 
-#include<prePassVertex>
+#ifdef PREPASS
+    #include<prePassVertex>
+#endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vertexOutputs.vDirectionW = normalize((finalWorld *  vec4f(positionUpdated, 0.0)).xyz);
@@ -157,7 +159,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef MAINUV1
 	vertexOutputs.vMainUV1 = uvUpdated;
 #endif
-    #include<uvVariableDeclaration>[2..7]
+#ifndef UV2
+    var uv2Updated: vec2f = vec2f(0., 0.);
+#endif
+#ifdef MAINUV2
+    vertexOutputs.vMainUV2 = uv2Updated;
+#endif
+    #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse,_MATRIXNAME_,diffuse,_INFONAME_,DiffuseInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)

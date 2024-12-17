@@ -9,6 +9,7 @@ import type { InputBlock } from "./Input/inputBlock";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -23,6 +24,19 @@ export class TransformBlock extends NodeMaterialBlock {
      * Defines the value to use to complement z value to transform it to a Vector4
      */
     public complementZ = 0;
+
+    /**
+     * Boolean indicating if the transformation is made for a direction vector and not a position vector
+     * If set to true the complementW value will be set to 0 else it will be set to 1
+     */
+    @editableInPropertyPage("Transform as direction", PropertyTypeForEdition.Boolean, undefined, { embedded: true })
+    public get transformAsDirection() {
+        return this.complementW === 0;
+    }
+
+    public set transformAsDirection(value: boolean) {
+        this.complementW = value ? 0 : 1;
+    }
 
     /**
      * Creates a new TransformBlock
@@ -96,7 +110,7 @@ export class TransformBlock extends NodeMaterialBlock {
 
         if (vector.connectedPoint) {
             // None uniform scaling case.
-            if (this.complementW === 0) {
+            if (this.complementW === 0 || this.transformAsDirection) {
                 const comments = `//${this.name}`;
                 state._emitFunctionFromInclude("helperFunctions", comments);
                 state.sharedData.blocksWithDefines.push(this);

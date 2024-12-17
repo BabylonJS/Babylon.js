@@ -12,6 +12,7 @@ import type { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { Constants } from "./constants";
 import type { WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import type { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
+import type { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 
 /**
  * The base engine class for WebGPU
@@ -35,6 +36,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
+    /** @internal */
+    public _occlusionQuery: WebGPUOcclusionQuery;
 
     // Frame Life Cycle (recreated each frame)
     /** @internal */
@@ -52,6 +55,9 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _timestampQuery: WebGPUTimestampQuery;
     /** @internal */
     public _timestampIndex = 0;
+
+    /** @internal */
+    public _debugStackRenderPass: string[] = [];
 
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
@@ -90,6 +96,12 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _endCurrentRenderPass(): number {
         if (!this._currentRenderPass) {
             return 0;
+        }
+
+        if (this._debugStackRenderPass.length !== 0) {
+            for (let i = 0; i < this._debugStackRenderPass.length; ++i) {
+                this._currentRenderPass.popDebugGroup();
+            }
         }
 
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;

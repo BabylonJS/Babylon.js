@@ -19,6 +19,7 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
             "node-editor/*": ["tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
+            "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"],
             "gui-editor/*": ["tools/guiEditor/src/*"],
             "viewer/*": ["tools/viewer/src/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/src/*"],

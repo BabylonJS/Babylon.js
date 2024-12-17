@@ -33,6 +33,7 @@ export class AggregatorBlock extends NodeGeometryBlock implements INodeGeometryE
      */
     @editableInPropertyPage("Aggregation", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "Max", value: Aggregations.Max },
             { label: "Min", value: Aggregations.Min },

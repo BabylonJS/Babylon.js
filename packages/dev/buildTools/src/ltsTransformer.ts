@@ -125,7 +125,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     if (transformedText) {
                         // if it is an import type (for type aliases) apply the new transformed location
                         const newArgument = ts.factory.updateLiteralTypeNode(node.argument as ts.LiteralTypeNode, ts.factory.createStringLiteral(transformedText, true));
-                        return ts.factory.updateImportTypeNode(node, newArgument, node.assertions, node.qualifier, node.typeArguments, node.isTypeOf);
+                        return ts.factory.updateImportTypeNode(node, newArgument, node.attributes, node.qualifier, node.typeArguments, node.isTypeOf);
                     }
                 } else if (ts.isTypeAliasDeclaration(node)) {
                     // check if the type alias is already declared in the original source file

@@ -574,35 +574,43 @@ export class InputBlock extends NodeMaterialBlock {
                 return;
             }
 
-            if (state.attributes.indexOf(this.declarationVariableName) !== -1) {
-                return;
-            }
+            const alreadyDeclared = state.attributes.indexOf(this.declarationVariableName) !== -1;
 
-            state.attributes.push(this.declarationVariableName);
+            if (!alreadyDeclared) {
+                state.attributes.push(this.declarationVariableName);
+            }
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
-                    state._emitUniformFromString(this.declarationVariableName, this.type, define);
+                    if (!alreadyDeclared) {
+                        state._emitUniformFromString(this.declarationVariableName, this.type, define);
+                    }
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `uniforms.`;
                     }
                 } else {
-                    state._emitVaryingFromString(this.declarationVariableName, this.type, define);
+                    if (!alreadyDeclared) {
+                        state._emitVaryingFromString(this.declarationVariableName, this.type, define);
+                    }
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `fragmentInputs.`;
                     }
                 }
             } else {
-                if (define) {
+                if (define && !alreadyDeclared) {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
+                    if (!alreadyDeclared) {
+                        state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
+                    }
                     this._prefix = `vertexInputs.`;
                 } else {
-                    state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
+                    if (!alreadyDeclared) {
+                        state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
+                    }
                 }
-                if (define) {
+                if (define && !alreadyDeclared) {
                     state._attributeDeclaration += `#endif\n`;
                 }
             }

@@ -114,6 +114,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     public dispose() {
         this._removeCanvas();
         this._setManagedOutputCanvas(null);
+        this.onXRLayerInitObservable.clear();
     }
 
     private _makeCanvasCompatibleAsync() {

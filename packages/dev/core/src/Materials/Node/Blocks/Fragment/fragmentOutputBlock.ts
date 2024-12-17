@@ -14,6 +14,18 @@ import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
+ * Color spaces supported by the fragment output block
+ */
+export enum FragmentOutputBlockColorSpace {
+    /** Unspecified */
+    NoColorSpace,
+    /** Gamma */
+    Gamma,
+    /** Linear */
+    Linear,
+}
+
+/**
  * Block used to output the final color
  */
 export class FragmentOutputBlock extends NodeMaterialBlock {
@@ -28,24 +40,49 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.rgb.addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
-        );
+
+        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
-    @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToGammaSpace = false;
 
     /** Gets or sets a boolean indicating if content needs to be converted to linear space */
-    @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToLinearSpace = false;
 
     /** Gets or sets a boolean indicating if logarithmic depth should be used */
-    @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true })
     public useLogarithmicDepth = false;
+
+    /**
+     * Gets or sets the color space used for the block
+     */
+    @editableInPropertyPage("Color space", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "No color space", value: FragmentOutputBlockColorSpace.NoColorSpace },
+            { label: "Gamma", value: FragmentOutputBlockColorSpace.Gamma },
+            { label: "Linear", value: FragmentOutputBlockColorSpace.Linear },
+        ],
+    })
+    public get colorSpace() {
+        if (this.convertToGammaSpace) {
+            return FragmentOutputBlockColorSpace.Gamma;
+        }
+        if (this.convertToLinearSpace) {
+            return FragmentOutputBlockColorSpace.Linear;
+        }
+        return FragmentOutputBlockColorSpace.NoColorSpace;
+    }
+
+    public set colorSpace(value: FragmentOutputBlockColorSpace) {
+        this.convertToGammaSpace = value === FragmentOutputBlockColorSpace.Gamma;
+        this.convertToLinearSpace = value === FragmentOutputBlockColorSpace.Linear;
+    }
 
     /**
      * Gets the current class name

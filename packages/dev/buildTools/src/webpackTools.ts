@@ -97,7 +97,7 @@ export const getRules = (
         rules.push(
             {
                 sideEffects: options.sideEffects,
-                test: /(?<!modules)\.s[ac]ss$/i,
+                test: /(?<!module)\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {
@@ -110,6 +110,7 @@ export const getRules = (
                     {
                         loader: "sass-loader",
                         options: {
+                            api: "modern",
                             sourceMap: true,
                         },
                     },
@@ -117,13 +118,14 @@ export const getRules = (
             },
             {
                 sideEffects: options.sideEffects,
-                test: /\.modules\.s[ac]ss$/i,
+                test: /\.module\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
+                            esModule: true,
                             modules: {
                                 localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
                             },
@@ -132,6 +134,7 @@ export const getRules = (
                     {
                         loader: "sass-loader",
                         options: {
+                            api: "modern",
                             sourceMap: true,
                         },
                     },
@@ -143,7 +146,9 @@ export const getRules = (
                     "style-loader",
                     {
                         loader: "css-loader",
+
                         options: {
+                            esModule: true,
                             sourceMap: true,
                         },
                     },

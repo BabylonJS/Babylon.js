@@ -25,6 +25,7 @@ interface ISliderLineComponentProps {
     iconLabel?: string;
     lockObject: LockObject;
     unit?: React.ReactNode;
+    allowOverflow?: boolean;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -154,8 +155,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     target={this.state}
                     digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount}
                     propertyName="value"
-                    min={this.props.minimum}
-                    max={this.props.maximum}
+                    min={this.props.allowOverflow ? undefined : this.props.minimum}
+                    max={this.props.allowOverflow ? undefined : this.props.maximum}
                     onEnter={() => {
                         const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
@@ -169,7 +170,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 />
                 <div className="slider">
                     <input
-                        className="range"
+                        className={"range" + (this.props.allowOverflow && (this.state.value > this.props.maximum || this.state.value < this.props.minimum) ? " overflow" : "")}
                         type="range"
                         step={this.props.step}
                         min={this.prepareDataToRead(this.props.minimum)}

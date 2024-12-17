@@ -9,6 +9,7 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 import type { Nullable } from "../../types";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { Logger } from "core/Misc/logger";
+import type { NodeGeometry } from "./nodeGeometry";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -321,17 +322,6 @@ export class NodeGeometryBlock {
         this._buildBlock(state);
         this._buildExecutionTime = PrecisionDate.Now - now;
 
-        // Compile connected blocks
-        for (const output of this._outputs) {
-            for (const endpoint of output.endpoints) {
-                const block = endpoint.ownerBlock;
-
-                if (block) {
-                    block.build(state);
-                }
-            }
-        }
-
         this.onBuildObservable.notifyObservers(this);
 
         return false;
@@ -342,6 +332,7 @@ export class NodeGeometryBlock {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
         } else {
             this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+            this._inputs[inputIndex0]._isMainLinkSource = true;
         }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }
@@ -355,8 +346,9 @@ export class NodeGeometryBlock {
 
     /**
      * Lets the block try to connect some inputs automatically
+     * @param _nodeGeometry defines the node geometry to use for auto connection
      */
-    public autoConfigure() {
+    public autoConfigure(_nodeGeometry: NodeGeometry) {
         // Do nothing
     }
 

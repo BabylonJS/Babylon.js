@@ -1,0 +1,7 @@
+{
+    "declarationLibs": ["@dev/addons"],
+    "devPackageName": "addons",
+    "filename": "babylonjs.addons.module.d.ts",
+    "outputDirectory": "./",
+    "addToDocumentation": true
+}

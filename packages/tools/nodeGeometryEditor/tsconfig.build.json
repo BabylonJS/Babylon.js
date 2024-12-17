@@ -9,6 +9,7 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "serializers/*": ["dev/serializers/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"]
         }

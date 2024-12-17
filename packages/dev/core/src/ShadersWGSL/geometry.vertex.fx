@@ -57,7 +57,7 @@ varying vViewPos: vec4f;
 varying vPositionW: vec3f;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 uniform previousViewProjection: mat4x4f;
 
 varying vCurrentPosition: vec4f;
@@ -74,13 +74,16 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef UV1
     var uvUpdated: vec2f = input.uv;
 #endif
+#ifdef UV2
+		var uv2Updated: vec2f = input.uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
 
-	#if defined(VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
 	// Compute velocity before bones computation
 	vCurrentPosition = scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
 	vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
@@ -96,7 +99,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		vertexOutputs.vWorldView1 = vWorldView[1];
 		vertexOutputs.vWorldView2 = vWorldView[2];
 		vertexOutputs.vWorldView3 = vWorldView[3];
-		vertexOutputs.vNormalW = normalUpdated;
+
+		let normalWorld: mat3x3f =  mat3x3f(finalWorld[0].xyz, finalWorld[1].xyz, finalWorld[2].xyz);
+		vertexOutputs.vNormalW = normalize(normalWorld * normalUpdated);
 	#else
         #ifdef NORMAL_WORLDSPACE
 			vertexOutputs.vNormalV = normalize((finalWorld *  vec4f(normalUpdated, 0.0)).xyz);
@@ -107,7 +112,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	vertexOutputs.vViewPos = scene.view * worldPos;
 
-	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && defined(BONES_VELOCITY_ENABLED)
 		vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
 
 		#if NUM_BONE_INFLUENCERS > 0
@@ -155,7 +160,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 			#else
-			vertexOutputs.vUV = input.uv;
+			vertexOutputs.vUV = uvUpdated;
 			#endif
 
 			#ifdef BUMP_UV1
@@ -170,19 +175,19 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
-			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#else
-			vertexOutputs.vUV = input.uv2;
+			vertexOutputs.vUV = uv2Updated;
 			#endif
 
 			#ifdef BUMP_UV2
-			vertexOutputs.vBumpUV = (uniforms.bumpMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vBumpUV = (uniforms.bumpMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 			#ifdef REFLECTIVITY_UV2
-			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 			#ifdef ALBEDO_UV2
-			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
 			#endif
 		#endif
 	#endif

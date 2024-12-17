@@ -391,6 +391,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this._observables.forEach((obs) => {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
+        super.dispose();
     }
 
     /**

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AbstractEngineOptions, EngineOptions, WebGPUEngineOptions } from "core/index";
+import type { AbstractEngine, AbstractEngineOptions, EngineOptions, IDisposable, Nullable, WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
@@ -21,6 +21,7 @@ export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
 }
 
 /**
+ * @experimental
  * Creates a Viewer instance that is bound to an HTML canvas.
  * @remarks
  * This function can be shared across multiple UI integrations (e.g. Web Components, React, etc.).
@@ -68,6 +69,21 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
             }
         });
         disposeActions.push(() => beforeRenderObserver.remove());
+
+        // If the canvas is not visible, suspend rendering.
+        let offscreenRenderingSuspension: Nullable<IDisposable> = null;
+        const intersectionObserver = new IntersectionObserver((entries) => {
+            if (entries.length > 0) {
+                if (entries[entries.length - 1].isIntersecting) {
+                    offscreenRenderingSuspension?.dispose();
+                    offscreenRenderingSuspension = null;
+                } else {
+                    offscreenRenderingSuspension = details.suspendRendering();
+                }
+            }
+        });
+        intersectionObserver.observe(canvas);
+        disposeActions.push(() => intersectionObserver.disconnect());
 
         // Call the original onInitialized callback, if one was provided.
         onInitialized?.(details);

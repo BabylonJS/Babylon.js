@@ -30,8 +30,8 @@ Since the very beginning, Babylon.js relies on a great forum and a tremendous co
 
 Please use the Github issues (after discussing them on the forum) **only** for:
 
-- Bugs
-- Feature requests
+-   Bugs
+-   Feature requests
 
 We will try to enforce these rules as we consider the forum is a better place for discussions and learnings.
 
@@ -39,9 +39,9 @@ We will try to enforce these rules as we consider the forum is a better place fo
 
 You can use Gitpod (A free online VS Code like IDE) for contributing online. With a single click it'll launch a workspace and automatically:
 
-- clone the BabylonJS repo.
-- install the dependencies.
-- run `npm run start`.
+-   clone the BabylonJS repo.
+-   install the dependencies.
+-   run `npm run start`.
 
 so that you can start straight away.
 
@@ -49,26 +49,26 @@ so that you can start straight away.
 
 ## Pull requests
 
-We are not complicated people, but we still have some [coding guidelines](https://doc.babylonjs.com/divingDeeper/developWithBjs/approvedNamingConventions)
-Before submitting your PR, just check that everything goes well by [creating the minified version](https://doc.babylonjs.com/advanced_topics/minifiedVer)
+We are not complicated people, but we still have some [coding guidelines](https://doc.babylonjs.com/contribute/toBabylon/approvedNamingConventions/)
+Before submitting your PR, just check that everything goes well by [creating the minified version](https://doc.babylonjs.com/setup/support/minifiedVer/)
 
-You should read the [how to contribute documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/howToStart) before working on your PR.
+You should read the [how to contribute documentation](https://doc.babylonjs.com/contribute/toBabylon/) before working on your PR.
 
-If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/contributeToDocs) would detail the process.
+If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/contribute/contributeToDocs/) would detail the process.
 
 To validate your PR, please follow these steps:
 
-- Run `npm run build:dev` locally and make sure that no error is generated
-- Make sure that all public functions and classes are commented using JSDoc/TSDoc syntax
-- Run `npm run test:unit` for unit tests, and check the buildSystem.md file for information regarding the visualization tests.
+-   Run `npm run build:dev` locally and make sure that no error is generated
+-   Make sure that all public functions and classes are commented using JSDoc/TSDoc syntax
+-   Run `npm run test:unit` for unit tests, and check the buildSystem.md file for information regarding the visualization tests.
 
 ## What should go where
 
 In order to not bloat the core engine with unwanted or unnecessary features (that we will need to maintain forever), here is a list of questions you could ask yourself before submitting a new feature (or feature request) for Babylon.js core engine:
 
-- Does my feature belong to a framework library?
-- Can my feature be used by multiple different applications?
-- Is there a general use case for this feature?
-- Does this feature already exist in a similar framework?
+-   Does my feature belong to a framework library?
+-   Can my feature be used by multiple different applications?
+-   Is there a general use case for this feature?
+-   Does this feature already exist in a similar framework?
 
 If your PR does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.

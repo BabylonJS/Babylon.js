@@ -1,8 +1,21 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AbstractMesh, EffectLayer, Mesh, Nullable, Observer, Scene, WebGPUDrawContext, WebGPUShaderProcessor, WebGPUPipelineContext } from "core/index";
+import type {
+    AbstractEngine,
+    AbstractMesh,
+    EffectLayer,
+    Mesh,
+    Nullable,
+    Observer,
+    Scene,
+    WebGPUDrawContext,
+    WebGPUShaderProcessor,
+    WebGPUPipelineContext,
+    GaussianSplattingMesh,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
+import { ScenePerformancePriority } from "core/scene";
 
 /**
  * Options for the snapshot rendering helper
@@ -29,6 +42,8 @@ export class SnapshotRenderingHelper {
     private _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
     private readonly _onResizeObserver: Nullable<Observer<AbstractEngine>>;
     private _disableRenderingRefCount = 0;
+    private _currentPerformancePriorityMode = ScenePerformancePriority.BackwardCompatible;
+    private _pendingCurrentPerformancePriorityMode?: ScenePerformancePriority;
 
     /**
      * Creates a new snapshot rendering helper
@@ -77,6 +92,10 @@ export class SnapshotRenderingHelper {
                     mesh.transferToEffect(mesh.computeWorldMatrix(true));
                 }
 
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    (mesh as GaussianSplattingMesh)._postToWorker();
+                }
+
                 if (mesh.morphTargetManager && mesh.subMeshes) {
                     // Make sure morph target animations work
                     for (const subMesh of mesh.subMeshes) {
@@ -113,6 +132,10 @@ export class SnapshotRenderingHelper {
 
         this._disableRenderingRefCount = 0;
 
+        this._currentPerformancePriorityMode = this._pendingCurrentPerformancePriorityMode ?? this._scene.performancePriority;
+        this._pendingCurrentPerformancePriorityMode = undefined;
+        this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
+
         this._scene.executeWhenReady(() => {
             if (this._disableRenderingRefCount > 0) {
                 return;
@@ -132,6 +155,29 @@ export class SnapshotRenderingHelper {
     public disableSnapshotRendering() {
         if (!this._engine.isWebGPU) {
             return;
+        }
+
+        if (this._disableRenderingRefCount === 0) {
+            // Snapshot rendering switches from enabled to disabled
+            // We reset the performance priority mode to that which it was before enabling snapshot rendering, but first set it to “BackwardCompatible” to allow the system to regenerate resources that may have been optimized for snapshot rendering.
+            // We'll then restore the original mode at the next frame.
+            this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
+            if (this._currentPerformancePriorityMode !== ScenePerformancePriority.BackwardCompatible) {
+                this._pendingCurrentPerformancePriorityMode = this._currentPerformancePriorityMode;
+                this._scene.executeWhenReady(() => {
+                    this._executeAtFrame(
+                        this._engine.frameId + 2,
+                        () => {
+                            // if this._disableRenderingRefCount === 0, snapshot rendering has been enabled in the meantime, so do nothing
+                            if (this._disableRenderingRefCount > 0 && this._pendingCurrentPerformancePriorityMode !== undefined) {
+                                this._scene.performancePriority = this._pendingCurrentPerformancePriorityMode;
+                            }
+                            this._pendingCurrentPerformancePriorityMode = undefined;
+                        },
+                        true
+                    );
+                });
+            }
         }
 
         this._engine.snapshotRendering = false;
@@ -244,9 +290,9 @@ export class SnapshotRenderingHelper {
         }
     }
 
-    private _executeAtFrame(frameId: number, func: () => void) {
+    private _executeAtFrame(frameId: number, func: () => void, executeWhenModeIsDisabled = false) {
         const obs = this._engine.onEndFrameObservable.add(() => {
-            if (this._disableRenderingRefCount > 0) {
+            if ((this._disableRenderingRefCount > 0 && !executeWhenModeIsDisabled) || (this._disableRenderingRefCount === 0 && executeWhenModeIsDisabled)) {
                 this._engine.onEndFrameObservable.remove(obs);
                 return;
             }

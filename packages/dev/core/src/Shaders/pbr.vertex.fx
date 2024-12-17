@@ -1,3 +1,5 @@
+#define CUSTOM_VERTEX_EXTENSION
+
 precision highp float;
 
 #include<__decl__pbrVertex>
@@ -121,6 +123,9 @@ void main(void) {
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+#ifdef UV2
+    vec2 uv2Updated = uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -135,9 +140,7 @@ void main(void) {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) &&                                                        \
-    (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) ||          \
-     defined(PREPASS_VELOCITY_LINEAR))
+#if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
     vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
@@ -149,7 +152,9 @@ void main(void) {
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
-#include<prePassVertex>
+#ifdef PREPASS
+    #include<prePassVertex>
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
@@ -198,11 +203,17 @@ void main(void) {
 #ifndef UV1
     vec2 uvUpdated = vec2(0., 0.);
 #endif
+#ifndef UV2
+    vec2 uv2Updated = vec2(0., 0.);
+#endif
 #ifdef MAINUV1
     vMainUV1 = uvUpdated;
 #endif
+#ifdef MAINUV2
+    vMainUV2 = uv2Updated;
+#endif
 
-    #include<uvVariableDeclaration>[2..7]
+    #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)

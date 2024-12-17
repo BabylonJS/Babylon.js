@@ -153,6 +153,22 @@ export class Constants {
     public static readonly TEXTUREFORMAT_RED = 6;
     /** RED (2nd reference) */
     public static readonly TEXTUREFORMAT_R = 6;
+    /** RED unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_R16_UNORM = 0x822a;
+    /** RG unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_UNORM = 0x822c;
+    /** RGB unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_UNORM = 0x8054;
+    /** RGBA unsigned short normed to [0, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_UNORM = 0x805b;
+    /** RED signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_R16_SNORM = 0x8f98;
+    /** RG signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RG16_SNORM = 0x8f99;
+    /** RGB signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGB16_SNORM = 0x8f9a;
+    /** RGBA signed short normed to [-1, 1] **/
+    public static readonly TEXTUREFORMAT_RGBA16_SNORM = 0x8f9b;
     /** RG */
     public static readonly TEXTUREFORMAT_RG = 7;
     /** RED_INTEGER */
@@ -230,7 +246,7 @@ export class Constants {
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
-    /** UNSIGNED_BYTE (2nd reference) */
+    /** @deprecated use more explicit TEXTURETYPE_UNSIGNED_BYTE instead. Use TEXTURETYPE_UNSIGNED_INTEGER for 32bits values.*/
     public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
     /** FLOAT */
     public static readonly TEXTURETYPE_FLOAT = 1;
@@ -619,7 +635,7 @@ export class Constants {
      */
     public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
     /**
-     * Constant used to retrieve albedo index in the textures array in the prepass
+     * Constant used to retrieve (sqrt) albedo index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
@@ -647,6 +663,12 @@ export class Constants {
      * using getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)
      */
     public static readonly PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE = 11;
+
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 12;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
@@ -810,6 +832,14 @@ export class Constants {
     public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
     /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
     public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_COLOR = 0x88f9;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR = 0x88fa;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_ALPHA = 0x8589;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA = 0x88fb;
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -918,4 +948,13 @@ export class Constants {
      * Additional matrix weights (for bones)
      */
     public static MatricesWeightsExtraKind = "matricesWeightsExtra";
+
+    /**
+     * The default minZ value for the near plane of a frustum light
+     */
+    public static ShadowMinZ = 0;
+    /**
+     * The default maxZ value for the far plane of a frustum light
+     */
+    public static ShadowMaxZ = 10000;
 }

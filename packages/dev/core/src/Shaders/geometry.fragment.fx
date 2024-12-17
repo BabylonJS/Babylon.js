@@ -19,7 +19,7 @@ varying vec4 vViewPos;
 varying vec3 vPositionW;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
@@ -114,6 +114,12 @@ void main() {
         velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
         gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef VELOCITY_LINEAR
+        vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) -
+                                    (vCurrentPosition.xy / vCurrentPosition.w));
+        gl_FragData[VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, 1.0);
     #endif
 
     #ifdef REFLECTIVITY

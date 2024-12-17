@@ -181,8 +181,8 @@ export abstract class FluidRenderingObject {
             return false;
         }
 
-        const depthEffect = this._depthEffectWrapper._drawWrapper.effect!;
-        const thicknessEffect = this._thicknessEffectWrapper._drawWrapper.effect!;
+        const depthEffect = this._depthEffectWrapper.drawWrapper.effect!;
+        const thicknessEffect = this._thicknessEffectWrapper.drawWrapper.effect!;
 
         return depthEffect.isReady() && thicknessEffect.isReady();
     }
@@ -203,7 +203,7 @@ export abstract class FluidRenderingObject {
             return;
         }
 
-        const depthDrawWrapper = this._depthEffectWrapper._drawWrapper;
+        const depthDrawWrapper = this._depthEffectWrapper.drawWrapper;
         const depthEffect = depthDrawWrapper.effect!;
 
         this._engine.enableEffect(depthDrawWrapper);
@@ -231,7 +231,7 @@ export abstract class FluidRenderingObject {
             return;
         }
 
-        const thicknessDrawWrapper = this._thicknessEffectWrapper._drawWrapper;
+        const thicknessDrawWrapper = this._thicknessEffectWrapper.drawWrapper;
         const thicknessEffect = thicknessDrawWrapper.effect!;
 
         this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
@@ -268,5 +268,6 @@ export abstract class FluidRenderingObject {
     public dispose(): void {
         this._depthEffectWrapper?.dispose(false);
         this._thicknessEffectWrapper?.dispose(false);
+        this.onParticleSizeChanged.clear();
     }
 }

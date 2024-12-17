@@ -1805,11 +1805,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /**
      * Disposes the material
-     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     * @param _forceDisposeEffect kept for backward compat. We reference count the effect now.
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+    public dispose(_forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
         const scene = this.getScene();
         // Animations
         scene.stopAnimation(this);
@@ -1834,18 +1834,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             if (this.meshMap) {
                 for (const meshId in this.meshMap) {
                     const mesh = this.meshMap[meshId];
-                    if (mesh) {
-                        mesh.material = null; // will set the entry in the map to undefined
-                        this.releaseVertexArrayObject(mesh, forceDisposeEffect);
-                    }
+                    this._disposeMeshResources(mesh);
                 }
             } else {
                 const meshes = scene.meshes;
                 for (const mesh of meshes) {
-                    if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
-                        mesh.material = null;
-                        this.releaseVertexArrayObject(mesh, forceDisposeEffect);
-                    }
+                    this._disposeMeshResources(mesh);
                 }
             }
         }
@@ -1853,7 +1847,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._drawWrapper.effect) {
+        if (this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
                 this._drawWrapper.effect.dispose();
             }
@@ -1884,25 +1878,36 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
     }
 
-    /**
-     * @internal
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+    private _disposeMeshResources(mesh: AbstractMesh | undefined) {
+        if (!mesh) {
+            return;
+        }
+
         const geometry = (<Mesh>mesh).geometry;
-        if (geometry) {
-            if (this._storeEffectOnSubMeshes) {
-                if (mesh.subMeshes) {
-                    for (const subMesh of mesh.subMeshes) {
-                        geometry._releaseVertexArrayObject(subMesh.effect);
-                        if (forceDisposeEffect && subMesh.effect) {
-                            subMesh.effect.dispose();
+        const materialForRenderPass = mesh._internalAbstractMeshDataInfo._materialForRenderPass;
+        if (this._storeEffectOnSubMeshes) {
+            if (mesh.subMeshes && materialForRenderPass) {
+                for (const subMesh of mesh.subMeshes) {
+                    const drawWrappers = subMesh._drawWrappers;
+                    for (let renderPassIndex = 0; renderPassIndex < drawWrappers.length; renderPassIndex++) {
+                        const effect = drawWrappers[renderPassIndex]?.effect;
+                        if (!effect) {
+                            continue;
+                        }
+                        const material = materialForRenderPass[renderPassIndex];
+                        if (material === this) {
+                            geometry?._releaseVertexArrayObject(effect);
+                            subMesh._removeDrawWrapper(renderPassIndex, true, true);
                         }
                     }
                 }
-            } else {
-                geometry._releaseVertexArrayObject(this._drawWrapper.effect);
             }
+        } else {
+            geometry?._releaseVertexArrayObject(this._drawWrapper.effect);
+        }
+
+        if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
+            mesh.material = null;
         }
     }
 
@@ -1926,7 +1931,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         if (this.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                if (!plugin.doNotSerialize) {
+                    serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                }
             }
         }
     }

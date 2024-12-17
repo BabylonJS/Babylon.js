@@ -15,13 +15,13 @@ export enum PreviewType {
     Explosion,
     Fire,
 
-    Custom,
-
-    // Env
-    Room,
-
     // Gaussian Splatting
     Parrot,
     BricksSkull,
     Plants,
+
+    Custom,
+
+    // Env
+    Room,
 }

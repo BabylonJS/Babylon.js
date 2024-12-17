@@ -308,10 +308,6 @@ export class CSG2 implements IDisposable {
             throw new Error("Error while creating the CSG: " + e.message);
         }
 
-        if (returnValue._manifold.genus() < 0) {
-            throw new Error("Incorrect volume detected. Make sure you are not using a double sided geometry");
-        }
-
         return returnValue;
     }
 
@@ -399,7 +395,7 @@ export class CSG2 implements IDisposable {
      * @param ignoreWorldMatrix defines if the world matrix should be ignored
      * @returns a new CSG2 class
      */
-    public static FromMesh(mesh: Mesh, ignoreWorldMatrix = false): any {
+    public static FromMesh(mesh: Mesh, ignoreWorldMatrix = false): CSG2 {
         const sourceVertices = mesh.getVerticesData(VertexBuffer.PositionKind);
         const sourceIndices = mesh.getIndices();
         const worldMatrix = mesh.computeWorldMatrix(true);
@@ -459,7 +455,7 @@ export function IsCSG2Ready() {
  */
 export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
-        manifoldUrl: "https://unpkg.com/manifold-3d@2.5.1",
+        manifoldUrl: "https://unpkg.com/manifold-3d@3.0.0",
         ...options,
     };
 

@@ -26,12 +26,14 @@ import { Animation } from "core/Animations/animation";
 import { AxesViewer } from "core/Debug/axesViewer";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { NormalMaterial } from "materials/normal/normalMaterial";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
     private _onBuildObserver: Nullable<Observer<NodeGeometry>>;
 
     private _onFrameObserver: Nullable<Observer<void>>;
+    private _onAxisObserver: Nullable<Observer<void>>;
     private _onExportToGLBObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
@@ -48,6 +50,7 @@ export class PreviewManager {
     private _matStd: MultiMaterial;
     private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
+    private _matNormals: NormalMaterial;
     private _axis: AxesViewer;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
@@ -60,10 +63,20 @@ export class PreviewManager {
             }
             const currentMat = this._mesh.material;
             this._mesh.material = this._matStd;
-            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene").then((glb: GLTFData) => {
+            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene", {
+                shouldExportNode: (node) => {
+                    return !node.doNotSerialize;
+                },
+            }).then((glb: GLTFData) => {
                 this._mesh!.material = currentMat;
                 glb.downloadFiles();
             });
+        });
+
+        let axisTopRight = true;
+
+        this._onAxisObserver = this._globalState.onAxis.add(() => {
+            axisTopRight = !axisTopRight;
         });
 
         this._onFrameObserver = this._globalState.onFrame.add(() => {
@@ -95,6 +108,7 @@ export class PreviewManager {
         this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
+        this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
@@ -128,6 +142,10 @@ export class PreviewManager {
         this._matVertexColor.backFaceCulling = false;
         this._matVertexColor.emissiveColor = Color3.White();
 
+        this._matNormals = new NormalMaterial("normalMaterial", this._scene);
+        this._matNormals.disableLighting = true;
+        this._matNormals.backFaceCulling = false;
+
         this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
         this._refreshPreviewMesh(true);
 
@@ -158,9 +176,13 @@ export class PreviewManager {
 
         this._axis = new AxesViewer(this._scene, 1, 2, undefined, undefined, undefined, 3);
         const dummy = new TransformNode("Dummy", this._scene);
+        dummy.doNotSerialize = true;
         this._axis.xAxis.setParent(dummy);
+        this._axis.xAxis.doNotSerialize = true;
         this._axis.yAxis.setParent(dummy);
+        this._axis.yAxis.doNotSerialize = true;
         this._axis.zAxis.setParent(dummy);
+        this._axis.zAxis.doNotSerialize = true;
 
         (this._axis.xAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
         (this._axis.yAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
@@ -177,10 +199,15 @@ export class PreviewManager {
         zPlane.position.z = 1;
         zPlane.position.y = 0.3;
 
-        const targetPosition = new Vector3(3.5, 3.6, 13);
+        let targetPosition = new Vector3(3.5, 3.6, 13);
         const tempMat = Matrix.Identity();
 
         this._scene.onBeforeCameraRenderObservable.add(() => {
+            if (axisTopRight) {
+                targetPosition = new Vector3(3.5, 3.6, 13);
+            } else {
+                targetPosition = new Vector3(0, 0, 10);
+            }
             this._scene.getViewMatrix().invertToRef(tempMat);
             Vector3.TransformCoordinatesToRef(targetPosition, tempMat, dummy.position);
         });
@@ -309,6 +336,9 @@ export class PreviewManager {
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
                 break;
+            case PreviewMode.Normals:
+                this._mesh.material = this._matNormals;
+                break;
         }
     }
 
@@ -330,6 +360,7 @@ export class PreviewManager {
 
     public dispose() {
         this._globalState.onFrame.remove(this._onFrameObserver);
+        this._onAxisObserver?.remove();
         this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onPreviewModeChanged.remove(this._onPreviewChangedObserver);

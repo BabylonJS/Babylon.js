@@ -266,10 +266,12 @@ export class NodeGeometry {
         state.buildId = this._buildId;
         state.verbose = verbose;
 
-        this.outputBlock.build(state);
-
-        if (updateBuildId) {
-            this._buildId = NodeGeometry._BuildIdGenerator++;
+        try {
+            this.outputBlock.build(state);
+        } finally {
+            if (updateBuildId) {
+                this._buildId = NodeGeometry._BuildIdGenerator++;
+            }
         }
 
         this._buildExecutionTime = PrecisionDate.Now - now;
@@ -331,7 +333,7 @@ export class NodeGeometry {
     private _initializeBlock(node: NodeGeometryBlock, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
-            node.autoConfigure();
+            node.autoConfigure(this);
         }
         node._preparationId = this._buildId;
 
@@ -437,6 +439,7 @@ export class NodeGeometry {
                 blockId: number;
                 x: number;
                 y: number;
+                isCollapsed: boolean;
             }[] = source.locations || source.editorData.locations;
 
             for (const location of locations) {

@@ -31,6 +31,7 @@ export * from "./Blocks/randomBlock";
 export * from "./Blocks/noiseBlock";
 export * from "./Blocks/mergeGeometryBlock";
 export * from "./Blocks/geometryCollectionBlock";
+export * from "./Blocks/cleanGeometryBlock";
 export * from "./Blocks/geometryElbowBlock";
 export * from "./Blocks/computeNormalsBlock";
 export * from "./Blocks/vectorConverterBlock";

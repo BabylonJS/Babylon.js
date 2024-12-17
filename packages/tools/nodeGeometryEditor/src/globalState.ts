@@ -34,6 +34,7 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onPreviewBackgroundChanged = new Observable<void>();
     onFrame = new Observable<void>();
+    onAxis = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
@@ -65,7 +66,6 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
-
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);

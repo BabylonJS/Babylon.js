@@ -10,17 +10,41 @@ import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { MaterialVariantsController } from "../../glTFFileLoader";
 
 const NAME = "KHR_materials_variants";
 
+export { MaterialVariantsController };
+
 declare module "../../glTFFileLoader" {
+    // Define options related types here so they can be referenced in the options,
+    // but export the types at the module level. This ensures the types are in the
+    // correct namespace for UMD.
+    type MaterialVariantsController = {
+        /**
+         * The list of available variant names for this asset.
+         */
+        readonly variants: readonly string[];
+
+        /**
+         * Gets or sets the selected variant.
+         */
+        selectedVariant: string;
+    };
+
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_variants extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["KHR_materials_variants"]: {};
+        ["KHR_materials_variants"]: Partial<{
+            /**
+             * Defines a callback that will be called if material variants are loaded.
+             * @experimental
+             */
+            onLoaded: (controller: MaterialVariantsController) => void;
+        }>;
     }
 }
 
@@ -68,11 +92,11 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Gets the list of available variant names for this asset.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @returns the list of all the variant names for this model
      */
-    public static GetAvailableVariants(rootMesh: Mesh): string[] {
-        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+    public static GetAvailableVariants(rootNode: TransformNode): string[] {
+        const extensionMetadata = this._GetExtensionMetadata(rootNode);
         if (!extensionMetadata) {
             return [];
         }
@@ -82,20 +106,20 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Gets the list of available variant names for this asset.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @returns the list of all the variant names for this model
      */
-    public getAvailableVariants(rootMesh: Mesh): string[] {
-        return KHR_materials_variants.GetAvailableVariants(rootMesh);
+    public getAvailableVariants(rootNode: TransformNode): string[] {
+        return KHR_materials_variants.GetAvailableVariants(rootNode);
     }
 
     /**
      * Select a variant given a variant name or a list of variant names.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @param variantName The variant name(s) to select.
      */
-    public static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void {
-        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+    public static SelectVariant(rootNode: TransformNode, variantName: string | string[]): void {
+        const extensionMetadata = this._GetExtensionMetadata(rootNode);
         if (!extensionMetadata) {
             throw new Error(`Cannot select variant on a glTF mesh that does not have the ${NAME} extension`);
         }
@@ -122,19 +146,19 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Select a variant given a variant name or a list of variant names.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @param variantName The variant name(s) to select.
      */
-    public selectVariant(rootMesh: Mesh, variantName: string | string[]): void {
-        KHR_materials_variants.SelectVariant(rootMesh, variantName);
+    public selectVariant(rootNode: TransformNode, variantName: string | string[]): void {
+        KHR_materials_variants.SelectVariant(rootNode, variantName);
     }
 
     /**
      * Reset back to the original before selecting a variant.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      */
-    public static Reset(rootMesh: Mesh): void {
-        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+    public static Reset(rootNode: TransformNode): void {
+        const extensionMetadata = this._GetExtensionMetadata(rootNode);
         if (!extensionMetadata) {
             throw new Error(`Cannot reset on a glTF mesh that does not have the ${NAME} extension`);
         }
@@ -148,19 +172,19 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Reset back to the original before selecting a variant.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      */
-    public reset(rootMesh: Mesh): void {
-        KHR_materials_variants.Reset(rootMesh);
+    public reset(rootNode: TransformNode): void {
+        KHR_materials_variants.Reset(rootNode);
     }
 
     /**
      * Gets the last selected variant name(s) or null if original.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @returns The selected variant name(s).
      */
-    public static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
-        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+    public static GetLastSelectedVariant(rootNode: TransformNode): Nullable<string | string[]> {
+        const extensionMetadata = this._GetExtensionMetadata(rootNode);
         if (!extensionMetadata) {
             throw new Error(`Cannot get the last selected variant on a glTF mesh that does not have the ${NAME} extension`);
         }
@@ -170,15 +194,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Gets the last selected variant name(s) or null if original.
-     * @param rootMesh The glTF root mesh
+     * @param rootNode The glTF root node
      * @returns The selected variant name(s).
      */
-    public getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
-        return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
+    public getLastSelectedVariant(rootNode: TransformNode): Nullable<string | string[]> {
+        return KHR_materials_variants.GetLastSelectedVariant(rootNode);
     }
 
-    private static _GetExtensionMetadata(rootMesh: Nullable<TransformNode>): Nullable<IExtensionMetadata> {
-        return rootMesh?._internalMetadata?.gltf?.[NAME] || null;
+    private static _GetExtensionMetadata(rootNode: Nullable<TransformNode>): Nullable<IExtensionMetadata> {
+        return rootNode?._internalMetadata?.gltf?.[NAME] || null;
     }
 
     /** @internal */
@@ -187,6 +211,31 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         if (extensions && extensions[this.name]) {
             const extension = extensions[this.name] as IKHRMaterialVariants_Variants;
             this._variants = extension.variants;
+        }
+    }
+
+    /** @internal */
+    public onReady(): void {
+        const rootNode = this._loader.rootBabylonMesh;
+        if (rootNode) {
+            this._loader.parent.extensionOptions[NAME]?.onLoaded?.({
+                get variants() {
+                    return KHR_materials_variants.GetAvailableVariants(rootNode);
+                },
+                get selectedVariant(): string {
+                    const lastSelectedVariant = KHR_materials_variants.GetLastSelectedVariant(rootNode);
+                    if (!lastSelectedVariant) {
+                        return KHR_materials_variants.GetAvailableVariants(rootNode)[0];
+                    }
+                    if (Array.isArray(lastSelectedVariant)) {
+                        return lastSelectedVariant[0];
+                    }
+                    return lastSelectedVariant;
+                },
+                set selectedVariant(variantName) {
+                    KHR_materials_variants.SelectVariant(rootNode, variantName);
+                },
+            });
         }
     }
 

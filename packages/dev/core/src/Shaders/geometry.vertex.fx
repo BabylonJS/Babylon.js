@@ -56,7 +56,7 @@ varying vec4 vViewPos;
 varying vec3 vPositionW;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 uniform mat4 previousViewProjection;
 
 varying vec4 vCurrentPosition;
@@ -73,13 +73,16 @@ void main(void)
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+#ifdef UV2
+    vec2 uv2Updated = uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
 
-	#if defined(VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
 	// Compute velocity before bones computation
 	vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 	vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
@@ -91,7 +94,8 @@ void main(void)
 
 	#ifdef BUMP
 		vWorldView = view * finalWorld;
-		vNormalW = normalUpdated;
+		mat3 normalWorld = mat3(finalWorld);
+		vNormalW = normalize(normalWorld * normalUpdated);
 	#else
         #ifdef NORMAL_WORLDSPACE
 			vNormalV = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
@@ -102,7 +106,7 @@ void main(void)
 
 	vViewPos = view * worldPos;
 
-	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && defined(BONES_VELOCITY_ENABLED)
 		vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 		#if NUM_BONE_INFLUENCERS > 0
@@ -150,7 +154,7 @@ void main(void)
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#else
-			vUV = uv;
+			vUV = uvUpdated;
 			#endif
 
 			#ifdef BUMP_UV1
@@ -165,19 +169,19 @@ void main(void)
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
-			vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+			vUV = vec2(diffuseMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#else
-			vUV = uv2;
+			vUV = uv2Updated;
 			#endif
 
 			#ifdef BUMP_UV2
-			vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
+			vBumpUV = vec2(bumpMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
 			#ifdef REFLECTIVITY_UV2
-			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
 			#ifdef ALBEDO_UV2
-			vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
+			vAlbedoUV = vec2(albedoMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
 		#endif
 	#endif

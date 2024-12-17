@@ -32,6 +32,7 @@ import {
     getStateObject,
     _createShaderProgram,
     deleteStateObject,
+    _isRenderingStateCompiled,
 } from "./thinEngine.functions";
 
 import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
@@ -47,7 +48,7 @@ import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
@@ -282,7 +283,6 @@ export class ThinEngine extends AbstractEngine {
         let canvas: Nullable<HTMLCanvasElement> = null;
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
-            this._renderingCanvas = canvas;
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
@@ -343,6 +343,7 @@ export class ThinEngine extends AbstractEngine {
                 this._onContextLost = (evt: Event) => {
                     evt.preventDefault();
                     this._contextWasLost = true;
+                    deleteStateObject(this._gl);
                     Logger.Warn("WebGL context lost.");
 
                     this.onContextLostObservable.notifyObservers(this);
@@ -352,11 +353,16 @@ export class ThinEngine extends AbstractEngine {
                     this._restoreEngineAfterContextLost(() => this._initGLContext());
                 };
 
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
 
                 options.powerPreference = options.powerPreference || "high-performance";
+            } else {
+                this._onContextLost = () => {
+                    deleteStateObject(this._gl);
+                };
             }
+
+            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
 
             if (this._badDesktopOS) {
                 options.xrCompatible = false;
@@ -397,7 +403,7 @@ export class ThinEngine extends AbstractEngine {
             }
         } else {
             this._gl = <WebGL2RenderingContext>canvasOrContext;
-            this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
+            canvas = this._gl.canvas as HTMLCanvasElement;
 
             if ((this._gl as any).renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
@@ -411,6 +417,8 @@ export class ThinEngine extends AbstractEngine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        this._sharedInit(canvas);
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
@@ -548,6 +556,7 @@ export class ThinEngine extends AbstractEngine {
             textureMaxLevel: this._webGLVersion > 1,
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
+            textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -600,6 +609,17 @@ export class ThinEngine extends AbstractEngine {
         this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
         this._caps.textureHalfFloatLinearFiltering =
             this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension("OES_texture_half_float_linear")) ? true : false;
+
+        if (this._caps.textureNorm16) {
+            this._gl.R16_EXT = 0x822a;
+            this._gl.RG16_EXT = 0x822c;
+            this._gl.RGB16_EXT = 0x8054;
+            this._gl.RGBA16_EXT = 0x805b;
+            this._gl.R16_SNORM_EXT = 0x8f98;
+            this._gl.RG16_SNORM_EXT = 0x8f99;
+            this._gl.RGB16_SNORM_EXT = 0x8f9a;
+            this._gl.RGBA16_SNORM_EXT = 0x8f9b;
+        }
 
         // Compressed formats
         if (this._caps.astc) {
@@ -1140,21 +1160,20 @@ export class ThinEngine extends AbstractEngine {
 
         this._currentRenderTarget = null;
 
-        // If MSAA, we need to bitblt back to main texture
-        const gl = this._gl;
-        if (webglRTWrapper._MSAAFramebuffer) {
+        if (!webglRTWrapper.disableAutomaticMSAAResolve) {
             if (texture.isMulti) {
-                // This texture is part of a MRT texture, we need to treat all attachments
-                this.unBindMultiColorAttachmentFramebuffer(texture, disableGenerateMipMaps, onBeforeUnbind);
-                return;
+                this.resolveMultiFramebuffer(texture);
+            } else {
+                this.resolveFramebuffer(texture);
             }
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, webglRTWrapper._framebuffer);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
         }
 
-        if (texture.texture?.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this.generateMipmaps(texture.texture);
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
         }
 
         if (onBeforeUnbind) {
@@ -1166,6 +1185,38 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this._bindUnboundFramebuffer(null);
+    }
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public generateMipMapsFramebuffer(texture: RenderTargetWrapper): void {
+        if (!texture.isMulti && texture.texture?.generateMipMaps && !texture.isCube) {
+            this.generateMipmaps(texture.texture);
+        }
+    }
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param texture  The render target texture containing the MSAA textures to resolve
+     */
+    public resolveFramebuffer(texture: RenderTargetWrapper): void {
+        const rtWrapper = texture as WebGLRenderTargetWrapper;
+        const gl = this._gl;
+
+        if (!rtWrapper._MSAAFramebuffer || rtWrapper.isMulti) {
+            return;
+        }
+
+        let bufferBits = rtWrapper.resolveMSAAColors ? gl.COLOR_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateDepthBuffer && rtWrapper.resolveMSAADepth ? gl.DEPTH_BUFFER_BIT : 0;
+        bufferBits |= rtWrapper._generateStencilBuffer && rtWrapper.resolveMSAAStencil ? gl.STENCIL_BUFFER_BIT : 0;
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
+        gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, bufferBits, gl.NEAREST);
     }
 
     /**
@@ -1884,7 +1935,9 @@ export class ThinEngine extends AbstractEngine {
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
             resetCachedPipeline(webGLPipelineContext);
-            this._gl.deleteProgram(webGLPipelineContext.program);
+            if (this._gl) {
+                this._gl.deleteProgram(webGLPipelineContext.program);
+            }
         }
     }
 
@@ -2119,16 +2172,10 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-        if (this._isDisposed || webGLPipelineContext._isDisposed) {
+        if (this._isDisposed) {
             return false;
         }
-        if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
-            this._finalizePipelineContext(webGLPipelineContext);
-            return true;
-        }
-
-        return false;
+        return _isRenderingStateCompiled(pipelineContext, this._gl, this.validateShaderPrograms);
     }
 
     /**
@@ -2841,20 +2888,26 @@ export class ThinEngine extends AbstractEngine {
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         let generateMipMaps = false;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let createMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
         let label: string | undefined;
+        let createMSAATexture = false;
+        let comparisonFunction = 0;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
-            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            createMipMaps = !!options.createMipMaps;
+            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
             label = options.label;
+            createMSAATexture = !!options.createMSAATexture;
+            comparisonFunction = options.comparisonFunction || 0;
         } else {
             generateMipMaps = !!options;
         }
@@ -2869,9 +2922,12 @@ export class ThinEngine extends AbstractEngine {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
+
+        const isDepthTexture = IsDepthTexture(format);
+        const hasStencil = HasStencilAspect(format);
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
@@ -2879,11 +2935,13 @@ export class ThinEngine extends AbstractEngine {
         const height = (<{ width: number; height: number; depth?: number; layers?: number }>size).height || <number>size;
         const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
         const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
-        const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
+        const filters = this._getSamplingParameters(samplingMode, (generateMipMaps || createMipMaps) && !isDepthTexture);
         const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : depth !== 0 ? gl.TEXTURE_3D : gl.TEXTURE_2D;
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
-        const internalFormat = this._getInternalFormat(format);
-        const textureType = this._getWebGLTextureType(type);
+        const sizedFormat = isDepthTexture
+            ? this._getInternalFormatFromDepthTextureFormat(format, true, hasStencil)
+            : this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
+        const internalFormat = isDepthTexture ? (hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT) : this._getInternalFormat(format);
+        const textureType = isDepthTexture ? this._getWebGLTextureTypeFromDepthTextureFormat(format) : this._getWebGLTextureType(type);
 
         // Bind
         this._bindTextureDirectly(target, texture);
@@ -2903,8 +2961,18 @@ export class ThinEngine extends AbstractEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+        if (isDepthTexture && this.webGLVersion > 1) {
+            if (comparisonFunction === 0) {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            } else {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+        }
+
         // MipMaps
-        if (generateMipMaps) {
+        if (generateMipMaps || createMipMaps) {
             this._gl.generateMipmap(target);
         }
 
@@ -2915,7 +2983,7 @@ export class ThinEngine extends AbstractEngine {
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
-        texture.depth = layers;
+        texture.depth = layers || depth;
         texture.isReady = true;
         texture.samples = samples;
         texture.generateMipMaps = generateMipMaps;
@@ -2923,8 +2991,47 @@ export class ThinEngine extends AbstractEngine {
         texture.type = type;
         texture.format = format;
         texture.label = label;
+        texture.comparisonFunction = comparisonFunction;
 
         this._internalTexturesCache.push(texture);
+
+        if (createMSAATexture) {
+            let renderBuffer: Nullable<WebGLRenderbuffer> = null;
+
+            if (IsDepthTexture(texture.format)) {
+                renderBuffer = this._setupFramebufferDepthAttachments(
+                    HasStencilAspect(texture.format),
+                    texture.format !== Constants.TEXTUREFORMAT_STENCIL8,
+                    texture.width,
+                    texture.height,
+                    samples,
+                    texture.format,
+                    true
+                );
+            } else {
+                renderBuffer = this._createRenderBuffer(
+                    texture.width,
+                    texture.height,
+                    samples,
+                    -1 /* not used */,
+                    this._getRGBABufferInternalSizedFormat(texture.type, texture.format, texture._useSRGBBuffer),
+                    -1 /* attachment */
+                );
+            }
+
+            if (!renderBuffer) {
+                throw new Error("Unable to create render buffer");
+            }
+
+            texture._autoMSAAManagement = true;
+
+            let hardwareTexture = texture._hardwareTexture as Nullable<WebGLHardwareTexture>;
+            if (!hardwareTexture) {
+                hardwareTexture = texture._hardwareTexture = this._createHardwareTexture() as WebGLHardwareTexture;
+            }
+
+            hardwareTexture.addMSAARenderBuffer(renderBuffer);
+        }
 
         return texture;
     }
@@ -3459,6 +3566,25 @@ export class ThinEngine extends AbstractEngine {
         return internalFormat;
     }
 
+    public _getWebGLTextureTypeFromDepthTextureFormat(textureFormat: number): GLenum {
+        const gl = this._gl;
+
+        let type: GLenum = gl.UNSIGNED_INT;
+        if (textureFormat === Constants.TEXTUREFORMAT_DEPTH16) {
+            type = gl.UNSIGNED_SHORT;
+        } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || textureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            type = gl.UNSIGNED_INT_24_8;
+        } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+            type = gl.FLOAT;
+        } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+            type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+        } else if (textureFormat === Constants.TEXTUREFORMAT_STENCIL8) {
+            type = gl.UNSIGNED_BYTE;
+        }
+
+        return type;
+    }
+
     /**
      * @internal
      */
@@ -3468,7 +3594,8 @@ export class ThinEngine extends AbstractEngine {
         width: number,
         height: number,
         samples = 1,
-        depthTextureFormat?: number
+        depthTextureFormat?: number,
+        dontBindRenderBufferToFrameBuffer = false
     ): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
 
@@ -3478,13 +3605,13 @@ export class ThinEngine extends AbstractEngine {
 
         // Create the depth/stencil buffer
         if (generateStencilBuffer && generateDepthBuffer) {
-            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, internalFormat, gl.DEPTH_STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, internalFormat, dontBindRenderBufferToFrameBuffer ? -1 : gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
-            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, gl.DEPTH_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, dontBindRenderBufferToFrameBuffer ? -1 : gl.DEPTH_ATTACHMENT);
         }
         if (generateStencilBuffer) {
-            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, gl.STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, dontBindRenderBufferToFrameBuffer ? -1 : gl.STENCIL_ATTACHMENT);
         }
 
         return null;
@@ -3527,7 +3654,9 @@ export class ThinEngine extends AbstractEngine {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
         }
 
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
+        if (attachment !== -1) {
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
+        }
 
         if (unbindBuffer) {
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -3915,7 +4044,7 @@ export class ThinEngine extends AbstractEngine {
         const keys = Object.keys(this._compiledEffects);
         for (const name of keys) {
             const effect = this._compiledEffects[name];
-            effect.dispose();
+            effect.dispose(true);
         }
 
         this._compiledEffects = {};
@@ -3928,8 +4057,9 @@ export class ThinEngine extends AbstractEngine {
         // Events
         if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
-                if (!this._doNotHandleContextLost) {
-                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+
+                if (this._onContextRestored) {
                     this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
                 }
             }
@@ -4131,15 +4261,23 @@ export class ThinEngine extends AbstractEngine {
                 internalFormat = this._gl.LUMINANCE_ALPHA;
                 break;
             case Constants.TEXTUREFORMAT_RED:
+            case Constants.TEXTUREFORMAT_R16_UNORM:
+            case Constants.TEXTUREFORMAT_R16_SNORM:
                 internalFormat = this._gl.RED;
                 break;
             case Constants.TEXTUREFORMAT_RG:
+            case Constants.TEXTUREFORMAT_RG16_UNORM:
+            case Constants.TEXTUREFORMAT_RG16_SNORM:
                 internalFormat = this._gl.RG;
                 break;
             case Constants.TEXTUREFORMAT_RGB:
+            case Constants.TEXTUREFORMAT_RGB16_UNORM:
+            case Constants.TEXTUREFORMAT_RGB16_SNORM:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 break;
             case Constants.TEXTUREFORMAT_RGBA:
+            case Constants.TEXTUREFORMAT_RGBA16_UNORM:
+            case Constants.TEXTUREFORMAT_RGBA16_SNORM:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
                 break;
         }
@@ -4235,6 +4373,14 @@ export class ThinEngine extends AbstractEngine {
                 switch (format) {
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R16I;
+                    case Constants.TEXTUREFORMAT_R16_SNORM:
+                        return this._gl.R16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RG16_SNORM:
+                        return this._gl.RG16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RGB16_SNORM:
+                        return this._gl.RGB16_SNORM_EXT;
+                    case Constants.TEXTUREFORMAT_RGBA16_SNORM:
+                        return this._gl.RGBA16_SNORM_EXT;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
                         return this._gl.RG16I;
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:
@@ -4248,6 +4394,14 @@ export class ThinEngine extends AbstractEngine {
                 switch (format) {
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R16UI;
+                    case Constants.TEXTUREFORMAT_R16_UNORM:
+                        return this._gl.R16_EXT;
+                    case Constants.TEXTUREFORMAT_RG16_UNORM:
+                        return this._gl.RG16_EXT;
+                    case Constants.TEXTUREFORMAT_RGB16_UNORM:
+                        return this._gl.RGB16_EXT;
+                    case Constants.TEXTUREFORMAT_RGBA16_UNORM:
+                        return this._gl.RGBA16_EXT;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
                         return this._gl.RG16UI;
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:

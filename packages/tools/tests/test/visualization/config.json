@@ -2,6 +2,24 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "EXT_lights_ies",
+            "playgroundId": "#UIAXAU#19",
+            "referenceImage": "ext_lights_ies.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IES Profile",
+            "playgroundId": "#UIAXAU#6",
+            "referenceImage": "iesprofile.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IES Profile2",
+            "playgroundId": "#UIAXAU#15",
+            "referenceImage": "iesprofile2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Gaussian Splatting NME",
             "playgroundId": "#WXWJKN#4",
             "referenceImage": "gsplat-nme.png"
@@ -366,7 +384,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#14",
+            "playgroundId": "#T90MQ4#19",
             "renderCount": 50,
             "referenceImage": "LineEdgesRenderer.png"
         },
@@ -424,7 +442,7 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#3",
+            "playgroundId": "#NZ2RZY#4",
             "renderCount": 50,
             "referenceImage": "chibi-rex.png"
         },
@@ -650,6 +668,11 @@
             "referenceImage": "draco.png"
         },
         {
+            "title": "Draco Decoder",
+            "playgroundId": "#22MFU2#82",
+            "referenceImage": "draco.png"
+        },
+        {
             "title": "GLTF Normals",
             "playgroundId": "#SMEAEB#0",
             "referenceImage": "gltfnormals.png"
@@ -853,29 +876,29 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, once)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#77",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#77",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "iterations = 1, iterations = 2",
+            "replace": "//options//, iterations = 2;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, once)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#76",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+            "replace": "//options//, useRightHandedSystem = true;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, twice)",
-            "playgroundId": "#KX53VK#48",
+            "playgroundId": "#KX53VK#76",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true, iterations = 1, iterations = 2",
+            "replace": "//options//, useRightHandedSystem = true; iterations = 2;",
             "errorRatio": 1.1
         },
         {
@@ -911,6 +934,42 @@
             "title": "GLTF Serializer KHR gpu instancing",
             "playgroundId": "#1Q2BWN#10",
             "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },
+        {
+            "title": "GLTF Serializer KHR punctual light, left-handed",
+            "playgroundId": "#FLXW8B#25",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
+        },
+        {
+            "title": "GLTF Serializer KHR punctual light, right-handed",
+            "playgroundId": "#FLXW8B#25",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, left-handed",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerCameraLeftHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, right-handed",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCameraRightHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, left-handed, round trip twice",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerCameraLeftHand.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, right-handed, round trip twice",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -959,6 +1018,11 @@
             "title": "GLTF Texture Linear Interpolation Test",
             "playgroundId": "#WGZLGJ#3009",
             "referenceImage": "gltfTextureLinearInterpolation.png"
+        },
+        {
+            "title": "GLTF Node visibility test",
+            "playgroundId": "#80DN99#3",
+            "referenceImage": "gltfNodeVisibility.png"
         },
         {
             "title": "Asset Containers",
@@ -1617,7 +1681,7 @@
         },
         {
             "title": "GLTF ext MSFT_LOD",
-            "playgroundId": "#2YZFA0#234",
+            "playgroundId": "#2YZFA0#422",
             "referenceImage": "gltfMSFTLOD.png"
         },
         {
@@ -2049,7 +2113,7 @@
         {
             "title": "apply-all-post-processes",
             "renderCount": 10,
-            "playgroundId": "#MJ59Y8#2"
+            "playgroundId": "#MJ59Y8#18"
         },
         {
             "title": "simple-custom-shader",
@@ -2241,10 +2305,53 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#180",
+            "playgroundId": "#8R5SSE#429",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Glow layer with vertex alpha",
+            "playgroundId": "#GWAX2G#7",
+            "referenceImage": "Glow-layer-with-vertex-alpha.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing Right-Handed",
+            "playgroundId": "#8R5SSE#425",
+            "referenceImage": "voxelShadowsRightHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Voxel Shadowing Left-Handed",
+            "playgroundId": "#8R5SSE#426",
+            "referenceImage": "voxelShadowsLeftHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Screen-space Shadowing Left-Handed",
+            "playgroundId": "#8R5SSE#427",
+            "referenceImage": "ssShadowsLeftHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Screen-space Shadowing Right-Handed",
+            "playgroundId": "#8R5SSE#428",
+            "referenceImage": "ssShadowsRightHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Normed 16 bits texture formats",
+            "playgroundId": "#SOCPNB#10",
             "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
+            "title": "UV2 Morphing",
+            "playgroundId": "#N5DLM7#1",
+            "referenceImage": "UV2-Morphing.png"
         }
     ]
 }

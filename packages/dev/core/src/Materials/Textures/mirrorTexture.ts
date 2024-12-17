@@ -159,7 +159,7 @@ export class MirrorTexture extends RenderTargetTexture {
         size: number | { width: number; height: number } | { ratio: number },
         scene?: Scene,
         generateMipMaps?: boolean,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true
     ) {
@@ -182,14 +182,6 @@ export class MirrorTexture extends RenderTargetTexture {
         if (engine.supportsUniformBuffers) {
             this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
         }
-
-        this.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`mirror generation for ${name}`, 1);
-        });
-
-        this.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup?.(1);
-        });
 
         let saveClipPlane: Nullable<Plane>;
 

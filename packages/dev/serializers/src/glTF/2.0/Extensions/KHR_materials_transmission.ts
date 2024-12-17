@@ -1,7 +1,7 @@
 import type { IMaterial, IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
 import { ImageMimeType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter } from "../glTFExporter";
+import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -23,11 +23,11 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -90,14 +90,15 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
             const volumeInfo: IKHRMaterialsTransmission = {
                 transmissionFactor: transmissionFactor,
-                hasTextures: () => {
-                    return this._hasTexturesExtension(babylonMaterial);
-                },
             };
+
+            if (this._hasTexturesExtension(babylonMaterial)) {
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+            }
 
             if (subSurface.refractionIntensityTexture) {
                 if (subSurface.useGltfStyleTextures) {
-                    const transmissionTexture = await this._exporter._glTFMaterialExporter._exportTextureInfoAsync(subSurface.refractionIntensityTexture, ImageMimeType.PNG);
+                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture, ImageMimeType.PNG);
                     if (transmissionTexture) {
                         volumeInfo.transmissionTexture = transmissionTexture;
                     }
@@ -114,4 +115,4 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_transmission(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_transmission(exporter));

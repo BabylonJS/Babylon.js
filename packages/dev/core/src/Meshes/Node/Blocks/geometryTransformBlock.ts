@@ -23,7 +23,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
@@ -124,10 +124,10 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
             if (this.matrix.isConnected) {
                 matrix = this.matrix.getConnectedValue(state);
             } else {
-                const scaling = this.scaling.getConnectedValue(state);
-                const rotation = this.rotation.getConnectedValue(state);
-                const translation = this.translation.getConnectedValue(state);
-                const pivot = this.pivot.getConnectedValue(state);
+                const scaling = this.scaling.getConnectedValue(state) || Vector3.OneReadOnly;
+                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                const translation = this.translation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                const pivot = this.pivot.getConnectedValue(state) || Vector3.ZeroReadOnly;
 
                 // Transform
                 Matrix.TranslationToRef(-pivot.x, -pivot.y, -pivot.z, this._pivotMatrix);

@@ -476,7 +476,7 @@ export class InputText extends Control {
         }
 
         if (this._onFocusSelectAll) {
-            this._selectAllText();
+            this.selectAllText();
         }
     }
 
@@ -510,7 +510,7 @@ export class InputText extends Control {
 
         //select all
         if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
-            this._selectAllText();
+            this.selectAllText();
             evt.preventDefault();
             return;
         }
@@ -800,8 +800,11 @@ export class InputText extends Control {
         this._cursorIndex = -1;
         this._markAsDirty();
     }
-    /** @internal */
-    protected _selectAllText() {
+
+    /**
+     * Allow the user to select all text
+     */
+    public selectAllText() {
         this._blinkIsEven = true;
         this.isTextHighlightOn = true;
 

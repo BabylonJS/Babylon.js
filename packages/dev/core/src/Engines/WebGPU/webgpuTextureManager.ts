@@ -290,6 +290,13 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     depth32float: 37,
 
     "depth32float-stencil8": 38,
+
+    r16unorm: 39,
+    rg16unorm: 40,
+    rgba16unorm: 41,
+    r16snorm: 42,
+    rg16snorm: 43,
+    rgba16snorm: 44,
 };
 
 /** @internal */
@@ -1002,9 +1009,16 @@ export class WebGPUTextureManager {
         }
     }
 
-    public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture {
+    public createGPUTextureForInternalTexture(
+        texture: InternalTexture,
+        width?: number,
+        height?: number,
+        depth?: number,
+        creationFlags?: number,
+        dontCreateMSAATexture?: boolean
+    ): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
-            texture._hardwareTexture = new WebGPUHardwareTexture();
+            texture._hardwareTexture = new WebGPUHardwareTexture(this._engine);
         }
 
         if (width === undefined) {
@@ -1125,12 +1139,14 @@ export class WebGPUTextureManager {
         texture.height = texture.baseHeight = height;
         texture.depth = texture.baseDepth = depth;
 
-        this.createMSAATexture(texture, texture.samples);
+        if (!dontCreateMSAATexture) {
+            this.createMSAATexture(texture, texture.samples);
+        }
 
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = -1): void {
+    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = 0): void {
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
         if (releaseExisting) {
@@ -1156,7 +1172,7 @@ export class WebGPUTextureManager {
             this._commandEncoderForCreation,
             WebGPUConstants.TextureUsage.RenderAttachment,
             0,
-            texture.label ? "MSAA" + texture.label : undefined
+            texture.label ? "MSAA_" + texture.label : "MSAA"
         );
         gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }

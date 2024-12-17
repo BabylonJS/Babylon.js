@@ -59,7 +59,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
-import { Popup } from "shared-ui-components/lines/popup";
+import { GUIEditor } from "../../../../guiEditor";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -802,7 +802,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={addIcon}
                         isActive={false}
                         onClick={() => {
-                            const w = (Popup as any)["gui-editor"] ?? window;
+                            const w = GUIEditor._PopupWindow ?? window;
                             const input = w.prompt("Enter new key name for metadata value", "newKey");
                             if (input === null || input.trim() === "") {
                                 return;
