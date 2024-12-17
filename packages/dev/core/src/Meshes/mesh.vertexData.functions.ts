@@ -17,10 +17,11 @@ export function OptimizeIndices(indices: IndicesArray) {
     const vertexToFaceMap = new Map<number, number[]>();
     faces.forEach((face, faceIndex) => {
         face.forEach((vertex) => {
-            if (!vertexToFaceMap.has(vertex)) {
-                vertexToFaceMap.set(vertex, []);
+            let face = vertexToFaceMap.get(vertex);
+            if (!face) {
+                vertexToFaceMap.set(vertex, face = []);
             }
-            vertexToFaceMap.get(vertex)!.push(faceIndex);
+            face.push(faceIndex);
         });
     });
 
