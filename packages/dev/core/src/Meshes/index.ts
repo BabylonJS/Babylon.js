@@ -33,6 +33,7 @@ export * from "./GreasedLine/greasedLineMesh";
 export * from "./GreasedLine/greasedLineRibbonMesh";
 export * from "./GreasedLine/greasedLineBaseMesh";
 export * from "./csg2";
+export * from "./mesh.vertexData.functions";
 import "./thinInstanceMesh";
 // eslint-disable-next-line no-duplicate-imports
 export * from "./thinInstanceMesh";

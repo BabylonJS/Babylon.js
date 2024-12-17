@@ -12,6 +12,7 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { _retryWithInterval } from "./timingTools";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -258,33 +259,34 @@ export function CreateScreenshotUsingRenderTarget(
     customizeTexture?.(texture);
 
     const renderWhenReady = () => {
-        if (texture.isReadyForRendering() && camera.isReady(true)) {
-            engine.onEndFrameObservable.addOnce(() => {
-                if (finalWidth === width && finalHeight === height) {
-                    texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                        DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                        texture.dispose();
-                    });
-                } else {
-                    const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                    importPromise.then(() =>
-                        ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                            engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                                texture.dispose();
-                            });
-                        })
-                    );
-                }
-            });
-            scene.incrementRenderId();
-            scene.resetCachedMaterial();
-            texture.render(true);
-            engine.setSize(originalSize.width, originalSize.height);
-            camera.getProjectionMatrix(true); // Force cache refresh;
-        } else {
-            setTimeout(renderWhenReady, 16);
-        }
+        _retryWithInterval(
+            () => texture.isReadyForRendering() && camera.isReady(true),
+            () => {
+                engine.onEndFrameObservable.addOnce(() => {
+                    if (finalWidth === width && finalHeight === height) {
+                        texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                            DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                            texture.dispose();
+                        });
+                    } else {
+                        const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
+                        importPromise.then(() =>
+                            ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                    DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                                    texture.dispose();
+                                });
+                            })
+                        );
+                    }
+                });
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+                texture.render(true);
+                engine.setSize(originalSize.width, originalSize.height);
+                camera.getProjectionMatrix(true); // Force cache refresh;
+            }
+        );
     };
 
     const renderToTexture = () => {
@@ -380,10 +382,10 @@ export function CreateScreenshotUsingRenderTargetAsync(
 
 /**
  * Gets height and width for screenshot size
- * @param engine
- * @param camera
- * @param size
- * @private
+ * @param engine The engine to use for rendering
+ * @param camera The camera to use for rendering
+ * @param size This size of the screenshot. can be a number or an object implementing IScreenshotSize
+ * @returns height and width for screenshot size
  */
 function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;

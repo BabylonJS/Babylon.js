@@ -12,6 +12,7 @@ import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ComputeBindingMapping } from "core/Engines/Extensions/engine.computeShader";
 
 import "../../ShadersWGSL/boundingInfo.compute";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /** @internal */
 export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform {
@@ -185,18 +186,16 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         }
 
         return new Promise((resolve) => {
-            const check = () => {
+            _retryWithInterval(() => {
                 const iterator = this._uniqueComputeShaders.keys();
                 for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
                     const computeShader = key.value;
                     if (!computeShader.isReady()) {
-                        setTimeout(check, 10);
-                        return;
+                        return false;
                     }
                 }
-                resolve();
-            };
-            check();
+                return true;
+            }, resolve);
         });
     }
 

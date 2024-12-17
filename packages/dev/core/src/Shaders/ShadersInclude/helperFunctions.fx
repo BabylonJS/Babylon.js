@@ -217,6 +217,26 @@ vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cu
 	return intersectPositionWS - cubePos;
 }
 
+vec3 equirectangularToCubemapDirection(vec2 uv) {
+  float longitude = uv.x * 2.0 * PI - PI;
+  float latitude = PI * 0.5 - uv.y * PI;
+  vec3 direction;
+  direction.x = cos(latitude) * sin(longitude);
+  direction.y = sin(latitude);
+  direction.z = cos(latitude) * cos(longitude);
+  return direction;
+}
+
+vec3 equirectangularToCubemapDirection(vec2 uv) {
+  float longitude = uv.x * 2.0 * PI - PI;
+  float latitude = PI * 0.5 - uv.y * PI;
+  vec3 direction;
+  direction.x = cos(latitude) * sin(longitude);
+  direction.y = sin(latitude);
+  direction.z = cos(latitude) * cos(longitude);
+  return direction;
+}
+
 // Since a sqrt of a negative value is undefined in GLSL, this function clamps the input value to 0.0.
 float sqrtClamped(float value) {
     return sqrt(max(value, 0.));
