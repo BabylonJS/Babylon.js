@@ -87,15 +87,12 @@ export class HDRIrradianceFiltering {
         const mipmapsCount = ILog2(width);
 
         const effect = this._effectWrapper.effect;
-        const outputTexture = this._createRenderTarget(width);
+        // Choose a power of 2 size for the irradiance map.
+        // It can be much smaller than the original texture.
+        const irradianceSize = Math.max(32, 1 << Math.floor(Math.log2(width >> 3)));
+        const outputTexture = this._createRenderTarget(irradianceSize);
         this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
-
-        // const intTexture = texture.getInternalTexture();
-        // if (intTexture) {
-        //     // Just in case generate fresh clean mips.
-        //     this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, intTexture, true);
-        // }
 
         this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
@@ -121,41 +118,15 @@ export class HDRIrradianceFiltering {
             effect.setVector3("right", directions[face][1]);
             effect.setVector3("front", directions[face][2]);
 
-            // for (let lod = 0; lod < mipmapsCount; lod++) {
             this._engine.bindFramebuffer(outputTexture, face, outputTexture.width, outputTexture.height, true, 0);
             this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
-            // let alpha = Math.pow(2, (lod - this._lodGenerationOffset) / this._lodGenerationScale) / width;
-            // if (lod === 0) {
-            //     alpha = 0;
-            // }
-
-            // effect.setFloat("alphaG", alpha);
-
             this._effectRenderer.draw();
-            // }
         }
 
         // Cleanup
         this._effectRenderer.restoreStates();
         this._engine.restoreDefaultFramebuffer();
-        // this._engine._releaseTexture(texture._texture!);
-        // texture.irradianceTexture = new BaseTexture(this._engine, outputTexture.texture!);
-
-        // Internal Swap
-        // const type = outputTexture.texture!.type;
-        // const format = outputTexture.texture!.format;
-
-        // outputTexture._swapAndDie(texture._texture!);
-
-        // texture._texture!.type = type;
-        // texture._texture!.format = format;
-
-        // New settings
-        // texture.gammaSpace = false;
-        // texture.lodGenerationOffset = this._lodGenerationOffset;
-        // texture.lodGenerationScale = this._lodGenerationScale;
-        // texture._prefiltered = true;
 
         const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture!);
         irradianceTexture.displayName = texture.name + "_irradiance";
@@ -210,7 +181,7 @@ export class HDRIrradianceFiltering {
     }
 
     /**
-     * Prefilters a cube texture to have mipmap levels representing roughness values.
+     * Prefilters a cube texture to contain IBL irradiance.
      * Prefiltering will be invoked at the end of next rendering pass.
      * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information

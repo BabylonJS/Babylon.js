@@ -162,6 +162,10 @@ export class IblCdfGenerator {
         if (this._iblSource!.isCube) {
             size.width *= 4;
             size.height *= 2;
+            // Force the resolution to be a power of 2 because we rely on the
+            // auto-mipmap generation for the scaled luminance texture.
+            size.width = 1 << Math.floor(Math.log2(size.width));
+            size.height = 1 << Math.floor(Math.log2(size.height));
         }
 
         const isWebGPU = this._engine.isWebGPU;
@@ -173,6 +177,7 @@ export class IblCdfGenerator {
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            gammaSpace: false,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
                     await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")]);
@@ -188,6 +193,7 @@ export class IblCdfGenerator {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            gammaSpace: false,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
                     await Promise.all([import("../ShadersWGSL/iblIcdf.fragment")]);
