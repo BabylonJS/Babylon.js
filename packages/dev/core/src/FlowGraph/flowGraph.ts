@@ -1,4 +1,5 @@
 import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
@@ -68,6 +69,10 @@ export interface IFlowGraphParseOptions {
  * The graph can then be started, which will init and start all of its event blocks.
  */
 export class FlowGraph {
+    /**
+     * An observable that is triggered when the state of the graph changes.
+     */
+    public onStateChangedObservable: Observable<FlowGraphState> = new Observable();
     /** @internal */
     public _eventBlocks: { [keyof in FlowGraphEventType]: FlowGraphEventBlock[] } = {
         [FlowGraphEventType.SceneReady]: [],
@@ -94,7 +99,22 @@ export class FlowGraph {
     /**
      * The state of the graph
      */
-    state: FlowGraphState = FlowGraphState.Stopped;
+    private _state: FlowGraphState = FlowGraphState.Stopped;
+
+    /**
+     * The state of the graph
+     */
+    public get state() {
+        return this._state;
+    }
+
+    /**
+     * The state of the graph
+     */
+    public set state(value: FlowGraphState) {
+        this._state = value;
+        this.onStateChangedObservable.notifyObservers(value);
+    }
 
     /**
      * Construct a Flow Graph
@@ -113,6 +133,12 @@ export class FlowGraph {
                         break;
                     }
                 }
+            }
+        });
+
+        this.onStateChangedObservable.add((state) => {
+            if (state === FlowGraphState.Started) {
+                this._startPendingEvents();
             }
         });
     }
@@ -151,6 +177,14 @@ export class FlowGraph {
             for (const context of this._executionContexts) {
                 block._startPendingTasks(context);
             }
+        } else {
+            this.onStateChangedObservable.addOnce((state) => {
+                if (state === FlowGraphState.Started) {
+                    for (const context of this._executionContexts) {
+                        block._startPendingTasks(context);
+                    }
+                }
+            });
         }
     }
 
@@ -165,7 +199,6 @@ export class FlowGraph {
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
-        this._startPendingEvents();
     }
 
     private _startPendingEvents() {

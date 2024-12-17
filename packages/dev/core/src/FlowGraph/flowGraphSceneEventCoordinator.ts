@@ -92,6 +92,7 @@ export class FlowGraphSceneEventCoordinator {
 
     public dispose() {
         this._sceneDisposeObserver?.remove();
+        this._sceneReadyObserver?.remove();
         this._sceneOnBeforeRenderObserver?.remove();
         this._meshPickedObserver?.remove();
         this._meshUnderPointerObserver?.remove();
