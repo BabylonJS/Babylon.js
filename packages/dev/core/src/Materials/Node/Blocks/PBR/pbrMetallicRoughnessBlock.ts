@@ -283,6 +283,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public useRadianceOcclusion: boolean = true;
 
     /**
+     * Use a different model for rough radiance that tends to better match raytracing.
+     */
+    @editableInPropertyPage("Alternate Rough Radiance", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
+    public useAlternateRoughRadiance: boolean = false;
+
+    /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
      */

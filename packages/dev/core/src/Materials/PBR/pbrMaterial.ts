@@ -529,6 +529,13 @@ export class PBRMaterial extends PBRBaseMaterial {
     public forceIrradianceInFragment = false;
 
     /**
+     * Use a different model for rough radiance that tends to better match raytracing.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useAlternateRoughRadiance = false;
+
+    /**
      * Number of Simultaneous lights allowed on the material.
      */
     @serialize()

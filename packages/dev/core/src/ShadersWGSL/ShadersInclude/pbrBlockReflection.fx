@@ -338,7 +338,12 @@
         #endif
 
         environmentIrradiance *= vReflectionColor.rgb;
-        outParams.environmentRadiance = environmentRadiance;
+        #ifdef ALTERNATE_ROUGH_RADIANCE^M
+            outParams.environmentRadiance.rgb = mix(environmentRadiance.rgb, environmentIrradiance, alphaG);
+            outParams.environmentRadiance.a = environmentRadiance.a;
+        #else
+            outParams.environmentRadiance = environmentRadiance;
+        #endif
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;
 
