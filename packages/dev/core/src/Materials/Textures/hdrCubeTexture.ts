@@ -12,6 +12,7 @@ import { Tools } from "../../Misc/tools";
 import { ToGammaSpace } from "../../Maths/math.constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
+import { HDRIrradianceFiltering } from "../../Materials/Textures/Filtering/hdrIrradianceFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -278,7 +279,48 @@ export class HDRCubeTexture extends BaseTexture {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
-                hdrFiltering.prefilter(this, previousOnLoad);
+                let irradiancePromise: Promise<Nullable<BaseTexture>>;
+                let cdfGeneratedPromise: Promise<void>;
+                const cdfGenerator = this.getScene()?.iblCdfGenerator;
+                if (!this._generateHarmonics) {
+                    if (cdfGenerator) {
+                        // If we're using CDF maps, the importanceSamplingRenderer needs this texture to be
+                        // ready before it can generate the CDF maps and that won't happen until prefiltering
+                        // is done. So, lets make a new texture with the non-prefiltered data and set it as the
+                        // iblSource for the importanceSamplingRenderer. Then, we'll wait for that to be ready
+                        // before we continue with the prefiltering.
+                        cdfGenerator.iblSource = new BaseTexture(this._engine, this.getInternalTexture());
+                        cdfGeneratedPromise = new Promise((resolve) => {
+                            cdfGenerator.onGeneratedObservable.addOnce(() => {
+                                resolve();
+                            });
+                        });
+                    } else {
+                        cdfGeneratedPromise = Promise.resolve();
+                    }
+                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine);
+                    irradiancePromise = cdfGeneratedPromise.then(() => hdrIrradianceFiltering.prefilter(this));
+                } else {
+                    irradiancePromise = Promise.resolve(null);
+                }
+                irradiancePromise.then((irradianceTexture) => {
+                    return hdrFiltering.prefilter(this).then(() => {
+                        if (!this._generateHarmonics && irradianceTexture) {
+                            this.irradianceTexture = irradianceTexture;
+                        }
+                        if (cdfGenerator) {
+                            cdfGenerator.iblSource = this;
+                        }
+                        const scene = this.getScene();
+                        if (scene) {
+                            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                        }
+                        Promise.resolve();
+                        if (previousOnLoad) {
+                            previousOnLoad();
+                        }
+                    });
+                });
             };
         }
 
