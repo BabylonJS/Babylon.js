@@ -31,6 +31,7 @@ export enum FragmentOutputBlockColorSpace {
 export class FragmentOutputBlock extends NodeMaterialBlock {
     private _linearDefineName: string;
     private _gammaDefineName: string;
+    private _additionalColorDefineName: string;
 
     /**
      * Create a new FragmentOutputBlock
@@ -136,15 +137,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
+        defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
     }
 
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
             BindLogDepth(undefined, effect, mesh.getScene());
-        }
-
-        if (this.additionalColor.connectedPoint) {
-            effect.setFloat("useAdditionalColor", nodeMaterial._useAdditionalColor ? 1.0 : 0.0);
         }
     }
 
@@ -160,22 +158,18 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
 
-        let registerToBindables = false;
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
             state._emitUniformFromString("logarithmicDepthConstant", NodeMaterialBlockConnectionPointTypes.Float);
             state._emitVaryingFromString("vFragmentDepth", NodeMaterialBlockConnectionPointTypes.Float);
-            registerToBindables = true;
+            state.sharedData.bindableBlocks.push(this);
         }
 
         if (additionalColor.connectedPoint) {
             state._excludeVariableName("useAdditionalColor");
             state._emitUniformFromString("useAdditionalColor", NodeMaterialBlockConnectionPointTypes.Float);
-            registerToBindables = true;
+            this._additionalColorDefineName = state._getFreeDefineName("USEADDITIONALCOLOR");
         }
 
-        if (registerToBindables) {
-            state.sharedData.bindableBlocks.push(this);
-        }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
 
@@ -196,13 +190,13 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             if (a.connectedPoint) {
                 aValue = a.associatedVariableName;
             }
-            state.compilationString += `if (useAdditionalColor != 0.){\r\n`;
+            state.compilationString += `#ifdef ${this._additionalColorDefineName}\n`;
             if (additionalColor.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
                 state.compilationString += `${outputString}  = ${vec4}(${additionalColor.associatedVariableName}, ${additionalColor.associatedVariableName}, ${additionalColor.associatedVariableName}, ${aValue});\n`;
             } else {
                 state.compilationString += `${outputString}  = ${vec4}(${additionalColor.associatedVariableName}, ${aValue});\n`;
             }
-            state.compilationString += `} else {\r\n`;
+            state.compilationString += `#else\n`;
         }
 
         if (rgba.connectedPoint) {
@@ -228,7 +222,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
 
         if (additionalColor.connectedPoint) {
-            state.compilationString += `}\r\n`;
+            state.compilationString += `#endif\n`;
         }
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
