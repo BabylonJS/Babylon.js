@@ -195,10 +195,7 @@ export class WebRequest implements IWebRequest {
             if (this._shouldSkipRequestModifications(url)) {
                 return;
             }
-            const newUrl = update(this._xhr, url);
-            if (newUrl !== undefined) {
-                url = newUrl;
-            }
+            url = update(this._xhr, url) || url;
         }
 
         // Clean url
