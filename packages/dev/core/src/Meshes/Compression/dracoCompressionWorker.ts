@@ -115,7 +115,7 @@ export function EncodeMesh(
 export function EncoderWorkerFunction(): void {
     let encoderPromise: PromiseLike<EncoderModule> | undefined;
 
-    onmessage = async (event) => {
+    onmessage = (event) => {
         const message = event.data;
         switch (message.id) {
             case "init": {
