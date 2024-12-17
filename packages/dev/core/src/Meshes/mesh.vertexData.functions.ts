@@ -1,4 +1,5 @@
 import type { IndicesArray } from "core/types";
+import { BitArray } from "core/Misc/bitArray";
 
 /**
  * Sort (in place) the index array so that faces with common indices are close
@@ -26,7 +27,7 @@ export function OptimizeIndices(indices: IndicesArray) {
     });
 
     // Step 3: Traverse faces using DFS to ensure connected faces are close
-    const visited = new Array(faceCount).fill(false);
+    const visited = new BitArray(faceCount);
     const sortedFaces: Array<number[]> = [];
 
     // Using a stack and not a recursive version to avoid call stack overflow
@@ -36,10 +37,10 @@ export function OptimizeIndices(indices: IndicesArray) {
         while (stack.length > 0) {
             const currentFaceIndex = stack.pop()!;
 
-            if (visited[currentFaceIndex]) {
+            if (visited.get(currentFaceIndex)) {
                 continue;
             }
-            visited[currentFaceIndex] = true;
+            visited.set(currentFaceIndex, true);
             sortedFaces.push(faces[currentFaceIndex]);
 
             // Push unvisited neighbors (faces sharing a vertex) onto the stack
@@ -51,7 +52,7 @@ export function OptimizeIndices(indices: IndicesArray) {
                 }
 
                 neighbors.forEach((neighborFaceIndex) => {
-                    if (!visited[neighborFaceIndex]) {
+                    if (!visited.get(neighborFaceIndex)) {
                         stack.push(neighborFaceIndex);
                     }
                 });
@@ -61,7 +62,7 @@ export function OptimizeIndices(indices: IndicesArray) {
 
     // Start DFS from the first face
     for (let i = 0; i < faceCount; i++) {
-        if (!visited[i]) {
+        if (!visited.get(i)) {
             deepFirstSearchStack(i);
         }
     }
