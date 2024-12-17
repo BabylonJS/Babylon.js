@@ -19,7 +19,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * Captures a screenshot of the current rendering
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
- * @param camera defines the source camera
+ * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
  * @param size This parameter can be set to a single number or to an object with the
  * following (optional) properties: precision, width, height. If a single number is passed,
  * it will be used for both width and height. If an object is passed, the screenshot size
@@ -32,6 +32,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * Check your browser for supported MIME types
  * @param forceDownload force the system to download the image even if a successCallback is provided
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  */
 export function CreateScreenshot(
     engine: AbstractEngine,
@@ -40,7 +41,8 @@ export function CreateScreenshot(
     successCallback?: (data: string) => void,
     mimeType = "image/png",
     forceDownload = false,
-    quality?: number
+    quality?: number,
+    useFill = false
 ): void {
     const { height, width } = _GetScreenshotSize(engine, camera, size);
 
@@ -48,26 +50,6 @@ export function CreateScreenshot(
         Logger.Error("Invalid 'size' parameter !");
         return;
     }
-
-    if (!screenshotCanvas) {
-        screenshotCanvas = document.createElement("canvas");
-    }
-
-    screenshotCanvas.width = width;
-    screenshotCanvas.height = height;
-
-    const renderContext = screenshotCanvas.getContext("2d");
-
-    const ratio = engine.getRenderWidth() / engine.getRenderHeight();
-    let newWidth = width;
-    let newHeight = newWidth / ratio;
-    if (newHeight > height) {
-        newHeight = height;
-        newWidth = newHeight * ratio;
-    }
-
-    const offsetX = Math.max(0, width - newWidth) / 2;
-    const offsetY = Math.max(0, height - newHeight) / 2;
 
     const scene = camera.getScene();
     if (scene.activeCamera !== camera) {
@@ -95,32 +77,57 @@ export function CreateScreenshot(
             undefined,
             quality
         );
-    } else {
-        engine.onEndFrameObservable.addOnce(() => {
-            const renderingCanvas = engine.getRenderingCanvas();
-            if (renderContext && renderingCanvas) {
-                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-            }
-
-            if (screenshotCanvas) {
-                if (forceDownload) {
-                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, undefined, mimeType, undefined, quality);
-                    if (successCallback) {
-                        successCallback("");
-                    }
-                } else {
-                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, successCallback, mimeType, undefined, quality);
-                }
-            }
-        });
+        return;
     }
+
+    engine.onEndFrameObservable.addOnce(() => {
+        if (!screenshotCanvas) {
+            screenshotCanvas = document.createElement("canvas");
+        }
+        screenshotCanvas.width = width;
+        screenshotCanvas.height = height;
+
+        const renderContext = screenshotCanvas.getContext("2d");
+        const renderingCanvas = engine.getRenderingCanvas();
+        if (!renderContext || !renderingCanvas) {
+            Logger.Error("Failed to create screenshot. Rendering context or rendering canvas is not available.");
+            return;
+        }
+
+        const srcWidth = renderingCanvas.width;
+        const srcHeight = renderingCanvas.height;
+        const destWidth = screenshotCanvas.width;
+        const destHeight = screenshotCanvas.height;
+
+        // Calculate scale factors for width and height. Use the larger of the two to fill the screenshot.
+        const scaleX = destWidth / srcWidth;
+        const scaleY = destHeight / srcHeight;
+        const scale = useFill ? Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
+        const newWidth = srcWidth * scale;
+        const newHeight = srcHeight * scale;
+
+        // Center the image in the screenshot canvas
+        const offsetX = (destWidth - newWidth) / 2;
+        const offsetY = (destHeight - newHeight) / 2;
+
+        renderContext.drawImage(renderingCanvas, 0, 0, srcWidth, srcHeight, offsetX, offsetY, newWidth, newHeight);
+
+        if (forceDownload) {
+            Tools.EncodeScreenshotCanvasData(screenshotCanvas, undefined, mimeType, undefined, quality);
+            if (successCallback) {
+                successCallback("");
+            }
+        } else {
+            Tools.EncodeScreenshotCanvasData(screenshotCanvas, successCallback, mimeType, undefined, quality);
+        }
+    });
 }
 
 /**
  * Captures a screenshot of the current rendering
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
- * @param camera defines the source camera
+ * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
  * @param size This parameter can be set to a single number or to an object with the
  * following (optional) properties: precision, width, height. If a single number is passed,
  * it will be used for both width and height. If an object is passed, the screenshot size
@@ -129,10 +136,18 @@ export function CreateScreenshot(
  * @param mimeType defines the MIME type of the screenshot image (default: image/png).
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
+export function CreateScreenshotAsync(
+    engine: AbstractEngine,
+    camera: Camera,
+    size: IScreenshotSize | number,
+    mimeType = "image/png",
+    quality?: number,
+    useFill = false
+): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshot(
             engine,
@@ -147,7 +162,8 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
             },
             mimeType,
             undefined,
-            quality
+            quality,
+            useFill
         );
     });
 }
@@ -157,15 +173,24 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
  * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
- * @param camera defines the source camera
+ * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
  * @param width defines the expected width
  * @param height defines the expected height
  * @param mimeType defines the MIME type of the screenshot image (default: image/png).
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  * @returns promise that resolves once the screenshot is taken
  */
-export function CreateScreenshotWithResizeAsync(engine: AbstractEngine, camera: Camera, width: number, height: number, mimeType = "image/png", quality?: number): Promise<void> {
+export function CreateScreenshotWithResizeAsync(
+    engine: AbstractEngine,
+    camera: Camera,
+    width: number,
+    height: number,
+    mimeType = "image/png",
+    quality?: number,
+    useFill = false
+): Promise<void> {
     return new Promise((resolve) => {
         CreateScreenshot(
             engine,
@@ -176,7 +201,8 @@ export function CreateScreenshotWithResizeAsync(engine: AbstractEngine, camera: 
             },
             mimeType,
             true,
-            quality
+            quality,
+            useFill
         );
     });
 }
@@ -471,7 +497,7 @@ export const ScreenshotTools = {
      * Captures a screenshot of the current rendering
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
-     * @param camera defines the source camera
+     * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
      * @param size This parameter can be set to a single number or to an object with the
      * following (optional) properties: precision, width, height. If a single number is passed,
      * it will be used for both width and height. If an object is passed, the screenshot size
@@ -484,6 +510,7 @@ export const ScreenshotTools = {
      * Check your browser for supported MIME types
      * @param forceDownload force the system to download the image even if a successCallback is provided
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
      */
     CreateScreenshot,
 
@@ -491,7 +518,7 @@ export const ScreenshotTools = {
      * Captures a screenshot of the current rendering
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
-     * @param camera defines the source camera
+     * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
      * @param size This parameter can be set to a single number or to an object with the
      * following (optional) properties: precision, width, height. If a single number is passed,
      * it will be used for both width and height. If an object is passed, the screenshot size
@@ -500,23 +527,25 @@ export const ScreenshotTools = {
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
     CreateScreenshotAsync,
 
     /**
-     * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+     * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+     * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
-     * @param camera defines the source camera
+     * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
      * @param width defines the expected width
      * @param height defines the expected height
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
-     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
-     * to the src parameter of an <img> to display it
+     * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+     * @returns promise that resolves once the screenshot is taken
      */
     CreateScreenshotWithResizeAsync,
 
