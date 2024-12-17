@@ -7,15 +7,19 @@ function getBitMask(bitIndex: number): number {
 }
 
 /**
- * An array that effectively stores boolean values where each value is a single bit of backing data.
+ * An fixed size array that effectively stores boolean values where each value is a single bit of backing data.
  * @remarks
  * All bits are initialized to false.
  */
 export class BitArray {
     private readonly _byteArray: Uint8Array;
 
-    public constructor(private readonly _size: number) {
-        this._byteArray = new Uint8Array(Math.ceil(this._size / 8));
+    /**
+     * Creates a new bit array with a fixed size.
+     * @param size The number of bits to store.
+     */
+    public constructor(public readonly size: number) {
+        this._byteArray = new Uint8Array(Math.ceil(this.size / 8));
     }
 
     /**
@@ -24,7 +28,7 @@ export class BitArray {
      * @returns The value at the specified index.
      */
     public get(bitIndex: number): boolean {
-        if (bitIndex >= this._size) {
+        if (bitIndex >= this.size) {
             throw new RangeError("Bit index out of range");
         }
         const byteIndex = getByteIndex(bitIndex);
@@ -38,7 +42,7 @@ export class BitArray {
      * @param value The value to set.
      */
     public set(bitIndex: number, value: boolean): void {
-        if (bitIndex >= this._size) {
+        if (bitIndex >= this.size) {
             throw new RangeError("Bit index out of range");
         }
         const byteIndex = getByteIndex(bitIndex);
