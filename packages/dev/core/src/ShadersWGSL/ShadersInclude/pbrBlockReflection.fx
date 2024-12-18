@@ -201,7 +201,7 @@
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
         , vEnvironmentIrradiance: vec3f
     #endif
-    #ifdef USESPHERICALFROMREFLECTIONMAP
+    #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
             , reflectionMatrix: mat4x4f
         #endif
@@ -289,11 +289,15 @@
         // _____________________________ Irradiance ________________________________
         var environmentIrradiance: vec3f =  vec3f(0., 0., 0.);
 
-#if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
-            #ifdef ANISOTROPIC
-                var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
+        #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
+            #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
+                #ifdef ANISOTROPIC
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
+                #else
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
+                #endif
             #else
-                var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
+                var irradianceVector: vec3f =  normalW;
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ

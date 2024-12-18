@@ -292,6 +292,9 @@ export class HDRCubeTexture extends BaseTexture {
                         cdfGenerator.iblSource = new BaseTexture(this._engine, this.getInternalTexture());
                         cdfGeneratedPromise = new Promise((resolve) => {
                             cdfGenerator.onGeneratedObservable.addOnce(() => {
+                                const oldTexture = cdfGenerator.iblSource;
+                                oldTexture?.dispose();
+                                cdfGenerator.iblSource = null;
                                 resolve();
                             });
                         });
@@ -307,14 +310,15 @@ export class HDRCubeTexture extends BaseTexture {
                     return hdrFiltering.prefilter(this).then(() => {
                         if (!this._generateHarmonics && irradianceTexture) {
                             this.irradianceTexture = irradianceTexture;
+                            const scene = this.getScene();
+                            if (scene) {
+                                scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                            }
                         }
                         if (cdfGenerator) {
                             cdfGenerator.iblSource = this;
                         }
-                        const scene = this.getScene();
-                        if (scene) {
-                            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-                        }
+
                         Promise.resolve();
                         if (previousOnLoad) {
                             previousOnLoad();

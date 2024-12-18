@@ -272,7 +272,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , fragmentInputs.vEnvironmentIrradiance
             #endif
-            #ifdef USESPHERICALFROMREFLECTIONMAP
+            #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     , uniforms.reflectionMatrix
                 #endif
