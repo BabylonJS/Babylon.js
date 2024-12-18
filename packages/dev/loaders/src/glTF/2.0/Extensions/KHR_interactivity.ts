@@ -8,6 +8,7 @@ import { convertGLTFToSerializedFlowGraph } from "./KHR_interactivity/interactiv
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { objectModelMapping } from "./objectModelMapping";
+import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 
 const NAME = "KHR_interactivity";
 
@@ -44,6 +45,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
         this._pathConverter = new GLTFPathToObjectConverter(this._loader.gltf, objectModelMapping);
+        // avoid starting animations automatically.
+        _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
     }
 
     public dispose() {

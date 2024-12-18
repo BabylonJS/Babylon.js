@@ -57,6 +57,7 @@ export function updateInteractivity() {
             context._userVariables[variableName] = {
                 className: "Mesh",
                 id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
             };
             return serializedObjects;
         },

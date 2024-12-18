@@ -11,7 +11,7 @@ import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import type { IGLTF } from "../../glTFLoaderInterfaces";
 
-function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, types: FlowGraphTypes[], index: number) {
+function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, types: FlowGraphTypes[], index: number, dataTransform?: ((value: any) => any) | null) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
         const className = types[configObject.type];
@@ -34,7 +34,7 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
             }
         })();
         return {
-            value,
+            value: dataTransform ? dataTransform(value) : value,
             className,
         };
     } else {
@@ -271,7 +271,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
             block.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                const convertedValue = convertVariableValueWithType(value as IKHRInteractivity_Variable, types, i);
+                const convertedValue = convertVariableValueWithType(value as IKHRInteractivity_Variable, types, i, valueMapping?.dataTransformer);
                 context._connectionValues[socketIn.uniqueId] = convertedValue;
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two

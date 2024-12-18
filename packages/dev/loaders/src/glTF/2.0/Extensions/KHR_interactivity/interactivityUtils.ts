@@ -863,17 +863,35 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 // TODO - fix the animation reference
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*isIndex: "animations"*/ },
+                animation: { name: "animationGroup", gltfType: "number", flowGraphType: "animation" /*isIndex: "animations"*/ },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time / 60 },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number) => time / 60 },
+                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time * 60 },
+                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number) => time * 60 },
             },
         },
         outputs: {
             flows: {
                 err: { name: "error" },
             },
+        },
+        extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            const animation = gltfBlock.values?.find((config) => config.id === "animation")?.value;
+            if (animation === undefined) {
+                throw new Error("animation not found in configuration");
+            }
+            const variableName = serializedObjects[0].dataInputs[0].uniqueId;
+            // connect the mesh to the asset input
+            // connectFlowGraphNodes("asset", "value", serializedObjects[0], serializedObjects[1], true);
+
+            // find the nodeIndex value
+            // serializedObjects[0].dataInputs = variableName;
+            context._connectionValues[variableName] = {
+                className: "AnimationGroup",
+                name: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.name,
+                uniqueId: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.uniqueId,
+            };
+            return serializedObjects;
         },
     },
     "animation/stop": {
@@ -958,7 +976,8 @@ export const gltfTypeToBabylonType: {
     float4: FlowGraphTypes.Vector4,
     float4x4: FlowGraphTypes.Matrix,
     int: FlowGraphTypes.Integer,
-    // int[] is configuration only, not used as value type
+    string: FlowGraphTypes.String,
+    "int[]": FlowGraphTypes.Any, // int[] is configuration only, not used as value type. Should be IntegerArray?
 };
 
 /*
