@@ -8,6 +8,19 @@ import { GLTFExporter } from "../glTFExporter";
 const NAME = "KHR_texture_transform";
 
 /**
+ * Computes the adjusted offset for a rotation centered about the origin.
+ * @internal
+ */
+function AdjustOffsetForRotationCenter(babylonTexture: Texture): [number, number] {
+    const { uOffset, vOffset, uRotationCenter, vRotationCenter, wAng } = babylonTexture;
+    const cosAngle = Math.cos(-wAng);
+    const sinAngle = Math.sin(-wAng);
+    const deltaU = uRotationCenter * (1 - cosAngle) - vRotationCenter * sinAngle;
+    const deltaV = vRotationCenter * (1 - cosAngle) + uRotationCenter * sinAngle;
+    return [uOffset + deltaU, vOffset + deltaV];
+}
+
+/**
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -34,10 +47,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        const canUseExtension =
-            babylonTexture &&
-            ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) ||
-                (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
+        const canUseExtension = babylonTexture && babylonTexture.uAng === 0 && babylonTexture.vAng === 0;
 
         if (canUseExtension) {
             const textureTransform: IKHRTextureTransform = {};
@@ -56,6 +66,10 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             if (babylonTexture.wAng !== 0) {
                 textureTransform.rotation = -babylonTexture.wAng;
                 transformIsRequired = true;
+
+                if (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0) {
+                    textureTransform.offset = AdjustOffsetForRotationCenter(babylonTexture);
+                }
             }
 
             if (babylonTexture.coordinatesIndex !== 0) {
@@ -89,9 +103,6 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
              */
             if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
-                resolve(null);
-            } else if (babylonTexture.wAng !== 0 && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
-                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin cannot be exported with ${NAME}`);
                 resolve(null);
             } else {
                 resolve(babylonTexture);
