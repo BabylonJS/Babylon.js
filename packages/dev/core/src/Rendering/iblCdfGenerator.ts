@@ -16,6 +16,7 @@ import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
+import type { Nullable } from "../types";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -28,12 +29,12 @@ export class IblCdfGenerator {
     private _cdfxPT: ProceduralTexture;
     private _icdfPT: ProceduralTexture;
     private _scaledLuminancePT: ProceduralTexture;
-    private _iblSource: BaseTexture;
+    private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
     /**
      * Gets the IBL source texture being used by the CDF renderer
      */
-    public get iblSource(): BaseTexture {
+    public get iblSource(): Nullable<BaseTexture> {
         return this._iblSource;
     }
 
@@ -41,12 +42,15 @@ export class IblCdfGenerator {
      * Sets the IBL source texture to be used by the CDF renderer.
      * This will trigger recreation of the CDF assets.
      */
-    public set iblSource(source: BaseTexture) {
+    public set iblSource(source: Nullable<BaseTexture>) {
         if (this._iblSource === source) {
             return;
         }
         this._disposeTextures();
         this._iblSource = source;
+        if (!source) {
+            return;
+        }
         if (source.isCube) {
             if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl();
