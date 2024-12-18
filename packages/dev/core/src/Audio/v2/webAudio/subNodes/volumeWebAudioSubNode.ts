@@ -2,11 +2,11 @@ import type { Nullable } from "../../../../types";
 import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
 import type { IWebAudioNode } from "../webAudioNode";
-import type { IWebAudioSuperNode } from "../webAudioSuperNode";
+import type { IWebAudioParentNode } from "../webAudioParentNode";
 
 /** @internal */
-export async function _CreateVolumeAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<IVolumeAudioOptions> = null): Promise<_VolumeWebAudioSubNode> {
-    return new _VolumeWebAudioSubNode(owner, options);
+export async function _CreateVolumeAudioSubNodeAsync(parent: IWebAudioParentNode, options: Nullable<IVolumeAudioOptions> = null): Promise<_VolumeWebAudioSubNode> {
+    return new _VolumeWebAudioSubNode(parent, options);
 }
 
 /** @internal */
@@ -15,14 +15,14 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
     public readonly node: GainNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioSuperNode, options: Nullable<IVolumeAudioOptions> = null) {
-        super(owner);
+    public constructor(parent: IWebAudioParentNode, options: Nullable<IVolumeAudioOptions> = null) {
+        super(parent);
 
-        this.node = new GainNode(owner.audioContext);
+        this.node = new GainNode(parent.audioContext);
 
         this.volume = options?.volume ?? 1;
 
-        owner.addSubNode(this);
+        parent.subGraph.addSubNode(this);
     }
 
     /** @internal */

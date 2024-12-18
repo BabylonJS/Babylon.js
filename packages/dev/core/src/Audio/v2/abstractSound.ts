@@ -1,14 +1,15 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { AudioNodeType } from "./abstractAudioNode";
-import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
+import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import type { AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
+import { AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
-import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import type { IVolumeAudioOptions, VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Options for creating a new sound.
@@ -39,18 +40,18 @@ export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudi
 /**
  * Abstract class representing a sound in the audio engine.
  */
-export abstract class AbstractSound extends AbstractAudioSuperNode {
+export abstract class AbstractSound extends AbstractAudioNode {
     private _state: SoundState = SoundState.Stopped;
-
-    // Owned by AbstractAudioEngine.
 
     // Non-owning.
     protected _soundInstances = new Set<_AbstractSoundInstance>();
 
     protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
+    protected abstract _subGraph: AbstractAudioSubGraph;
+
     /**
-     * Whether the sound should start playing immediately.
+     * Whether the sound should start playing automatically.
      */
     public readonly autoplay: boolean;
 
@@ -122,12 +123,23 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     }
 
     protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
-        super(name, engine, AudioNodeType.Output);
+        super(engine, AudioNodeType.Output, null, name);
 
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
         this.maxInstances = options?.maxInstances ?? Infinity;
         this.startOffset = options?.startOffset ?? 0;
+    }
+
+    /** */
+    public get volume(): number {
+        return this._subGraph.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.volume ?? 1;
+    }
+
+    public set volume(value: number) {
+        this._subGraph.callOnSubNode<VolumeAudioSubNode>(AudioSubNode.Volume, (node) => {
+            node.volume = value;
+        });
     }
 
     /**

@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
 import { StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
 import type { IWebAudioNode } from "../webAudioNode";
-import type { IWebAudioSuperNode } from "../webAudioSuperNode";
+import type { IWebAudioSuperNode } from "../webAudioParentNode";
 
 /** @internal */
 export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioSubNode> {

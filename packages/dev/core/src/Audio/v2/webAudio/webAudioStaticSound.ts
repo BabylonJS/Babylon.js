@@ -1,18 +1,17 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
+import type { IAudioParentNode } from "../audioParentNode";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
+import { WebAudioSoundSubGraph } from "./subGraphs/webAudioSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
-import type { _WebAudioSubGraph } from "./webAudioSubGraph";
-import { _CreateAudioSubGraphAsync } from "./webAudioSubGraph";
-import type { IWebAudioSuperNode } from "./webAudioSuperNode";
+import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -75,10 +74,10 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWebAudioNode {
+class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebAudioParentNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
-    protected _subNodeGraph: _WebAudioSubGraph;
+    protected _subGraph: WebAudioSoundSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -89,6 +88,8 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWe
     /** @internal */
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
+
+        this._subGraph = new WebAudioSoundSubGraph(this);
     }
 
     /** @internal */
@@ -100,8 +101,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWe
         } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
-
-        this._subNodeGraph = await _CreateAudioSubGraphAsync(this, options);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
@@ -122,32 +121,22 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWe
 
     /** @internal */
     public get webAudioInputNode() {
-        return this._subNodeGraph.webAudioInputNode;
+        return this._subGraph.webAudioInputNode;
     }
 
     /** @internal */
     public get webAudioOutputNode() {
-        return this._subNodeGraph.webAudioOutputNode;
+        return this._subGraph.webAudioOutputNode;
     }
 
     /** @internal */
-    public addSubNode(subNode: AbstractAudioSubNode): void {
-        this._addSubNode(subNode);
+    public get children(): Map<string, Set<AbstractAudioNode>> {
+        return this._children;
     }
 
     /** @internal */
-    public disconnectSubNodes(): void {
-        this._disconnectSubNodes();
-    }
-
-    /** @internal */
-    public getSubNode(subNodeClassName: string): Nullable<AbstractAudioSubNode> {
-        return this._getSubNode(subNodeClassName);
-    }
-
-    /** @internal */
-    public hasSubNode(name: string): boolean {
-        return this._hasSubNode(name);
+    public get subGraph(): WebAudioSoundSubGraph {
+        return this._subGraph;
     }
 
     /** @internal */
@@ -157,15 +146,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode, IWe
 
     protected _createSoundInstance(): WebAudioStaticSoundInstance {
         return new WebAudioStaticSoundInstance(this);
-    }
-
-    protected override _updateSubNodes(): void {
-        if (!this._subNodeGraph) {
-            return;
-        }
-
-        this._subNodeGraph.updateSubNodes();
-        this._reconnect();
     }
 
     protected override _connect(node: IWebAudioNode): void {
