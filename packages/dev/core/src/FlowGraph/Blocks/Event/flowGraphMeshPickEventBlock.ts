@@ -85,7 +85,6 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public override _executeEvent(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
-        console.log("picked mesh", pickedInfo);
         // get the pointer type
         const pointerType = this.pointerType.getValue(context);
         if (pointerType !== pickedInfo.type) {

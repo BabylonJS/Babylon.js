@@ -19,7 +19,6 @@ declare module "../../glTFFileLoader" {
 
 // interactivity
 export function updateHoverabilityInteractivity() {
-    console.log("updateInteractivity");
     addNewInteractivityFlowGraphMapping("event/onHoverIn", {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
         blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable],

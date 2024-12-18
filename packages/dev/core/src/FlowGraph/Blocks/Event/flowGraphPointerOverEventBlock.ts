@@ -3,7 +3,6 @@ import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Nullable } from "core/types";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
