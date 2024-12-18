@@ -99,9 +99,10 @@ export function CreateScreenshot(
         const destWidth = screenshotCanvas.width;
         const destHeight = screenshotCanvas.height;
 
-        // Calculate scale factors for width and height. Use the larger of the two to fill the screenshot.
+        // Calculate scale factors for width and height.
         const scaleX = destWidth / srcWidth;
         const scaleY = destHeight / srcHeight;
+        // Use the larger of the two scales to fill the screenshot dimensions, else use the smaller to fit.
         const scale = useFill ? Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
         const newWidth = srcWidth * scale;
         const newHeight = srcHeight * scale;
