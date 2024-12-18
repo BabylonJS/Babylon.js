@@ -10,9 +10,9 @@ import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = -1;
 
-    public override readonly type = FlowGraphEventType.SceneReady;
+    public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
 
-    public override _executeEvent(context: FlowGraphContext, payload: any): boolean {
+    public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
         this._execute(context);
         return true;
     }

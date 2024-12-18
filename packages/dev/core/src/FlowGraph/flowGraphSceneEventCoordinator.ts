@@ -80,11 +80,11 @@ export class FlowGraphSceneEventCoordinator {
             const previousState = this._pointerUnderMeshState[pointerId];
             if (!previousState && mesh) {
                 this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOver, payload: { pointerId, mesh } });
-            } else if (previousState && mesh === null) {
+            } else if (previousState && !mesh) {
                 this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOut, payload: { pointerId, mesh: previousState } });
-            } else if (previousState && mesh) {
-                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOut, payload: { pointerId, mesh: previousState } });
-                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOver, payload: { pointerId, mesh } });
+            } else if (previousState && mesh && previousState !== mesh) {
+                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOut, payload: { pointerId, mesh: previousState, over: mesh } });
+                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerOver, payload: { pointerId, mesh, out: previousState } });
             }
             this._pointerUnderMeshState[pointerId] = mesh;
         }, PointerEventTypes.POINTERMOVE);

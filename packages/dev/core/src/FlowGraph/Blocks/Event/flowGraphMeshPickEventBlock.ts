@@ -63,7 +63,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     /**
      * the type of the event this block reacts to
      */
-    public override readonly type = FlowGraphEventType.MeshPick;
+    public override readonly type: FlowGraphEventType = FlowGraphEventType.MeshPick;
 
     public constructor(
         /**
@@ -85,6 +85,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public override _executeEvent(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
+        console.log("picked mesh", pickedInfo);
         // get the pointer type
         const pointerType = this.pointerType.getValue(context);
         if (pointerType !== pickedInfo.type) {
@@ -99,10 +100,12 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
             this.pickedPoint.setValue(pickedInfo.pickInfo.pickedPoint!, context);
             this.pickedMesh.setValue(pickedInfo.pickInfo.pickedMesh, context);
             this._execute(context);
+            // stop the propagation if the configuration says so
+            return !this.config?.stopPropagation;
         } else {
             // TODO - does it make sense to reset the values? The event will not be triggered anyway.
         }
-        return !this.config?.stopPropagation;
+        return true;
     }
 
     /**

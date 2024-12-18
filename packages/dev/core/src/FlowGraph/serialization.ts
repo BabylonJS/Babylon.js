@@ -5,6 +5,7 @@ import type { Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 function isMeshClassName(className: string) {
     return (
@@ -28,6 +29,10 @@ function isVectorClassName(className: string) {
         className === FlowGraphTypes.Color3 ||
         className === FlowGraphTypes.Color4
     );
+}
+
+function isAnimationGroupClassName(className: string) {
+    return className === "AnimationGroup";
 }
 
 function parseVector(className: string, value: Array<number>, flipHandedness = false) {
@@ -99,9 +104,18 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = intermediateValue.id ? (scene.getMeshById(intermediateValue.id) ?? scene.getNodeById(intermediateValue.id)) : scene.getMeshByName(intermediateValue.name);
+        let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
+        if (nodes.length === 0) {
+            nodes = scene.transformNodes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
+        }
+        finalValue = intermediateValue.uniqueId ? nodes.find((m) => m.uniqueId === intermediateValue.uniqueId) : nodes[0];
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
+    } else if (isAnimationGroupClassName(className)) {
+        // do not use the scene.getAnimationGroupByName because it is possible that two AGs will have the same name
+        const ags = scene.animationGroups.filter((ag) => ag.name === intermediateValue.name);
+        // uniqueId changes on each load. this is used for the glTF loader, that uses serialization after the scene was loaded.
+        finalValue = ags.length === 1 ? ags[0] : ags.find((ag) => ag.uniqueId === intermediateValue.uniqueId);
     } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {

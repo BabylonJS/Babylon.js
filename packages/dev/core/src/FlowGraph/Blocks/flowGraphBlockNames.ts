@@ -1,3 +1,7 @@
+/**
+ * Enum of all block names.
+ * Note - if you add a new block, you must add it here, and must add it in the block factory!
+ */
 export const enum FlowGraphBlockNames {
     PlayAnimation = "FlowGraphPlayAnimationBlock",
     StopAnimation = "FlowGraphStopAnimationBlock",
@@ -8,6 +12,12 @@ export const enum FlowGraphBlockNames {
     SendCustomEvent = "FlowGraphSendCustomEventBlock",
     ReceiveCustomEvent = "FlowGraphReceiveCustomEventBlock",
     MeshPickEvent = "FlowGraphMeshPickEventBlock",
+    PointerEvent = "FlowGraphPointerEventBlock",
+    PointerDownEvent = "FlowGraphPointerDownEventBlock",
+    PointerUpEvent = "FlowGraphPointerUpEventBlock",
+    PointerMoveEvent = "FlowGraphPointerMoveEventBlock",
+    PointerOverEvent = "FlowGraphPointerOverEventBlock",
+    PointerOutEvent = "FlowGraphPointerOutEventBlock",
     E = "FlowGraphEBlock",
     PI = "FlowGraphPIBlock",
     Inf = "FlowGraphInfBlock",

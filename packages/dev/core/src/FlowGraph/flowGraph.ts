@@ -168,6 +168,10 @@ export class FlowGraph {
      * @param block the event block to be added
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
+        if (block.type === FlowGraphEventType.PointerOver || block.type === FlowGraphEventType.PointerOut) {
+            this._scene.constantlyUpdateMeshUnderPointer = true;
+        }
+
         // don't add if NoTrigger, but still start the pending tasks
         if (block.type !== FlowGraphEventType.NoTrigger) {
             this._eventBlocks[block.type].push(block);
