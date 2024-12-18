@@ -1,10 +1,8 @@
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+// eslint-disable-next-line import/no-internal-modules
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, Scene, Nullable, AbstractMesh } from "core/index";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { USDFileLoaderMetadata } from "./usdFileLoader.metadata";
 import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
