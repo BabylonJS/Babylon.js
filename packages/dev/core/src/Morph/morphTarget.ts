@@ -145,6 +145,23 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Gets the number of vertices stored in this target
+     */
+    public get vertexCount(): number {
+        return this._positions
+            ? this._positions.length / 3
+            : this._normals
+              ? this._normals.length / 3
+              : this._tangents
+                ? this._tangents.length / 3
+                : this._uvs
+                  ? this._uvs.length / 2
+                  : this._uv2s
+                    ? this._uv2s.length / 2
+                    : 0;
+    }
+
+    /**
      * Affects position data to this target
      * @param data defines the position data to use
      */
