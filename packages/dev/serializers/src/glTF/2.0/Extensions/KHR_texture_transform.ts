@@ -104,9 +104,11 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
                 resolve(null);
-            } else {
-                resolve(babylonTexture);
             }
+            if (babylonTexture.wAng !== 0 && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin will be exported with an adjusted texture offset.`);
+            }
+            resolve(babylonTexture);
         });
     }
 }
