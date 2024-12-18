@@ -143,7 +143,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (currentlyRunningAnimationGroups.indexOf(animationGroupToUse.uniqueId) !== -1) {
                 animationGroupToUse.stop();
             }
-
+            animationGroupToUse.reset();
             animationGroupToUse.start(loop, speed, from, to);
             animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
             animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
