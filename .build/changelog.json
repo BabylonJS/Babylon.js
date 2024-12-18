@@ -1,38 +1,173 @@
 {
-    "fromTag": "7.40.2",
+    "fromTag": "7.40.3",
     "changelog": {
-        "7.40.2": [
+        "7.40.4": [
             {
-                "pr": "15994",
-                "title": "Viewer: Allow environment texture and skybox to be set separately (and a couple other small changes)",
-                "description": "The main change in this PR is to allow the environment texture and the skybox to be configured separately (this has come up multiple times, including in the [forum](https://forum.babylonjs.com/t/babylon-viewer-v2/54317/37). To try to keep this simple, `Viewer.loadEnvironment` now has an options object where you can specify whether the \"environment\" should be used for lighting or skybox or both. On the html element level, the `environment` attribute behaves the same as before (sets both the env texture and the skybox), but there are also now `environment-lighting` and `environment-skybox` attributes if you want to set them separately. This makes `environment` essentially a shorthand, somewhat like `padding` relative to `padding-top`, `padding-bottom`, etc.\r\n\r\nThe other changes included in this PR are:\r\n- Adding a reset camera button (so that discovering double click/tap is not required). This change was based on feedback from @PatrickRyanMS.\r\n- If animation is playing, pause it when activating a hotspot (e.g. moving the camera to a pose associated with the hotspot). Without this, a `surface` type hotspot will almost certainly have moved by the time the camera finishes its interpolation. This change was based on feedback from @PatrickRyanMS.\r\n- Update the icons to use svg from https://iconcloud.design. This change was based on feedback from @PatrickRyanMS.\r\n- Mark various internal members as `@internal` so they don't show up in the API docs.",
+                "pr": "16012",
+                "title": "Add BitArray and use it in OptimizeIndices",
+                "description": "Booleans can be up to 4 bytes (depending on the JS engine and the scenario). A `BitArray` always uses just 1 bit per boolean, which means up to 32x less memory. Some light reading indicated that some JS engines will optimize Arrays that only contain booleans to use 1 bit per boolean, but this isn't what I saw happening when taking a few heap snapshots in Chrome (rather, I saw a ~5mb Array for a model with ~1.3M indices). Perf is pretty much identical between this `BitArray` and a normal `Array` of `boolean`s, until you have 100,000,000+ entries, in which case the `BitArray` is orders of magnitude faster. Not sure we'll ever have a use case this big, so maybe irrelevant, but good to know its now slower.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/tools/viewer-alpha/src/index.ts",
-                    "packages/tools/viewer-alpha/src/viewer.ts",
-                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts",
-                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts",
+                    "packages/dev/core/src/Misc/bitArray.ts",
+                    "packages/dev/core/src/Misc/index.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15993",
-                "title": "Fix XR's near interaction's selection mesh positioning",
-                "description": "The temp vectors were being used by other functions, which changed the tmpVector's value.\r\nAlso added a new flag to hide the selection mesh even if it should be visible.",
+                "pr": "15988",
+                "title": "use _retryWithInterval where possible",
+                "description": "This is an example of how _retryWithInterval can be used instead of setTimout of the calling function.\n\nThere are a few other places in the framework that could benefit from that, but looking for feedback whether or not it makes sense to do the work.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/timingTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16009",
+                "title": "Add a new optimizeIndices features to improve cache hit on large models",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16006",
+                "title": "Switch from uniform to defines",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
                 ],
                 "tags": [
-                    "bug"
+                    "skip changelog"
                 ]
+            },
+            {
+                "pr": "16003",
+                "title": "Allow CustomRequestModifiers to modify URL",
+                "description": "This can be useful, for example, when the assets are hosted on private S3 buckets and the user signs the URLs that Babylon requests on the fly.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15963",
+                "title": "Adding normalization to realtime irradiance filtering",
+                "description": "Big improvement to importance sampling irradiance using CDF. Previously, we weren't applying the PDF properly to each sample.\r\nNow, the results of real-time irradiance are very close to raytraced ground truth.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradiance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradianceCDF.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16002",
+                "title": "Integrate direct glow support in NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-automatic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-manual.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16004",
+                "title": "Support loading color grading texture from blob url",
+                "description": "The old check expects the URL to end with `.3dl`, which won't work for blob URLs.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts"
+                ],
+                "tags": []
             }
         ],
         "7.40.3": [
@@ -191,6 +326,40 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "7.40.2": [
+            {
+                "pr": "15994",
+                "title": "Viewer: Allow environment texture and skybox to be set separately (and a couple other small changes)",
+                "description": "The main change in this PR is to allow the environment texture and the skybox to be configured separately (this has come up multiple times, including in the [forum](https://forum.babylonjs.com/t/babylon-viewer-v2/54317/37). To try to keep this simple, `Viewer.loadEnvironment` now has an options object where you can specify whether the \"environment\" should be used for lighting or skybox or both. On the html element level, the `environment` attribute behaves the same as before (sets both the env texture and the skybox), but there are also now `environment-lighting` and `environment-skybox` attributes if you want to set them separately. This makes `environment` essentially a shorthand, somewhat like `padding` relative to `padding-top`, `padding-bottom`, etc.\r\n\r\nThe other changes included in this PR are:\r\n- Adding a reset camera button (so that discovering double click/tap is not required). This change was based on feedback from @PatrickRyanMS.\r\n- If animation is playing, pause it when activating a hotspot (e.g. moving the camera to a pose associated with the hotspot). Without this, a `surface` type hotspot will almost certainly have moved by the time the camera finishes its interpolation. This change was based on feedback from @PatrickRyanMS.\r\n- Update the icons to use svg from https://iconcloud.design. This change was based on feedback from @PatrickRyanMS.\r\n- Mark various internal members as `@internal` so they don't show up in the API docs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15993",
+                "title": "Fix XR's near interaction's selection mesh positioning",
+                "description": "The temp vectors were being used by other functions, which changed the tmpVector's value.\r\nAlso added a new flag to hide the selection mesh even if it should be visible.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],

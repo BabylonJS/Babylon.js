@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-render-graph-editor",
-    "version": "7.29.3",
+    "version": "7.29.4",
     "main": "babylon.nodeRenderGraphEditor.js",
     "types": "babylon.nodeRenderGraphEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^7.40.3"
+        "babylonjs": "^7.40.4"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
