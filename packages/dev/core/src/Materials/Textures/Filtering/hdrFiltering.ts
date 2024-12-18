@@ -77,6 +77,7 @@ export class HDRFiltering {
             generateDepthBuffer: false,
             generateStencilBuffer: false,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            label: "HDR_Radiance_Filtering_Target",
         });
         this._engine.updateTextureWrappingMode(rtWrapper.texture!, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE);
 

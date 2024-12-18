@@ -15,6 +15,7 @@ import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { HDRIrradianceFiltering } from "../../Materials/Textures/Filtering/hdrIrradianceFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Materials/Textures/baseTexture.polynomial";
+import { IblCdfGenerator } from "core/Rendering";
 
 /**
  * This represents a texture coming from an HDR input.
@@ -28,6 +29,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _generateHarmonics = true;
     private _noMipmap: boolean;
     private _prefilterOnLoad: boolean;
+    private _prefilterIrradianceOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
     private _supersample: boolean;
@@ -114,6 +116,7 @@ export class HDRCubeTexture extends BaseTexture {
      * @param onLoad on success callback function
      * @param onError on error callback function
      * @param supersample Defines if texture must be supersampled (default: false)
+     * @param prefilterIrradianceOnLoad Prefilters HDR texture to allow use of this texture for irradiance lighting.
      */
     constructor(
         url: string,
@@ -125,7 +128,8 @@ export class HDRCubeTexture extends BaseTexture {
         prefilterOnLoad = false,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        supersample = false
+        supersample = false,
+        prefilterIrradianceOnLoad = false
     ) {
         super(sceneOrEngine);
 
@@ -140,6 +144,7 @@ export class HDRCubeTexture extends BaseTexture {
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
         this._prefilterOnLoad = prefilterOnLoad;
+        this._prefilterIrradianceOnLoad = prefilterIrradianceOnLoad;
         this._onLoad = () => {
             this.onLoadObservable.notifyObservers(this);
             if (onLoad) {
@@ -275,50 +280,30 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        if (engine._features.allowTexturePrefiltering && this._prefilterOnLoad) {
+        if (engine._features.allowTexturePrefiltering && (this._prefilterOnLoad || this._prefilterIrradianceOnLoad)) {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
                 let irradiancePromise: Promise<Nullable<BaseTexture>>;
-                let cdfGeneratedPromise: Promise<void>;
-                const cdfGenerator = this.getScene()?.iblCdfGenerator;
-                if (!this._generateHarmonics) {
-                    if (cdfGenerator) {
-                        // If we're using CDF maps, the importanceSamplingRenderer needs this texture to be
-                        // ready before it can generate the CDF maps and that won't happen until prefiltering
-                        // is done. So, lets make a new texture with the non-prefiltered data and set it as the
-                        // iblSource for the importanceSamplingRenderer. Then, we'll wait for that to be ready
-                        // before we continue with the prefiltering.
-                        cdfGenerator.iblSource = new BaseTexture(this._engine, this.getInternalTexture());
-                        cdfGeneratedPromise = new Promise((resolve) => {
-                            cdfGenerator.onGeneratedObservable.addOnce(() => {
-                                const oldTexture = cdfGenerator.iblSource;
-                                oldTexture?.dispose();
-                                cdfGenerator.iblSource = null;
-                                resolve();
-                            });
-                        });
-                    } else {
-                        cdfGeneratedPromise = Promise.resolve();
-                    }
-                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine);
-                    irradiancePromise = cdfGeneratedPromise.then(() => hdrIrradianceFiltering.prefilter(this));
+                if (this._prefilterIrradianceOnLoad) {
+                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: true });
+                    irradiancePromise = hdrIrradianceFiltering.prefilter(this);
                 } else {
                     irradiancePromise = Promise.resolve(null);
                 }
                 irradiancePromise.then((irradianceTexture) => {
-                    return hdrFiltering.prefilter(this).then(() => {
-                        if (!this._generateHarmonics && irradianceTexture) {
+                    let radiancePromise = Promise.resolve();
+                    if (this._prefilterOnLoad) {
+                        radiancePromise = hdrFiltering.prefilter(this);
+                    }
+                    return radiancePromise.then(() => {
+                        if (this._prefilterIrradianceOnLoad && irradianceTexture) {
                             this.irradianceTexture = irradianceTexture;
                             const scene = this.getScene();
                             if (scene) {
                                 scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                             }
                         }
-                        if (cdfGenerator) {
-                            cdfGenerator.iblSource = this;
-                        }
-
                         Promise.resolve();
                         if (previousOnLoad) {
                             previousOnLoad();
