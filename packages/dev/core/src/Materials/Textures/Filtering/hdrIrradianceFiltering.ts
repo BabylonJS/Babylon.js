@@ -211,7 +211,7 @@ export class HDRIrradianceFiltering {
             this._cdfGenerator = new IblCdfGenerator(texture.getScene()!);
             const internalTexture = texture.getInternalTexture();
             if (internalTexture) {
-                this._cdfGenerator.iblSource = new BaseTexture(this._engine, internalTexture);
+                this._cdfGenerator.iblSource = texture;
                 internalTexture.label = "HDR_IBL_Source";
                 cdfGeneratedPromise = new Promise((resolve) => {
                     this._cdfGenerator.onGeneratedObservable.addOnce(() => {
