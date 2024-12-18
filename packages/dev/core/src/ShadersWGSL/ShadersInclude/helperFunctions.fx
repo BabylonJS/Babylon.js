@@ -158,7 +158,7 @@ fn pow5(value: f32) -> f32 {
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 fn getLuminance(color: vec3f) -> f32
 {
-    return saturateVec3(dot(color, LuminanceEncodeApprox));
+    return saturate(dot(color, LuminanceEncodeApprox));
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
@@ -212,13 +212,13 @@ fn parallaxCorrectNormal(vertexPos: vec3f, origVec: vec3f, cubeSize: vec3f, cube
 }
 
 fn equirectangularToCubemapDirection(uv : vec2f)->vec3f {
-  var longitude : f32 = uv.x * TWO_PI - PI;
-  var latitude : f32 = HALF_PI - uv.y * PI;
-  var direction : vec3f;
-  direction.x = cos(latitude) * sin(longitude);
-  direction.y = sin(latitude);
-  direction.z = cos(latitude) * cos(longitude);
-  return direction;
+    var longitude : f32 = uv.x * TWO_PI - PI;
+    var latitude : f32 = HALF_PI - uv.y * PI;
+    var direction : vec3f;
+    direction.x = cos(latitude) * sin(longitude);
+    direction.y = sin(latitude);
+    direction.z = cos(latitude) * cos(longitude);
+    return direction;
 }
 
 // Clamps the input value to 0.
