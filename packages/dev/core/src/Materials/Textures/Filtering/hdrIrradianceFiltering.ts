@@ -10,6 +10,7 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { IblCdfGenerator } from "core/Rendering";
 
 /**
  * Options for texture filtering
@@ -24,6 +25,11 @@ interface IHDRIrradianceFilteringOptions {
      * Quality of the filter. Should be `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` for prefiltering
      */
     quality?: number;
+
+    /**
+     * Use the Cumulative Distribution Function (CDF) for filtering
+     */
+    useCdf?: boolean;
 }
 
 /**
@@ -33,6 +39,7 @@ export class HDRIrradianceFiltering {
     private _engine: AbstractEngine;
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
+    private _cdfGenerator: IblCdfGenerator;
 
     /**
      * Quality switch for prefiltering. Should be set to `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` unless
@@ -46,6 +53,11 @@ export class HDRIrradianceFiltering {
     public hdrScale: number = 1;
 
     /**
+     * Use the Cumulative Distribution Function (CDF) for filtering
+     */
+    public useCdf: boolean = false;
+
+    /**
      * Instantiates HDR filter for irradiance map
      *
      * @param engine Thin engine
@@ -56,6 +68,7 @@ export class HDRIrradianceFiltering {
         this._engine = engine;
         this.hdrScale = options.hdrScale || this.hdrScale;
         this.quality = options.quality || this.quality;
+        this.useCdf = options.useCdf || this.useCdf;
     }
 
     private _createRenderTarget(size: number): RenderTargetWrapper {
@@ -73,11 +86,10 @@ export class HDRIrradianceFiltering {
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            label: "HDR_Irradiance_Filtering_Target",
         });
         this._engine.updateTextureWrappingMode(rtWrapper.texture!, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE);
-
-        this._engine.updateTextureSamplingMode(Constants.TEXTURE_BILINEAR_SAMPLINGMODE, rtWrapper.texture!, false);
 
         return rtWrapper;
     }
@@ -89,7 +101,7 @@ export class HDRIrradianceFiltering {
         const effect = this._effectWrapper.effect;
         // Choose a power of 2 size for the irradiance map.
         // It can be much smaller than the original texture.
-        const irradianceSize = Math.max(32, 1 << Math.floor(Math.log2(width >> 3)));
+        const irradianceSize = Math.max(32, 1 << ILog2(width >> 3));
         const outputTexture = this._createRenderTarget(irradianceSize);
         this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
@@ -108,9 +120,8 @@ export class HDRIrradianceFiltering {
         effect.setFloat("hdrScale", this.hdrScale);
         effect.setFloat2("vFilteringInfo", texture.getSize().width, mipmapsCount);
         effect.setTexture("inputTexture", texture);
-        const cdfGenerator = texture.getScene()?.iblCdfGenerator;
-        if (cdfGenerator) {
-            effect.setTexture("icdfTexture", cdfGenerator.getIcdfTexture());
+        if (this._cdfGenerator) {
+            effect.setTexture("icdfTexture", this._cdfGenerator.getIcdfTexture());
         }
 
         for (let face = 0; face < 6; face++) {
@@ -118,7 +129,7 @@ export class HDRIrradianceFiltering {
             effect.setVector3("right", directions[face][1]);
             effect.setVector3("front", directions[face][2]);
 
-            this._engine.bindFramebuffer(outputTexture, face, outputTexture.width, outputTexture.height, true, 0);
+            this._engine.bindFramebuffer(outputTexture, face, undefined, undefined, true);
             this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
             this._effectRenderer.draw();
@@ -127,7 +138,8 @@ export class HDRIrradianceFiltering {
         // Cleanup
         this._effectRenderer.restoreStates();
         this._engine.restoreDefaultFramebuffer();
-
+        effect.setTexture("inputTexture", null);
+        effect.setTexture("icdfTexture", null);
         const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture!);
         irradianceTexture.displayName = texture.name + "_irradiance";
         irradianceTexture.gammaSpace = false;
@@ -144,7 +156,7 @@ export class HDRIrradianceFiltering {
 
         const isWebGPU = this._engine.isWebGPU;
         const samplers = ["inputTexture"];
-        if (texture.getScene()?.iblCdfGenerator) {
+        if (this._cdfGenerator) {
             samplers.push("icdfTexture");
             defines.push("#define IBL_CDF_FILTERING");
         }
@@ -194,18 +206,38 @@ export class HDRIrradianceFiltering {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
             return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }
+        let cdfGeneratedPromise = Promise.resolve();
+        if (this.useCdf) {
+            this._cdfGenerator = new IblCdfGenerator(texture.getScene()!);
+            const internalTexture = texture.getInternalTexture();
+            if (internalTexture) {
+                this._cdfGenerator.iblSource = new BaseTexture(this._engine, internalTexture);
+                internalTexture.label = "HDR_IBL_Source";
+                cdfGeneratedPromise = new Promise((resolve) => {
+                    this._cdfGenerator.onGeneratedObservable.addOnce(() => {
+                        resolve();
+                    });
+                });
+            }
+        }
 
         return new Promise((resolve) => {
-            this._effectRenderer = new EffectRenderer(this._engine);
-            this._effectWrapper = this._createEffect(texture);
-            this._effectWrapper.effect.executeWhenCompiled(() => {
-                const irradianceTexture = this._prefilterInternal(texture);
-                this._effectRenderer.dispose();
-                this._effectWrapper.dispose();
-                resolve(irradianceTexture);
-                if (onFinished) {
-                    onFinished();
-                }
+            return cdfGeneratedPromise.then(() => {
+                this._effectRenderer = new EffectRenderer(this._engine);
+                this._effectWrapper = this._createEffect(texture);
+                this._effectWrapper.effect.executeWhenCompiled(() => {
+                    const irradianceTexture = this._prefilterInternal(texture);
+                    this._effectRenderer.dispose();
+                    this._effectWrapper.dispose();
+                    if (this._cdfGenerator) {
+                        // this._cdfGenerator.iblSource!._swapAndDie(texture._texture!);
+                    }
+                    this._cdfGenerator?.dispose();
+                    resolve(irradianceTexture);
+                    if (onFinished) {
+                        onFinished();
+                    }
+                });
             });
         });
     }
