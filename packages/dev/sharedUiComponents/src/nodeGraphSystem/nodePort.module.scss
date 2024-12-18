@@ -1,0 +1,40 @@
+.selected {
+    filter: brightness(2);
+}
+
+.pip {
+    background: green;
+    width: 6px;
+    height: 6px;
+    grid-row: 1;
+    grid-column: 1;
+    align-self: center;
+    justify-self: center;
+    border-radius: 7px;
+    border: 2px solid black;
+
+    &.hidden {
+        display: none;
+    }
+}
+
+img {
+    grid-row: 1;
+    grid-column: 1;
+}
+
+img.selected {
+    box-shadow: 0 0 0 2px;
+    border-radius: 50%;
+}
+
+.numberContainer {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0px !important;
+    padding-top: 0px !important;
+
+    div {
+        margin-top: 2px;
+    }
+}

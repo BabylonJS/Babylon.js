@@ -57,6 +57,11 @@ export interface IPipelineGenerationOptions {
      * extend the pipeline generation options
      */
     extendedCreatePipelineOptions?: Partial<ICreateAndPreparePipelineContextOptions>;
+
+    /**
+     * If true, generating a new pipeline will return when the pipeline is ready to be used
+     */
+    waitForIsReady?: boolean;
 }
 
 /**

@@ -162,6 +162,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (this.inXRSession) {
             this.exitXRAsync();
         }
+        this.onXRReady.clear();
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();

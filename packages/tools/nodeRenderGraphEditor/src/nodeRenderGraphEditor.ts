@@ -3,13 +3,13 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
-import { Popup } from "./sharedComponents/popup";
 import { SerializationTools } from "./serializationTools";
 import type { Observable } from "core/Misc/observable";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Scene } from "core/scene";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 
 /**
  * Interface used to specify creation options for the node editor
@@ -27,6 +27,7 @@ export interface INodeEditorOptions {
  */
 export class NodeRenderGraphEditor {
     private static _CurrentState: GlobalState;
+    private static _PopupWindow: Window | null;
 
     /**
      * Show the node editor
@@ -39,16 +40,19 @@ export class NodeRenderGraphEditor {
         RegisterTypeLedger();
 
         if (this._CurrentState) {
-            const popupWindow = (Popup as any)["node-render-graph-editor"];
-            if (popupWindow) {
-                popupWindow.close();
+            if (this._PopupWindow) {
+                this._PopupWindow.close();
             }
         }
 
         let hostElement = options.hostElement;
 
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS NODE RENDER GRAPH EDITOR", "node-render-graph-editor", 1000, 800)!;
+            hostElement = CreatePopup("BABYLON.JS NODE RENDER GRAPH EDITOR", {
+                onWindowCreateCallback: (w) => (this._PopupWindow = w),
+                width: 1000,
+                height: 800,
+            })!;
         }
 
         const globalState = new GlobalState(options.nodeRenderGraph.getScene());
@@ -81,17 +85,15 @@ export class NodeRenderGraphEditor {
         });
 
         // Close the popup window when the page is refreshed or scene is disposed
-        const popupWindow = (Popup as any)["node-render-graph-editor"];
-        if (globalState.nodeRenderGraph && options.hostScene && popupWindow) {
+        if (globalState.nodeRenderGraph && options.hostScene && this._PopupWindow) {
             options.hostScene.onDisposeObservable.addOnce(() => {
-                if (popupWindow) {
-                    popupWindow.close();
+                if (this._PopupWindow) {
+                    this._PopupWindow.close();
                 }
             });
             window.onbeforeunload = () => {
-                const popupWindow = (Popup as any)["node-render-graph-editor"];
-                if (popupWindow) {
-                    popupWindow.close();
+                if (this._PopupWindow) {
+                    this._PopupWindow.close();
                 }
             };
         }

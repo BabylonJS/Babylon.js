@@ -93,7 +93,7 @@ export class BlurPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         defines = "",
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA

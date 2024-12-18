@@ -12,12 +12,13 @@ import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
-import localStyles from "./graphNode.modules.scss";
-import commonStyles from "./common.modules.scss";
+import * as localStyles from "./graphNode.module.scss";
+import * as commonStyles from "./common.module.scss";
 import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
+import { BuildFloatUI } from "./tools";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -560,7 +561,7 @@ export class GraphNode {
         });
     }
 
-    private _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
+    public _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
         for (const refresh of this._visualPropertiesRefresh) {
             refresh();
         }
@@ -702,6 +703,7 @@ export class GraphNode {
         this._visual.appendChild(this._executionTime);
 
         // Options
+        let portUICount = 0;
         let idGenerator = 0;
         const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
         if (propStore) {
@@ -748,76 +750,21 @@ export class GraphNode {
                     }
                     case PropertyTypeForEdition.Int:
                     case PropertyTypeForEdition.Float: {
-                        const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
-                        if (cantDisplaySlider) {
-                            container.classList.add(localStyles.floatContainer);
-                            const numberInput = root.ownerDocument!.createElement("input");
-                            numberInput.type = "number";
-                            numberInput.id = `number-${idGenerator++}`;
-                            this._visualPropertiesRefresh.push(() => {
-                                numberInput.value = source[propertyName];
-                            });
-                            numberInput.onchange = () => {
-                                source[propertyName] = parseFloat(numberInput.value);
+                        this._optionsContainer.appendChild(container);
+                        BuildFloatUI(
+                            container,
+                            root.ownerDocument!,
+                            displayName,
+                            type === PropertyTypeForEdition.Int,
+                            source,
+                            propertyName,
+                            () => {
                                 this._forceRebuild(source, propertyName, options?.notifiers);
-                            };
-                            container.appendChild(numberInput);
-                            const label = root.ownerDocument!.createElement("div");
-                            label.innerText = displayName;
-                            container.appendChild(label);
-
-                            let shouldCapture = false;
-                            numberInput.onpointerdown = (evt) => {
-                                shouldCapture = true;
-                                evt.preventDefault();
-                            };
-                            numberInput.onpointerup = (evt) => {
-                                if (numberInput.hasPointerCapture(evt.pointerId)) {
-                                    numberInput.releasePointerCapture(evt.pointerId);
-                                    shouldCapture = false;
-                                    evt.preventDefault();
-                                } else {
-                                    numberInput.focus();
-                                    numberInput.select();
-                                }
-                            };
-                            numberInput.onpointermove = (evt) => {
-                                if (shouldCapture) {
-                                    numberInput.setPointerCapture(evt.pointerId);
-                                }
-
-                                if (numberInput.hasPointerCapture(evt.pointerId)) {
-                                    numberInput.value = (parseFloat(numberInput.value) + evt.movementX * 0.01).toFixed(2);
-                                    source[propertyName] = parseFloat(numberInput.value);
-                                    this._forceRebuild(source, propertyName, options?.notifiers);
-                                    evt.preventDefault();
-                                }
-                            };
-                        } else {
-                            container.classList.add(localStyles.sliderContainer);
-                            const label = root.ownerDocument!.createElement("label");
-                            container.appendChild(label);
-                            const value = root.ownerDocument!.createElement("div");
-                            container.appendChild(value);
-                            const slider = root.ownerDocument!.createElement("input");
-                            slider.type = "range";
-                            slider.id = `slider-${idGenerator++}`;
-                            slider.step = type === PropertyTypeForEdition.Int ? "1" : (Math.abs((options.max as number) - (options.min as number)) / 100.0).toString();
-                            slider.min = (options.min as number).toString();
-                            slider.max = (options.max as number).toString();
-                            container.appendChild(slider);
-                            label.innerText = displayName;
-                            label.htmlFor = slider.id;
-                            this._visualPropertiesRefresh.push(() => {
-                                slider.value = source[propertyName];
-                                value.innerText = source[propertyName];
-                            });
-                            slider.oninput = () => {
-                                source[propertyName] = parseFloat(slider.value);
-                                value.innerText = source[propertyName];
-                                this._forceRebuild(source, propertyName, options?.notifiers);
-                            };
-                        }
+                            },
+                            options.min,
+                            options.max,
+                            this._visualPropertiesRefresh
+                        );
                         break;
                     }
                     case PropertyTypeForEdition.List: {
@@ -850,14 +797,14 @@ export class GraphNode {
 
                         select.onclick = () => {
                             selectList.classList.toggle(commonStyles.hidden);
-                            select.classList.toggle(localStyles.active);
+                            select.classList.toggle(localStyles.activeNode);
                             this._visual.classList.toggle(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = !this._stateManager.modalIsDisplayed;
                         };
 
                         select.onpointerleave = () => {
                             selectList.classList.add(commonStyles.hidden);
-                            select.classList.remove(localStyles.active);
+                            select.classList.remove(localStyles.activeNode);
                             this._visual.classList.remove(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = false;
                         };
@@ -866,17 +813,20 @@ export class GraphNode {
             }
         }
 
-        if (this._visualPropertiesRefresh.length === 0) {
-            this._inputsContainer.classList.add(commonStyles.inputsContainerUp);
-        }
-
         // Connections
         for (const input of this.content.inputs) {
+            if (input.directValueDefinition) {
+                portUICount++;
+            }
             this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
         }
 
         for (const output of this.content.outputs) {
             this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
+        }
+
+        if (this._visualPropertiesRefresh.length === 0 && portUICount === 0) {
+            this._inputsContainer.classList.add(commonStyles.inputsContainerUp);
         }
 
         this.refresh();

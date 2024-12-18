@@ -21,7 +21,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
      */
     public readonly outputObjectList: FrameGraphObjectList;
 
-    private _scene: Scene;
+    private readonly _scene: Scene;
 
     /**
      * Creates a new cull objects task.

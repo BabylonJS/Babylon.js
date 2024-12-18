@@ -1,4 +1,4 @@
-import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
+import { DracoDecoder } from "core/Meshes/Compression/dracoDecoder";
 import type { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Geometry } from "core/Meshes/geometry";
@@ -8,7 +8,7 @@ import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader, ArrayItem, LoadBoundingInfoFromPositionAccessor } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_draco_mesh_compression";
@@ -39,9 +39,9 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     /**
-     * The draco compression used to decode vertex data or DracoCompression.Default if not defined
+     * The draco decoder used to decode vertex data or DracoDecoder.Default if not defined
      */
-    public dracoCompression?: DracoCompression;
+    public dracoDecoder?: DracoDecoder;
 
     /**
      * Defines whether this extension is enabled.
@@ -60,12 +60,12 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
+        this.enabled = DracoDecoder.DefaultAvailable && this._loader.isExtensionUsed(NAME);
     }
 
     /** @internal */
     public dispose(): void {
-        delete this.dracoCompression;
+        delete this.dracoDecoder;
         (this._loader as any) = null;
     }
 
@@ -119,10 +119,15 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             const bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                    const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression._decodeMeshToGeometryForGltfAsync(babylonMesh.name, this._loader.babylonScene, data, attributes, normalized).catch((error) => {
-                        throw new Error(`${context}: ${error.message}`);
-                    });
+                    const dracoDecoder = this.dracoDecoder || DracoDecoder.Default;
+                    const positionAccessor = ArrayItem.TryGet(this._loader.gltf.accessors, primitive.attributes["POSITION"]);
+                    const babylonBoundingInfo =
+                        !this._loader.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton && positionAccessor ? LoadBoundingInfoFromPositionAccessor(positionAccessor) : null;
+                    return dracoDecoder
+                        ._decodeMeshToGeometryForGltfAsync(babylonMesh.name, this._loader.babylonScene, data, attributes, normalized, babylonBoundingInfo)
+                        .catch((error) => {
+                            throw new Error(`${context}: ${error.message}`);
+                        });
                 });
             }
 

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import style from "./FlexibleDropZone.modules.scss";
+import * as style from "./FlexibleDropZone.module.scss";
 import { FlexibleResizeBar } from "./FlexibleResizeBar";
 import { ResizeDirections } from "./types";
 

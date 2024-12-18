@@ -509,6 +509,7 @@ export class WebXRHand implements IDisposable {
         }
         this._jointTransforms.forEach((transform) => transform.dispose());
         this._jointTransforms.length = 0;
+        this.onHandMeshSetObservable.clear();
     }
 }
 

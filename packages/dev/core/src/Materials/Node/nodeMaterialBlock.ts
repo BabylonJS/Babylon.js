@@ -351,7 +351,12 @@ export class NodeMaterialBlock {
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (const input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!forOutput || forOutput.type === input.type || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                if (
+                    !forOutput ||
+                    forOutput.type === input.type ||
+                    input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect ||
+                    input.acceptedConnectionPointTypes.indexOf(forOutput.type) !== -1
+                ) {
                     return input;
                 }
             }
@@ -573,6 +578,7 @@ export class NodeMaterialBlock {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
         } else {
             this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+            this._inputs[inputIndex0]._isMainLinkSource = true;
         }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }

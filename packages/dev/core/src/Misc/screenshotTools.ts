@@ -12,6 +12,7 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { _retryWithInterval } from "./timingTools";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -153,7 +154,8 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
 }
 
 /**
- * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+ * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+ * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
@@ -162,8 +164,7 @@ export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, si
  * @param mimeType defines the MIME type of the screenshot image (default: image/png).
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
- * @returns screenshot as a string of base64-encoded characters. This string can be assigned
- * to the src parameter of an <img> to display it
+ * @returns promise that resolves once the screenshot is taken
  */
 export function CreateScreenshotWithResizeAsync(engine: AbstractEngine, camera: Camera, width: number, height: number, mimeType = "image/png", quality?: number): Promise<void> {
     return new Promise((resolve) => {
@@ -240,7 +241,7 @@ export function CreateScreenshotUsingRenderTarget(
         scene,
         false,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT,
+        Constants.TEXTURETYPE_UNSIGNED_BYTE,
         false,
         Texture.BILINEAR_SAMPLINGMODE,
         undefined,
@@ -258,33 +259,34 @@ export function CreateScreenshotUsingRenderTarget(
     customizeTexture?.(texture);
 
     const renderWhenReady = () => {
-        if (texture.isReadyForRendering() && camera.isReady(true)) {
-            engine.onEndFrameObservable.addOnce(() => {
-                if (finalWidth === width && finalHeight === height) {
-                    texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                        DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                        texture.dispose();
-                    });
-                } else {
-                    const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                    importPromise.then(() =>
-                        ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                            engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                                texture.dispose();
-                            });
-                        })
-                    );
-                }
-            });
-            scene.incrementRenderId();
-            scene.resetCachedMaterial();
-            texture.render(true);
-            engine.setSize(originalSize.width, originalSize.height);
-            camera.getProjectionMatrix(true); // Force cache refresh;
-        } else {
-            setTimeout(renderWhenReady, 16);
-        }
+        _retryWithInterval(
+            () => texture.isReadyForRendering() && camera.isReady(true),
+            () => {
+                engine.onEndFrameObservable.addOnce(() => {
+                    if (finalWidth === width && finalHeight === height) {
+                        texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                            DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                            texture.dispose();
+                        });
+                    } else {
+                        const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
+                        importPromise.then(() =>
+                            ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                    DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                                    texture.dispose();
+                                });
+                            })
+                        );
+                    }
+                });
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+                texture.render(true);
+                engine.setSize(originalSize.width, originalSize.height);
+                camera.getProjectionMatrix(true); // Force cache refresh;
+            }
+        );
     };
 
     const renderToTexture = () => {
@@ -380,10 +382,10 @@ export function CreateScreenshotUsingRenderTargetAsync(
 
 /**
  * Gets height and width for screenshot size
- * @param engine
- * @param camera
- * @param size
- * @private
+ * @param engine The engine to use for rendering
+ * @param camera The camera to use for rendering
+ * @param size This size of the screenshot. can be a number or an object implementing IScreenshotSize
+ * @returns height and width for screenshot size
  */
 function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;

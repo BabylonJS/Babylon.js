@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractMesh, Nullable, PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
-import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "core/Engines/constants";
 
@@ -18,6 +19,25 @@ export type HotSpotQuery = {
 };
 
 /**
+ * Create a HotSpotQuery from a picking info
+ * @remarks If there is no pickedMesh or the pickedMesh has no indices, null will be returned
+ * @param pickingInfo picking info to use
+ * @returns HotSpotQuery or null if it was not possible to create one
+ */
+export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): Nullable<HotSpotQuery> {
+    const indices = pickingInfo.pickedMesh?.getIndices();
+    if (indices) {
+        const base = pickingInfo.faceId * 3;
+        return {
+            pointIndex: [indices[base], indices[base + 1], indices[base + 2]],
+            barycentric: [pickingInfo.bu, pickingInfo.bv, 1 - pickingInfo.bu - pickingInfo.bv],
+        };
+    }
+
+    return null;
+}
+
+/**
  * Return a transformed local position from a mesh and vertex index
  * @param mesh mesh used to get vertex array from
  * @param index vertex index
@@ -31,6 +51,10 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
     }
     const base = index * 3;
     const values = [data[base + 0], data[base + 1], data[base + 2]];
+    if (values.some((value) => isNaN(value ?? Number.NaN))) {
+        return false;
+    }
+
     if (mesh.morphTargetManager) {
         for (let component = 0; component < 3; component++) {
             let value = values[component];
@@ -96,12 +120,15 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
  * @param hotSpotQuery point indices and barycentric
  * @param resPosition output world position
  * @param resNormal optional output world normal
+ * @returns false if it was not possible to compute the hotspot position
  */
-export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, resPosition: Vector3, resNormal?: Vector3): void {
+export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, resPosition: Vector3, resNormal?: Vector3): boolean {
     resPosition.set(0, 0, 0);
     for (let i = 0; i < 3; i++) {
         const index = hotSpotQuery.pointIndex[i];
-        GetTransformedPosition(mesh, index, TmpVectors.Vector3[i]);
+        if (!GetTransformedPosition(mesh, index, TmpVectors.Vector3[i])) {
+            return false;
+        }
         TmpVectors.Vector3[i].scaleAndAddToRef(hotSpotQuery.barycentric[i], resPosition);
     }
 
@@ -121,13 +148,15 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         segmentB.subtractInPlace(pointA);
         segmentA.normalize();
         segmentB.normalize();
-        Vector3.CrossToRef(segmentB, segmentA, resNormal);
+        Vector3.CrossToRef(segmentA, segmentB, resNormal);
 
-        // flip normal
-        let invertWinding = mesh.material && mesh.material.sideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
-        invertWinding ||= mesh.getWorldMatrix().determinant() < 0;
-        invertWinding ||= mesh.getScene().useRightHandedSystem;
-        if (invertWinding) {
+        // flip normal when face culling is changed
+        const flipNormal =
+            mesh.material &&
+            mesh.material.sideOrientation ===
+                (mesh.getScene().useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation);
+
+        if (flipNormal) {
             resNormal.scaleInPlace(-1);
         }
 
@@ -135,4 +164,6 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
         resNormal.normalize();
     }
+
+    return true;
 }

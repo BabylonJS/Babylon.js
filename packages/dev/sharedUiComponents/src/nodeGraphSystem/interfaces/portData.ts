@@ -8,6 +8,37 @@ export enum PortDataDirection {
     Output,
 }
 
+export enum PortDirectValueTypes {
+    Float,
+    Int,
+}
+
+export interface IPortDirectValueDefinition {
+    /**
+     * Gets the source object
+     */
+    source: any;
+    /**
+     * Gets the property name used to store the value
+     */
+    propertyName: string;
+
+    /**
+     * Gets or sets the min value accepted for this point if nothing is connected
+     */
+    valueMin: Nullable<any>;
+
+    /**
+     * Gets or sets the max value accepted for this point if nothing is connected
+     */
+    valueMax: Nullable<any>;
+
+    /**
+     * Gets or sets the type of the value
+     */
+    valueType: PortDirectValueTypes;
+}
+
 export interface IPortData {
     data: any;
     name: string;
@@ -21,6 +52,7 @@ export interface IPortData {
     needDualDirectionValidation: boolean;
     hasEndpoints: boolean;
     endpoints: Nullable<IPortData[]>;
+    directValueDefinition?: IPortDirectValueDefinition;
 
     updateDisplayName: (newName: string) => void;
     canConnectTo: (port: IPortData) => boolean;

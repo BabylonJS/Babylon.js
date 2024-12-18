@@ -976,6 +976,8 @@ export class FluidRenderingTargetRenderer {
         this._renderPostProcess?.dispose();
         this._renderPostProcess = null;
 
+        this._onUseVelocityChanged.clear();
+
         this._needInitialization = false;
     }
 }

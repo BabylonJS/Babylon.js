@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions } from "core/index";
+import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
@@ -21,9 +21,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
      * @param name The name of the task
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
+     * @param options The options of the object renderer.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
-        super(name, frameGraph, scene);
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
+        super(name, frameGraph, scene, options);
 
         this.postProcess = new ThinTAAPostProcess(`${name} post-process`, scene.getEngine());
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
@@ -38,12 +39,12 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the back buffer color/depth textures are not allowed. Use regular textures instead.`);
         }
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            const depthTextureDescription = this._frameGraph.getTextureDescription(this.depthTexture);
+            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
                 throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
@@ -58,43 +59,37 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: outputTextureDescription.size,
             options: {
-                createMipMaps: false,
-                generateMipMaps: false,
+                createMipMaps: outputTextureDescription.options.createMipMaps,
                 types: [Constants.TEXTURETYPE_HALF_FLOAT],
-                samplingModes: [Constants.TEXTURE_NEAREST_NEAREST],
                 formats: [Constants.TEXTUREFORMAT_RGBA],
                 samples: 1,
                 useSRGBBuffers: [false],
-                generateDepthBuffer: false,
-                generateStencilBuffer: false,
-                label: "",
+                creationFlags: [0],
+                labels: [""],
             },
             sizeIsPercentage: false,
             isHistoryTexture: true,
         };
 
-        const pingPongHandle = this._frameGraph.createRenderTargetTexture(`${this.name} history`, textureCreationOptions);
+        const pingPongHandle = this._frameGraph.textureManager.createRenderTargetTexture(`${this.name} history`, textureCreationOptions);
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, pingPongHandle);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, pingPongHandle);
         if (this.depthTexture !== undefined) {
-            this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
-        this._rtt._size = outputTextureDescription.size;
+        this._textureWidth = outputTextureDescription.size.width;
+        this._textureHeight = outputTextureDescription.size.height;
+
+        let pingPongRenderTargetWrapper: FrameGraphRenderTarget | undefined;
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
-        if (this.depthTexture !== undefined) {
-            pass.setRenderTargetDepth(this.depthTexture);
-        }
-
+        pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
-            this._rtt.renderList = this.objectList.meshes;
-            this._rtt.particleSystemList = this.objectList.particleSystems;
-
-            this._scene.incrementRenderId();
-            this._scene.resetCachedMaterial();
+            this._renderer.renderList = this.objectList.meshes;
+            this._renderer.particleSystemList = this.objectList.particleSystems;
 
             this.postProcess.updateProjectionMatrix();
 
@@ -107,11 +102,13 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
                 this._scene.setTransformMatrix(this.camera.getViewMatrix(), this.camera.getProjectionMatrix());
             }
 
-            context.render(this._rtt);
+            context.render(this._renderer, this._textureWidth, this._textureHeight);
 
             this._scene.activeCamera = null;
 
-            context.bindRenderTarget(pingPongHandle, "frame graph - TAA merge with history texture");
+            pingPongRenderTargetWrapper = pingPongRenderTargetWrapper || context.createRenderTarget(`${this.name} ping/pong`, pingPongHandle);
+
+            context.bindRenderTarget(pingPongRenderTargetWrapper, "frame graph - TAA merge with history texture");
 
             if (!this.postProcess.disabled) {
                 context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
@@ -127,9 +124,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
         passDisabled.setRenderTarget(this.outputTexture);
-        if (this.depthTexture !== undefined) {
-            passDisabled.setRenderTargetDepth(this.depthTexture);
-        }
+        passDisabled.setRenderTargetDepth(this.depthTexture);
         passDisabled.setExecuteFunc((context) => {
             context.copyTexture(this.destinationTexture);
         });

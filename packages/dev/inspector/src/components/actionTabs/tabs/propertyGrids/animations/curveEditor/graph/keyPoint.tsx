@@ -7,9 +7,9 @@ import * as React from "react";
 import type { Context } from "../context";
 import type { Curve } from "./curve";
 
-const keyInactive = require("../assets/keyInactiveIcon.svg") as string;
-const keySelected = require("../assets/keySelectedIcon.svg") as string;
-const keyActive = require("../assets/keyActiveIcon.svg") as string;
+import keyInactive from "../assets/keyInactiveIcon.svg";
+import keySelected from "../assets/keySelectedIcon.svg";
+import keyActive from "../assets/keyActiveIcon.svg";
 
 interface IKeyPointComponentProps {
     x: number;

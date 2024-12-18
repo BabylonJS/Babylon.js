@@ -1,5 +1,12 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, NodeRenderGraphBlock, NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphInputBlock } from "core/index";
+import type {
+    Nullable,
+    NodeRenderGraphBlock,
+    NodeRenderGraphBlockConnectionPointValueType,
+    NodeRenderGraphInputBlock,
+    IShadowLight,
+    FrameGraphShadowGeneratorTask,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
 
@@ -21,6 +28,9 @@ export class NodeRenderGraphConnectionPoint {
     public _linkedConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
+    public _isMainLinkSource = false;
+
+    /** @internal */
     public _typeConnectionSource: Nullable<NodeRenderGraphConnectionPoint | (() => NodeRenderGraphConnectionPoint)> = null;
 
     /** @internal */
@@ -29,6 +39,33 @@ export class NodeRenderGraphConnectionPoint {
     /** Gets the direction of the point */
     public get direction() {
         return this._direction;
+    }
+
+    /**
+     * Checks if the value is a texture handle
+     * @param value The value to check
+     * @returns True if the value is a texture handle
+     */
+    public static IsTextureHandle(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && Number.isFinite(value);
+    }
+
+    /**
+     * Checks if the value is a shadow generator task
+     * @param value The value to check
+     * @returns True if the value is a shadow generator
+     */
+    public static IsShadowGenerator(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && (value as FrameGraphShadowGeneratorTask).mapSize !== undefined;
+    }
+
+    /**
+     * Checks if the value is a shadow light
+     * @param value The value to check
+     * @returns True if the value is a shadow light
+     */
+    public static IsShadowLight(value: NodeRenderGraphBlockConnectionPointValueType | undefined): boolean {
+        return value !== undefined && (value as IShadowLight).setShadowProjectionMatrix !== undefined;
     }
 
     /**
@@ -79,8 +116,17 @@ export class NodeRenderGraphConnectionPoint {
                 return this._connectedPoint.type;
             }
 
-            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-                return this._linkedConnectionSource.type;
+            if (this._linkedConnectionSource) {
+                if (this._linkedConnectionSource.isConnected) {
+                    return this._linkedConnectionSource.type;
+                }
+                if (this._linkedConnectionSource._defaultConnectionPointType) {
+                    return this._linkedConnectionSource._defaultConnectionPointType;
+                }
+            }
+
+            if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
             }
         }
 
@@ -165,7 +211,7 @@ export class NodeRenderGraphConnectionPoint {
 
     /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
-        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+        if (this._linkedConnectionSource && !this._isMainLinkSource && this._linkedConnectionSource.isConnected) {
             return this.type;
         }
         return this._type;

@@ -418,7 +418,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         imageProcessingConfiguration?: ImageProcessingConfiguration
     ) {
         super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true);

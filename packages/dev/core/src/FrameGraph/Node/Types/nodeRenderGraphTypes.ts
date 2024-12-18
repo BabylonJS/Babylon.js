@@ -1,8 +1,5 @@
-import type { Color4 } from "../../../Maths/math.color";
-import type { Scene } from "../../../scene";
-import type { FrameGraphTextureHandle } from "../../../FrameGraph/frameGraphTypes";
-import type { Camera } from "../../../Cameras/camera";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+// eslint-disable-next-line import/no-internal-modules
+import type { Color4, Scene, FrameGraphTextureHandle, Camera, FrameGraphObjectList, IShadowLight, FrameGraphShadowGeneratorTask } from "core/index";
 
 /**
  * Interface used to configure the node render graph editor
@@ -71,11 +68,18 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureLinearVelocity = 0x00008000,
 
     /** Bit field for all textures but back buffer depth/stencil */
-    TextureAllButBackBufferDepthStencil = 0x00fffffb,
-    /** Bit field for all textures but back buffer */
-    TextureAllButBackBuffer = 0x00fffff9,
-    TextureAll = 0x00ffffff,
+    TextureAllButBackBufferDepthStencil = 0x000ffffb,
+    /** Bit field for all textures but back buffer color and depth/stencil */
+    TextureAllButBackBuffer = 0x000ffff9,
+    /** Bit field for all textures */
+    TextureAll = 0x000fffff,
 
+    /** Resource container */
+    ResourceContainer = 0x00100000,
+    /** Shadow generator */
+    ShadowGenerator = 0x00200000,
+    /** Light */
+    ShadowLight = 0x00400000,
     /** Camera */
     Camera = 0x01000000,
     /** List of objects (meshes, particle systems, sprites) */
@@ -116,4 +120,4 @@ export const enum NodeRenderGraphConnectionPointDirection {
 /**
  * Defines the type of a connection point value
  */
-export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureHandle | Camera | FrameGraphObjectList;
+export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureHandle | Camera | FrameGraphObjectList | IShadowLight | FrameGraphShadowGeneratorTask;

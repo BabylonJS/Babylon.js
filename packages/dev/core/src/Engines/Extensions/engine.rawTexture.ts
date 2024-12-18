@@ -25,7 +25,7 @@ declare module "../abstractEngine" {
          * @param format defines the format of the data
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          */
         updateRawTexture(
@@ -42,7 +42,7 @@ declare module "../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          */
         updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
@@ -52,7 +52,7 @@ declare module "../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          */
@@ -63,7 +63,7 @@ declare module "../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          * @param level defines which level of the texture to update
@@ -76,7 +76,7 @@ declare module "../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -103,7 +103,7 @@ declare module "../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -144,7 +144,7 @@ declare module "../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
          */
         updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
 
@@ -164,7 +164,7 @@ declare module "../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
          */
         updateRawTexture2DArray(
             texture: InternalTexture,
@@ -183,7 +183,7 @@ ThinEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
@@ -233,7 +233,7 @@ ThinEngine.prototype.createRawTexture = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     creationFlags = 0,
     useSRGBBuffer = false
@@ -597,7 +597,7 @@ function _makeCreateRawTextureFunction(is3D: boolean) {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ): InternalTexture {
         const target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         const source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
@@ -664,7 +664,7 @@ function _makeUpdateRawTextureFunction(is3D: boolean) {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ): void {
         const target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         const internalType = this._getWebGLTextureType(textureType);

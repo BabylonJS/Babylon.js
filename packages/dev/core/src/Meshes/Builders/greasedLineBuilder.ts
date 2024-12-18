@@ -122,14 +122,14 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
     let material;
     switch (options.materialType) {
         case GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR:
-            material = new PBRMaterial(name, scene, true); // Forcing glsl for now
+            material = new PBRMaterial(name, scene, options.forceGLSL);
             new GreasedLinePluginMaterial(material, scene, options);
             break;
         case GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE:
             material = new GreasedLineSimpleMaterial(name, scene, options);
             break;
         default:
-            material = new StandardMaterial(name, scene, true); // Forcing glsl for now
+            material = new StandardMaterial(name, scene, options.forceGLSL);
             new GreasedLinePluginMaterial(material, scene, options);
             break;
     }

@@ -154,6 +154,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_TANGENT = false;
     /** Morph target uv */
     public MORPHTARGETS_UV = false;
+    /** Morph target uv2 */
+    public MORPHTARGETS_UV2 = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */
@@ -301,6 +303,13 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
+
+    /** @internal */
+    public _useAdditionalColor = false;
+
+    public override set _glowModeEnabled(value: boolean) {
+        this._useAdditionalColor = value;
+    }
 
     /** Get the inspector from bundle or global
      * @returns the global NME
@@ -699,6 +708,18 @@ export class NodeMaterial extends PushMaterial {
      */
     @serialize()
     public forceAlphaBlending = false;
+
+    public override get _supportGlowLayer() {
+        if (this._fragmentOutputNodes.length === 0) {
+            return false;
+        }
+
+        if (this._fragmentOutputNodes.some((f) => (f as FragmentOutputBlock).additionalColor && (f as FragmentOutputBlock).additionalColor.isConnected)) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Specifies if the material will require alpha blending
@@ -1166,7 +1187,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): Nullable<PostProcess> {
         if (this.mode !== NodeMaterialModes.PostProcess) {
@@ -1191,7 +1212,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): PostProcess {
         let tempName = this.name + this._buildId;
@@ -1654,7 +1675,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh.materialDefines || typeof subMesh.materialDefines === "string") {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 

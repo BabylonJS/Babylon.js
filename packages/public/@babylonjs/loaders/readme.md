@@ -1,6 +1,6 @@
 # Babylon.js Loaders module
 
-For usage documentation please visit https://doc.babylonjs.com/extensions and choose "loaders".
+For usage documentation please visit https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes/.
 
 # Installation instructions
 
@@ -20,4 +20,4 @@ import "@babylonjs/loaders/glTF";
 
 This will extend Babylon's loader plugins to allow the load of gltf and glb files.
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

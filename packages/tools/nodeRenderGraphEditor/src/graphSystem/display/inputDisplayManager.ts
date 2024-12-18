@@ -1,7 +1,7 @@
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import styles from "./inputDisplayManager.modules.scss";
+import * as styles from "./inputDisplayManager.module.scss";
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 

@@ -423,6 +423,7 @@ export class GIRSMManager {
         this._debugLayer.texture?.dispose();
         this._debugLayer.dispose();
         this._scene.onBeforeDrawPhaseObservable.remove(this._drawPhaseObserver);
+        this._onShaderLoadedObservable.clear();
     }
 
     /**

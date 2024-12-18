@@ -290,6 +290,13 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     depth32float: 37,
 
     "depth32float-stencil8": 38,
+
+    r16unorm: 39,
+    rg16unorm: 40,
+    rgba16unorm: 41,
+    r16snorm: 42,
+    rg16snorm: 43,
+    rgba16snorm: 44,
 };
 
 /** @internal */
@@ -1011,7 +1018,7 @@ export class WebGPUTextureManager {
         dontCreateMSAATexture?: boolean
     ): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
-            texture._hardwareTexture = new WebGPUHardwareTexture();
+            texture._hardwareTexture = new WebGPUHardwareTexture(this._engine);
         }
 
         if (width === undefined) {
@@ -1165,7 +1172,7 @@ export class WebGPUTextureManager {
             this._commandEncoderForCreation,
             WebGPUConstants.TextureUsage.RenderAttachment,
             0,
-            texture.label ? "MSAA" + texture.label : undefined
+            texture.label ? "MSAA_" + texture.label : "MSAA"
         );
         gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }

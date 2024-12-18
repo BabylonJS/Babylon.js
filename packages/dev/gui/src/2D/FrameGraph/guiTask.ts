@@ -54,7 +54,7 @@ export class FrameGraphGUITask extends FrameGraphTask {
         }
         this._adt = adt;
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
@@ -66,7 +66,7 @@ export class FrameGraphGUITask extends FrameGraphTask {
             throw new Error("FrameGraphGUITask: destinationTexture is required");
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
