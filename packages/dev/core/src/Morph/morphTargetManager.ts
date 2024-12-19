@@ -239,6 +239,7 @@ export class MorphTargetManager implements IDisposable {
         }
         this._useTextureToStoreTargets = value;
         this._mustSynchronize = true;
+        this._syncActiveTargets();
     }
 
     /**
@@ -319,6 +320,7 @@ export class MorphTargetManager implements IDisposable {
             target.onInfluenceChanged.remove(this._targetInfluenceChangedObservers.splice(index, 1)[0]);
             target._onDataLayoutChanged.remove(this._targetDataLayoutChangedObservers.splice(index, 1)[0]);
             this._mustSynchronize = true;
+            this._syncActiveTargets();
         }
 
         if (this._scene) {
