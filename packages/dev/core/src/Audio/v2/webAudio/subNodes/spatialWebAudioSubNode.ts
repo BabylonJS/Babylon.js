@@ -1,14 +1,14 @@
-import { SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
+import { _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInputNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<SpatialAudioSubNode> {
-    return new SpatialWebAudioSubNode(engine);
+export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
+    return new _SpatialWebAudioSubNode(engine);
 }
 
 /** @internal */
-class SpatialWebAudioSubNode extends SpatialAudioSubNode {
+class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     /** @internal */
     public readonly node: PannerNode;
 

@@ -1,18 +1,18 @@
 import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../../abstractAudioNode";
-import { AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
-import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
-import { AudioSubNode } from "../../subNodes/audioSubNode";
-import type { IVolumeAudioOptions, VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
-import { hasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
+import { _AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
+import type { _AbstractAudioSubNode } from "../../abstractAudioSubNode";
+import { _AudioSubNode } from "../../subNodes/audioSubNode";
+import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
+import { _hasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioSuperNode, IWebAudioSubNode } from "../webAudioNode";
+import type { IWebAudioInputNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
 
 /** */
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
-export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
+export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     protected _owner: IWebAudioSuperNode;
     protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
@@ -25,12 +25,12 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
 
     /** @internal */
     public async init(options: Nullable<IWebAudioBaseSubGraphOptions>): Promise<void> {
-        this._createAndAddSubNode(AudioSubNode.Volume);
+        this._createAndAddSubNode(_AudioSubNode.Volume);
 
         await this._createSubNodePromisesResolved();
 
-        if (options && hasVolumeAudioOptions(options)) {
-            this.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.setOptions(options);
+        if (options && _hasVolumeAudioOptions(options)) {
+            this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.setOptions(options);
         }
     }
 
@@ -46,9 +46,9 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
         return this._webAudioOutputNode;
     }
 
-    protected _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
+    protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
         switch (name) {
-            case AudioSubNode.Volume:
+            case _AudioSubNode.Volume:
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;
@@ -60,7 +60,7 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
             return;
         }
 
-        const volumeNode = this.getSubNode<IWebAudioSubNode>(AudioSubNode.Volume);
+        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
         if (!volumeNode) {
             return;
         }

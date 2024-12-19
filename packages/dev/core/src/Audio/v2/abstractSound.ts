@@ -1,15 +1,17 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { AudioNodeType } from "./abstractAudioNode";
+import { _AudioNodeType } from "./abstractAudioNode";
 import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
-import { AudioSubNode } from "./subNodes/audioSubNode";
+import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import { StereoAudio, type IStereoAudioOptions, type StereoAudioSubNode } from "./subNodes/stereoAudioSubNode";
-import { VolumeAudio, type IVolumeAudioOptions, type VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
+import type { _StereoAudioSubNode, IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
+import { _StereoAudio } from "./subNodes/stereoAudioSubNode";
+import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Options for creating a new sound.
@@ -121,7 +123,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     }
 
     protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
-        super(name, engine, AudioNodeType.Output);
+        super(name, engine, _AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
@@ -131,22 +133,22 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
 
     /** */
     public get stereoPan(): number {
-        return this._subGraph.getSubNode<StereoAudioSubNode>(AudioSubNode.Stereo)?.pan ?? StereoAudio.DefaultPan;
+        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.pan ?? _StereoAudio.DefaultPan;
     }
 
     public set stereoPan(value: number) {
-        this._subGraph.callOnSubNode<StereoAudioSubNode>(AudioSubNode.Stereo, (node) => {
+        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo, (node) => {
             node.pan = value;
         });
     }
 
     /** */
     public get volume(): number {
-        return this._subGraph.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.volume ?? VolumeAudio.DefaultVolume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
     }
 
     public set volume(value: number) {
-        this._subGraph.callOnSubNode<VolumeAudioSubNode>(AudioSubNode.Volume, (node) => {
+        this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
         });
     }

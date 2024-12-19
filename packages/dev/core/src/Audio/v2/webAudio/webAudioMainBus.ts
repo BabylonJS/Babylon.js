@@ -4,7 +4,7 @@ import type { AudioEngineV2 } from "../audioEngineV2";
 import { LastCreatedAudioEngine } from "../audioEngineV2";
 import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
-import { WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
+import { _WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInputNode, IWebAudioSuperNode } from "./webAudioNode";
 
@@ -33,7 +33,7 @@ export async function CreateMainAudioBusAsync(name: string, options: Nullable<IM
 
 /** @internal */
 export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode {
-    protected _subGraph: WebAudioBaseSubGraph;
+    protected _subGraph: _WebAudioBaseSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -98,7 +98,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
         return "_WebAudioMainBus";
     }
 
-    private static _SubGraph = class extends WebAudioBaseSubGraph {
+    private static _SubGraph = class extends _WebAudioBaseSubGraph {
         protected override _owner: _WebAudioMainBus;
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

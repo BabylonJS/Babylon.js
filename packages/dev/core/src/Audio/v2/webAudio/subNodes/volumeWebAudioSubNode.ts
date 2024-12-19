@@ -1,14 +1,14 @@
-import { VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
+import { _VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInputNode, IWebAudioSubNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): Promise<VolumeAudioSubNode> {
-    return new VolumeWebAudioSubNode(engine);
+export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_VolumeAudioSubNode> {
+    return new _VolumeWebAudioSubNode(engine);
 }
 
 /** @internal */
-class VolumeWebAudioSubNode extends VolumeAudioSubNode implements IWebAudioSubNode {
+class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
     /** @internal */
     public readonly node: GainNode;
 

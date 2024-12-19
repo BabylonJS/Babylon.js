@@ -1,17 +1,24 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import { _AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { AudioSubNode } from "./audioSubNode";
+import { _AudioSubNode } from "./audioSubNode";
 
-export enum SpatialAudio {
-    DefaultConeInnerAngle = 360,
-    DefaultConeOuterAngle = 360,
-    DefaultConeOuterVolume = 0,
-    DefaultDistanceModel = "inverse",
-    DefaultMaxDistance = 10000,
-    DefaultPanningModel = "equalpower",
+/** @internal */
+export class _SpatialAudio {
+    /** @internal */
+    public static readonly DefaultConeInnerAngle = 360;
+    /** @internal */
+    public static readonly DefaultConeOuterAngle = 360;
+    /** @internal */
+    public static readonly DefaultConeOuterVolume = 0;
+    /** @internal */
+    public static readonly DefaultDistanceModel = "inverse";
+    /** @internal */
+    public static readonly DefaultMaxDistance = 10000;
+    /** @internal */
+    public static readonly DefaultPanningModel = "equalpower";
 }
 
 /**
@@ -72,7 +79,7 @@ export interface ISpatialAudioOptions {
  * @param options The spatial audio options to check.
  * @returns `true` if spatial audio options are defined, otherwise `false`.
  */
-export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
+export function _hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
     return (
         options.spatialEnabled ||
         options.spatialConeInnerAngle !== undefined ||
@@ -90,9 +97,9 @@ export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
 }
 
 /** @internal */
-export abstract class SpatialAudioSubNode extends AbstractAudioSubNode {
+export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(AudioSubNode.Spatial, engine);
+        super(_AudioSubNode.Spatial, engine);
     }
 
     public abstract get coneInnerAngle(): number;
@@ -122,11 +129,11 @@ export abstract class SpatialAudioSubNode extends AbstractAudioSubNode {
             return;
         }
 
-        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : SpatialAudio.DefaultConeInnerAngle;
-        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : SpatialAudio.DefaultConeOuterAngle;
-        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : SpatialAudio.DefaultConeOuterVolume;
-        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : SpatialAudio.DefaultDistanceModel;
-        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : SpatialAudio.DefaultMaxDistance;
-        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : SpatialAudio.DefaultPanningModel;
+        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : _SpatialAudio.DefaultConeInnerAngle;
+        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : _SpatialAudio.DefaultConeOuterAngle;
+        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : _SpatialAudio.DefaultConeOuterVolume;
+        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : _SpatialAudio.DefaultDistanceModel;
+        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : _SpatialAudio.DefaultMaxDistance;
+        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : _SpatialAudio.DefaultPanningModel;
     }
 }

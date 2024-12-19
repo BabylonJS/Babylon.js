@@ -7,7 +7,7 @@ import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
-import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
 
@@ -44,7 +44,7 @@ export async function CreateStreamingSoundAsync(
 
 /** @internal */
 class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
-    protected _subGraph: WebAudioBusAndSoundSubGraph;
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public source: StreamingSoundSourceType;
@@ -135,7 +135,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         }
     }
 
-    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+    private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStreamingSound;
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

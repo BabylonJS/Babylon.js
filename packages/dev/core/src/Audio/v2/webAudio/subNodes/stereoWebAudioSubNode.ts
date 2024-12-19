@@ -1,14 +1,14 @@
-import { StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
+import { _StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInputNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): Promise<StereoAudioSubNode> {
-    return new StereoWebAudioSubNode(engine);
+export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_StereoAudioSubNode> {
+    return new _StereoWebAudioSubNode(engine);
 }
 
 /** @internal */
-class StereoWebAudioSubNode extends StereoAudioSubNode {
+class _StereoWebAudioSubNode extends _StereoAudioSubNode {
     /** @internal */
     public readonly node: StereoPannerNode;
 

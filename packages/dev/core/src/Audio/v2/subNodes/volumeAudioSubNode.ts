@@ -1,10 +1,12 @@
 import type { Nullable } from "../../../types";
-import { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import { _AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { AudioSubNode } from "./audioSubNode";
+import { _AudioSubNode } from "./audioSubNode";
 
-export enum VolumeAudio {
-    DefaultVolume = 1,
+/** @internal */
+export class _VolumeAudio {
+    /** @internal */
+    public static readonly DefaultVolume = 1;
 }
 
 /**
@@ -21,14 +23,14 @@ export interface IVolumeAudioOptions {
  * @param options The stereo audio options to check.
  * @returns `true` if the stereo audio options are defined, otherwise `false`.
  */
-export function hasVolumeAudioOptions(options: IVolumeAudioOptions): boolean {
+export function _hasVolumeAudioOptions(options: IVolumeAudioOptions): boolean {
     return options.volume !== undefined;
 }
 
 /** @internal */
-export abstract class VolumeAudioSubNode extends AbstractAudioSubNode {
+export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(AudioSubNode.Volume, engine);
+        super(_AudioSubNode.Volume, engine);
     }
 
     public abstract get volume(): number;
@@ -40,6 +42,6 @@ export abstract class VolumeAudioSubNode extends AbstractAudioSubNode {
             return;
         }
 
-        this.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
+        this.volume = options.volume !== undefined ? options.volume : _VolumeAudio.DefaultVolume;
     }
 }

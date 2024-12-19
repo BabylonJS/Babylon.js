@@ -7,7 +7,7 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
 
@@ -75,7 +75,7 @@ export async function CreateSoundBufferAsync(
 class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
-    protected _subGraph: WebAudioBusAndSoundSubGraph;
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -170,7 +170,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         return "WebAudioStaticSound";
     }
 
-    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+    private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStaticSound;
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

@@ -1,11 +1,11 @@
 import { NamedAbstractAudioNode } from "./abstractAudioNode";
-import type { AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 
 /**
  * Abstract class for audio nodes containing sub-graphs.
  */
 export abstract class AbstractAudioSuperNode extends NamedAbstractAudioNode {
-    protected abstract _subGraph: AbstractAudioSubGraph;
+    protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
      * Releases associated resources.

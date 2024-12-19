@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSound } from "./abstractSound";
 import { SoundState } from "./soundState";
 
@@ -17,7 +17,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
     protected constructor(source: AbstractSound) {
-        super(source.engine, AudioNodeType.Output);
+        super(source.engine, _AudioNodeType.Output);
 
         this._source = source;
         this._startOffset = source.startOffset;

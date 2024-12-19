@@ -1,10 +1,10 @@
 import type { Nullable } from "../../types";
 import type { NamedAbstractAudioNode } from "./abstractAudioNode";
-import type { AbstractAudioSubNode } from "./abstractAudioSubNode";
+import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 
 /** @internal */
-export abstract class AbstractAudioSubGraph {
-    private _createSubNodePromises = new Map<string, Promise<AbstractAudioSubNode>>();
+export abstract class _AbstractAudioSubGraph {
+    private _createSubNodePromises = new Map<string, Promise<_AbstractAudioSubNode>>();
 
     protected _subNodes = new Map<string, Set<NamedAbstractAudioNode>>();
 
@@ -31,7 +31,7 @@ export abstract class AbstractAudioSubGraph {
      * @param name The name of the sub node
      * @param callback The function to call with the named sub node
      */
-    public callOnSubNode<T extends AbstractAudioSubNode>(name: string, callback: (node: T) => void): void {
+    public callOnSubNode<T extends _AbstractAudioSubNode>(name: string, callback: (node: T) => void): void {
         const node = this.getSubNode(name);
         if (node) {
             callback(node as T);
@@ -56,7 +56,7 @@ export abstract class AbstractAudioSubGraph {
         return set.values().next().value as T;
     }
 
-    protected abstract _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>>;
+    protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;
     protected abstract _onSubNodesChanged(): void;
 
     protected async _createSubNodePromisesResolved(): Promise<void> {
@@ -91,7 +91,7 @@ export abstract class AbstractAudioSubGraph {
         child.onNameChangedObservable.add(this._onSubNodeNameChanged);
     }
 
-    protected _createAndAddSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
+    protected _createAndAddSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
         const promise = this._createSubNode(name);
 
         if (!promise) {

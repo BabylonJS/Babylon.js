@@ -1,21 +1,24 @@
 import { Observable } from "../../Misc/observable";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
-export enum AudioNodeType {
+type AudioNodeType = number;
+
+/** @internal */
+export class _AudioNodeType {
     /**
      * Input nodes receive audio data from an upstream node.
      */
-    Input = 1,
+    public static readonly Input = 1;
 
     /**
      * Output nodes send audio data to a downstream node.
      */
-    Output = 2,
+    public static readonly Output = 2;
 
     /**
      * Input/Output nodes receive audio data from an upstream node and send audio data to a downstream node.
      */
-    InputOutput = 3,
+    public static readonly InputOutput = _AudioNodeType.Input | _AudioNodeType.Output;
 }
 
 /**
@@ -49,11 +52,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType | AudioNodeType.Input) {
+        if (nodeType | _AudioNodeType.Input) {
             this._connectedDownstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType | AudioNodeType.Output) {
+        if (nodeType | _AudioNodeType.Output) {
             this._connectedUpstreamNodes = new Set<AbstractAudioNode>();
         }
     }

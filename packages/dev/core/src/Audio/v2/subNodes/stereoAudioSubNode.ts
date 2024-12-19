@@ -1,11 +1,12 @@
 import type { Nullable } from "../../../types";
-import { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import { _AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { AudioSubNode } from "./audioSubNode";
+import { _AudioSubNode } from "./audioSubNode";
 
-/** */
-export enum StereoAudio {
-    DefaultPan = 0,
+/** @internal */
+export class _StereoAudio {
+    /** @internal */
+    public static readonly DefaultPan = 0;
 }
 
 /** */
@@ -24,16 +25,16 @@ export interface IStereoAudioOptions {
  * @param options The stereo audio options to check.
  * @returns `true` if stereo audio options are defined, otherwise `false`.
  */
-export function hasStereoAudioOptions(options: IStereoAudioOptions): boolean {
+export function _hasStereoAudioOptions(options: IStereoAudioOptions): boolean {
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 
 /**
  *
  */
-export abstract class StereoAudioSubNode extends AbstractAudioSubNode {
+export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(AudioSubNode.Stereo, engine);
+        super(_AudioSubNode.Stereo, engine);
     }
 
     abstract get pan(): number;
@@ -45,6 +46,6 @@ export abstract class StereoAudioSubNode extends AbstractAudioSubNode {
             return;
         }
 
-        this.pan = options.stereoPan !== undefined ? options.stereoPan : StereoAudio.DefaultPan;
+        this.pan = options.stereoPan !== undefined ? options.stereoPan : _StereoAudio.DefaultPan;
     }
 }

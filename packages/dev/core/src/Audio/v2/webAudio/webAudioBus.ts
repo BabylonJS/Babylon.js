@@ -2,13 +2,13 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
-import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
-    protected _subGraph: WebAudioBusAndSoundSubGraph;
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -53,7 +53,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
         return "_WebAudioBus";
     }
 
-    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+    private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: _WebAudioBus;
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
