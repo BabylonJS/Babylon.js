@@ -14,10 +14,7 @@ export interface IWebAudioOutputNode extends AbstractAudioNode {
 }
 
 /** @internal */
-export interface IWebAudioInputOutputNode extends IWebAudioInputNode, IWebAudioOutputNode {}
-
-/** @internal */
-export interface IWebAudioParentNode extends IWebAudioInputOutputNode {
+export interface IWebAudioParentNode extends IWebAudioInputNode, IWebAudioOutputNode {
     /** @internal */
     audioContext: AudioContext | OfflineAudioContext;
 }
