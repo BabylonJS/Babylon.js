@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../../types";
 import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
-import { VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
+import { VolumeAudio, VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
 import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
 
 /** @internal */
@@ -56,6 +56,15 @@ export class VolumeWebAudioSubNode extends VolumeAudioSubNode {
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
+    }
+
+    /** @internal */
+    public setOptions(options: Nullable<IVolumeAudioOptions>): void {
+        if (!options) {
+            return;
+        }
+
+        this.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
     }
 
     /** @internal */

@@ -3,7 +3,7 @@ import type { AbstractAudioNode } from "../../abstractAudioNode";
 import { AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
-import { hasVolumeAudioOptions, VolumeAudio, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
+import { hasVolumeAudioOptions, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
@@ -13,8 +13,6 @@ export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
 export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
-    protected abstract get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>>;
-
     protected _owner: IWebAudioParentNode;
     protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
@@ -32,12 +30,11 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
         await this._createSubNodePromisesResolved();
 
         if (options && hasVolumeAudioOptions(options)) {
-            const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
-            if (volumeNode) {
-                volumeNode.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
-            }
+            this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume)?.setOptions(options);
         }
     }
+
+    protected abstract get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>>;
 
     /** @internal */
     public get webAudioInputNode(): Nullable<AudioNode> {

@@ -8,8 +8,8 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
 import { AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import type { IStereoAudioOptions, StereoAudioSubNode } from "./subNodes/stereoAudioSubNode";
-import type { IVolumeAudioOptions, VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
+import { StereoAudio, type IStereoAudioOptions, type StereoAudioSubNode } from "./subNodes/stereoAudioSubNode";
+import { VolumeAudio, type IVolumeAudioOptions, type VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Options for creating a new sound.
@@ -133,7 +133,7 @@ export abstract class AbstractSound extends AbstractAudioNode {
 
     /** */
     public get stereoPan(): number {
-        return this._subGraph.getSubNode<StereoAudioSubNode>(AudioSubNode.Stereo)?.pan ?? 0;
+        return this._subGraph.getSubNode<StereoAudioSubNode>(AudioSubNode.Stereo)?.pan ?? StereoAudio.DefaultPan;
     }
 
     public set stereoPan(value: number) {
@@ -144,7 +144,7 @@ export abstract class AbstractSound extends AbstractAudioNode {
 
     /** */
     public get volume(): number {
-        return this._subGraph.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.volume ?? 1;
+        return this._subGraph.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.volume ?? VolumeAudio.DefaultVolume;
     }
 
     public set volume(value: number) {
