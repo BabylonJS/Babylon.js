@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.41.0
+
+### Core
+
+- Add useFill parameter to CreateScreenshot - by [alexchuber](https://github.com/alexchuber) ([#16013](https://github.com/BabylonJS/Babylon.js/pull/16013))
+- More common shader constants and helpers for helperFunctions.fx - by [kircher1](https://github.com/kircher1) ([#16011](https://github.com/BabylonJS/Babylon.js/pull/16011))
+
+### Serializers
+
+
 ## 7.40.4
 
 ### Core
