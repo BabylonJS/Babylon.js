@@ -10,6 +10,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * @experimental
  * Block that provides two different output flows. One is started immediately once the block is executed,
  * and the other is executed after a set time. The timer for this block runs based on the scene's render loop.
+ * @deprecated Use SetDelay instead
  */
 export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     /**
@@ -27,7 +28,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         const currentTimeout = this.timeout.getValue(context);
 
         if (currentTimeout !== undefined && currentTimeout >= 0) {
-            const timers = context._getExecutionVariable(this, "runningTimers") || [];
+            const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
             const scene = context.configuration.scene;
             const timer: AdvancedTimer = new AdvancedTimer({
                 timeout: currentTimeout,
@@ -50,19 +51,19 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {
-        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
         const index = timers.indexOf(timer);
         if (index !== -1) {
             timers.splice(index, 1);
         } else {
             Tools.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
         }
-        context._removePendingBlock(this);
+        this._resetAfterCanceled(context);
         this.done._activateSignal(context);
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
         for (const timer of timers) {
             timer.dispose();
         }

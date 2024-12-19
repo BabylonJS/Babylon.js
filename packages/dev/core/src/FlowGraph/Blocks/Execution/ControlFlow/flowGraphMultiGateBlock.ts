@@ -5,6 +5,7 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for the multi gate block.
@@ -21,11 +22,7 @@ export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockCo
     /**
      * If the block should loop back to the first output flow after executing the last one. Default to false.
      */
-    loop?: boolean;
-    /**
-     * The index of the output flow to start with. Default to 0.
-     */
-    startIndex?: number;
+    isLoop?: boolean;
 }
 /**
  * @experimental
@@ -40,12 +37,11 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     /**
      * Output connections: The output flows.
      */
-    public outFlows: FlowGraphSignalConnection[];
+    public readonly outFlows: FlowGraphSignalConnection[] = [];
     /**
      * Output connection: The index of the current output flow.
      */
-    public readonly currentIndex: FlowGraphDataConnection<number>;
-    private _cachedUnusedIndexes: number[] = [];
+    public readonly lastIndex: FlowGraphDataConnection<number>;
 
     constructor(
         /**
@@ -55,74 +51,77 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.currentIndex = this.registerDataOutput("currentIndex", RichTypeNumber);
-        this.config.startIndex = this.config.startIndex !== undefined ? this.config.startIndex : 0;
-        this.config.startIndex = Math.max(0, Math.min(this.config.startIndex!, this.config.numberOutputFlows - 1));
-        this.outFlows = [];
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows.push(this._registerSignalOutput(`out${i}`));
+        this.lastIndex = this.registerDataOutput("lastIndex", RichTypeNumber, -1);
+        this.setNumberOfOutputFlows(config?.numberOutputFlows);
+    }
+
+    private _getNextIndex(indexesUsed: boolean[]): number {
+        // find the next index available from the indexes used array
+
+        // if all outputs were used, reset the indexes used array if we are in a loop multi gate
+        if (!indexesUsed.includes(false)) {
+            if (this.config.isLoop) {
+                indexesUsed.fill(false);
+            }
+        }
+        if (!this.config.isRandom) {
+            return indexesUsed.indexOf(false);
+        } else {
+            const unusedIndexes = indexesUsed.map((used, index) => (used ? -1 : index)).filter((index) => index !== -1);
+            return unusedIndexes[Math.floor(Math.random() * unusedIndexes.length)];
         }
     }
 
-    private _getUnusedIndexes(context: FlowGraphContext): number[] {
-        const result = this._cachedUnusedIndexes;
-        result.length = 0;
-        if (!context._hasExecutionVariable(this, "unusedIndexes")) {
-            for (let i = 0; i < this.config.numberOutputFlows; i++) {
-                result.push(i);
-            }
-        } else {
-            const contextUnusedIndexes = context._getExecutionVariable(this, "unusedIndexes");
-            for (let i = 0; i < contextUnusedIndexes.length; i++) {
-                result.push(contextUnusedIndexes[i]);
+    /**
+     * Sets the block's output flows. Would usually be passed from the constructor but can be changed afterwards.
+     * @param numberOutputFlows the number of output flows
+     */
+    public setNumberOfOutputFlows(numberOutputFlows: number = 1) {
+        // check the size of the outFlow Array, see if it is not larger than needed
+        while (this.outFlows.length > numberOutputFlows) {
+            const flow = this.outFlows.pop();
+            if (flow) {
+                flow.disconnectFromAll();
+                this._unregisterSignalOutput(flow.name);
             }
         }
-        return result;
-    }
 
-    private _getNextOutput(currentIndex: number, unusedIndexes: number[]): number {
-        if (this.config.isRandom) {
-            const nextIndex = Math.floor(Math.random() * unusedIndexes.length);
-            return unusedIndexes[nextIndex];
-        } else {
-            return currentIndex + 1;
+        while (this.outFlows.length < numberOutputFlows) {
+            this.outFlows.push(this._registerSignalOutput(`out_${this.outFlows.length}`));
         }
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        const currentIndex = context._getExecutionVariable(this, "currentIndex") ?? this.config.startIndex! - 1;
-        let unusedIndexes = this._getUnusedIndexes(context);
+        // set the state(s) of the block
+        if (!context._hasExecutionVariable(this, "indexesUsed")) {
+            context._setExecutionVariable(
+                this,
+                "indexesUsed",
+                this.outFlows.map(() => false)
+            );
+        }
 
         if (callingSignal === this.reset) {
-            context._deleteExecutionVariable(this, "currentIndex");
-            context._deleteExecutionVariable(this, "unusedIndexes");
+            context._deleteExecutionVariable(this, "indexesUsed");
+            this.lastIndex.setValue(-1, context);
             return;
         }
-
-        let nextIndex = this._getNextOutput(currentIndex, unusedIndexes);
-        if (nextIndex >= this.config.numberOutputFlows && this.config.loop) {
-            nextIndex = 0;
-        } else if (nextIndex >= this.config.numberOutputFlows && !this.config.loop) {
+        const indexesUsed = context._getExecutionVariable(this, "indexesUsed", [] as boolean[]);
+        const nextIndex = this._getNextIndex(indexesUsed);
+        if (nextIndex === -1) {
             return;
         }
-
-        unusedIndexes = unusedIndexes.filter((i) => i !== nextIndex);
-        if (unusedIndexes.length === 0) {
-            for (let i = 0; i < this.config.numberOutputFlows; i++) {
-                unusedIndexes.push(i);
-            }
-        }
-        context._setExecutionVariable(this, "unusedIndexes", unusedIndexes);
-        context._setExecutionVariable(this, "currentIndex", nextIndex);
-        this.currentIndex.setValue(nextIndex, context);
+        this.lastIndex.setValue(nextIndex, context);
         this.outFlows[nextIndex]._activateSignal(context);
+        indexesUsed[nextIndex] = true;
+        context._setExecutionVariable(this, "indexesUsed", indexesUsed);
     }
 
     /**
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGMultiGateBlock";
+        return FlowGraphBlockNames.MultiGate;
     }
 
     /**
@@ -133,8 +132,8 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         super.serialize(serializationObject);
         serializationObject.config.numberOutputFlows = this.config.numberOutputFlows;
         serializationObject.config.isRandom = this.config.isRandom;
-        serializationObject.config.loop = this.config.loop;
+        serializationObject.config.loop = this.config.isLoop;
         serializationObject.config.startIndex = this.config.startIndex;
     }
 }
-RegisterClass("FGMultiGateBlock", FlowGraphMultiGateBlock);
+RegisterClass(FlowGraphBlockNames.MultiGate, FlowGraphMultiGateBlock);
