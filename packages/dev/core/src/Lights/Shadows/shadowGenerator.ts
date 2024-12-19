@@ -1625,6 +1625,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
                 if (morphInfluencers > 0) {
                     defines.push("#define MORPHTARGETS");
+                    defines.push("#define MORPHTARGETS_POSITION");
                     defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                     if (manager.isUsingTextureForTargets) {
                         defines.push("#define MORPHTARGETS_TEXTURE");
