@@ -102,23 +102,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
     }
 
     /** @internal */
-    public get children(): Map<string, Set<AbstractAudioNode>> {
-        return this._children;
-    }
-
-    /** @internal */
-    public beforeInputNodeChanged(): void {}
-
-    /** @internal */
-    public afterInputNodeChanged(): void {}
-
-    /** @internal */
-    public beforeOutputNodeChanged(): void {}
-
-    /** @internal */
-    public afterOutputNodeChanged(): void {}
-
-    /** @internal */
     public getClassName(): string {
         return "WebAudioStreamingSound";
     }
@@ -147,7 +130,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
         protected override _owner: WebAudioStreamingSound;
 
         protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner.children;
+            return this._owner._children;
         }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

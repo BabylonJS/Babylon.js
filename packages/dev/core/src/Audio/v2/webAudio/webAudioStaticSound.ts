@@ -129,11 +129,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
         return this._subGraph.webAudioOutputNode;
     }
 
-    /** @internal */
-    public get children(): Map<string, Set<AbstractAudioNode>> {
-        return this._children;
-    }
-
     protected _createSoundInstance(): WebAudioStaticSoundInstance {
         return new WebAudioStaticSoundInstance(this);
     }
@@ -162,18 +157,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public beforeInputNodeChanged(): void {}
-
-    /** @internal */
-    public afterInputNodeChanged(): void {}
-
-    /** @internal */
-    public beforeOutputNodeChanged(): void {}
-
-    /** @internal */
-    public afterOutputNodeChanged(): void {}
-
-    /** @internal */
     public getClassName(): string {
         return "WebAudioStaticSound";
     }
@@ -182,7 +165,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
         protected override _owner: WebAudioStaticSound;
 
         protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner.children;
+            return this._owner._children;
         }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

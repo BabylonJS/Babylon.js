@@ -69,11 +69,6 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         return this._subGraph.webAudioOutputNode;
     }
 
-    /** @internal */
-    public get children(): Map<string, Set<AbstractAudioNode>> {
-        return this._children;
-    }
-
     protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
@@ -91,18 +86,6 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
     }
 
     /** @internal */
-    public beforeInputNodeChanged(): void {}
-
-    /** @internal */
-    public afterInputNodeChanged(): void {}
-
-    /** @internal */
-    public beforeOutputNodeChanged(): void {}
-
-    /** @internal */
-    public afterOutputNodeChanged(): void {}
-
-    /** @internal */
     public getClassName(): string {
         return "_WebAudioMainBus";
     }
@@ -111,7 +94,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         protected override _owner: _WebAudioMainBus;
 
         protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner.children;
+            return this._owner._children;
         }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {

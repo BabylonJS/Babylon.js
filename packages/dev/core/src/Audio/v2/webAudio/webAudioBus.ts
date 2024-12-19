@@ -18,6 +18,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
         super(name, engine, options);
 
         this.audioContext = engine.audioContext;
+
         this._subGraph = new _WebAudioBus._SubGraph(this);
     }
 
@@ -37,23 +38,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public get children(): Map<string, Set<AbstractAudioNode>> {
-        return this._children;
-    }
-
-    /** @internal */
-    public beforeInputNodeChanged(): void {}
-
-    /** @internal */
-    public afterInputNodeChanged(): void {}
-
-    /** @internal */
-    public beforeOutputNodeChanged(): void {}
-
-    /** @internal */
-    public afterOutputNodeChanged(): void {}
-
-    /** @internal */
     public getClassName(): string {
         return "_WebAudioBus";
     }
@@ -62,7 +46,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
         protected override _owner: _WebAudioBus;
 
         protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner.children;
+            return this._owner._children;
         }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
