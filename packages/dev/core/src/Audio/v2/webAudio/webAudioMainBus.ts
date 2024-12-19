@@ -75,11 +75,6 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         return this._children;
     }
 
-    /** @internal */
-    public get subGraph(): WebAudioBaseSubGraph {
-        return this._subGraph;
-    }
-
     protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 

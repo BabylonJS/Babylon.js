@@ -3,7 +3,6 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
-import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioParentNode } from "./webAudioParentNode";
 
@@ -40,11 +39,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
     /** @internal */
     public get children(): Map<string, Set<AbstractAudioNode>> {
         return this._children;
-    }
-
-    /** @internal */
-    public get subGraph(): IWebAudioSubGraph {
-        return this._subGraph;
     }
 
     /** @internal */

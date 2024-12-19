@@ -8,7 +8,6 @@ import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
-import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInputNode } from "./webAudioInputNode";
 import type { IWebAudioOutputNode } from "./webAudioOutputNode";
@@ -107,11 +106,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
     /** @internal */
     public get children(): Map<string, Set<AbstractAudioNode>> {
         return this._children;
-    }
-
-    /** @internal */
-    public get subGraph(): IWebAudioSubGraph {
-        return this._subGraph;
     }
 
     /** @internal */
