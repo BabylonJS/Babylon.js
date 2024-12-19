@@ -11,7 +11,9 @@ export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
  * Options for creating a new streaming sound.
  */
 export interface IStreamingSoundOptions extends IAbstractSoundOptions {
-    /** The number of instances to preload */
+    /**
+     * The number of instances to preload
+     * */
     preloadCount?: number;
 
     /**
@@ -31,11 +33,6 @@ export abstract class StreamingSound extends AbstractSound {
      * The preload type for the sound stream.
      */
     public preloadType: StreamingSoundPreloadType;
-
-    /**
-     * Set to `true` to preserve the pitch of the sound when changing the playback rate; otherwise `false`.
-     */
-    public preservesPitch: boolean;
 
     /** @internal */
     constructor(name: string, engine: AudioEngineV2, options: Nullable<IStreamingSoundOptions> = null) {

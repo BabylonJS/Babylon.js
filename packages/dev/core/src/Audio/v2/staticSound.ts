@@ -56,12 +56,12 @@ export abstract class StaticSound extends AbstractSound {
     public loopEnd: number;
 
     /**
-     * The pitch of the sound.
+     * The pitch offset of the sound in cents. Default is 0.
      */
     public pitch: number;
 
     /**
-     * The playback rate of the sound.
+     * The playback rate of the sound. Default is 1.
      */
     public playbackRate: number;
 
