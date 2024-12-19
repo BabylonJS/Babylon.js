@@ -9,6 +9,7 @@ const NAME = "KHR_texture_transform";
 
 /**
  * Computes the adjusted offset for a rotation centered about the origin.
+ * This does not work when scaling is involved; investigation is needed.
  * @internal
  */
 function AdjustOffsetForRotationCenter(babylonTexture: Texture): [number, number] {
@@ -47,8 +48,13 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        const canUseExtension = babylonTexture && babylonTexture.uAng === 0 && babylonTexture.vAng === 0;
-
+        const canUseExtension =
+            babylonTexture &&
+            babylonTexture.uAng === 0 &&
+            babylonTexture.vAng === 0 &&
+            (babylonTexture.wAng === 0 ||
+                (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) ||
+                (babylonTexture.uScale === 1 && babylonTexture.vScale === 1));
         if (canUseExtension) {
             const textureTransform: IKHRTextureTransform = {};
             let transformIsRequired = false;
@@ -106,6 +112,10 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 resolve(null);
             }
             if (babylonTexture.wAng !== 0 && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                    Tools.Warn(`${context}: Texture ${babylonTexture.name} with scaling and a rotation not centered at the origin cannot be exported with ${NAME}`);
+                    resolve(null);
+                }
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin will be exported with an adjusted texture offset.`);
             }
             resolve(babylonTexture);
