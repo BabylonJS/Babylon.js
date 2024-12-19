@@ -2,6 +2,7 @@ import type { Nullable } from "../../../../types";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
 import { _CreateSpatialAudioSubNodeAsync } from "../subNodes/spatialWebAudioSubNode";
+import type { _StereoWebAudioSubNode } from "../subNodes/stereoWebAudioSubNode";
 import { _CreateStereoAudioSubNodeAsync } from "../subNodes/stereoWebAudioSubNode";
 import type { _VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioNode } from "../webAudioNode";
@@ -52,11 +53,19 @@ export class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
     protected override _onSubNodesChanged(): void {
         super._onSubNodesChanged();
 
-        let inputSubNode: Nullable<IWebAudioNode> = null;
-
+        const stereoNode = this.getSubNode<_StereoWebAudioSubNode>(AudioSubNode.Stereo);
         const volumeNode = this.getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume);
 
-        if (volumeNode) {
+        if (stereoNode) {
+            if (volumeNode) {
+                stereoNode.connect(volumeNode);
+            }
+        }
+
+        let inputSubNode: Nullable<IWebAudioNode> = null;
+        if (stereoNode) {
+            inputSubNode = stereoNode;
+        } else if (volumeNode) {
             inputSubNode = volumeNode;
         }
 

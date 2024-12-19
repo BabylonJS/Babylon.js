@@ -8,7 +8,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
 import { AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
+import type { IStereoAudioOptions, StereoAudioSubNode } from "./subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions, VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 
 /**
@@ -129,6 +129,17 @@ export abstract class AbstractSound extends AbstractAudioNode {
         this.loop = options?.loop ?? false;
         this.maxInstances = options?.maxInstances ?? Infinity;
         this.startOffset = options?.startOffset ?? 0;
+    }
+
+    /** */
+    public get stereoPan(): number {
+        return this._subGraph.getSubNode<StereoAudioSubNode>(AudioSubNode.Stereo)?.pan ?? 0;
+    }
+
+    public set stereoPan(value: number) {
+        this._subGraph.callOnSubNode<StereoAudioSubNode>(AudioSubNode.Stereo, (node) => {
+            node.pan = value;
+        });
     }
 
     /** */
