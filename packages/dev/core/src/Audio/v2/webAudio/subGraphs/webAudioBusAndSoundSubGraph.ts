@@ -12,9 +12,15 @@ import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioInputNode } from "../webAudioInputNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 import { WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
+import type { IWebAudioSubGraph } from "./webAudioSubGraph";
 
 /** @internal */
 export interface IWebAudioBusAndSoundSubGraphOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {}
+
+/** @internal */
+export interface IWebAudioBusAndSoundSubGraph extends IWebAudioSubGraph {
+    init(options: Nullable<IWebAudioBusAndSoundSubGraphOptions>): Promise<void>;
+}
 
 /** @internal */
 export class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
