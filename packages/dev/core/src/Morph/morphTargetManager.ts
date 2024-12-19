@@ -62,85 +62,30 @@ export class MorphTargetManager implements IDisposable {
      */
     public optimizeInfluencers = true;
 
-    private _enablePositionMorphing = true;
     /**
      * Gets or sets a boolean indicating if positions must be morphed
      */
-    public get enablePositionMorphing() {
-        return this._enablePositionMorphing;
-    }
+    public enablePositionMorphing = true;
 
-    public set enablePositionMorphing(value: boolean) {
-        if (this._enablePositionMorphing === value) {
-            return;
-        }
-        this._enablePositionMorphing = value;
-        this._mustSynchronize = true;
-    }
-
-    private _enableNormalMorphing = true;
     /**
      * Gets or sets a boolean indicating if normals must be morphed
      */
-    public get enableNormalMorphing() {
-        return this._enableNormalMorphing;
-    }
+    public enableNormalMorphing = true;
 
-    public set enableNormalMorphing(value: boolean) {
-        if (this._enableNormalMorphing === value) {
-            return;
-        }
-        this._enableNormalMorphing = value;
-        this._mustSynchronize = true;
-    }
-
-    private _enableTangentMorphing = true;
     /**
      * Gets or sets a boolean indicating if tangents must be morphed
      */
-    public get enableTangentMorphing() {
-        return this._enableTangentMorphing;
-    }
+    public enableTangentMorphing = true;
 
-    public set enableTangentMorphing(value: boolean) {
-        if (this._enableTangentMorphing === value) {
-            return;
-        }
-        this._enableTangentMorphing = value;
-        this._mustSynchronize = true;
-    }
-
-    private _enableUVMorphing = true;
     /**
      * Gets or sets a boolean indicating if UV must be morphed
      */
-    public get enableUVMorphing() {
-        return this._enableUVMorphing;
-    }
+    public enableUVMorphing = true;
 
-    public set enableUVMorphing(value: boolean) {
-        if (this._enableUVMorphing === value) {
-            return;
-        }
-        this._enableUVMorphing = value;
-        this._mustSynchronize = true;
-    }
-
-    private _enableUV2Morphing = true;
     /**
      * Gets or sets a boolean indicating if UV2 must be morphed
      */
-    public get enableUV2Morphing() {
-        return this._enableUV2Morphing;
-    }
-
-    public set enableUV2Morphing(value: boolean) {
-        if (this._enableUV2Morphing === value) {
-            return;
-        }
-        this._enableUV2Morphing = value;
-        this._mustSynchronize = true;
-    }
+    public enableUV2Morphing = true;
 
     /**
      * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
@@ -154,6 +99,7 @@ export class MorphTargetManager implements IDisposable {
                 this._blockCounter = 0;
 
                 this._mustSynchronize = true;
+                this._syncActiveTargets();
             }
         }
     }
@@ -205,6 +151,7 @@ export class MorphTargetManager implements IDisposable {
 
         this._numMaxInfluencers = value;
         this._mustSynchronize = true;
+        this._syncActiveTargets();
     }
 
     /**
@@ -353,9 +300,11 @@ export class MorphTargetManager implements IDisposable {
         this._targetDataLayoutChangedObservers.push(
             target._onDataLayoutChanged.add(() => {
                 this._mustSynchronize = true;
+                this._syncActiveTargets();
             })
         );
         this._mustSynchronize = true;
+        this._syncActiveTargets();
     }
 
     /**
@@ -381,11 +330,6 @@ export class MorphTargetManager implements IDisposable {
      * @internal
      */
     public _bind(effect: Effect) {
-        if (this._mustSynchronize) {
-            this._mustSynchronize = false;
-            this.synchronize();
-            this._syncActiveTargets(false);
-        }
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
@@ -428,7 +372,7 @@ export class MorphTargetManager implements IDisposable {
         return serializationObject;
     }
 
-    private _syncActiveTargets(needUpdate: boolean): void {
+    private _syncActiveTargets(needUpdate = false): void {
         if (this.areUpdatesFrozen) {
             return;
         }
