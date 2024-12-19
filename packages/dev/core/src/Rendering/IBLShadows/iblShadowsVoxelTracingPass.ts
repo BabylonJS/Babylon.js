@@ -10,6 +10,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -343,7 +344,11 @@ export class _IblShadowsVoxelTracingPass {
 
         this._frameId++;
 
-        let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
+        let rotation = 0.0;
+        if (this._scene.environmentTexture) {
+            rotation = (this._scene.environmentTexture as CubeTexture).rotationY ?? 0;
+        }
+        rotation = this._scene.useRightHandedSystem ? -(rotation + 0.5 * Math.PI) : rotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
         this._shadowParameters.set(this._sampleDirections, this._frameId, 1.0, rotation);
         this._outputTexture.setVector4("shadowParameters", this._shadowParameters);
@@ -359,8 +364,10 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.setVector4("shadowOpacity", this._opacityParameters);
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
         this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!._getNoiseTexture());
-        this._outputTexture.setTexture("icdfySampler", this._renderPipeline!._getIcdfyTexture());
-        this._outputTexture.setTexture("icdfxSampler", this._renderPipeline!._getIcdfxTexture());
+        const cdfGenerator = this._scene.iblCdfGenerator;
+        if (cdfGenerator) {
+            this._outputTexture.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
+        }
         if (this._debugVoxelMarchEnabled) {
             this._outputTexture.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
@@ -395,8 +402,8 @@ export class _IblShadowsVoxelTracingPass {
         return (
             this._outputTexture.isReady() &&
             !(this._debugPassPP && !this._debugPassPP.isReady()) &&
-            this._renderPipeline!._getIcdfyTexture().isReady() &&
-            this._renderPipeline!._getIcdfxTexture().isReady() &&
+            this._scene.iblCdfGenerator &&
+            this._scene.iblCdfGenerator.getIcdfTexture().isReady() &&
             this._renderPipeline!._getVoxelGridTexture().isReady()
         );
     }

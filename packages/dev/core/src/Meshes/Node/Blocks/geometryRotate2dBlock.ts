@@ -16,7 +16,7 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("input", NodeGeometryBlockConnectionPointTypes.Vector2);
-        this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Vector2);
     }
 
@@ -50,7 +50,7 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock() {
-        if (!this.angle.isConnected || !this.input.isConnected) {
+        if (!this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;

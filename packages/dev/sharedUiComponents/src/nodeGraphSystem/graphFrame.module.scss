@@ -31,6 +31,12 @@
     word-wrap: break-word;
 }
 
+.frame-comment-span {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .selected.frame-box-border {
     border-color: white;
 }

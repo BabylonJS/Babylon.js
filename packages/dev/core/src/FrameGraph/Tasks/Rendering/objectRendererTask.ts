@@ -1,8 +1,21 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext, ObjectRendererOptions } from "core/index";
+import type {
+    FrameGraph,
+    FrameGraphTextureHandle,
+    Scene,
+    Camera,
+    FrameGraphObjectList,
+    FrameGraphRenderContext,
+    ObjectRendererOptions,
+    Light,
+    Nullable,
+    Observer,
+    FrameGraphShadowGeneratorTask,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
+import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 
 /**
  * Task used to render objects to a texture.
@@ -22,6 +35,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * The dependencies of the task (optional).
      */
     public dependencies?: FrameGraphTextureHandle[] = [];
+
+    /**
+     * The shadow generators used to render the objects (optional).
+     */
+    public shadowGenerators?: FrameGraphShadowGeneratorTask[] = [];
 
     private _camera: Camera;
 
@@ -53,7 +71,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public depthWrite = true;
 
     /**
+     * If shadows should be disabled (default is false).
+     */
+    public disableShadows = false;
+
+    /**
      * The output texture.
+     * This texture will point to the same texture than the destinationTexture property if it is set.
+     * Note, however, that the handle itself will be different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -63,11 +88,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * Note, however, that the handle itself will be different!
      */
     public readonly outputDepthTexture: FrameGraphTextureHandle;
-
-    protected _scene: Scene;
-    protected _renderer: ObjectRenderer;
-    protected _textureWidth: number;
-    protected _textureHeight: number;
 
     /**
      * The object renderer used to render the objects.
@@ -86,6 +106,13 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.name = value;
         }
     }
+
+    protected readonly _scene: Scene;
+    protected readonly _renderer: ObjectRenderer;
+    protected _textureWidth: number;
+    protected _textureHeight: number;
+    protected _onBeforeRenderObservable: Nullable<Observer<number>> = null;
+    protected _onAfterRenderObservable: Nullable<Observer<number>> = null;
 
     /**
      * Constructs a new object renderer task.
@@ -107,8 +134,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             }
         });
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
-        this.outputDepthTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
@@ -120,7 +147,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
         let depthEnabled = false;
 
@@ -136,7 +163,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 );
             }
 
-            const depthTextureDescription = this._frameGraph.getTextureDescription(this.depthTexture);
+            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
                 throw new Error(`FrameGraphObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
@@ -144,20 +171,20 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             depthEnabled = true;
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
         if (this.depthTexture !== undefined) {
-            this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
         this._textureWidth = outputTextureDescription.size.width;
         this._textureHeight = outputTextureDescription.size.height;
 
+        this._setLightsForShadow();
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.destinationTexture);
-        if (this.depthTexture !== undefined) {
-            pass.setRenderTargetDepth(this.depthTexture);
-        }
+        pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
@@ -178,9 +205,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(this.destinationTexture);
-            if (this.depthTexture !== undefined) {
-                passDisabled.setRenderTargetDepth(this.depthTexture);
-            }
+            passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
 
             if (this.dependencies !== undefined) {
@@ -194,5 +219,42 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public override dispose(): void {
         this._renderer.dispose();
         super.dispose();
+    }
+
+    private _setLightsForShadow() {
+        const lightsForShadow: Set<Light> = new Set();
+        const shadowEnabled: Map<Light, boolean> = new Map();
+
+        if (this.shadowGenerators) {
+            for (const shadowGeneratorTask of this.shadowGenerators) {
+                const shadowGenerator = shadowGeneratorTask.shadowGenerator;
+                const light = shadowGenerator.getLight();
+                if (light.isEnabled() && light.shadowEnabled) {
+                    lightsForShadow.add(light);
+                    if (FrameGraphCascadedShadowGeneratorTask.IsCascadedShadowGenerator(shadowGeneratorTask)) {
+                        light._shadowGenerators!.set(shadowGeneratorTask.camera, shadowGenerator);
+                    } else {
+                        light._shadowGenerators!.set(null, shadowGenerator);
+                    }
+                }
+            }
+        }
+
+        this._renderer.onBeforeRenderObservable.remove(this._onBeforeRenderObservable);
+        this._onBeforeRenderObservable = this._renderer.onBeforeRenderObservable.add(() => {
+            for (let i = 0; i < this._scene.lights.length; i++) {
+                const light = this._scene.lights[i];
+                shadowEnabled.set(light, light.shadowEnabled);
+                light.shadowEnabled = !this.disableShadows && lightsForShadow.has(light);
+            }
+        });
+
+        this._renderer.onAfterRenderObservable.remove(this._onAfterRenderObservable);
+        this._onAfterRenderObservable = this._renderer.onAfterRenderObservable.add(() => {
+            for (let i = 0; i < this._scene.lights.length; i++) {
+                const light = this._scene.lights[i];
+                light.shadowEnabled = shadowEnabled.get(light)!;
+            }
+        });
     }
 }

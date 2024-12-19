@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
-import type { PropertyValues } from "lit";
-import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { PropertyValues, TemplateResult } from "lit";
+import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -15,11 +15,15 @@ import { Logger } from "core/Misc/logger";
 import { isToneMapping, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
-// Icon SVG is pulled from https://react.fluentui.dev/?path=/docs/icons-catalog--docs
-const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
-const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z";
+// Icon SVG is pulled from https://iconcloud.design
+const playFilledIcon =
+    "M5 5.27368C5 3.56682 6.82609 2.48151 8.32538 3.2973L20.687 10.0235C22.2531 10.8756 22.2531 13.124 20.687 13.9762L8.32538 20.7024C6.82609 21.5181 5 20.4328 5 18.726V5.27368Z";
+const pauseFilledIcon =
+    "M5.74609 3C4.7796 3 3.99609 3.7835 3.99609 4.75V19.25C3.99609 20.2165 4.7796 21 5.74609 21H9.24609C10.2126 21 10.9961 20.2165 10.9961 19.25V4.75C10.9961 3.7835 10.2126 3 9.24609 3H5.74609ZM14.7461 3C13.7796 3 12.9961 3.7835 12.9961 4.75V19.25C12.9961 20.2165 13.7796 21 14.7461 21H18.2461C19.2126 21 19.9961 20.2165 19.9961 19.25V4.75C19.9961 3.7835 19.2126 3 18.2461 3H14.7461Z";
+const arrowResetFilledIcon =
+    "M7.20711 2.54289C7.59763 2.93342 7.59763 3.56658 7.20711 3.95711L5.41421 5.75H13.25C17.6683 5.75 21.25 9.33172 21.25 13.75C21.25 18.1683 17.6683 21.75 13.25 21.75C8.83172 21.75 5.25 18.1683 5.25 13.75C5.25 13.1977 5.69772 12.75 6.25 12.75C6.80228 12.75 7.25 13.1977 7.25 13.75C7.25 17.0637 9.93629 19.75 13.25 19.75C16.5637 19.75 19.25 17.0637 19.25 13.75C19.25 10.4363 16.5637 7.75 13.25 7.75H5.41421L7.20711 9.54289C7.59763 9.93342 7.59763 10.5666 7.20711 10.9571C6.81658 11.3476 6.18342 11.3476 5.79289 10.9571L2.29289 7.45711C1.90237 7.06658 1.90237 6.43342 2.29289 6.04289L5.79289 2.54289C6.18342 2.15237 6.81658 2.15237 7.20711 2.54289Z";
 const targetFilledIcon =
-    "M10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 10a5 5 0 1 1 10 0 5 5 0 0 1-10 0Zm5-3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z";
+    "M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14ZM6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12ZM12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z";
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
@@ -60,6 +64,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     animationspeedchange: Event;
     animationplayingchange: Event;
     animationprogresschange: Event;
+    selectedmaterialvariantchange: Event;
 }
 
 /**
@@ -141,10 +146,17 @@ export class HTML3DElement extends LitElement {
             (details) => (details.viewer.selectedAnimation = this.selectedAnimation ?? details.viewer.selectedAnimation),
             (details) => (this.selectedAnimation = details.viewer.selectedAnimation)
         ),
+        this._createPropertyBinding(
+            "selectedMaterialVariant",
+            (details) => details.viewer.onSelectedMaterialVariantChanged,
+            (details) => (details.viewer.selectedMaterialVariant = this.selectedMaterialVariant ?? details.viewer.selectedMaterialVariant ?? ""),
+            (details) => (this.selectedMaterialVariant = details.viewer.selectedMaterialVariant)
+        ),
     ] as const;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
-    static override styles = css`
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override styles = css`
         :host {
             --ui-foreground-color: white;
             --ui-background-hue: 233;
@@ -198,8 +210,8 @@ export class HTML3DElement extends LitElement {
 
         .loading-progress-outer {
             height: 4px;
-            border-radius: 2px;
-            border: none;
+            border-radius: 4px;
+            border: 1px solid var(--ui-background-color);
             outline: none;
             top: 12px;
             pointer-events: none;
@@ -450,6 +462,7 @@ export class HTML3DElement extends LitElement {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query && this._viewerDetails) {
+            this._viewerDetails.viewer.pauseAnimation();
             const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
             this._viewerDetails.camera.interpolateTo(
                 cameraOrbit[0],
@@ -465,13 +478,20 @@ export class HTML3DElement extends LitElement {
     /**
      * The engine to use for rendering.
      */
-    @property({ reflect: true })
+    @property({
+        converter: (value: string | null): HTML3DElement["engine"] => {
+            if (value === "WebGL" || value === "WebGPU") {
+                return value;
+            }
+            return getDefaultEngine();
+        },
+    })
     public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
      * The model URL.
      */
-    @property({ reflect: true })
+    @property()
     public source: Nullable<string> = null;
 
     /**
@@ -479,14 +499,36 @@ export class HTML3DElement extends LitElement {
      * @remarks
      * If this property is not set, the extension will be inferred from the model URL when possible.
      */
-    @property({ reflect: true })
+    @property()
     public extension: Nullable<string> = null;
 
     /**
-     * The environment URL.
+     * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
-    @property({ reflect: true })
-    public environment: Nullable<string> = null;
+    @property({
+        hasChanged: (newValue: HTML3DElement["environment"], oldValue: HTML3DElement["environment"]) => {
+            return newValue.lighting !== oldValue.lighting || newValue.skybox !== oldValue.skybox;
+        },
+    })
+    public get environment(): { lighting: Nullable<string>; skybox: Nullable<string> } {
+        return { lighting: this.environmentLighting, skybox: this.environmentSkybox };
+    }
+    public set environment(url: string) {
+        this.environmentLighting = url;
+        this.environmentSkybox = url;
+    }
+
+    /**
+     * The texture URL for lighting.
+     */
+    @property({ attribute: "environment-lighting" })
+    public environmentLighting: Nullable<string> = null;
+
+    /**
+     * The texture URL for the skybox.
+     */
+    @property({ attribute: "environment-skybox" })
+    public environmentSkybox: Nullable<string> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -694,13 +736,29 @@ export class HTML3DElement extends LitElement {
     public animationProgress = 0;
 
     @state()
-    private _animations: string[] = [];
+    private _animations: readonly string[] = [];
 
     @state()
     private _isAnimationPlaying = false;
 
+    /**
+     * The list of material variants for the currently loaded model.
+     */
+    public get materialVariants(): readonly string[] {
+        return this._viewerDetails?.viewer.materialVariants ?? [];
+    }
+
+    /**
+     * The currently selected material variant.
+     */
+    @property({ attribute: "material-variant" })
+    public selectedMaterialVariant: Nullable<string> = null;
+
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
+
+    @query("#materialSelect")
+    private _materialSelect: HTMLSelectElement | undefined;
 
     /**
      * Toggles the play/pause animation state if there is a selected animation.
@@ -709,21 +767,33 @@ export class HTML3DElement extends LitElement {
         this._viewerDetails?.viewer.toggleAnimation();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override connectedCallback(): void {
+    /**
+     * Resets the camera to its initial pose.
+     */
+    public resetCamera() {
+        this._viewerDetails?.viewer.resetCamera();
+    }
+
+    /** @internal */
+    public override connectedCallback(): void {
         super.connectedCallback();
         this._setupViewer();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override disconnectedCallback(): void {
+    /** @internal */
+    public override disconnectedCallback(): void {
         super.disconnectedCallback();
         this._tearDownViewer();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override update(changedProperties: PropertyValues<this>): void {
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
+
+        if (this._materialSelect) {
+            this._materialSelect.value = "";
+        }
 
         if (changedProperties.get("engine")) {
             this._tearDownViewer();
@@ -735,88 +805,134 @@ export class HTML3DElement extends LitElement {
                 this._updateModel();
             }
 
-            if (changedProperties.has("environment")) {
-                this._updateEnv();
+            if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
+                this._updateEnv({
+                    lighting: changedProperties.has("environmentLighting"),
+                    skybox: changedProperties.has("environmentSkybox"),
+                });
             }
         }
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override render() {
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected override render() {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
         const isIndeterminate = this.loadingProgress === true;
+
+        const progressBar = html`
+            <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
+                <div
+                    class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
+                    style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
+                ></div>
+            </div>
+        `;
+
+        // Setup the list of toolbar controls.
+        let toolbarControls: TemplateResult[] = [];
+        if (this._viewerDetails?.model != null) {
+            // If the model has animations, add animation controls.
+            if (this._hasAnimations) {
+                toolbarControls.push(html`
+                    <div class="animation-timeline">
+                        <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
+                            ${!this.isAnimationPlaying
+                                ? html`
+                                      <svg viewBox="0 0 24 24">
+                                          <path d="${playFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `
+                                : html`
+                                      <svg viewBox="0 0 24 24">
+                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `}
+                        </button>
+                        <input
+                            aria-label="Animation Progress"
+                            class="animation-timeline-input"
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.0001"
+                            .value="${this.animationProgress}"
+                            @input="${this._onAnimationTimelineChanged}"
+                            @pointerdown="${this._onAnimationTimelinePointerDown}"
+                        />
+                    </div>
+                    <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
+                        ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option> `)}
+                    </select>
+                    ${this.animations.length > 1
+                        ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                              ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
+                          </select>`
+                        : ""}
+                `);
+            }
+
+            // If the model has material variants, add material variant controls.
+            if (this.materialVariants.length > 1) {
+                toolbarControls.push(html`
+                    <select aria-label="Select Material Variant" @change="${this._onMaterialVariantChanged}">
+                        ${this.materialVariants.map((name) => html`<option value="${name}" .selected="${this.selectedMaterialVariant === name}">${name}</option>`)}
+                    </select>
+                `);
+            }
+
+            // Always include a button to reset the camera pose.
+            toolbarControls.push(html`
+                <button aria-label="Reset Camera Pose" @click="${this.resetCamera}">
+                    <svg viewBox="0 0 24 24">
+                        <path d="${arrowResetFilledIcon}" fill="currentColor"></path>
+                    </svg>
+                </button>
+            `);
+
+            // If hotspots have been defined, add hotspot controls.
+            if (this._hasHotSpots) {
+                toolbarControls.push(html`
+                    <div class="select-container">
+                        <select id="materialSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                            <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
+                            ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
+                        </select>
+                        <!-- This button is not actually interactive, we want input to pass through to the select below. -->
+                        <button style="pointer-events: none">
+                            <svg viewBox="0 0 24 24">
+                                <path d="${targetFilledIcon}" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `);
+            }
+
+            // Add a vertical divider between each toolbar control.
+            const controlCount = toolbarControls.length;
+            const separator = html`<div class="divider"></div>`;
+            toolbarControls = toolbarControls.reduce((toolbarControls, toolbarControl, index) => {
+                if (index < controlCount - 1) {
+                    return [...toolbarControls, toolbarControl, separator];
+                } else {
+                    return [...toolbarControls, toolbarControl];
+                }
+            }, new Array<TemplateResult>());
+        }
 
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
-                <slot name="progress-bar">
-                    <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
-                        <div
-                            class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
-                            style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
-                        ></div>
-                    </div>
-                </slot>
-                ${this._viewerDetails?.model == null || (!this._hasAnimations && !this._hasHotSpots)
+                <slot name="progress-bar"> ${progressBar}</slot>
+                ${toolbarControls.length === 0
                     ? ""
                     : html`
                           <slot name="tool-bar">
-                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">
-                                  ${!this._hasAnimations
-                                      ? ""
-                                      : html`<div class="animation-timeline">
-                                                <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                                                    ${!this.isAnimationPlaying
-                                                        ? html`<svg viewBox="0 0 20 20">
-                                                              <path d="${playFilledIcon}" fill="currentColor"></path>
-                                                          </svg>`
-                                                        : html`<svg viewBox="-3 -2 24 24">
-                                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                                          </svg>`}
-                                                </button>
-                                                <input
-                                                    aria-label="Animation Progress"
-                                                    class="animation-timeline-input"
-                                                    type="range"
-                                                    min="0"
-                                                    max="1"
-                                                    step="0.0001"
-                                                    .value="${this.animationProgress}"
-                                                    @input="${this._onAnimationTimelineChanged}"
-                                                    @pointerdown="${this._onAnimationTimelinePointerDown}"
-                                                />
-                                            </div>
-                                            <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
-                                                ${allowedAnimationSpeeds.map(
-                                                    (speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`
-                                                )}
-                                            </select> `}
-                                  ${this.animations.length > 1
-                                      ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                                            ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
-                                        </select>`
-                                      : ""}
-                                  ${this._hasAnimations && this._hasHotSpots ? html`<div class="divider"></div>` : ""}
-                                  ${this._hasHotSpots
-                                      ? html`<div class="select-container">
-                                            <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
-                                                <option value="" hidden selected></option>
-                                                <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
-                                                ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
-                                            </select>
-                                            <!-- This button is not actually interactive, we want input to pass through to the select below. -->
-                                            <button style="pointer-events: none">
-                                                <svg viewBox="0 0 20 20">
-                                                    <path d="${targetFilledIcon}" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </div> `
-                                      : ""}
-                              </div>
+                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
                           </slot>
                       `}
             </div>
@@ -863,6 +979,11 @@ export class HTML3DElement extends LitElement {
             const input = event.target as HTMLInputElement;
             input.addEventListener("pointerup", () => this._viewerDetails?.viewer.playAnimation(), { once: true });
         }
+    }
+
+    private _onMaterialVariantChanged(event: Event) {
+        const selectElement = event.target as HTMLSelectElement;
+        this.selectedMaterialVariant = selectElement.value;
     }
 
     private _onHotSpotsChanged(event: Event) {
@@ -990,7 +1111,7 @@ export class HTML3DElement extends LitElement {
                         });
 
                         this._updateModel();
-                        this._updateEnv();
+                        this._updateEnv({ lighting: true, skybox: true });
 
                         this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1031,14 +1152,29 @@ export class HTML3DElement extends LitElement {
         }
     }
 
-    private async _updateEnv() {
+    private async _updateEnv(options: EnvironmentOptions) {
         if (this._viewerDetails) {
             try {
-                if (this.environment) {
-                    await this._viewerDetails.viewer.loadEnvironment(this.environment);
+                const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
+
+                if (options.lighting && options.skybox && this.environmentLighting === this.environmentSkybox) {
+                    updates.push([this.environmentLighting, { lighting: true, skybox: true }]);
                 } else {
-                    await this._viewerDetails.viewer.resetEnvironment();
+                    if (options.lighting) {
+                        updates.push([this.environmentLighting, { lighting: true }]);
+                    }
+                    if (options.skybox) {
+                        updates.push([this.environmentSkybox, { skybox: true }]);
+                    }
                 }
+
+                updates.forEach(async ([url, options]) => {
+                    if (url) {
+                        await this._viewerDetails?.viewer.loadEnvironment(url, options);
+                    } else {
+                        await this._viewerDetails?.viewer.resetEnvironment(options);
+                    }
+                });
             } catch (error) {
                 Logger.Log(error);
             }

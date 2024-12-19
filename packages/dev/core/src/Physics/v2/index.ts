@@ -7,5 +7,6 @@ export * from "./physicsMaterial";
 export * from "./physicsAggregate";
 export * from "./ragdoll";
 export * from "./IPhysicsEnginePlugin";
+export * from "./characterController";
 /* eslint-disable import/no-internal-modules */
 export * from "./Plugins/index";

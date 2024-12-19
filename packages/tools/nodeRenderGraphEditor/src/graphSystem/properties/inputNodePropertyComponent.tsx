@@ -183,13 +183,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions.size}
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
-                                <OptionsLine
-                                    label="Format"
-                                    options={textureDepthStencilFormatList}
-                                    target={creationOptions.options}
-                                    propertyName="depthTextureFormat"
-                                    onSelect={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
-                                />
+                                {creationOptions.options.formats && (
+                                    <OptionsLine
+                                        label="Format"
+                                        options={textureDepthStencilFormatList}
+                                        target={creationOptions}
+                                        propertyName=""
+                                        onSelect={(value: number | string) => {
+                                            creationOptions.options.formats![0] = value as number;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                        extractValue={() => creationOptions.options.formats![0]}
+                                        noDirectUpdate={true}
+                                    />
+                                )}
                                 <FloatLineComponent
                                     lockObject={this.props.stateManager.lockObject}
                                     digits={0}

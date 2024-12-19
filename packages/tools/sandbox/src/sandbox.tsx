@@ -15,6 +15,7 @@ import { Color3, Color4 } from "core/Maths/math";
 import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
 interface ISandboxProps {}
 
@@ -38,6 +39,7 @@ export class Sandbox extends React.Component<
     private _assetUrl?: string;
     private _autoRotate?: boolean;
     private _cameraPosition?: Vector3;
+    private _toneMapping?: number;
     private _logoRef: React.RefObject<HTMLImageElement>;
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
@@ -165,19 +167,26 @@ export class Sandbox extends React.Component<
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
             for (const param of params) {
-                const split = param.split("=", 2);
-                const name = split[0];
-                const value = split[1];
-                switch (name) {
-                    case "assetUrl": {
+                const [name, value] = param.split("=", 2);
+                switch (name.toLowerCase()) {
+                    case "3dcommerce": {
+                        set3DCommerceMode();
+                        break;
+                    }
+                    case "asset":
+                    case "asseturl": {
                         this._assetUrl = value;
                         break;
                     }
-                    case "autoRotate": {
-                        this._autoRotate = value === "true" ? true : false;
+                    case "autorotate": {
+                        this._autoRotate = value.toLowerCase() === "true" ? true : false;
                         break;
                     }
-                    case "cameraPosition": {
+                    case "camera": {
+                        this._camera = +value;
+                        break;
+                    }
+                    case "cameraposition": {
                         this._cameraPosition = Vector3.FromArray(
                             value.split(",").map(function (component) {
                                 return +component;
@@ -185,16 +194,42 @@ export class Sandbox extends React.Component<
                         );
                         break;
                     }
-                    case "kiosk": {
-                        this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
+                    case "clearcolor": {
+                        this._clearColor = value;
                         break;
                     }
+                    case "environment": {
+                        EnvironmentTools.SkyboxPath = value;
+                        break;
+                    }
+                    case "kiosk": {
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "" };
+                        break;
+                    }
+                    case "skybox": {
+                        this._globalState.skybox = value.toLowerCase() === "true" ? true : false;
+                        break;
+                    }
+                    case "tonemapping": {
+                        switch (value.toLowerCase()) {
+                            case "standard":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                                break;
+                            case "aces":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                                break;
+                            case "khr_pbr_neutral":
+                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                                break;
+                        }
+                        break;
+                    }
+
+                    // --------------------------------------------
+                    // Reflector specific parameters (undocumented)
+                    // --------------------------------------------
                     case "reflector": {
                         setReflectorMode();
-                        break;
-                    }
-                    case "3dcommerce": {
-                        set3DCommerceMode();
                         break;
                     }
                     case "hostname": {
@@ -207,22 +242,6 @@ export class Sandbox extends React.Component<
                         if (this._globalState.reflector) {
                             this._globalState.reflector.port = +value;
                         }
-                        break;
-                    }
-                    case "environment": {
-                        EnvironmentTools.SkyboxPath = value;
-                        break;
-                    }
-                    case "skybox": {
-                        this._globalState.skybox = value === "true" ? true : false;
-                        break;
-                    }
-                    case "clearColor": {
-                        this._clearColor = value;
-                        break;
-                    }
-                    case "camera": {
-                        this._camera = +value;
                         break;
                     }
                 }
@@ -250,6 +269,7 @@ export class Sandbox extends React.Component<
                             assetUrl={this._assetUrl}
                             autoRotate={this._autoRotate}
                             cameraPosition={this._cameraPosition}
+                            toneMapping={this._toneMapping}
                             expanded={!this.state.isFooterVisible}
                             onEngineCreated={this.onEngineCreated}
                         />

@@ -19,7 +19,15 @@ var covariancesATexture: texture_2d<f32>;
 var covariancesBTexture: texture_2d<f32>;
 var centersTexture: texture_2d<f32>;
 var colorsTexture: texture_2d<f32>;
-
+#if SH_DEGREE > 0
+var shTexture0: texture_2d<u32>;
+#endif
+#if SH_DEGREE > 1
+var shTexture1: texture_2d<u32>;
+#endif
+#if SH_DEGREE > 2
+var shTexture2: texture_2d<u32>;
+#endif
 // Output
 varying vColor: vec4f;
 varying vPosition: vec2f;
@@ -35,8 +43,15 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
 
-    vertexOutputs.vColor = splat.color;
     vertexOutputs.vPosition = input.position;
+
+#if SH_DEGREE > 0
+    let dir: vec3f = normalize(worldPos.xyz - scene.vEyePosition.xyz);
+    vertexOutputs.vColor = vec4f(computeSH(splat, splat.color.xyz, dir), 1.0);
+#else
+    vertexOutputs.vColor = splat.color;
+#endif
+
     vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport);
 
 #include<clipPlaneVertex>

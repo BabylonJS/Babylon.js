@@ -76,7 +76,7 @@ export class CubeMapToSphericalPolynomialTools {
         const gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
         const format = Constants.TEXTUREFORMAT_RGBA;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (texture.textureType == Constants.TEXTURETYPE_FLOAT || texture.textureType == Constants.TEXTURETYPE_HALF_FLOAT) {
             type = Constants.TEXTURETYPE_FLOAT;
         }
@@ -171,7 +171,7 @@ export class CubeMapToSphericalPolynomialTools {
                     }
 
                     // Handle Integer types.
-                    if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
+                    if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
                         r /= 255;
                         g /= 255;
                         b /= 255;

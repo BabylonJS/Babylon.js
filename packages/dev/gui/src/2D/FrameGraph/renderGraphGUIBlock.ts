@@ -40,6 +40,7 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
         super(name, frameGraph, scene);
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);

@@ -62,7 +62,7 @@ export interface IEffectLayerOptions {
     renderingGroupId: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
      */
     mainTextureType: number;
 
@@ -362,7 +362,7 @@ export abstract class EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             generateStencilBuffer: false,
             ...options,
         };
@@ -957,7 +957,9 @@ export abstract class EffectLayer {
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
         if (this._useMeshMaterial(renderingMesh)) {
+            subMesh.getMaterial()!._glowModeEnabled = true;
             renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
+            subMesh.getMaterial()!._glowModeEnabled = false;
         } else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 

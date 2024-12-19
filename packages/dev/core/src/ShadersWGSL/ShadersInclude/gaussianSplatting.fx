@@ -9,6 +9,15 @@ struct Splat {
     color: vec4f,
     covA: vec4f,
     covB: vec4f,
+#if SH_DEGREE > 0
+    sh0: vec4<u32>,
+#endif
+#if SH_DEGREE > 1
+    sh1: vec4<u32>,
+#endif
+#if SH_DEGREE > 2
+    sh2: vec4<u32>,
+#endif
 };
 
 fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
@@ -19,10 +28,135 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
     splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
     splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
-
+#if SH_DEGREE > 0
+    splat.sh0 = textureLoad(shTexture0, splatUVi32, 0);
+#endif
+#if SH_DEGREE > 1
+    splat.sh1 = textureLoad(shTexture1, splatUVi32, 0);
+#endif
+#if SH_DEGREE > 2
+    splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
+#endif
     return splat;
 }
+
+fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 16>) -> vec3f
+{
+    let SH_C0: f32 = 0.28209479;
+    let SH_C1: f32 = 0.48860251;
+    var SH_C2: array<f32, 5> = array<f32, 5>(
+        1.092548430,
+        -1.09254843,
+        0.315391565,
+        -1.09254843,
+        0.546274215
+    );
+
+    var SH_C3: array<f32, 7> = array<f32, 7>(
+        -0.59004358,
+        2.890611442,
+        -0.45704579,
+        0.373176332,
+        -0.45704579,
+        1.445305721,
+        -0.59004358
+    );
+
+	var result: vec3f = /*SH_C0 * */sh[0];
+
+#if SH_DEGREE > 0
+    let x: f32 = dir.x;
+    let y: f32 = dir.y;
+    let z: f32 = dir.z;
+
+    result += -SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+#if SH_DEGREE > 1
+    let xx: f32 = x * x;
+    let yy: f32 = y * y;
+    let zz: f32 = z * z;
+    let xy: f32 = x * y;
+    let yz: f32 = y * z;
+    let xz: f32 = x * z;
+    result += 
+        SH_C2[0] * xy * sh[4] +
+        SH_C2[1] * yz * sh[5] +
+        SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
+        SH_C2[3] * xz * sh[7] +
+        SH_C2[4] * (xx - yy) * sh[8];
+
+#if SH_DEGREE > 2
+    result += 
+        SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
+        SH_C3[1] * xy * z * sh[10] +
+        SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
+        SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
+        SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
+        SH_C3[5] * z * (xx - yy) * sh[14] +
+        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
+#endif
+#endif
+#endif
+
+    return result;
+}
+
+fn decompose(value: u32) -> vec4f
+{
+    let components : vec4f = vec4f(
+                        f32((value           ) & 255u),
+                        f32((value >> u32( 8)) & 255u),
+                        f32((value >> u32(16)) & 255u),
+                        f32((value >> u32(24)) & 255u));
+
+    return components * vec4f(2./255.) - vec4f(1.);
+}
+
+fn computeSH(splat: Splat, color: vec3f, dir: vec3f) -> vec3f
+{
+    var sh: array<vec3<f32>, 16>;
     
+    sh[0] = color;
+
+#if SH_DEGREE > 0
+    let sh00: vec4f = decompose(splat.sh0.x);
+    let sh01: vec4f = decompose(splat.sh0.y);
+    let sh02: vec4f = decompose(splat.sh0.z);
+
+    sh[1] = vec3f(sh00.x, sh00.y, sh00.z);
+    sh[2] = vec3f(sh00.w, sh01.x, sh01.y);
+    sh[3] = vec3f(sh01.z, sh01.w, sh02.x);
+#endif
+#if SH_DEGREE > 1
+    let sh03: vec4f = decompose(splat.sh0.w);
+    let sh04: vec4f = decompose(splat.sh1.x);
+    let sh05: vec4f = decompose(splat.sh1.y);
+
+    sh[4] = vec3f(sh02.y, sh02.z, sh02.w);
+    sh[5] = vec3f(sh03.x, sh03.y, sh03.z);
+    sh[6] = vec3f(sh03.w, sh04.x, sh04.y);
+    sh[7] = vec3f(sh04.z, sh04.w, sh05.x);
+    sh[8] = vec3f(sh05.y, sh05.z, sh05.w);
+#endif
+#if SH_DEGREE > 2
+    let sh06: vec4f = decompose(splat.sh1.z);
+    let sh07: vec4f = decompose(splat.sh1.w);
+    let sh08: vec4f = decompose(splat.sh2.x);
+    let sh09: vec4f = decompose(splat.sh2.y);
+    let sh10: vec4f = decompose(splat.sh2.z);
+    let sh11: vec4f = decompose(splat.sh2.w);
+
+    sh[9] = vec3f(sh06.x, sh06.y, sh06.z);
+    sh[10] = vec3f(sh06.w, sh07.x, sh07.y);
+    sh[11] = vec3f(sh07.z, sh07.w, sh08.x);
+    sh[12] = vec3f(sh08.y, sh08.z, sh08.w);
+    sh[13] = vec3f(sh09.x, sh09.y, sh09.z);
+    sh[14] = vec3f(sh09.w, sh10.x, sh10.y);
+    sh[15] = vec3f(sh10.z, sh10.w, sh11.x);    
+#endif
+
+    return computeColorFromSHDegree(dir, sh);
+}
+
 fn gaussianSplatting(
     meshPos: vec2<f32>, 
     worldPos: vec3<f32>, 

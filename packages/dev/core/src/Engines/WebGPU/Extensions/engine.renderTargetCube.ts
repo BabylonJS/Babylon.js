@@ -23,7 +23,7 @@ ThinWebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: numbe
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
-        type: Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
         samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         format: Constants.TEXTUREFORMAT_RGBA,
         samples: 1,

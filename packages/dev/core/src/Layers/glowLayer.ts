@@ -93,7 +93,7 @@ export interface IGlowLayerOptions {
     alphaBlendingMode?: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
      */
     mainTextureType: number;
 
@@ -212,7 +212,7 @@ export class GlowLayer extends EffectLayer {
             renderingGroupId: -1,
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             generateStencilBuffer: false,
             ...options,
         };
@@ -296,7 +296,7 @@ export class GlowLayer extends EffectLayer {
         if (this._engine.getCaps().textureHalfFloatRender) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
         this._blurTexture1 = new RenderTargetTexture(
@@ -629,9 +629,15 @@ export class GlowLayer extends EffectLayer {
      * @returns true if the material of the mesh should be use to render the effect
      */
     protected override _useMeshMaterial(mesh: AbstractMesh): boolean {
+        // Specific case of material supporting glow directly
+        if (mesh.material?._supportGlowLayer) {
+            return true;
+        }
+
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
+
         return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
     }
 

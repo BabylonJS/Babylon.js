@@ -5,5 +5,6 @@ declare module "*.svg" {
 
 declare module "*.module.scss" {
     const content: Record<string, string>;
-    export default content;
+    // also allow "import * as styles from './styles.module.scss'"
+    export = content;
 }

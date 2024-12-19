@@ -7,7 +7,6 @@ import { Constants } from "../constants";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { DDSInfo } from "core/Misc/dds";
-import { DDSTools } from "core/Misc/dds";
 
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -49,7 +48,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
     forcedExtension: any = null,
     createPolynomials: boolean = true
 ): InternalTexture {
-    const callback = (loadData: any) => {
+    const callback = async (loadData: any) => {
         if (!loadData) {
             if (onLoad) {
                 onLoad(null);
@@ -80,6 +79,9 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         if (!width) {
             return;
         }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { DDSTools } = await import("core/Misc/dds");
 
         const textures: BaseTexture[] = [];
         for (let i = 0; i < mipSlices; i++) {

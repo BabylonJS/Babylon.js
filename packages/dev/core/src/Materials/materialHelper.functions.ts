@@ -679,6 +679,7 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
     const manager = (<Mesh>mesh).morphTargetManager;
     if (manager) {
         defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
+        defines["MORPHTARGETS_UV2"] = manager.supportsUV2s && defines["UV2"];
         defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
@@ -687,6 +688,7 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
     } else {
         defines["MORPHTARGETS_UV"] = false;
+        defines["MORPHTARGETS_UV2"] = false;
         defines["MORPHTARGETS_TANGENT"] = false;
         defines["MORPHTARGETS_NORMAL"] = false;
         defines["MORPHTARGETS"] = false;
@@ -932,6 +934,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param projectedLightTexture defines if projected texture must be used
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
+ * @param iesLightTexture defines if IES texture must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -939,7 +942,8 @@ export function PrepareUniformsAndSamplersForLight(
     samplersList: string[],
     projectedLightTexture?: any,
     uniformBuffersList: Nullable<string[]> = null,
-    updateOnlyBuffersList = false
+    updateOnlyBuffersList = false,
+    iesLightTexture = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -977,6 +981,9 @@ export function PrepareUniformsAndSamplersForLight(
         samplersList.push("projectionLightTexture" + lightIndex);
         uniformsList.push("textureProjectionMatrix" + lightIndex);
     }
+    if (iesLightTexture) {
+        samplersList.push("iesLightTexture" + lightIndex);
+    }
 }
 
 /**
@@ -1008,7 +1015,15 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         if (!defines["LIGHT" + lightIndex]) {
             break;
         }
-        PrepareUniformsAndSamplersForLight(lightIndex, uniformsList, samplersList, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffersList);
+        PrepareUniformsAndSamplersForLight(
+            lightIndex,
+            uniformsList,
+            samplersList,
+            defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
+            uniformBuffersList,
+            false,
+            defines["IESLIGHTTEXTURE" + lightIndex]
+        );
     }
 
     if (defines["NUM_MORPH_INFLUENCERS"]) {

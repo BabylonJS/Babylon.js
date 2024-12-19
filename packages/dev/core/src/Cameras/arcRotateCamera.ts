@@ -48,7 +48,7 @@ export class ArcRotateCamera extends TargetCamera {
     public beta: number;
 
     /**
-     * Defines the radius of the camera from it s target point.
+     * Defines the radius of the camera from its target point.
      */
     @serialize()
     public radius: number;
@@ -540,6 +540,8 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public restoreStateInterpolationFactor = 0;
 
+    private _currentInterpolationFactor = 0;
+
     /** @internal */
     public override _viewMatrix = new Matrix();
     /** @internal */
@@ -807,7 +809,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public override _restoreStateValues(): boolean {
         if (this.hasStateStored() && this.restoreStateInterpolationFactor > Epsilon && this.restoreStateInterpolationFactor < 1) {
-            this.interpolateTo(this._storedAlpha, this._storedBeta, this._storedRadius, this._storedTarget, this._storedTargetScreenOffset);
+            this.interpolateTo(this._storedAlpha, this._storedBeta, this._storedRadius, this._storedTarget, this._storedTargetScreenOffset, this.restoreStateInterpolationFactor);
             return true;
         }
         if (!super._restoreStateValues()) {
@@ -836,14 +838,30 @@ export class ArcRotateCamera extends TargetCamera {
      * @param radius Defines the goal radius.
      * @param target Defines the goal target.
      * @param targetScreenOffset Defines the goal target screen offset.
+     * @param interpolationFactor A value  between 0 and 1 that determines the speed of the interpolation.
      */
-    public interpolateTo(alpha = this.alpha, beta = this.beta, radius = this.radius, target = this.target, targetScreenOffset = this.targetScreenOffset): void {
+    public interpolateTo(
+        alpha = this.alpha,
+        beta = this.beta,
+        radius = this.radius,
+        target = this.target,
+        targetScreenOffset = this.targetScreenOffset,
+        interpolationFactor?: number
+    ): void {
         this._progressiveRestore = true;
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
         this.inertialRadiusOffset = 0;
         this.inertialPanningX = 0;
         this.inertialPanningY = 0;
+
+        if (interpolationFactor != null) {
+            this._currentInterpolationFactor = interpolationFactor;
+        } else if (this.restoreStateInterpolationFactor !== 0) {
+            this._currentInterpolationFactor = this.restoreStateInterpolationFactor;
+        } else {
+            this._currentInterpolationFactor = 0.1;
+        }
 
         alpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
         beta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
@@ -961,7 +979,7 @@ export class ArcRotateCamera extends TargetCamera {
         // progressive restore
         if (this._progressiveRestore) {
             const dt = this._scene.getEngine().getDeltaTime() / 1000;
-            const t = 1 - Math.pow(2, -dt / this.restoreStateInterpolationFactor);
+            const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
 
             // can't use tmp vector here because of assignment
             this.setTarget(Vector3.Lerp(this.getTarget(), this._goalTarget, t));

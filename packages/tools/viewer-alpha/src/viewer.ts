@@ -1,5 +1,6 @@
 import type {
     AbstractEngine,
+    AbstractMesh,
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
@@ -7,15 +8,20 @@ import type {
     FramingBehavior,
     HotSpotQuery,
     IDisposable,
+    IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
     Nullable,
     Observer,
+    PickingInfo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
+import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -24,16 +30,17 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
-import { AsyncLock } from "core/Misc/asyncLock";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
-import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
+import { AsyncLock } from "core/Misc/asyncLock";
+import { deepMerge } from "core/Misc/deepMerger";
+import { Observable } from "core/Misc/observable";
+import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -94,13 +101,13 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
+function createSkybox(scene: Scene, camera: Camera, reflectionTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
     hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
     hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
     if (hdrSkyboxMaterial.reflectionTexture) {
         hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
     }
@@ -146,6 +153,15 @@ export type ViewerDetails = {
      * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
      */
     suspendRendering(): IDisposable;
+
+    /**
+     * Picks the object at the given screen coordinates.
+     * @remarks This function ensures skeletal and morph target animations are up to date before picking, and typically should not be called at high frequency (e.g. every frame, on pointer move, etc.).
+     * @param screenX The x coordinate in screen space.
+     * @param screenY The y coordinate in screen space.
+     * @returns A PickingInfo if an object was picked, otherwise null.
+     */
+    pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
 export type ViewerOptions = Partial<
@@ -157,7 +173,24 @@ export type ViewerOptions = Partial<
     }>
 >;
 
-export type EnvironmentOptions = Partial<Readonly<{}>>;
+export type EnvironmentOptions = Partial<
+    Readonly<{
+        /**
+         * Whether to use the environment for lighting (e.g. IBL).
+         */
+        lighting: boolean;
+
+        /**
+         * Whether to use the environment for the skybox.
+         */
+        skybox: boolean;
+    }>
+>;
+
+const defaultLoadEnvironmentOptions = {
+    lighting: true,
+    skybox: true,
+} as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -213,14 +246,6 @@ export class ViewerHotSpotResult {
  * Provides an experience for viewing a single 3D model.
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
- * Includes (or will include) support for common model viewing requirements such as:
- * - Loading different model formats.
- * - Setting up a camera and providing default behaviors like auto orbit and pose interpolation.
- * - Framing the loaded model in the camera's view.
- * - Setting up the environment, lighting, and tone mapping.
- * - Enumerating and playing (or auto playing) animations.
- * - Enumerating and switching between material variants.
- * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
     static {
@@ -287,11 +312,19 @@ export class Viewer implements IDisposable {
      */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
+    /**
+     * Fired when the selected material variant changes.
+     */
+    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
+
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _details: ViewerDetails;
+    private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
+    private _materialVariantsController: Nullable<MaterialVariantsController> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -307,8 +340,10 @@ export class Viewer implements IDisposable {
     private _loadModelAbortController: Nullable<AbortController> = null;
 
     private readonly _loadEnvironmentLock = new AsyncLock();
-    private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+
+    private readonly _loadSkyboxLock = new AsyncLock();
+    private _loadSkyboxAbortController: Nullable<AbortController> = null;
 
     private _isLoadingModel = false;
     private _modelLoadingProgress: Nullable<number> = null;
@@ -316,7 +351,6 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
-    private _vector3 = BuildTuple(4, Vector3.Zero);
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -360,15 +394,34 @@ export class Viewer implements IDisposable {
             });
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
+            camera.useInputToRestoreState = false;
+
+            scene.onPointerObservable.add(async (pointerInfo) => {
+                const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                if (pickingInfo?.pickedPoint) {
+                    const distance = pickingInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                    // Immediately reset the target and the radius based on the distance to the picked point.
+                    // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                    camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                    camera.radius = distance;
+                    camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
+                } else {
+                    camera.restoreState();
+                }
+            }, PointerEventTypes.POINTERDOUBLETAP);
+
             this._details = {
                 viewer: this,
                 scene,
                 camera,
                 model: null,
-                suspendRendering: this._suspendRendering.bind(this),
+                suspendRendering: () => this._suspendRendering(),
+                pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
             };
         }
         this._details.scene.skipFrustumClipping = true;
+        this._details.scene.skipPointerDownPicking = true;
+        this._details.scene.skipPointerUpPicking = true;
         this._details.scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._details.camera.attachControl();
@@ -617,6 +670,29 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * The list of material variant names for the currently loaded model.
+     */
+    public get materialVariants(): readonly string[] {
+        return this._materialVariantsController?.variants ?? [];
+    }
+
+    /**
+     * The currently selected material variant.
+     */
+    public get selectedMaterialVariant(): Nullable<string> {
+        return this._materialVariantsController?.selectedVariant ?? null;
+    }
+
+    public set selectedMaterialVariant(value: string) {
+        if (value !== this.selectedMaterialVariant && this._materialVariantsController?.variants.includes(value)) {
+            this._snapshotHelper.disableSnapshotRendering();
+            this._materialVariantsController.selectedVariant = value;
+            this._snapshotHelper.enableSnapshotRendering();
+            this.onSelectedMaterialVariantChanged.notifyObservers();
+        }
+    }
+
+    /**
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
@@ -647,22 +723,35 @@ export class Viewer implements IDisposable {
                 this.onLoadingProgressChanged.notifyObservers();
             }
         };
+        delete options?.onProgress;
 
-        // Enable transparency as coverage by default to be 3D Commerce compliant by default.
-        // https://doc.babylonjs.com/setup/support/3D_commerce_certif
-        if (!options?.pluginOptions?.gltf?.transparencyAsCoverage) {
-            options = {
-                ...options,
-                pluginOptions: {
-                    ...options?.pluginOptions,
-                    gltf: {
-                        ...options?.pluginOptions?.gltf,
-                        transparencyAsCoverage: true,
+        const originalOnMaterialVariantsLoaded = options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+        const onMaterialVariantsLoaded: typeof originalOnMaterialVariantsLoaded = (controller) => {
+            originalOnMaterialVariantsLoaded?.(controller);
+            this._materialVariantsController = controller;
+        };
+        delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+
+        const defaultOptions: LoadModelOptions = {
+            // Pass a progress callback to update the loading progress.
+            onProgress,
+            pluginOptions: {
+                gltf: {
+                    // Enable transparency as coverage by default to be 3D Commerce compliant by default.
+                    // https://doc.babylonjs.com/setup/support/3D_commerce_certif
+                    transparencyAsCoverage: true,
+                    extensionOptions: {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        KHR_materials_variants: {
+                            // Capture the material variants controller when it is loaded.
+                            onLoaded: onMaterialVariantsLoaded,
+                        },
                     },
                 },
-                onProgress,
-            };
-        }
+            },
+        };
+
+        options = deepMerge(defaultOptions, options ?? {});
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
@@ -672,6 +761,9 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.disableSnapshotRendering();
             this._details.model?.dispose();
             this._details.model = null;
+            this._meshDataCache.clear();
+            this._materialVariantsController = null;
+            this.onSelectedMaterialVariantChanged.notifyObservers();
             this.selectedAnimation = -1;
 
             try {
@@ -680,6 +772,7 @@ export class Viewer implements IDisposable {
                     this._modelLoadingProgress = 0;
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                    this.onSelectedMaterialVariantChanged.notifyObservers();
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
                         group.pause();
@@ -718,56 +811,79 @@ export class Viewer implements IDisposable {
 
     /**
      * Unloads the current environment if one is loaded.
+     * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
-    public async resetEnvironment(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, undefined, abortSignal);
+    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironment(undefined, options, abortSignal);
     }
 
     private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
-        const abortController = (this._loadEnvironmentAbortController = new AbortController());
+        options = options ?? defaultLoadEnvironmentOptions;
+        if (!options.lighting && !options.skybox) {
+            return;
+        }
 
-        await this._loadEnvironmentLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, abortController.signal);
+        const locks: AsyncLock[] = [];
+        if (options.lighting) {
+            this._loadEnvironmentAbortController?.abort("New environment lighting is being loaded before previous environment lighting finished loading.");
+            locks.push(this._loadEnvironmentLock);
+        }
+        if (options.skybox) {
+            this._loadSkyboxAbortController?.abort("New environment skybox is being loaded before previous environment skybox finished loading.");
+            locks.push(this._loadSkyboxLock);
+        }
+
+        const environmentAbortController = (this._loadEnvironmentAbortController = options.lighting ? new AbortController() : null);
+        const skyboxAbortController = (this._loadSkyboxAbortController = options.skybox ? new AbortController() : null);
+
+        await AsyncLock.LockAsync(async () => {
+            throwIfAborted(abortSignal, environmentAbortController?.signal, skyboxAbortController?.signal);
             this._snapshotHelper.disableSnapshotRendering();
-            this._environment?.dispose();
-            this._environment = null;
-            this._details.scene.autoClear = true;
+
+            const dispose = () => {
+                if (options.lighting) {
+                    this._details.scene.environmentTexture?.dispose();
+                    this._details.scene.environmentTexture = null;
+                }
+                if (options.skybox) {
+                    this._skybox?.dispose(undefined, true);
+                    this._skybox = null;
+                    this._details.scene.autoClear = true;
+                }
+            };
+
+            // First dispose the current environment and/or skybox.
+            dispose();
 
             try {
                 if (url) {
-                    this._environment = await new Promise<IDisposable>((resolve, reject) => {
-                        const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+
+                    if (options.lighting) {
                         this._details.scene.environmentTexture = cubeTexture;
+                    }
 
-                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
-                        this._snapshotHelper.fixMeshes([skybox]);
-                        this._skybox = skybox;
-
+                    if (options.skybox) {
+                        const reflectionTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
+                        this._skybox = createSkybox(this._details.scene, this._details.camera, reflectionTexture, this.skyboxBlur);
+                        this._snapshotHelper.fixMeshes([this._skybox]);
                         this._details.scene.autoClear = false;
+                    }
 
-                        const dispose = () => {
-                            cubeTexture.dispose();
-                            skybox.dispose();
-                            this._skybox = null;
-                        };
-
+                    await new Promise<void>((resolve, reject) => {
                         const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
-                            resolve({
-                                dispose,
-                            });
+                            resolve();
                         });
 
                         const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
                             if (texture === cubeTexture) {
                                 successObserver.remove();
                                 errorObserver.remove();
-                                dispose();
                                 reject(new Error("Failed to load environment texture."));
                             }
                         });
@@ -777,12 +893,13 @@ export class Viewer implements IDisposable {
                 this._updateLight();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
+                dispose();
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
             }
-        });
+        }, locks);
     }
 
     /**
@@ -808,6 +925,13 @@ export class Viewer implements IDisposable {
      */
     public async pauseAnimation() {
         this._activeAnimation?.pause();
+    }
+
+    /**
+     * Resets the camera to its initial pose.
+     */
+    public resetCamera() {
+        this._details.camera.restoreState();
     }
 
     /**
@@ -852,16 +976,19 @@ export class Viewer implements IDisposable {
             return false;
         }
 
-        const worldNormal = this._vector3[2];
-        const worldPos = this._vector3[1];
-        const screenPos = this._vector3[0];
+        const worldNormal = this._tempVectors[2];
+        const worldPos = this._tempVectors[1];
+        const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
             const mesh = this._details.model.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
-            GetHotSpotToRef(mesh, query, worldPos, worldNormal);
+
+            if (!GetHotSpotToRef(mesh, query, worldPos, worldNormal)) {
+                return false;
+            }
         } else {
             worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
@@ -882,7 +1009,7 @@ export class Viewer implements IDisposable {
         result.worldPosition[2] = worldPos.z;
 
         // visibility
-        const eyeToSurface = this._vector3[3];
+        const eyeToSurface = this._tempVectors[3];
         eyeToSurface.copyFrom(this._details.camera.globalPosition);
         eyeToSurface.subtractInPlace(worldPos);
         eyeToSurface.normalize();
@@ -912,6 +1039,11 @@ export class Viewer implements IDisposable {
         if (!this._renderLoopController) {
             const render = () => {
                 this._details.scene.render();
+
+                // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                this._details.camera.panningSensibility = 5000 / this._details.camera.radius;
+                this._details.camera.speed = this._details.camera.radius * 0.2;
+
                 if (this.isAnimationPlaying) {
                     this.onAnimationProgressChanged.notifyObservers();
                     this._autoRotationBehavior.resetLastInteractionTime();
@@ -934,11 +1066,12 @@ export class Viewer implements IDisposable {
     }
 
     private _updateCamera(interpolate = false): void {
-        // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
+
+        this._details.camera.useAutoRotationBehavior = true;
 
         const currentAlpha = this._details.camera.alpha;
         const currentBeta = this._details.camera.beta;
@@ -973,20 +1106,16 @@ export class Viewer implements IDisposable {
 
             goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
-        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
         this._details.camera.radius = goalRadius;
         this._details.camera.target = goalTarget;
-        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.001;
+        this._details.camera.upperRadiusLimit = goalRadius * 5;
+        this._details.camera.minZ = goalRadius * 0.001;
         this._details.camera.maxZ = goalRadius * 1000;
-        this._details.camera.speed = goalRadius * 0.2;
-        this._details.camera.useAutoRotationBehavior = true;
-        this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
-        this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
         this._details.camera.wheelDeltaPercentage = 0.01;
-        this._details.camera.pinchDeltaPercentage = 0.01;
+        this._details.camera.useNaturalPinchZoom = true;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
 
@@ -1007,7 +1136,7 @@ export class Viewer implements IDisposable {
             shouldHaveDefaultLight = false;
         } else {
             const hasModelProvidedLights = this._details.model.lights.length > 0;
-            const hasImageBasedLighting = !!this._environment;
+            const hasImageBasedLighting = !!this._details.scene.environmentTexture;
             const hasMaterials = this._details.model.materials.length > 0;
             const hasNonPBRMaterials = this._details.model.materials.some((material) => !(material instanceof PBRMaterial));
 
@@ -1030,6 +1159,29 @@ export class Viewer implements IDisposable {
 
     private _applyAnimationSpeed() {
         this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
+    }
+
+    private async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
+        await import("core/Culling/ray");
+        if (this._details.model) {
+            const model = this._details.model;
+            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
+            model.meshes.forEach((mesh) => {
+                let cache = this._meshDataCache.get(mesh);
+                if (!cache) {
+                    cache = {};
+                    this._meshDataCache.set(mesh, cache);
+                }
+                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+            });
+
+            const pickingInfo = this._details.scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
+            if (pickingInfo.hit) {
+                return pickingInfo;
+            }
+        }
+
+        return null;
     }
 
     /**

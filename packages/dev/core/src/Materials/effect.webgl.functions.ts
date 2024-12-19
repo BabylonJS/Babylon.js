@@ -2,11 +2,13 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import { _executeWhenRenderingStateIsCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
 import { _getGlobalDefines } from "core/Engines/abstractEngine.functions";
 import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "core/Engines/shaderStore";
+import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Generate a pipeline context from the provided options
@@ -37,7 +39,8 @@ export async function generatePipelineContext(
                 break;
             case "WEBGL2":
             default:
-                processor = new (await import("core/Engines/WebGL/webGL2ShaderProcessors")).WebGL2ShaderProcessor();
+                // default to WebGL2, which is included in the package. Avoid async-load the default.
+                processor = new WebGL2ShaderProcessor();
                 break;
         }
     }
@@ -87,7 +90,16 @@ export async function generatePipelineContext(
                             _preparePipelineContext,
                             _executeWhenRenderingStateIsCompiled
                         );
-                        resolve(pipeline);
+                        // the default behavior so far. If not async or no request to wait for isReady, resolve immediately
+                        if (!options.waitForIsReady || !pipeline.isAsync) {
+                            resolve(pipeline);
+                        } else {
+                            _retryWithInterval(
+                                () => _isRenderingStateCompiled(pipeline, context),
+                                () => resolve(pipeline),
+                                () => reject(new Error("Timeout while waiting for pipeline to be ready"))
+                            );
+                        }
                     } catch (e) {
                         reject(e);
                     }

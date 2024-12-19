@@ -1,11 +1,9 @@
-import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
+import { GetTypeForDepthTexture, InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
-import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import "../../AbstractEngine/abstractEngine.texture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
@@ -130,15 +128,11 @@ ThinWebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureS
     internalTexture.label = options.label;
 
     internalTexture.format = internalOptions.depthTextureFormat;
+    internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
-
-    // Now that the hardware texture is created, we can retrieve the GPU format and set the right type to the internal texture
-    const gpuTextureWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
-
-    internalTexture.type = WebGPUTextureHelper.GetTextureTypeFromFormat(gpuTextureWrapper.format);
 
     this._internalTexturesCache.push(internalTexture);
 

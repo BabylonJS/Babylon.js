@@ -135,7 +135,7 @@ export interface DDSInfo {
      */
     dxgiFormat: number;
     /**
-     * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
+     * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT
      */
     textureType: number;
     /**
@@ -169,7 +169,7 @@ export class DDSTools {
 
         const fourCC = header[off_pfFourCC];
         const dxgiFormat = fourCC === FOURCC_DX10 ? extendedHeader[off_dxgiFormat] : 0;
-        let textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
         switch (fourCC) {
             case FOURCC_D3DFMT_R16G16B16A16F:
@@ -570,7 +570,7 @@ export class DDSTools {
                                 }
                             }
 
-                            texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                            texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                         } else {
                             const floatAvailable = caps.textureFloat && ((destTypeMustBeFilterable && caps.textureFloatLinearFiltering) || !destTypeMustBeFilterable);
                             const halfFloatAvailable = caps.textureHalfFloat && ((destTypeMustBeFilterable && caps.textureHalfFloatLinearFiltering) || !destTypeMustBeFilterable);
@@ -640,7 +640,7 @@ export class DDSTools {
                             engine._uploadDataToTextureDirectly(texture, floatArray, face, i);
                         }
                     } else if (info.isRGB) {
-                        texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                         if (bpp === 24) {
                             texture.format = Constants.TEXTUREFORMAT_RGB;
                             dataLength = width * height * 3;
@@ -661,14 +661,14 @@ export class DDSTools {
 
                         byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer);
                         texture.format = Constants.TEXTUREFORMAT_LUMINANCE;
-                        texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                         engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                     } else {
                         dataLength = (((Math.max(4, width) / 4) * Math.max(4, height)) / 4) * blockBytes;
                         byteArray = new Uint8Array(data.buffer, data.byteOffset + dataOffset, dataLength);
 
-                        texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
                         engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);
                     }
                 }
