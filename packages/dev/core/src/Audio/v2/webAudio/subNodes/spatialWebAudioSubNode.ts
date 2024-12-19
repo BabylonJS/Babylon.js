@@ -1,22 +1,22 @@
-import type { Nullable } from "../../../../types";
-import { SpatialAudio, SpatialAudioSubNode, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
+import { SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
+import type { _WebAudioEngine } from "../webAudioEngine";
+import type { IWebAudioInputNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioParentNode): Promise<SpatialWebAudioSubNode> {
-    return new SpatialWebAudioSubNode(owner);
+export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<SpatialAudioSubNode> {
+    return new SpatialWebAudioSubNode(engine);
 }
 
 /** @internal */
-export class SpatialWebAudioSubNode extends SpatialAudioSubNode {
+class SpatialWebAudioSubNode extends SpatialAudioSubNode {
     /** @internal */
     public readonly node: PannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioParentNode) {
-        super(owner);
+    public constructor(engine: _WebAudioEngine) {
+        super(engine);
 
-        this.node = new PannerNode(owner.audioContext);
+        this.node = new PannerNode(engine.audioContext);
     }
 
     /** @internal */
@@ -103,20 +103,6 @@ export class SpatialWebAudioSubNode extends SpatialAudioSubNode {
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
-    }
-
-    /** @internal */
-    public setOptions(options: Nullable<ISpatialAudioOptions>): void {
-        if (!options) {
-            return;
-        }
-
-        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : SpatialAudio.DefaultConeInnerAngle;
-        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : SpatialAudio.DefaultConeOuterAngle;
-        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : SpatialAudio.DefaultConeOuterVolume;
-        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : SpatialAudio.DefaultDistanceModel;
-        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : SpatialAudio.DefaultMaxDistance;
-        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : SpatialAudio.DefaultPanningModel;
     }
 
     /** @internal */

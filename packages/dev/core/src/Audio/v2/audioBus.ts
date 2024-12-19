@@ -26,8 +26,7 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
 export abstract class AudioBus extends AbstractAudioBus {
     private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
-    /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAudioBusOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine);
 
         if (options?.outputBus) {

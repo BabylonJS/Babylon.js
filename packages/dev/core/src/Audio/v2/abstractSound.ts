@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import { AudioNodeType } from "./abstractAudioNode";
+import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
@@ -40,15 +40,13 @@ export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudi
 /**
  * Abstract class representing a sound in the audio engine.
  */
-export abstract class AbstractSound extends AbstractAudioNode {
+export abstract class AbstractSound extends AbstractAudioSuperNode {
     private _state: SoundState = SoundState.Stopped;
 
     // Non-owning.
     protected _soundInstances = new Set<_AbstractSoundInstance>();
 
     protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
-
-    protected abstract _subGraph: AbstractAudioSubGraph;
 
     /**
      * Whether the sound should start playing automatically.
@@ -123,7 +121,7 @@ export abstract class AbstractSound extends AbstractAudioNode {
     }
 
     protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
-        super(engine, AudioNodeType.Output, null, name);
+        super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;

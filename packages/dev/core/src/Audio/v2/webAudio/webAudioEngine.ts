@@ -1,5 +1,6 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
+import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
 import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
@@ -255,6 +256,21 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public addMainBus(mainBus: MainAudioBus): void {
         this._addMainBus(mainBus);
+    }
+
+    /** @internal */
+    public removeMainBus(mainBus: MainAudioBus): void {
+        this._removeMainBus(mainBus);
+    }
+
+    /** @internal */
+    public addSuperNode(superNode: AbstractAudioSuperNode): void {
+        this._addSuperNode(superNode);
+    }
+
+    /** @internal */
+    public removeSuperNode(superNode: AbstractAudioSuperNode): void {
+        this._removeSuperNode(superNode);
     }
 
     /** @internal */

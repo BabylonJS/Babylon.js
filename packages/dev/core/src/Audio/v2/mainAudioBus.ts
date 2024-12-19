@@ -9,8 +9,7 @@ export interface IMainAudioBusOptions extends IVolumeAudioOptions {}
  * Abstract class representing the main audio bus in the audio engine.
  */
 export abstract class MainAudioBus extends AbstractAudioBus {
-    /** @internal */
-    constructor(name: string, engine: AudioEngineV2) {
+    protected constructor(name: string, engine: AudioEngineV2) {
         super(name, engine);
     }
 }

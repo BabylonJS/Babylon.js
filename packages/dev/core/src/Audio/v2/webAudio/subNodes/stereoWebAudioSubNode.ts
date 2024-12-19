@@ -1,23 +1,22 @@
-import type { Nullable } from "core/types";
-import type { IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
-import { StereoAudio, StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
+import { StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
+import type { _WebAudioEngine } from "../webAudioEngine";
+import type { IWebAudioInputNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioParentNode): Promise<StereoWebAudioSubNode> {
-    return new StereoWebAudioSubNode(owner);
+export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): Promise<StereoAudioSubNode> {
+    return new StereoWebAudioSubNode(engine);
 }
 
 /** @internal */
-export class StereoWebAudioSubNode extends StereoAudioSubNode {
+class StereoWebAudioSubNode extends StereoAudioSubNode {
     /** @internal */
     public readonly node: StereoPannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioParentNode) {
-        super(owner);
+    public constructor(engine: _WebAudioEngine) {
+        super(engine);
 
-        this.node = new StereoPannerNode(owner.audioContext);
+        this.node = new StereoPannerNode(engine.audioContext);
     }
 
     /** @internal */
@@ -40,6 +39,11 @@ export class StereoWebAudioSubNode extends StereoAudioSubNode {
         return this.node;
     }
 
+    /** @internal */
+    public getClassName(): string {
+        return "StereoWebAudioSubNode";
+    }
+
     protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
@@ -54,19 +58,5 @@ export class StereoWebAudioSubNode extends StereoAudioSubNode {
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
-    }
-
-    /** @internal */
-    public setOptions(options: Nullable<IStereoAudioOptions>): void {
-        if (!options) {
-            return;
-        }
-
-        this.pan = options.stereoPan !== undefined ? options.stereoPan : StereoAudio.DefaultPan;
-    }
-
-    /** @internal */
-    public getClassName(): string {
-        return "StereoWebAudioSubNode";
     }
 }

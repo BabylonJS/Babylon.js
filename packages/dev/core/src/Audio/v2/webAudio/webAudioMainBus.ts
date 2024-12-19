@@ -6,7 +6,7 @@ import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
 import { WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioParentNode } from "./webAudioNode";
+import type { IWebAudioInputNode, IWebAudioSuperNode } from "./webAudioNode";
 
 /**
  * Creates a new main audio bus.
@@ -28,12 +28,11 @@ export async function CreateMainAudioBusAsync(name: string, options: Nullable<IM
 
     const bus = new _WebAudioMainBus(name, engine as _WebAudioEngine);
     await bus.init(options);
-    (engine as _WebAudioEngine).addMainBus(bus);
     return bus;
 }
 
 /** @internal */
-export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNode {
+export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode {
     protected _subGraph: WebAudioBaseSubGraph;
 
     /** @internal */
@@ -46,8 +45,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
     constructor(name: string, engine: _WebAudioEngine) {
         super(name, engine);
 
-        this.audioContext = engine.audioContext;
         this._subGraph = new _WebAudioMainBus._SubGraph(this);
+        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
@@ -57,6 +56,15 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         if (this.engine.mainOutput) {
             this._connect(this.engine.mainOutput);
         }
+
+        this.engine.addMainBus(this);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this.engine.removeMainBus(this);
     }
 
     /** @internal */
@@ -92,10 +100,6 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
 
     private static _SubGraph = class extends WebAudioBaseSubGraph {
         protected override _owner: _WebAudioMainBus;
-
-        protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner._children;
-        }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._connectedDownstreamNodes ?? null;

@@ -9,7 +9,7 @@ import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioParentNode } from "./webAudioNode";
+import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -43,7 +43,7 @@ export async function CreateStreamingSoundAsync(
 }
 
 /** @internal */
-class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNode {
+class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
     protected _subGraph: WebAudioBusAndSoundSubGraph;
 
     /** @internal */
@@ -89,6 +89,15 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
+
+        this.engine.addSuperNode(this);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this.engine.removeSuperNode(this);
     }
 
     /** @internal */
@@ -128,10 +137,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
 
     private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStreamingSound;
-
-        protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner._children;
-        }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._connectedDownstreamNodes ?? null;

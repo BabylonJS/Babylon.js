@@ -1,5 +1,8 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { _WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
 export interface IWebAudioInputNode extends AbstractAudioNode {
@@ -14,7 +17,13 @@ export interface IWebAudioOutputNode extends AbstractAudioNode {
 }
 
 /** @internal */
-export interface IWebAudioParentNode extends IWebAudioInputNode, IWebAudioOutputNode {
+export interface IWebAudioSuperNode extends AbstractAudioSuperNode, IWebAudioInputNode, IWebAudioOutputNode {
     /** @internal */
-    audioContext: AudioContext | OfflineAudioContext;
+    engine: _WebAudioEngine;
+}
+
+/** @internal */
+export interface IWebAudioSubNode extends AbstractAudioSubNode {
+    /** @internal */
+    node: AudioNode;
 }

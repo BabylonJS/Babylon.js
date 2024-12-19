@@ -4,27 +4,38 @@ import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioParentNode } from "./webAudioNode";
+import type { IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
-export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
+export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     protected _subGraph: WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public readonly audioContext: AudioContext;
 
     /** @internal */
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine, options);
 
-        this.audioContext = engine.audioContext;
-
         this._subGraph = new _WebAudioBus._SubGraph(this);
+        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
     public async init(options: Nullable<IAudioBusOptions>): Promise<void> {
         await this._subGraph.init(options);
+
+        this.engine.addSuperNode(this);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this.engine.removeSuperNode(this);
     }
 
     /** @internal */
@@ -44,10 +55,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
 
     private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
         protected override _owner: _WebAudioBus;
-
-        protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner._children;
-        }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._connectedDownstreamNodes ?? null;

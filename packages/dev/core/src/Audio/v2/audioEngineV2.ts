@@ -1,5 +1,6 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "./abstractAudioNode";
+import type { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { MainAudioBus } from "./mainAudioBus";
 
 const instances: AudioEngineV2[] = [];
@@ -20,13 +21,13 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
  * Abstract base class for audio engines.
  */
 export abstract class AudioEngineV2 {
-    // Owns top-level AbstractAudioNode objects.
-    // Owns all AbstractSound objects.
+    private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    // Not owned, but all items should be in parent's `children` container, too, which is owned.
+    // Not owned, but all items should be in `superNodes` container, too, which is owned.
     private readonly _mainBuses = new Set<MainAudioBus>();
 
-    private _defaultMainBus: Nullable<MainAudioBus> = null;
+    // Owned top-level AbstractAudioSuperNode instances.
+    private readonly _superNodes = new Set<AbstractAudioSuperNode>();
 
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
@@ -77,6 +78,14 @@ export abstract class AudioEngineV2 {
         if (instances.includes(this)) {
             instances.splice(instances.indexOf(this), 1);
         }
+
+        const superNodeIterator = this._superNodes.values();
+        for (let next = superNodeIterator.next(); !next.done; next = superNodeIterator.next()) {
+            next.value.dispose();
+        }
+
+        this._superNodes.clear();
+        this._mainBuses.clear();
     }
 
     /**
@@ -108,8 +117,22 @@ export abstract class AudioEngineV2 {
 
     protected _addMainBus(mainBus: MainAudioBus): void {
         this._mainBuses.add(mainBus);
-        mainBus.onDisposeObservable.addOnce(() => {
-            this._mainBuses.delete(mainBus);
-        });
+
+        this._addSuperNode(mainBus);
+    }
+
+    protected _removeMainBus(mainBus: MainAudioBus): void {
+        this._mainBuses.delete(mainBus);
+        this._defaultMainBus = null;
+
+        this._removeSuperNode(mainBus);
+    }
+
+    protected _addSuperNode(superNode: AbstractAudioSuperNode): void {
+        this._superNodes.add(superNode);
+    }
+
+    protected _removeSuperNode(superNode: AbstractAudioSuperNode): void {
+        this._superNodes.delete(superNode);
     }
 }

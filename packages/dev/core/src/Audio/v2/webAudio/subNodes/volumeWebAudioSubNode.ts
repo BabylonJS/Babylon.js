@@ -1,25 +1,22 @@
-import type { Nullable } from "../../../../types";
-import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
-import { VolumeAudio, VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
+import { VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
+import type { _WebAudioEngine } from "../webAudioEngine";
+import type { IWebAudioInputNode, IWebAudioSubNode } from "../webAudioNode";
 
 /** @internal */
-export async function _CreateVolumeAudioSubNodeAsync(parent: IWebAudioParentNode, options: Nullable<IVolumeAudioOptions> = null): Promise<VolumeWebAudioSubNode> {
-    return new VolumeWebAudioSubNode(parent, options);
+export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): Promise<VolumeAudioSubNode> {
+    return new VolumeWebAudioSubNode(engine);
 }
 
 /** @internal */
-export class VolumeWebAudioSubNode extends VolumeAudioSubNode {
+class VolumeWebAudioSubNode extends VolumeAudioSubNode implements IWebAudioSubNode {
     /** @internal */
     public readonly node: GainNode;
 
     /** @internal */
-    public constructor(parent: IWebAudioParentNode, options: Nullable<IVolumeAudioOptions> = null) {
-        super(parent);
+    public constructor(engine: _WebAudioEngine) {
+        super(engine);
 
-        this.node = new GainNode(parent.audioContext);
-
-        this.volume = options?.volume ?? 1;
+        this.node = new GainNode(engine.audioContext);
     }
 
     /** @internal */
@@ -56,15 +53,6 @@ export class VolumeWebAudioSubNode extends VolumeAudioSubNode {
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
-    }
-
-    /** @internal */
-    public setOptions(options: Nullable<IVolumeAudioOptions>): void {
-        if (!options) {
-            return;
-        }
-
-        this.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
     }
 
     /** @internal */

@@ -1,7 +1,8 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { Nullable } from "../../../types";
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import type { AudioEngineV2 } from "../audioEngineV2";
 import { AudioSubNode } from "./audioSubNode";
 
 export enum SpatialAudio {
@@ -14,7 +15,7 @@ export enum SpatialAudio {
 }
 
 /**
- *
+ * Options for spatial audio.
  */
 export interface ISpatialAudioOptions {
     /**
@@ -69,7 +70,7 @@ export interface ISpatialAudioOptions {
 
 /**
  * @param options The spatial audio options to check.
- * @returns `true` if the spatial audio options are defined, otherwise `false`.
+ * @returns `true` if spatial audio options are defined, otherwise `false`.
  */
 export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
     return (
@@ -88,11 +89,44 @@ export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
     );
 }
 
-/**
- *
- */
+/** @internal */
 export abstract class SpatialAudioSubNode extends AbstractAudioSubNode {
-    protected constructor(owner: AbstractAudioNode) {
-        super(AudioSubNode.Spatial, owner);
+    protected constructor(engine: AudioEngineV2) {
+        super(AudioSubNode.Spatial, engine);
+    }
+
+    public abstract get coneInnerAngle(): number;
+    public abstract set coneInnerAngle(value: number);
+
+    public abstract get coneOuterAngle(): number;
+    public abstract set coneOuterAngle(value: number);
+
+    public abstract get coneOuterVolume(): number;
+    public abstract set coneOuterVolume(value: number);
+
+    public abstract get distanceModel(): "linear" | "inverse" | "exponential";
+    public abstract set distanceModel(value: "linear" | "inverse" | "exponential");
+
+    public abstract get maxDistance(): number;
+    public abstract set maxDistance(value: number);
+
+    public abstract get panningModel(): "equalpower" | "HRTF";
+    public abstract set panningModel(value: "equalpower" | "HRTF");
+
+    public abstract get webAudioInputNode(): AudioNode;
+    public abstract get webAudioOutputNode(): AudioNode;
+
+    /** @internal */
+    public setOptions(options: Nullable<ISpatialAudioOptions>): void {
+        if (!options) {
+            return;
+        }
+
+        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : SpatialAudio.DefaultConeInnerAngle;
+        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : SpatialAudio.DefaultConeOuterAngle;
+        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : SpatialAudio.DefaultConeOuterVolume;
+        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : SpatialAudio.DefaultDistanceModel;
+        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : SpatialAudio.DefaultMaxDistance;
+        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : SpatialAudio.DefaultPanningModel;
     }
 }

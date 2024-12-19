@@ -9,7 +9,7 @@ import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioParentNode } from "./webAudioNode";
+import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -72,7 +72,7 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
+class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
     protected _subGraph: WebAudioBusAndSoundSubGraph;
@@ -112,6 +112,15 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
         if (options?.autoplay) {
             this.play(this.startOffset, this.duration > 0 ? this.duration : null);
         }
+
+        this.engine.addSuperNode(this);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this.engine.removeSuperNode(this);
     }
 
     /** @internal */
@@ -163,10 +172,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
 
     private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStaticSound;
-
-        protected get _children(): Map<string, Set<AbstractAudioNode>> {
-            return this._owner._children;
-        }
 
         protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._connectedDownstreamNodes ?? null;

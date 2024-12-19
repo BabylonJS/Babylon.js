@@ -1,5 +1,4 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 export enum AudioNodeType {
@@ -23,13 +22,6 @@ export enum AudioNodeType {
  * Abstract class for an audio node.
  */
 export abstract class AbstractAudioNode {
-    private _name: string;
-
-    // If parent is null, node is owned by audio engine.
-    private _parent: Nullable<AbstractAudioNode> = null;
-
-    protected readonly _children = new Map<string, Set<AbstractAudioNode>>();
-
     /**
      * The connected downstream audio nodes.
      *
@@ -54,9 +46,7 @@ export abstract class AbstractAudioNode {
      */
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
 
-    protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNode> = null, name: Nullable<string> = null) {
-        this._name = name ?? "";
-
+    protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
         if (nodeType | AudioNodeType.Input) {
@@ -66,24 +56,12 @@ export abstract class AbstractAudioNode {
         if (nodeType | AudioNodeType.Output) {
             this._connectedUpstreamNodes = new Set<AbstractAudioNode>();
         }
-
-        this._setParent(parent);
     }
 
     /**
      * Releases associated resources.
      */
     public dispose(): void {
-        const itName = this._children.values();
-        for (let nextName = itName.next(); !nextName.done; nextName = itName.next()) {
-            const itNode = nextName.value.values();
-            for (let nextNode = itNode.next(); !nextNode.done; nextNode = itNode.next()) {
-                nextNode.value.dispose();
-            }
-        }
-
-        this._getParent()?._removeChild(this);
-
         if (this._connectedDownstreamNodes) {
             for (const node of Array.from(this._connectedDownstreamNodes)) {
                 this._disconnect(node);
@@ -103,87 +81,10 @@ export abstract class AbstractAudioNode {
     }
 
     /**
-     * The name of the audio node.
-     */
-    public get name(): string {
-        return this._name;
-    }
-
-    /**
-     * Sets the name of the audio node.
-     */
-    public set name(name: string) {
-        if (this._name === name) {
-            return;
-        }
-
-        this._getParent()?._children.get(this._name)?.delete(this);
-
-        this._name = name;
-
-        this._getParent()?._getChildSet(name).add(this);
-    }
-
-    protected _getParent(): Nullable<AbstractAudioNode> {
-        return this._parent ?? this.engine.mainOutput;
-    }
-
-    protected _setParent(parent: Nullable<AbstractAudioNode>) {
-        if (this._parent === parent) {
-            return;
-        }
-
-        this._getParent()?._removeChild(this);
-        this._parent = parent;
-        this._getParent()?._addChild(this);
-    }
-
-    /**
-     * The audio node's type.
-     */
-    public get type(): AudioNodeType {
-        let type = 0;
-
-        if (this._connectedDownstreamNodes) {
-            type |= AudioNodeType.Output;
-        }
-
-        if (this._connectedUpstreamNodes) {
-            type |= AudioNodeType.Input;
-        }
-
-        return type;
-    }
-
-    /**
      * Gets a string identifying the name of the class
      * @returns the class's name as a string
      */
     public abstract getClassName(): string;
-
-    protected _addChild(child: AbstractAudioNode): void {
-        const set = this._getChildSet(child.name);
-        set.add(child);
-    }
-
-    protected _removeChild(child: AbstractAudioNode): void {
-        const set = this._children.get(child.name);
-
-        if (set) {
-            set.delete(child);
-        }
-    }
-
-    protected _getChildSet(name: string): Set<AbstractAudioNode> {
-        let set = this._children.get(name);
-
-        if (!set) {
-            set = new Set<AbstractAudioNode>();
-            this._children.set(name, set);
-        }
-
-        return set;
-    }
 
     /**
      * Connect to a downstream audio input node.
@@ -219,24 +120,6 @@ export abstract class AbstractAudioNode {
         node._onDisconnect(this);
     }
 
-    protected _reconnectDownstreamNodes(): void {
-        if (this._connectedDownstreamNodes) {
-            for (const node of Array.from(this._connectedDownstreamNodes)) {
-                this._disconnect(node);
-                this._connect(node);
-            }
-        }
-    }
-
-    protected _reconnectUpstreamNodes(): void {
-        if (this._connectedUpstreamNodes) {
-            for (const node of Array.from(this._connectedUpstreamNodes)) {
-                node._disconnect(this);
-                node._connect(this);
-            }
-        }
-    }
-
     /**
      * Called when an upstream audio output node is connecting.
      * @param node - The connecting upstream audio node
@@ -258,5 +141,51 @@ export abstract class AbstractAudioNode {
      */
     protected _onDisconnect(node: AbstractAudioNode): void {
         this._connectedUpstreamNodes?.delete(node);
+    }
+}
+
+/**
+ * Abstract class for a named audio node.
+ */
+export abstract class NamedAbstractAudioNode extends AbstractAudioNode {
+    private _name: string;
+
+    /**
+     * Observable for when the audio node is renamed.
+     */
+    public readonly onNameChangedObservable = new Observable<{ oldName: string; node: NamedAbstractAudioNode }>();
+
+    protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
+        super(engine, nodeType);
+
+        this._name = name;
+    }
+
+    public override dispose(): void {
+        super.dispose();
+
+        this.onNameChangedObservable.clear();
+    }
+
+    /**
+     * The name of the audio node.
+     */
+    public get name(): string {
+        return this._name;
+    }
+
+    /**
+     * Sets the name of the audio node.
+     */
+    public set name(name: string) {
+        if (this._name === name) {
+            return;
+        }
+
+        const oldName = this._name;
+
+        this._name = name;
+
+        this.onNameChangedObservable.notifyObservers({ oldName, node: this });
     }
 }

@@ -16,8 +16,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
-    /** @internal */
-    constructor(source: AbstractSound) {
+    protected constructor(source: AbstractSound) {
         super(source.engine, AudioNodeType.Output);
 
         this._source = source;

@@ -3,21 +3,21 @@ import type { AbstractAudioNode } from "../../abstractAudioNode";
 import { AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
-import { hasVolumeAudioOptions, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
-import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
+import type { IVolumeAudioOptions, VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
+import { hasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
+import type { IWebAudioInputNode, IWebAudioSuperNode, IWebAudioSubNode } from "../webAudioNode";
 
 /** */
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
 export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
-    protected _owner: IWebAudioParentNode;
+    protected _owner: IWebAudioSuperNode;
     protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
     /** @internal */
-    constructor(owner: IWebAudioParentNode) {
+    constructor(owner: IWebAudioSuperNode) {
         super();
 
         this._owner = owner;
@@ -30,7 +30,7 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
         await this._createSubNodePromisesResolved();
 
         if (options && hasVolumeAudioOptions(options)) {
-            this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume)?.setOptions(options);
+            this.getSubNode<VolumeAudioSubNode>(AudioSubNode.Volume)?.setOptions(options);
         }
     }
 
@@ -49,7 +49,7 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
     protected _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
         switch (name) {
             case AudioSubNode.Volume:
-                return _CreateVolumeAudioSubNodeAsync(this._owner);
+                return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;
         }
@@ -60,7 +60,7 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
             return;
         }
 
-        const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
+        const volumeNode = this.getSubNode<IWebAudioSubNode>(AudioSubNode.Volume);
         if (!volumeNode) {
             return;
         }
