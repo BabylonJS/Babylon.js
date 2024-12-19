@@ -196,3 +196,10 @@ export type Constructor<C extends new (...args: any[]) => any, I extends Instanc
  * Alias type for image sources
  */
 export type ImageSource = ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas;
+
+/**
+ * Type modifier to make an optional property required
+ */
+export type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
+    [Property in Key]-?: Type[Property];
+};
