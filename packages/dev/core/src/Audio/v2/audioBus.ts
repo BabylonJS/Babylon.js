@@ -1,7 +1,6 @@
 import type { Nullable } from "../../types";
 import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { AudioSender } from "./audioSender";
 import type { MainAudioBus } from "./mainAudioBus";
 import { AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
@@ -27,16 +26,9 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
 export abstract class AudioBus extends AbstractAudioBus {
     private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
-    /**
-     * The sender of the audio bus.
-     */
-    public readonly sender: AudioSender;
-
     /** @internal */
     constructor(name: string, engine: AudioEngineV2, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine);
-
-        this.sender = {} as any; //engine.createSender(this);
 
         if (options?.outputBus) {
             this.outputBus = options.outputBus;
