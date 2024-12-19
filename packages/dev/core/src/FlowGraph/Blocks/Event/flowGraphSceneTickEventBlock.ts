@@ -5,6 +5,12 @@ import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+
+export interface IFlowGraphOnTickEventPayload {
+    timeSinceStart: number;
+    deltaTime: number;
+}
+
 /**
  * @experimental
  * Block that triggers on scene tick (before each render).
@@ -38,7 +44,9 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public override _executeEvent(context: FlowGraphContext, payload: never): boolean {
+    public override _executeEvent(context: FlowGraphContext, payload: IFlowGraphOnTickEventPayload): boolean {
+        this.timeSinceStart.setValue(payload.timeSinceStart, context);
+        this.deltaTime.setValue(payload.deltaTime, context);
         this._execute(context);
         return true;
     }

@@ -45,6 +45,8 @@ export class FlowGraphSceneEventCoordinator {
     private _meshUnderPointerObserver: Nullable<Observer<{ mesh: Nullable<AbstractMesh>; pointerId: number }>>;
     private _pointerUnderMeshState: { [pointerId: number]: Nullable<AbstractMesh> } = {};
 
+    private _startingTime: number = 0;
+
     constructor(scene: Scene) {
         this._scene = scene;
         this._initialize();
@@ -63,7 +65,15 @@ export class FlowGraphSceneEventCoordinator {
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneDispose });
         });
         this._sceneOnBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
-            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneBeforeRender });
+            const deltaTime = this._scene.getEngine().getDeltaTime() / 1000; // set in seconds
+            this.onEventTriggeredObservable.notifyObservers({
+                type: FlowGraphEventType.SceneBeforeRender,
+                payload: {
+                    timeSinceStart: this._startingTime,
+                    deltaTime,
+                },
+            });
+            this._startingTime += deltaTime;
         });
 
         this._meshPickedObserver = this._scene.onPointerObservable.add((pointerInfo) => {
