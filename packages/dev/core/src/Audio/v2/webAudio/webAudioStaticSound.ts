@@ -92,12 +92,12 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
     public static SubGraph = class extends AbstractAudioSubGraph implements IWebAudioBusAndSoundSubGraph {
-        protected override _owner: IWebAudioParentNode;
+        protected override _owner: WebAudioStaticSound;
         protected _webAudioInputNode: Nullable<AudioNode> = null;
         protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
         /** @internal */
-        public constructor(owner: IWebAudioParentNode) {
+        public constructor(owner: WebAudioStaticSound) {
             super(owner);
         }
 
@@ -163,9 +163,9 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
             if (!this._webAudioOutputNode) {
                 const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
                 if (volumeNode) {
-                    this._owner.beforeOutputNodeChanged();
+                    this._owner._beforeOutputNodeChanged();
                     this._webAudioOutputNode = volumeNode.node;
-                    this._owner.afterOutputNodeChanged();
+                    this._owner._afterOutputNodeChanged();
                 }
             }
 
@@ -188,9 +188,9 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
             const webAudioInputNode = inputSubNode?.webAudioInputNode ?? null;
 
             if (this._webAudioInputNode !== webAudioInputNode) {
-                this._owner.beforeInputNodeChanged();
+                this._owner._beforeInputNodeChanged();
                 this._webAudioInputNode = webAudioInputNode;
-                this._owner.afterInputNodeChanged();
+                this._owner._afterInputNodeChanged();
             }
         }
     };
@@ -288,7 +288,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public beforeInputNodeChanged(): void {
+    protected _beforeInputNodeChanged(): void {
         if (this.webAudioInputNode && this._connectedUpstreamNodes) {
             for (const node of this._connectedUpstreamNodes) {
                 (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
@@ -297,7 +297,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public afterInputNodeChanged(): void {
+    protected _afterInputNodeChanged(): void {
         if (this.webAudioInputNode && this._connectedUpstreamNodes) {
             for (const node of this._connectedUpstreamNodes) {
                 (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
@@ -306,12 +306,12 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public beforeOutputNodeChanged(): void {
+    protected _beforeOutputNodeChanged(): void {
         this.webAudioOutputNode?.disconnect();
     }
 
     /** @internal */
-    public afterOutputNodeChanged(): void {
+    protected _afterOutputNodeChanged(): void {
         if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
             for (const node of this._connectedDownstreamNodes) {
                 const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
@@ -321,6 +321,18 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
             }
         }
     }
+
+    /** @internal */
+    public beforeInputNodeChanged(): void {}
+
+    /** @internal */
+    public afterInputNodeChanged(): void {}
+
+    /** @internal */
+    public beforeOutputNodeChanged(): void {}
+
+    /** @internal */
+    public afterOutputNodeChanged(): void {}
 
     /** @internal */
     public getClassName(): string {
