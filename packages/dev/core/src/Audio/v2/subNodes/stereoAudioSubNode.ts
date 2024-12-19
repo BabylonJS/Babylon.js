@@ -2,9 +2,12 @@ import { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
-/**
- *
- */
+/** */
+export enum StereoAudio {
+    DefaultPan = 0,
+}
+
+/** */
 export interface IStereoAudioOptions {
     /**
      * Enable stereo. Default is false.

@@ -1,24 +1,35 @@
+import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
+import { LastCreatedAudioEngine } from "../audioEngineV2";
+import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
 import { WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioNode } from "./webAudioNode";
+import type { IWebAudioInputNode } from "./webAudioInputNode";
+import type { IWebAudioOutputNode } from "./webAudioOutputNode";
 import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 /**
  * Creates a new main audio bus.
- * @param name - The name of the main bus.
+ * @param name - The name of the main audio bus.
+ * @param options - The options to use when creating the main audio bus.
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
-export async function CreateMainAudioBusAsync(name: string, engine: AudioEngineV2): Promise<MainAudioBus> {
+export async function CreateMainAudioBusAsync(name: string, options: Nullable<IMainAudioBusOptions> = null, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
+    engine = engine ?? LastCreatedAudioEngine();
+
+    if (!engine) {
+        throw new Error("No audio engine available.");
+    }
+
     if (!engine.isWebAudio) {
-        throw new Error("Wrong engine type.");
+        throw new Error("Unsupported engine type.");
     }
 
     const bus = new _WebAudioMainBus(name, engine as _WebAudioEngine);
-    await bus.init();
+    await bus.init(options);
     (engine as _WebAudioEngine).addMainBus(bus);
     return bus;
 }
@@ -42,8 +53,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
     }
 
     /** @internal */
-    public async init(): Promise<void> {
-        await this._subGraph.init();
+    public async init(options: Nullable<IMainAudioBusOptions>): Promise<void> {
+        await this._subGraph.init(options);
 
         if (this.engine.mainOutput) {
             this._connect(this.engine.mainOutput);
@@ -70,7 +81,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         return this._subGraph;
     }
 
-    protected override _connect(node: IWebAudioNode): void {
+    protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
         if (node.webAudioInputNode) {
@@ -78,7 +89,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
         }
     }
 
-    protected override _disconnect(node: IWebAudioNode): void {
+    protected override _disconnect(node: IWebAudioInputNode): void {
         super._disconnect(node);
 
         if (node.webAudioInputNode) {
@@ -87,13 +98,38 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNod
     }
 
     /** @internal */
-    public reconnectDownstreamNodes(): void {
-        this._reconnectDownstreamNodes();
+    public beforeInputNodeChanged(): void {
+        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
+            for (const node of this._connectedUpstreamNodes) {
+                (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
+            }
+        }
     }
 
     /** @internal */
-    public reconnectUpstreamNodes(): void {
-        this._reconnectUpstreamNodes();
+    public afterInputNodeChanged(): void {
+        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
+            for (const node of this._connectedUpstreamNodes) {
+                (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
+            }
+        }
+    }
+
+    /** @internal */
+    public beforeOutputNodeChanged(): void {
+        this.webAudioOutputNode?.disconnect();
+    }
+
+    /** @internal */
+    public afterOutputNodeChanged(): void {
+        if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
+            for (const node of this._connectedDownstreamNodes) {
+                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
+                if (webAudioInputNode) {
+                    this.webAudioOutputNode.connect(webAudioInputNode);
+                }
+            }
+        }
     }
 
     /** @internal */

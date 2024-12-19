@@ -10,8 +10,14 @@ export interface IAudioParentNode extends AbstractAudioNode {
     get subGraph(): AbstractAudioSubGraph;
 
     /** @internal */
-    reconnectDownstreamNodes(): void;
+    beforeInputNodeChanged(): void;
 
     /** @internal */
-    reconnectUpstreamNodes(): void;
+    afterInputNodeChanged(): void;
+
+    /** @internal */
+    beforeOutputNodeChanged(): void;
+
+    /** @internal */
+    afterOutputNodeChanged(): void;
 }

@@ -1,16 +1,18 @@
 import type { Nullable } from "../../types";
-import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { AudioSender } from "./audioSender";
 import type { MainAudioBus } from "./mainAudioBus";
+import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
+import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
+import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
 export type AbstractPrimaryAudioBus = MainAudioBus | AudioBus;
 
 /**
  * Options for creating a new audio bus.
  */
-export interface IAudioBusOptions extends IAbstractAudioBusOptions {
+export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {
     /**
      * The output bus of the audio bus.
      */

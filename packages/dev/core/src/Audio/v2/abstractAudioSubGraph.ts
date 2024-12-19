@@ -44,15 +44,7 @@ export abstract class AbstractAudioSubGraph {
             return;
         }
 
-        let promise = this._createSubNodePromises.get(name) ?? null;
-
-        if (!promise) {
-            promise = this._createSubNode(name);
-
-            if (promise) {
-                this._createSubNodePromises.set(name, promise);
-            }
-        }
+        const promise = this._createSubNodePromises.get(name) ?? this._createAndAddSubNode(name);
 
         promise?.then((node) => {
             callback(node as T);
@@ -92,11 +84,11 @@ export abstract class AbstractAudioSubGraph {
         this._onSubNodesChanged();
     }
 
-    protected _createAndAddSubNode(name: string): void {
+    protected _createAndAddSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
         const promise = this._createSubNode(name);
 
         if (!promise) {
-            return;
+            return null;
         }
 
         promise.then((node) => {
@@ -104,5 +96,7 @@ export abstract class AbstractAudioSubGraph {
         });
 
         this._createSubNodePromises.set(name, promise);
+
+        return promise;
     }
 }

@@ -2,10 +2,14 @@ import type { Nullable } from "core/types";
 import { AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
-import type { _VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
+import { hasVolumeAudioOptions, VolumeAudio, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
+import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 import type { IWebAudioSubGraph } from "./webAudioSubGraph";
+
+/** */
+export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
 export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebAudioSubGraph {
@@ -18,10 +22,17 @@ export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebA
     }
 
     /** @internal */
-    public async init(): Promise<void> {
+    public async init(options: Nullable<IWebAudioBaseSubGraphOptions>): Promise<void> {
         this._createAndAddSubNode(AudioSubNode.Volume);
 
         await this._createSubNodePromisesResolved();
+
+        if (options && hasVolumeAudioOptions(options)) {
+            const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
+            if (volumeNode) {
+                volumeNode.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
+            }
+        }
     }
 
     /** @internal */
@@ -48,13 +59,13 @@ export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebA
             return;
         }
 
-        const volumeNode = this.getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume);
+        const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
         if (!volumeNode) {
             return;
         }
 
+        this._owner.beforeOutputNodeChanged();
         this._webAudioOutputNode = volumeNode.node;
-
-        this._owner.reconnectDownstreamNodes();
+        this._owner.afterOutputNodeChanged();
     }
 }

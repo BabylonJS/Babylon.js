@@ -1,30 +1,23 @@
-import type { Nullable } from "core/types";
-import { SpatialAudioSubNode, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
-import type { IWebAudioNode } from "../webAudioNode";
+import type { Nullable } from "../../../../types";
+import { SpatialAudio, SpatialAudioSubNode, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
+import type { IWebAudioInputNode } from "../webAudioInputNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 
 /** @internal */
-export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioParentNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialWebAudioSubNode> {
-    return new _SpatialWebAudioSubNode(owner, options);
+export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioParentNode): Promise<SpatialWebAudioSubNode> {
+    return new SpatialWebAudioSubNode(owner);
 }
 
 /** @internal */
-export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
+export class SpatialWebAudioSubNode extends SpatialAudioSubNode {
     /** @internal */
     public readonly node: PannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioParentNode, options: Nullable<ISpatialAudioOptions>) {
+    public constructor(owner: IWebAudioParentNode) {
         super(owner);
 
         this.node = new PannerNode(owner.audioContext);
-
-        this.coneInnerAngle = options?.spatialConeInnerAngle ?? 360;
-        this.coneOuterAngle = options?.spatialConeOuterAngle ?? 360;
-        this.coneOuterVolume = options?.spatialConeOuterVolume ?? 0;
-        this.distanceModel = options?.spatialDistanceModel ?? "inverse";
-        this.maxDistance = options?.spatialMaxDistance ?? 10000;
-        this.panningModel = options?.spatialPanningModel ?? "equalpower";
     }
 
     /** @internal */
@@ -97,7 +90,7 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
         return this.node;
     }
 
-    protected override _connect(node: IWebAudioNode): void {
+    protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
         if (node.webAudioInputNode) {
@@ -105,12 +98,26 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
         }
     }
 
-    protected override _disconnect(node: IWebAudioNode): void {
+    protected override _disconnect(node: IWebAudioInputNode): void {
         super._disconnect(node);
 
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
+    }
+
+    /** @internal */
+    public setOptions(options: Nullable<ISpatialAudioOptions>): void {
+        if (!options) {
+            return;
+        }
+
+        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : SpatialAudio.DefaultConeInnerAngle;
+        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : SpatialAudio.DefaultConeOuterAngle;
+        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : SpatialAudio.DefaultConeOuterVolume;
+        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : SpatialAudio.DefaultDistanceModel;
+        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : SpatialAudio.DefaultMaxDistance;
+        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : SpatialAudio.DefaultPanningModel;
     }
 
     /** @internal */

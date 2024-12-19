@@ -10,7 +10,8 @@ import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioNode } from "./webAudioNode";
+import type { IWebAudioInputNode } from "./webAudioInputNode";
+import type { IWebAudioOutputNode } from "./webAudioOutputNode";
 import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
@@ -82,6 +83,8 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
             this.outputBus = this.engine.defaultMainBus;
         }
 
+        await this._subGraph.init(options);
+
         if (options?.preloadCount) {
             await this.preloadInstances(options.preloadCount);
         }
@@ -89,8 +92,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
-
-        await this._subGraph.init();
     }
 
     /** @internal */
@@ -114,13 +115,38 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
     }
 
     /** @internal */
-    public reconnectDownstreamNodes(): void {
-        this._reconnectDownstreamNodes();
+    public beforeInputNodeChanged(): void {
+        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
+            for (const node of this._connectedUpstreamNodes) {
+                (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
+            }
+        }
     }
 
     /** @internal */
-    public reconnectUpstreamNodes(): void {
-        this._reconnectUpstreamNodes();
+    public afterInputNodeChanged(): void {
+        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
+            for (const node of this._connectedUpstreamNodes) {
+                (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
+            }
+        }
+    }
+
+    /** @internal */
+    public beforeOutputNodeChanged(): void {
+        this.webAudioOutputNode?.disconnect();
+    }
+
+    /** @internal */
+    public afterOutputNodeChanged(): void {
+        if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
+            for (const node of this._connectedDownstreamNodes) {
+                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
+                if (webAudioInputNode) {
+                    this.webAudioOutputNode.connect(webAudioInputNode);
+                }
+            }
+        }
     }
 
     /** @internal */
@@ -132,7 +158,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
         return new WebAudioStreamingSoundInstance(this);
     }
 
-    protected override _connect(node: IWebAudioNode): void {
+    protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
         if (this._subGraph.webAudioInputNode) {
@@ -140,7 +166,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
         }
     }
 
-    protected override _disconnect(node: IWebAudioNode): void {
+    protected override _disconnect(node: IWebAudioInputNode): void {
         super._disconnect(node);
 
         if (this._subGraph.webAudioInputNode) {
@@ -150,7 +176,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
 }
 
 /** @internal */
-class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
+class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutputNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
@@ -303,6 +329,10 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance {
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    }
+
+    public get webAudioOutputNode(): Nullable<AudioNode> {
+        return this.sourceNode;
     }
 
     /** @internal */

@@ -1,22 +1,8 @@
 import type { Nullable } from "../../types";
-import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 import { AbstractAudioBus } from "./abstractAudioBus";
+import type { IAudioBusOptions } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { AudioSender } from "./audioSender";
-
-/**
- * Options for creating a new auxilliary audio bus.
- */
-export interface IAuxilliaryAudioBusOptions extends IAbstractAudioBusOptions {
-    /**
-     * Whether to enable a positioner for the auxilliary audio bus.
-     */
-    enablePositioner?: boolean;
-    /**
-     * The output bus for the auxilliary audio bus.
-     */
-    outputBus?: AbstractAudioBus;
-}
 
 /**
  * Abstract class representing an auxilliary audio bus in the audio engine.
@@ -30,7 +16,7 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
     public readonly sender: AudioSender;
 
     /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAuxilliaryAudioBusOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine);
 
         this.sender = {} as any; //engine.createSender(this);

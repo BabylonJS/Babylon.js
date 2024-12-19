@@ -4,6 +4,15 @@ import { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
+export enum SpatialAudio {
+    DefaultConeInnerAngle = 360,
+    DefaultConeOuterAngle = 360,
+    DefaultConeOuterVolume = 0,
+    DefaultDistanceModel = "inverse",
+    DefaultMaxDistance = 10000,
+    DefaultPanningModel = "equalpower",
+}
+
 /**
  *
  */

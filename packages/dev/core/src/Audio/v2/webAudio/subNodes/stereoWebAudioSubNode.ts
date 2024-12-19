@@ -1,26 +1,24 @@
 import type { Nullable } from "core/types";
 import type { IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
-import { StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
-import type { IWebAudioNode } from "../webAudioNode";
+import { StereoAudio, StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
+import type { IWebAudioInputNode } from "../webAudioInputNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 
 /** @internal */
-export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioParentNode, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioSubNode> {
-    return new _StereoWebAudioSubNode(owner, options);
+export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioParentNode): Promise<StereoWebAudioSubNode> {
+    return new StereoWebAudioSubNode(owner);
 }
 
 /** @internal */
-export class _StereoWebAudioSubNode extends StereoAudioSubNode {
+export class StereoWebAudioSubNode extends StereoAudioSubNode {
     /** @internal */
     public readonly node: StereoPannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioParentNode, options: Nullable<IStereoAudioOptions>) {
+    public constructor(owner: IWebAudioParentNode) {
         super(owner);
 
         this.node = new StereoPannerNode(owner.audioContext);
-
-        this.pan = options?.stereoPan ?? 0;
     }
 
     /** @internal */
@@ -43,7 +41,7 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
         return this.node;
     }
 
-    protected override _connect(node: IWebAudioNode): void {
+    protected override _connect(node: IWebAudioInputNode): void {
         super._connect(node);
 
         if (node.webAudioInputNode) {
@@ -51,12 +49,21 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
         }
     }
 
-    protected override _disconnect(node: IWebAudioNode): void {
+    protected override _disconnect(node: IWebAudioInputNode): void {
         super._disconnect(node);
 
         if (node.webAudioInputNode) {
             this.node.disconnect(node.webAudioInputNode);
         }
+    }
+
+    /** @internal */
+    public setOptions(options: Nullable<IStereoAudioOptions>): void {
+        if (!options) {
+            return;
+        }
+
+        this.pan = options.stereoPan !== undefined ? options.stereoPan : StereoAudio.DefaultPan;
     }
 
     /** @internal */
