@@ -10,9 +10,7 @@ import { _CreateSpatialAudioSubNodeAsync } from "../subNodes/spatialWebAudioSubN
 import type { StereoWebAudioSubNode } from "../subNodes/stereoWebAudioSubNode";
 import { _CreateStereoAudioSubNodeAsync } from "../subNodes/stereoWebAudioSubNode";
 import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
-import type { IWebAudioInputNode } from "../webAudioInputNode";
-import type { IWebAudioOutputNode } from "../webAudioOutputNode";
-import type { IWebAudioParentNode } from "../webAudioParentNode";
+import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioParentNode } from "../webAudioNode";
 import { WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
 
 /** @internal */

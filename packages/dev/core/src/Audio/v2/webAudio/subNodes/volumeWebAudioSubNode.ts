@@ -1,8 +1,7 @@
 import type { Nullable } from "../../../../types";
 import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { VolumeAudioSubNode } from "../../subNodes/volumeAudioSubNode";
-import type { IWebAudioInputNode } from "../webAudioInputNode";
-import type { IWebAudioParentNode } from "../webAudioParentNode";
+import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
 
 /** @internal */
 export async function _CreateVolumeAudioSubNodeAsync(parent: IWebAudioParentNode, options: Nullable<IVolumeAudioOptions> = null): Promise<VolumeWebAudioSubNode> {

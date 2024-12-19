@@ -6,8 +6,7 @@ import { AudioSubNode } from "../../subNodes/audioSubNode";
 import { hasVolumeAudioOptions, VolumeAudio, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
-import type { IWebAudioInputNode } from "../webAudioInputNode";
-import type { IWebAudioParentNode } from "../webAudioParentNode";
+import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
 
 /** */
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}

@@ -1,7 +1,7 @@
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { MainAudioOutput } from "../mainAudioOutput";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode } from "./webAudioInputNode";
+import type { IWebAudioInputNode } from "./webAudioNode";
 
 /** @internal */
 export async function _CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<_WebAudioMainOutput> {

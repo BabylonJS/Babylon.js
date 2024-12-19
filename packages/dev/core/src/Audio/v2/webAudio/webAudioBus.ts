@@ -4,7 +4,7 @@ import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioParentNode } from "./webAudioParentNode";
+import type { IWebAudioParentNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {

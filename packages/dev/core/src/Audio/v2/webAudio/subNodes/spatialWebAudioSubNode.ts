@@ -1,7 +1,6 @@
 import type { Nullable } from "../../../../types";
 import { SpatialAudio, SpatialAudioSubNode, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
-import type { IWebAudioInputNode } from "../webAudioInputNode";
-import type { IWebAudioParentNode } from "../webAudioParentNode";
+import type { IWebAudioInputNode, IWebAudioParentNode } from "../webAudioNode";
 
 /** @internal */
 export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioParentNode): Promise<SpatialWebAudioSubNode> {

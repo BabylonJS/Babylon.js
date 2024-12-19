@@ -9,9 +9,7 @@ import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode } from "./webAudioInputNode";
-import type { IWebAudioOutputNode } from "./webAudioOutputNode";
-import type { IWebAudioParentNode } from "./webAudioParentNode";
+import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioParentNode } from "./webAudioNode";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
