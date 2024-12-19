@@ -891,6 +891,7 @@ export class Effect implements IDisposable {
                 this.onError(this, this._compilationError);
             }
             this.onErrorObservable.notifyObservers(this);
+            this._engine.onEffectErrorObservable.notifyObservers({ effect: this, errors: this._compilationError });
         };
 
         // In case a previous compilation was successful, we need to restore the previous pipeline context
