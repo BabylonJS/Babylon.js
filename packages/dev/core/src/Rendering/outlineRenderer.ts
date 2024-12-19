@@ -242,7 +242,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Alpha test
-        if (material && material.needAlphaTesting()) {
+        if (material && material.needAlphaTestingForMesh(effectiveMesh)) {
             const alphaTexture = material.getAlphaTestTexture();
             if (alphaTexture) {
                 effect.setTexture("diffuseSampler", alphaTexture);
@@ -288,7 +288,7 @@ export class OutlineRenderer implements ISceneComponent {
         const scene = mesh.getScene();
 
         // Alpha test
-        if (material.needAlphaTesting()) {
+        if (material.needAlphaTestingForMesh(mesh)) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
