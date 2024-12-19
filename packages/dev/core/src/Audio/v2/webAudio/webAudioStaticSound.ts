@@ -1,14 +1,14 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
-import type { IAudioParentNode } from "../audioParentNode";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import { WebAudioSoundSubGraph } from "./subGraphs/webAudioSoundSubGraph";
+import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
 import type { IWebAudioParentNode } from "./webAudioParentNode";
@@ -74,10 +74,10 @@ export async function CreateSoundBufferAsync(
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebAudioParentNode {
+class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
-    protected _subGraph: WebAudioSoundSubGraph;
+    protected _subGraph: WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -89,7 +89,7 @@ class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebA
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
-        this._subGraph = new WebAudioSoundSubGraph(this);
+        this._subGraph = new WebAudioBusAndSoundSubGraph(this);
     }
 
     /** @internal */
@@ -108,6 +108,8 @@ class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebA
             await this.engine.isReadyPromise;
             this.outputBus = this.engine.defaultMainBus;
         }
+
+        await this._subGraph.init();
 
         if (options?.autoplay) {
             this.play(this.startOffset, this.duration > 0 ? this.duration : null);
@@ -135,13 +137,8 @@ class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebA
     }
 
     /** @internal */
-    public get subGraph(): WebAudioSoundSubGraph {
+    public get subGraph(): IWebAudioSubGraph {
         return this._subGraph;
-    }
-
-    /** @internal */
-    public getClassName(): string {
-        return "WebAudioStaticSound";
     }
 
     protected _createSoundInstance(): WebAudioStaticSoundInstance {
@@ -150,12 +147,40 @@ class WebAudioStaticSound extends StaticSound implements IAudioParentNode, IWebA
 
     protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-        this.webAudioOutputNode.connect(node.webAudioInputNode);
+
+        if (node.webAudioInputNode) {
+            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
+
+        if (node.webAudioInputNode) {
+            try {
+                this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+            } catch (e) {
+                // Ignore error that occurs when node is not connected.
+                if (!(e instanceof DOMException && e.name === "InvalidAccessError")) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /** @internal */
+    public reconnectDownstreamNodes(): void {
+        this._reconnectDownstreamNodes();
+    }
+
+    /** @internal */
+    public reconnectUpstreamNodes(): void {
+        this._reconnectUpstreamNodes();
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStaticSound";
     }
 }
 

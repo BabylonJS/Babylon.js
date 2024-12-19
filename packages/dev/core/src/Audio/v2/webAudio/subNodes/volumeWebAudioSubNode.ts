@@ -21,8 +21,6 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
         this.node = new GainNode(parent.audioContext);
 
         this.volume = options?.volume ?? 1;
-
-        parent.subGraph.addSubNode(this);
     }
 
     /** @internal */
@@ -36,11 +34,6 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "VolumeWebAudioSubNode";
-    }
-
-    /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this.node;
     }
@@ -51,10 +44,23 @@ export class _VolumeWebAudioSubNode extends VolumeAudioSubNode {
     }
 
     protected override _connect(node: IWebAudioNode): void {
-        this.node.connect(node.webAudioInputNode);
+        super._connect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.connect(node.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
-        this.node.disconnect(node.webAudioInputNode);
+        super._disconnect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.disconnect(node.webAudioInputNode);
+        }
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "VolumeWebAudioSubNode";
     }
 }

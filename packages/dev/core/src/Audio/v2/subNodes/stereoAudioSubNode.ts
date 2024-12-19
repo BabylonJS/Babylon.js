@@ -1,5 +1,5 @@
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
-import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
 /**
@@ -28,7 +28,7 @@ export function hasStereoAudioOptions(options: IStereoAudioOptions): boolean {
  *
  */
 export abstract class StereoAudioSubNode extends AbstractAudioSubNode {
-    protected constructor(owner: AbstractAudioSuperNode) {
+    protected constructor(owner: IAudioParentNode) {
         super(AudioSubNode.Stereo, owner);
     }
 

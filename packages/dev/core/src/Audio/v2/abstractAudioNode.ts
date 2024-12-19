@@ -219,13 +219,16 @@ export abstract class AbstractAudioNode {
         node._onDisconnect(this);
     }
 
-    protected _reconnect(): void {
+    protected _reconnectDownstreamNodes(): void {
         if (this._connectedDownstreamNodes) {
             for (const node of Array.from(this._connectedDownstreamNodes)) {
                 this._disconnect(node);
                 this._connect(node);
             }
         }
+    }
+
+    protected _reconnectUpstreamNodes(): void {
         if (this._connectedUpstreamNodes) {
             for (const node of Array.from(this._connectedUpstreamNodes)) {
                 node._disconnect(this);

@@ -5,10 +5,12 @@ import { AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
+import type { IWebAudioSubGraph } from "./webAudioSubGraph";
 
 /** @internal */
-export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
+export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebAudioSubGraph {
     protected override _owner: IWebAudioParentNode;
+    protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
     /** @internal */
     constructor(owner: IWebAudioParentNode) {
@@ -16,8 +18,20 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
     }
 
     /** @internal */
-    public get webAudioOutputNode(): AudioNode {
-        return this.getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume)?.node!;
+    public async init(): Promise<void> {
+        this._createAndAddSubNode(AudioSubNode.Volume);
+
+        await this._createSubNodePromisesResolved();
+    }
+
+    /** @internal */
+    public get webAudioInputNode(): Nullable<AudioNode> {
+        return this._webAudioOutputNode;
+    }
+
+    /** @internal */
+    public get webAudioOutputNode(): Nullable<AudioNode> {
+        return this._webAudioOutputNode;
     }
 
     protected _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
@@ -27,5 +41,20 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
             default:
                 return null;
         }
+    }
+
+    protected _onSubNodesChanged(): void {
+        if (this._webAudioOutputNode) {
+            return;
+        }
+
+        const volumeNode = this.getSubNode<_VolumeWebAudioSubNode>(AudioSubNode.Volume);
+        if (!volumeNode) {
+            return;
+        }
+
+        this._webAudioOutputNode = volumeNode.node;
+
+        this._owner.reconnectDownstreamNodes();
     }
 }

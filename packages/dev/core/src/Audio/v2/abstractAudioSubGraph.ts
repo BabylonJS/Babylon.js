@@ -5,7 +5,7 @@ import type { IAudioParentNode } from "./audioParentNode";
 
 /** @internal */
 export abstract class AbstractAudioSubGraph {
-    private _subNodePromises = new Map<string, Promise<AbstractAudioSubNode>>();
+    private _createSubNodePromises = new Map<string, Promise<AbstractAudioSubNode>>();
 
     protected _owner: IAudioParentNode;
 
@@ -29,12 +29,6 @@ export abstract class AbstractAudioSubGraph {
         return set.values().next().value as T;
     }
 
-    /** @internal */
-    public addSubNode(child: AbstractAudioNode): void {
-        const set = this._getSubNodeSet(child.name);
-        set.add(child);
-    }
-
     /**
      * Executes the given callback with the named sub node, creating the sub node if needed.
      *
@@ -50,13 +44,13 @@ export abstract class AbstractAudioSubGraph {
             return;
         }
 
-        let promise = this._subNodePromises.get(name) ?? null;
+        let promise = this._createSubNodePromises.get(name) ?? null;
 
         if (!promise) {
             promise = this._createSubNode(name);
 
             if (promise) {
-                this._subNodePromises.set(name, promise);
+                this._createSubNodePromises.set(name, promise);
             }
         }
 
@@ -66,23 +60,10 @@ export abstract class AbstractAudioSubGraph {
     }
 
     protected abstract _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>>;
+    protected abstract _onSubNodesChanged(): void;
 
-    protected _hasSubNode(name: string): boolean {
-        const set = this._children.get(name);
-
-        if (!set) {
-            return false;
-        }
-
-        return set.size > 0;
-    }
-
-    protected _removeSubNode(child: AbstractAudioNode): void {
-        const set = this._children.get(child.name);
-
-        if (set) {
-            set.delete(child);
-        }
+    protected async _createSubNodePromisesResolved(): Promise<void> {
+        await Promise.all(this._createSubNodePromises.values());
     }
 
     protected _getSubNodeSet(name: string): Set<AbstractAudioNode> {
@@ -94,5 +75,34 @@ export abstract class AbstractAudioSubGraph {
         }
 
         return set;
+    }
+
+    protected _hasSubNode(name: string): boolean {
+        const set = this._children.get(name);
+
+        if (!set) {
+            return false;
+        }
+
+        return set.size > 0;
+    }
+
+    protected _addSubNode(child: AbstractAudioNode): void {
+        this._getSubNodeSet(child.name).add(child);
+        this._onSubNodesChanged();
+    }
+
+    protected _createAndAddSubNode(name: string): void {
+        const promise = this._createSubNode(name);
+
+        if (!promise) {
+            return;
+        }
+
+        promise.then((node) => {
+            this._addSubNode(node);
+        });
+
+        this._createSubNodePromises.set(name, promise);
     }
 }

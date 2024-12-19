@@ -1,10 +1,10 @@
 import type { Nullable } from "core/types";
 import { SpatialAudioSubNode, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
 import type { IWebAudioNode } from "../webAudioNode";
-import type { IWebAudioSuperNode } from "../webAudioParentNode";
+import type { IWebAudioParentNode } from "../webAudioParentNode";
 
 /** @internal */
-export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialWebAudioSubNode> {
+export async function _CreateSpatialAudioSubNodeAsync(owner: IWebAudioParentNode, options: Nullable<ISpatialAudioOptions> = null): Promise<_SpatialWebAudioSubNode> {
     return new _SpatialWebAudioSubNode(owner, options);
 }
 
@@ -14,7 +14,7 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
     public readonly node: PannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioSuperNode, options: Nullable<ISpatialAudioOptions>) {
+    public constructor(owner: IWebAudioParentNode, options: Nullable<ISpatialAudioOptions>) {
         super(owner);
 
         this.node = new PannerNode(owner.audioContext);
@@ -25,8 +25,6 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
         this.distanceModel = options?.spatialDistanceModel ?? "inverse";
         this.maxDistance = options?.spatialMaxDistance ?? 10000;
         this.panningModel = options?.spatialPanningModel ?? "equalpower";
-
-        owner.addSubNode(this);
     }
 
     /** @internal */
@@ -90,11 +88,6 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "SpatialWebAudioSubNode";
-    }
-
-    /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this.node;
     }
@@ -105,10 +98,23 @@ export class _SpatialWebAudioSubNode extends SpatialAudioSubNode {
     }
 
     protected override _connect(node: IWebAudioNode): void {
-        this.node.connect(node.webAudioInputNode);
+        super._connect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.connect(node.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
-        this.node.disconnect(node.webAudioInputNode);
+        super._disconnect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.disconnect(node.webAudioInputNode);
+        }
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "SpatialWebAudioSubNode";
     }
 }

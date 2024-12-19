@@ -7,9 +7,11 @@ import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
+import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
-import type { _WebAudioSubGraph } from "./webAudioSubGraph";
+import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -43,10 +45,8 @@ export async function CreateStreamingSoundAsync(
 }
 
 /** @internal */
-class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
-    private _gainNode: GainNode;
-
-    protected _subNodeGraph: _WebAudioSubGraph;
+class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNode {
+    protected _subGraph: WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public source: StreamingSoundSourceType;
@@ -58,18 +58,10 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
     public audioContext: AudioContext;
 
     /** @internal */
-    public get webAudioInputNode() {
-        return this._gainNode;
-    }
-
-    /** @internal */
-    public get webAudioOutputNode() {
-        return this._gainNode;
-    }
-
-    /** @internal */
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
+
+        this._subGraph = new WebAudioBusAndSoundSubGraph(this);
     }
 
     /** @internal */
@@ -81,9 +73,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
         }
 
         this.audioContext = audioContext;
-
-        this._gainNode = new GainNode(this.audioContext);
-
         this.source = source;
 
         if (options?.outputBus) {
@@ -93,8 +82,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
             this.outputBus = this.engine.defaultMainBus;
         }
 
-        this.volume = options?.volume ?? 1;
-
         if (options?.preloadCount) {
             await this.preloadInstances(options.preloadCount);
         }
@@ -102,6 +89,38 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
         if (options?.autoplay) {
             this.play(null, this.startOffset);
         }
+
+        await this._subGraph.init();
+    }
+
+    /** @internal */
+    public get webAudioInputNode() {
+        return this._subGraph.webAudioInputNode;
+    }
+
+    /** @internal */
+    public get webAudioOutputNode() {
+        return this._subGraph.webAudioOutputNode;
+    }
+
+    /** @internal */
+    public get children(): Map<string, Set<AbstractAudioNode>> {
+        return this._children;
+    }
+
+    /** @internal */
+    public get subGraph(): IWebAudioSubGraph {
+        return this._subGraph;
+    }
+
+    /** @internal */
+    public reconnectDownstreamNodes(): void {
+        this._reconnectDownstreamNodes();
+    }
+
+    /** @internal */
+    public reconnectUpstreamNodes(): void {
+        this._reconnectUpstreamNodes();
     }
 
     /** @internal */
@@ -113,18 +132,20 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioNode {
         return new WebAudioStreamingSoundInstance(this);
     }
 
-    protected override _updateSubNodes(): void {
-        //
-    }
-
     protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-        this.webAudioOutputNode.connect(node.webAudioInputNode);
+
+        if (this._subGraph.webAudioInputNode) {
+            this.webAudioOutputNode?.connect(this._subGraph.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
+
+        if (this._subGraph.webAudioInputNode) {
+            this.webAudioOutputNode?.disconnect(this._subGraph.webAudioInputNode);
+        }
     }
 }
 

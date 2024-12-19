@@ -1,8 +1,10 @@
+import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { MainAudioBus } from "../mainAudioBus";
+import { WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioNode } from "./webAudioNode";
-import type { _WebAudioSubGraph } from "./webAudioSubGraph";
+import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 /**
  * Creates a new main audio bus.
@@ -16,34 +18,32 @@ export async function CreateMainAudioBusAsync(name: string, engine: AudioEngineV
     }
 
     const bus = new _WebAudioMainBus(name, engine as _WebAudioEngine);
+    await bus.init();
     (engine as _WebAudioEngine).addMainBus(bus);
     return bus;
 }
 
 /** @internal */
-export class _WebAudioMainBus extends MainAudioBus implements IWebAudioNode {
-    private _gainNode: GainNode;
-
-    protected _subNodeGraph: _WebAudioSubGraph;
+export class _WebAudioMainBus extends MainAudioBus implements IWebAudioParentNode {
+    protected _subGraph: WebAudioBaseSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public get webAudioInputNode(): AudioNode {
-        return this._gainNode;
-    }
-
-    /** @internal */
-    public get webAudioOutputNode(): AudioNode {
-        return this._gainNode;
-    }
+    public audioContext: AudioContext;
 
     /** @internal */
     constructor(name: string, engine: _WebAudioEngine) {
         super(name, engine);
 
-        this._gainNode = new GainNode((this.engine as _WebAudioEngine).audioContext);
+        this.audioContext = engine.audioContext;
+        this._subGraph = new WebAudioBaseSubGraph(this);
+    }
+
+    /** @internal */
+    public async init(): Promise<void> {
+        await this._subGraph.init();
 
         if (this.engine.mainOutput) {
             this._connect(this.engine.mainOutput);
@@ -51,21 +51,53 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioNode {
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "_WebAudioMainBus";
+    public get webAudioInputNode() {
+        return this._subGraph.webAudioInputNode;
     }
 
-    protected override _updateSubNodes(): void {
-        //
+    /** @internal */
+    public get webAudioOutputNode() {
+        return this._subGraph.webAudioOutputNode;
+    }
+
+    /** @internal */
+    public get children(): Map<string, Set<AbstractAudioNode>> {
+        return this._children;
+    }
+
+    /** @internal */
+    public get subGraph(): WebAudioBaseSubGraph {
+        return this._subGraph;
     }
 
     protected override _connect(node: IWebAudioNode): void {
         super._connect(node);
-        this.webAudioOutputNode.connect(node.webAudioInputNode);
+
+        if (node.webAudioInputNode) {
+            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
         super._disconnect(node);
-        this.webAudioOutputNode.disconnect(node.webAudioInputNode);
+
+        if (node.webAudioInputNode) {
+            this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+        }
+    }
+
+    /** @internal */
+    public reconnectDownstreamNodes(): void {
+        this._reconnectDownstreamNodes();
+    }
+
+    /** @internal */
+    public reconnectUpstreamNodes(): void {
+        this._reconnectUpstreamNodes();
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "_WebAudioMainBus";
     }
 }

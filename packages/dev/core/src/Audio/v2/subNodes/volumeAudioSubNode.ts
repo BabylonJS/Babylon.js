@@ -1,5 +1,5 @@
-import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
+import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
 /**
@@ -16,8 +16,8 @@ export interface IVolumeAudioOptions {
  *
  */
 export abstract class VolumeAudioSubNode extends AbstractAudioSubNode {
-    protected constructor(parent: AbstractAudioNode) {
-        super(AudioSubNode.Volume, parent);
+    protected constructor(owner: IAudioParentNode) {
+        super(AudioSubNode.Volume, owner);
     }
 
     public abstract get volume(): number;

@@ -2,10 +2,10 @@ import type { Nullable } from "core/types";
 import type { IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
 import { StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
 import type { IWebAudioNode } from "../webAudioNode";
-import type { IWebAudioSuperNode } from "../webAudioParentNode";
+import type { IWebAudioParentNode } from "../webAudioParentNode";
 
 /** @internal */
-export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioSuperNode, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioSubNode> {
+export async function _CreateStereoAudioSubNodeAsync(owner: IWebAudioParentNode, options: Nullable<IStereoAudioOptions> = null): Promise<_StereoWebAudioSubNode> {
     return new _StereoWebAudioSubNode(owner, options);
 }
 
@@ -15,14 +15,12 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
     public readonly node: StereoPannerNode;
 
     /** @internal */
-    public constructor(owner: IWebAudioSuperNode, options: Nullable<IStereoAudioOptions>) {
+    public constructor(owner: IWebAudioParentNode, options: Nullable<IStereoAudioOptions>) {
         super(owner);
 
         this.node = new StereoPannerNode(owner.audioContext);
 
         this.pan = options?.stereoPan ?? 0;
-
-        owner.addSubNode(this);
     }
 
     /** @internal */
@@ -36,11 +34,6 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "StereoWebAudioSubNode";
-    }
-
-    /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this.node;
     }
@@ -51,10 +44,23 @@ export class _StereoWebAudioSubNode extends StereoAudioSubNode {
     }
 
     protected override _connect(node: IWebAudioNode): void {
-        this.node.connect(node.webAudioInputNode);
+        super._connect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.connect(node.webAudioInputNode);
+        }
     }
 
     protected override _disconnect(node: IWebAudioNode): void {
-        this.node.disconnect(node.webAudioInputNode);
+        super._disconnect(node);
+
+        if (node.webAudioInputNode) {
+            this.node.disconnect(node.webAudioInputNode);
+        }
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "StereoWebAudioSubNode";
     }
 }
