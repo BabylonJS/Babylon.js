@@ -1,6 +1,5 @@
 import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
-import { DracoAttributeName, DracoEncoderMethod } from "./dracoEncoder.types";
-import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
+import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions, DracoAttributeName } from "./dracoEncoder.types";
 import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
 import { Tools } from "../../Misc/tools";
 import { VertexBuffer } from "../buffer";
@@ -9,9 +8,15 @@ import { Mesh } from "../mesh";
 import type { Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
+import type { EncoderModule } from "draco3d";
+
+/**
+ * Missing type from types/draco3d. Do not export; UMD tests will fail.
+ */
+type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-declare let DracoEncoderModule: any;
+declare let DracoEncoderModule: DracoEncoderModule;
 
 /**
  * Map the Babylon.js attribute kind to the Draco attribute kind, defined by the `GeometryAttributeType` enum.
@@ -19,15 +24,15 @@ declare let DracoEncoderModule: any;
  */
 function getDracoAttributeName(kind: string): DracoAttributeName {
     if (kind === VertexBuffer.PositionKind) {
-        return DracoAttributeName.POSITION;
+        return "POSITION";
     } else if (kind === VertexBuffer.NormalKind) {
-        return DracoAttributeName.NORMAL;
+        return "NORMAL";
     } else if (kind === VertexBuffer.ColorKind) {
-        return DracoAttributeName.COLOR;
+        return "COLOR";
     } else if (kind.startsWith(VertexBuffer.UVKind)) {
-        return DracoAttributeName.TEX_COORD;
+        return "TEX_COORD";
     }
-    return DracoAttributeName.GENERIC;
+    return "GENERIC";
 }
 
 /**
@@ -109,13 +114,13 @@ function UseTransferableBuffer(attributes: Array<IDracoAttributeData>, indices: 
 const DefaultEncoderOptions: IDracoEncoderOptions = {
     decodeSpeed: 5,
     encodeSpeed: 5,
-    method: DracoEncoderMethod.EDGEBREAKER,
+    method: "MESH_EDGEBREAKER_ENCODING",
     quantizationBits: {
-        [DracoAttributeName.POSITION]: 14,
-        [DracoAttributeName.NORMAL]: 10,
-        [DracoAttributeName.COLOR]: 8,
-        [DracoAttributeName.TEX_COORD]: 12,
-        [DracoAttributeName.GENERIC]: 12,
+        POSITION: 14,
+        NORMAL: 10,
+        COLOR: 8,
+        TEX_COORD: 12,
+        GENERIC: 12,
     },
 };
 
@@ -212,7 +217,7 @@ export class DracoEncoder extends DracoCodec {
     }
 
     protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** EncoderModule */ }> {
-        const module = await (jsModule /*as DracoEncoderModule*/ || DracoEncoderModule)({ wasmBinary });
+        const module = await ((jsModule as DracoEncoderModule) || DracoEncoderModule)({ wasmBinary });
         return { module };
     }
 
@@ -234,7 +239,7 @@ export class DracoEncoder extends DracoCodec {
      * @param options options for the encoding
      * @returns a promise that resolves to the newly-encoded data
      */
-    public encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
+    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
         const verticesCount = input.getTotalVertices();
         if (verticesCount == 0) {
             throw new Error("Cannot compress geometry with Draco. There are no vertices.");
@@ -242,49 +247,47 @@ export class DracoEncoder extends DracoCodec {
 
         // Prepare parameters for encoding
         const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
-        if (input instanceof Mesh && input.morphTargetManager && mergedOptions.method === DracoEncoderMethod.EDGEBREAKER) {
+        if (input instanceof Mesh && input.morphTargetManager && mergedOptions.method === "MESH_EDGEBREAKER_ENCODING") {
             Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
-            mergedOptions.method = DracoEncoderMethod.SEQUENTIAL;
+            mergedOptions.method = "MESH_SEQUENTIAL_ENCODING";
         }
 
         const indices = PrepareIndicesForDraco(input);
         const attributes = PrepareAttributesForDraco(input, mergedOptions.excludedAttributes);
 
         if (this._workerPoolPromise) {
-            return this._workerPoolPromise.then((workerPool) => {
-                return new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
-                    workerPool.push((worker, onComplete) => {
-                        const onError = (error: ErrorEvent) => {
+            const workerPool = await this._workerPoolPromise;
+            return new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
+                workerPool.push((worker, onComplete) => {
+                    const onError = (error: ErrorEvent) => {
+                        worker.removeEventListener("error", onError);
+                        worker.removeEventListener("message", onMessage);
+                        reject(error);
+                        onComplete();
+                    };
+
+                    const onMessage = (message: MessageEvent<EncoderMessage>) => {
+                        if (message.data.id === "encodeMeshDone") {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
-                            reject(error);
+                            resolve(message.data.encodedMeshData);
                             onComplete();
-                        };
+                        }
+                    };
 
-                        const onMessage = (message: MessageEvent<EncoderMessage>) => {
-                            if (message.data.id === "encodeMeshDone") {
-                                worker.removeEventListener("error", onError);
-                                worker.removeEventListener("message", onMessage);
-                                resolve(message.data.encodedMeshData);
-                                onComplete();
-                            }
-                        };
+                    worker.addEventListener("error", onError);
+                    worker.addEventListener("message", onMessage);
 
-                        worker.addEventListener("error", onError);
-                        worker.addEventListener("message", onMessage);
-
-                        // Manually copy all of our attribute data into our own transferable buffer to ensure we're only copying what we need
-                        const buffer = UseTransferableBuffer(attributes, indices);
-                        worker.postMessage({ id: "encodeMesh", attributes: attributes, indices: indices, options: mergedOptions, buffer: buffer }, [buffer]);
-                    });
+                    // Manually copy all of our attribute data into our own transferable buffer to ensure we're only copying what we need
+                    const buffer = UseTransferableBuffer(attributes, indices);
+                    worker.postMessage({ id: "encodeMesh", attributes: attributes, indices: indices, options: mergedOptions, buffer: buffer }, [buffer]);
                 });
             });
         }
 
         if (this._modulePromise) {
-            return this._modulePromise.then((encoder) => {
-                return EncodeMesh(encoder.module, attributes, indices, mergedOptions);
-            });
+            const encoder = await this._modulePromise;
+            return EncodeMesh(encoder.module, attributes, indices, mergedOptions);
         }
 
         throw new Error("Draco encoder module is not available");

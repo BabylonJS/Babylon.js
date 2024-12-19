@@ -3,28 +3,12 @@ import type { Nullable } from "core/types";
 /**
  * The available Draco attribute names.
  */
-export enum DracoAttributeName {
-    POSITION = "POSITION",
-    NORMAL = "NORMAL",
-    COLOR = "COLOR",
-    TEX_COORD = "TEX_COORD",
-    GENERIC = "GENERIC",
-}
+export type DracoAttributeName = "POSITION" | "NORMAL" | "COLOR" | "TEX_COORD" | "GENERIC";
 
 /**
  * Draco encoding method (from EncoderMethod enum in `draco_encoder.ts`).
  */
-export enum DracoEncoderMethod {
-    /**
-     * Lower compression, but preserves the order of vertices.
-     */
-    SEQUENTIAL = "MESH_SEQUENTIAL_ENCODING",
-    /**
-     * Higher compression, but changes the order of vertices.
-     * NOTE: This will not work with morph targets.
-     */
-    EDGEBREAKER = "MESH_EDGEBREAKER_ENCODING",
-}
+export type DracoEncoderMethod = "MESH_SEQUENTIAL_ENCODING" | "MESH_EDGEBREAKER_ENCODING";
 
 /**
  * Options for a particular encoding.
@@ -45,7 +29,7 @@ export interface IDracoEncoderOptions {
     /**
      * The number of bits to use for each DRACO attribute kind.
      */
-    quantizationBits?: { [key: string /**DracoAttributeName*/]: number };
+    quantizationBits?: Record<DracoAttributeName, number>;
     /**
      * The list of BABYLON attribute kinds to skip exporting, if present. Defaults to none.
      */
@@ -87,7 +71,7 @@ export interface IDracoEncodedMeshData {
     /**
      * A map of Babylon vertex attributes to their Draco unique ids in the encoded data.
      */
-    attributeIDs: { [kind: string]: number };
+    attributeIDs: Record<string, number>;
 }
 
 /**

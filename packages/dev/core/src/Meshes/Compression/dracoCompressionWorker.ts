@@ -7,7 +7,7 @@ import { DracoDecoderModule } from "draco3dgltf";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-declare let DracoEncoderModule: any; // DracoEncoderModule will exist too, it's just not in the types package
+declare let DracoEncoderModule: (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
 interface InitDoneMessage {
     id: "initDone";
@@ -31,7 +31,7 @@ export function EncodeMesh(
     let meshBuilder: Nullable<MeshBuilder> = null;
     let mesh: Nullable<Mesh> = null;
     let encodedNativeBuffer: Nullable<DracoInt8Array> = null;
-    const attributeIDs: { [kind: string]: number } = {}; // Babylon kind -> Draco unique id
+    const attributeIDs: Record<string, number> = {}; // Babylon kind -> Draco unique id
 
     // Double-check that at least a position attribute is provided
     const positionAttribute = attributes.find((a) => a.babylonAttribute === "position");
@@ -123,8 +123,8 @@ export function EncoderWorkerFunction(): void {
                 if (message.url) {
                     importScripts(message.url);
                 }
-                const initDecoderObject = message.wasmBinary ? { wasmBinary: message.wasmBinary } : {};
-                encoderPromise = DracoEncoderModule(initDecoderObject);
+                const initEncoderObject = message.wasmBinary ? { wasmBinary: message.wasmBinary } : {};
+                encoderPromise = DracoEncoderModule(initEncoderObject);
                 postMessage({ id: "initDone" });
                 break;
             }
@@ -148,7 +148,7 @@ export function EncoderWorkerFunction(): void {
 export function DecodeMesh(
     decoderModule: any,
     data: Int8Array,
-    attributeIDs: { [kind: string]: number } | undefined,
+    attributeIDs: Record<string, number> | undefined,
     onIndicesData: (indices: Uint16Array | Uint32Array) => void,
     onAttributeData: (kind: string, data: ArrayBufferView, size: number, offset: number, stride: number, normalized: boolean) => void
 ): number {
@@ -248,7 +248,7 @@ export function DecodeMesh(
                 processAttribute(decoder, geometry, kind, attribute);
             }
         } else {
-            const dracoAttributeTypes: { [kind: string]: number } = {
+            const dracoAttributeTypes: Record<string, number> = {
                 position: decoderModule.POSITION,
                 normal: decoderModule.NORMAL,
                 color: decoderModule.COLOR,
