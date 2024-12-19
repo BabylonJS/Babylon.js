@@ -1,7 +1,7 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
+import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
-import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
 export enum SpatialAudio {
@@ -92,7 +92,7 @@ export function hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
  *
  */
 export abstract class SpatialAudioSubNode extends AbstractAudioSubNode {
-    protected constructor(owner: IAudioParentNode) {
+    protected constructor(owner: AbstractAudioNode) {
         super(AudioSubNode.Spatial, owner);
     }
 }

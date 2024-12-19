@@ -1,5 +1,5 @@
+import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractAudioSubNode } from "../abstractAudioSubNode";
-import type { IAudioParentNode } from "../audioParentNode";
 import { AudioSubNode } from "./audioSubNode";
 
 export enum VolumeAudio {
@@ -28,7 +28,7 @@ export function hasVolumeAudioOptions(options: IVolumeAudioOptions): boolean {
  *
  */
 export abstract class VolumeAudioSubNode extends AbstractAudioSubNode {
-    protected constructor(owner: IAudioParentNode) {
+    protected constructor(owner: AbstractAudioNode) {
         super(AudioSubNode.Volume, owner);
     }
 
