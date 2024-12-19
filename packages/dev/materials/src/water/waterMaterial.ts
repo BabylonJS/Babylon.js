@@ -394,7 +394,7 @@ export class WaterMaterial extends PushMaterial {
 
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
 
         if (defines._areMiscDirty) {
             defines.FRESNELSEPARATE = this._fresnelSeparate;
