@@ -27,13 +27,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
 
-import {
-    BindBonesParameters,
-    BindMorphTargetParameters,
-    PrepareAttributesForMorphTargetsInfluencers,
-    PrepareDefinesForMorphTargets,
-    PushAttributesForInstances,
-} from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
