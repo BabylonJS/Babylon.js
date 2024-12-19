@@ -201,7 +201,7 @@
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
         , vEnvironmentIrradiance: vec3f
     #endif
-    #ifdef USESPHERICALFROMREFLECTIONMAP
+    #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
             , reflectionMatrix: mat4x4f
         #endif
@@ -289,24 +289,33 @@
         // _____________________________ Irradiance ________________________________
         var environmentIrradiance: vec3f =  vec3f(0., 0., 0.);
 
-        #ifdef USESPHERICALFROMREFLECTIONMAP
-            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                environmentIrradiance = vEnvironmentIrradiance;
-            #else
+        #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
+            #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                 #ifdef ANISOTROPIC
                     var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
                 #else
                     var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
                 #endif
+            #else
+                var irradianceVector: vec3f =  normalW;
+            #endif
 
-                #ifdef REFLECTIONMAP_OPPOSITEZ
-                    irradianceVector.z *= -1.0;
-                #endif
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                irradianceVector.z *= -1.0;
+            #endif
 
-                #ifdef INVERTCUBICMAP
-                    irradianceVector.y *= -1.0;
-                #endif
+            #ifdef INVERTCUBICMAP
+                irradianceVector.y *= -1.0;
+            #endif
 
+            #ifdef SS_TRANSLUCENCY
+                outParams.irradianceVector = irradianceVector;
+            #endif
+        #endif
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                environmentIrradiance = vEnvironmentIrradiance;
+            #else
                 #if defined(REALTIME_FILTERING)
                     environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo
                     #ifdef IBL_CDF_FILTERING
@@ -317,13 +326,9 @@
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
-                
-                #ifdef SS_TRANSLUCENCY
-                    outParams.irradianceVector = irradianceVector;
-                #endif
             #endif
         #elif defined(USEIRRADIANCEMAP)
-            var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
+            var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, irradianceVector);
             environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
                 environmentIrradiance = fromRGBD(environmentIrradiance4);
