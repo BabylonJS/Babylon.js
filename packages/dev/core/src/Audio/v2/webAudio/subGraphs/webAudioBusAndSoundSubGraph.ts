@@ -92,18 +92,22 @@ export abstract class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
 
         if (this._webAudioInputNode !== webAudioInputNode) {
             // Disconnect the wrapped upstream WebAudio nodes from the old wrapped WebAudio node.
+            // The wrapper nodes are unaware of this change.
             if (this._webAudioInputNode && this._connectedUpstreamNodes) {
-                for (const node of this._connectedUpstreamNodes) {
-                    (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this._webAudioInputNode);
+                const it = this._connectedUpstreamNodes.values();
+                for (let next = it.next(); !next.done; next = it.next()) {
+                    (next.value as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this._webAudioInputNode);
                 }
             }
 
             this._webAudioInputNode = webAudioInputNode;
 
             // Connect the wrapped upstream WebAudio nodes to the new wrapped WebAudio node.
+            // The wrapper nodes are unaware of this change.
             if (webAudioInputNode && this._connectedUpstreamNodes) {
-                for (const node of this._connectedUpstreamNodes) {
-                    (node as IWebAudioOutputNode).webAudioOutputNode?.connect(webAudioInputNode);
+                const it = this._connectedUpstreamNodes.values();
+                for (let next = it.next(); !next.done; next = it.next()) {
+                    (next.value as IWebAudioOutputNode).webAudioOutputNode?.connect(webAudioInputNode);
                 }
             }
         }
