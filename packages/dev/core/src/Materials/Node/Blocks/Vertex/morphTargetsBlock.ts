@@ -243,6 +243,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
 
         const manager = (<Mesh>mesh).morphTargetManager;
+        const hasPositions = manager && manager.supportsPositions;
         const hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
         const hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
         const hasUVs = manager && manager.supportsUVs && defines["UV1"];
@@ -262,8 +263,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += `if (i >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
 
             injectionCode += `vertexID = ${isWebGPU ? "f32(vertexInputs.vertexIndex" : "float(gl_VertexID"}) * ${uniformsPrefix}morphTargetTextureInfo.x;\n`;
-            injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
-            injectionCode += `vertexID += 1.0;\n`;
+            if (hasPositions) {
+                injectionCode += `#ifdef MORPHTARGETS_POSITION\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
+                injectionCode += `vertexID += 1.0;\n`;
+                injectionCode += `#endif\n`;
+            }
 
             if (hasNormals) {
                 injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
@@ -301,7 +306,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += "}\n";
         } else {
             for (let index = 0; index < repeatCount; index++) {
-                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
+                if (hasPositions) {
+                    injectionCode += `#ifdef MORPHTARGETS_POSITION\n`;
+                    injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
+                    injectionCode += `#endif\n`;
+                }
 
                 if (hasNormals) {
                     injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;

@@ -234,6 +234,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NONUNIFORMSCALING = false;
 
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;

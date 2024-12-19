@@ -773,6 +773,7 @@ export class ShaderMaterial extends PushMaterial {
             const uv2 = manager.supportsUV2s && defines.indexOf("#define UV2") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
             const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
+            const position = manager.supportsPositions;
             numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (uv) {
                 defines.push("#define MORPHTARGETS_UV");
@@ -785,6 +786,9 @@ export class ShaderMaterial extends PushMaterial {
             }
             if (normal) {
                 defines.push("#define MORPHTARGETS_NORMAL");
+            }
+            if (position) {
+                defines.push("#define MORPHTARGETS_POSITION");
             }
             if (numInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
@@ -939,7 +943,7 @@ export class ShaderMaterial extends PushMaterial {
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;
 
-        if (!effect?.isReady() ?? true) {
+        if (!effect?.isReady()) {
             return false;
         }
 

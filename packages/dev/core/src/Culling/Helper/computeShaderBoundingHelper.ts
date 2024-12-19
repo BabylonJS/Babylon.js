@@ -168,6 +168,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             if (manager) {
                 defines = defines.slice();
                 defines.push("#define MORPHTARGETS");
+                defines.push("#define MORPHTARGETS_POSITION");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + maxNumInfluencers);
 
                 const computeShaderWithMorph = this._getComputeShader(defines, hasBones, true);

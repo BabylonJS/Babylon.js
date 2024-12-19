@@ -148,6 +148,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target position */
+    public MORPHTARGETS_POSITION = false;
     /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
     /** Morph target tangent */

@@ -156,6 +156,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public TWOSIDEDLIGHTING = false;
     public SHADOWFLOAT = false;
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;

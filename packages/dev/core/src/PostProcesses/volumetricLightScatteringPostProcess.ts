@@ -257,6 +257,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
             if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
+                defines.push("#define MORPHTARGETS_POSITION");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
                 if (morphTargetManager.isUsingTextureForTargets) {
