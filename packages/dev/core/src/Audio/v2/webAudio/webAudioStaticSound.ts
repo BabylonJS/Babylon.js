@@ -1,7 +1,5 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { AbstractAudioSubGraph } from "../abstractAudioSubGraph";
-import type { AbstractAudioSubNode } from "../abstractAudioSubNode";
 import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
@@ -9,19 +7,8 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import { AudioSubNode } from "../subNodes/audioSubNode";
-import { hasSpatialAudioOptions } from "../subNodes/spatialAudioSubNode";
-import { hasStereoAudioOptions } from "../subNodes/stereoAudioSubNode";
-import { hasVolumeAudioOptions, VolumeAudio } from "../subNodes/volumeAudioSubNode";
-import type { IWebAudioBusAndSoundSubGraph, IWebAudioBusAndSoundSubGraphOptions } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
-import type { SpatialWebAudioSubNode } from "./subNodes/spatialWebAudioSubNode";
-import { _CreateSpatialAudioSubNodeAsync } from "./subNodes/spatialWebAudioSubNode";
-import type { StereoWebAudioSubNode } from "./subNodes/stereoWebAudioSubNode";
-import { _CreateStereoAudioSubNodeAsync } from "./subNodes/stereoWebAudioSubNode";
-import type { VolumeWebAudioSubNode } from "./subNodes/volumeWebAudioSubNode";
-import { _CreateVolumeAudioSubNodeAsync } from "./subNodes/volumeWebAudioSubNode";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInputNode } from "./webAudioInputNode";
 import type { IWebAudioOutputNode } from "./webAudioOutputNode";
@@ -91,111 +78,7 @@ export async function CreateSoundBufferAsync(
 class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     private _buffer: WebAudioStaticSoundBuffer;
 
-    public static SubGraph = class extends AbstractAudioSubGraph implements IWebAudioBusAndSoundSubGraph {
-        protected override _owner: WebAudioStaticSound;
-        protected _webAudioInputNode: Nullable<AudioNode> = null;
-        protected _webAudioOutputNode: Nullable<AudioNode> = null;
-
-        /** @internal */
-        public constructor(owner: WebAudioStaticSound) {
-            super(owner);
-        }
-
-        /** @internal */
-        public async init(options: Nullable<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
-            this._createAndAddSubNode(AudioSubNode.Volume);
-
-            await this._createSubNodePromisesResolved();
-
-            let hasSpatialOptions = false;
-            let hasStereoOptions = false;
-
-            if (options) {
-                if ((hasSpatialOptions = hasSpatialAudioOptions(options))) {
-                    this._createAndAddSubNode(AudioSubNode.Spatial);
-                }
-                if ((hasStereoOptions = hasStereoAudioOptions(options))) {
-                    this._createAndAddSubNode(AudioSubNode.Stereo);
-                }
-            }
-
-            await this._createSubNodePromisesResolved();
-
-            if (options && hasVolumeAudioOptions(options)) {
-                const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
-                if (volumeNode) {
-                    volumeNode.volume = options.volume !== undefined ? options.volume : VolumeAudio.DefaultVolume;
-                }
-            }
-
-            if (hasSpatialOptions) {
-                this.getSubNode<SpatialWebAudioSubNode>(AudioSubNode.Spatial)?.setOptions(options);
-            }
-            if (hasStereoOptions) {
-                this.getSubNode<StereoWebAudioSubNode>(AudioSubNode.Stereo)?.setOptions(options);
-            }
-        }
-
-        /** @internal */
-        public get webAudioInputNode(): Nullable<AudioNode> {
-            return this._webAudioInputNode;
-        }
-
-        /** @internal */
-        public get webAudioOutputNode(): Nullable<AudioNode> {
-            return this._webAudioOutputNode;
-        }
-
-        protected override _createSubNode(name: string): Nullable<Promise<AbstractAudioSubNode>> {
-            switch (name) {
-                case AudioSubNode.Spatial:
-                    return _CreateSpatialAudioSubNodeAsync(this._owner);
-                case AudioSubNode.Stereo:
-                    return _CreateStereoAudioSubNodeAsync(this._owner);
-                case AudioSubNode.Volume:
-                    return _CreateVolumeAudioSubNodeAsync(this._owner);
-                default:
-                    return null;
-            }
-        }
-
-        protected override _onSubNodesChanged(): void {
-            if (!this._webAudioOutputNode) {
-                const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
-                if (volumeNode) {
-                    this._owner._beforeOutputNodeChanged();
-                    this._webAudioOutputNode = volumeNode.node;
-                    this._owner._afterOutputNodeChanged();
-                }
-            }
-
-            const stereoNode = this.getSubNode<StereoWebAudioSubNode>(AudioSubNode.Stereo);
-            const volumeNode = this.getSubNode<VolumeWebAudioSubNode>(AudioSubNode.Volume);
-
-            if (stereoNode) {
-                if (volumeNode) {
-                    stereoNode.connect(volumeNode);
-                }
-            }
-
-            let inputSubNode: Nullable<IWebAudioInputNode> = null;
-            if (stereoNode) {
-                inputSubNode = stereoNode;
-            } else if (volumeNode) {
-                inputSubNode = volumeNode;
-            }
-
-            const webAudioInputNode = inputSubNode?.webAudioInputNode ?? null;
-
-            if (this._webAudioInputNode !== webAudioInputNode) {
-                this._owner._beforeInputNodeChanged();
-                this._webAudioInputNode = webAudioInputNode;
-                this._owner._afterInputNodeChanged();
-            }
-        }
-    };
-
-    protected _subGraph: IWebAudioBusAndSoundSubGraph;
+    protected _subGraph: WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -207,8 +90,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
-        // this._subGraph = new WebAudioBusAndSoundSubGraph(this);
-        this._subGraph = new WebAudioStaticSound.SubGraph(this);
+        this._subGraph = new WebAudioStaticSound._SubGraph(this);
     }
 
     /** @internal */
@@ -288,41 +170,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     }
 
     /** @internal */
-    protected _beforeInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
-            }
-        }
-    }
-
-    /** @internal */
-    protected _afterInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
-            }
-        }
-    }
-
-    /** @internal */
-    protected _beforeOutputNodeChanged(): void {
-        this.webAudioOutputNode?.disconnect();
-    }
-
-    /** @internal */
-    protected _afterOutputNodeChanged(): void {
-        if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
-            for (const node of this._connectedDownstreamNodes) {
-                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
-                if (webAudioInputNode) {
-                    this.webAudioOutputNode.connect(webAudioInputNode);
-                }
-            }
-        }
-    }
-
-    /** @internal */
     public beforeInputNodeChanged(): void {}
 
     /** @internal */
@@ -338,6 +185,22 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioParentNode {
     public getClassName(): string {
         return "WebAudioStaticSound";
     }
+
+    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+        protected override _owner: WebAudioStaticSound;
+
+        protected get _children(): Map<string, Set<AbstractAudioNode>> {
+            return this._owner.children;
+        }
+
+        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedDownstreamNodes ?? null;
+        }
+
+        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedUpstreamNodes ?? null;
+        }
+    };
 }
 
 /** @internal */

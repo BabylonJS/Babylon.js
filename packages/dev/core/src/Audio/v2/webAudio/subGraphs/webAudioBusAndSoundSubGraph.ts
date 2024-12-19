@@ -1,4 +1,5 @@
 import type { Nullable } from "../../../../types";
+import type { AbstractAudioNode } from "../../abstractAudioNode";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
 import { hasSpatialAudioOptions, type ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
@@ -10,20 +11,17 @@ import type { StereoWebAudioSubNode } from "../subNodes/stereoWebAudioSubNode";
 import { _CreateStereoAudioSubNodeAsync } from "../subNodes/stereoWebAudioSubNode";
 import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioInputNode } from "../webAudioInputNode";
+import type { IWebAudioOutputNode } from "../webAudioOutputNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 import { WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
-import type { IWebAudioSubGraph } from "./webAudioSubGraph";
 
 /** @internal */
 export interface IWebAudioBusAndSoundSubGraphOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {}
 
 /** @internal */
-export interface IWebAudioBusAndSoundSubGraph extends IWebAudioSubGraph {
-    init(options: Nullable<IWebAudioBusAndSoundSubGraphOptions>): Promise<void>;
-}
+export abstract class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
+    protected abstract get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>>;
 
-/** @internal */
-export class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
     protected _webAudioInputNode: Nullable<AudioNode> = null;
 
     /** @internal */
@@ -101,9 +99,21 @@ export class WebAudioBusAndSoundSubGraph extends WebAudioBaseSubGraph {
         const webAudioInputNode = inputSubNode?.webAudioInputNode ?? null;
 
         if (this._webAudioInputNode !== webAudioInputNode) {
-            this._owner.beforeInputNodeChanged();
+            // this._owner.beforeInputNodeChanged();
+            if (this._owner.webAudioInputNode && this._connectedUpstreamNodes) {
+                for (const node of this._connectedUpstreamNodes) {
+                    (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this._owner.webAudioInputNode);
+                }
+            }
+
             this._webAudioInputNode = webAudioInputNode;
-            this._owner.afterInputNodeChanged();
+
+            // this._owner.afterInputNodeChanged();
+            if (this._owner.webAudioInputNode && this._connectedUpstreamNodes) {
+                for (const node of this._connectedUpstreamNodes) {
+                    (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this._owner.webAudioInputNode);
+                }
+            }
         }
     }
 }

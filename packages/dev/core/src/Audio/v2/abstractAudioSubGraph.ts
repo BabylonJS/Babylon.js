@@ -1,22 +1,12 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractAudioSubNode } from "./abstractAudioSubNode";
-import type { IAudioParentNode } from "./audioParentNode";
 
 /** @internal */
 export abstract class AbstractAudioSubGraph {
     private _createSubNodePromises = new Map<string, Promise<AbstractAudioSubNode>>();
 
-    protected _owner: IAudioParentNode;
-
-    /** @internal */
-    constructor(owner: IAudioParentNode) {
-        this._owner = owner;
-    }
-
-    private get _children(): Map<string, Set<AbstractAudioNode>> {
-        return this._owner.children;
-    }
+    protected abstract get _children(): Map<string, Set<AbstractAudioNode>>;
 
     /** @internal */
     public getSubNode<T extends AbstractAudioNode>(name: string): Nullable<T> {

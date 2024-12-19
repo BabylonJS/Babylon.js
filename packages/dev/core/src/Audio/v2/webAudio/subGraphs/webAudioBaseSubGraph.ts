@@ -1,10 +1,12 @@
 import type { Nullable } from "core/types";
+import type { AbstractAudioNode } from "../../abstractAudioNode";
 import { AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
 import type { AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { AudioSubNode } from "../../subNodes/audioSubNode";
 import { hasVolumeAudioOptions, VolumeAudio, type IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import type { VolumeWebAudioSubNode } from "../subNodes/volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
+import type { IWebAudioInputNode } from "../webAudioInputNode";
 import type { IWebAudioParentNode } from "../webAudioParentNode";
 import type { IWebAudioSubGraph } from "./webAudioSubGraph";
 
@@ -12,13 +14,17 @@ import type { IWebAudioSubGraph } from "./webAudioSubGraph";
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
-export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebAudioSubGraph {
-    protected override _owner: IWebAudioParentNode;
+export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebAudioSubGraph {
+    protected abstract get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>>;
+
+    protected _owner: IWebAudioParentNode;
     protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
     /** @internal */
     constructor(owner: IWebAudioParentNode) {
-        super(owner);
+        super();
+
+        this._owner = owner;
     }
 
     /** @internal */
@@ -64,8 +70,17 @@ export class WebAudioBaseSubGraph extends AbstractAudioSubGraph implements IWebA
             return;
         }
 
-        this._owner.beforeOutputNodeChanged();
+        this._owner.webAudioOutputNode?.disconnect();
+
         this._webAudioOutputNode = volumeNode.node;
-        this._owner.afterOutputNodeChanged();
+
+        if (this._owner.webAudioOutputNode && this._connectedDownstreamNodes) {
+            for (const node of this._connectedDownstreamNodes) {
+                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
+                if (webAudioInputNode) {
+                    this._owner.webAudioOutputNode.connect(webAudioInputNode);
+                }
+            }
+        }
     }
 }

@@ -5,8 +5,6 @@ import { AudioBus } from "../audioBus";
 import { WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { IWebAudioSubGraph } from "./subGraphs/webAudioSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode } from "./webAudioInputNode";
-import type { IWebAudioOutputNode } from "./webAudioOutputNode";
 import type { IWebAudioParentNode } from "./webAudioParentNode";
 
 /** @internal */
@@ -21,7 +19,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
         super(name, engine, options);
 
         this.audioContext = engine.audioContext;
-        this._subGraph = new WebAudioBusAndSoundSubGraph(this);
+        this._subGraph = new _WebAudioBus._SubGraph(this);
     }
 
     /** @internal */
@@ -50,42 +48,35 @@ export class _WebAudioBus extends AudioBus implements IWebAudioParentNode {
     }
 
     /** @internal */
-    public beforeInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
-            }
-        }
-    }
+    public beforeInputNodeChanged(): void {}
 
     /** @internal */
-    public afterInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
-            }
-        }
-    }
+    public afterInputNodeChanged(): void {}
 
     /** @internal */
-    public beforeOutputNodeChanged(): void {
-        this.webAudioOutputNode?.disconnect();
-    }
+    public beforeOutputNodeChanged(): void {}
 
     /** @internal */
-    public afterOutputNodeChanged(): void {
-        if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
-            for (const node of this._connectedDownstreamNodes) {
-                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
-                if (webAudioInputNode) {
-                    this.webAudioOutputNode.connect(webAudioInputNode);
-                }
-            }
-        }
-    }
+    public afterOutputNodeChanged(): void {}
 
     /** @internal */
     public getClassName(): string {
         return "_WebAudioBus";
     }
+
+    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+        protected override _owner: _WebAudioBus;
+
+        protected get _children(): Map<string, Set<AbstractAudioNode>> {
+            return this._owner.children;
+        }
+
+        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedDownstreamNodes ?? null;
+        }
+
+        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedUpstreamNodes ?? null;
+        }
+    };
 }

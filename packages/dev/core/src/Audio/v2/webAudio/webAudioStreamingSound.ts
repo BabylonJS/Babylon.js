@@ -62,7 +62,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
     constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
-        this._subGraph = new WebAudioBusAndSoundSubGraph(this);
+        this._subGraph = new WebAudioStreamingSound._SubGraph(this);
     }
 
     /** @internal */
@@ -115,39 +115,16 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
     }
 
     /** @internal */
-    public beforeInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.disconnect(this.webAudioInputNode);
-            }
-        }
-    }
+    public beforeInputNodeChanged(): void {}
 
     /** @internal */
-    public afterInputNodeChanged(): void {
-        if (this.webAudioInputNode && this._connectedUpstreamNodes) {
-            for (const node of this._connectedUpstreamNodes) {
-                (node as IWebAudioOutputNode).webAudioOutputNode?.connect(this.webAudioInputNode);
-            }
-        }
-    }
+    public afterInputNodeChanged(): void {}
 
     /** @internal */
-    public beforeOutputNodeChanged(): void {
-        this.webAudioOutputNode?.disconnect();
-    }
+    public beforeOutputNodeChanged(): void {}
 
     /** @internal */
-    public afterOutputNodeChanged(): void {
-        if (this.webAudioOutputNode && this._connectedDownstreamNodes) {
-            for (const node of this._connectedDownstreamNodes) {
-                const webAudioInputNode = (node as IWebAudioInputNode).webAudioInputNode;
-                if (webAudioInputNode) {
-                    this.webAudioOutputNode.connect(webAudioInputNode);
-                }
-            }
-        }
-    }
+    public afterOutputNodeChanged(): void {}
 
     /** @internal */
     public getClassName(): string {
@@ -173,6 +150,22 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioParentNo
             this.webAudioOutputNode?.disconnect(this._subGraph.webAudioInputNode);
         }
     }
+
+    private static _SubGraph = class extends WebAudioBusAndSoundSubGraph {
+        protected override _owner: WebAudioStreamingSound;
+
+        protected get _children(): Map<string, Set<AbstractAudioNode>> {
+            return this._owner.children;
+        }
+
+        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedDownstreamNodes ?? null;
+        }
+
+        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._connectedUpstreamNodes ?? null;
+        }
+    };
 }
 
 /** @internal */
