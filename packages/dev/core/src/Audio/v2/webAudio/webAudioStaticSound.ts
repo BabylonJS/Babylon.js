@@ -84,7 +84,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     public audioContext: AudioContext | OfflineAudioContext;
 
     /** @internal */
-    constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStaticSound._SubGraph(this);
@@ -212,7 +212,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     /** @internal */
-    constructor(engine: _WebAudioEngine) {
+    public constructor(engine: _WebAudioEngine) {
         super(engine);
     }
 
@@ -325,7 +325,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     /** @internal */
     public sourceNode: Nullable<AudioBufferSourceNode>;
 
-    constructor(source: WebAudioStaticSound) {
+    public constructor(source: WebAudioStaticSound) {
         super(source);
         this._initSourceNode();
         this._loop = source.loop;

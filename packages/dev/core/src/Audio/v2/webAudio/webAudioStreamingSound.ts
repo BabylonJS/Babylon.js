@@ -56,7 +56,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     public audioContext: AudioContext;
 
     /** @internal */
-    constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStreamingSound._SubGraph(this);
@@ -235,7 +235,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     };
 
-    constructor(source: WebAudioStreamingSound) {
+    public constructor(source: WebAudioStreamingSound) {
         super(source);
 
         this._loop = source.loop;

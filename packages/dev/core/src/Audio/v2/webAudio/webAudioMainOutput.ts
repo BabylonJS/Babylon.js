@@ -34,7 +34,7 @@ export class _WebAudioMainOutput extends MainAudioOutput implements IWebAudioInp
     }
 
     /** @internal */
-    constructor(engine: AudioEngineV2) {
+    public constructor(engine: AudioEngineV2) {
         super(engine);
 
         const audioContext = (this.engine as _WebAudioEngine).audioContext;

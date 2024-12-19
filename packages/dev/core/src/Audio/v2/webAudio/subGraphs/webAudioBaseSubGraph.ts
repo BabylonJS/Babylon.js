@@ -17,7 +17,7 @@ export abstract class WebAudioBaseSubGraph extends AbstractAudioSubGraph {
     protected _webAudioOutputNode: Nullable<AudioNode> = null;
 
     /** @internal */
-    constructor(owner: IWebAudioSuperNode) {
+    public constructor(owner: IWebAudioSuperNode) {
         super();
 
         this._owner = owner;

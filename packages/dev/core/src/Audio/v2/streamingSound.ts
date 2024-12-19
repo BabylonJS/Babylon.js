@@ -34,8 +34,7 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public preloadType: StreamingSoundPreloadType;
 
-    /** @internal */
-    constructor(name: string, engine: AudioEngineV2, options: Nullable<IStreamingSoundOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
         this.preloadType = options?.preloadType ?? "auto";

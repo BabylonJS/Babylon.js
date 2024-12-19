@@ -14,8 +14,7 @@ export abstract class StaticSoundBuffer {
     public abstract get duration(): number;
     public abstract get numberOfChannels(): number;
 
-    /** @internal */
-    constructor(engine: AudioEngineV2) {
+    protected constructor(engine: AudioEngineV2) {
         this.engine = engine;
     }
 }

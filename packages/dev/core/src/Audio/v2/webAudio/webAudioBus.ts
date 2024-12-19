@@ -17,7 +17,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public readonly audioContext: AudioContext;
 
     /** @internal */
-    constructor(name: string, engine: _WebAudioEngine, options: Nullable<IAudioBusOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine, options);
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
