@@ -286,7 +286,7 @@ void main(void) {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , vEnvironmentIrradiance
             #endif
-            #ifdef USESPHERICALFROMREFLECTIONMAP
+            #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     , reflectionMatrix
                 #endif
