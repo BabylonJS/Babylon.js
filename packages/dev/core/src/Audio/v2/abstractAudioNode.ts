@@ -128,7 +128,7 @@ export abstract class AbstractAudioNode {
      * @param node - The connecting upstream audio node
      * @returns `true` if the connection succeeds; otherwise `false`
      */
-    protected _onConnect(node: AbstractAudioNode): boolean {
+    private _onConnect(node: AbstractAudioNode): boolean {
         if (!this._upstreamNodes) {
             return false;
         }
@@ -142,7 +142,7 @@ export abstract class AbstractAudioNode {
      * Called when an upstream audio output node disconnects.
      * @param node - The disconnecting upstream audio node
      */
-    protected _onDisconnect(node: AbstractAudioNode): void {
+    private _onDisconnect(node: AbstractAudioNode): void {
         this._upstreamNodes?.delete(node);
     }
 }

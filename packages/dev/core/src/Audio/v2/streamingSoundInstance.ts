@@ -4,7 +4,7 @@ import { _AbstractSoundInstance } from "./abstractSoundInstance";
 
 /** @internal */
 export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
-    protected _resolvePreloadedPromise: () => void;
+    private _resolvePreloadedPromise: () => void;
 
     /** @internal */
     public readonly preloadedPromise = new Promise<void>((resolve) => {

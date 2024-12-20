@@ -5,8 +5,7 @@ import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 /** @internal */
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises = new Map<string, Promise<_AbstractAudioSubNode>>();
-
-    protected _subNodes = new Map<string, Set<NamedAbstractAudioNode>>();
+    private _subNodes = new Map<string, Set<NamedAbstractAudioNode>>();
 
     /**
      * Releases associated resources.
@@ -64,7 +63,7 @@ export abstract class _AbstractAudioSubGraph {
         await Promise.all(this._createSubNodePromises.values());
     }
 
-    protected _getSubNodeSet(name: string): Set<NamedAbstractAudioNode> {
+    private _getSubNodeSet(name: string): Set<NamedAbstractAudioNode> {
         let set = this._subNodes.get(name);
 
         if (!set) {
@@ -85,7 +84,7 @@ export abstract class _AbstractAudioSubGraph {
         return set.size > 0;
     }
 
-    protected _addSubNode(node: NamedAbstractAudioNode): void {
+    private _addSubNode(node: NamedAbstractAudioNode): void {
         this._getSubNodeSet(node.name).add(node);
         this._onSubNodesChanged();
 

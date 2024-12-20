@@ -48,7 +48,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     // Non-owning.
     protected _instances = new Set<_AbstractSoundInstance>();
 
-    protected _outBus: Nullable<AbstractPrimaryAudioBus> = null;
+    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
 
     /**
      * Whether the sound should start playing automatically.
@@ -214,7 +214,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         this._state = state;
     }
 
-    protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
+    private _getNewestInstance(): Nullable<_AbstractSoundInstance> {
         if (this._instances.size === 0) {
             return null;
         }
@@ -229,7 +229,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         return instance;
     }
 
-    protected _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
+    private _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
         this._instances.delete(instance);
 
         if (this._instances.size === 0) {
