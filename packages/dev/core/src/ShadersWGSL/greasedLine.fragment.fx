@@ -24,18 +24,18 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let grlColorMode: f32 = uniforms.grl_colorModeAndColorDistributionType.x;
     let grlColorDistributionType: f32 = uniforms.grl_colorModeAndColorDistributionType.y;
 
-    fragmentOutputs.color = vec4(uniforms.grlColor, 1.);
+    var outColor = vec4(uniforms.grlColor, 1.);
 
-    fragmentOutputs.color.a = step(fragmentInputs.grlCounters, uniforms.grlVisibility);
-    if (fragmentOutputs.color.a == 0.0) {
+    outColor.a = step(fragmentInputs.grlCounters, uniforms.grlVisibility);
+    if (outColor.a == 0.0) {
         discard;
     }
 
     if (uniforms.grlUseDash == 1.0) {
         let dashPosition = (fragmentInputs.grlCounters + uniforms.grlDashOffset) % uniforms.grlDashArray;
-        fragmentOutputs.color.a *= ceil(dashPosition - (uniforms.grlDashArray * uniforms.grlDashRatio));
+        outColor.a *= ceil(dashPosition - (uniforms.grlDashArray * uniforms.grlDashRatio));
 
-        if (fragmentOutputs.color.a == 0.0) {
+        if (outColor.a == 0.0) {
             discard;
         }
     }
@@ -49,13 +49,25 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         if (grlColorMode == COLOR_MODE_SET) {
-            fragmentOutputs.color = grlColor;
+            outColor = grlColor;
         } else if (grlColorMode == COLOR_MODE_ADD) {
-            fragmentOutputs.color += grlColor;
+            outColor += grlColor;
         } else if (grlColorMode == COLOR_MODE_MULTIPLY) {
-            fragmentOutputs.color *= grlColor;
+            outColor *= grlColor;
         }
     }
+
+    #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)
+        fragmentOutputs.color = outColor;
+    #endif
+
+    #if ORDER_INDEPENDENT_TRANSPARENCY
+	if (fragDepth == nearestDepth) {
+		fragmentOutputs.frontColor = vec4f(fragmentOutputs.frontColor.rgb + outColor.rgb * outColor.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - outColor.a));
+	} else {
+		fragmentOutputs.backColor += outColor;
+	}
+    #endif
 
     #define CUSTOM_FRAGMENT_MAIN_END
 }
