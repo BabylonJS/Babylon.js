@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { NamedAbstractAudioNode } from "./abstractAudioNode";
+import type { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
 import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 
 /** @internal */
@@ -20,6 +20,7 @@ export abstract class _AbstractAudioSubGraph {
             }
         }
 
+        this._subNodes.clear();
         this._createSubNodePromises.clear();
     }
 
@@ -84,11 +85,12 @@ export abstract class _AbstractAudioSubGraph {
         return set.size > 0;
     }
 
-    protected _addSubNode(child: NamedAbstractAudioNode): void {
-        this._getSubNodeSet(child.name).add(child);
+    protected _addSubNode(node: NamedAbstractAudioNode): void {
+        this._getSubNodeSet(node.name).add(node);
         this._onSubNodesChanged();
 
-        child.onNameChangedObservable.add(this._onSubNodeNameChanged);
+        node.onDisposeObservable.add(this._onSubNodeDisposed);
+        node.onNameChangedObservable.add(this._onSubNodeNameChanged);
     }
 
     protected _createAndAddSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
@@ -106,6 +108,13 @@ export abstract class _AbstractAudioSubGraph {
 
         return promise;
     }
+
+    private _onSubNodeDisposed = (node: AbstractAudioNode) => {
+        const subNode = node as NamedAbstractAudioNode;
+
+        this._getSubNodeSet(subNode.name).delete(subNode);
+        this._onSubNodesChanged();
+    };
 
     private _onSubNodeNameChanged = (event: { oldName: string; node: NamedAbstractAudioNode }) => {
         const set = this._subNodes.get(event.oldName);

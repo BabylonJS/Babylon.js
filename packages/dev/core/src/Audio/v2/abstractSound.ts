@@ -164,8 +164,6 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         this._outBus = null;
         this._instances.clear();
         this.onEndedObservable.clear();
-
-        this.onDisposeObservable.notifyObservers(this);
     }
 
     protected abstract _createInstance(): _AbstractSoundInstance;
