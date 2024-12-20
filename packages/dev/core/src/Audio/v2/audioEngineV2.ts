@@ -1,3 +1,4 @@
+import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
@@ -15,6 +16,15 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
     }
 
     return Instances[Instances.length - 1];
+}
+
+/** */
+export interface IAudioEngineV2Options {
+    /** */
+    listenerPosition?: Vector3;
+
+    /** */
+    volume?: number;
 }
 
 /**
@@ -67,6 +77,15 @@ export abstract class AudioEngineV2 {
     protected constructor() {
         Instances.push(this);
     }
+
+    public abstract get listenerPosition(): Vector3;
+    public abstract set listenerPosition(value: Vector3);
+
+    // public abstract get listenerForward(): Vector3;
+    // public abstract set listenerForward(value: Vector3);
+
+    // public abstract get listenerUp(): Vector3;
+    // public abstract set listenerUp(value: Vector3);
 
     public abstract get volume(): number;
     public abstract set volume(value: number);

@@ -1,6 +1,8 @@
+import { Vector3 } from "../../../Maths/math.vector";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { IAudioEngineV2Options } from "../audioEngineV2";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
@@ -10,7 +12,7 @@ import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
 /**
  * Options for creating a new v2 audio engine that uses the WebAudio API.
  */
-export interface IWebAudioEngineOptions {
+export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
     /**
      * The audio context to be used by the engine.
      */
@@ -38,7 +40,7 @@ export interface IWebAudioEngineOptions {
  * @returns A promise that resolves with the created audio engine.
  */
 export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AudioEngineV2> {
-    const engine = new _WebAudioEngine(options ?? {});
+    const engine = new _WebAudioEngine(options);
     await engine.init(options);
     return engine;
 }
@@ -65,6 +67,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
     private _volume = 1;
+
+    private _listenerPosition: Vector3 = Vector3.Zero();
 
     /** @internal */
     public readonly audioContext: AudioContext;
@@ -149,6 +153,27 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public get listenerPosition(): Vector3 {
+        return this._listenerPosition;
+    }
+
+    public set listenerPosition(value: Vector3) {
+        if (this._listenerPosition.equals(value)) {
+            return;
+        }
+
+        this._listenerPosition.copyFrom(value);
+
+        if (this.audioContext.listener.positionX !== undefined) {
+            this.audioContext.listener.positionX.value = value.x;
+            this.audioContext.listener.positionY.value = value.y;
+            this.audioContext.listener.positionZ.value = value.z;
+        } else {
+            this.audioContext.listener.setPosition(value.x, value.y, value.z);
+        }
+    }
+
+    /** @internal */
     public get volume(): number {
         return this._volume;
     }
@@ -167,10 +192,15 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public constructor(options: IWebAudioEngineOptions) {
+    public constructor(options: Nullable<IWebAudioEngineOptions> = null) {
         super();
 
+        this._volume = options?.volume ?? 1;
         this.audioContext = options?.audioContext ?? new AudioContext();
+
+        if (options?.listenerPosition) {
+            this.listenerPosition = options.listenerPosition;
+        }
     }
 
     /** @internal */

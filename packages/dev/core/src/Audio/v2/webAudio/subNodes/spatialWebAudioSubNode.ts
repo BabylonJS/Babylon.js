@@ -1,6 +1,13 @@
-import { _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
+import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { TransformNode } from "../../../../Meshes/transformNode";
+import type { Nullable } from "../../../../types";
+import { _SpatialAudio, _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
+
+const TempMatrix = new Matrix();
+const TempQuaternion = new Quaternion();
+const TempVector = new Vector3();
 
 /** @internal */
 export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
@@ -9,6 +16,10 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+    private _rotationQuaternion: Quaternion = _SpatialAudio.DefaultRotationQuaternion.clone();
+    private _rotationAngles: Vector3 = _SpatialAudio.DefaultRotation.clone();
+    private _rotationAnglesDirty = false;
+
     /** @internal */
     public readonly node: PannerNode;
 
@@ -24,7 +35,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.coneInnerAngle;
     }
 
-    /** @internal */
     public set coneInnerAngle(value: number) {
         this.node.coneInnerAngle = value;
     }
@@ -34,7 +44,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.coneOuterAngle;
     }
 
-    /** @internal */
     public set coneOuterAngle(value: number) {
         this.node.coneOuterAngle = value;
     }
@@ -44,7 +53,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.coneOuterGain;
     }
 
-    /** @internal */
     public set coneOuterVolume(value: number) {
         this.node.coneOuterGain = value;
     }
@@ -54,7 +62,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.distanceModel;
     }
 
-    /** @internal */
     public set distanceModel(value: "linear" | "inverse" | "exponential") {
         this.node.distanceModel = value;
     }
@@ -64,7 +71,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.maxDistance;
     }
 
-    /** @internal */
     public set maxDistance(value: number) {
         this.node.maxDistance = value;
     }
@@ -74,9 +80,78 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         return this.node.panningModel;
     }
 
-    /** @internal */
     public set panningModel(value: "equalpower" | "HRTF") {
         this.node.panningModel = value;
+    }
+
+    /** @internal */
+    public get position(): Vector3 {
+        return new Vector3(this.node.positionX.value, this.node.positionY.value, this.node.positionZ.value);
+    }
+
+    public set position(value: Vector3) {
+        this.node.positionX.value = value.x;
+        this.node.positionY.value = value.y;
+        this.node.positionZ.value = value.z;
+    }
+
+    /** @internal */
+    public get refDistance(): number {
+        return this.node.refDistance;
+    }
+
+    public set refDistance(value: number) {
+        this.node.refDistance = value;
+    }
+
+    /** @internal */
+    public get rolloffFactor(): number {
+        return this.node.rolloffFactor;
+    }
+
+    public set rolloffFactor(value: number) {
+        this.node.rolloffFactor = value;
+    }
+
+    /** @internal */
+    public get rotation(): Vector3 {
+        if (this._rotationAnglesDirty) {
+            this._rotationAnglesDirty = false;
+            this._rotationQuaternion.toEulerAnglesToRef(this._rotationAngles);
+        }
+
+        return this._rotationAngles;
+    }
+
+    public set rotation(value: Vector3) {
+        Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TempQuaternion);
+        this.rotationQuaternion = TempQuaternion;
+    }
+
+    /** @internal */
+    public get rotationQuaternion(): Quaternion {
+        return this._rotationQuaternion;
+    }
+
+    public set rotationQuaternion(value: Quaternion) {
+        this._rotationQuaternion.copyFrom(value);
+
+        const mat = Matrix.FromQuaternionToRef(value, TempMatrix);
+        const orientation = Vector3.TransformNormalToRef(Vector3.Right(), mat, TempVector);
+
+        this.node.orientationX.value = orientation.x;
+        this.node.orientationY.value = orientation.y;
+        this.node.orientationZ.value = orientation.z;
+    }
+
+    /** @internal */
+    public get transformNode(): Nullable<TransformNode> {
+        // TODO: Implement `transformNode` property.
+        return null;
+    }
+
+    public set transformNode(value: Nullable<TransformNode>) {
+        // TODO: Implement `transformNode` property.
     }
 
     /** @internal */

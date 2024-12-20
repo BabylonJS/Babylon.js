@@ -1,4 +1,4 @@
-import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import { _AbstractAudioSubNode } from "../abstractAudioSubNode";
@@ -19,6 +19,16 @@ export class _SpatialAudio {
     public static readonly DefaultMaxDistance = 10000;
     /** @internal */
     public static readonly DefaultPanningModel = "equalpower";
+    /** @internal */
+    public static readonly DefaultPosition = Vector3.Zero();
+    /** @internal */
+    public static readonly DefaultRefDistance = 1;
+    /** @internal */
+    public static readonly DefaultRolloffFactor = 1;
+    /** @internal */
+    public static readonly DefaultRotation = Vector3.Zero();
+    /** @internal */
+    public static readonly DefaultRotationQuaternion = Quaternion.FromEulerVector(_SpatialAudio.DefaultRotation);
 }
 
 /**
@@ -68,7 +78,7 @@ export interface ISpatialAudioOptions {
     /**
      * The spatial rotation.
      */
-    spatialRotation?: Quaternion;
+    spatialRotation?: Vector3;
     /**
      * The transform node to track spatially.
      */
@@ -120,6 +130,24 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract get panningModel(): "equalpower" | "HRTF";
     public abstract set panningModel(value: "equalpower" | "HRTF");
 
+    public abstract get position(): Vector3;
+    public abstract set position(value: Vector3);
+
+    public abstract get refDistance(): number;
+    public abstract set refDistance(value: number);
+
+    public abstract get rolloffFactor(): number;
+    public abstract set rolloffFactor(value: number);
+
+    public abstract get rotation(): Vector3;
+    public abstract set rotation(value: Vector3);
+
+    public abstract get rotationQuaternion(): Quaternion;
+    public abstract set rotationQuaternion(value: Quaternion);
+
+    public abstract get transformNode(): Nullable<TransformNode>;
+    public abstract set transformNode(value: Nullable<TransformNode>);
+
     public abstract get inNode(): AudioNode;
     public abstract get outNode(): AudioNode;
 
@@ -131,9 +159,15 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
 
         this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : _SpatialAudio.DefaultConeInnerAngle;
         this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : _SpatialAudio.DefaultConeOuterAngle;
+
         this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : _SpatialAudio.DefaultConeOuterVolume;
         this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : _SpatialAudio.DefaultDistanceModel;
         this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : _SpatialAudio.DefaultMaxDistance;
         this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : _SpatialAudio.DefaultPanningModel;
+        this.position = options.spatialPosition !== undefined ? options.spatialPosition : _SpatialAudio.DefaultPosition.clone();
+        this.refDistance = options.spatialRefDistance !== undefined ? options.spatialRefDistance : _SpatialAudio.DefaultRefDistance;
+        this.rolloffFactor = options.spatialRolloffFactor !== undefined ? options.spatialRolloffFactor : _SpatialAudio.DefaultRolloffFactor;
+        this.rotation = options.spatialRotation !== undefined ? options.spatialRotation : _SpatialAudio.DefaultRotation.clone();
+        this.transformNode = options.spatialTransformNode ?? null;
     }
 }

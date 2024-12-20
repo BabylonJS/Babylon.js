@@ -17,4 +17,17 @@ export abstract class _AbstractAudioSubNode extends NamedAbstractAudioNode {
     public disconnect(node: _AbstractAudioSubNode): void {
         this._disconnect(node);
     }
+
+    /** @internal */
+    public disconnectAll(): void {
+        if (!this._downstreamNodes) {
+            return;
+        }
+
+        const it = this._downstreamNodes.values();
+
+        for (let next = it.next(); !next.done; next = it.next()) {
+            this._disconnect(next.value);
+        }
+    }
 }
