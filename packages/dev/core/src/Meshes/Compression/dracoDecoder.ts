@@ -89,7 +89,7 @@ export class DracoDecoder extends DracoCodec {
         return typeof DracoDecoderModule !== "undefined";
     }
 
-    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** DecoderModule */ }> {
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: unknown /** DracoDecoderModule */): Promise<{ module: unknown /** DecoderModule */ }> {
         const module = await ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary });
         return { module };
     }

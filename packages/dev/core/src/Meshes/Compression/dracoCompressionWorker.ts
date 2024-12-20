@@ -15,18 +15,19 @@ interface InitDoneMessage {
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
-declare function postMessage(message: InitDoneMessage | DecoderMessage | EncoderMessage, transfer?: any[]): void;
+declare function postMessage(message: InitDoneMessage | DecoderMessage | EncoderMessage, transfer?: ArrayBufferLike[]): void;
 
 /**
  * @internal
  */
 export function EncodeMesh(
-    encoderModule: any /** EncoderModule */,
+    module: unknown /** EncoderModule */,
     attributes: Array<IDracoAttributeData>,
     indices: Nullable<Uint16Array | Uint32Array>,
     options: IDracoEncoderOptions,
     destination?: ArrayBuffer
 ): Nullable<IDracoEncodedMeshData> {
+    const encoderModule = module as EncoderModule;
     let encoder: Nullable<Encoder> = null;
     let meshBuilder: Nullable<MeshBuilder> = null;
     let mesh: Nullable<Mesh> = null;
@@ -51,9 +52,9 @@ export function EncodeMesh(
     }
 
     try {
-        encoder = new encoderModule.Encoder() as Encoder;
-        meshBuilder = new encoderModule.MeshBuilder() as MeshBuilder;
-        mesh = new encoderModule.Mesh() as Mesh;
+        encoder = new encoderModule.Encoder();
+        meshBuilder = new encoderModule.MeshBuilder();
+        mesh = new encoderModule.Mesh();
 
         // Add the faces
         meshBuilder.AddFacesToMesh(mesh, indices.length / 3, indices);
@@ -146,20 +147,21 @@ export function EncoderWorkerFunction(): void {
  * @internal
  */
 export function DecodeMesh(
-    decoderModule: any,
+    module: unknown /** DecoderModule */,
     data: Int8Array,
     attributeIDs: Record<string, number> | undefined,
     onIndicesData: (indices: Uint16Array | Uint32Array) => void,
     onAttributeData: (kind: string, data: ArrayBufferView, size: number, offset: number, stride: number, normalized: boolean) => void
 ): number {
+    const decoderModule = module as DecoderModule;
     let decoder: Nullable<Decoder> = null;
     let buffer: Nullable<DecoderBuffer> = null;
     let geometry: Nullable<Mesh | PointCloud> = null;
 
     try {
-        decoder = new decoderModule.Decoder() as Decoder;
+        decoder = new decoderModule.Decoder();
 
-        buffer = new decoderModule.DecoderBuffer() as DecoderBuffer;
+        buffer = new decoderModule.DecoderBuffer();
         buffer.Init(data, data.byteLength);
 
         let status: Status;
@@ -206,7 +208,7 @@ export function DecodeMesh(
 
         const numPoints = geometry.num_points();
 
-        const processAttribute = (decoder: Decoder, geometry: Mesh | PointCloud, kind: string, attribute: any) => {
+        const processAttribute = (decoder: Decoder, geometry: Mesh | PointCloud, kind: string, attribute: any /** Attribute */) => {
             const dataType = attribute.data_type();
             const numComponents = attribute.num_components();
             const normalized = attribute.normalized();

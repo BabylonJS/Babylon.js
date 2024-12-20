@@ -10,9 +10,7 @@ import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import type { EncoderModule } from "draco3d";
 
-/**
- * Missing type from types/draco3d. Do not export; UMD tests will fail.
- */
+// Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -216,7 +214,7 @@ export class DracoEncoder extends DracoCodec {
         return typeof DracoEncoderModule !== "undefined";
     }
 
-    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** EncoderModule */ }> {
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: unknown /** DracoEncoderModule */): Promise<{ module: unknown /** EncoderModule */ }> {
         const module = await ((jsModule as DracoEncoderModule) || DracoEncoderModule)({ wasmBinary });
         return { module };
     }
