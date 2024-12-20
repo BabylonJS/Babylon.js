@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
+import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
@@ -10,6 +10,7 @@ import { _StaticSoundInstance } from "../staticSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { _getWebAudioEngine } from "./webAudioTools";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -29,18 +30,11 @@ export async function CreateSoundAsync(
     options: Nullable<IStaticSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSound> {
-    engine = engine ?? LastCreatedAudioEngine();
+    const webAudioEngine = _getWebAudioEngine(engine);
 
-    if (!engine) {
-        throw new Error("No audio engine available.");
-    }
-
-    if (!engine.isWebAudio) {
-        throw new Error("Unsupported engine type.");
-    }
-
-    const sound = new WebAudioStaticSound(name, engine as _WebAudioEngine, options);
+    const sound = new WebAudioStaticSound(name, webAudioEngine, options);
     await sound.init(source, options);
+
     return sound;
 }
 
@@ -56,17 +50,9 @@ export async function CreateSoundBufferAsync(
     options: Nullable<IStaticSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
-    engine = engine ?? LastCreatedAudioEngine();
+    const webAudioEngine = _getWebAudioEngine(engine);
 
-    if (!engine) {
-        throw new Error("No audio engine available.");
-    }
-
-    if (!engine.isWebAudio) {
-        throw new Error("Unsupported engine type.");
-    }
-
-    const buffer = new WebAudioStaticSoundBuffer(engine as _WebAudioEngine);
+    const buffer = new WebAudioStaticSoundBuffer(webAudioEngine);
     await buffer.init(source, options);
     return buffer;
 }

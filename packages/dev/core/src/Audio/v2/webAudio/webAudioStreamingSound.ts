@@ -1,7 +1,7 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { LastCreatedAudioEngine, type AudioEngineV2 } from "../audioEngineV2";
+import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _cleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
@@ -10,6 +10,7 @@ import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { _getWebAudioEngine } from "./webAudioTools";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -27,18 +28,11 @@ export async function CreateStreamingSoundAsync(
     options: Nullable<IStreamingSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
-    engine = engine ?? LastCreatedAudioEngine();
+    const webAudioEngine = _getWebAudioEngine(engine);
 
-    if (!engine) {
-        throw new Error("No audio engine available.");
-    }
-
-    if (!engine.isWebAudio) {
-        throw new Error("Unsupported engine type.");
-    }
-
-    const sound = new WebAudioStreamingSound(name, engine as _WebAudioEngine, options);
+    const sound = new WebAudioStreamingSound(name, webAudioEngine, options);
     await sound.init(source, options);
+
     return sound;
 }
 

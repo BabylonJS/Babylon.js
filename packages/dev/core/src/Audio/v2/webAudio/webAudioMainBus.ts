@@ -1,12 +1,12 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { LastCreatedAudioEngine } from "../audioEngineV2";
 import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
+import { _getWebAudioEngine } from "./webAudioTools";
 
 /**
  * Creates a new main audio bus.
@@ -16,18 +16,11 @@ import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
  * @returns A promise that resolves with the created main audio bus.
  */
 export async function CreateMainAudioBusAsync(name: string, options: Nullable<IMainAudioBusOptions> = null, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
-    engine = engine ?? LastCreatedAudioEngine();
+    const webAudioEngine = _getWebAudioEngine(engine);
 
-    if (!engine) {
-        throw new Error("No audio engine available.");
-    }
-
-    if (!engine.isWebAudio) {
-        throw new Error("Unsupported engine type.");
-    }
-
-    const bus = new _WebAudioMainBus(name, engine as _WebAudioEngine);
+    const bus = new _WebAudioMainBus(name, webAudioEngine);
     await bus.init(options);
+
     return bus;
 }
 
