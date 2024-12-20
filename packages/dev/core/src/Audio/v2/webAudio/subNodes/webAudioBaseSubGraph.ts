@@ -32,6 +32,25 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         if (options && _HasVolumeAudioOptions(options)) {
             this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.setOptions(options);
         }
+
+        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
+        if (!volumeNode) {
+            return;
+        }
+
+        this._outNode = volumeNode.node;
+
+        // Connect the wrapped downstream WebAudio nodes to the new wrapped WebAudio node.
+        // The wrapper nodes are unaware of this change.
+        if (volumeNode.node && this._downstreamNodes) {
+            const it = this._downstreamNodes.values();
+            for (let next = it.next(); !next.done; next = it.next()) {
+                const inNode = (next.value as IWebAudioInNode).inNode;
+                if (inNode) {
+                    volumeNode.node.connect(inNode);
+                }
+            }
+        }
     }
 
     protected abstract get _downstreamNodes(): Nullable<Set<AbstractAudioNode>>;
@@ -52,31 +71,6 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;
-        }
-    }
-
-    protected _onSubNodesChanged(): void {
-        if (this._outNode) {
-            return;
-        }
-
-        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
-        if (!volumeNode) {
-            return;
-        }
-
-        this._outNode = volumeNode.node;
-
-        // Connect the wrapped downstream WebAudio nodes to the new wrapped WebAudio node.
-        // The wrapper nodes are unaware of this change.
-        if (volumeNode.node && this._downstreamNodes) {
-            const it = this._downstreamNodes.values();
-            for (let next = it.next(); !next.done; next = it.next()) {
-                const inNode = (next.value as IWebAudioInNode).inNode;
-                if (inNode) {
-                    volumeNode.node.connect(inNode);
-                }
-            }
         }
     }
 }

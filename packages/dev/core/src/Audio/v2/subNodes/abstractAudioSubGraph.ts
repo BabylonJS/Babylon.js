@@ -57,7 +57,12 @@ export abstract class _AbstractAudioSubGraph {
     }
 
     protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;
-    protected abstract _onSubNodesChanged(): void;
+
+    /**
+     * Called when sub-nodes are added or removed.
+     * - Override this to connect and reconnect sub-nodes as needed.
+     */
+    protected _onSubNodesChanged(): void {}
 
     protected async _createSubNodePromisesResolved(): Promise<void> {
         await Promise.all(this._createSubNodePromises.values());

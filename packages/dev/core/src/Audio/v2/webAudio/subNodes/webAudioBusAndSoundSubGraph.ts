@@ -70,8 +70,6 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     }
 
     protected override _onSubNodesChanged(): void {
-        super._onSubNodesChanged();
-
         const spatialNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Spatial);
         const stereoNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Stereo);
         const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
