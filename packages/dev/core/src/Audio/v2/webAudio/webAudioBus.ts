@@ -41,6 +41,9 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public override dispose(): void {
         super.dispose();
 
+        this._spatial = null;
+        this._stereo = null;
+
         this.engine.removeNode(this);
     }
 

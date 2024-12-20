@@ -96,6 +96,9 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     public override dispose(): void {
         super.dispose();
 
+        this._spatial = null;
+        this._stereo = null;
+
         this.engine.removeNode(this);
     }
 
