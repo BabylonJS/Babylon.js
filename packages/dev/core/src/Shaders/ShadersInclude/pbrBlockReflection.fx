@@ -278,10 +278,6 @@
             #ifdef INVERTCUBICMAP
                 irradianceVector.y *= -1.0;
             #endif
-
-            #ifdef SS_TRANSLUCENCY
-                outParams.irradianceVector = irradianceVector;
-            #endif
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
@@ -296,9 +292,17 @@
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
+
+                #ifdef SS_TRANSLUCENCY
+                    outParams.irradianceVector = irradianceVector;
+                #endif
             #endif
         #elif defined(USEIRRADIANCEMAP)
-            vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, irradianceVector);
+            #ifdef REFLECTIONMAP_3D
+                vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, irradianceVector);
+            #else
+                vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, reflectionCoords);
+            #endif
             environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
                 environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
