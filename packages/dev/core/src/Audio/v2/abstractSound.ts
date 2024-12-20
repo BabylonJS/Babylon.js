@@ -1,11 +1,11 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { _AudioNodeType } from "./abstractAudioNode";
-import { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
+import { _AudioNodeType, NamedAbstractAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
+import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
@@ -43,11 +43,12 @@ export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudi
 /**
  * Abstract class representing a sound in the audio engine.
  */
-export abstract class AbstractSound extends AbstractAudioSuperNode {
+export abstract class AbstractSound extends NamedAbstractAudioNode {
     private _state: SoundState = SoundState.Stopped;
 
-    // Non-owning.
     protected _instances = new Set<_AbstractSoundInstance>();
+
+    protected abstract _subGraph: _AbstractAudioSubGraph;
 
     private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
 
@@ -155,7 +156,9 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         this.stop();
 
         this._outBus = null;
+
         this._instances.clear();
+        this._subGraph.dispose();
         this.onEndedObservable.clear();
     }
 

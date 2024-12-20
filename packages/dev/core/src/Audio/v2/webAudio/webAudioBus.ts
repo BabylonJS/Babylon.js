@@ -34,14 +34,14 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public async init(options: Nullable<IAudioBusOptions>): Promise<void> {
         await this._subGraph.init(options);
 
-        this.engine.addSuperNode(this);
+        this.engine.addNode(this);
     }
 
     /** @internal */
     public override dispose(): void {
         super.dispose();
 
-        this.engine.removeSuperNode(this);
+        this.engine.removeNode(this);
     }
 
     /** @internal */

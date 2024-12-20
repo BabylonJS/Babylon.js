@@ -1,7 +1,7 @@
 import { Vector3 } from "../../../Maths/math.vector";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
-import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
+import type { NamedAbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioEngineV2Options } from "../audioEngineV2";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
@@ -284,12 +284,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public addSuperNode(superNode: AbstractAudioSuperNode): void {
-        this._addSuperNode(superNode);
+    public addNode(node: NamedAbstractAudioNode): void {
+        this._addNode(node);
     }
 
     /** @internal */
-    public removeSuperNode(superNode: AbstractAudioSuperNode): void {
-        this._removeSuperNode(superNode);
+    public removeNode(node: NamedAbstractAudioNode): void {
+        this._removeNode(node);
     }
 }

@@ -103,14 +103,14 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
             this.play(this.startOffset, this.duration > 0 ? this.duration : null);
         }
 
-        this.engine.addSuperNode(this);
+        this.engine.addNode(this);
     }
 
     /** @internal */
     public override dispose(): void {
         super.dispose();
 
-        this.engine.removeSuperNode(this);
+        this.engine.removeNode(this);
     }
 
     /** @internal */
