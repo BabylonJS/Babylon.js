@@ -297,8 +297,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
         this.mediaElement.removeEventListener("ended", this._onEnded);
         this.mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
-        for (const child of Array.from(this.mediaElement.children)) {
-            this.mediaElement.removeChild(child);
+        for (const source of Array.from(this.mediaElement.children)) {
+            this.mediaElement.removeChild(source);
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
