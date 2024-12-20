@@ -21,7 +21,7 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     }
 
     /** @internal */
-    set startOffset(value: number) {
+    public set startOffset(value: number) {
         this._startOffset = value;
     }
 
