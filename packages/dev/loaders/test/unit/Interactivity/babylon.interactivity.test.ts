@@ -1,21 +1,23 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { loggerExample, mathExample, customEventExample, worldPointerExample, doNExample, intMathExample, matrixMathExample } from "./testData";
-import { convertGLTFToSerializedFlowGraph } from "loaders/glTF/2.0/Extensions/interactivityFunctions";
+import { convertGLTFToSerializedFlowGraph } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityFunctions";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { ArcRotateCamera } from "core/Cameras";
-import { InteractivityPathToObjectConverter } from "loaders/glTF/2.0/Extensions/interactivityPathToObjectConverter";
 import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
+import { ParseFlowGraphAsync } from "core/FlowGraph";
+import { GLTFPathToObjectConverter } from "loaders/glTF/2.0/Extensions/gltfPathToObjectConverter";
+import { objectModelMapping } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
     let mockGltf: any;
+    const pathConverter = new GLTFPathToObjectConverter(mockGltf, objectModelMapping);
 
     beforeEach(() => {
         engine = new NullEngine();
@@ -24,68 +26,57 @@ describe("Babylon Interactivity", () => {
         log.mockClear();
     });
 
-    it("should load a basic graph", () => {
+    it("should load a basic graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(loggerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector4(2, 4, 6, 8));
     });
 
-    it("should load a math graph", () => {
+    it("should load a math graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(mathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(42);
     });
 
-    it("should do integer math operations", () => {
+    it("should do integer math operations", async () => {
         const json = convertGLTFToSerializedFlowGraph(intMathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new FlowGraphInteger(1));
     });
 
-    it("should do matrix math operations", () => {
+    it("should do matrix math operations", async () => {
         const json = convertGLTFToSerializedFlowGraph(matrixMathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        log.mockClear();
-        scene.onReadyObservable.notifyObservers(scene);
-        expect(log.mock.calls[0][0].m).toEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
+        expect(log.mock.calls[0][0]._m).toStrictEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
     });
 
-    it("should load a custom event graph", () => {
+    it("should load a custom event graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(customEventExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector3(1, 2, 3));
     });
 
-    it("should resolve world pointers", () => {
+    it("should resolve world pointers", async () => {
         const mesh = new Mesh("mesh", scene);
         const gltf: any = {
             nodes: [
@@ -96,21 +87,19 @@ describe("Babylon Interactivity", () => {
         };
         const json = convertGLTFToSerializedFlowGraph(worldPointerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(gltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        const pathConverter = new GLTFPathToObjectConverter(gltf, objectModelMapping);
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector3(1, 1, 1));
         expect(mesh.position).toStrictEqual(new Vector3(1, 1, 1));
     });
 
-    it("should execute an event N times with doN", () => {
+    it("should execute an event N times with doN", async () => {
         const json = convertGLTFToSerializedFlowGraph(doNExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
-        FlowGraph.Parse(json, { coordinator, pathConverter });
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
 

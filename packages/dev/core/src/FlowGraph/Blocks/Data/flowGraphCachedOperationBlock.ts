@@ -1,3 +1,4 @@
+import type { Nullable } from "../../../types";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
@@ -30,9 +31,9 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
     public abstract _doOperation(context: FlowGraphContext): OutputT;
 
     public override _updateOutputs(context: FlowGraphContext) {
-        const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName);
-        const cachedValue = context._getExecutionVariable(this, cacheName);
-        if (cachedValue !== undefined && cachedExecutionId === context.executionId) {
+        const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName, -1);
+        const cachedValue = context._getExecutionVariable<Nullable<OutputT>>(this, cacheName, null);
+        if (cachedValue !== undefined && cachedValue !== null && cachedExecutionId === context.executionId) {
             this.value.setValue(cachedValue, context);
         } else {
             const calculatedValue = this._doOperation(context);

@@ -1,4 +1,5 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
@@ -12,7 +13,7 @@ export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockCon
     /**
      * The number of output flows.
      */
-    numberOutputFlows: number;
+    numberOutputFlows?: number;
 }
 
 /**
@@ -33,14 +34,31 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     ) {
         super(config);
         this.outFlows = [];
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows.push(this._registerSignalOutput(`${i}`));
-        }
+        this.setNumberOfOutputFlows(this.config.numberOutputFlows);
     }
 
     public _execute(context: FlowGraphContext) {
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
+        for (let i = 0; i < this.outFlows.length; i++) {
             this.outFlows[i]._activateSignal(context);
+        }
+    }
+
+    /**
+     * Sets the block's output flows. Would usually be passed from the constructor but can be changed afterwards.
+     * @param numberOutputFlows the number of output flows
+     */
+    public setNumberOfOutputFlows(numberOutputFlows: number = 1) {
+        // check the size of the outFlow Array, see if it is not larger than needed
+        while (this.outFlows.length > numberOutputFlows) {
+            const flow = this.outFlows.pop();
+            if (flow) {
+                flow.disconnectFromAll();
+                this._unregisterSignalOutput(flow.name);
+            }
+        }
+
+        while (this.outFlows.length < numberOutputFlows) {
+            this.outFlows.push(this._registerSignalOutput(`out_${this.outFlows.length}`));
         }
     }
 
@@ -48,12 +66,8 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSequenceBlock.ClassName;
+        return FlowGraphBlockNames.Sequence;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSequenceBlock";
 }
-RegisterClass(FlowGraphSequenceBlock.ClassName, FlowGraphSequenceBlock);
+
+RegisterClass(FlowGraphBlockNames.Sequence, FlowGraphSequenceBlock);

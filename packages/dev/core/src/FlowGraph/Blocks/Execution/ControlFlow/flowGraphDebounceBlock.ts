@@ -5,6 +5,7 @@ import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalCo
 import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -52,7 +53,7 @@ export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGDebounceBlock";
+        return FlowGraphBlockNames.Debounce;
     }
 }
-RegisterClass("FGDebounceBlock", FlowGraphDebounceBlock);
+RegisterClass(FlowGraphBlockNames.Debounce, FlowGraphDebounceBlock);

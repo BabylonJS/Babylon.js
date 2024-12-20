@@ -1,6 +1,4 @@
-import { Tools } from "../Misc/tools";
 import { RandomGUID } from "../Misc/guid";
-import type { FlowGraphBlock } from "./flowGraphBlock";
 
 /**
  * @experimental
@@ -116,6 +114,39 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     /**
+     * Disconnects two connections.
+     * @param point the connection to disconnect from.
+     * @param removeFromLocal if true, the connection will be removed from the local connection list.
+     */
+    public disconnectFrom(point: ConnectedToT, removeFromLocal = true): void {
+        const indexLocal = this._connectedPoint.indexOf(point);
+        const indexConnected = point._connectedPoint.indexOf(this);
+        if (indexLocal === -1 || indexConnected === -1) {
+            return;
+        }
+        if (removeFromLocal) {
+            this._connectedPoint.splice(indexLocal, 1);
+        }
+        point._connectedPoint.splice(indexConnected, 1);
+    }
+
+    /**
+     * Disconnects all connected points.
+     */
+    public disconnectFromAll() {
+        for (const point of this._connectedPoint) {
+            this.disconnectFrom(point, false);
+        }
+        this._connectedPoint.length = 0;
+    }
+
+    public dispose() {
+        for (const point of this._connectedPoint) {
+            this.disconnectFrom(point);
+        }
+    }
+
+    /**
      * Saves the connection to a JSON object.
      * @param serializationObject the object to serialize to.
      */
@@ -146,18 +177,5 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         this.name = serializationObject.name;
         this._connectionType = serializationObject._connectionType;
         this.connectedPointIds = serializationObject.connectedPointIds;
-    }
-
-    /**
-     * Parses a connection from an object
-     * @param serializationObject the object to parse from.
-     * @param ownerBlock the block that owns the connection.
-     * @returns the parsed connection.
-     */
-    public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
-        const type = Tools.Instantiate(serializationObject.className);
-        const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
-        connection.deserialize(serializationObject);
-        return connection;
     }
 }
