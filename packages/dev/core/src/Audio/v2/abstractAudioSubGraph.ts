@@ -78,7 +78,7 @@ export abstract class _AbstractAudioSubGraph {
         this._getSubNodeSet(node.name).add(node);
         this._onSubNodesChanged();
 
-        node.onDisposeObservable.add(this._onSubNodeDisposed);
+        node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
         node.onNameChangedObservable.add(this._onSubNodeNameChanged);
     }
 
