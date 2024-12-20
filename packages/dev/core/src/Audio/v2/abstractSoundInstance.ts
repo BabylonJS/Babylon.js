@@ -7,7 +7,7 @@ import { SoundState } from "./soundState";
 /** @internal */
 export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     protected _state: SoundState = SoundState.Stopped;
-    protected _source: AbstractSound;
+    protected _sound: AbstractSound;
     protected _startOffset: number = 0;
 
     /** Observable triggered when the sound instance's playback ends */
@@ -16,11 +16,11 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
-    protected constructor(source: AbstractSound) {
-        super(source.engine, _AudioNodeType.Output);
+    protected constructor(sound: AbstractSound) {
+        super(sound.engine, _AudioNodeType.Out);
 
-        this._source = source;
-        this._startOffset = source.startOffset;
+        this._sound = sound;
+        this._startOffset = sound.startOffset;
     }
 
     /** @internal */

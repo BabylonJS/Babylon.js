@@ -8,17 +8,17 @@ export class _AudioNodeType {
     /**
      * Input nodes receive audio data from an upstream node.
      */
-    public static readonly Input = 1;
+    public static readonly In = 1;
 
     /**
      * Output nodes send audio data to a downstream node.
      */
-    public static readonly Output = 2;
+    public static readonly Out = 2;
 
     /**
      * Input/Output nodes receive audio data from an upstream node and send audio data to a downstream node.
      */
-    public static readonly InputOutput = _AudioNodeType.Input | _AudioNodeType.Output;
+    public static readonly InOut = _AudioNodeType.In | _AudioNodeType.Out;
 }
 
 /**
@@ -30,14 +30,14 @@ export abstract class AbstractAudioNode {
      *
      * Undefined for input nodes.
      */
-    protected readonly _connectedDownstreamNodes?: Set<AbstractAudioNode> | undefined;
+    protected readonly _downstreamNodes?: Set<AbstractAudioNode> | undefined;
 
     /**
      * The connected upstream audio nodes.
      *
      * Undefined for output nodes.
      */
-    protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
+    protected readonly _upstreamNodes?: Set<AbstractAudioNode> | undefined;
 
     /**
      * The audio engine this node belongs to.
@@ -52,12 +52,12 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType | _AudioNodeType.Input) {
-            this._connectedDownstreamNodes = new Set<AbstractAudioNode>();
+        if (nodeType | _AudioNodeType.In) {
+            this._downstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType | _AudioNodeType.Output) {
-            this._connectedUpstreamNodes = new Set<AbstractAudioNode>();
+        if (nodeType | _AudioNodeType.Out) {
+            this._upstreamNodes = new Set<AbstractAudioNode>();
         }
     }
 
@@ -65,18 +65,18 @@ export abstract class AbstractAudioNode {
      * Releases associated resources.
      */
     public dispose(): void {
-        if (this._connectedDownstreamNodes) {
-            for (const node of Array.from(this._connectedDownstreamNodes)) {
+        if (this._downstreamNodes) {
+            for (const node of Array.from(this._downstreamNodes)) {
                 this._disconnect(node);
             }
-            this._connectedDownstreamNodes.clear();
+            this._downstreamNodes.clear();
         }
 
-        if (this._connectedUpstreamNodes) {
-            for (const node of Array.from(this._connectedUpstreamNodes)) {
+        if (this._upstreamNodes) {
+            for (const node of Array.from(this._upstreamNodes)) {
                 node._disconnect(this);
             }
-            this._connectedUpstreamNodes.clear();
+            this._upstreamNodes.clear();
         }
 
         this.onDisposeObservable.notifyObservers(this);
@@ -94,11 +94,11 @@ export abstract class AbstractAudioNode {
      * @param node - The downstream audio input node to connect
      */
     protected _connect(node: AbstractAudioNode): void {
-        if (!this._connectedDownstreamNodes) {
+        if (!this._downstreamNodes) {
             return;
         }
 
-        if (this._connectedDownstreamNodes.has(node)) {
+        if (this._downstreamNodes.has(node)) {
             return;
         }
 
@@ -106,7 +106,7 @@ export abstract class AbstractAudioNode {
             return;
         }
 
-        this._connectedDownstreamNodes.add(node);
+        this._downstreamNodes.add(node);
     }
 
     /**
@@ -114,11 +114,11 @@ export abstract class AbstractAudioNode {
      * @param node - The downstream audio input node to disconnect
      */
     protected _disconnect(node: AbstractAudioNode): void {
-        if (!this._connectedDownstreamNodes) {
+        if (!this._downstreamNodes) {
             return;
         }
 
-        this._connectedDownstreamNodes.delete(node);
+        this._downstreamNodes.delete(node);
 
         node._onDisconnect(this);
     }
@@ -129,11 +129,11 @@ export abstract class AbstractAudioNode {
      * @returns `true` if the connection succeeds; otherwise `false`
      */
     protected _onConnect(node: AbstractAudioNode): boolean {
-        if (!this._connectedUpstreamNodes) {
+        if (!this._upstreamNodes) {
             return false;
         }
 
-        this._connectedUpstreamNodes.add(node);
+        this._upstreamNodes.add(node);
 
         return true;
     }
@@ -143,7 +143,7 @@ export abstract class AbstractAudioNode {
      * @param node - The disconnecting upstream audio node
      */
     protected _onDisconnect(node: AbstractAudioNode): void {
-        this._connectedUpstreamNodes?.delete(node);
+        this._upstreamNodes?.delete(node);
     }
 }
 

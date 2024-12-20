@@ -14,8 +14,8 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     /** @internal */
     public onReadyObservable = new Observable<_StreamingSoundInstance>();
 
-    protected constructor(source: AbstractSound) {
-        super(source);
+    protected constructor(sound: AbstractSound) {
+        super(sound);
 
         this.onReadyObservable.add(this._resolvePreloadedPromise);
     }

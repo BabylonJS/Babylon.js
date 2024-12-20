@@ -12,7 +12,7 @@ export abstract class StaticSoundBuffer {
     public abstract get sampleRate(): number;
     public abstract get length(): number;
     public abstract get duration(): number;
-    public abstract get numberOfChannels(): number;
+    public abstract get channelCount(): number;
 
     protected constructor(engine: AudioEngineV2) {
         this.engine = engine;

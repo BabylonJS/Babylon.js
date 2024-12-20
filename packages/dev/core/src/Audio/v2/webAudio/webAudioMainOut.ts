@@ -1,25 +1,25 @@
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { MainAudioOutput } from "../mainAudioOutput";
+import { MainAudioOut } from "../mainAudioOut";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode } from "./webAudioNode";
+import type { IWebAudioInNode } from "./webAudioNode";
 
 /** @internal */
-export async function _CreateMainAudioOutputAsync(engine: AudioEngineV2): Promise<_WebAudioMainOutput> {
+export async function _CreateMainAudioOutAsync(engine: AudioEngineV2): Promise<_WebAudioMainOut> {
     if (!engine.isWebAudio) {
         throw new Error("Wrong engine type.");
     }
 
-    const mainAudioOutput = new _WebAudioMainOutput(engine);
+    const mainAudioOutput = new _WebAudioMainOut(engine);
     return mainAudioOutput;
 }
 
 /** @internal */
-export class _WebAudioMainOutput extends MainAudioOutput implements IWebAudioInputNode {
+export class _WebAudioMainOut extends MainAudioOut implements IWebAudioInNode {
     private _destinationNode: AudioDestinationNode;
     private _gainNode: GainNode;
 
     /** @internal */
-    public get webAudioInputNode(): AudioNode {
+    public get inNode(): AudioNode {
         return this._gainNode;
     }
 

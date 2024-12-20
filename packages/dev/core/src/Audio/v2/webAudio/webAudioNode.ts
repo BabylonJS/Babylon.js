@@ -5,19 +5,19 @@ import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
 import type { _WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
-export interface IWebAudioInputNode extends AbstractAudioNode {
+export interface IWebAudioInNode extends AbstractAudioNode {
     /** @internal */
-    webAudioInputNode: Nullable<AudioNode>;
+    inNode: Nullable<AudioNode>;
 }
 
 /** @internal */
-export interface IWebAudioOutputNode extends AbstractAudioNode {
+export interface IWebAudioOutNode extends AbstractAudioNode {
     /** @internal */
-    webAudioOutputNode: Nullable<AudioNode>;
+    outNode: Nullable<AudioNode>;
 }
 
 /** @internal */
-export interface IWebAudioSuperNode extends AbstractAudioSuperNode, IWebAudioInputNode, IWebAudioOutputNode {
+export interface IWebAudioSuperNode extends AbstractAudioSuperNode, IWebAudioInNode, IWebAudioOutNode {
     /** @internal */
     engine: _WebAudioEngine;
 }

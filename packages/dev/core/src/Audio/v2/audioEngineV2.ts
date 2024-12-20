@@ -47,7 +47,7 @@ export abstract class AudioEngineV2 {
     /**
      * The main output node.
      */
-    public abstract get mainOutput(): AbstractAudioNode;
+    public abstract get mainOut(): AbstractAudioNode;
 
     /**
      * The default main bus.
@@ -79,8 +79,8 @@ export abstract class AudioEngineV2 {
             instances.splice(instances.indexOf(this), 1);
         }
 
-        const superNodeIterator = this._superNodes.values();
-        for (let next = superNodeIterator.next(); !next.done; next = superNodeIterator.next()) {
+        const superNodeIt = this._superNodes.values();
+        for (let next = superNodeIt.next(); !next.done; next = superNodeIt.next()) {
             next.value.dispose();
         }
 

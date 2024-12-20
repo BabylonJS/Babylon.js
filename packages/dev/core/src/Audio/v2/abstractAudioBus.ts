@@ -10,7 +10,7 @@ import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
  */
 export abstract class AbstractAudioBus extends AbstractAudioSuperNode {
     protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, _AudioNodeType.InputOutput);
+        super(name, engine, _AudioNodeType.InOut);
     }
 
     /** */

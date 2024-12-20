@@ -120,8 +120,8 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract get panningModel(): "equalpower" | "HRTF";
     public abstract set panningModel(value: "equalpower" | "HRTF");
 
-    public abstract get webAudioInputNode(): AudioNode;
-    public abstract get webAudioOutputNode(): AudioNode;
+    public abstract get inNode(): AudioNode;
+    public abstract get outNode(): AudioNode;
 
     /** @internal */
     public setOptions(options: Nullable<ISpatialAudioOptions>): void {

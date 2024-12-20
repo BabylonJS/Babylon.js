@@ -6,7 +6,7 @@ import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioSuperNode } from "./webAudioNode";
+import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
 
 /**
  * Creates a new main audio bus.
@@ -53,8 +53,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     public async init(options: Nullable<IMainAudioBusOptions>): Promise<void> {
         await this._subGraph.init(options);
 
-        if (this.engine.mainOutput) {
-            this._connect(this.engine.mainOutput);
+        if (this.engine.mainOut) {
+            this._connect(this.engine.mainOut);
         }
 
         this.engine.addMainBus(this);
@@ -68,28 +68,28 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     }
 
     /** @internal */
-    public get webAudioInputNode() {
-        return this._subGraph.webAudioInputNode;
+    public get inNode() {
+        return this._subGraph.inNode;
     }
 
     /** @internal */
-    public get webAudioOutputNode() {
-        return this._subGraph.webAudioOutputNode;
+    public get outNode() {
+        return this._subGraph.outNode;
     }
 
-    protected override _connect(node: IWebAudioInputNode): void {
+    protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
-        if (node.webAudioInputNode) {
-            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
         }
     }
 
-    protected override _disconnect(node: IWebAudioInputNode): void {
+    protected override _disconnect(node: IWebAudioInNode): void {
         super._disconnect(node);
 
-        if (node.webAudioInputNode) {
-            this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+        if (node.inNode) {
+            this.outNode?.disconnect(node.inNode);
         }
     }
 
@@ -101,8 +101,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     private static _SubGraph = class extends _WebAudioBaseSubGraph {
         protected override _owner: _WebAudioMainBus;
 
-        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedDownstreamNodes ?? null;
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
         }
     };
 }

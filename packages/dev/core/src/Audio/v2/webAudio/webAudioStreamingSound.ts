@@ -9,7 +9,7 @@ import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
+import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -73,11 +73,11 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         this.audioContext = audioContext;
         this.source = source;
 
-        if (options?.outputBus) {
-            this.outputBus = options.outputBus;
+        if (options?.outBus) {
+            this.outBus = options.outBus;
         } else {
             await this.engine.isReadyPromise;
-            this.outputBus = this.engine.defaultMainBus;
+            this.outBus = this.engine.defaultMainBus;
         }
 
         await this._subGraph.init(options);
@@ -101,13 +101,13 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     }
 
     /** @internal */
-    public get webAudioInputNode() {
-        return this._subGraph.webAudioInputNode;
+    public get inNode() {
+        return this._subGraph.inNode;
     }
 
     /** @internal */
-    public get webAudioOutputNode() {
-        return this._subGraph.webAudioOutputNode;
+    public get outNode() {
+        return this._subGraph.outNode;
     }
 
     /** @internal */
@@ -115,41 +115,41 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         return "WebAudioStreamingSound";
     }
 
-    protected _createSoundInstance(): WebAudioStreamingSoundInstance {
+    protected _createInstance(): WebAudioStreamingSoundInstance {
         return new WebAudioStreamingSoundInstance(this);
     }
 
-    protected override _connect(node: IWebAudioInputNode): void {
+    protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
-        if (this._subGraph.webAudioInputNode) {
-            this.webAudioOutputNode?.connect(this._subGraph.webAudioInputNode);
+        if (this._subGraph.inNode) {
+            this.outNode?.connect(this._subGraph.inNode);
         }
     }
 
-    protected override _disconnect(node: IWebAudioInputNode): void {
+    protected override _disconnect(node: IWebAudioInNode): void {
         super._disconnect(node);
 
-        if (this._subGraph.webAudioInputNode) {
-            this.webAudioOutputNode?.disconnect(this._subGraph.webAudioInputNode);
+        if (this._subGraph.inNode) {
+            this.outNode?.disconnect(this._subGraph.inNode);
         }
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStreamingSound;
 
-        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedDownstreamNodes ?? null;
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
         }
 
-        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedUpstreamNodes ?? null;
+        protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._upstreamNodes ?? null;
         }
     };
 }
 
 /** @internal */
-class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutputNode {
+class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
@@ -174,7 +174,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this.dispose();
     };
 
-    protected override _source: WebAudioStreamingSound;
+    protected override _sound: WebAudioStreamingSound;
 
     /** @internal */
     public mediaElement: HTMLMediaElement;
@@ -235,18 +235,18 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     };
 
-    public constructor(source: WebAudioStreamingSound) {
-        super(source);
+    public constructor(sound: WebAudioStreamingSound) {
+        super(sound);
 
-        this._loop = source.loop;
-        this._preloadType = source.preloadType;
+        this._loop = sound.loop;
+        this._preloadType = sound.preloadType;
 
-        if (typeof source.source === "string") {
-            this._initFromUrl(source.source);
-        } else if (Array.isArray(source.source)) {
-            this._initFromUrls(source.source);
-        } else if (source.source instanceof HTMLMediaElement) {
-            this._initFromMediaElement(source.source);
+        if (typeof sound.source === "string") {
+            this._initFromUrl(sound.source);
+        } else if (Array.isArray(sound.source)) {
+            this._initFromUrls(sound.source);
+        } else if (sound.source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(sound.source);
         }
     }
 
@@ -281,8 +281,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
         mediaElement.load();
 
-        this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: mediaElement });
-        this._connect(this._source);
+        this.sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this._connect(this._sound);
 
         this.mediaElement = mediaElement;
     }
@@ -304,7 +304,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
 
-    public get webAudioOutputNode(): Nullable<AudioNode> {
+    public get outNode(): Nullable<AudioNode> {
         return this.sourceNode;
     }
 
@@ -370,16 +370,16 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
-            this.sourceNode?.connect(node.webAudioInputNode);
+        if (node instanceof WebAudioStreamingSound && node.inNode) {
+            this.sourceNode?.connect(node.inNode);
         }
     }
 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
-            this.sourceNode?.disconnect(node.webAudioInputNode);
+        if (node instanceof WebAudioStreamingSound && node.inNode) {
+            this.sourceNode?.disconnect(node.inNode);
         }
     }
 

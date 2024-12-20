@@ -17,46 +17,46 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
     /**
      * The output bus of the audio bus.
      */
-    outputBus?: AbstractPrimaryAudioBus;
+    outBus?: AbstractPrimaryAudioBus;
 }
 
 /**
  * Abstract class for an audio bus.
  */
 export abstract class AudioBus extends AbstractAudioBus {
-    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
+    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
 
     protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine);
 
-        if (options?.outputBus) {
-            this.outputBus = options.outputBus;
+        if (options?.outBus) {
+            this.outBus = options.outBus;
         }
     }
 
     /**
      * Gets the output bus of the audio bus.
      */
-    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
-        return this._outputBus;
+    public get outBus(): Nullable<AbstractPrimaryAudioBus> {
+        return this._outBus;
     }
 
     /**
      * Sets the output bus of the audio bus.
      */
-    public set outputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
-        if (this._outputBus === outputBus) {
+    public set outBus(outBus: Nullable<AbstractPrimaryAudioBus>) {
+        if (this._outBus === outBus) {
             return;
         }
 
-        if (this._outputBus) {
-            this._disconnect(this._outputBus);
+        if (this._outBus) {
+            this._disconnect(this._outBus);
         }
 
-        this._outputBus = outputBus;
+        this._outBus = outBus;
 
-        if (this._outputBus) {
-            this._connect(this._outputBus);
+        if (this._outBus) {
+            this._connect(this._outBus);
         }
     }
 

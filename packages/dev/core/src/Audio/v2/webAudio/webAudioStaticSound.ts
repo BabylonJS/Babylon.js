@@ -9,7 +9,7 @@ import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInputNode, IWebAudioOutputNode, IWebAudioSuperNode } from "./webAudioNode";
+import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -100,11 +100,11 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
 
-        if (options?.outputBus) {
-            this.outputBus = options.outputBus;
+        if (options?.outBus) {
+            this.outBus = options.outBus;
         } else {
             await this.engine.isReadyPromise;
-            this.outputBus = this.engine.defaultMainBus;
+            this.outBus = this.engine.defaultMainBus;
         }
 
         await this._subGraph.init(options);
@@ -129,33 +129,33 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     }
 
     /** @internal */
-    public get webAudioInputNode() {
-        return this._subGraph.webAudioInputNode;
+    public get inNode() {
+        return this._subGraph.inNode;
     }
 
     /** @internal */
-    public get webAudioOutputNode() {
-        return this._subGraph.webAudioOutputNode;
+    public get outNode() {
+        return this._subGraph.outNode;
     }
 
-    protected _createSoundInstance(): WebAudioStaticSoundInstance {
+    protected _createInstance(): WebAudioStaticSoundInstance {
         return new WebAudioStaticSoundInstance(this);
     }
 
-    protected override _connect(node: IWebAudioInputNode): void {
+    protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
-        if (node.webAudioInputNode) {
-            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
         }
     }
 
-    protected override _disconnect(node: IWebAudioInputNode): void {
+    protected override _disconnect(node: IWebAudioInNode): void {
         super._disconnect(node);
 
-        if (node.webAudioInputNode) {
+        if (node.inNode) {
             try {
-                this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+                this.outNode?.disconnect(node.inNode);
             } catch (e) {
                 // Ignore error that occurs when node is not connected.
                 if (!(e instanceof DOMException && e.name === "InvalidAccessError")) {
@@ -173,12 +173,12 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: WebAudioStaticSound;
 
-        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedDownstreamNodes ?? null;
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
         }
 
-        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedUpstreamNodes ?? null;
+        protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._upstreamNodes ?? null;
         }
     };
 }
@@ -207,7 +207,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     /** @internal */
-    public get numberOfChannels(): number {
+    public get channelCount(): number {
         return this.audioBuffer.numberOfChannels;
     }
 
@@ -264,7 +264,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 }
 
 /** @internal */
-class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutputNode {
+class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
@@ -320,15 +320,15 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     };
 
-    protected override _source: WebAudioStaticSound;
+    protected override _sound: WebAudioStaticSound;
 
     /** @internal */
     public sourceNode: Nullable<AudioBufferSourceNode>;
 
-    public constructor(source: WebAudioStaticSound) {
-        super(source);
+    public constructor(sound: WebAudioStaticSound) {
+        super(sound);
         this._initSourceNode();
-        this._loop = source.loop;
+        this._loop = sound.loop;
     }
 
     /** @internal */
@@ -342,7 +342,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
 
-    public get webAudioOutputNode(): Nullable<AudioNode> {
+    public get outNode(): Nullable<AudioNode> {
         return this.sourceNode;
     }
 
@@ -356,7 +356,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
 
         if (this._state === SoundState.Paused) {
             // TODO: Make this fall within loop points when loop start/end is set.
-            startOffset = (this.currentTime + this._startOffset) % this._source.buffer.duration;
+            startOffset = (this.currentTime + this._startOffset) % this._sound.buffer.duration;
             waitTime = 0;
         } else if (startOffset) {
             this._startOffset = startOffset;
@@ -425,16 +425,16 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.sourceNode?.connect(node.webAudioInputNode);
+        if (node instanceof WebAudioStaticSound && node.inNode) {
+            this.sourceNode?.connect(node.inNode);
         }
     }
 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.sourceNode?.disconnect(node.webAudioInputNode);
+        if (node instanceof WebAudioStaticSound && node.inNode) {
+            this.sourceNode?.disconnect(node.inNode);
         }
     }
 
@@ -443,17 +443,17 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
             return;
         }
 
-        this.sourceNode = new AudioBufferSourceNode(this._source.audioContext, {
-            buffer: this._source.buffer.audioBuffer,
-            detune: this._source.pitch,
-            loop: this._source.loop,
-            loopEnd: this._source.loopEnd,
-            loopStart: this._source.loopStart,
-            playbackRate: this._source.playbackRate,
+        this.sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
+            buffer: this._sound.buffer.audioBuffer,
+            detune: this._sound.pitch,
+            loop: this._sound.loop,
+            loopEnd: this._sound.loopEnd,
+            loopStart: this._sound.loopStart,
+            playbackRate: this._sound.playbackRate,
         });
 
         this.sourceNode.addEventListener("ended", this._onEnded, { once: true });
-        this._connect(this._source);
+        this._connect(this._sound);
     }
 
     private _deinitSourceNode(): void {
@@ -461,7 +461,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
             return;
         }
 
-        this._disconnect(this._source);
+        this._disconnect(this._sound);
         this.sourceNode.removeEventListener("ended", this._onEnded);
 
         this.sourceNode = null;

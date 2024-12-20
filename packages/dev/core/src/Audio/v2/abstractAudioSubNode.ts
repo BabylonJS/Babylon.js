@@ -5,7 +5,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 export abstract class _AbstractAudioSubNode extends NamedAbstractAudioNode {
     /** @internal */
     protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, _AudioNodeType.InputOutput);
+        super(name, engine, _AudioNodeType.InOut);
     }
 
     /** @internal */

@@ -77,7 +77,7 @@ export abstract class StaticSound extends AbstractSound {
         this.playbackRate = options?.playbackRate ?? 1;
     }
 
-    protected abstract override _createSoundInstance(): _StaticSoundInstance;
+    protected abstract override _createInstance(): _StaticSoundInstance;
 
     /**
      * Plays the sound.
@@ -86,12 +86,12 @@ export abstract class StaticSound extends AbstractSound {
      * @param waitTime - The time to wait before playing the sound in seconds.
      */
     public play(startOffset: Nullable<number> = null, duration: Nullable<number> = null, waitTime: Nullable<number> = null): void {
-        if (this._isPaused && this._soundInstances.size > 0) {
+        if (this._isPaused && this._instances.size > 0) {
             this.resume();
             return;
         }
 
-        const instance = this._createSoundInstance();
+        const instance = this._createInstance();
         this._beforePlay(instance);
         instance.play(startOffset, duration, waitTime);
         this._afterPlay(instance);
@@ -110,11 +110,11 @@ export abstract class StaticSound extends AbstractSound {
             this._setState(SoundState.Stopped);
         }
 
-        if (!this._soundInstances) {
+        if (!this._instances) {
             return;
         }
 
-        for (const instance of Array.from(this._soundInstances)) {
+        for (const instance of Array.from(this._instances)) {
             (instance as _StaticSoundInstance).stop(waitTime);
         }
     }

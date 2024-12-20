@@ -1,6 +1,6 @@
 import { _StereoAudioSubNode } from "../../subNodes/stereoAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
-import type { IWebAudioInputNode } from "../webAudioNode";
+import type { IWebAudioInNode } from "../webAudioNode";
 
 /** @internal */
 export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_StereoAudioSubNode> {
@@ -30,12 +30,12 @@ class _StereoWebAudioSubNode extends _StereoAudioSubNode {
     }
 
     /** @internal */
-    public get webAudioInputNode(): AudioNode {
+    public get inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get webAudioOutputNode(): AudioNode {
+    public get outNode(): AudioNode {
         return this.node;
     }
 
@@ -44,19 +44,19 @@ class _StereoWebAudioSubNode extends _StereoAudioSubNode {
         return "StereoWebAudioSubNode";
     }
 
-    protected override _connect(node: IWebAudioInputNode): void {
+    protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
-        if (node.webAudioInputNode) {
-            this.node.connect(node.webAudioInputNode);
+        if (node.inNode) {
+            this.node.connect(node.inNode);
         }
     }
 
-    protected override _disconnect(node: IWebAudioInputNode): void {
+    protected override _disconnect(node: IWebAudioInNode): void {
         super._disconnect(node);
 
-        if (node.webAudioInputNode) {
-            this.node.disconnect(node.webAudioInputNode);
+        if (node.inNode) {
+            this.node.disconnect(node.inNode);
         }
     }
 }

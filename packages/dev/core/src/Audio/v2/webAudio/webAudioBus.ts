@@ -39,13 +39,13 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     }
 
     /** @internal */
-    public get webAudioInputNode() {
-        return this._subGraph.webAudioInputNode;
+    public get inNode() {
+        return this._subGraph.inNode;
     }
 
     /** @internal */
-    public get webAudioOutputNode() {
-        return this._subGraph.webAudioOutputNode;
+    public get outNode() {
+        return this._subGraph.outNode;
     }
 
     /** @internal */
@@ -56,12 +56,12 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
         protected override _owner: _WebAudioBus;
 
-        protected get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedDownstreamNodes ?? null;
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
         }
 
-        protected get _connectedUpstreamNodes(): Nullable<Set<AbstractAudioNode>> {
-            return this._owner._connectedUpstreamNodes ?? null;
+        protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._upstreamNodes ?? null;
         }
     };
 }

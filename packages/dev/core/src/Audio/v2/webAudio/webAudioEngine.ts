@@ -5,8 +5,8 @@ import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
-import type { _WebAudioMainOutput } from "./webAudioMainOutput";
-import { _CreateMainAudioOutputAsync } from "./webAudioMainOutput";
+import type { _WebAudioMainOut } from "./webAudioMainOut";
+import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
 
 /**
  * Options for creating a new v2 audio engine that uses the WebAudio API.
@@ -61,7 +61,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _resumePromise: Nullable<Promise<void>> = null;
 
-    private _mainOutput: _WebAudioMainOutput;
+    private _mainOutput: _WebAudioMainOut;
 
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
@@ -88,14 +88,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get mainOutput(): _WebAudioMainOutput {
+    public get mainOut(): _WebAudioMainOut {
         return this._mainOutput;
     }
 
     private _initAudioContext: () => Promise<void> = async () => {
         this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
-        this._mainOutput = await _CreateMainAudioOutputAsync(this);
+        this._mainOutput = await _CreateMainAudioOutAsync(this);
         this._mainOutput.volume = this._volume;
 
         await CreateMainAudioBusAsync("default", this);
@@ -154,7 +154,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public stateChangedObservable: Observable<string> = new Observable();
 
     /** @internal */
-    public get webAudioInputNode(): AudioNode {
+    public get inNode(): AudioNode {
         return this.audioContext.destination;
     }
 

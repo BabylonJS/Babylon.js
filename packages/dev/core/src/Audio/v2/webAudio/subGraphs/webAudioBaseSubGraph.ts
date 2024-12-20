@@ -6,7 +6,7 @@ import { _AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _hasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
-import type { IWebAudioInputNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
+import type { IWebAudioInNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
 
 /** */
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
@@ -14,7 +14,7 @@ export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 /** @internal */
 export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     protected _owner: IWebAudioSuperNode;
-    protected _webAudioOutputNode: Nullable<AudioNode> = null;
+    protected _outNode: Nullable<AudioNode> = null;
 
     /** @internal */
     public constructor(owner: IWebAudioSuperNode) {
@@ -34,16 +34,16 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         }
     }
 
-    protected abstract get _connectedDownstreamNodes(): Nullable<Set<AbstractAudioNode>>;
+    protected abstract get _downstreamNodes(): Nullable<Set<AbstractAudioNode>>;
 
     /** @internal */
-    public get webAudioInputNode(): Nullable<AudioNode> {
-        return this._webAudioOutputNode;
+    public get inNode(): Nullable<AudioNode> {
+        return this._outNode;
     }
 
     /** @internal */
-    public get webAudioOutputNode(): Nullable<AudioNode> {
-        return this._webAudioOutputNode;
+    public get outNode(): Nullable<AudioNode> {
+        return this._outNode;
     }
 
     protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
@@ -56,7 +56,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     }
 
     protected _onSubNodesChanged(): void {
-        if (this._webAudioOutputNode) {
+        if (this._outNode) {
             return;
         }
 
@@ -65,16 +65,16 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
             return;
         }
 
-        this._webAudioOutputNode = volumeNode.node;
+        this._outNode = volumeNode.node;
 
         // Connect the wrapped downstream WebAudio nodes to the new wrapped WebAudio node.
         // The wrapper nodes are unaware of this change.
-        if (volumeNode.node && this._connectedDownstreamNodes) {
-            const it = this._connectedDownstreamNodes.values();
+        if (volumeNode.node && this._downstreamNodes) {
+            const it = this._downstreamNodes.values();
             for (let next = it.next(); !next.done; next = it.next()) {
-                const webAudioInputNode = (next.value as IWebAudioInputNode).webAudioInputNode;
-                if (webAudioInputNode) {
-                    volumeNode.node.connect(webAudioInputNode);
+                const inNode = (next.value as IWebAudioInNode).inNode;
+                if (inNode) {
+                    volumeNode.node.connect(inNode);
                 }
             }
         }

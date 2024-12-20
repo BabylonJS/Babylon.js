@@ -51,7 +51,7 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      */
     public async preloadInstance(): Promise<void> {
-        const instance = this._createSoundInstance();
+        const instance = this._createInstance();
 
         this._addPreloadedInstance(instance);
 
@@ -70,7 +70,7 @@ export abstract class StreamingSound extends AbstractSound {
         await Promise.all(this._preloadedInstancesPromises);
     }
 
-    protected abstract override _createSoundInstance(): _StreamingSoundInstance;
+    protected abstract override _createInstance(): _StreamingSoundInstance;
 
     /**
      * Plays the sound.
@@ -78,7 +78,7 @@ export abstract class StreamingSound extends AbstractSound {
      * @param duration - How long to play the sound in seconds.
      */
     public play(startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
-        if (this._isPaused && this._soundInstances.size > 0) {
+        if (this._isPaused && this._instances.size > 0) {
             this.resume();
             return;
         }
@@ -90,7 +90,7 @@ export abstract class StreamingSound extends AbstractSound {
             instance.startOffset = this.startOffset;
             this._removePreloadedInstance(instance);
         } else {
-            instance = this._createSoundInstance();
+            instance = this._createInstance();
         }
 
         const onInstanceStateChanged = () => {
@@ -112,11 +112,11 @@ export abstract class StreamingSound extends AbstractSound {
     public stop(): void {
         this._setState(SoundState.Stopped);
 
-        if (!this._soundInstances) {
+        if (!this._instances) {
             return;
         }
 
-        for (const instance of Array.from(this._soundInstances)) {
+        for (const instance of Array.from(this._instances)) {
             instance.stop();
         }
     }

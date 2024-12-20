@@ -32,7 +32,7 @@ export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudi
     /**
      * The output bus for the sound.
      */
-    outputBus?: AbstractPrimaryAudioBus;
+    outBus?: AbstractPrimaryAudioBus;
     /**
      * The sound's start offset in seconds.
      */
@@ -46,9 +46,9 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     private _state: SoundState = SoundState.Stopped;
 
     // Non-owning.
-    protected _soundInstances = new Set<_AbstractSoundInstance>();
+    protected _instances = new Set<_AbstractSoundInstance>();
 
-    protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
+    protected _outBus: Nullable<AbstractPrimaryAudioBus> = null;
 
     /**
      * Whether the sound should start playing automatically.
@@ -102,28 +102,28 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     /**
      * The output bus for the sound.
      */
-    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
-        return this._outputBus;
+    public get outBus(): Nullable<AbstractPrimaryAudioBus> {
+        return this._outBus;
     }
 
-    public set outputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
-        if (this._outputBus === outputBus) {
+    public set outBus(outBus: Nullable<AbstractPrimaryAudioBus>) {
+        if (this._outBus === outBus) {
             return;
         }
 
-        if (this._outputBus) {
-            this._disconnect(this._outputBus);
+        if (this._outBus) {
+            this._disconnect(this._outBus);
         }
 
-        this._outputBus = outputBus;
+        this._outBus = outBus;
 
-        if (this._outputBus) {
-            this._connect(this._outputBus);
+        if (this._outBus) {
+            this._connect(this._outBus);
         }
     }
 
     protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
-        super(name, engine, _AudioNodeType.Output);
+        super(name, engine, _AudioNodeType.Out);
 
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
@@ -161,14 +161,14 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
 
         this.stop();
 
-        this._outputBus = null;
-        this._soundInstances.clear();
+        this._outBus = null;
+        this._instances.clear();
         this.onEndedObservable.clear();
 
         this.onDisposeObservable.notifyObservers(this);
     }
 
-    protected abstract _createSoundInstance(): _AbstractSoundInstance;
+    protected abstract _createInstance(): _AbstractSoundInstance;
 
     public abstract play(startOffset?: Nullable<number>, duration?: Nullable<number>): void;
 
@@ -176,11 +176,11 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
      * Pauses the sound.
      */
     public pause(): void {
-        if (!this._soundInstances) {
+        if (!this._instances) {
             return;
         }
 
-        for (const instance of Array.from(this._soundInstances)) {
+        for (const instance of Array.from(this._instances)) {
             instance.pause();
         }
 
@@ -195,11 +195,11 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
             return;
         }
 
-        if (!this._soundInstances) {
+        if (!this._instances) {
             return;
         }
 
-        for (const instance of Array.from(this._soundInstances)) {
+        for (const instance of Array.from(this._instances)) {
             instance.resume();
         }
 
@@ -209,7 +209,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     public abstract stop(): void;
 
     protected get _isPaused(): boolean {
-        return this._state === SoundState.Paused && this._soundInstances.size > 0;
+        return this._state === SoundState.Paused && this._instances.size > 0;
     }
 
     protected _setState(state: SoundState): void {
@@ -217,13 +217,13 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
     }
 
     protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
-        if (this._soundInstances.size === 0) {
+        if (this._instances.size === 0) {
             return null;
         }
 
         let instance: Nullable<_AbstractSoundInstance> = null;
 
-        const it = this._soundInstances.values();
+        const it = this._instances.values();
         for (let next = it.next(); !next.done; next = it.next()) {
             instance = next.value;
         }
@@ -231,23 +231,23 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         return instance;
     }
 
-    protected _onSoundInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
-        this._soundInstances.delete(instance);
+    protected _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
+        this._instances.delete(instance);
 
-        if (this._soundInstances.size === 0) {
+        if (this._instances.size === 0) {
             this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
         }
     };
 
     protected _beforePlay(instance: _AbstractSoundInstance): void {
-        if (this.state === SoundState.Paused && this._soundInstances.size > 0) {
+        if (this.state === SoundState.Paused && this._instances.size > 0) {
             this.resume();
             return;
         }
 
-        instance.onEndedObservable.addOnce(this._onSoundInstanceEnded);
-        this._soundInstances.add(instance);
+        instance.onEndedObservable.addOnce(this._onInstanceEnded);
+        this._instances.add(instance);
     }
 
     protected _afterPlay(instance: _AbstractSoundInstance): void {
@@ -256,8 +256,8 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
 
     protected _stopExcessInstances(): void {
         if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = Array.from(this._soundInstances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
-            const it = this._soundInstances.values();
+            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
+            const it = this._instances.values();
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {
                 const instance = it.next().value;
