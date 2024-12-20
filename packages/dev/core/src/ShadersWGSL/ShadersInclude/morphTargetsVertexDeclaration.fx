@@ -1,6 +1,8 @@
 ﻿#ifdef MORPHTARGETS
 	#ifndef MORPHTARGETS_TEXTURE
+		#ifdef MORPHTARGETS_POSITION
 		attribute position{X} : vec3<f32>;
+		#endif
 
 		#ifdef MORPHTARGETS_NORMAL
 		attribute normal{X} : vec3<f32>;
