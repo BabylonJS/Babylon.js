@@ -1,7 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import type { Nullable } from "../../../../types";
-import { _SpatialAudio, _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
+import { _SpatialAudioDefault, _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
@@ -16,8 +16,8 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
-    private _rotationQuaternion: Quaternion = _SpatialAudio.DefaultRotationQuaternion.clone();
-    private _rotationAngles: Vector3 = _SpatialAudio.DefaultRotation.clone();
+    private _rotationQuaternion: Quaternion = _SpatialAudioDefault.RotationQuaternion.clone();
+    private _rotationAngles: Vector3 = _SpatialAudioDefault.Rotation.clone();
     private _rotationAnglesDirty = false;
 
     /** @internal */
@@ -96,11 +96,11 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public get refDistance(): number {
+    public get referenceDistance(): number {
         return this.node.refDistance;
     }
 
-    public set refDistance(value: number) {
+    public set referenceDistance(value: number) {
         this.node.refDistance = value;
     }
 

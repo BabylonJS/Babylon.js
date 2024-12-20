@@ -5,6 +5,7 @@ import type { MainAudioBus } from "./mainAudioBus";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
 export type AbstractPrimaryAudioBus = MainAudioBus | AudioBus;
@@ -59,5 +60,6 @@ export abstract class AudioBus extends AbstractAudioBus {
         }
     }
 
+    public abstract get spatial(): AbstractSpatialAudio;
     public abstract get stereo(): AbstractStereoAudio;
 }

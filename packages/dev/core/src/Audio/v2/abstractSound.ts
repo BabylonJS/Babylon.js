@@ -1,5 +1,3 @@
-import type { Quaternion, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { _AudioNodeType } from "./abstractAudioNode";
@@ -9,11 +7,11 @@ import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
-import type { _SpatialAudioSubNode, ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import { _SpatialAudio } from "./subNodes/spatialAudioSubNode";
+import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
+import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
 /**
@@ -134,133 +132,8 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         this.startOffset = options?.startOffset ?? 0;
     }
 
-    /** */
-    public get spatialConeInnerAngle(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneInnerAngle ?? _SpatialAudio.DefaultConeInnerAngle;
-    }
-
-    public set spatialConeInnerAngle(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.coneInnerAngle = value;
-        });
-    }
-
-    /** */
-    public get spatialConeOuterAngle(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterAngle ?? _SpatialAudio.DefaultConeOuterAngle;
-    }
-
-    public set spatialConeOuterAngle(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.coneOuterAngle = value;
-        });
-    }
-
-    /** */
-    public get spatialConeOuterVolume(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterVolume ?? _SpatialAudio.DefaultConeOuterVolume;
-    }
-
-    public set spatialConeOuterVolume(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.coneOuterVolume = value;
-        });
-    }
-
-    /** */
-    public get spatialDistanceModel(): "linear" | "inverse" | "exponential" {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.distanceModel ?? _SpatialAudio.DefaultDistanceModel;
-    }
-
-    public set spatialDistanceModel(value: "linear" | "inverse" | "exponential") {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.distanceModel = value;
-        });
-    }
-
-    /** */
-    public get spatialMaxDistance(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.maxDistance ?? _SpatialAudio.DefaultMaxDistance;
-    }
-
-    public set spatialMaxDistance(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.maxDistance = value;
-        });
-    }
-
-    /** */
-    public get spatialPanningModel(): "equalpower" | "HRTF" {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.panningModel ?? _SpatialAudio.DefaultPanningModel;
-    }
-
-    public set spatialPanningModel(value: "equalpower" | "HRTF") {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.panningModel = value;
-        });
-    }
-
-    /** */
-    public get spatialPosition(): Vector3 {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.position ?? _SpatialAudio.DefaultPosition;
-    }
-
-    public set spatialPosition(value: Vector3) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.position = value;
-        });
-    }
-
-    /** */
-    public get spatialRefDistance(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.refDistance ?? _SpatialAudio.DefaultRefDistance;
-    }
-
-    public set spatialRefDistance(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.refDistance = value;
-        });
-    }
-
-    /** */
-    public get spatialRolloffFactor(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rolloffFactor ?? _SpatialAudio.DefaultRolloffFactor;
-    }
-
-    public set spatialRolloffFactor(value: number) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.rolloffFactor = value;
-        });
-    }
-
-    /** */
-    public get spatialRotation(): Vector3 {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotation ?? _SpatialAudio.DefaultRotation;
-    }
-
-    public set spatialRotation(value: Vector3) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.rotation = value;
-        });
-    }
-
-    /** */
-    public get spatialRotationQuaternion(): Quaternion {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotationQuaternion ?? _SpatialAudio.DefaultRotationQuaternion;
-    }
-
-    /** */
-    public get spatialTransformNode(): Nullable<TransformNode> {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.transformNode ?? null;
-    }
-
-    public set spatialTransformNode(value: Nullable<TransformNode>) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.transformNode = value;
-        });
-    }
-
-    public abstract readonly stereo: AbstractStereoAudio;
+    public abstract get spatial(): AbstractSpatialAudio;
+    public abstract get stereo(): AbstractStereoAudio;
 
     /** */
     public get volume(): number {

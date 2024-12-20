@@ -7,7 +7,7 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
-import type { AbstractStereoAudio } from "../subProperties/abstractStereoAudio";
+import { _SpatialAudio } from "../subProperties/spatialAudio";
 import { _StereoAudio } from "../subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
@@ -62,11 +62,10 @@ export async function CreateSoundBufferAsync(
 /** @internal */
 class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: WebAudioStaticSoundBuffer;
+    private _spatial: Nullable<_SpatialAudio> = null;
+    private _stereo: Nullable<_StereoAudio> = null;
 
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
-
-    /** @internal */
-    public readonly stereo: AbstractStereoAudio;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -79,7 +78,6 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStaticSound._SubGraph(this);
-        this.stereo = new _StereoAudio(this._subGraph);
     }
 
     /** @internal */
@@ -128,6 +126,16 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     /** @internal */
     public get outNode() {
         return this._subGraph.outNode;
+    }
+
+    /** @internal */
+    public override get spatial(): _SpatialAudio {
+        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override get stereo(): _StereoAudio {
+        return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
     }
 
     protected _createInstance(): WebAudioStaticSoundInstance {

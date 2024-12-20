@@ -7,7 +7,7 @@ import { _CleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
-import type { AbstractStereoAudio } from "../subProperties/abstractStereoAudio";
+import { _SpatialAudio } from "../subProperties/spatialAudio";
 import { _StereoAudio } from "../subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
@@ -40,10 +40,10 @@ export async function CreateStreamingSoundAsync(
 
 /** @internal */
 class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
-    protected _subGraph: _WebAudioBusAndSoundSubGraph;
+    private _spatial: Nullable<_SpatialAudio> = null;
+    private _stereo: Nullable<_StereoAudio> = null;
 
-    /** @internal */
-    public readonly stereo: AbstractStereoAudio;
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
     public source: StreamingSoundSourceType;
@@ -59,7 +59,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         super(name, engine, options);
 
         this._subGraph = new WebAudioStreamingSound._SubGraph(this);
-        this.stereo = new _StereoAudio(this._subGraph);
     }
 
     /** @internal */
@@ -108,6 +107,16 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     /** @internal */
     public get outNode() {
         return this._subGraph.outNode;
+    }
+
+    /** @internal */
+    public override get spatial(): _SpatialAudio {
+        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override get stereo(): _StereoAudio {
+        return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
     }
 
     /** @internal */
