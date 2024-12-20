@@ -6,7 +6,7 @@ import { MainAudioBus } from "../mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _getWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioTools";
 
 /**
  * Creates a new main audio bus.
@@ -16,7 +16,7 @@ import { _getWebAudioEngine } from "./webAudioTools";
  * @returns A promise that resolves with the created main audio bus.
  */
 export async function CreateMainAudioBusAsync(name: string, options: Nullable<IMainAudioBusOptions> = null, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
-    const webAudioEngine = _getWebAudioEngine(engine);
+    const webAudioEngine = _GetWebAudioEngine(engine);
 
     const bus = new _WebAudioMainBus(name, webAudioEngine);
     await bus.init(options);

@@ -3,18 +3,18 @@ import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractAudioSuperNode } from "./abstractAudioSuperNode";
 import type { MainAudioBus } from "./mainAudioBus";
 
-const instances: AudioEngineV2[] = [];
+const Instances: AudioEngineV2[] = [];
 
 /**
  * Gets the most recently created v2 audio engine.
  * @returns The most recently created v2 audio engine.
  */
 export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
-    if (instances.length === 0) {
+    if (Instances.length === 0) {
         return null;
     }
 
-    return instances[instances.length - 1];
+    return Instances[Instances.length - 1];
 }
 
 /**
@@ -65,7 +65,7 @@ export abstract class AudioEngineV2 {
     }
 
     protected constructor() {
-        instances.push(this);
+        Instances.push(this);
     }
 
     public abstract get volume(): number;
@@ -75,8 +75,8 @@ export abstract class AudioEngineV2 {
      * Releases associated resources.
      */
     public dispose(): void {
-        if (instances.includes(this)) {
-            instances.splice(instances.indexOf(this), 1);
+        if (Instances.includes(this)) {
+            Instances.splice(Instances.indexOf(this), 1);
         }
 
         const superNodeIt = this._superNodes.values();

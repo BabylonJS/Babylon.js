@@ -3,14 +3,14 @@ import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
-import { _cleanUrl } from "../soundTools";
+import { _CleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _getWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioTools";
 
 export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -28,7 +28,7 @@ export async function CreateStreamingSoundAsync(
     options: Nullable<IStreamingSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
-    const webAudioEngine = _getWebAudioEngine(engine);
+    const webAudioEngine = _GetWebAudioEngine(engine);
 
     const sound = new WebAudioStreamingSound(name, webAudioEngine, options);
     await sound.init(source, options);
@@ -246,7 +246,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
     private _initFromUrl(url: string): void {
         // TODO: Maybe use the existing file loading tools to clean the URL.
-        const audio = new Audio(_cleanUrl(url));
+        const audio = new Audio(_CleanUrl(url));
         this._initFromMediaElement(audio);
     }
 
@@ -256,7 +256,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         for (const url of urls) {
             const source = document.createElement("source");
             // TODO: Maybe use the existing file loading tools to clean the URL.
-            source.src = _cleanUrl(url);
+            source.src = _CleanUrl(url);
             audio.appendChild(source);
         }
 

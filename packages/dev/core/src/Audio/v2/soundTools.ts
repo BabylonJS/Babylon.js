@@ -1,4 +1,4 @@
 /** @internal */
-export function _cleanUrl(url: string) {
+export function _CleanUrl(url: string) {
     return url.replace(/#/gm, "%23");
 }

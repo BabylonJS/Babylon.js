@@ -44,7 +44,7 @@ export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOp
     return engine;
 }
 
-const formatMimeTypeMap = new Map<string, string>([
+const FormatMimeTypeMap = new Map<string, string>([
     ["aac", "audio/aac"],
     ["ac3", "audio/ac3"],
     ["flac", "audio/flac"],
@@ -222,7 +222,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             return false;
         }
 
-        const mimeType = formatMimeTypeMap.get(format);
+        const mimeType = FormatMimeTypeMap.get(format);
         if (mimeType === undefined) {
             return false;
         }

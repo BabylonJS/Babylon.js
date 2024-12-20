@@ -2,7 +2,7 @@ import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
-import { _cleanUrl } from "../soundTools";
+import { _CleanUrl } from "../soundTools";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
@@ -10,9 +10,9 @@ import { _StaticSoundInstance } from "../staticSoundInstance";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _getWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioTools";
 
-const fileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
+const FileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
 export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
@@ -30,7 +30,7 @@ export async function CreateSoundAsync(
     options: Nullable<IStaticSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSound> {
-    const webAudioEngine = _getWebAudioEngine(engine);
+    const webAudioEngine = _GetWebAudioEngine(engine);
 
     const sound = new WebAudioStaticSound(name, webAudioEngine, options);
     await sound.init(source, options);
@@ -50,7 +50,7 @@ export async function CreateSoundBufferAsync(
     options: Nullable<IStaticSoundOptions> = null,
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
-    const webAudioEngine = _getWebAudioEngine(engine);
+    const webAudioEngine = _GetWebAudioEngine(engine);
 
     const buffer = new WebAudioStaticSoundBuffer(webAudioEngine);
     await buffer.init(source, options);
@@ -216,7 +216,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
     private async _initFromUrl(url: string): Promise<void> {
         // TODO: Maybe use the existing file loading tools here.
-        url = _cleanUrl(url);
+        url = _CleanUrl(url);
         await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
     }
 
@@ -225,7 +225,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
             if (skipCodecCheck) {
                 await this._initFromUrl(url);
             } else {
-                const matches = url.match(fileExtensionRegex);
+                const matches = url.match(FileExtensionRegex);
                 const format = matches?.at(1);
                 if (format && this.engine.formatIsValid(format)) {
                     try {

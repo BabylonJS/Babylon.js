@@ -23,7 +23,7 @@ export interface IVolumeAudioOptions {
  * @param options The stereo audio options to check.
  * @returns `true` if the stereo audio options are defined, otherwise `false`.
  */
-export function _hasVolumeAudioOptions(options: IVolumeAudioOptions): boolean {
+export function _HasVolumeAudioOptions(options: IVolumeAudioOptions): boolean {
     return options.volume !== undefined;
 }
 

@@ -25,7 +25,7 @@ export interface IStereoAudioOptions {
  * @param options The stereo audio options to check.
  * @returns `true` if stereo audio options are defined, otherwise `false`.
  */
-export function _hasStereoAudioOptions(options: IStereoAudioOptions): boolean {
+export function _HasStereoAudioOptions(options: IStereoAudioOptions): boolean {
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 

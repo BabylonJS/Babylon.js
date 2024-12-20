@@ -3,9 +3,9 @@ import type { AbstractAudioNode } from "../../abstractAudioNode";
 import type { _AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { _AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode, ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
-import { _hasSpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
+import { _HasSpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
 import type { _StereoAudioSubNode, IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
-import { _hasStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
+import { _HasStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _CreateSpatialAudioSubNodeAsync } from "../subNodes/spatialWebAudioSubNode";
 import { _CreateStereoAudioSubNodeAsync } from "../subNodes/stereoWebAudioSubNode";
@@ -29,10 +29,10 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasStereoOptions = false;
 
         if (options) {
-            if ((hasSpatialOptions = _hasSpatialAudioOptions(options))) {
+            if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
                 this._createAndAddSubNode(_AudioSubNode.Spatial);
             }
-            if ((hasStereoOptions = _hasStereoAudioOptions(options))) {
+            if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
                 this._createAndAddSubNode(_AudioSubNode.Stereo);
             }
         }

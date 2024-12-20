@@ -79,7 +79,7 @@ export interface ISpatialAudioOptions {
  * @param options The spatial audio options to check.
  * @returns `true` if spatial audio options are defined, otherwise `false`.
  */
-export function _hasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
+export function _HasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
     return (
         options.spatialEnabled ||
         options.spatialConeInnerAngle !== undefined ||

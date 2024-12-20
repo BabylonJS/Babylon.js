@@ -4,7 +4,7 @@ import { _AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
 import type { _AbstractAudioSubNode } from "../../abstractAudioSubNode";
 import { _AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
-import { _hasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
+import { _HasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "../subNodes/volumeWebAudioSubNode";
 import type { IWebAudioInNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
 
@@ -29,7 +29,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
         await this._createSubNodePromisesResolved();
 
-        if (options && _hasVolumeAudioOptions(options)) {
+        if (options && _HasVolumeAudioOptions(options)) {
             this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.setOptions(options);
         }
     }
