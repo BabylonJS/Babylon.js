@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
-import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
 import { _StereoAudio } from "../subProperties/stereoAudio";

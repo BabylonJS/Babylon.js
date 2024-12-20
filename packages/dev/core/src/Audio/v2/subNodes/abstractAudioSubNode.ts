@@ -1,5 +1,5 @@
-import { _AudioNodeType, NamedAbstractAudioNode } from "./abstractAudioNode";
-import type { AudioEngineV2 } from "./audioEngineV2";
+import { _AudioNodeType, NamedAbstractAudioNode } from "../abstractAudioNode";
+import type { AudioEngineV2 } from "../audioEngineV2";
 
 /** @internal */
 export abstract class _AbstractAudioSubNode extends NamedAbstractAudioNode {

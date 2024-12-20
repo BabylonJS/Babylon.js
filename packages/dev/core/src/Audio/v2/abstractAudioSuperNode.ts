@@ -1,5 +1,5 @@
 import { NamedAbstractAudioNode } from "./abstractAudioNode";
-import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 
 /**
  * Abstract class for audio nodes containing sub-graphs.

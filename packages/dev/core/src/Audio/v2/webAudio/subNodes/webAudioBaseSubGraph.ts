@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../../abstractAudioNode";
-import { _AbstractAudioSubGraph } from "../../abstractAudioSubGraph";
-import type { _AbstractAudioSubNode } from "../../abstractAudioSubNode";
+import { _AbstractAudioSubGraph } from "../../subNodes/abstractAudioSubGraph";
+import type { _AbstractAudioSubNode } from "../../subNodes/abstractAudioSubNode";
 import { _AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
 import { _HasVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";

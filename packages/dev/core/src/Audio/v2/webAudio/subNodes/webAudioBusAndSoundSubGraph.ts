@@ -1,14 +1,14 @@
 import type { Nullable } from "../../../../types";
 import type { AbstractAudioNode } from "../../abstractAudioNode";
-import type { _AbstractAudioSubNode } from "../../abstractAudioSubNode";
+import type { _AbstractAudioSubNode } from "../../subNodes/abstractAudioSubNode";
 import { _AudioSubNode } from "../../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode, ISpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
 import { _HasSpatialAudioOptions } from "../../subNodes/spatialAudioSubNode";
 import type { _StereoAudioSubNode, IStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
 import { _HasStereoAudioOptions } from "../../subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "../../subNodes/volumeAudioSubNode";
-import { _CreateSpatialAudioSubNodeAsync } from "../subNodes/spatialWebAudioSubNode";
-import { _CreateStereoAudioSubNodeAsync } from "../subNodes/stereoWebAudioSubNode";
+import { _CreateSpatialAudioSubNodeAsync } from "./spatialWebAudioSubNode";
+import { _CreateStereoAudioSubNodeAsync } from "./stereoWebAudioSubNode";
 import type { IWebAudioOutNode, IWebAudioSubNode } from "../webAudioNode";
 import { _WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
 

@@ -9,7 +9,7 @@ import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
 import { _SpatialAudio } from "../subProperties/spatialAudio";
 import { _StereoAudio } from "../subProperties/stereoAudio";
-import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
+import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioTools";

@@ -1,4 +1,4 @@
-import type { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
+import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _StereoAudioSubNode } from "../subNodes/stereoAudioSubNode";
 import { _StereoAudioDefault } from "../subNodes/stereoAudioSubNode";

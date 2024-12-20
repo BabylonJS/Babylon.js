@@ -3,7 +3,7 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import type { IMainAudioBusOptions } from "../mainAudioBus";
 import { MainAudioBus } from "../mainAudioBus";
-import { _WebAudioBaseSubGraph } from "./subGraphs/webAudioBaseSubGraph";
+import { _WebAudioBaseSubGraph } from "./subNodes/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioTools";
