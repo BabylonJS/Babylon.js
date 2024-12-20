@@ -11,10 +11,10 @@ import { SoundState } from "./soundState";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { _SpatialAudioSubNode, ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import { _SpatialAudio } from "./subNodes/spatialAudioSubNode";
-import type { _StereoAudioSubNode, IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
-import { _StereoAudio } from "./subNodes/stereoAudioSubNode";
+import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
+import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
 /**
  * Options for creating a new sound.
@@ -260,16 +260,7 @@ export abstract class AbstractSound extends AbstractAudioSuperNode {
         });
     }
 
-    /** */
-    public get stereoPan(): number {
-        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.pan ?? _StereoAudio.DefaultPan;
-    }
-
-    public set stereoPan(value: number) {
-        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo, (node) => {
-            node.pan = value;
-        });
-    }
+    public abstract readonly stereo: AbstractStereoAudio;
 
     /** */
     public get volume(): number {

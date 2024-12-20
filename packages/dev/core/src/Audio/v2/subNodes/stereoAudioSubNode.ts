@@ -4,9 +4,9 @@ import type { AudioEngineV2 } from "../audioEngineV2";
 import { _AudioSubNode } from "./audioSubNode";
 
 /** @internal */
-export class _StereoAudio {
+export class _StereoAudioDefault {
     /** @internal */
-    public static readonly DefaultPan = 0;
+    public static readonly Pan = 0;
 }
 
 /** */
@@ -46,6 +46,6 @@ export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
             return;
         }
 
-        this.pan = options.stereoPan !== undefined ? options.stereoPan : _StereoAudio.DefaultPan;
+        this.pan = options.stereoPan !== undefined ? options.stereoPan : _StereoAudioDefault.Pan;
     }
 }

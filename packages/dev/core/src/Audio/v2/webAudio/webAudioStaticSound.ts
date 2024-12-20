@@ -7,6 +7,8 @@ import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
+import type { AbstractStereoAudio } from "../subProperties/abstractStereoAudio";
+import { _StereoAudio } from "../subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
@@ -64,6 +66,9 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
+    public readonly stereo: AbstractStereoAudio;
+
+    /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
@@ -74,6 +79,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStaticSound._SubGraph(this);
+        this.stereo = new _StereoAudio(this._subGraph);
     }
 
     /** @internal */

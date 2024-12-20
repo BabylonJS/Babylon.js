@@ -2,11 +2,10 @@ import type { Nullable } from "../../types";
 import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { MainAudioBus } from "./mainAudioBus";
-import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import type { _StereoAudioSubNode, IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
-import { _StereoAudio } from "./subNodes/stereoAudioSubNode";
+import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
 export type AbstractPrimaryAudioBus = MainAudioBus | AudioBus;
 
@@ -60,14 +59,5 @@ export abstract class AudioBus extends AbstractAudioBus {
         }
     }
 
-    /** */
-    public get stereoPan(): number {
-        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.pan ?? _StereoAudio.DefaultPan;
-    }
-
-    public set stereoPan(value: number) {
-        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo, (node) => {
-            node.pan = value;
-        });
-    }
+    public abstract get stereo(): AbstractStereoAudio;
 }

@@ -2,13 +2,18 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
+import type { AbstractStereoAudio } from "../subProperties/abstractStereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
+import { _StereoAudio } from "../subProperties/stereoAudio";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
+
+    /** @internal */
+    public readonly stereo: AbstractStereoAudio;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -21,6 +26,8 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
         super(name, engine, options);
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
+        this.stereo = new _StereoAudio(this._subGraph);
+
         this.audioContext = engine.audioContext;
     }
 

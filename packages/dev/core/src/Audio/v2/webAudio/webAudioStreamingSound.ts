@@ -7,6 +7,8 @@ import { _CleanUrl } from "../soundTools";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { _StreamingSoundInstance } from "../streamingSoundInstance";
+import type { AbstractStereoAudio } from "../subProperties/abstractStereoAudio";
+import { _StereoAudio } from "../subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subGraphs/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
@@ -41,6 +43,9 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
+    public readonly stereo: AbstractStereoAudio;
+
+    /** @internal */
     public source: StreamingSoundSourceType;
 
     /** @internal */
@@ -54,6 +59,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         super(name, engine, options);
 
         this._subGraph = new WebAudioStreamingSound._SubGraph(this);
+        this.stereo = new _StereoAudio(this._subGraph);
     }
 
     /** @internal */

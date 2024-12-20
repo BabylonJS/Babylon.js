@@ -1,0 +1,27 @@
+import type { _AbstractAudioSubGraph } from "../abstractAudioSubGraph";
+import { _AudioSubNode } from "../subNodes/audioSubNode";
+import type { _StereoAudioSubNode } from "../subNodes/stereoAudioSubNode";
+import { _StereoAudioDefault } from "../subNodes/stereoAudioSubNode";
+import { AbstractStereoAudio } from "./abstractStereoAudio";
+
+/** @internal */
+export class _StereoAudio extends AbstractStereoAudio {
+    private _subGraph: _AbstractAudioSubGraph;
+
+    /** @internal */
+    public constructor(subGraph: _AbstractAudioSubGraph) {
+        super();
+        this._subGraph = subGraph;
+    }
+
+    /** @internal */
+    public get pan(): number {
+        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.pan ?? _StereoAudioDefault.Pan;
+    }
+
+    public set pan(value: number) {
+        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo, (node) => {
+            node.pan = value;
+        });
+    }
+}
