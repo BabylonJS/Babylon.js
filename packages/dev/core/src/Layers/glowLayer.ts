@@ -629,9 +629,15 @@ export class GlowLayer extends EffectLayer {
      * @returns true if the material of the mesh should be use to render the effect
      */
     protected override _useMeshMaterial(mesh: AbstractMesh): boolean {
+        // Specific case of material supporting glow directly
+        if (mesh.material?._supportGlowLayer) {
+            return true;
+        }
+
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
+
         return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
     }
 

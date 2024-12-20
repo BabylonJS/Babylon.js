@@ -234,6 +234,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NONUNIFORMSCALING = false;
 
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
@@ -1490,8 +1491,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
-            "icdfxSampler",
-            "icdfySampler",
+            "icdfSampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -2308,8 +2308,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     //if realtime filtering and using CDF maps, set them.
                     const cdfGenerator = this.getScene().iblCdfGenerator;
                     if (this.realTimeFiltering && cdfGenerator) {
-                        ubo.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
-                        ubo.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
+                        ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
                     }
                 }
 

@@ -607,5 +607,27 @@ describe("Babylon glTF Serializer", () => {
                 expect(node.rotation).toEqual(transformsRH.rotation);
             });
         });
+
+        it("should reparent children of unexported node to nearest ancestor", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const parent = BABYLON.MeshBuilder.CreateBox("parent");
+                const child = BABYLON.MeshBuilder.CreateBox("child");
+                child.parent = parent;
+                BABYLON.MeshBuilder.CreateBox("grandchild1").parent = child;
+                BABYLON.MeshBuilder.CreateBox("grandchild2").parent = child;
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", {
+                    shouldExportNode: (node) => node.name.startsWith("grandchild"),
+                });
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            expect(assertionData.nodes).toHaveLength(2);
+            expect(assertionData.nodes[0].name).toContain("grandchild");
+            expect(assertionData.nodes[1].name).toContain("grandchild");
+            expect(assertionData.scenes).toHaveLength(1);
+            expect(assertionData.scenes[0].nodes).toHaveLength(2);
+            expect(assertionData.scenes[0].nodes).toContain(0);
+            expect(assertionData.scenes[0].nodes).toContain(1);
+        });
     });
 });

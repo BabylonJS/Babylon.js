@@ -9,8 +9,7 @@ uniform sampler2D depthSampler;
 uniform sampler2D worldNormalSampler;
 uniform sampler2D blueNoiseSampler;
 // Importance sampling
-uniform sampler2D icdfxSampler;
-uniform sampler2D icdfySampler;
+uniform sampler2D icdfSampler;
 uniform sampler3D voxelGridSampler;
 
 // shadow parameters: int nbDirs, int frameId, unused, float envRot
@@ -409,8 +408,8 @@ void main(void) {
       vec2 r = plasticSequence(frameId * nbDirs + i);
       r = fract(r + vec2(2.0) * abs(noise.xy - vec2(0.5)));
       vec2 T;
-      T.x = textureLod(icdfxSampler, vec2(r.x, 0.0), 0.0).x;
-      T.y = textureLod(icdfySampler, vec2(T.x, r.y), 0.0).x;
+      T.x = textureLod(icdfSampler, vec2(r.x, 0.0), 0.0).x;
+      T.y = textureLod(icdfSampler, vec2(T.x, r.y), 0.0).y;
       T.x -= normalizedRotation;
       L = vec4(uv_to_normal(T), 0);
       #ifndef RIGHT_HANDED

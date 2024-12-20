@@ -148,6 +148,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target position */
+    public MORPHTARGETS_POSITION = false;
     /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
     /** Morph target tangent */
@@ -303,6 +305,13 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
+
+    /** @internal */
+    public _useAdditionalColor = false;
+
+    public override set _glowModeEnabled(value: boolean) {
+        this._useAdditionalColor = value;
+    }
 
     /** Get the inspector from bundle or global
      * @returns the global NME
@@ -701,6 +710,18 @@ export class NodeMaterial extends PushMaterial {
      */
     @serialize()
     public forceAlphaBlending = false;
+
+    public override get _supportGlowLayer() {
+        if (this._fragmentOutputNodes.length === 0) {
+            return false;
+        }
+
+        if (this._fragmentOutputNodes.some((f) => (f as FragmentOutputBlock).additionalColor && (f as FragmentOutputBlock).additionalColor.isConnected)) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Specifies if the material will require alpha blending
@@ -1656,7 +1677,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh.materialDefines || typeof subMesh.materialDefines === "string") {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
