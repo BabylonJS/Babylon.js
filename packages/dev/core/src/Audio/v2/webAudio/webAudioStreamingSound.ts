@@ -296,6 +296,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        this.engine.userGestureObservable.removeCallback(this._onUserGesture);
     }
 
     public get outNode(): Nullable<AudioNode> {
@@ -402,7 +403,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
                 this._setState(SoundState.FailedToStart);
 
                 if (this._loop) {
-                    this.engine.startSoundInstanceOnNextUserInteraction(this);
+                    this.engine.userGestureObservable.addOnce(this._onUserGesture);
                 }
             });
         } else if (this._loop) {
@@ -424,4 +425,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
+
+    private _onUserGesture = () => {
+        this.play();
+    };
 }

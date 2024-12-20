@@ -1,7 +1,6 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioSuperNode } from "../abstractAudioSuperNode";
-import type { _AbstractSoundInstance } from "../abstractSoundInstance";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
@@ -101,22 +100,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
         await CreateMainAudioBusAsync("default", this);
     };
 
-    private _onUserInteraction: () => void = async () => {
+    private _onUserGesture: () => void = async () => {
         if (this._resumeOnInteraction) {
             await this.audioContext.resume();
-
-            const it = this._soundInstancesToStartOnNextUserInteraction.values();
-            let next = it.next();
-
-            while (!next.done) {
-                const instance = next.value;
-
-                instance.play();
-                this._soundInstancesToStartOnNextUserInteraction.delete(instance);
-
-                next = it.next();
-            }
         }
+
+        this.userGestureObservable.notifyObservers();
     };
 
     private _onAudioContextStateChange = () => {
@@ -143,7 +132,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
 
-    private _soundInstancesToStartOnNextUserInteraction = new Set<_AbstractSoundInstance>();
+    /** @internal */
+    public userGestureObservable: Observable<void> = new Observable();
 
     /** @internal */
     public get state(): string {
@@ -189,7 +179,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._resumeOnPause = options?.resumeOnPause ?? true;
         this._resumeOnPauseRetryInterval = options?.resumeOnPauseRetryInterval ?? 1000;
 
-        document.addEventListener("click", this._onUserInteraction);
+        document.addEventListener("click", this._onUserGesture);
 
         await this._initAudioContext();
         this._resolveIsReadyPromise();
@@ -203,7 +193,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this.audioContext.close();
         }
 
-        document.removeEventListener("click", this._onUserInteraction);
+        document.removeEventListener("click", this._onUserGesture);
         this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
     }
 
@@ -271,10 +261,5 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public removeSuperNode(superNode: AbstractAudioSuperNode): void {
         this._removeSuperNode(superNode);
-    }
-
-    /** @internal */
-    public startSoundInstanceOnNextUserInteraction(soundInstance: _AbstractSoundInstance): void {
-        this._soundInstancesToStartOnNextUserInteraction.add(soundInstance);
     }
 }
