@@ -29,6 +29,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _noMipmap: boolean;
     private _prefilterOnLoad: boolean;
     private _prefilterIrradianceOnLoad: boolean;
+    private _prefilterUsingCdf: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
     private _supersample: boolean;
@@ -116,6 +117,7 @@ export class HDRCubeTexture extends BaseTexture {
      * @param onError on error callback function
      * @param supersample Defines if texture must be supersampled (default: false)
      * @param prefilterIrradianceOnLoad Prefilters HDR texture to allow use of this texture for irradiance lighting.
+     * @param prefilterUsingCdf Defines if the prefiltering should be done using a CDF instead of the default approach.
      */
     constructor(
         url: string,
@@ -128,7 +130,8 @@ export class HDRCubeTexture extends BaseTexture {
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         supersample = false,
-        prefilterIrradianceOnLoad = false
+        prefilterIrradianceOnLoad = false,
+        prefilterUsingCdf = false
     ) {
         super(sceneOrEngine);
 
@@ -144,6 +147,7 @@ export class HDRCubeTexture extends BaseTexture {
         this._textureMatrix = Matrix.Identity();
         this._prefilterOnLoad = prefilterOnLoad;
         this._prefilterIrradianceOnLoad = prefilterIrradianceOnLoad;
+        this._prefilterUsingCdf = prefilterUsingCdf;
         this._onLoad = () => {
             this.onLoadObservable.notifyObservers(this);
             if (onLoad) {
@@ -286,7 +290,7 @@ export class HDRCubeTexture extends BaseTexture {
                 let irradiancePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
                 let radiancePromise: Promise<void> = Promise.resolve();
                 if (this._prefilterIrradianceOnLoad) {
-                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: true });
+                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
                     irradiancePromise = hdrIrradianceFiltering.prefilter(this);
                 }
                 if (this._prefilterOnLoad) {

@@ -10,7 +10,7 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { IblCdfGenerator } from "core/Rendering";
+import { IblCdfGenerator } from "../../../Rendering/iblCdfGenerator";
 
 /**
  * Options for texture filtering
