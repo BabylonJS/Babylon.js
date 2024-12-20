@@ -141,6 +141,7 @@ export class HDRIrradianceFiltering {
         effect.setTexture("inputTexture", null);
         effect.setTexture("icdfTexture", null);
         const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture!);
+        irradianceTexture.name = texture.name + "_irradiance";
         irradianceTexture.displayName = texture.name + "_irradiance";
         irradianceTexture.gammaSpace = false;
         return irradianceTexture;
@@ -206,32 +207,25 @@ export class HDRIrradianceFiltering {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
             return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }
-        let cdfGeneratedPromise = Promise.resolve();
+        let cdfGeneratedPromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
         if (this.useCdf) {
-            this._cdfGenerator = new IblCdfGenerator(texture.getScene()!);
-            const internalTexture = texture.getInternalTexture();
-            if (internalTexture) {
-                this._cdfGenerator.iblSource = texture;
-                internalTexture.label = "HDR_IBL_Source";
-                cdfGeneratedPromise = new Promise((resolve) => {
-                    this._cdfGenerator.onGeneratedObservable.addOnce(() => {
-                        resolve();
-                    });
+            this._cdfGenerator = new IblCdfGenerator(this._engine);
+            this._cdfGenerator.iblSource = texture;
+            cdfGeneratedPromise = new Promise((resolve) => {
+                this._cdfGenerator.onGeneratedObservable.addOnce(() => {
+                    resolve(null);
                 });
-            }
+            });
         }
 
-        return new Promise((resolve) => {
-            return cdfGeneratedPromise.then(() => {
+        return cdfGeneratedPromise.then(() => {
+            return new Promise((resolve) => {
                 this._effectRenderer = new EffectRenderer(this._engine);
                 this._effectWrapper = this._createEffect(texture);
                 this._effectWrapper.effect.executeWhenCompiled(() => {
                     const irradianceTexture = this._prefilterInternal(texture);
                     this._effectRenderer.dispose();
                     this._effectWrapper.dispose();
-                    if (this._cdfGenerator) {
-                        // this._cdfGenerator.iblSource!._swapAndDie(texture._texture!);
-                    }
                     this._cdfGenerator?.dispose();
                     resolve(irradianceTexture);
                     if (onFinished) {

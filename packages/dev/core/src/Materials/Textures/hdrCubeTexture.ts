@@ -15,7 +15,6 @@ import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { HDRIrradianceFiltering } from "../../Materials/Textures/Filtering/hdrIrradianceFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Materials/Textures/baseTexture.polynomial";
-import { IblCdfGenerator } from "core/Rendering";
 
 /**
  * This represents a texture coming from an HDR input.
@@ -284,31 +283,27 @@ export class HDRCubeTexture extends BaseTexture {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
-                let irradiancePromise: Promise<Nullable<BaseTexture>>;
+                let irradiancePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
+                let radiancePromise: Promise<void> = Promise.resolve();
                 if (this._prefilterIrradianceOnLoad) {
                     const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: true });
                     irradiancePromise = hdrIrradianceFiltering.prefilter(this);
-                } else {
-                    irradiancePromise = Promise.resolve(null);
                 }
-                irradiancePromise.then((irradianceTexture) => {
-                    let radiancePromise = Promise.resolve();
-                    if (this._prefilterOnLoad) {
-                        radiancePromise = hdrFiltering.prefilter(this);
+                if (this._prefilterOnLoad) {
+                    radiancePromise = hdrFiltering.prefilter(this);
+                }
+                Promise.all([irradiancePromise, radiancePromise]).then((results) => {
+                    const irradianceTexture = results[0] as Nullable<BaseTexture>;
+                    if (this._prefilterIrradianceOnLoad && irradianceTexture) {
+                        this.irradianceTexture = irradianceTexture;
+                        const scene = this.getScene();
+                        if (scene) {
+                            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                        }
                     }
-                    return radiancePromise.then(() => {
-                        if (this._prefilterIrradianceOnLoad && irradianceTexture) {
-                            this.irradianceTexture = irradianceTexture;
-                            const scene = this.getScene();
-                            if (scene) {
-                                scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-                            }
-                        }
-                        Promise.resolve();
-                        if (previousOnLoad) {
-                            previousOnLoad();
-                        }
-                    });
+                    if (previousOnLoad) {
+                        previousOnLoad();
+                    }
                 });
             };
         }
