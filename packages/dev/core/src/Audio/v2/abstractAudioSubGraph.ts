@@ -74,16 +74,6 @@ export abstract class _AbstractAudioSubGraph {
         return set;
     }
 
-    protected _hasSubNode(name: string): boolean {
-        const set = this._subNodes.get(name);
-
-        if (!set) {
-            return false;
-        }
-
-        return set.size > 0;
-    }
-
     private _addSubNode(node: NamedAbstractAudioNode): void {
         this._getSubNodeSet(node.name).add(node);
         this._onSubNodesChanged();
