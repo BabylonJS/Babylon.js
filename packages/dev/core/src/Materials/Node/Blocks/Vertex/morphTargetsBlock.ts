@@ -268,7 +268,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
-            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASPOSITIONS) || defined(MORPHTARGETS_POSITION)\n`;
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASPOSITIONS\n`;
             injectionCode += `vertexID += 1.0;\n`;
             injectionCode += `#endif\n`;
 
@@ -277,7 +277,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
-            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASNORMALS) || defined(MORPHTARGETS_NORMAL)\n`;
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASNORMALS\n`;
             injectionCode += `vertexID += 1.0;\n`;
             injectionCode += `#endif\n`;
 
@@ -286,7 +286,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
-            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASUVS) || defined(MORPHTARGETS_UV)\n`;
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASUVS\n`;
             injectionCode += `vertexID += 1.0;\n`;
             injectionCode += `#endif\n`;
 
@@ -301,7 +301,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 }
                 injectionCode += `#endif\n`;
             }
-            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASTANGENTS) || defined(MORPHTARGETS_TANGENT)\n`;
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASTANGENTS\n`;
             injectionCode += `vertexID += 1.0;\n`;
             injectionCode += `#endif\n`;
 
