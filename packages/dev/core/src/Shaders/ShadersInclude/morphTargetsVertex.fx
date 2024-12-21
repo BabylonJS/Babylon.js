@@ -8,21 +8,29 @@
 
 			#ifdef MORPHTARGETS_POSITION
 				positionUpdated += (readVector3FromRawSampler(i, vertexID) - position) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASPOSITIONS
 				vertexID += 1.0;
 			#endif
 		
 			#ifdef MORPHTARGETS_NORMAL
 				normalUpdated += (readVector3FromRawSampler(i, vertexID)  - normal) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASNORMALS
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_UV
 				uvUpdated += (readVector3FromRawSampler(i, vertexID).xy - uv) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASUVS
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
 				tangentUpdated.xyz += (readVector3FromRawSampler(i, vertexID)  - tangent.xyz) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASTANGENTS
 				vertexID += 1.0;
 			#endif
 

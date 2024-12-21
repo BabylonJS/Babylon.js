@@ -696,12 +696,34 @@ export abstract class EffectLayer {
             morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (morphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
-                defines.push("#define MORPHTARGETS_POSITION");
+                if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+                if (manager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+                if (manager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+                if (manager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+                if (manager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+                if (manager.supportsPositions) {
+                    defines.push("#define MORPHTARGETS_POSITION");
+                }
+                if (manager.supportsUVs) {
+                    if (uv1) defines.push("#define MORPHTARGETS_UV");
+                }
+                if (manager.supportsUV2s) {
+                    if (uv2) defines.push("#define MORPHTARGETS_UV2");
+                }
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                 if (manager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
-                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(
+                    attribs,
+                    mesh,
+                    morphInfluencers,
+                    true, // usePositionMorph
+                    false, // useNormalMorph
+                    false, // useTangentMorph
+                    uv1, // useUVMorph
+                    uv2 // useUV2Morph
+                );
             }
         }
 

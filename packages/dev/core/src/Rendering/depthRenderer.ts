@@ -403,16 +403,21 @@ export class DepthRenderer {
 
         const attribs = [VertexBuffer.PositionKind];
 
+        let uv1 = false;
+        let uv2 = false;
+
         // Alpha test
         if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
                 defines.push("#define UV1");
+                uv1 = true;
             }
             if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                 attribs.push(VertexBuffer.UV2Kind);
                 defines.push("#define UV2");
+                uv2 = true;
             }
         }
 
@@ -447,14 +452,34 @@ export class DepthRenderer {
             numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
             if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
-                defines.push("#define MORPHTARGETS_POSITION");
+                if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+                if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+                if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+                if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+                if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+                if (morphTargetManager.supportsPositions) {
+                    defines.push("#define MORPHTARGETS_POSITION");
+                }
+                if (morphTargetManager.supportsUVs) {
+                    if (uv1) defines.push("#define MORPHTARGETS_UV");
+                }
+                if (morphTargetManager.supportsUV2s) {
+                    if (uv2) defines.push("#define MORPHTARGETS_UV2");
+                }
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
-
-                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(
+                    attribs,
+                    mesh,
+                    numMorphInfluencers,
+                    true, // usePositionMorph
+                    false, // useNormalMorph
+                    false, // useTangentMorph
+                    uv1, // useUVMorph
+                    uv2 // useUV2Morph
+                );
             }
         }
 
