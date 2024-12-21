@@ -31,6 +31,7 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareAttributesForBakedVertexAnimation,
+    PrepareAttributesForMorphTargetsInfluencers,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
 
@@ -769,25 +770,29 @@ export class ShaderMaterial extends PushMaterial {
         let numInfluencers = 0;
         const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
         if (manager) {
-            const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
-            const uv2 = manager.supportsUV2s && defines.indexOf("#define UV2") !== -1;
-            const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
-            const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            const position = manager.supportsPositions;
+            const uv = defines.indexOf("#define UV1") !== -1;
+            const uv2 = defines.indexOf("#define UV2") !== -1;
+            const tangent = defines.indexOf("#define TANGENT") !== -1;
+            const normal = defines.indexOf("#define NORMAL") !== -1;
             numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (uv) {
-                defines.push("#define MORPHTARGETS_UV");
+            if (manager.supportsUVs) {
+                defines.push("#define MORPHTARGETS_SUPPORTUVS");
+                if (uv) defines.push("#define MORPHTARGETS_UV");
             }
-            if (uv2) {
-                defines.push("#define MORPHTARGETS_UV2");
+            if (manager.supportsUV2s) {
+                defines.push("#define MORPHTARGETS_SUPPORTUV2S");
+                if (uv2) defines.push("#define MORPHTARGETS_UV2");
             }
-            if (tangent) {
-                defines.push("#define MORPHTARGETS_TANGENT");
+            if (manager.supportsTangents) {
+                defines.push("#define MORPHTARGETS_SUPPORTTANGENTS");
+                if (tangent) defines.push("#define MORPHTARGETS_TANGENT");
             }
-            if (normal) {
-                defines.push("#define MORPHTARGETS_NORMAL");
+            if (manager.supportsNormals) {
+                defines.push("#define MORPHTARGETS_SUPPORTNORMALS");
+                if (normal) defines.push("#define MORPHTARGETS_NORMAL");
             }
-            if (position) {
+            if (manager.supportsPositions) {
+                defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
                 defines.push("#define MORPHTARGETS_POSITION");
             }
             if (numInfluencers > 0) {
@@ -805,21 +810,16 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
             defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-            for (let index = 0; index < numInfluencers; index++) {
-                attribs.push(VertexBuffer.PositionKind + index);
-
-                if (normal) {
-                    attribs.push(VertexBuffer.NormalKind + index);
-                }
-
-                if (tangent) {
-                    attribs.push(VertexBuffer.TangentKind + index);
-                }
-
-                if (uv) {
-                    attribs.push(VertexBuffer.UVKind + "_" + index);
-                }
-            }
+            PrepareAttributesForMorphTargetsInfluencers(
+                attribs,
+                mesh!,
+                numInfluencers,
+                true, // usePositionMorph
+                normal, // useNormalMorph
+                tangent, // useTangentMorph
+                uv, // useUVMorph
+                uv2 // useUV2Morph
+            );
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");

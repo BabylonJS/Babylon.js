@@ -21,7 +21,13 @@ import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 // Temps
 const _TempFogColor = Color3.Black();
-const _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
+const _TmpMorphInfluencers = {
+    NUM_MORPH_INFLUENCERS: 0,
+    NORMAL: false,
+    TANGENT: false,
+    UV: false,
+    UV2: false,
+};
 
 /**
  * Binds the logarithmic depth information from the scene to the effect for the given defines.
@@ -64,10 +70,28 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
  * @param attribs The current list of supported attribs
  * @param mesh The mesh to prepare the morph targets attributes for
  * @param influencers The number of influencers
+ * @param usePositionMorph Whether the position morph target is used
+ * @param useNormalMorph Whether the normal morph target is used
+ * @param useTangentMorph Whether the tangent morph target is used
+ * @param useUVMorph Whether the UV morph target is used
+ * @param useUV2Morph Whether the UV2 morph target is used
  */
-export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
+export function PrepareAttributesForMorphTargetsInfluencers(
+    attribs: string[],
+    mesh: AbstractMesh,
+    influencers: number,
+    usePositionMorph = true,
+    useNormalMorph = false,
+    useTangentMorph = false,
+    useUVMorph = false,
+    useUV2Morph = false
+): void {
     _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
-    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers);
+    _TmpMorphInfluencers.NORMAL = useNormalMorph;
+    _TmpMorphInfluencers.TANGENT = useTangentMorph;
+    _TmpMorphInfluencers.UV = useUVMorph;
+    _TmpMorphInfluencers.UV2 = useUV2Morph;
+    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, usePositionMorph);
 }
 
 /**
@@ -75,8 +99,9 @@ export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], m
  * @param attribs The current list of supported attribs
  * @param mesh The mesh to prepare the morph targets attributes for
  * @param defines The current Defines of the effect
+ * @param usePositionMorph Whether the position morph target is used
  */
-export function PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
+export function PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any, usePositionMorph = true): void {
     const influencers = defines["NUM_MORPH_INFLUENCERS"];
 
     if (influencers > 0 && EngineStore.LastCreatedEngine) {
@@ -85,7 +110,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         if (manager?.isUsingTextureForTargets) {
             return;
         }
-        const position = manager && manager.supportsPositions;
+        const position = manager && manager.supportsPositions && usePositionMorph;
         const normal = manager && manager.supportsNormals && defines["NORMAL"];
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
@@ -691,6 +716,13 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
         defines["MORPHTARGETS_POSITION"] = manager.supportsPositions;
+
+        defines["MORPHTARGETS_SUPPORTUVS"] = manager.supportsUVs;
+        defines["MORPHTARGETS_SUPPORTUV2S"] = manager.supportsUV2s;
+        defines["MORPHTARGETS_SUPPORTTANGENTS"] = manager.supportsTangents;
+        defines["MORPHTARGETS_SUPPORTNORMALS"] = manager.supportsNormals;
+        defines["MORPHTARGETS_SUPPORTPOSITIONS"] = manager.supportsPositions;
+
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
         defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
 
@@ -701,6 +733,13 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = false;
         defines["MORPHTARGETS_NORMAL"] = false;
         defines["MORPHTARGETS_POSITION"] = false;
+
+        defines["MORPHTARGETS_SUPPORTUVS"] = false;
+        defines["MORPHTARGETS_SUPPORTUV2S"] = false;
+        defines["MORPHTARGETS_SUPPORTTANGENTS"] = false;
+        defines["MORPHTARGETS_SUPPORTNORMALS"] = false;
+        defines["MORPHTARGETS_SUPPORTPOSITIONS"] = false;
+
         defines["MORPHTARGETS"] = false;
         defines["NUM_MORPH_INFLUENCERS"] = 0;
     }

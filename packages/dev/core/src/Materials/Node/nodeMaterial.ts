@@ -158,6 +158,16 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    /** Morph target support positions */
+    public MORPHTARGETS_SUPPORTPOSITIONS = false;
+    /** Morph target support normals */
+    public MORPHTARGETS_SUPPORTNORMALS = false;
+    /** Morph target support tangents */
+    public MORPHTARGETS_SUPPORTTANGENTS = false;
+    /** Morph target support uvs */
+    public MORPHTARGETS_SUPPORTUVS = false;
+    /** Morph target support uv2s */
+    public MORPHTARGETS_SUPPORTUV2S = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */

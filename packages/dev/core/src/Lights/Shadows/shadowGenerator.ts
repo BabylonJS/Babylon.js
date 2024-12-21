@@ -1551,10 +1551,15 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const mesh = subMesh.getMesh();
 
+            let useNormal = false;
+            let uv1 = false;
+            let uv2 = false;
+
             // Normal bias.
             if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 attribs.push(VertexBuffer.NormalKind);
                 defines.push("#define NORMAL");
+                useNormal = true;
                 if (mesh.nonUniformScaling) {
                     defines.push("#define NONUNIFORMSCALING");
                 }
@@ -1583,11 +1588,13 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
+                        uv1 = true;
                     }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                         if (this._opacityTexture.coordinatesIndex === 1) {
                             attribs.push(VertexBuffer.UV2Kind);
                             defines.push("#define UV2");
+                            uv2 = true;
                         }
                     }
                 }
@@ -1624,12 +1631,37 @@ export class ShadowGenerator implements IShadowGenerator {
                 morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
                 if (morphInfluencers > 0) {
                     defines.push("#define MORPHTARGETS");
-                    defines.push("#define MORPHTARGETS_POSITION");
+                    if (manager.supportsPositions) {
+                        defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
+                        defines.push("#define MORPHTARGETS_POSITION");
+                    }
+                    if (manager.supportsNormals) {
+                        defines.push("#define MORPHTARGETS_SUPPORTNORMALS");
+                        if (useNormal) defines.push("#define MORPHTARGETS_NORMAL");
+                    }
+                    if (manager.supportsTangents) defines.push("#define MORPHTARGETS_SUPPORTTANGENTS");
+                    if (manager.supportsUVs) {
+                        defines.push("#define MORPHTARGETS_SUPPORTUVS");
+                        if (uv1) defines.push("#define MORPHTARGETS_UV");
+                    }
+                    if (manager.supportsUV2s) {
+                        defines.push("#define MORPHTARGETS_SUPPORTUV2S");
+                        if (uv2) defines.push("#define MORPHTARGETS_UV2");
+                    }
                     defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                     if (manager.isUsingTextureForTargets) {
                         defines.push("#define MORPHTARGETS_TEXTURE");
                     }
-                    PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                    PrepareAttributesForMorphTargetsInfluencers(
+                        attribs,
+                        mesh,
+                        morphInfluencers,
+                        true, // usePositionMorph
+                        useNormal, // useNormalMorph
+                        false, // useTangentMorph
+                        uv1, // useUVMorph
+                        uv2 // useUV2Morph
+                    );
                 }
             }
 
