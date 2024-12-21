@@ -696,18 +696,18 @@ export abstract class EffectLayer {
             morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (morphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
+                if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+                if (manager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+                if (manager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+                if (manager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+                if (manager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
                 if (manager.supportsPositions) {
-                    defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
                     defines.push("#define MORPHTARGETS_POSITION");
                 }
-                if (manager.supportsNormals) defines.push("#define MORPHTARGETS_SUPPORTNORMALS");
-                if (manager.supportsTangents) defines.push("#define MORPHTARGETS_SUPPORTANGENTS");
                 if (manager.supportsUVs) {
-                    defines.push("#define MORPHTARGETS_SUPPORTUVS");
                     if (uv1) defines.push("#define MORPHTARGETS_UV");
                 }
                 if (manager.supportsUV2s) {
-                    defines.push("#define MORPHTARGETS_SUPPORTUV2S");
                     if (uv2) defines.push("#define MORPHTARGETS_UV2");
                 }
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);

@@ -717,11 +717,11 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
         defines["MORPHTARGETS_POSITION"] = manager.supportsPositions;
 
-        defines["MORPHTARGETS_SUPPORTUVS"] = manager.supportsUVs;
-        defines["MORPHTARGETS_SUPPORTUV2S"] = manager.supportsUV2s;
-        defines["MORPHTARGETS_SUPPORTTANGENTS"] = manager.supportsTangents;
-        defines["MORPHTARGETS_SUPPORTNORMALS"] = manager.supportsNormals;
-        defines["MORPHTARGETS_SUPPORTPOSITIONS"] = manager.supportsPositions;
+        defines["MORPHTARGETTEXTURE_HASUVS"] = manager.hasUVs;
+        defines["MORPHTARGETTEXTURE_HASUV2S"] = manager.hasUV2s;
+        defines["MORPHTARGETTEXTURE_HASTANGENTS"] = manager.hasTangents;
+        defines["MORPHTARGETTEXTURE_HASNORMALS"] = manager.hasNormals;
+        defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = manager.hasPositions;
 
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
         defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
@@ -734,11 +734,11 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_NORMAL"] = false;
         defines["MORPHTARGETS_POSITION"] = false;
 
-        defines["MORPHTARGETS_SUPPORTUVS"] = false;
-        defines["MORPHTARGETS_SUPPORTUV2S"] = false;
-        defines["MORPHTARGETS_SUPPORTTANGENTS"] = false;
-        defines["MORPHTARGETS_SUPPORTNORMALS"] = false;
-        defines["MORPHTARGETS_SUPPORTPOSITIONS"] = false;
+        defines["MORPHTARGETTEXTURE_HASUVS"] = false;
+        defines["MORPHTARGETTEXTURE_HASUV2S"] = false;
+        defines["MORPHTARGETTEXTURE_HASTANGENTS"] = false;
+        defines["MORPHTARGETTEXTURE_HASNORMALS"] = false;
+        defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = false;
 
         defines["MORPHTARGETS"] = false;
         defines["NUM_MORPH_INFLUENCERS"] = 0;

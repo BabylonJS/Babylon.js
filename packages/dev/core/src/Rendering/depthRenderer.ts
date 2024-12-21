@@ -452,18 +452,18 @@ export class DepthRenderer {
             numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
             if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
+                if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+                if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+                if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+                if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+                if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
                 if (morphTargetManager.supportsPositions) {
-                    defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
                     defines.push("#define MORPHTARGETS_POSITION");
                 }
-                if (morphTargetManager.supportsNormals) defines.push("#define MORPHTARGETS_SUPPORTNORMALS");
-                if (morphTargetManager.supportsTangents) defines.push("#define MORPHTARGETS_SUPPORTTANGENTS");
                 if (morphTargetManager.supportsUVs) {
-                    defines.push("#define MORPHTARGETS_SUPPORTUVS");
                     if (uv1) defines.push("#define MORPHTARGETS_UV");
                 }
                 if (morphTargetManager.supportsUV2s) {
-                    defines.push("#define MORPHTARGETS_SUPPORTUV2S");
                     if (uv2) defines.push("#define MORPHTARGETS_UV2");
                 }
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);

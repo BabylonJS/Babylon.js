@@ -91,8 +91,8 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                 numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
                 if (numInfluencers > 0) {
                     defines.push("#define MORPHTARGETS");
+                    if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
                     if (manager.supportsPositions) {
-                        defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
                         defines.push("#define MORPHTARGETS_POSITION");
                     }
                     defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);

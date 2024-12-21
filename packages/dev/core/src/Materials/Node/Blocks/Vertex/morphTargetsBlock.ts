@@ -267,56 +267,48 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 injectionCode += `#ifdef MORPHTARGETS_POSITION\n`;
                 injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
-                injectionCode += `#if defined(MORPHTARGETS_SUPPORTPOSITIONS) || defined(MORPHTARGETS_POSITION)\n`;
-                injectionCode += `vertexID += 1.0;\n`;
-                injectionCode += `#endif\n`;
             }
+            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASPOSITIONS) || defined(MORPHTARGETS_POSITION)\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
             if (supportNormals) {
-                if (defines["NORMAL"]) {
-                    injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
-                    injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
-                    injectionCode += `#endif\n`;
-                }
-                injectionCode += `#if defined(MORPHTARGETS_SUPPORTNORMALS) || defined(MORPHTARGETS_NORMAL)\n`;
-                injectionCode += `vertexID += 1.0;\n`;
+                injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
+                injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASNORMALS) || defined(MORPHTARGETS_NORMAL)\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
             if (supportUVs) {
-                if (defines["UV1"]) {
-                    injectionCode += `#ifdef MORPHTARGETS_UV\n`;
-                    injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
-                    injectionCode += `#endif\n`;
-                }
-                injectionCode += `#if defined(MORPHTARGETS_SUPPORTUVS) || defined(MORPHTARGETS_UV)\n`;
-                injectionCode += `vertexID += 1.0;\n`;
+                injectionCode += `#ifdef MORPHTARGETS_UV\n`;
+                injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASUVS) || defined(MORPHTARGETS_UV)\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
             if (supportTangents) {
-                if (defines["TANGENT"]) {
-                    injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
-                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(i, vertexID) - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
+                injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
+                injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(i, vertexID) - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
 
-                    if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                        injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\n`;
-                    } else {
-                        injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\n`;
-                    }
-                    injectionCode += `#endif\n`;
+                if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\n`;
+                } else {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\n`;
                 }
-                injectionCode += `#if defined(MORPHTARGETS_SUPPORTTANGENTS) || defined(MORPHTARGETS_TANGENT)\n`;
-                injectionCode += `vertexID += 1.0;\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#if defined(MORPHTARGETTEXTURE_HASTANGENTS) || defined(MORPHTARGETS_TANGENT)\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
             if (supportUV2s) {
-                if (defines["UV2"]) {
-                    injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
-                    injectionCode += `${uv2Output.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv2.associatedVariableName}) * morphTargetInfluences[i];\n`;
-                    injectionCode += `#endif\n`;
-                }
+                injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
+                injectionCode += `${uv2Output.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv2.associatedVariableName}) * morphTargetInfluences[i];\n`;
+                injectionCode += `#endif\n`;
             }
 
             injectionCode += "}\n";

@@ -11,14 +11,14 @@
 			#ifdef MORPHTARGETS_POSITION
 				positionUpdated = positionUpdated + (readVector3FromRawSampler(i, vertexID) - vertexInputs.position) * uniforms.morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTPOSITIONS) || defined(MORPHTARGETS_POSITION)
+			#if defined(MORPHTARGETTEXTURE_HASPOSITIONS) || defined(MORPHTARGETS_POSITION)
 				vertexID = vertexID + 1.0;
 			#endif
 		
 			#ifdef MORPHTARGETS_NORMAL
 				normalUpdated = normalUpdated + (readVector3FromRawSampler(i, vertexID)  - vertexInputs.normal) * uniforms.morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTNORMALS) || defined(MORPHTARGETS_NORMAL)
+			#if defined(MORPHTARGETTEXTURE_HASNORMALS) || defined(MORPHTARGETS_NORMAL)
 				vertexID = vertexID + 1.0;
 			#endif
 
@@ -47,7 +47,7 @@
 		#endif
 		
 		#ifdef MORPHTARGETS_NORMAL
-		    normalUpdated += (vertexInputs.normal{X} - vertexInputs.normal) * uniforms.morphTargetInfluences[{X}];
+		    normalUpdated = normalUpdated + (vertexInputs.normal{X} - vertexInputs.normal) * uniforms.morphTargetInfluences[{X}];
 		#endif
 
 		#ifdef MORPHTARGETS_TANGENT

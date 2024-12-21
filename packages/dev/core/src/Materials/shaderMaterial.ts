@@ -775,24 +775,24 @@ export class ShaderMaterial extends PushMaterial {
             const tangent = defines.indexOf("#define TANGENT") !== -1;
             const normal = defines.indexOf("#define NORMAL") !== -1;
             numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
+            if (manager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+            if (manager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+            if (manager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+            if (manager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+            if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
             if (manager.supportsUVs) {
-                defines.push("#define MORPHTARGETS_SUPPORTUVS");
                 if (uv) defines.push("#define MORPHTARGETS_UV");
             }
             if (manager.supportsUV2s) {
-                defines.push("#define MORPHTARGETS_SUPPORTUV2S");
                 if (uv2) defines.push("#define MORPHTARGETS_UV2");
             }
             if (manager.supportsTangents) {
-                defines.push("#define MORPHTARGETS_SUPPORTTANGENTS");
                 if (tangent) defines.push("#define MORPHTARGETS_TANGENT");
             }
             if (manager.supportsNormals) {
-                defines.push("#define MORPHTARGETS_SUPPORTNORMALS");
                 if (normal) defines.push("#define MORPHTARGETS_NORMAL");
             }
             if (manager.supportsPositions) {
-                defines.push("#define MORPHTARGETS_SUPPORTPOSITIONS");
                 defines.push("#define MORPHTARGETS_POSITION");
             }
             if (numInfluencers > 0) {

@@ -9,28 +9,28 @@
 			#ifdef MORPHTARGETS_POSITION
 				positionUpdated += (readVector3FromRawSampler(i, vertexID) - position) * morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTPOSITIONS) || defined(MORPHTARGETS_POSITION)
+			#if defined(MORPHTARGETTEXTURE_HASPOSITIONS) || defined(MORPHTARGETS_POSITION)
 				vertexID += 1.0;
 			#endif
 		
 			#ifdef MORPHTARGETS_NORMAL
 				normalUpdated += (readVector3FromRawSampler(i, vertexID)  - normal) * morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTNORMALS) || defined(MORPHTARGETS_NORMAL)
+			#if defined(MORPHTARGETTEXTURE_HASNORMALS) || defined(MORPHTARGETS_NORMAL)
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_UV
 				uvUpdated += (readVector3FromRawSampler(i, vertexID).xy - uv) * morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTUVS) || defined(MORPHTARGETS_UV)
+			#if defined(MORPHTARGETTEXTURE_HASUVS) || defined(MORPHTARGETS_UV)
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
 				tangentUpdated.xyz += (readVector3FromRawSampler(i, vertexID)  - tangent.xyz) * morphTargetInfluences[i];
 			#endif
-			#if defined(MORPHTARGETS_SUPPORTTANGENTS) || defined(MORPHTARGETS_TANGENT)
+			#if defined(MORPHTARGETTEXTURE_HASTANGENTS) || defined(MORPHTARGETS_TANGENT)
 				vertexID += 1.0;
 			#endif
 
