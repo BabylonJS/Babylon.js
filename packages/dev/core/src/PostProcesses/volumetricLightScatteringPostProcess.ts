@@ -215,19 +215,20 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Alpha test
         if (material) {
-            if (material.needAlphaTesting()) {
+            const needAlphaTesting = material.needAlphaTesting();
+            if (needAlphaTesting) {
                 defines.push("#define ALPHATEST");
             }
 
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
                 defines.push("#define UV1");
-                uv1 = true;
+                uv1 = needAlphaTesting;
             }
             if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                 attribs.push(VertexBuffer.UV2Kind);
                 defines.push("#define UV2");
-                uv2 = true;
+                uv2 = needAlphaTesting;
             }
         }
 
