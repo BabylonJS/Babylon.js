@@ -670,14 +670,22 @@ export const RequestFile = (
                     }
 
                     if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!IsWindowObjectExist() || IsFileURL()))) {
-                        try {
-                            if (onSuccess) {
-                                onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                        // It's possible for the request to have a success status code but null response if the underlying
+                        // underlying HTTP connection was closed prematurely. See _onHttpResponseClose in xhr2.js. In this
+                        // case we will throw an exception if we call the onSuccess handler because "data" will be null
+                        // and that then bypasses the retry strategy.
+                        const data = useArrayBuffer ? request.response : request.responseText;
+                        if (data !== null) {
+                            try {
+                                if (onSuccess) {
+                                    onSuccess(data, request);
+                                }
                             }
-                        } catch (e) {
-                            handleError(e);
+                            catch (e) {
+                                handleError(e);
+                            }
+                            return;
                         }
-                        return;
                     }
 
                     const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
