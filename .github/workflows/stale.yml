@@ -1,4 +1,4 @@
-name: Flag Stale Issues/PRs
+name: Masbate/PR
 
 on:
   schedule:
