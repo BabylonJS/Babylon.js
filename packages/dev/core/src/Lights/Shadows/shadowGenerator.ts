@@ -1329,7 +1329,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 // Morph targets
                 BindMorphTargetParameters(renderingMesh, effect);
-
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
