@@ -1231,9 +1231,9 @@ export class ShaderMaterial extends PushMaterial {
 
         if (effect && mesh && (mustRebind || !this.isFrozen)) {
             // Morph targets
-            const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager && manager.numInfluencers > 0) {
-                BindMorphTargetParameters(<Mesh>mesh, effect);
+            BindMorphTargetParameters(mesh, effect);
+            if (mesh.morphTargetManager && mesh.morphTargetManager.isUsingTextureForTargets) {
+                mesh.morphTargetManager._bind(effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;

@@ -204,9 +204,9 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         BindBonesParameters(mesh, effect);
 
         // Morph targets
-        const manager = (<Mesh>mesh).morphTargetManager;
-        if (manager && manager.numInfluencers > 0) {
-            BindMorphTargetParameters(<Mesh>mesh, effect);
+        BindMorphTargetParameters(mesh, effect);
+        if (mesh.morphTargetManager && mesh.morphTargetManager.isUsingTextureForTargets) {
+            mesh.morphTargetManager._bind(effect);
         }
 
         // BVA
