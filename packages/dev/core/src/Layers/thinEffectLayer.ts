@@ -53,7 +53,7 @@ export interface IThinEffectLayerOptions {
  * The effect layer class can not be used directly and is intented to inherited from to be
  * customized per effects.
  */
-export abstract class ThinEffectLayer {
+export class ThinEffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _mergeDrawWrapper: DrawWrapper[];
@@ -62,12 +62,16 @@ export abstract class ThinEffectLayer {
     protected _scene: Scene;
     protected _engine: AbstractEngine;
     protected _options: Required<IThinEffectLayerOptions>;
-    protected _objectRenderer: ObjectRenderer;
-    protected _shouldRender = true;
-    protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
-    protected _effectIntensity: { [meshUniqueId: number]: number } = {};
-
-    public postProcesses: EffectWrapper[] = [];
+    /** @internal */
+    public _objectRenderer: ObjectRenderer;
+    /** @internal */
+    public _shouldRender = true;
+    /** @internal */
+    public _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
+    /** @internal */
+    public _effectIntensity: { [meshUniqueId: number]: number } = {};
+    /** @internal */
+    public _postProcesses: EffectWrapper[] = [];
 
     /**
      * Force all the effect layers to compile to glsl even on WebGPU engines.
@@ -79,6 +83,11 @@ export abstract class ThinEffectLayer {
      * The name of the layer
      */
     public name: string;
+
+    /**
+     * The clear color of the texture used to generate the glow map.
+     */
+    public neutralColor: Color4 = new Color4();
 
     /**
      * Specifies whether the effect layer is enabled or not.
@@ -208,9 +217,16 @@ export abstract class ThinEffectLayer {
      * @param name The name of the layer
      * @param scene The scene to use the layer in
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
-     * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to false and you should call `isReady` manually before rendering to the layer.
+     * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to true and you should call `isReady` manually before rendering to the layer.
+     * @param _additionalImportShadersAsync Additional shaders to import when the layer is created
      */
-    constructor(name: string, scene?: Scene, forceGLSL = false, dontCheckIfReady = false) {
+    constructor(
+        name: string,
+        scene?: Scene,
+        forceGLSL = false,
+        dontCheckIfReady = false,
+        private _additionalImportShadersAsync?: () => Promise<void>
+    ) {
         this.name = name;
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         this._dontCheckIfReady = dontCheckIfReady;
@@ -230,59 +246,48 @@ export abstract class ThinEffectLayer {
         this._generateVertexBuffer();
     }
 
-    protected _shadersLoaded = false;
+    /** @internal */
+    public _shadersLoaded = false;
 
     /**
      * Get the effect name of the layer.
      * @returns The effect name
      */
-    public abstract getEffectName(): string;
-
-    /**
-     * Checks for the readiness of the element composing the layer.
-     * @param subMesh the mesh to check for
-     * @param useInstances specify whether or not to use instances to render the mesh
-     * @returns true if ready otherwise, false
-     */
-    public abstract isSubMeshReady(subMesh: SubMesh, useInstances: boolean): boolean;
-
-    /**
-     * Create the merge effect. This is the shader use to blit the information back
-     * to the main canvas at the end of the scene rendering.
-     * @returns The effect containing the shader used to merge the effect on the  main canvas
-     */
-    protected abstract _createMergeEffect(): Effect;
-
-    /**
-     * Creates the render target textures and post processes used in the effect layer.
-     */
-    protected abstract _createTextureAndPostProcesses(): void;
-
-    /**
-     * Implementation specific of rendering the generating effect on the main canvas.
-     * @param effect The effect used to render through
-     * @param renderNum Index of the _internalRender call (0 for the first time _internalRender is called, 1 for the second time, etc. _internalRender is called the number of times returned by _numInternalDraws())
-     */
-    protected abstract _internalCompose(effect: Effect, renderIndex: number): void;
-
-    /**
-     * Sets the required values for both the emissive texture and and the main color.
-     */
-    protected abstract _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-
-    /**
-     * Number of times _internalRender will be called. Some effect layers need to render the mesh several times, so they should override this method with the number of times the mesh should be rendered
-     * @returns Number of times a mesh must be rendered in the layer
-     */
-    protected _numInternalDraws(): number {
-        return 1;
+    public getEffectName(): string {
+        return "";
     }
 
     /**
-     * Initializes the effect layer with the required options.
-     * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
+     * Checks for the readiness of the element composing the layer.
+     * @param _subMesh the mesh to check for
+     * @param _useInstances specify whether or not to use instances to render the mesh
+     * @returns true if ready otherwise, false
      */
-    protected _init(options: IThinEffectLayerOptions): void {
+    public isReady(_subMesh: SubMesh, _useInstances: boolean): boolean {
+        return true;
+    }
+
+    /** @internal */
+    public _createMergeEffect(): Effect {
+        throw new Error("Effect Layer: no merge effect defined");
+    }
+
+    /** @internal */
+    public _createTextureAndPostProcesses(): void {}
+
+    /** @internal */
+    public _internalCompose(_effect: Effect, _renderIndex: number): void {}
+
+    /** @internal */
+    public _setEmissiveTextureAndColor(_mesh: Mesh, _subMesh: SubMesh, _material: Material): void {}
+
+    /** @internal */
+    public _numInternalDraws(): number {
+        return 1;
+    }
+
+    /** @internal */
+    public _init(options: IThinEffectLayerOptions): void {
         // Adapt options
         this._options = {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
@@ -292,12 +297,8 @@ export abstract class ThinEffectLayer {
         };
 
         this._createObjectRenderer();
-        this._createTextureAndPostProcesses();
     }
 
-    /**
-     * Generates the index buffer of the full screen quad blending to the main canvas.
-     */
     private _generateIndexBuffer(): void {
         // Indices
         const indices = [];
@@ -312,9 +313,6 @@ export abstract class ThinEffectLayer {
         this._indexBuffer = this._engine.createIndexBuffer(indices);
     }
 
-    /**
-     * Generates the vertex buffer of the full screen quad blending to the main canvas.
-     */
     private _generateVertexBuffer(): void {
         // VBO
         const vertices = [];
@@ -327,9 +325,6 @@ export abstract class ThinEffectLayer {
         this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
     }
 
-    /**
-     * Creates the main texture for the effect layer.
-     */
     protected _createObjectRenderer(): void {
         this._objectRenderer = new ObjectRenderer(`ObjectRenderer for effect layer ${this.name}`, this._scene, {
             doNotChangeAspectRatio: true,
@@ -341,6 +336,21 @@ export abstract class ThinEffectLayer {
         for (const id in this._materialForRendering) {
             const [mesh, material] = this._materialForRendering[id];
             this._objectRenderer.setMaterialForRendering(mesh, material);
+        }
+
+        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
+        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
+
+        let boundingBoxRendererEnabled = false;
+        if (hasBoundingBoxRenderer) {
+            this._objectRenderer.onBeforeRenderObservable.add(() => {
+                boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
+                this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
+            });
+
+            this._objectRenderer.onAfterRenderObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+            });
         }
 
         this._objectRenderer.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
@@ -415,51 +425,11 @@ export abstract class ThinEffectLayer {
         };
     }
 
-    public renderLayer(viewportWidth: number, viewportHeight: number): void {
-        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
+    /** @internal */
+    public _addCustomEffectDefines(_defines: string[]): void {}
 
-        let boundingBoxRendererEnabled = false;
-
-        this._scene.incrementRenderId();
-        this._scene.resetCachedMaterial();
-
-        this._objectRenderer.prepareRenderList();
-
-        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        if (hasBoundingBoxRenderer) {
-            boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
-
-            this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
-        }
-
-        this._objectRenderer.initRender(viewportWidth, viewportHeight);
-
-        this._objectRenderer.render();
-
-        if (hasBoundingBoxRenderer) {
-            this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
-        }
-
-        this._objectRenderer.finishRender();
-    }
-
-    /**
-     * Adds specific effects defines.
-     * @param defines The defines to add specifics to.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _addCustomEffectDefines(defines: string[]): void {
-        // Nothing to add by default.
-    }
-
-    /**
-     * Checks for the readiness of the element composing the layer.
-     * @param subMesh the mesh to check for
-     * @param useInstances specify whether or not to use instances to render the mesh
-     * @param emissiveTexture the associated emissive texture used to generate the glow
-     * @returns true if ready otherwise, false
-     */
-    protected _isSubMeshReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
+    /** @internal */
+    public _internalIsSubMeshReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
 
@@ -660,7 +630,12 @@ export abstract class ThinEffectLayer {
 
         const effectIsReady = drawWrapper.effect!.isReady();
 
-        return effectIsReady && (this._dontCheckIfReady || (!this._dontCheckIfReady && this.isReady()));
+        return effectIsReady && (this._dontCheckIfReady || (!this._dontCheckIfReady && this.isLayerReady()));
+    }
+
+    /** @internal */
+    public _isSubMeshReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
+        return this._internalIsSubMeshReady(subMesh, useInstances, emissiveTexture);
     }
 
     protected async _importShadersAsync(): Promise<void> {
@@ -669,13 +644,15 @@ export abstract class ThinEffectLayer {
         } else {
             await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
         }
+        this._additionalImportShadersAsync?.();
     }
 
-    public isReady(): boolean {
+    /** @internal */
+    public _internalIsLayerReady(): boolean {
         let isReady = true;
 
-        for (let i = 0; i < this.postProcesses.length; i++) {
-            isReady = this.postProcesses[i].isReady() && isReady;
+        for (let i = 0; i < this._postProcesses.length; i++) {
+            isReady = this._postProcesses[i].isReady() && isReady;
         }
 
         const numDraws = this._numInternalDraws();
@@ -693,11 +670,20 @@ export abstract class ThinEffectLayer {
     }
 
     /**
-     * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+     * Checks if the layer is ready to be used.
+     * @returns true if the layer is ready to be used
      */
-    public compose(): void {
-        if (!this._dontCheckIfReady && !this.isReady()) {
-            return;
+    public isLayerReady(): boolean {
+        return this._internalIsLayerReady();
+    }
+
+    /**
+     * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+     * @returns true if the rendering was successful
+     */
+    public compose(): boolean {
+        if (!this._dontCheckIfReady && !this.isLayerReady()) {
+            return false;
         }
 
         const engine = this._scene.getEngine();
@@ -728,6 +714,16 @@ export abstract class ThinEffectLayer {
         engine.setAlphaMode(previousAlphaMode);
 
         this.onAfterComposeObservable.notifyObservers(this);
+
+        return true;
+    }
+
+    /** @internal */
+    public _internalHasMesh(mesh: AbstractMesh): boolean {
+        if (this.renderingGroupId === -1 || mesh.renderingGroupId === this.renderingGroupId) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -736,10 +732,12 @@ export abstract class ThinEffectLayer {
      * @returns true if the mesh will be used
      */
     public hasMesh(mesh: AbstractMesh): boolean {
-        if (this.renderingGroupId === -1 || mesh.renderingGroupId === this.renderingGroupId) {
-            return true;
-        }
-        return false;
+        return this._internalHasMesh(mesh);
+    }
+
+    /** @internal */
+    public _internalShouldRender(): boolean {
+        return this.isEnabled && this._shouldRender;
     }
 
     /**
@@ -747,44 +745,26 @@ export abstract class ThinEffectLayer {
      * @returns true if the glow layer should be rendered
      */
     public shouldRender(): boolean {
-        return this.isEnabled && this._shouldRender;
+        return this._internalShouldRender();
     }
 
-    /**
-     * Returns true if the mesh should render, otherwise false.
-     * @param mesh The mesh to render
-     * @returns true if it should render otherwise false
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
+    /** @internal */
+    public _shouldRenderMesh(_mesh: AbstractMesh): boolean {
         return true;
     }
 
-    /**
-     * Returns true if the mesh can be rendered, otherwise false.
-     * @param mesh The mesh to render
-     * @param material The material used on the mesh
-     * @returns true if it can be rendered otherwise false
-     */
-    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+    /** @internal */
+    public _internalCanRenderMesh(mesh: AbstractMesh, material: Material): boolean {
         return !material.needAlphaBlendingForMesh(mesh);
     }
 
-    /**
-     * Returns true if the mesh should render, otherwise false.
-     * @returns true if it should render otherwise false
-     */
-    protected _shouldRenderEmissiveTextureForMesh(): boolean {
-        return true;
+    /** @internal */
+    public _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+        return this._internalCanRenderMesh(mesh, material);
     }
 
-    /**
-     * Renders the submesh passed in parameter to the generation map.
-     * @param subMesh
-     * @param enableAlphaMode
-     */
     protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
-        if (!this.shouldRender()) {
+        if (!this._internalShouldRender()) {
             return;
         }
 
@@ -948,20 +928,12 @@ export abstract class ThinEffectLayer {
         this.onAfterRenderMeshToEffect.notifyObservers(ownerMesh);
     }
 
-    /**
-     * Defines whether the current material of the mesh should be use to render the effect.
-     * @param mesh defines the current mesh to render
-     * @returns true if the mesh material should be use
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+    /** @internal */
+    public _useMeshMaterial(_mesh: AbstractMesh): boolean {
         return false;
     }
 
-    /**
-     * Rebuild the required buffers.
-     * @internal Internal use only.
-     */
+    /** @internal */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 

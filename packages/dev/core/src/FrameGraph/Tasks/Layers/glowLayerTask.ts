@@ -110,8 +110,8 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
         this.glowLayer = new ThinGlowLayer(name, scene, options, true);
 
         for (let i = 0; i < 2; i++) {
-            this._blurX.push(new FrameGraphBlurTask(`${name} Blur X${i}`, this._frameGraph, this.glowLayer.postProcesses[i * 2 + 0] as ThinBlurPostProcess));
-            this._blurY.push(new FrameGraphBlurTask(`${name} Blur Y${i}`, this._frameGraph, this.glowLayer.postProcesses[i * 2 + 1] as ThinBlurPostProcess));
+            this._blurX.push(new FrameGraphBlurTask(`${name} Blur X${i}`, this._frameGraph, this.glowLayer._postProcesses[i * 2 + 0] as ThinBlurPostProcess));
+            this._blurY.push(new FrameGraphBlurTask(`${name} Blur Y${i}`, this._frameGraph, this.glowLayer._postProcesses[i * 2 + 1] as ThinBlurPostProcess));
         }
 
         this._clearTask = new FrameGraphClearTextureTask(name + " Clear Layer", frameGraph);
@@ -125,7 +125,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
     }
 
     public override isReady() {
-        return this._objectRendererTask.isReady() && this.glowLayer.isReady();
+        return this._objectRendererTask.isReady() && this.glowLayer.isLayerReady();
     }
 
     public record() {

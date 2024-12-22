@@ -304,11 +304,7 @@ export class HighlightLayer extends EffectLayer {
      * @param scene The scene to use the layer in
      * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
      */
-    constructor(
-        public override name: string,
-        scene?: Scene,
-        options?: Partial<IHighlightLayerOptions>
-    ) {
+    constructor(name: string, scene?: Scene, options?: Partial<IHighlightLayerOptions>) {
         super(name, scene, options !== undefined ? !!options.forceGLSL : false);
 
         this.neutralColor = HighlightLayer.NeutralColor;

@@ -52,9 +52,11 @@ export class ThinGlowLayer extends ThinEffectLayer {
     public static DefaultBlurKernelSize = 32;
 
     /**
-     * The clear color of the texture used to generate the glow map.
+     * Gets the ldrMerge option.
      */
-    public neutralColor: Color4 = new Color4();
+    public get ldrMerge(): boolean {
+        return this._options.ldrMerge;
+    }
 
     /**
      * Sets the kernel size of the blur.
@@ -71,13 +73,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         this._verticalBlurPostprocess1.kernel = effectiveKernel;
         this._horizontalBlurPostprocess2.kernel = effectiveKernel;
         this._verticalBlurPostprocess2.kernel = effectiveKernel;
-    }
-
-    /**
-     * Gets the ldrMerge option.
-     */
-    public get ldrMerge(): boolean {
-        return this._options.ldrMerge;
     }
 
     /**
@@ -109,8 +104,10 @@ export class ThinGlowLayer extends ThinEffectLayer {
     private _horizontalBlurPostprocess2: ThinBlurPostProcess;
     private _verticalBlurPostprocess2: ThinBlurPostProcess;
 
-    private _includedOnlyMeshes: number[] = [];
-    private _excludedMeshes: number[] = [];
+    /** @internal */
+    public _includedOnlyMeshes: number[] = [];
+    /** @internal */
+    public _excludedMeshes: number[] = [];
     private _meshesUsingTheirOwnMaterials: number[] = [];
 
     /**
@@ -130,7 +127,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * @param name The name of the layer
      * @param scene The scene to use the layer in
      * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
-     * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to false and you should call `isReady` manually before rendering to the layer.
+     * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to true and you should call `isReady` manually before rendering to the layer.
      */
     constructor(name: string, scene?: Scene, options?: IThinGlowLayerOptions, dontCheckIfReady = false) {
         super(name, scene, false, dontCheckIfReady);
@@ -148,6 +145,10 @@ export class ThinGlowLayer extends ThinEffectLayer {
 
         // Initialize the layer
         this._init(this._options);
+
+        if (dontCheckIfReady) {
+            this._createTextureAndPostProcesses();
+        }
     }
 
     protected override async _importShadersAsync() {
@@ -168,7 +169,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * Get the effect name of the layer.
      * @returns The effect name
      */
-    public getEffectName(): string {
+    public override getEffectName(): string {
         return ThinGlowLayer.EffectName;
     }
 
@@ -177,7 +178,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
      */
-    protected _createMergeEffect(): Effect {
+    public override _createMergeEffect(): Effect {
         let defines = "#define EMISSIVE \n";
         if (this._options.ldrMerge) {
             defines += "#define LDR \n";
@@ -204,10 +205,8 @@ export class ThinGlowLayer extends ThinEffectLayer {
         );
     }
 
-    /**
-     * Creates the render target textures and post processes used in the glow layer.
-     */
-    protected _createTextureAndPostProcesses(): void {
+    /** @internal */
+    public override _createTextureAndPostProcesses(): void {
         const effectiveKernel = this._getEffectiveBlurKernelSize();
         this._horizontalBlurPostprocess1 = new ThinBlurPostProcess("GlowLayerHBP1", this._scene.getEngine(), new Vector2(1.0, 0), effectiveKernel);
         this._verticalBlurPostprocess1 = new ThinBlurPostProcess("GlowLayerVBP1", this._scene.getEngine(), new Vector2(0, 1.0), effectiveKernel);
@@ -215,13 +214,9 @@ export class ThinGlowLayer extends ThinEffectLayer {
         this._horizontalBlurPostprocess2 = new ThinBlurPostProcess("GlowLayerHBP2", this._scene.getEngine(), new Vector2(1.0, 0), effectiveKernel);
         this._verticalBlurPostprocess2 = new ThinBlurPostProcess("GlowLayerVBP2", this._scene.getEngine(), new Vector2(0, 1.0), effectiveKernel);
 
-        this.postProcesses = [this._horizontalBlurPostprocess1, this._verticalBlurPostprocess1, this._horizontalBlurPostprocess2, this._verticalBlurPostprocess2];
+        this._postProcesses = [this._horizontalBlurPostprocess1, this._verticalBlurPostprocess1, this._horizontalBlurPostprocess2, this._verticalBlurPostprocess2];
     }
 
-    /**
-     * @returns The blur kernel size used by the glow.
-     * Note: The value passed in the options is divided by 2 for back compatibility.
-     */
     private _getEffectiveBlurKernelSize() {
         return this._options.blurKernelSize / 2;
     }
@@ -232,7 +227,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * @param useInstances specify whether or not to use instances to render the mesh
      * @returns true if ready otherwise, false
      */
-    public isSubMeshReady(subMesh: SubMesh, useInstances: boolean): boolean {
+    public override isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();
         const mesh = subMesh.getRenderingMesh();
 
@@ -251,23 +246,21 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return false;
     }
 
-    /**
-     * Returns true if the mesh can be rendered, otherwise false.
-     * @param mesh The mesh to render
-     * @param material The material used on the mesh
-     * @returns true if it can be rendered otherwise false
-     */
-    protected override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+    /** @internal */
+    public override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
         return true;
     }
 
+    /**
+     * Binds the textures for the compose pass.
+     */
     public bindTexturesForCompose: (effect: Effect) => void;
 
     /**
      * Implementation specific of rendering the generating effect on the main canvas.
      * @param effect The effect used to render through
      */
-    protected _internalCompose(effect: Effect): void {
+    public override _internalCompose(effect: Effect): void {
         // Texture
         this.bindTexturesForCompose(effect);
         effect.setFloat("offset", this._intensity);
@@ -285,13 +278,8 @@ export class ThinGlowLayer extends ThinEffectLayer {
         engine.setStencilBuffer(previousStencilBuffer);
     }
 
-    /**
-     * Sets the required values for both the emissive texture and and the main color.
-     * @param mesh
-     * @param subMesh
-     * @param material
-     */
-    protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
+    /** @internal */
+    public override _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
         let textureLevel = 1.0;
 
         if (this.customEmissiveTextureSelector) {
@@ -325,20 +313,13 @@ export class ThinGlowLayer extends ThinEffectLayer {
         }
     }
 
-    /**
-     * Returns true if the mesh should render, otherwise false.
-     * @param mesh The mesh to render
-     * @returns true if it should render otherwise false
-     */
-    protected override _shouldRenderMesh(mesh: Mesh): boolean {
+    /** @internal */
+    public override _shouldRenderMesh(mesh: Mesh): boolean {
         return this.hasMesh(mesh);
     }
 
-    /**
-     * Adds specific effects defines.
-     * @param defines The defines to add specifics to.
-     */
-    protected override _addCustomEffectDefines(defines: string[]): void {
+    /** @internal */
+    public override _addCustomEffectDefines(defines: string[]): void {
         defines.push("#define GLOW");
     }
 
@@ -407,12 +388,8 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return true;
     }
 
-    /**
-     * Defines whether the current material of the mesh should be use to render the effect.
-     * @param mesh defines the current mesh to render
-     * @returns true if the material of the mesh should be use to render the effect
-     */
-    protected override _useMeshMaterial(mesh: AbstractMesh): boolean {
+    /** @internal */
+    public override _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
@@ -447,12 +424,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
         mesh.resetDrawCache(renderPassId);
     }
 
-    /**
-     * Free any resources and references associated to a mesh.
-     * Internal use
-     * @param mesh The mesh to free.
-     * @internal
-     */
+    /** @internal */
     public _disposeMesh(mesh: Mesh): void {
         this.removeIncludedOnlyMesh(mesh);
         this.removeExcludedMesh(mesh);
