@@ -19,7 +19,6 @@ import type { Effect } from "../Materials/effect";
 import type { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
-import { _WarnImport } from "../Misc/devTools";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinEffectLayer } from "./thinEffectLayer";
@@ -238,12 +237,6 @@ export abstract class EffectLayer {
     }
 
     /**
-     * @internal
-     */
-    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _WarnImport("EffectLayerSceneComponent");
-    };
-    /**
      * Sets a specific material to be used to render a mesh/a list of meshes in the layer
      * @param mesh mesh or array of meshes
      * @param material material to use by the layer when rendering the mesh(es). If undefined is passed, the specific material created by the layer will be used.
@@ -306,11 +299,9 @@ export abstract class EffectLayer {
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
-        EffectLayer._SceneComponentInitialization(this._scene);
 
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
-        this._scene.effectLayers.push(this);
 
         this._thinEffectLayer.onDisposeObservable.add(() => {
             this.onDisposeObservable.notifyObservers(this);
@@ -471,7 +462,7 @@ export abstract class EffectLayer {
                 type: this._effectLayerOptions.mainTextureType,
                 samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
                 generateStencilBuffer: this._effectLayerOptions.generateStencilBuffer,
-                existingObjectRenderer: this._thinEffectLayer._objectRenderer,
+                existingObjectRenderer: this._thinEffectLayer.objectRenderer,
             }
         );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
@@ -632,12 +623,6 @@ export abstract class EffectLayer {
 
         // Clean textures and post processes
         this._disposeTextureAndPostProcesses();
-
-        // Remove from scene
-        const index = this._scene.effectLayers.indexOf(this, 0);
-        if (index > -1) {
-            this._scene.effectLayers.splice(index, 1);
-        }
 
         // Callback
         this.onDisposeObservable.clear();

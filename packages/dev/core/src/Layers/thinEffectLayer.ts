@@ -23,6 +23,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
+import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -46,12 +47,7 @@ export interface IThinEffectLayerOptions {
 }
 
 /**
- * The effect layer Helps adding post process effect blended with the main pass.
- *
- * This can be for instance use to generate glow or highlight effects on the scene.
- *
- * The effect layer class can not be used directly and is intented to inherited from to be
- * customized per effects.
+ * @internal
  */
 export class ThinEffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
@@ -62,8 +58,7 @@ export class ThinEffectLayer {
     protected _scene: Scene;
     protected _engine: AbstractEngine;
     protected _options: Required<IThinEffectLayerOptions>;
-    /** @internal */
-    public _objectRenderer: ObjectRenderer;
+    protected _objectRenderer: ObjectRenderer;
     /** @internal */
     public _shouldRender = true;
     /** @internal */
@@ -151,13 +146,12 @@ export class ThinEffectLayer {
     public onAfterComposeObservable = new Observable<ThinEffectLayer>();
 
     /**
-     * Gets the main texture where the effect is rendered
+     * Gets the object renderer used to render objects in the layer
      */
     public get objectRenderer() {
         return this._objectRenderer;
     }
 
-    /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
     /**
@@ -166,6 +160,13 @@ export class ThinEffectLayer {
     public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
     }
+
+    /**
+     * @internal
+     */
+    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+        throw _WarnImport("EffectLayerSceneComponent");
+    };
 
     private _materialForRendering: { [id: string]: [AbstractMesh, Material] } = {};
 
@@ -213,7 +214,7 @@ export class ThinEffectLayer {
     }
 
     /**
-     * Instantiates a new effect Layer and references it in the scene.
+     * Instantiates a new effect Layer
      * @param name The name of the layer
      * @param scene The scene to use the layer in
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
@@ -230,6 +231,10 @@ export class ThinEffectLayer {
         this.name = name;
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         this._dontCheckIfReady = dontCheckIfReady;
+
+        ThinEffectLayer._SceneComponentInitialization(this._scene);
+
+        this._scene.effectLayers.push(this);
 
         const engine = this._scene.getEngine();
 
@@ -326,17 +331,12 @@ export class ThinEffectLayer {
     }
 
     protected _createObjectRenderer(): void {
-        this._objectRenderer = new ObjectRenderer(`ObjectRenderer for effect layer ${this.name}`, this._scene, {
+        this._objectRenderer = new ObjectRenderer(`ObjectRenderer for thin effect layer ${this.name}`, this._scene, {
             doNotChangeAspectRatio: true,
         });
         this._objectRenderer.activeCamera = this._options.camera;
         this._objectRenderer.renderParticles = false;
         this._objectRenderer.renderList = null;
-
-        for (const id in this._materialForRendering) {
-            const [mesh, material] = this._materialForRendering[id];
-            this._objectRenderer.setMaterialForRendering(mesh, material);
-        }
 
         // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
         const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
@@ -945,7 +945,7 @@ export class ThinEffectLayer {
     }
 
     /**
-     * Dispose the highlight layer and free resources.
+     * Dispose the effect layer and free resources.
      */
     public dispose(): void {
         const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
@@ -965,6 +965,13 @@ export class ThinEffectLayer {
         this._mergeDrawWrapper = [];
 
         this._objectRenderer.dispose();
+
+        // Remove from scene
+        this._scene.removeEffectLayer(this);
+        const index = this._scene.effectLayers.indexOf(this, 0);
+        if (index > -1) {
+            this._scene.effectLayers.splice(index, 1);
+        }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);

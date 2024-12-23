@@ -98,6 +98,7 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import type { ThinEffectLayer } from "./Layers/thinEffectLayer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -528,7 +529,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
      */
-    public effectLayers: Array<EffectLayer> = [];
+    public effectLayers: Array<EffectLayer | ThinEffectLayer> = [];
 
     /**
      * The list of sounds used in the scene.

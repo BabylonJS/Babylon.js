@@ -21,6 +21,7 @@ import type { EffectLayer } from "./Layers/effectLayer";
 import type { ReflectionProbe } from "./Probes/reflectionProbe";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import type { ThinEffectLayer } from "./Layers/thinEffectLayer";
 /**
  * Interface defining container for the different elements composing a scene.
  * This class is dynamically extended by the different components of the scene increasing
@@ -137,7 +138,7 @@ export interface IAssetContainer {
     /**
      * The list of effect layers added to the scene
      */
-    effectLayers: EffectLayer[];
+    effectLayers: (EffectLayer | ThinEffectLayer)[];
 
     /**
      * The list of layers added to the scene
