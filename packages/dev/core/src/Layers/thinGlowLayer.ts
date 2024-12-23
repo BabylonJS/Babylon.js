@@ -34,11 +34,7 @@ export interface IThinGlowLayerOptions extends IThinEffectLayerOptions {
 }
 
 /**
- * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
- *
- * Once instantiated in a scene, by default, all the emissive meshes will glow.
- *
- * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
+ * @internal
  */
 export class ThinGlowLayer extends ThinEffectLayer {
     /**
@@ -147,8 +143,17 @@ export class ThinGlowLayer extends ThinEffectLayer {
         this._init(this._options);
 
         if (dontCheckIfReady) {
+            // When dontCheckIfReady is true, we are in the new ThinXXX layer mode, so we must call _createTextureAndPostProcesses ourselves (it is called by EffectLayer otherwise)
             this._createTextureAndPostProcesses();
         }
+    }
+
+    /**
+     * Gets the class name of the thin glow layer
+     * @returns the string with the class name of the glow layer
+     */
+    public getClassName(): string {
+        return "GlowLayer";
     }
 
     protected override async _importShadersAsync() {
@@ -165,19 +170,10 @@ export class ThinGlowLayer extends ThinEffectLayer {
         await super._importShadersAsync();
     }
 
-    /**
-     * Get the effect name of the layer.
-     * @returns The effect name
-     */
     public override getEffectName(): string {
         return ThinGlowLayer.EffectName;
     }
 
-    /**
-     * @internal
-     * Create the merge effect. This is the shader use to blit the information back
-     * to the main canvas at the end of the scene rendering.
-     */
     public override _createMergeEffect(): Effect {
         let defines = "#define EMISSIVE \n";
         if (this._options.ldrMerge) {
@@ -205,7 +201,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         );
     }
 
-    /** @internal */
     public override _createTextureAndPostProcesses(): void {
         const effectiveKernel = this._getEffectiveBlurKernelSize();
         this._horizontalBlurPostprocess1 = new ThinBlurPostProcess("GlowLayerHBP1", this._scene.getEngine(), new Vector2(1.0, 0), effectiveKernel);
@@ -221,12 +216,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return this._options.blurKernelSize / 2;
     }
 
-    /**
-     * Checks for the readiness of the element composing the layer.
-     * @param subMesh the mesh to check for
-     * @param useInstances specify whether or not to use instances to render the mesh
-     * @returns true if ready otherwise, false
-     */
     public override isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();
         const mesh = subMesh.getRenderingMesh();
@@ -239,14 +228,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return super._isSubMeshReady(subMesh, useInstances, emissiveTexture);
     }
 
-    /**
-     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
-     */
-    public needStencil(): boolean {
-        return false;
-    }
-
-    /** @internal */
     public override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
         return true;
     }
@@ -256,10 +237,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
      */
     public bindTexturesForCompose: (effect: Effect) => void;
 
-    /**
-     * Implementation specific of rendering the generating effect on the main canvas.
-     * @param effect The effect used to render through
-     */
     public override _internalCompose(effect: Effect): void {
         // Texture
         this.bindTexturesForCompose(effect);
@@ -278,7 +255,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         engine.setStencilBuffer(previousStencilBuffer);
     }
 
-    /** @internal */
     public override _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
         let textureLevel = 1.0;
 
@@ -313,12 +289,10 @@ export class ThinGlowLayer extends ThinEffectLayer {
         }
     }
 
-    /** @internal */
     public override _shouldRenderMesh(mesh: Mesh): boolean {
         return this.hasMesh(mesh);
     }
 
-    /** @internal */
     public override _addCustomEffectDefines(defines: string[]): void {
         defines.push("#define GLOW");
     }
@@ -365,11 +339,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         }
     }
 
-    /**
-     * Determine if a given mesh will be used in the glow layer
-     * @param mesh The mesh to test
-     * @returns true if the mesh will be highlighted by the current glow layer
-     */
     public override hasMesh(mesh: AbstractMesh): boolean {
         if (!super.hasMesh(mesh)) {
             return false;
@@ -388,7 +357,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return true;
     }
 
-    /** @internal */
     public override _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;

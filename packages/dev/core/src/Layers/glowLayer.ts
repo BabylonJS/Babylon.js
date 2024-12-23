@@ -369,7 +369,7 @@ export class GlowLayer extends EffectLayer {
      * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
-        return this._thinGlowLayer.needStencil();
+        return false;
     }
 
     /**
