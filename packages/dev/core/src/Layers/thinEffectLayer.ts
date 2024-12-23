@@ -23,7 +23,6 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
-import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -161,13 +160,6 @@ export class ThinEffectLayer {
         return this._shaderLanguage;
     }
 
-    /**
-     * @internal
-     */
-    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _WarnImport("EffectLayerSceneComponent");
-    };
-
     private _materialForRendering: { [id: string]: [AbstractMesh, Material] } = {};
 
     /**
@@ -231,10 +223,6 @@ export class ThinEffectLayer {
         this.name = name;
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         this._dontCheckIfReady = dontCheckIfReady;
-
-        ThinEffectLayer._SceneComponentInitialization(this._scene);
-
-        this._scene.effectLayers.push(this);
 
         const engine = this._scene.getEngine();
 
@@ -965,13 +953,6 @@ export class ThinEffectLayer {
         this._mergeDrawWrapper = [];
 
         this._objectRenderer.dispose();
-
-        // Remove from scene
-        this._scene.removeEffectLayer(this);
-        const index = this._scene.effectLayers.indexOf(this, 0);
-        if (index > -1) {
-            this._scene.effectLayers.splice(index, 1);
-        }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);

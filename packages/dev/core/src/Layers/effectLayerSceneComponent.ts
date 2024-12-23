@@ -10,7 +10,6 @@ import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import type { IAssetContainer } from "core/IAssetContainer";
-import { ThinEffectLayer } from "./thinEffectLayer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -33,17 +32,17 @@ declare module "../scene" {
          * @param toRemove defines the effect layer to remove
          * @returns the index of the removed effect layer
          */
-        removeEffectLayer(toRemove: EffectLayer | ThinEffectLayer): number;
+        removeEffectLayer(toRemove: EffectLayer): number;
 
         /**
          * Adds the given effect layer to this scene
          * @param newEffectLayer defines the effect layer to add
          */
-        addEffectLayer(newEffectLayer: EffectLayer | ThinEffectLayer): void;
+        addEffectLayer(newEffectLayer: EffectLayer): void;
     }
 }
 
-Scene.prototype.removeEffectLayer = function (toRemove: EffectLayer | ThinEffectLayer): number {
+Scene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
     const index = this.effectLayers.indexOf(toRemove);
     if (index !== -1) {
         this.effectLayers.splice(index, 1);
@@ -52,7 +51,7 @@ Scene.prototype.removeEffectLayer = function (toRemove: EffectLayer | ThinEffect
     return index;
 };
 
-Scene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer | ThinEffectLayer): void {
+Scene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
     this.effectLayers.push(newEffectLayer);
 };
 
@@ -75,10 +74,6 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     private _renderEffects = false;
     private _needStencil = false;
     private _previousStencilState = false;
-
-    private static _IsEffectLayer(layer: EffectLayer | ThinEffectLayer): layer is EffectLayer {
-        return (layer as EffectLayer).mainTexture !== undefined;
-    }
 
     /**
      * Creates a new instance of the component for the given scene
@@ -129,7 +124,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
 
         const layers = this.scene.effectLayers;
         for (const effectLayer of layers) {
-            if (EffectLayerSceneComponent._IsEffectLayer(effectLayer) && effectLayer.serialize) {
+            if (effectLayer.serialize) {
                 serializationObject.effectLayers.push(effectLayer.serialize());
             }
         }
@@ -179,11 +174,11 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         const currentRenderPassId = this._engine.currentRenderPassId;
         const layers = this.scene.effectLayers;
         for (const layer of layers) {
-            if (!EffectLayerSceneComponent._IsEffectLayer(layer) || !layer.hasMesh(mesh)) {
+            if (!layer.hasMesh(mesh)) {
                 continue;
             }
 
-            const renderTarget = layer.mainTexture;
+            const renderTarget = <RenderTargetTexture>(<any>layer)._mainTexture;
             this._engine.currentRenderPassId = renderTarget.renderPassId;
 
             for (const subMesh of mesh.subMeshes) {
@@ -208,7 +203,6 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
             this._previousStencilState = this._engine.getStencilBuffer();
             for (const effectLayer of layers) {
                 if (
-                    EffectLayerSceneComponent._IsEffectLayer(effectLayer) &&
                     effectLayer.shouldRender() &&
                     (!effectLayer.camera ||
                         (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
@@ -253,7 +247,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
             const layers = this.scene.effectLayers;
             for (let i = 0; i < layers.length; i++) {
                 const effectLayer = layers[i];
-                if (EffectLayerSceneComponent._IsEffectLayer(effectLayer) && effectLayer.renderingGroupId === renderingGroupId) {
+                if (effectLayer.renderingGroupId === renderingGroupId) {
                     if (effectLayer.shouldRender()) {
                         effectLayer.render();
                     }
@@ -275,7 +269,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 }
 
-ThinEffectLayer._SceneComponentInitialization = (scene: Scene) => {
+EffectLayer._SceneComponentInitialization = (scene: Scene) => {
     let component = scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
     if (!component) {
         component = new EffectLayerSceneComponent(scene);
