@@ -680,8 +680,7 @@ export const RequestFile = (
                                 if (onSuccess) {
                                     onSuccess(data, request);
                                 }
-                            }
-                            catch (e) {
+                            } catch (e) {
                                 handleError(e);
                             }
                             return;
