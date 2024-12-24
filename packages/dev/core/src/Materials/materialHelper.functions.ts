@@ -18,7 +18,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
 const _TempFogColor = Color3.Black();
