@@ -156,9 +156,11 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public TWOSIDEDLIGHTING = false;
     public SHADOWFLOAT = false;
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
+    public MORPHTARGETS_UV2 = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH

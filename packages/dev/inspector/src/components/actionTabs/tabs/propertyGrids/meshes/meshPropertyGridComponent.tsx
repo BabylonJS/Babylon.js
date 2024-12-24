@@ -367,7 +367,10 @@ export class MeshPropertyGridComponent extends React.Component<
 
         if (mesh.morphTargetManager) {
             for (let index = 0; index < mesh.morphTargetManager.numTargets; index++) {
-                morphTargets.push(mesh.morphTargetManager.getTarget(index));
+                const target = mesh.morphTargetManager.getTarget(index);
+                if (target.hasPositions) {
+                    morphTargets.push(target);
+                }
             }
         }
 

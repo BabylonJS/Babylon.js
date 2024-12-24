@@ -85,11 +85,15 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         if (manager?.isUsingTextureForTargets) {
             return;
         }
+        const position = manager && manager.supportsPositions;
         const normal = manager && manager.supportsNormals && defines["NORMAL"];
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
+        const uv2 = manager && manager.supportsUV2s && defines["UV2"];
         for (let index = 0; index < influencers; index++) {
-            attribs.push(Constants.PositionKind + index);
+            if (position) {
+                attribs.push(Constants.PositionKind + index);
+            }
 
             if (normal) {
                 attribs.push(Constants.NormalKind + index);
@@ -101,6 +105,10 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
 
             if (uv) {
                 attribs.push(Constants.UVKind + "_" + index);
+            }
+
+            if (uv2) {
+                attribs.push(Constants.UV2Kind + "_" + index);
             }
 
             if (attribs.length > maxAttributesCount) {
@@ -679,16 +687,20 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
     const manager = (<Mesh>mesh).morphTargetManager;
     if (manager) {
         defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
+        defines["MORPHTARGETS_UV2"] = manager.supportsUV2s && defines["UV2"];
         defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
+        defines["MORPHTARGETS_POSITION"] = manager.supportsPositions;
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
         defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
 
         defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
     } else {
         defines["MORPHTARGETS_UV"] = false;
+        defines["MORPHTARGETS_UV2"] = false;
         defines["MORPHTARGETS_TANGENT"] = false;
         defines["MORPHTARGETS_NORMAL"] = false;
+        defines["MORPHTARGETS_POSITION"] = false;
         defines["MORPHTARGETS"] = false;
         defines["NUM_MORPH_INFLUENCERS"] = 0;
     }

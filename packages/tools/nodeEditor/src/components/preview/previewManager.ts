@@ -703,7 +703,7 @@ export class PreviewManager {
                 }
 
                 default: {
-                    if (this._meshes.length) {
+                    if (this._meshes && this._meshes.length) {
                         const tasks = this._meshes.map((m) => {
                             m.hasVertexAlpha = false;
                             return this._forceCompilationAsync(tempMaterial, m);

@@ -313,6 +313,7 @@ export class GLTFMaterialExporter {
         // Create a temporary texture with the texture buffer data
         const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
 
+        engine.isWebGPU ? await import("core/ShadersWGSL/pass.fragment") : await import("core/Shaders/pass.fragment");
         await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
 
         const data = await engine._readTexturePixels(tempTexture, width, height);

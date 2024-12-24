@@ -17,3 +17,49 @@ export class TimingTools {
         }
     }
 }
+
+function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void) {
+    try {
+        if (condition()) {
+            onSuccess();
+            return true;
+        }
+    } catch (e) {
+        onError?.(e);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @internal
+ */
+export const _retryWithInterval = (
+    condition: () => boolean,
+    onSuccess: () => void,
+    onError?: (e?: any) => void,
+    step = 16,
+    maxTimeout = 30000,
+    checkConditionOnCall: boolean = true,
+    additionalStringOnTimeout?: string
+) => {
+    // if checkConditionOnCall is true, we check the condition immediately. If it is true, run everything synchronously
+    if (checkConditionOnCall) {
+        // that means that one of the two happened - either the condition is true or an exception was thrown when checking the condition
+        if (_runWithCondition(condition, onSuccess, onError)) {
+            // don't schedule the interval, no reason to check it again.
+            return;
+        }
+    }
+    const int = setInterval(() => {
+        if (_runWithCondition(condition, onSuccess, onError)) {
+            clearInterval(int);
+        } else {
+            maxTimeout -= step;
+            if (maxTimeout < 0) {
+                clearInterval(int);
+                onError?.(new Error("Operation timed out after maximum retries. " + (additionalStringOnTimeout || "")));
+            }
+        }
+    }, step);
+};
