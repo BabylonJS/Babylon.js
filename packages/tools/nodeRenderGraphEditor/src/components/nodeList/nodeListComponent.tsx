@@ -51,7 +51,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ShadowGeneratorBlock: "Generates shadows through a shadow generator",
         CascadedShadowGeneratorBlock: "Generates shadows through a cascaded shadow generator",
         ExecuteBlock: "Block used to execute a custom function",
-        GlowLayerBlock: "Adds a glow effects to a texture",
+        GlowLayerBlock: "Adds a glow effect to a texture",
     };
 
     private _customFrameList: { [key: string]: string };

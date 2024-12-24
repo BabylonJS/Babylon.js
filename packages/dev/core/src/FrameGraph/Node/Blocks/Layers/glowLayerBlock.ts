@@ -72,7 +72,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     /** Forces the merge step to be done in ldr (clamp values &gt; 1). Default: false */
     @editableInPropertyPage("LDR merge", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get ldrMerge() {
-        return this._frameGraphTask.glowLayer.ldrMerge;
+        return this._frameGraphTask.layer.ldrMerge;
     }
 
     public set ldrMerge(value: boolean) {
@@ -82,21 +82,21 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     /** How big is the kernel of the blur texture */
     @editableInPropertyPage("Blur kernel size", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 256 })
     public get blurKernelSize() {
-        return this._frameGraphTask.glowLayer.blurKernelSize;
+        return this._frameGraphTask.layer.blurKernelSize;
     }
 
     public set blurKernelSize(value: number) {
-        this._frameGraphTask.glowLayer.blurKernelSize = value;
+        this._frameGraphTask.layer.blurKernelSize = value;
     }
 
     /** The intensity of the glow */
     @editableInPropertyPage("Intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 5 })
     public get intensity() {
-        return this._frameGraphTask.glowLayer.intensity;
+        return this._frameGraphTask.layer.intensity;
     }
 
     public set intensity(value: number) {
-        this._frameGraphTask.glowLayer.intensity = value;
+        this._frameGraphTask.layer.intensity = value;
     }
 
     /**

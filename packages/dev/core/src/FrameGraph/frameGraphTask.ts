@@ -9,10 +9,10 @@ import { FrameGraphRenderPass } from "./Passes/renderPass";
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
+    protected readonly _internalDependencies: FrameGraphTextureHandle[] = [];
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
-    protected _internalDependencies: FrameGraphTextureHandle[] = [];
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     // Same thing for the disabled property
@@ -82,6 +82,7 @@ export abstract class FrameGraphTask {
     public _reset() {
         this._passes.length = 0;
         this._passesDisabled.length = 0;
+        this._internalDependencies.length = 0;
     }
 
     /** @internal */

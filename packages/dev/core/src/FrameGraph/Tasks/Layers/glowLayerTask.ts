@@ -46,7 +46,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
 
     public set camera(camera: Camera) {
         this._camera = camera;
-        this.glowLayer.camera = this.camera;
+        this.layer.camera = this.camera;
     }
 
     /**
@@ -62,7 +62,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
     /**
      * The glow layer object. Use this object to update the glow layer properties (e.g. intensity, blur kernel size).
      */
-    public readonly glowLayer: ThinGlowLayer;
+    public readonly layer: ThinGlowLayer;
 
     /**
      * The name of the task.
@@ -107,25 +107,25 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
 
         this._engine = scene.getEngine();
 
-        this.glowLayer = new ThinGlowLayer(name, scene, options, true);
+        this.layer = new ThinGlowLayer(name, scene, options, true);
 
         for (let i = 0; i < 2; i++) {
-            this._blurX.push(new FrameGraphBlurTask(`${name} Blur X${i}`, this._frameGraph, this.glowLayer._postProcesses[i * 2 + 0] as ThinBlurPostProcess));
-            this._blurY.push(new FrameGraphBlurTask(`${name} Blur Y${i}`, this._frameGraph, this.glowLayer._postProcesses[i * 2 + 1] as ThinBlurPostProcess));
+            this._blurX.push(new FrameGraphBlurTask(`${name} Blur X${i}`, this._frameGraph, this.layer._postProcesses[i * 2 + 0] as ThinBlurPostProcess));
+            this._blurY.push(new FrameGraphBlurTask(`${name} Blur Y${i}`, this._frameGraph, this.layer._postProcesses[i * 2 + 1] as ThinBlurPostProcess));
         }
 
         this._clearTask = new FrameGraphClearTextureTask(name + " Clear Layer", frameGraph);
         this._clearTask.clearColor = true;
         this._clearTask.clearDepth = true;
 
-        this._objectRendererTask = new FrameGraphObjectRendererTask(name + " Render to Layer", frameGraph, scene, undefined, this.glowLayer.objectRenderer);
-        this.glowLayer._renderPassId = this._objectRendererTask.objectRenderer.renderPassId;
+        this._objectRendererTask = new FrameGraphObjectRendererTask(name + " Render to Layer", frameGraph, scene, undefined, this.layer.objectRenderer);
+        this.layer._renderPassId = this._objectRendererTask.objectRenderer.renderPassId;
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
-        return this._objectRendererTask.isReady() && this.glowLayer.isLayerReady();
+        return this._objectRendererTask.isReady() && this.layer.isLayerReady();
     }
 
     public record() {
@@ -180,7 +180,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
         // Clears the textures
         this._clearTask.destinationTexture = colorLayerOutput;
         this._clearTask.depthTexture = depthLayerOutput;
-        this._clearTask.color = this.glowLayer.neutralColor;
+        this._clearTask.color = this.layer.neutralColor;
         this._clearTask.record();
 
         // Renders the objects to the layer texture
@@ -221,14 +221,14 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
             textureSize.height = textureSize.height >> 1;
         }
 
-        this._internalDependencies = [this._blurY[0].outputTexture, this._blurY[1].outputTexture];
+        this._internalDependencies.push(this._blurY[0].outputTexture, this._blurY[1].outputTexture);
 
         // Composes the glow layer with the destination texture
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            this.glowLayer.bindTexturesForCompose = (effect: Effect) => {
+            this.layer.bindTexturesForCompose = (effect: Effect) => {
                 context.bindTextureHandle(effect, "textureSampler", this._blurY[0].outputTexture);
                 context.setTextureSamplingMode(this._blurY[1].destinationTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
                 context.bindTextureHandle(effect, "textureSampler2", this._blurY[1].outputTexture);
@@ -236,7 +236,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
 
             context._applyRenderTarget();
 
-            this.glowLayer.compose();
+            this.layer.compose();
         });
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
@@ -248,7 +248,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphTask {
     public override dispose(): void {
         this._clearTask.dispose();
         this._objectRendererTask.dispose();
-        this.glowLayer.dispose();
+        this.layer.dispose();
         for (let i = 0; i < this._blurX.length; i++) {
             this._blurX[i].dispose();
             this._blurY[i].dispose();
