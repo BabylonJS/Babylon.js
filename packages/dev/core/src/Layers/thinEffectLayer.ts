@@ -547,6 +547,7 @@ export class ThinEffectLayer {
             morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (morphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
+                defines.push("#define MORPHTARGETS_POSITION");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                 if (manager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
@@ -803,7 +804,9 @@ export class ThinEffectLayer {
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
         if (this._useMeshMaterial(renderingMesh)) {
+            subMesh.getMaterial()!._glowModeEnabled = true;
             renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
+            subMesh.getMaterial()!._glowModeEnabled = false;
         } else if (this._isSubMeshReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 

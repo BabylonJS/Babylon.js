@@ -358,9 +358,15 @@ export class ThinGlowLayer extends ThinEffectLayer {
     }
 
     public override _useMeshMaterial(mesh: AbstractMesh): boolean {
+        // Specific case of material supporting glow directly
+        if (mesh.material?._supportGlowLayer) {
+            return true;
+        }
+
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
+
         return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
     }
 
