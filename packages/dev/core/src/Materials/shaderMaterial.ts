@@ -31,7 +31,6 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareAttributesForBakedVertexAnimation,
-    PrepareAttributesForMorphTargetsInfluencers,
     PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
