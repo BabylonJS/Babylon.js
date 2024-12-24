@@ -9,7 +9,7 @@ import {
     BindBonesParameters,
     BindMorphTargetParameters,
     PrepareAttributesForBakedVertexAnimation,
-    PrepareAttributesForMorphTargetsInfluencers,
+    PrepareDefinesAndAttributesForMorphTargets,
 } from "core/Materials/materialHelper.functions";
 import type { Mesh } from "core/Meshes/mesh";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
@@ -66,7 +66,6 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
 
             // Get correct effect
             let computeEffect: Effect;
-            let numInfluencers = 0;
             const defines: string[] = [];
             const attribs = [VertexBuffer.PositionKind];
 
@@ -86,31 +85,19 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             }
 
             // Morph
-            const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
-            if (manager) {
-                numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-                if (numInfluencers > 0) {
-                    defines.push("#define MORPHTARGETS");
-                    if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
-                    if (manager.supportsPositions) {
-                        defines.push("#define MORPHTARGETS_POSITION");
-                    }
-                    defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-                    if (manager.isUsingTextureForTargets) {
-                        defines.push("#define MORPHTARGETS_TEXTURE");
-                    }
-                    PrepareAttributesForMorphTargetsInfluencers(
-                        attribs,
-                        mesh,
-                        numInfluencers,
-                        true, // usePositionMorph
-                        false, // useNormalMorph
-                        false, // useTangentMorph
-                        false, // useUVMorph
-                        false // useUV2Morph
-                    );
-                }
-            }
+            const numMorphInfluencers = mesh.morphTargetManager
+                ? PrepareDefinesAndAttributesForMorphTargets(
+                      mesh.morphTargetManager,
+                      defines,
+                      attribs,
+                      mesh,
+                      true, // usePositionMorph
+                      false, // useNormalMorph
+                      false, // useTangentMorph
+                      false, // useUVMorph
+                      false // useUV2Morph
+                  )
+                : 0;
 
             // Baked Vertex Animation
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
@@ -143,7 +130,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                     fallbacks: null,
                     onCompiled: null,
                     onError: null,
-                    indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                    indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                     maxSimultaneousLights: 0,
                     transformFeedbackVaryings: ["outPosition"],
                 };

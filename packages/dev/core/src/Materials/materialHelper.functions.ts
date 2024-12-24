@@ -18,6 +18,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
 const _TempFogColor = Color3.Black();
@@ -66,32 +67,77 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
 }
 
 /**
- * Prepares the list of attributes required for morph targets according to the effect defines.
- * @param attribs The current list of supported attribs
- * @param mesh The mesh to prepare the morph targets attributes for
- * @param influencers The number of influencers
+ * Prepares the list of attributes and defines required for morph targets.
+ * @param morphTargetManager The manager for the morph targets
+ * @param defines The current list of defines
+ * @param attribs The current list of attributes
+ * @param mesh The mesh to prepare the defines and attributes for
  * @param usePositionMorph Whether the position morph target is used
  * @param useNormalMorph Whether the normal morph target is used
  * @param useTangentMorph Whether the tangent morph target is used
  * @param useUVMorph Whether the UV morph target is used
  * @param useUV2Morph Whether the UV2 morph target is used
+ * @returns The maxSimultaneousMorphTargets for the effect
  */
-export function PrepareAttributesForMorphTargetsInfluencers(
+export function PrepareDefinesAndAttributesForMorphTargets(
+    morphTargetManager: MorphTargetManager,
+    defines: string[],
     attribs: string[],
     mesh: AbstractMesh,
-    influencers: number,
-    usePositionMorph = true,
-    useNormalMorph = false,
-    useTangentMorph = false,
-    useUVMorph = false,
-    useUV2Morph = false
-): void {
-    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+    usePositionMorph: boolean,
+    useNormalMorph: boolean,
+    useTangentMorph: boolean,
+    useUVMorph: boolean,
+    useUV2Morph: boolean
+): number {
+    const numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+    if (numMorphInfluencers <= 0) {
+        return 0;
+    }
+
+    defines.push("#define MORPHTARGETS");
+
+    if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+    if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+    if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+    if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+    if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+
+    if (morphTargetManager.supportsPositions && usePositionMorph) defines.push("#define MORPHTARGETS_POSITION");
+    if (morphTargetManager.supportsNormals && useNormalMorph) defines.push("#define MORPHTARGETS_NORMAL");
+    if (morphTargetManager.supportsTangents && useTangentMorph) defines.push("#define MORPHTARGETS_TANGENT");
+    if (morphTargetManager.supportsUVs && useUVMorph) defines.push("#define MORPHTARGETS_UV");
+    if (morphTargetManager.supportsUV2s && useUV2Morph) defines.push("#define MORPHTARGETS_UV2");
+
+    defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+    if (morphTargetManager.isUsingTextureForTargets) {
+        defines.push("#define MORPHTARGETS_TEXTURE");
+    }
+
+    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = numMorphInfluencers;
     _TmpMorphInfluencers.NORMAL = useNormalMorph;
     _TmpMorphInfluencers.TANGENT = useTangentMorph;
     _TmpMorphInfluencers.UV = useUVMorph;
     _TmpMorphInfluencers.UV2 = useUV2Morph;
+
     PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, usePositionMorph);
+    return numMorphInfluencers;
+}
+
+/**
+ * Prepares the list of attributes required for morph targets according to the effect defines.
+ * @param attribs The current list of supported attribs
+ * @param mesh The mesh to prepare the morph targets attributes for
+ * @param influencers The number of influencers
+ */
+export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
+    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+    _TmpMorphInfluencers.NORMAL = false;
+    _TmpMorphInfluencers.TANGENT = false;
+    _TmpMorphInfluencers.UV = false;
+    _TmpMorphInfluencers.UV2 = false;
+    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, true);
 }
 
 /**

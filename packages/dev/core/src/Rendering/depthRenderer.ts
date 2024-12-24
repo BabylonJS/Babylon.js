@@ -17,7 +17,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials";
@@ -446,42 +446,19 @@ export class DepthRenderer {
         }
 
         // Morph targets
-        const morphTargetManager = (mesh as Mesh).morphTargetManager;
-        let numMorphInfluencers = 0;
-        if (morphTargetManager) {
-            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
-            if (numMorphInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
-                if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
-                if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
-                if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
-                if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
-                if (morphTargetManager.supportsPositions) {
-                    defines.push("#define MORPHTARGETS_POSITION");
-                }
-                if (morphTargetManager.supportsUVs) {
-                    if (uv1) defines.push("#define MORPHTARGETS_UV");
-                }
-                if (morphTargetManager.supportsUV2s) {
-                    if (uv2) defines.push("#define MORPHTARGETS_UV2");
-                }
-                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-                if (morphTargetManager.isUsingTextureForTargets) {
-                    defines.push("#define MORPHTARGETS_TEXTURE");
-                }
-                PrepareAttributesForMorphTargetsInfluencers(
-                    attribs,
-                    mesh,
-                    numMorphInfluencers,
-                    true, // usePositionMorph
-                    false, // useNormalMorph
-                    false, // useTangentMorph
-                    uv1, // useUVMorph
-                    uv2 // useUV2Morph
-                );
-            }
-        }
+        const numMorphInfluencers = mesh.morphTargetManager
+            ? PrepareDefinesAndAttributesForMorphTargets(
+                  mesh.morphTargetManager,
+                  defines,
+                  attribs,
+                  mesh,
+                  true, // usePositionMorph
+                  false, // useNormalMorph
+                  false, // useTangentMorph
+                  uv1, // useUVMorph
+                  uv2 // useUV2Morph
+              )
+            : 0;
 
         // Points cloud rendering
         if (material.pointsCloud) {

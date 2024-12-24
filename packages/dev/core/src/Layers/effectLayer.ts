@@ -26,7 +26,7 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -690,42 +690,19 @@ export abstract class EffectLayer {
         }
 
         // Morph targets
-        const manager = (<Mesh>mesh).morphTargetManager;
-        let morphInfluencers = 0;
-        if (manager) {
-            morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (morphInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                if (manager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
-                if (manager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
-                if (manager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
-                if (manager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
-                if (manager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
-                if (manager.supportsPositions) {
-                    defines.push("#define MORPHTARGETS_POSITION");
-                }
-                if (manager.supportsUVs) {
-                    if (uv1) defines.push("#define MORPHTARGETS_UV");
-                }
-                if (manager.supportsUV2s) {
-                    if (uv2) defines.push("#define MORPHTARGETS_UV2");
-                }
-                defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                if (manager.isUsingTextureForTargets) {
-                    defines.push("#define MORPHTARGETS_TEXTURE");
-                }
-                PrepareAttributesForMorphTargetsInfluencers(
-                    attribs,
-                    mesh,
-                    morphInfluencers,
-                    true, // usePositionMorph
-                    false, // useNormalMorph
-                    false, // useTangentMorph
-                    uv1, // useUVMorph
-                    uv2 // useUV2Morph
-                );
-            }
-        }
+        const numMorphInfluencers = mesh.morphTargetManager
+            ? PrepareDefinesAndAttributesForMorphTargets(
+                  mesh.morphTargetManager,
+                  defines,
+                  attribs,
+                  mesh,
+                  true, // usePositionMorph
+                  false, // useNormalMorph
+                  false, // useTangentMorph
+                  uv1, // useUVMorph
+                  uv2 // useUV2Morph
+              )
+            : 0;
 
         // Instances
         if (useInstances) {
@@ -775,7 +752,7 @@ export abstract class EffectLayer {
                     fallbacks,
                     undefined,
                     undefined,
-                    { maxSimultaneousMorphTargets: morphInfluencers },
+                    { maxSimultaneousMorphTargets: numMorphInfluencers },
                     this._shaderLanguage,
                     this._shadersLoaded
                         ? undefined
