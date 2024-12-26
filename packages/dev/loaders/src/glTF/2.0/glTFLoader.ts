@@ -74,10 +74,11 @@ import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
-import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
+import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
+import { objectModelMapping } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 export { GLTFFileLoader };
 
@@ -1673,22 +1674,22 @@ export class GLTFLoader implements IGLTFLoader {
             return Promise.resolve();
         }
 
-        let properties: Array<AnimationPropertyInfo>;
+        let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
-                properties = nodeAnimationData.translation;
+                properties = objectModelMapping.nodes.__array__.translation.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.ROTATION: {
-                properties = nodeAnimationData.rotation;
+                properties = objectModelMapping.nodes.__array__.rotation.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.SCALE: {
-                properties = nodeAnimationData.scale;
+                properties = objectModelMapping.nodes.__array__.scale.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.WEIGHTS: {
-                properties = nodeAnimationData.weights;
+                properties = objectModelMapping.nodes.__array__.weights.interpolation!;
                 break;
             }
             default: {
@@ -1696,7 +1697,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        const targetInfo: IObjectInfo<AnimationPropertyInfo[]> = {
+        const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
             object: targetNode,
             info: properties,
         };
@@ -1720,7 +1721,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IObjectInfo<AnimationPropertyInfo[]>,
+        targetInfo: IObjectInfo<IInterpolationPropertyInfo[]>,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;
@@ -1792,10 +1793,11 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
-                        ++numAnimations;
-                        onLoad(babylonAnimatable, babylonAnimation);
-                    });
+                    const babylonAnimations = propertyInfo.buildAnimations(target, name, fps, keys);
+                    for (const babylonAnimation of babylonAnimations) {
+                        numAnimations++;
+                        onLoad(babylonAnimation.babylonAnimatable, babylonAnimation.babylonAnimation);
+                    }
                 }
             }
         });
