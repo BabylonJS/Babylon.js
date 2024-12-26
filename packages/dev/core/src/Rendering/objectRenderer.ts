@@ -174,16 +174,38 @@ export class ObjectRenderer {
      */
     public options: Required<ObjectRendererOptions>;
 
+    private _name: string;
     /**
      * Friendly name of the object renderer
      */
-    public name: string;
+    public get name() {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        if (this._name === value) {
+            return;
+        }
+
+        this._name = value;
+
+        if (!this._scene) {
+            return;
+        }
+
+        const engine = this._scene.getEngine();
+
+        for (let i = 0; i < this._renderPassIds.length; ++i) {
+            const renderPassId = this._renderPassIds[i];
+            engine._renderPassNames[renderPassId] = `${this._name}#${i}`;
+        }
+    }
 
     /**
      * Current render pass id. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
      */
     public renderPassId: number;
-    private _renderPassIds: number[];
+    private readonly _renderPassIds: number[];
     /**
      * Gets the render pass ids used by the object renderer.
      */
@@ -259,7 +281,7 @@ export class ObjectRenderer {
         const engine = this._scene.getEngine();
 
         for (let i = 0; i < this.options.numPasses; ++i) {
-            this._renderPassIds[i] = engine.createRenderPassId(`ObjectRenderer - ${this.name}#${i}`);
+            this._renderPassIds[i] = engine.createRenderPassId(`${this.name}#${i}`);
         }
     }
 
