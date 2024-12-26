@@ -4264,7 +4264,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
+            let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
+            if (currentLOD) {
+                currentLOD[1] = -1;
+            } else {
+                currentLOD = [mesh, -1];
+                mesh._internalAbstractMeshDataInfo._currentLOD.set(this.activeCamera, currentLOD);
+            }
             if (mesh.isBlocked) {
                 continue;
             }
@@ -4284,8 +4290,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
+            currentLOD[0] = meshToRender;
+            currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }

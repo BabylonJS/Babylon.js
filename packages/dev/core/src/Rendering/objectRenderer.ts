@@ -115,6 +115,12 @@ export class ObjectRenderer {
     public activeCamera: Nullable<Camera>;
 
     /**
+     * Define the camera used to calculate the LOD of the objects.
+     * If not defined, activeCamera will be used. If not defined nor activeCamera, scene's active camera will be used.
+     */
+    public cameraForLOD: Nullable<Camera>;
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean;
@@ -528,7 +534,8 @@ export class ObjectRenderer {
 
     private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, checkLayerMask: boolean): void {
         const scene = this._scene;
-        const camera = scene.activeCamera;
+        const camera = scene.activeCamera; // note that at this point, scene.activeCamera == this.activeCamera if defined, because initRender() has been called before
+        const cameraForLOD = this.cameraForLOD ?? camera;
 
         this._renderingManager.reset();
 
@@ -547,15 +554,29 @@ export class ObjectRenderer {
                     continue;
                 }
 
-                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && camera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, camera) : mesh.getLOD(camera);
-                    mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
-                }
-                if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
-                    continue;
+                let meshToRender: Nullable<AbstractMesh> = null;
+
+                if (cameraForLOD) {
+                    const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);
+                    const currentFrameId = scene.getFrameId();
+                    if (!meshToRenderAndFrameId || meshToRenderAndFrameId[1] !== currentFrameId) {
+                        meshToRender = scene.customLODSelector ? scene.customLODSelector(mesh, cameraForLOD) : mesh.getLOD(cameraForLOD);
+                        if (!meshToRenderAndFrameId) {
+                            mesh._internalAbstractMeshDataInfo._currentLOD.set(cameraForLOD, [meshToRender, currentFrameId]);
+                        } else {
+                            meshToRenderAndFrameId[0] = meshToRender;
+                            meshToRenderAndFrameId[1] = currentFrameId;
+                        }
+                    } else {
+                        meshToRender = meshToRenderAndFrameId[0];
+                    }
+                } else {
+                    meshToRender = mesh;
                 }
 
-                let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+                if (!meshToRender) {
+                    continue;
+                }
 
                 if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                     meshToRender.computeWorldMatrix(); // Compute world matrix if LOD is billboard
