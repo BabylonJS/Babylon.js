@@ -1,11 +1,26 @@
 {
-    "fromTag": "7.41.0",
+    "fromTag": "7.41.1",
     "changelog": {
-        "7.41.0": [
+        "7.42.0": [
             {
-                "pr": "16015",
-                "title": "Adjust KHR_texture_transform offset for non-zero rotation center",
-                "description": "Forum issue: https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425",
+                "pr": "16021",
+                "title": "Fix volume refresh for GS",
+                "description": "https://forum.babylonjs.com/t/wrong-z-in-bouding-box-of-gaussian-splat/55481/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16019",
+                "title": "Limit cases where KHR_texture_transform offset is adjusted for non-origin rotation",
+                "description": "I overlooked how scaling affects the calculations here https://github.com/BabylonJS/Babylon.js/pull/16015. For now, just go back to the original behavior (don't export KHR_texture_transform) if we can't adjust this offset. \r\n\r\nWhile here, I also merged preExportTexture into postExportTexture so we don't have to check conditions twice.",
                 "author": {
                     "name": "alexchuber",
                     "url": "https://github.com/alexchuber"
@@ -16,33 +31,6 @@
                 "tags": [
                     "skip changelog"
                 ]
-            },
-            {
-                "pr": "16013",
-                "title": "Add useFill parameter to CreateScreenshot",
-                "description": "CreateScreenshot currently letterboxes the rendering canvas in the screenshot. The `useFill` property, if true, will fill the given `size` dimension of the screenshot with the rendering canvas. If the rendering canvas' aspect ratio does not match the aspect ratio of the dimensions, then it will be clipped to fit. \r\n\r\nOther:\r\n- Early return if using `CreateScreenshotUsingRenderTarget`\r\n- Update comments",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/screenshotTools.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16011",
-                "title": "More common shader constants and helpers for helperFunctions.fx",
-                "description": null,
-                "author": {
-                    "name": "kircher1",
-                    "url": "https://github.com/kircher1"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx"
-                ],
-                "tags": []
             }
         ],
         "7.41.1": [
@@ -142,6 +130,50 @@
                     "bug",
                     "rendering engine"
                 ]
+            }
+        ],
+        "7.41.0": [
+            {
+                "pr": "16015",
+                "title": "Adjust KHR_texture_transform offset for non-zero rotation center",
+                "description": "Forum issue: https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16013",
+                "title": "Add useFill parameter to CreateScreenshot",
+                "description": "CreateScreenshot currently letterboxes the rendering canvas in the screenshot. The `useFill` property, if true, will fill the given `size` dimension of the screenshot with the rendering canvas. If the rendering canvas' aspect ratio does not match the aspect ratio of the dimensions, then it will be clipped to fit. \r\n\r\nOther:\r\n- Early return if using `CreateScreenshotUsingRenderTarget`\r\n- Update comments",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16011",
+                "title": "More common shader constants and helpers for helperFunctions.fx",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx"
+                ],
+                "tags": []
             }
         ],
         "7.40.4": [

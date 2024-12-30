@@ -1,15 +1,13 @@
 import { serialize, serializeAsColor4, serializeAsCameraReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import type { SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { ISize } from "../Maths/math.size";
-import { Color4 } from "../Maths/math.color";
+import type { Color4 } from "../Maths/math.color";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
@@ -18,17 +16,13 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
+import type { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
 import { _WarnImport } from "../Misc/devTools";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import { EffectFallbacks } from "../Materials/effectFallbacks";
-import { DrawWrapper } from "../Materials/drawWrapper";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ThinEffectLayer } from "./thinEffectLayer";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -81,52 +75,90 @@ export interface IEffectLayerOptions {
  * customized per effects.
  */
 export abstract class EffectLayer {
-    private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<DataBuffer>;
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mergeDrawWrapper: DrawWrapper[];
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
     protected _maxSize: number = 0;
     protected _mainTextureDesiredSize: ISize = { width: 0, height: 0 };
     protected _mainTexture: RenderTargetTexture;
-    protected _shouldRender = true;
+    protected get _shouldRender() {
+        return this._thinEffectLayer._shouldRender;
+    }
+    protected set _shouldRender(value) {
+        this._thinEffectLayer._shouldRender = value;
+    }
     protected _postProcesses: PostProcess[] = [];
     protected _textures: BaseTexture[] = [];
-    protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
-    protected _effectIntensity: { [meshUniqueId: number]: number } = {};
+    protected get _emissiveTextureAndColor(): { texture: Nullable<BaseTexture>; color: Color4 } {
+        return this._thinEffectLayer._emissiveTextureAndColor;
+    }
+    protected set _emissiveTextureAndColor(value) {
+        this._thinEffectLayer._emissiveTextureAndColor = value;
+    }
+    protected get _effectIntensity(): { [meshUniqueId: number]: number } {
+        return this._thinEffectLayer._effectIntensity;
+    }
+    protected set _effectIntensity(value) {
+        this._thinEffectLayer._effectIntensity = value;
+    }
+    private readonly _thinEffectLayer: ThinEffectLayer;
+    private readonly _internalThinEffectLayer: boolean;
 
     /**
      * Force all the effect layers to compile to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
      */
-    public static ForceGLSL = false;
+    public static get ForceGLSL() {
+        return ThinEffectLayer.ForceGLSL;
+    }
+
+    public static set ForceGLSL(value: boolean) {
+        ThinEffectLayer.ForceGLSL = value;
+    }
 
     /**
      * The name of the layer
      */
     @serialize()
-    public name: string;
+    public get name() {
+        return this._thinEffectLayer.name;
+    }
+
+    public set name(value: string) {
+        this._thinEffectLayer.name = value;
+    }
 
     /**
      * The clear color of the texture used to generate the glow map.
      */
     @serializeAsColor4()
-    public neutralColor: Color4 = new Color4();
+    public get neutralColor(): Color4 {
+        return this._thinEffectLayer.neutralColor;
+    }
+
+    public set neutralColor(value: Color4) {
+        this._thinEffectLayer.neutralColor = value;
+    }
 
     /**
      * Specifies whether the highlight layer is enabled or not.
      */
     @serialize()
-    public isEnabled: boolean = true;
+    public get isEnabled(): boolean {
+        return this._thinEffectLayer.isEnabled;
+    }
+
+    public set isEnabled(value: boolean) {
+        this._thinEffectLayer.isEnabled = value;
+    }
 
     /**
      * Gets the camera attached to the layer.
      */
     @serializeAsCameraReference()
     public get camera(): Nullable<Camera> {
-        return this._effectLayerOptions.camera;
+        return this._thinEffectLayer.camera;
     }
 
     /**
@@ -134,17 +166,23 @@ export abstract class EffectLayer {
      */
     @serialize()
     public get renderingGroupId(): number {
-        return this._effectLayerOptions.renderingGroupId;
+        return this._thinEffectLayer.renderingGroupId;
     }
     public set renderingGroupId(renderingGroupId: number) {
-        this._effectLayerOptions.renderingGroupId = renderingGroupId;
+        this._thinEffectLayer.renderingGroupId = renderingGroupId;
     }
 
     /**
      * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
      */
     @serialize()
-    public disableBoundingBoxesFromEffectLayer = false;
+    public get disableBoundingBoxesFromEffectLayer() {
+        return this._thinEffectLayer.disableBoundingBoxesFromEffectLayer;
+    }
+
+    public set disableBoundingBoxesFromEffectLayer(value: boolean) {
+        this._thinEffectLayer.disableBoundingBoxesFromEffectLayer = value;
+    }
 
     /**
      * An event triggered when the effect layer has been disposed.
@@ -188,14 +226,15 @@ export abstract class EffectLayer {
         return this._mainTexture;
     }
 
-    /** Shader language used by the material */
-    protected _shaderLanguage = ShaderLanguage.GLSL;
+    protected get _shaderLanguage(): ShaderLanguage {
+        return this._thinEffectLayer.shaderLanguage;
+    }
 
     /**
      * Gets the shader language used in this material.
      */
     public get shaderLanguage(): ShaderLanguage {
-        return this._shaderLanguage;
+        return this._thinEffectLayer.shaderLanguage;
     }
 
     /**
@@ -204,32 +243,13 @@ export abstract class EffectLayer {
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
     };
-
-    private _materialForRendering: { [id: string]: [AbstractMesh, Material] } = {};
-
     /**
      * Sets a specific material to be used to render a mesh/a list of meshes in the layer
      * @param mesh mesh or array of meshes
      * @param material material to use by the layer when rendering the mesh(es). If undefined is passed, the specific material created by the layer will be used.
      */
     public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
-        this._mainTexture.setMaterialForRendering(mesh, material);
-        if (Array.isArray(mesh)) {
-            for (let i = 0; i < mesh.length; ++i) {
-                const currentMesh = mesh[i];
-                if (!material) {
-                    delete this._materialForRendering[currentMesh.uniqueId];
-                } else {
-                    this._materialForRendering[currentMesh.uniqueId] = [currentMesh, material];
-                }
-            }
-        } else {
-            if (!material) {
-                delete this._materialForRendering[mesh.uniqueId];
-            } else {
-                this._materialForRendering[mesh.uniqueId] = [mesh, material];
-            }
-        }
+        this._thinEffectLayer.setMaterialForRendering(mesh, material);
     }
 
     /**
@@ -238,7 +258,7 @@ export abstract class EffectLayer {
      * @returns The intensity of the effect for the mesh
      */
     public getEffectIntensity(mesh: AbstractMesh) {
-        return this._effectIntensity[mesh.uniqueId] ?? 1;
+        return this._thinEffectLayer.getEffectIntensity(mesh);
     }
 
     /**
@@ -247,7 +267,7 @@ export abstract class EffectLayer {
      * @param intensity The intensity of the effect for the mesh
      */
     public setEffectIntensity(mesh: AbstractMesh, intensity: number): void {
-        this._effectIntensity[mesh.uniqueId] = intensity;
+        this._thinEffectLayer.setEffectIntensity(mesh, intensity);
     }
 
     /**
@@ -255,36 +275,75 @@ export abstract class EffectLayer {
      * @param name The name of the layer
      * @param scene The scene to use the layer in
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     * @param thinEffectLayer The thin instance of the effect layer (optional)
      */
     constructor(
         /** The Friendly of the effect in the scene */
         name: string,
         scene?: Scene,
-        forceGLSL = false
+        forceGLSL = false,
+        thinEffectLayer?: ThinEffectLayer
     ) {
+        this._internalThinEffectLayer = !thinEffectLayer;
+        if (!thinEffectLayer) {
+            thinEffectLayer = new ThinEffectLayer(name, scene, forceGLSL, false, this._importShadersAsync.bind(this));
+            thinEffectLayer.getEffectName = this.getEffectName.bind(this);
+            thinEffectLayer.isReady = this.isReady.bind(this);
+            thinEffectLayer._createMergeEffect = this._createMergeEffect.bind(this);
+            thinEffectLayer._createTextureAndPostProcesses = this._createTextureAndPostProcesses.bind(this);
+            thinEffectLayer._internalCompose = this._internalRender.bind(this);
+            thinEffectLayer._setEmissiveTextureAndColor = this._setEmissiveTextureAndColor.bind(this);
+            thinEffectLayer._numInternalDraws = this._numInternalDraws.bind(this);
+            thinEffectLayer._addCustomEffectDefines = this._addCustomEffectDefines.bind(this);
+            thinEffectLayer.hasMesh = this.hasMesh.bind(this);
+            thinEffectLayer.shouldRender = this.shouldRender.bind(this);
+            thinEffectLayer._shouldRenderMesh = this._shouldRenderMesh.bind(this);
+            thinEffectLayer._canRenderMesh = this._canRenderMesh.bind(this);
+            thinEffectLayer._useMeshMaterial = this._useMeshMaterial.bind(this);
+        }
+
+        this._thinEffectLayer = thinEffectLayer;
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         EffectLayer._SceneComponentInitialization(this._scene);
 
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
-
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._mergeDrawWrapper = [];
+        this._thinEffectLayer.onDisposeObservable.add(() => {
+            this.onDisposeObservable.notifyObservers(this);
+        });
 
-        // Generate Buffers
-        this._generateIndexBuffer();
-        this._generateVertexBuffer();
+        this._thinEffectLayer.onBeforeRenderLayerObservable.add(() => {
+            this.onBeforeRenderMainTextureObservable.notifyObservers(this);
+        });
+
+        this._thinEffectLayer.onBeforeComposeObservable.add(() => {
+            this.onBeforeComposeObservable.notifyObservers(this);
+        });
+
+        this._thinEffectLayer.onBeforeRenderMeshToEffect.add((mesh) => {
+            this.onBeforeRenderMeshToEffect.notifyObservers(mesh);
+        });
+
+        this._thinEffectLayer.onAfterRenderMeshToEffect.add((mesh) => {
+            this.onAfterRenderMeshToEffect.notifyObservers(mesh);
+        });
+
+        this._thinEffectLayer.onAfterComposeObservable.add(() => {
+            this.onAfterComposeObservable.notifyObservers(this);
+        });
     }
 
-    protected _shadersLoaded = false;
+    protected get _shadersLoaded() {
+        return this._thinEffectLayer._shadersLoaded;
+    }
+
+    protected set _shadersLoaded(value: boolean) {
+        this._thinEffectLayer._shadersLoaded = value;
+    }
 
     /**
      * Get the effect name of the layer.
@@ -348,7 +407,7 @@ export abstract class EffectLayer {
      * @returns Number of times a mesh must be rendered in the layer
      */
     protected _numInternalDraws(): number {
-        return 1;
+        return this._internalThinEffectLayer ? 1 : this._thinEffectLayer._numInternalDraws();
     }
 
     /**
@@ -368,40 +427,9 @@ export abstract class EffectLayer {
         };
 
         this._setMainTextureSize();
+        this._thinEffectLayer._init(options);
         this._createMainTexture();
         this._createTextureAndPostProcesses();
-    }
-
-    /**
-     * Generates the index buffer of the full screen quad blending to the main canvas.
-     */
-    private _generateIndexBuffer(): void {
-        // Indices
-        const indices = [];
-        indices.push(0);
-        indices.push(1);
-        indices.push(2);
-
-        indices.push(0);
-        indices.push(2);
-        indices.push(3);
-
-        this._indexBuffer = this._engine.createIndexBuffer(indices);
-    }
-
-    /**
-     * Generates the vertex buffer of the full screen quad blending to the main canvas.
-     */
-    private _generateVertexBuffer(): void {
-        // VBO
-        const vertices = [];
-        vertices.push(1, 1);
-        vertices.push(-1, 1);
-        vertices.push(-1, -1);
-        vertices.push(1, -1);
-
-        const vertexBuffer = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
-        this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
     }
 
     /**
@@ -439,13 +467,12 @@ export abstract class EffectLayer {
                 height: this._mainTextureDesiredSize.height,
             },
             this._scene,
-            false,
-            true,
-            this._effectLayerOptions.mainTextureType,
-            false,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            true,
-            this._effectLayerOptions.generateStencilBuffer
+            {
+                type: this._effectLayerOptions.mainTextureType,
+                samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+                generateStencilBuffer: this._effectLayerOptions.generateStencilBuffer,
+                existingObjectRenderer: this._thinEffectLayer.objectRenderer,
+            }
         );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
         this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -456,98 +483,9 @@ export abstract class EffectLayer {
         this._mainTexture.renderList = null;
         this._mainTexture.ignoreCameraViewport = true;
 
-        for (const id in this._materialForRendering) {
-            const [mesh, material] = this._materialForRendering[id];
-            this._mainTexture.setMaterialForRendering(mesh, material);
-        }
-
-        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
-            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
-                for (let i = 0; i < mesh.subMeshes.length; ++i) {
-                    const subMesh = mesh.subMeshes[i];
-                    const material = subMesh.getMaterial();
-                    const renderingMesh = subMesh.getRenderingMesh();
-
-                    if (!material) {
-                        continue;
-                    }
-
-                    const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
-                    const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
-
-                    this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
-
-                    if (!this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        };
-
-        // Custom render function
-        this._mainTexture.customRenderFunction = (
-            opaqueSubMeshes: SmartArray<SubMesh>,
-            alphaTestSubMeshes: SmartArray<SubMesh>,
-            transparentSubMeshes: SmartArray<SubMesh>,
-            depthOnlySubMeshes: SmartArray<SubMesh>
-        ): void => {
-            this.onBeforeRenderMainTextureObservable.notifyObservers(this);
-
-            let index: number;
-
-            const engine = this._scene.getEngine();
-
-            if (depthOnlySubMeshes.length) {
-                engine.setColorWrite(false);
-                for (index = 0; index < depthOnlySubMeshes.length; index++) {
-                    this._renderSubMesh(depthOnlySubMeshes.data[index]);
-                }
-                engine.setColorWrite(true);
-            }
-
-            for (index = 0; index < opaqueSubMeshes.length; index++) {
-                this._renderSubMesh(opaqueSubMeshes.data[index]);
-            }
-
-            for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                this._renderSubMesh(alphaTestSubMeshes.data[index]);
-            }
-
-            const previousAlphaMode = engine.getAlphaMode();
-
-            for (index = 0; index < transparentSubMeshes.length; index++) {
-                const subMesh = transparentSubMeshes.data[index];
-                const material = subMesh.getMaterial();
-                if (material && material.needDepthPrePass) {
-                    const engine = material.getScene().getEngine();
-                    engine.setColorWrite(false);
-                    this._renderSubMesh(subMesh);
-                    engine.setColorWrite(true);
-                }
-                this._renderSubMesh(subMesh, true);
-            }
-
-            engine.setAlphaMode(previousAlphaMode);
-        };
-
         this._mainTexture.onClearObservable.add((engine: AbstractEngine) => {
             engine.clear(this.neutralColor, true, true, true);
         });
-
-        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        if (this._scene.getBoundingBoxRenderer) {
-            const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
-
-            this._mainTexture.onBeforeBindObservable.add(() => {
-                this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
-            });
-
-            this._mainTexture.onAfterUnbindObservable.add(() => {
-                this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
-            });
-        }
     }
 
     /**
@@ -567,274 +505,24 @@ export abstract class EffectLayer {
      * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
-        const engine = this._scene.getEngine();
-        const mesh = subMesh.getMesh();
-
-        const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
-
-        if (renderingMaterial) {
-            return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
-        }
-
-        const material = subMesh.getMaterial();
-
-        if (!material) {
-            return false;
-        }
-
-        if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
-            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
-        }
-
-        const defines: string[] = [];
-
-        const attribs = [VertexBuffer.PositionKind];
-
-        let uv1 = false;
-        let uv2 = false;
-
-        // Diffuse
-        if (material) {
-            const needAlphaTest = material.needAlphaTesting();
-
-            const diffuseTexture = material.getAlphaTestTexture();
-            const needAlphaBlendFromDiffuse =
-                diffuseTexture && diffuseTexture.hasAlpha && ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
-
-            if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
-                defines.push("#define DIFFUSE");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && diffuseTexture.coordinatesIndex === 1) {
-                    defines.push("#define DIFFUSEUV2");
-                    uv2 = true;
-                } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    defines.push("#define DIFFUSEUV1");
-                    uv1 = true;
-                }
-
-                if (needAlphaTest) {
-                    defines.push("#define ALPHATEST");
-                    defines.push("#define ALPHATESTVALUE 0.4");
-                }
-                if (!diffuseTexture.gammaSpace) {
-                    defines.push("#define DIFFUSE_ISLINEAR");
-                }
-            }
-
-            const opacityTexture = (material as any).opacityTexture;
-            if (opacityTexture) {
-                defines.push("#define OPACITY");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && opacityTexture.coordinatesIndex === 1) {
-                    defines.push("#define OPACITYUV2");
-                    uv2 = true;
-                } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    defines.push("#define OPACITYUV1");
-                    uv1 = true;
-                }
-            }
-        }
-
-        // Emissive
-        if (emissiveTexture) {
-            defines.push("#define EMISSIVE");
-            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && emissiveTexture.coordinatesIndex === 1) {
-                defines.push("#define EMISSIVEUV2");
-                uv2 = true;
-            } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                defines.push("#define EMISSIVEUV1");
-                uv1 = true;
-            }
-            if (!emissiveTexture.gammaSpace) {
-                defines.push("#define EMISSIVE_ISLINEAR");
-            }
-        }
-
-        // Vertex
-        if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha && material.transparencyMode !== Material.MATERIAL_OPAQUE) {
-            attribs.push(VertexBuffer.ColorKind);
-            defines.push("#define VERTEXALPHA");
-        }
-
-        if (uv1) {
-            attribs.push(VertexBuffer.UVKind);
-            defines.push("#define UV1");
-        }
-        if (uv2) {
-            attribs.push(VertexBuffer.UV2Kind);
-            defines.push("#define UV2");
-        }
-
-        // Bones
-        const fallbacks = new EffectFallbacks();
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            }
-
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-
-            const skeleton = mesh.skeleton;
-            if (skeleton && skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-            } else {
-                defines.push("#define BonesPerMesh " + (skeleton ? skeleton.bones.length + 1 : 0));
-            }
-
-            if (mesh.numBoneInfluencers > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
-        } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
-        }
-
-        // Morph targets
-        const numMorphInfluencers = mesh.morphTargetManager
-            ? PrepareDefinesAndAttributesForMorphTargets(
-                  mesh.morphTargetManager,
-                  defines,
-                  attribs,
-                  mesh,
-                  true, // usePositionMorph
-                  false, // useNormalMorph
-                  false, // useTangentMorph
-                  uv1, // useUVMorph
-                  uv2 // useUV2Morph
-              )
-            : 0;
-
-        // Instances
-        if (useInstances) {
-            defines.push("#define INSTANCES");
-            PushAttributesForInstances(attribs);
-            if (subMesh.getRenderingMesh().hasThinInstances) {
-                defines.push("#define THIN_INSTANCES");
-            }
-        }
-
-        // ClipPlanes
-        prepareStringDefinesForClipPlanes(material, this._scene, defines);
-
-        this._addCustomEffectDefines(defines);
-
-        // Get correct effect
-        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
-        const cachedDefines = drawWrapper.defines as string;
-        const join = defines.join("\n");
-        if (cachedDefines !== join) {
-            const uniforms = [
-                "world",
-                "mBones",
-                "viewProjection",
-                "glowColor",
-                "morphTargetInfluences",
-                "morphTargetCount",
-                "boneTextureWidth",
-                "diffuseMatrix",
-                "emissiveMatrix",
-                "opacityMatrix",
-                "opacityIntensity",
-                "morphTargetTextureInfo",
-                "morphTargetTextureIndices",
-                "glowIntensity",
-            ];
-
-            addClipPlaneUniforms(uniforms);
-
-            drawWrapper.setEffect(
-                this._engine.createEffect(
-                    "glowMapGeneration",
-                    attribs,
-                    uniforms,
-                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
-                    join,
-                    fallbacks,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers },
-                    this._shaderLanguage,
-                    this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              await this._importShadersAsync();
-                              this._shadersLoaded = true;
-                          }
-                ),
-                join
-            );
-        }
-
-        const effectIsReady = drawWrapper.effect!.isReady();
-
-        return this._arePostProcessAndMergeReady() && effectIsReady;
+        return this._internalThinEffectLayer
+            ? this._thinEffectLayer._internalIsSubMeshReady(subMesh, useInstances, emissiveTexture)
+            : this._thinEffectLayer._isSubMeshReady(subMesh, useInstances, emissiveTexture);
     }
 
-    protected async _importShadersAsync(): Promise<void> {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
-        }
-    }
+    protected async _importShadersAsync(): Promise<void> {}
 
     protected _arePostProcessAndMergeReady(): boolean {
-        let isReady = true;
-
-        for (let i = 0; i < this._postProcesses.length; i++) {
-            isReady = this._postProcesses[i].isReady() && isReady;
-        }
-
-        const numDraws = this._numInternalDraws();
-
-        for (let i = 0; i < numDraws; ++i) {
-            let currentEffect = this._mergeDrawWrapper[i];
-            if (!currentEffect) {
-                currentEffect = this._mergeDrawWrapper[i] = new DrawWrapper(this._engine);
-                currentEffect.setEffect(this._createMergeEffect());
-            }
-            isReady = currentEffect.effect!.isReady() && isReady;
-        }
-
-        return isReady;
+        return this._internalThinEffectLayer ? this._thinEffectLayer._internalIsLayerReady() : this._thinEffectLayer.isLayerReady();
     }
 
     /**
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
-        if (!this._arePostProcessAndMergeReady()) {
+        if (!this._thinEffectLayer.compose()) {
             return;
         }
-
-        const engine = this._scene.getEngine();
-        const numDraws = this._numInternalDraws();
-
-        this.onBeforeComposeObservable.notifyObservers(this);
-
-        const previousAlphaMode = engine.getAlphaMode();
-
-        for (let i = 0; i < numDraws; ++i) {
-            const currentEffect = this._mergeDrawWrapper[i];
-
-            // Render
-            engine.enableEffect(currentEffect);
-            engine.setState(false);
-
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect.effect!);
-
-            // Go Blend.
-            engine.setAlphaMode(this._effectLayerOptions.alphaBlendingMode);
-
-            // Blends the map on the main canvas.
-            this._internalRender(currentEffect.effect!, i);
-        }
-
-        // Restore Alpha
-        engine.setAlphaMode(previousAlphaMode);
-
-        this.onAfterComposeObservable.notifyObservers(this);
 
         // Handle size changes.
         const size = this._mainTexture.getSize();
@@ -858,10 +546,7 @@ export abstract class EffectLayer {
      * @returns true if the mesh will be used
      */
     public hasMesh(mesh: AbstractMesh): boolean {
-        if (this.renderingGroupId === -1 || mesh.renderingGroupId === this.renderingGroupId) {
-            return true;
-        }
-        return false;
+        return this._internalThinEffectLayer ? this._thinEffectLayer._internalHasMesh(mesh) : this._thinEffectLayer.hasMesh(mesh);
     }
 
     /**
@@ -869,7 +554,7 @@ export abstract class EffectLayer {
      * @returns true if the glow layer should be rendered
      */
     public shouldRender(): boolean {
-        return this.isEnabled && this._shouldRender;
+        return this._internalThinEffectLayer ? this._thinEffectLayer._internalShouldRender() : this._thinEffectLayer.shouldRender();
     }
 
     /**
@@ -879,7 +564,7 @@ export abstract class EffectLayer {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
-        return true;
+        return this._internalThinEffectLayer ? true : this._thinEffectLayer._shouldRenderMesh(mesh);
     }
 
     /**
@@ -889,7 +574,7 @@ export abstract class EffectLayer {
      * @returns true if it can be rendered otherwise false
      */
     protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
-        return !material.needAlphaBlendingForMesh(mesh);
+        return this._internalThinEffectLayer ? this._thinEffectLayer._internalCanRenderMesh(mesh, material) : this._thinEffectLayer._canRenderMesh(mesh, material);
     }
 
     /**
@@ -901,185 +586,13 @@ export abstract class EffectLayer {
     }
 
     /**
-     * Renders the submesh passed in parameter to the generation map.
-     * @param subMesh
-     * @param enableAlphaMode
-     */
-    protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
-        if (!this.shouldRender()) {
-            return;
-        }
-
-        const material = subMesh.getMaterial();
-        const ownerMesh = subMesh.getMesh();
-        const replacementMesh = subMesh.getReplacementMesh();
-        const renderingMesh = subMesh.getRenderingMesh();
-        const effectiveMesh = subMesh.getEffectiveMesh();
-        const scene = this._scene;
-        const engine = scene.getEngine();
-
-        effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
-
-        if (!material) {
-            return;
-        }
-
-        // Do not block in blend mode.
-        if (!this._canRenderMesh(renderingMesh, material)) {
-            return;
-        }
-
-        // Culling
-        let sideOrientation = material._getEffectiveOrientation(renderingMesh);
-        const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-        if (mainDeterminant < 0) {
-            sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
-        }
-
-        const reverse = sideOrientation === Material.ClockWiseSideOrientation;
-        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, undefined, material.zOffsetUnits);
-
-        // Managing instances
-        const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
-        if (batch.mustReturn) {
-            return;
-        }
-
-        // Early Exit per mesh
-        if (!this._shouldRenderMesh(renderingMesh)) {
-            return;
-        }
-
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
-
-        this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
-
-        this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
-
-        if (this._useMeshMaterial(renderingMesh)) {
-            subMesh.getMaterial()!._glowModeEnabled = true;
-            renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
-            subMesh.getMaterial()!._glowModeEnabled = false;
-        } else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
-
-            let drawWrapper = subMesh._getDrawWrapper();
-            if (!drawWrapper && renderingMaterial) {
-                drawWrapper = renderingMaterial._getDrawWrapper();
-            }
-
-            if (!drawWrapper) {
-                return;
-            }
-
-            const effect = drawWrapper.effect!;
-
-            engine.enableEffect(drawWrapper);
-            if (!hardwareInstancedRendering) {
-                renderingMesh._bind(subMesh, effect, material.fillMode);
-            }
-
-            if (!renderingMaterial) {
-                effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                effect.setMatrix("world", effectiveMesh.getWorldMatrix());
-                effect.setFloat4(
-                    "glowColor",
-                    this._emissiveTextureAndColor.color.r,
-                    this._emissiveTextureAndColor.color.g,
-                    this._emissiveTextureAndColor.color.b,
-                    this._emissiveTextureAndColor.color.a
-                );
-            } else {
-                renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
-            }
-
-            if (!renderingMaterial) {
-                const needAlphaTest = material.needAlphaTesting();
-
-                const diffuseTexture = material.getAlphaTestTexture();
-                const needAlphaBlendFromDiffuse =
-                    diffuseTexture && diffuseTexture.hasAlpha && ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
-
-                if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
-                    effect.setTexture("diffuseSampler", diffuseTexture);
-                    const textureMatrix = diffuseTexture.getTextureMatrix();
-
-                    if (textureMatrix) {
-                        effect.setMatrix("diffuseMatrix", textureMatrix);
-                    }
-                }
-
-                const opacityTexture = (material as any).opacityTexture;
-                if (opacityTexture) {
-                    effect.setTexture("opacitySampler", opacityTexture);
-                    effect.setFloat("opacityIntensity", opacityTexture.level);
-                    const textureMatrix = opacityTexture.getTextureMatrix();
-                    if (textureMatrix) {
-                        effect.setMatrix("opacityMatrix", textureMatrix);
-                    }
-                }
-
-                // Glow emissive only
-                if (this._emissiveTextureAndColor.texture) {
-                    effect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
-                    effect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
-                }
-
-                // Bones
-                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    const skeleton = renderingMesh.skeleton;
-
-                    if (skeleton.isUsingTextureForMatrices) {
-                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                        if (!boneTexture) {
-                            return;
-                        }
-
-                        effect.setTexture("boneSampler", boneTexture);
-                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                    } else {
-                        effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
-                    }
-                }
-
-                // Morph targets
-                BindMorphTargetParameters(renderingMesh, effect);
-                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                    renderingMesh.morphTargetManager._bind(effect);
-                }
-
-                // Alpha mode
-                if (enableAlphaMode) {
-                    engine.setAlphaMode(material.alphaMode);
-                }
-
-                // Intensity of effect
-                effect.setFloat("glowIntensity", this.getEffectIntensity(renderingMesh));
-
-                // Clip planes
-                bindClipPlane(effect, material, scene);
-            }
-
-            // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
-                effect.setMatrix("world", world)
-            );
-        } else {
-            // Need to reset refresh rate of the main map
-            this._mainTexture.resetRefreshCounter();
-        }
-
-        this.onAfterRenderMeshToEffect.notifyObservers(ownerMesh);
-    }
-
-    /**
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      * @returns true if the mesh material should be use
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
-        return false;
+        return this._internalThinEffectLayer ? false : this._thinEffectLayer._useMeshMaterial(mesh);
     }
 
     /**
@@ -1087,13 +600,7 @@ export abstract class EffectLayer {
      * @internal Internal use only.
      */
     public _rebuild(): void {
-        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
-
-        if (vb) {
-            vb._rebuild();
-        }
-
-        this._generateIndexBuffer();
+        this._thinEffectLayer._rebuild();
     }
 
     /**
@@ -1121,21 +628,7 @@ export abstract class EffectLayer {
      * Dispose the highlight layer and free resources.
      */
     public dispose(): void {
-        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
-        if (vertexBuffer) {
-            vertexBuffer.dispose();
-            this._vertexBuffers[VertexBuffer.PositionKind] = null;
-        }
-
-        if (this._indexBuffer) {
-            this._scene.getEngine()._releaseBuffer(this._indexBuffer);
-            this._indexBuffer = null;
-        }
-
-        for (const drawWrapper of this._mergeDrawWrapper) {
-            drawWrapper.dispose();
-        }
-        this._mergeDrawWrapper = [];
+        this._thinEffectLayer.dispose();
 
         // Clean textures and post processes
         this._disposeTextureAndPostProcesses();
@@ -1147,8 +640,6 @@ export abstract class EffectLayer {
         }
 
         // Callback
-        this.onDisposeObservable.notifyObservers(this);
-
         this.onDisposeObservable.clear();
         this.onBeforeRenderMainTextureObservable.clear();
         this.onBeforeComposeObservable.clear();

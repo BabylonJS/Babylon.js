@@ -297,9 +297,15 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             throw new Error(`FrameGraphShadowGeneratorTask ${this.name}: light and objectList are required`);
         }
 
-        const shadowMap = this._frameGraph.textureManager.importTexture(`${this.name} shadowmap`, this._shadowGenerator!.getShadowMap()!.getInternalTexture()!);
+        // Make sure the renderList / particleSystemList are set when FrameGraphShadowGeneratorTask.isReady() is called!
+        const shadowMap = this._shadowGenerator!.getShadowMap()!;
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, shadowMap);
+        shadowMap.renderList = this.objectList.meshes;
+        shadowMap.particleSystemList = this.objectList.particleSystems;
+
+        const shadowTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} shadowmap`, this._shadowGenerator!.getShadowMap()!.getInternalTexture()!);
+
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, shadowTextureHandle);
 
         const pass = this._frameGraph.addPass(this.name);
 
