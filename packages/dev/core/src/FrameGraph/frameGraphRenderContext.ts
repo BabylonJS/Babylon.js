@@ -250,10 +250,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
                 this._scene.incrementRenderId();
                 this._scene.resetCachedMaterial();
 
+                this._applyRenderTarget();
+
                 object.prepareRenderList();
+
                 object.initRender(viewportWidth!, viewportHeight!);
 
-                this._applyRenderTarget();
                 object.render();
 
                 object.finishRender();
@@ -297,7 +299,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
-    private _applyRenderTarget() {
+    /** @internal */
+    public _applyRenderTarget() {
         if (this._renderTargetIsBound) {
             return;
         }
