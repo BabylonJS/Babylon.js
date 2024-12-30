@@ -1,6 +1,137 @@
 {
-    "fromTag": "7.40.4",
+    "fromTag": "7.41.1",
     "changelog": {
+        "7.42.0": [
+            {
+                "pr": "16021",
+                "title": "Fix volume refresh for GS",
+                "description": "https://forum.babylonjs.com/t/wrong-z-in-bouding-box-of-gaussian-splat/55481/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16019",
+                "title": "Limit cases where KHR_texture_transform offset is adjusted for non-origin rotation",
+                "description": "I overlooked how scaling affects the calculations here https://github.com/BabylonJS/Babylon.js/pull/16015. For now, just go back to the original behavior (don't export KHR_texture_transform) if we can't adjust this offset. \r\n\r\nWhile here, I also merged preExportTexture into postExportTexture so we don't have to check conditions twice.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.41.1": [
+            {
+                "pr": "16020",
+                "title": "use _retryWithInterval where possible",
+                "description": "cc @RaananW ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16018",
+                "title": "Import pass shader in glTF serializer",
+                "description": "See https://forum.babylonjs.com/t/issue-importing-shader-during-gltf-export/55465",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16017",
+                "title": "Allow exporting children of skipped nodes in glTF exporter",
+                "description": "See https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421/2 . Expected behavior is that all nodes are checked for export using `shouldExportNode()`, regardless of whether parent is being exported or not, but we missed this in https://github.com/BabylonJS/Babylon.js/pull/15869. \r\n\r\nNow children add themselves to their parent instead of parents tracking and adding their children. This helps address a weird situation where a child node is skipped, so its parent needs to add the indices of several grandchildren instead of just the child’s index (which is null anyway). The new `parentNodeChildren` parameter also helps with accessing the glTF root node list, in the case where a root node is skipped but has children that should be reparented to the root.\r\n\r\nAlso factored out the creation of the glTF nodes into _createNodeAsync() so that we can early return a null (meaning skipped) node and still process its children afterwards in _exportNodeAsync().",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16014",
+                "title": "Morph target manager: Refactor of code + ability to disable position morphing",
+                "description": "The morph texture was created too often, which led to problems with the fast snapshot rendering mode in WebGPU.\r\n\r\nSo, I reworked the code and also added the option of not morphing positions.\r\n\r\n[EDIT] Supporting \"positions\" optionally is a breaking change, as I had to add the \"MORPHTARGETS_POSITION\" define in a few places in the code. Let me know if I should remove this feature.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16016",
+                "title": "Mesh: Fix wireframe for unindexed meshes",
+                "description": "See https://forum.babylonjs.com/t/wireframe-not-rendered-for-unindexed-mesh/55460/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
         "7.41.0": [
             {
                 "pr": "16015",
