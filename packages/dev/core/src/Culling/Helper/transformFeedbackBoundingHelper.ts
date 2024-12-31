@@ -5,7 +5,12 @@ import type { Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
 import type { Nullable } from "core/types";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
+import {
+    BindBonesParameters,
+    BindMorphTargetParameters,
+    PrepareAttributesForBakedVertexAnimation,
+    PrepareDefinesAndAttributesForMorphTargets,
+} from "core/Materials/materialHelper.functions";
 import type { Mesh } from "core/Meshes/mesh";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
 import { extractMinAndMax } from "core/Maths/math.functions";
@@ -61,11 +66,8 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
 
             // Get correct effect
             let computeEffect: Effect;
-            let numInfluencers = 0;
             const defines: string[] = [];
-            let uniforms: string[] = [];
             const attribs = [VertexBuffer.PositionKind];
-            const samplers: string[] = [];
 
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
@@ -75,87 +77,50 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
-
-                const skeleton = mesh.skeleton;
-
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-
-                if (skeleton.isUsingTextureForMatrices) {
-                    defines.push("#define BONETEXTURE");
-
-                    if (uniforms.indexOf("boneTextureWidth") === -1) {
-                        uniforms.push("boneTextureWidth");
-                    }
-
-                    if (samplers.indexOf("boneSampler") === -1) {
-                        samplers.push("boneSampler");
-                    }
-                } else {
-                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-
-                    if (uniforms.indexOf("mBones") === -1) {
-                        uniforms.push("mBones");
-                    }
-                }
+                defines.push("#define BONETEXTURE " + mesh.skeleton.isUsingTextureForMatrices);
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
             // Morph
-            const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
-            if (manager) {
-                numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-                if (numInfluencers > 0) {
-                    defines.push("#define MORPHTARGETS");
-                    defines.push("#define MORPHTARGETS_POSITION");
-                }
-                if (manager.isUsingTextureForTargets) {
-                    defines.push("#define MORPHTARGETS_TEXTURE");
-
-                    if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
-                        uniforms.push("morphTargetTextureIndices");
-                    }
-
-                    if (samplers.indexOf("morphTargets") === -1) {
-                        samplers.push("morphTargets");
-                    }
-                }
-                defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-                for (let index = 0; index < numInfluencers; index++) {
-                    attribs.push(VertexBuffer.PositionKind + index);
-                }
-                if (numInfluencers > 0) {
-                    uniforms = uniforms.slice();
-                    uniforms.push("morphTargetInfluences");
-                    uniforms.push("morphTargetCount");
-                    uniforms.push("morphTargetTextureInfo");
-                    uniforms.push("morphTargetTextureIndices");
-                }
-            }
+            const numMorphInfluencers = mesh.morphTargetManager
+                ? PrepareDefinesAndAttributesForMorphTargets(
+                      mesh.morphTargetManager,
+                      defines,
+                      attribs,
+                      mesh,
+                      true, // usePositionMorph
+                      false, // useNormalMorph
+                      false, // useTangentMorph
+                      false, // useUVMorph
+                      false // useUV2Morph
+                  )
+                : 0;
 
             // Baked Vertex Animation
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
-
             if (bvaManager && bvaManager.isEnabled) {
                 defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-                if (uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
-                    uniforms.push("bakedVertexAnimationSettings");
-                }
-                if (uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
-                    uniforms.push("bakedVertexAnimationTextureSizeInverted");
-                }
-                if (uniforms.indexOf("bakedVertexAnimationTime") === -1) {
-                    uniforms.push("bakedVertexAnimationTime");
-                }
-
-                if (samplers.indexOf("bakedVertexAnimationTexture") === -1) {
-                    samplers.push("bakedVertexAnimationTexture");
-                }
                 PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
             }
 
             const join = defines.join("\n");
             if (!this._effects[join]) {
+                const uniforms = [
+                    "boneTextureWidth",
+                    "mBones",
+                    "morphTargetInfluences",
+                    "morphTargetCount",
+                    "morphTargetTextureInfo",
+                    "morphTargetTextureIndices",
+                    "bakedVertexAnimationSettings",
+                    "bakedVertexAnimationTextureSizeInverted",
+                    "bakedVertexAnimationTime",
+                ];
+                const samplers = ["boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
+
                 const computeEffectOptions = {
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -165,7 +130,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                     fallbacks: null,
                     onCompiled: null,
                     onError: null,
-                    indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                    indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                     maxSimultaneousLights: 0,
                     transformFeedbackVaryings: ["outPosition"],
                 };
@@ -204,9 +169,9 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         BindBonesParameters(mesh, effect);
 
         // Morph targets
-        const manager = (<Mesh>mesh).morphTargetManager;
-        if (manager && manager.numInfluencers > 0) {
-            BindMorphTargetParameters(<Mesh>mesh, effect);
+        BindMorphTargetParameters(mesh, effect);
+        if (mesh.morphTargetManager && mesh.morphTargetManager.isUsingTextureForTargets) {
+            mesh.morphTargetManager._bind(effect);
         }
 
         // BVA

@@ -20,7 +20,7 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 
@@ -541,20 +541,19 @@ export class ThinEffectLayer {
         }
 
         // Morph targets
-        const manager = (<Mesh>mesh).morphTargetManager;
-        let morphInfluencers = 0;
-        if (manager) {
-            morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (morphInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                defines.push("#define MORPHTARGETS_POSITION");
-                defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                if (manager.isUsingTextureForTargets) {
-                    defines.push("#define MORPHTARGETS_TEXTURE");
-                }
-                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
-            }
-        }
+        const numMorphInfluencers = mesh.morphTargetManager
+            ? PrepareDefinesAndAttributesForMorphTargets(
+                  mesh.morphTargetManager,
+                  defines,
+                  attribs,
+                  mesh,
+                  true, // usePositionMorph
+                  false, // useNormalMorph
+                  false, // useTangentMorph
+                  uv1, // useUVMorph
+                  uv2 // useUV2Morph
+              )
+            : 0;
 
         // Instances
         if (useInstances) {
@@ -604,7 +603,7 @@ export class ThinEffectLayer {
                     fallbacks,
                     undefined,
                     undefined,
-                    { maxSimultaneousMorphTargets: morphInfluencers },
+                    { maxSimultaneousMorphTargets: numMorphInfluencers },
                     this._shaderLanguage,
                     this._shadersLoaded
                         ? undefined

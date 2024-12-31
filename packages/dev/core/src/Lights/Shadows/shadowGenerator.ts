@@ -31,7 +31,7 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
-    PrepareAttributesForMorphTargetsInfluencers,
+    PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -1329,7 +1329,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 // Morph targets
                 BindMorphTargetParameters(renderingMesh, effect);
-
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
@@ -1552,10 +1551,15 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const mesh = subMesh.getMesh();
 
+            let useNormal = false;
+            let uv1 = false;
+            let uv2 = false;
+
             // Normal bias.
             if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 attribs.push(VertexBuffer.NormalKind);
                 defines.push("#define NORMAL");
+                useNormal = true;
                 if (mesh.nonUniformScaling) {
                     defines.push("#define NONUNIFORMSCALING");
                 }
@@ -1584,11 +1588,13 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
+                        uv1 = true;
                     }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                         if (this._opacityTexture.coordinatesIndex === 1) {
                             attribs.push(VertexBuffer.UV2Kind);
                             defines.push("#define UV2");
+                            uv2 = true;
                         }
                     }
                 }
@@ -1619,20 +1625,19 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Morph targets
-            const manager = (<Mesh>mesh).morphTargetManager;
-            let morphInfluencers = 0;
-            if (manager) {
-                morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-                if (morphInfluencers > 0) {
-                    defines.push("#define MORPHTARGETS");
-                    defines.push("#define MORPHTARGETS_POSITION");
-                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                    if (manager.isUsingTextureForTargets) {
-                        defines.push("#define MORPHTARGETS_TEXTURE");
-                    }
-                    PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
-                }
-            }
+            const numMorphInfluencers = mesh.morphTargetManager
+                ? PrepareDefinesAndAttributesForMorphTargets(
+                      mesh.morphTargetManager,
+                      defines,
+                      attribs,
+                      mesh,
+                      true, // usePositionMorph
+                      useNormal, // useNormalMorph
+                      false, // useTangentMorph
+                      uv1, // useUVMorph
+                      uv2 // useUV2Morph
+                  )
+                : 0;
 
             // ClipPlanes
             prepareStringDefinesForClipPlanes(material, this._scene, defines);
@@ -1737,7 +1742,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         fallbacks: fallbacks,
                         onCompiled: null,
                         onError: null,
-                        indexParameters: { maxSimultaneousMorphTargets: morphInfluencers },
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
                     },
                     engine
