@@ -95,7 +95,7 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         grlNormal.x *= grlFinalPosition.w;
                         grlNormal.y *= grlFinalPosition.w;
 
-                        let pr: f32 = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
+                        let pr = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
                         grlNormal.x /= pr.x;
                         grlNormal.y /= pr.y;
                     #endif

@@ -693,7 +693,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
             this._internalAbstractMeshDataInfo._materialForRenderPass = [];
         }
+        const currentMaterial = this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId];
+        if (currentMaterial?.meshMap?.[this.uniqueId]) {
+            currentMaterial.meshMap[this.uniqueId] = undefined;
+        }
+
         this._internalAbstractMeshDataInfo._materialForRenderPass[renderPassId] = material;
+        if (material && material.meshMap) {
+            material.meshMap[this.uniqueId] = this;
+        }
     }
 
     /**
@@ -2736,6 +2744,26 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
         this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+        return this;
+    }
+
+    /**
+     * Optimize the indices order so that we keep the faces with similar indices together
+     * @returns the current mesh
+     */
+    public async optimizeIndicesAsync(): Promise<AbstractMesh> {
+        const indices = this.getIndices();
+
+        if (!indices) {
+            return this;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { OptimizeIndices } = await import("./mesh.vertexData.functions");
+
+        OptimizeIndices(indices);
+
+        this.setIndices(indices, this.getTotalVertices());
         return this;
     }
 

@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "exactOptionalPropertyTypes": true,
+        "rootDir": "./src"
     },
 
     "references": [

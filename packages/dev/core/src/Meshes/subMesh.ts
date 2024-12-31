@@ -436,8 +436,15 @@ export class SubMesh implements ICullable {
         if (!this._linesIndexBuffer) {
             const linesIndices = [];
 
-            for (let index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-                linesIndices.push(indices[index], indices[index + 1], indices[index + 1], indices[index + 2], indices[index + 2], indices[index]);
+            if (indices.length === 0) {
+                // Unindexed mesh
+                for (let index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+                    linesIndices.push(index, index + 1, index + 1, index + 2, index + 2, index);
+                }
+            } else {
+                for (let index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+                    linesIndices.push(indices[index], indices[index + 1], indices[index + 1], indices[index + 2], indices[index + 2], indices[index]);
+                }
             }
 
             this._linesIndexBuffer = engine.createIndexBuffer(linesIndices);

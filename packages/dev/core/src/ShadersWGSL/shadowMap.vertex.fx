@@ -50,6 +50,9 @@ var positionUpdated: vec3f = input.position;
 #ifdef UV1
     var uvUpdated: vec2f = input.uv;
 #endif
+#ifdef UV2
+    var uv2Updated: vec2f = input.uv2;
+#endif
 #ifdef NORMAL
 	var normalUpdated: vec3f = input.normal;
 #endif
@@ -90,7 +93,7 @@ vertexOutputs.position = scene.viewProjection * worldPos;
         vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
     #endif
     #ifdef UV2
-        vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
+        vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
     #endif
 #endif
 

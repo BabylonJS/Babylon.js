@@ -9,6 +9,7 @@ import { FrameGraphRenderPass } from "./Passes/renderPass";
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
+    protected readonly _internalDependencies: FrameGraphTextureHandle[] = [];
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
@@ -40,6 +41,11 @@ export abstract class FrameGraphTask {
     public set disabled(value: boolean) {
         this._disabled = value;
     }
+
+    /**
+     * The (texture) dependencies of the task (optional).
+     */
+    public dependencies?: FrameGraphTextureHandle[];
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
@@ -76,6 +82,7 @@ export abstract class FrameGraphTask {
     public _reset() {
         this._passes.length = 0;
         this._passesDisabled.length = 0;
+        this._internalDependencies.length = 0;
     }
 
     /** @internal */

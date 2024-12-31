@@ -343,6 +343,7 @@ export class ThinEngine extends AbstractEngine {
                 this._onContextLost = (evt: Event) => {
                     evt.preventDefault();
                     this._contextWasLost = true;
+                    deleteStateObject(this._gl);
                     Logger.Warn("WebGL context lost.");
 
                     this.onContextLostObservable.notifyObservers(this);
@@ -352,11 +353,16 @@ export class ThinEngine extends AbstractEngine {
                     this._restoreEngineAfterContextLost(() => this._initGLContext());
                 };
 
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
 
                 options.powerPreference = options.powerPreference || "high-performance";
+            } else {
+                this._onContextLost = () => {
+                    deleteStateObject(this._gl);
+                };
             }
+
+            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
 
             if (this._badDesktopOS) {
                 options.xrCompatible = false;
@@ -4051,8 +4057,9 @@ export class ThinEngine extends AbstractEngine {
         // Events
         if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
-                if (!this._doNotHandleContextLost) {
-                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+
+                if (this._onContextRestored) {
                     this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
                 }
             }

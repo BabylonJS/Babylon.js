@@ -108,7 +108,11 @@ export class LatticePluginMaterial extends MaterialPluginBase {
      * @param shaderLanguage The shader language to use.
      * @returns the description of the uniforms
      */
-    public override getUniforms(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL) {
+    public override getUniforms(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL): {
+        ubo: { name: string; size: number; type: string; arraySize?: number }[];
+        vertex?: string;
+        fragment?: string;
+    } {
         if (shaderLanguage === ShaderLanguage.WGSL) {
             // For webgpu we only define the UBO with the correct type and size.
             return {

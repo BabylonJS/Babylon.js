@@ -76,6 +76,7 @@ export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
 export * from "./asyncLock";
+export * from "./bitArray";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

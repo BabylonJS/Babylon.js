@@ -15,7 +15,8 @@ import { ShaderLanguage } from "./shaderLanguage";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline, _retryWithInterval } from "./effect.functions";
+import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -608,7 +609,11 @@ export class Effect implements IDisposable {
             },
             (e) => {
                 this._processCompilationErrors(e, previousPipelineContext);
-            }
+            },
+            16,
+            30000,
+            true,
+            ` - Effect: ${typeof this.name === "string" ? this.name : this.key}`
         );
     }
 
@@ -886,6 +891,7 @@ export class Effect implements IDisposable {
                 this.onError(this, this._compilationError);
             }
             this.onErrorObservable.notifyObservers(this);
+            this._engine.onEffectErrorObservable.notifyObservers({ effect: this, errors: this._compilationError });
         };
 
         // In case a previous compilation was successful, we need to restore the previous pipeline context
