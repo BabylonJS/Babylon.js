@@ -148,6 +148,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target position */
+    public MORPHTARGETS_POSITION = false;
     /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
     /** Morph target tangent */
@@ -156,6 +158,16 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    /** Morph target support positions */
+    public MORPHTARGETTEXTURE_HASPOSITIONS = false;
+    /** Morph target support normals */
+    public MORPHTARGETTEXTURE_HASNORMALS = false;
+    /** Morph target support tangents */
+    public MORPHTARGETTEXTURE_HASTANGENTS = false;
+    /** Morph target support uvs */
+    public MORPHTARGETTEXTURE_HASUVS = false;
+    /** Morph target support uv2s */
+    public MORPHTARGETTEXTURE_HASUV2S = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */

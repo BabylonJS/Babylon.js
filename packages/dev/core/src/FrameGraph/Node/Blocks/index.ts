@@ -4,6 +4,8 @@ export * from "./inputBlock";
 export * from "./outputBlock";
 export * from "./resourceContainerBlock";
 
+export * from "./Layers/glowLayerBlock";
+
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";

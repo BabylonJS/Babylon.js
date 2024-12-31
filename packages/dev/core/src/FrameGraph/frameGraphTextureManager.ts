@@ -154,7 +154,7 @@ export class FrameGraphTextureManager {
         return {
             size: textureSizeIsObject(creationOptions.size) ? { ...creationOptions.size } : creationOptions.size,
             sizeIsPercentage: creationOptions.sizeIsPercentage,
-            options: this._cloneTextureOptions(creationOptions.options, entry.textureIndex),
+            options: FrameGraphTextureManager.CloneTextureOptions(creationOptions.options, entry.textureIndex),
             isHistoryTexture: creationOptions.isHistoryTexture,
         };
     }
@@ -257,7 +257,7 @@ export class FrameGraphTextureManager {
                 size: textureSizeIsObject(creationOptions.size) ? { ...creationOptions.size } : creationOptions.size,
                 sizeIsPercentage: creationOptions.sizeIsPercentage,
                 isHistoryTexture: creationOptions.isHistoryTexture,
-                options: this._cloneTextureOptions(creationOptions.options),
+                options: FrameGraphTextureManager.CloneTextureOptions(creationOptions.options),
             },
             this._isRecordingTask ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph,
             handle
@@ -342,7 +342,7 @@ export class FrameGraphTextureManager {
             name: textureEntry.name,
             creationOptions: {
                 size: { ...(textureEntry.creationOptions.size as { width: number; height: number; depth?: number; layers?: number }) },
-                options: this._cloneTextureOptions(textureEntry.creationOptions.options),
+                options: FrameGraphTextureManager.CloneTextureOptions(textureEntry.creationOptions.options),
                 sizeIsPercentage: textureEntry.creationOptions.sizeIsPercentage,
                 isHistoryTexture: false,
             },
@@ -623,7 +623,13 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    private _cloneTextureOptions(options: FrameGraphTextureOptions, textureIndex?: number): FrameGraphTextureOptions {
+    /**
+     * Clones a texture options
+     * @param options The options to clone
+     * @param textureIndex The index of the texture in the types, formats, etc array of FrameGraphTextureOptions. If not provided, all options are cloned.
+     * @returns The cloned options
+     */
+    public static CloneTextureOptions(options: FrameGraphTextureOptions, textureIndex?: number): FrameGraphTextureOptions {
         return textureIndex !== undefined
             ? {
                   createMipMaps: options.createMipMaps,

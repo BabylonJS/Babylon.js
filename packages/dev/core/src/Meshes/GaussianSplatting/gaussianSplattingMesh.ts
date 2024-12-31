@@ -1178,6 +1178,15 @@ export class GaussianSplattingMesh extends Mesh {
         runCoroutineSync(this._updateData(data, false, sh));
     }
 
+    /**
+     * Refreshes the bounding info, taking into account all the thin instances defined
+     * @returns the current Gaussian Splatting
+     */
+    public override refreshBoundingInfo(): Mesh {
+        this.thinInstanceRefreshBoundingInfo(false);
+        return this;
+    }
+
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {

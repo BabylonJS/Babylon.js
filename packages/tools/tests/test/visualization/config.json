@@ -1211,7 +1211,8 @@
         {
             "title": "GlowLayer",
             "playgroundId": "#LRFB2D#262",
-            "referenceImage": "GlowLayer.png"
+            "referenceImage": "GlowLayer.png",
+            "errorRatio": 2.5
         },
         {
             "title": "Local cubemaps",
@@ -2099,11 +2100,6 @@
         {
             "title": "simple-render-target-with-blue-spheres",
             "playgroundId": "#NRR7F4#0"
-        },
-        {
-            "title": "neon-pipe-with-glow-layer",
-            "renderCount": 5,
-            "playgroundId": "#X229PI#0"
         },
         {
             "title": "pillars-sphere-and-torus-with-PCSS-shadows",

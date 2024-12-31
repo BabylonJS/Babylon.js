@@ -2007,12 +2007,7 @@ export class ThinEngine extends AbstractEngine {
             defines,
             fallbacks,
             onCompiled,
-            (effect: Effect, errors: string) => {
-                if (onError) {
-                    onError(effect, errors);
-                }
-                this.onEffectErrorObservable.notifyObservers({ effect, errors });
-            },
+            onError,
             indexParameters,
             name,
             (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,

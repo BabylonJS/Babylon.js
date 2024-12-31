@@ -1,38 +1,348 @@
 {
-    "fromTag": "7.40.2",
+    "fromTag": "7.41.1",
     "changelog": {
-        "7.40.2": [
+        "7.42.0": [
             {
-                "pr": "15994",
-                "title": "Viewer: Allow environment texture and skybox to be set separately (and a couple other small changes)",
-                "description": "The main change in this PR is to allow the environment texture and the skybox to be configured separately (this has come up multiple times, including in the [forum](https://forum.babylonjs.com/t/babylon-viewer-v2/54317/37). To try to keep this simple, `Viewer.loadEnvironment` now has an options object where you can specify whether the \"environment\" should be used for lighting or skybox or both. On the html element level, the `environment` attribute behaves the same as before (sets both the env texture and the skybox), but there are also now `environment-lighting` and `environment-skybox` attributes if you want to set them separately. This makes `environment` essentially a shorthand, somewhat like `padding` relative to `padding-top`, `padding-bottom`, etc.\r\n\r\nThe other changes included in this PR are:\r\n- Adding a reset camera button (so that discovering double click/tap is not required). This change was based on feedback from @PatrickRyanMS.\r\n- If animation is playing, pause it when activating a hotspot (e.g. moving the camera to a pose associated with the hotspot). Without this, a `surface` type hotspot will almost certainly have moved by the time the camera finishes its interpolation. This change was based on feedback from @PatrickRyanMS.\r\n- Update the icons to use svg from https://iconcloud.design. This change was based on feedback from @PatrickRyanMS.\r\n- Mark various internal members as `@internal` so they don't show up in the API docs.",
+                "pr": "16021",
+                "title": "Fix volume refresh for GS",
+                "description": "https://forum.babylonjs.com/t/wrong-z-in-bouding-box-of-gaussian-splat/55481/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16019",
+                "title": "Limit cases where KHR_texture_transform offset is adjusted for non-origin rotation",
+                "description": "I overlooked how scaling affects the calculations here https://github.com/BabylonJS/Babylon.js/pull/16015. For now, just go back to the original behavior (don't export KHR_texture_transform) if we can't adjust this offset. \r\n\r\nWhile here, I also merged preExportTexture into postExportTexture so we don't have to check conditions twice.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.41.1": [
+            {
+                "pr": "16020",
+                "title": "use _retryWithInterval where possible",
+                "description": "cc @RaananW ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16018",
+                "title": "Import pass shader in glTF serializer",
+                "description": "See https://forum.babylonjs.com/t/issue-importing-shader-during-gltf-export/55465",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16017",
+                "title": "Allow exporting children of skipped nodes in glTF exporter",
+                "description": "See https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421/2 . Expected behavior is that all nodes are checked for export using `shouldExportNode()`, regardless of whether parent is being exported or not, but we missed this in https://github.com/BabylonJS/Babylon.js/pull/15869. \r\n\r\nNow children add themselves to their parent instead of parents tracking and adding their children. This helps address a weird situation where a child node is skipped, so its parent needs to add the indices of several grandchildren instead of just the child’s index (which is null anyway). The new `parentNodeChildren` parameter also helps with accessing the glTF root node list, in the case where a root node is skipped but has children that should be reparented to the root.\r\n\r\nAlso factored out the creation of the glTF nodes into _createNodeAsync() so that we can early return a null (meaning skipped) node and still process its children afterwards in _exportNodeAsync().",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16014",
+                "title": "Morph target manager: Refactor of code + ability to disable position morphing",
+                "description": "The morph texture was created too often, which led to problems with the fast snapshot rendering mode in WebGPU.\r\n\r\nSo, I reworked the code and also added the option of not morphing positions.\r\n\r\n[EDIT] Supporting \"positions\" optionally is a breaking change, as I had to add the \"MORPHTARGETS_POSITION\" define in a few places in the code. Let me know if I should remove this feature.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16016",
+                "title": "Mesh: Fix wireframe for unindexed meshes",
+                "description": "See https://forum.babylonjs.com/t/wireframe-not-rendered-for-unindexed-mesh/55460/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
+        "7.41.0": [
+            {
+                "pr": "16015",
+                "title": "Adjust KHR_texture_transform offset for non-zero rotation center",
+                "description": "Forum issue: https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16013",
+                "title": "Add useFill parameter to CreateScreenshot",
+                "description": "CreateScreenshot currently letterboxes the rendering canvas in the screenshot. The `useFill` property, if true, will fill the given `size` dimension of the screenshot with the rendering canvas. If the rendering canvas' aspect ratio does not match the aspect ratio of the dimensions, then it will be clipped to fit. \r\n\r\nOther:\r\n- Early return if using `CreateScreenshotUsingRenderTarget`\r\n- Update comments",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16011",
+                "title": "More common shader constants and helpers for helperFunctions.fx",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx"
+                ],
+                "tags": []
+            }
+        ],
+        "7.40.4": [
+            {
+                "pr": "16012",
+                "title": "Add BitArray and use it in OptimizeIndices",
+                "description": "Booleans can be up to 4 bytes (depending on the JS engine and the scenario). A `BitArray` always uses just 1 bit per boolean, which means up to 32x less memory. Some light reading indicated that some JS engines will optimize Arrays that only contain booleans to use 1 bit per boolean, but this isn't what I saw happening when taking a few heap snapshots in Chrome (rather, I saw a ~5mb Array for a model with ~1.3M indices). Perf is pretty much identical between this `BitArray` and a normal `Array` of `boolean`s, until you have 100,000,000+ entries, in which case the `BitArray` is orders of magnitude faster. Not sure we'll ever have a use case this big, so maybe irrelevant, but good to know its now slower.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/tools/viewer-alpha/src/index.ts",
-                    "packages/tools/viewer-alpha/src/viewer.ts",
-                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts",
-                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts",
+                    "packages/dev/core/src/Misc/bitArray.ts",
+                    "packages/dev/core/src/Misc/index.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15993",
-                "title": "Fix XR's near interaction's selection mesh positioning",
-                "description": "The temp vectors were being used by other functions, which changed the tmpVector's value.\r\nAlso added a new flag to hide the selection mesh even if it should be visible.",
+                "pr": "15988",
+                "title": "use _retryWithInterval where possible",
+                "description": "This is an example of how _retryWithInterval can be used instead of setTimout of the calling function.\n\nThere are a few other places in the framework that could benefit from that, but looking for feedback whether or not it makes sense to do the work.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/timingTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16009",
+                "title": "Add a new optimizeIndices features to improve cache hit on large models",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16006",
+                "title": "Switch from uniform to defines",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
                 ],
                 "tags": [
-                    "bug"
+                    "skip changelog"
                 ]
+            },
+            {
+                "pr": "16003",
+                "title": "Allow CustomRequestModifiers to modify URL",
+                "description": "This can be useful, for example, when the assets are hosted on private S3 buckets and the user signs the URLs that Babylon requests on the fly.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15963",
+                "title": "Adding normalization to realtime irradiance filtering",
+                "description": "Big improvement to importance sampling irradiance using CDF. Previously, we weren't applying the PDF properly to each sample.\r\nNow, the results of real-time irradiance are very close to raytraced ground truth.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradiance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradianceCDF.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16002",
+                "title": "Integrate direct glow support in NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-automatic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-manual.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16004",
+                "title": "Support loading color grading texture from blob url",
+                "description": "The old check expects the URL to end with `.3dl`, which won't work for blob URLs.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts"
+                ],
+                "tags": []
             }
         ],
         "7.40.3": [
@@ -191,6 +501,40 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "7.40.2": [
+            {
+                "pr": "15994",
+                "title": "Viewer: Allow environment texture and skybox to be set separately (and a couple other small changes)",
+                "description": "The main change in this PR is to allow the environment texture and the skybox to be configured separately (this has come up multiple times, including in the [forum](https://forum.babylonjs.com/t/babylon-viewer-v2/54317/37). To try to keep this simple, `Viewer.loadEnvironment` now has an options object where you can specify whether the \"environment\" should be used for lighting or skybox or both. On the html element level, the `environment` attribute behaves the same as before (sets both the env texture and the skybox), but there are also now `environment-lighting` and `environment-skybox` attributes if you want to set them separately. This makes `environment` essentially a shorthand, somewhat like `padding` relative to `padding-top`, `padding-bottom`, etc.\r\n\r\nThe other changes included in this PR are:\r\n- Adding a reset camera button (so that discovering double click/tap is not required). This change was based on feedback from @PatrickRyanMS.\r\n- If animation is playing, pause it when activating a hotspot (e.g. moving the camera to a pose associated with the hotspot). Without this, a `surface` type hotspot will almost certainly have moved by the time the camera finishes its interpolation. This change was based on feedback from @PatrickRyanMS.\r\n- Update the icons to use svg from https://iconcloud.design. This change was based on feedback from @PatrickRyanMS.\r\n- Mark various internal members as `@internal` so they don't show up in the API docs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15993",
+                "title": "Fix XR's near interaction's selection mesh positioning",
+                "description": "The temp vectors were being used by other functions, which changed the tmpVector's value.\r\nAlso added a new flag to hide the selection mesh even if it should be visible.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],

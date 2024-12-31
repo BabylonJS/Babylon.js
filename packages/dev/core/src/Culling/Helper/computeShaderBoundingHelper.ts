@@ -145,7 +145,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             this._processedMeshes.push(mesh);
 
             const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager) {
+            if (manager && manager.supportsPositions) {
                 maxNumInfluencers = Math.max(maxNumInfluencers, manager.numTargets);
             }
         }
@@ -165,7 +165,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             this._uniqueComputeShaders.add(computeShaderWithoutMorph);
 
             const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager) {
+            if (manager && manager.supportsPositions) {
                 defines = defines.slice();
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + maxNumInfluencers);
@@ -232,7 +232,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             const [computeShaderWithoutMorph, computeShaderWithMorph] = this._computeShaders[i];
 
             const manager = (<Mesh>mesh).morphTargetManager;
-            const hasMorphs = manager && manager.numInfluencers > 0;
+            const hasMorphs = manager && manager.numInfluencers > 0 && manager.supportsPositions;
             const computeShader = hasMorphs ? computeShaderWithMorph : computeShaderWithoutMorph;
 
             this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);

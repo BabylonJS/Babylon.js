@@ -5,21 +5,32 @@
 			if (i >= morphTargetCount) break;
 
 			vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;
-			positionUpdated += (readVector3FromRawSampler(i, vertexID) - position) * morphTargetInfluences[i];
-			vertexID += 1.0;
+
+			#ifdef MORPHTARGETS_POSITION
+				positionUpdated += (readVector3FromRawSampler(i, vertexID) - position) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASPOSITIONS
+				vertexID += 1.0;
+			#endif
 		
 			#ifdef MORPHTARGETS_NORMAL
 				normalUpdated += (readVector3FromRawSampler(i, vertexID)  - normal) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASNORMALS
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_UV
 				uvUpdated += (readVector3FromRawSampler(i, vertexID).xy - uv) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASUVS
 				vertexID += 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
 				tangentUpdated.xyz += (readVector3FromRawSampler(i, vertexID)  - tangent.xyz) * morphTargetInfluences[i];
+			#endif
+			#ifdef MORPHTARGETTEXTURE_HASTANGENTS
 				vertexID += 1.0;
 			#endif
 
@@ -29,7 +40,9 @@
 		}
 		#endif
 	#else
+		#ifdef MORPHTARGETS_POSITION
 		positionUpdated += (position{X} - position) * morphTargetInfluences[{X}];
+		#endif
 		
 		#ifdef MORPHTARGETS_NORMAL
 		normalUpdated += (normal{X} - normal) * morphTargetInfluences[{X}];
