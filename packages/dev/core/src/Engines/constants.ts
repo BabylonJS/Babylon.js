@@ -948,4 +948,13 @@ export class Constants {
      * Additional matrix weights (for bones)
      */
     public static MatricesWeightsExtraKind = "matricesWeightsExtra";
+
+    /**
+     * The default minZ value for the near plane of a frustum light
+     */
+    public static ShadowMinZ = 0;
+    /**
+     * The default maxZ value for the far plane of a frustum light
+     */
+    public static ShadowMaxZ = 10000;
 }

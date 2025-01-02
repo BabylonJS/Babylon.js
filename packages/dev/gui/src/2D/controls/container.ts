@@ -468,18 +468,20 @@ export class Container extends Control {
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
                     computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
-                    if (this.width !== computedWidth + "px") {
+                    const width = computedWidth + "px";
+                    if (this.width !== width) {
                         this.parent?._markAsDirty();
-                        this.width = computedWidth + "px";
+                        this.width = width;
                         this._width.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
                     computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
-                    if (this.height !== computedHeight + "px") {
+                    const height = computedHeight + "px";
+                    if (this.height !== height) {
                         this.parent?._markAsDirty();
-                        this.height = computedHeight + "px";
+                        this.height = height;
                         this._height.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }

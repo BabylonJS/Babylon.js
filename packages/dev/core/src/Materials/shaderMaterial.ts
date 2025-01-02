@@ -31,6 +31,7 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareAttributesForBakedVertexAnimation,
+    PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
 import type { IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
@@ -771,47 +772,28 @@ export class ShaderMaterial extends PushMaterial {
         let numInfluencers = 0;
         const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
         if (manager) {
-            const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
-            const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
-            const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (uv) {
-                defines.push("#define MORPHTARGETS_UV");
-            }
-            if (tangent) {
-                defines.push("#define MORPHTARGETS_TANGENT");
-            }
-            if (normal) {
-                defines.push("#define MORPHTARGETS_NORMAL");
-            }
-            if (numInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-            }
+            const uv = defines.indexOf("#define UV1") !== -1;
+            const uv2 = defines.indexOf("#define UV2") !== -1;
+            const tangent = defines.indexOf("#define TANGENT") !== -1;
+            const normal = defines.indexOf("#define NORMAL") !== -1;
+            numInfluencers = PrepareDefinesAndAttributesForMorphTargets(
+                manager,
+                defines,
+                attribs,
+                mesh!,
+                true, // usePositionMorph
+                normal, // useNormalMorph
+                tangent, // useTangentMorph
+                uv, // useUVMorph
+                uv2 // useUV2Morph
+            );
             if (manager.isUsingTextureForTargets) {
-                defines.push("#define MORPHTARGETS_TEXTURE");
-
                 if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
                     uniforms.push("morphTargetTextureIndices");
                 }
 
                 if (this._options.samplers.indexOf("morphTargets") === -1) {
                     this._options.samplers.push("morphTargets");
-                }
-            }
-            defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-            for (let index = 0; index < numInfluencers; index++) {
-                attribs.push(VertexBuffer.PositionKind + index);
-
-                if (normal) {
-                    attribs.push(VertexBuffer.NormalKind + index);
-                }
-
-                if (tangent) {
-                    attribs.push(VertexBuffer.TangentKind + index);
-                }
-
-                if (uv) {
-                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
             }
             if (numInfluencers > 0) {
@@ -1224,9 +1206,9 @@ export class ShaderMaterial extends PushMaterial {
 
         if (effect && mesh && (mustRebind || !this.isFrozen)) {
             // Morph targets
-            const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager && manager.numInfluencers > 0) {
-                BindMorphTargetParameters(<Mesh>mesh, effect);
+            BindMorphTargetParameters(mesh, effect);
+            if (mesh.morphTargetManager && mesh.morphTargetManager.isUsingTextureForTargets) {
+                mesh.morphTargetManager._bind(effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;

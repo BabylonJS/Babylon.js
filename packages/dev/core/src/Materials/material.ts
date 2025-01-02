@@ -234,6 +234,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     protected _forceGLSL = false;
 
+    /** @internal */
+    public get _supportGlowLayer() {
+        return false;
+    }
+
+    /** @internal */
+    public set _glowModeEnabled(value: boolean) {
+        // Do nothing here
+    }
+
     /**
      * Gets the shader language used in this material.
      */
@@ -1931,7 +1941,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         if (this.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                if (!plugin.doNotSerialize) {
+                    serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
+                }
             }
         }
     }

@@ -31,6 +31,7 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 
@@ -69,19 +70,10 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this.output.value = this._frameGraphTask.outputObjectList;
 
-        const cameraConnectedPoint = this.camera.connectedPoint;
-        if (cameraConnectedPoint) {
-            this._frameGraphTask.camera = cameraConnectedPoint.value as Camera;
-        }
-
-        const objectsConnectedPoint = this.objects.connectedPoint;
-        if (objectsConnectedPoint) {
-            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
-        }
+        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
+        this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
     }
 
     protected override _dumpPropertiesCode() {

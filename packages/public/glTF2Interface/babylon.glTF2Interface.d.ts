@@ -1008,6 +1008,24 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the EXT_lights_ies extension
+     */
+
+    /** @internal */
+    interface IEXTLightsIES_LightReference {
+        light: number;
+        color?: number[];
+        multiplier?: number;
+    }
+
+    /** @internal */
+    interface IEXTLightsIES_Light extends IChildRootProperty {
+        uri?: string;
+        bufferView?: number;
+        mimeType?: string;
+    }
+
+    /**
      * Interfaces from the KHR_lights_punctual extension
      */
 

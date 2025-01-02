@@ -120,7 +120,7 @@ export class PostProcessManager {
 
         for (let index = 0; index < postProcesses.length; index++) {
             if (index < postProcesses.length - 1) {
-                postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture?.texture);
+                postProcesses[index + 1].activate(this._scene.activeCamera || this._scene, targetTexture?.texture);
             } else {
                 if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);

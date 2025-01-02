@@ -34,10 +34,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3
         );
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerInput("uv2", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerOutput("uv2Output", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -70,10 +72,17 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the tangent input component
+     * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the uv2 input component
+     */
+    public get uv2(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
     }
 
     /**
@@ -98,10 +107,17 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the tangent output component
+     * Gets the uv output component
      */
     public get uvOutput(): NodeMaterialConnectionPoint {
         return this._outputs[3];
+    }
+
+    /**
+     * Gets the uv2 output component
+     */
+    public get uv2Output(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
     }
 
     public override initialize(state: NodeMaterialBuildState) {
@@ -170,6 +186,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             }
             uvInput.output.connectTo(this.uv);
         }
+        if (!this.uv2.isConnected) {
+            let uv2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv2" && additionalFilteringInfo(b));
+
+            if (!uv2Input) {
+                uv2Input = new InputBlock("uv2");
+                uv2Input.setAsAttribute("uv2");
+            }
+            uv2Input.output.connectTo(this.uv2);
+        }
     }
 
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -208,17 +233,21 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const normal = this.normal;
         const tangent = this.tangent;
         const uv = this.uv;
+        const uv2 = this.uv2;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
+        const uv2Output = this.uv2Output;
         const state = vertexShaderState;
         const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
 
         const manager = (<Mesh>mesh).morphTargetManager;
-        const hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
-        const hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
-        const hasUVs = manager && manager.supportsUVs && defines["UV1"];
+        const supportPositions = manager && manager.supportsPositions;
+        const supportNormals = manager && manager.supportsNormals;
+        const supportTangents = manager && manager.supportsTangents;
+        const supportUVs = manager && manager.supportsUVs;
+        const supportUV2s = manager && manager.supportsUV2s;
 
         let injectionCode = "";
 
@@ -234,24 +263,34 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += `if (i >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
 
             injectionCode += `vertexID = ${isWebGPU ? "f32(vertexInputs.vertexIndex" : "float(gl_VertexID"}) * ${uniformsPrefix}morphTargetTextureInfo.x;\n`;
-            injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
+            if (supportPositions) {
+                injectionCode += `#ifdef MORPHTARGETS_POSITION\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
+                injectionCode += `#endif\n`;
+            }
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASPOSITIONS\n`;
             injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
-            if (hasNormals) {
+            if (supportNormals) {
                 injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
                 injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
-                injectionCode += `vertexID += 1.0;\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASNORMALS\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
-            if (hasUVs) {
+            if (supportUVs) {
                 injectionCode += `#ifdef MORPHTARGETS_UV\n`;
                 injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
-                injectionCode += `vertexID += 1.0;\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASUVS\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
 
-            if (hasTangents) {
+            if (supportTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
                 injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(i, vertexID) - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
 
@@ -262,25 +301,38 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 }
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASTANGENTS\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
+
+            if (supportUV2s) {
+                injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
+                injectionCode += `${uv2Output.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv2.associatedVariableName}) * morphTargetInfluences[i];\n`;
+                injectionCode += `#endif\n`;
+            }
 
             injectionCode += "}\n";
         } else {
             for (let index = 0; index < repeatCount; index++) {
-                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
+                if (supportPositions) {
+                    injectionCode += `#ifdef MORPHTARGETS_POSITION\n`;
+                    injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
+                    injectionCode += `#endif\n`;
+                }
 
-                if (hasNormals) {
+                if (supportNormals && defines["NORMAL"]) {
                     injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
                     injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
                 }
 
-                if (hasUVs) {
+                if (supportUVs && defines["UV1"]) {
                     injectionCode += `#ifdef MORPHTARGETS_UV\n`;
                     injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
                 }
 
-                if (hasTangents) {
+                if (supportTangents && defines["TANGENT"]) {
                     injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
                     injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
 
@@ -291,6 +343,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                     }
                     injectionCode += `#endif\n`;
                 }
+
+                if (supportUV2s && defines["UV2"]) {
+                    injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
+                    injectionCode += `${uv2Output.associatedVariableName}.xy += (uv2_${index} - ${uv2.associatedVariableName}.xy) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `#endif\n`;
+                }
             }
         }
         injectionCode += `#endif\n`;
@@ -299,18 +357,24 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         if (repeatCount > 0) {
             for (let index = 0; index < repeatCount; index++) {
-                state.attributes.push(VertexBuffer.PositionKind + index);
+                if (supportPositions) {
+                    state.attributes.push(VertexBuffer.PositionKind + index);
+                }
 
-                if (hasNormals) {
+                if (supportNormals && defines["NORMAL"]) {
                     state.attributes.push(VertexBuffer.NormalKind + index);
                 }
 
-                if (hasTangents) {
+                if (supportTangents && defines["TANGENT"]) {
                     state.attributes.push(VertexBuffer.TangentKind + index);
                 }
 
-                if (hasUVs) {
+                if (supportUVs && defines["UV1"]) {
                     state.attributes.push(VertexBuffer.UVKind + "_" + index);
+                }
+
+                if (supportUV2s && defines["UV2"]) {
+                    state.attributes.push(VertexBuffer.UV2Kind + "_" + index);
                 }
             }
         }
@@ -333,10 +397,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const normal = this.normal;
         const tangent = this.tangent;
         const uv = this.uv;
+        const uv2 = this.uv2;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
+        const uv2Output = this.uv2Output;
         const comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -365,6 +431,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `${state._declareOutput(uvOutput)} = ${uv.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
         state.compilationString += `${state._declareOutput(uvOutput)} = vec2(0., 0.);\n`;
+        state.compilationString += `#endif\n`;
+        state.compilationString += `#ifdef UV2\n`;
+        state.compilationString += `${state._declareOutput(uv2Output)} = ${uv2.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${state._declareOutput(uv2Output)} = vec2(0., 0.);\n`;
         state.compilationString += `#endif\n`;
 
         // Repeatable content

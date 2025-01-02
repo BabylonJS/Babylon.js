@@ -37,7 +37,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
             (light as any)._displayFrustumDLH.dispose();
         }
 
-        if (displayFrustum && camera) {
+        if (displayFrustum) {
             const dlh = ((light as any)._displayFrustumDLH = new DirectionalLightFrustumViewer(light, camera));
             (light as any)._displayFrustumObservable = light.getScene().onAfterRenderObservable.add(() => {
                 dlh.update();
@@ -47,8 +47,16 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
 
     override render() {
         const light = this.props.light;
+        const camera = light.getScene().activeCamera;
 
-        const generator = (light.getShadowGenerator() as ShadowGenerator | CascadedShadowGenerator) || null;
+        let generator = (light.getShadowGenerator(camera) as ShadowGenerator | CascadedShadowGenerator) || null;
+        if (generator === null) {
+            // try to get the first shadow generator
+            const shadowGenerators = light.getShadowGenerators();
+            if (shadowGenerators && shadowGenerators.size > 0) {
+                generator = shadowGenerators.values().next().value as ShadowGenerator | CascadedShadowGenerator;
+            }
+        }
 
         const hideAutoCalcShadowZBounds = generator instanceof CascadedShadowGenerator;
         const displayFrustum = (light as any)._displayFrustum ?? false;

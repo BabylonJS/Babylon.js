@@ -987,10 +987,10 @@ export class GaussianSplattingMesh extends Mesh {
         maximum.maximizeInPlaceFromFloats(x, y, z);
 
         quaternion.set(
-            (uBuffer[32 * sourceIndex + 28 + 1] - 128) / 128,
-            (uBuffer[32 * sourceIndex + 28 + 2] - 128) / 128,
-            (uBuffer[32 * sourceIndex + 28 + 3] - 128) / 128,
-            -(uBuffer[32 * sourceIndex + 28 + 0] - 128) / 128
+            (uBuffer[32 * sourceIndex + 28 + 1] - 127.5) / 127.5,
+            (uBuffer[32 * sourceIndex + 28 + 2] - 127.5) / 127.5,
+            (uBuffer[32 * sourceIndex + 28 + 3] - 127.5) / 127.5,
+            -(uBuffer[32 * sourceIndex + 28 + 0] - 127.5) / 127.5
         );
         quaternion.toRotationMatrix(matrixRotation);
 
@@ -1176,6 +1176,15 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public updateData(data: ArrayBuffer, sh?: Uint8Array[]): void {
         runCoroutineSync(this._updateData(data, false, sh));
+    }
+
+    /**
+     * Refreshes the bounding info, taking into account all the thin instances defined
+     * @returns the current Gaussian Splatting
+     */
+    public override refreshBoundingInfo(): Mesh {
+        this.thinInstanceRefreshBoundingInfo(false);
+        return this;
     }
 
     // in case size is different

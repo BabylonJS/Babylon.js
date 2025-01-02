@@ -48,7 +48,7 @@ export class ArcRotateCamera extends TargetCamera {
     public beta: number;
 
     /**
-     * Defines the radius of the camera from it s target point.
+     * Defines the radius of the camera from its target point.
      */
     @serialize()
     public radius: number;

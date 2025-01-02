@@ -181,8 +181,7 @@ struct subSurfaceOutParams
                     , in samplerCube reflectionSampler
                     , in vec2 vReflectionFilteringInfo
                     #ifdef IBL_CDF_FILTERING
-                        , in sampler2D icdfxSampler
-                        , in sampler2D icdfySampler
+                        , in sampler2D icdfSampler
                     #endif
                 #endif
             #endif
@@ -496,7 +495,7 @@ struct subSurfaceOutParams
             #if defined(REALTIME_FILTERING)
                 vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler, icdfySampler
+                    , icdfSampler
                 #endif
                 );
             #else

@@ -6,6 +6,15 @@
     "configurations": [
         {
             /*
+            Attach to Playground
+            */
+            "type": "msedge",
+            "request": "launch",
+            "name": "Attach to Playground (Edge)",
+            "url": "http://localhost:1338"
+        },
+        {
+            /*
             Launch the playground to be use to test changes in dev packages
             */
             "type": "msedge",
@@ -367,7 +376,7 @@
             "request": "launch",
             "runtimeExecutable": "npx",
             "name": "Update single validation test - WebGL2 (Dev)",
-            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "-project", "webgl2", "-g", "${input:testName}", "--update-snapshots"],
+            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "webgl2", "-g", "${input:testName}", "--update-snapshots"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
