@@ -434,7 +434,7 @@ export class SubMesh implements ICullable {
      */
     public _getLinesIndexBuffer(indices: IndicesArray, engine: AbstractEngine): DataBuffer {
         if (!this._linesIndexBuffer) {
-            const adjustedIndexCount = Math.floor(this.indexCount / 3) * 3;
+            const adjustedIndexCount = Math.floor(this.indexCount / 3) * 6;
             const shouldUseUint32 = this.verticesStart + this.verticesCount > 65535;
             const linesIndices = shouldUseUint32 ? new Uint32Array(adjustedIndexCount) : new Uint16Array(adjustedIndexCount);
 
