@@ -5564,7 +5564,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param filter a predicate to filter for tags
      * @returns
      */
-    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
+    private _getByTags<T>(list: T[], tagsQuery: string, filter?: (item: T) => boolean): T[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;
