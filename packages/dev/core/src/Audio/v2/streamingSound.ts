@@ -74,10 +74,8 @@ export abstract class StreamingSound extends AbstractSound {
 
     /**
      * Plays the sound.
-     * @param startOffset - The time within the sound source to start playing the sound in seconds.
-     * @param duration - How long to play the sound in seconds.
      */
-    public play(startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    public play(): void {
         if (this._isPaused && this._instances.size > 0) {
             this.resume();
             return;
@@ -102,7 +100,7 @@ export abstract class StreamingSound extends AbstractSound {
         instance.onStateChangedObservable.add(onInstanceStateChanged);
 
         this._beforePlay(instance);
-        instance.play(startOffset, duration);
+        instance.play(this.startOffset, this.duration != 0 ? this.duration : null);
         this._afterPlay(instance);
     }
 

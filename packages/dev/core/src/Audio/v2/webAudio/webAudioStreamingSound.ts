@@ -86,7 +86,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         }
 
         if (options?.autoplay) {
-            this.play(null, this.startOffset);
+            this.play();
         }
 
         this.engine.addNode(this);

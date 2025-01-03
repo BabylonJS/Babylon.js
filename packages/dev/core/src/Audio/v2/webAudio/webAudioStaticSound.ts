@@ -100,7 +100,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         await this._subGraph.init(options);
 
         if (options?.autoplay) {
-            this.play(this.startOffset, this.duration > 0 ? this.duration : null);
+            this.play();
         }
 
         this.engine.addNode(this);
