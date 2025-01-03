@@ -1344,7 +1344,7 @@ export class AssetContainer extends AbstractAssetContainer {
      * @param filter defines a predicate used to filter results
      * @returns an array of Material
      */
-    public getMaterialByTags(tagsQuery: string, filter?: (material: Material) => boolean): Material[] {
+    public getMaterialsByTags(tagsQuery: string, filter?: (material: Material) => boolean): Material[] {
         return this._getByTags(this.materials, tagsQuery, filter).concat(this._getByTags(this.multiMaterials, tagsQuery, filter));
     }
 
