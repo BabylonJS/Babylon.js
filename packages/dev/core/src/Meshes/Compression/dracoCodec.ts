@@ -43,7 +43,7 @@ export interface IDracoCodecConfiguration {
     /**
      * The codec module if already available.
      */
-    jsModule?: any /* DracoDecoderModule | DracoEncoderModule */;
+    jsModule?: unknown /* DracoDecoderModule | DracoEncoderModule */;
 }
 
 /**
@@ -72,7 +72,7 @@ export function _IsConfigurationAvailable(config: IDracoCodecConfiguration): boo
  */
 export abstract class DracoCodec implements IDisposable {
     protected _workerPoolPromise?: Promise<WorkerPool>;
-    protected _modulePromise?: Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
+    protected _modulePromise?: Promise<{ module: unknown /** DecoderModule | EncoderModule */ }>;
 
     /**
      * Checks if the default codec JS module is in scope.
@@ -82,7 +82,10 @@ export abstract class DracoCodec implements IDisposable {
     /**
      * Creates the JS Module for the corresponding wasm.
      */
-    protected abstract _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** DecoderModule | EncoderModule */ }>;
+    protected abstract _createModuleAsync(
+        wasmBinary?: ArrayBuffer,
+        jsModule?: unknown /** DracoDecoderModule | DracoEncoderModule */
+    ): Promise<{ module: unknown /** DecoderModule | EncoderModule */ }>;
 
     /**
      * Returns the worker content.

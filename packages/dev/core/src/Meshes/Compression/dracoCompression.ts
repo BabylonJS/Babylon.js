@@ -1,7 +1,7 @@
 import { _GetDefaultNumWorkers, _IsConfigurationAvailable } from "./dracoCodec";
 import type { IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
-import type { MeshData } from "./dracoDecoder";
+import type { MeshData } from "./dracoDecoder.types";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { Nullable } from "core/types";
