@@ -263,7 +263,7 @@ export class Animation {
             return null;
         }
 
-        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode !== Animation.ANIMATIONLOOPMODE_CONSTANT, 1.0, onAnimationEnd);
     }
 
     /**
