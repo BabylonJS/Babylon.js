@@ -432,7 +432,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , ${isWebGPU ? "input." : ""}${this._vEnvironmentIrradianceName}
             #endif
-            #ifdef USESPHERICALFROMREFLECTIONMAP
+            #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     , ${this._reflectionMatrixName}
                 #endif
