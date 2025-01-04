@@ -156,8 +156,9 @@ export class StackPanel extends Container {
             }
 
             if (this._isVertical) {
-                if (child.top !== stackHeight + "px") {
-                    child.top = stackHeight + "px";
+                const top = stackHeight + "px";
+                if (child.top !== top) {
+                    child.top = top;
                     this._rebuildLayout = true;
                     child._top.ignoreAdaptiveScaling = true;
                 }
@@ -168,8 +169,9 @@ export class StackPanel extends Container {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             } else {
-                if (child.left !== stackWidth + "px") {
-                    child.left = stackWidth + "px";
+                const left = stackWidth + "px";
+                if (child.left !== left) {
+                    child.left = left;
                     this._rebuildLayout = true;
                     child._left.ignoreAdaptiveScaling = true;
                 }
