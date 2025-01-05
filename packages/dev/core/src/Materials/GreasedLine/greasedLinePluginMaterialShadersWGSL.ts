@@ -139,27 +139,27 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlDashOffset: f32 = uniforms.grl_dashOptions.z;
                     let grlDashRatio: f32 = uniforms.grl_dashOptions.w;
 
-                    finalColor.a *= step(fragmentInputs.grlCounters, grlVisibility);
-                    if (finalColor.a == 0.0) {
+                    grlFinalColor.a *= step(fragmentInputs.grlCounters, grlVisibility);
+                    if (grlFinalColor.a == 0.0) {
                         discard;
                     }
 
                     if (grlUseDash == 1.0) {
                         let dashPosition = (fragmentInputs.grlCounters + grlDashOffset) % grlDashArray;
-                        finalColor.a *= ceil(dashPosition - (grlDashArray * grlDashRatio));
+                        grlFinalColor.a *= ceil(dashPosition - (grlDashArray * grlDashRatio));
 
-                        if (finalColor.a == 0.0) {
+                        if (grlFinalColor.a == 0.0) {
                             discard;
                         }
                     }
 
                     #ifdef GREASED_LINE_HAS_COLOR
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                            finalColor = vec4f(uniforms.grl_singleColor, finalColor.a);
+                            grlFinalColor = vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            finalColor += vec4f(uniforms.grl_singleColor, finalColor.a);
+                            grlFinalColor += vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            finalColor *= vec4f(uniforms.grl_singleColor, finalColor.a);
+                            grlFinalColor *= vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         }
                     #else
                         if (grlUseColors == 1.) {
@@ -170,11 +170,11 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                                 let grlColor: vec4f = textureSample(grl_colors, grl_colorsSampler, lookup);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                                finalColor = grlColor;
+                                grlFinalColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                                finalColor += grlColor;
+                                grlFinalColor += grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                                finalColor *= grlColor;
+                                grlFinalColor *= grlColor;
                             }
                         }
                     #endif
