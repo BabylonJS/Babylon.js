@@ -562,6 +562,7 @@ export class ObjectRenderer {
         this._renderingManager.reset();
 
         const sceneRenderId = scene.getRenderId();
+        const currentFrameId = scene.getFrameId();
         for (let meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
             const mesh = currentRenderList[meshIndex];
 
@@ -580,7 +581,6 @@ export class ObjectRenderer {
 
                 if (cameraForLOD) {
                     const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);
-                    const currentFrameId = scene.getFrameId();
                     if (!meshToRenderAndFrameId || meshToRenderAndFrameId[1] !== currentFrameId) {
                         meshToRender = scene.customLODSelector ? scene.customLODSelector(mesh, cameraForLOD) : mesh.getLOD(cameraForLOD);
                         if (!meshToRenderAndFrameId) {
