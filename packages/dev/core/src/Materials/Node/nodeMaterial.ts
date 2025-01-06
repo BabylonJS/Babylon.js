@@ -70,6 +70,7 @@ import type { IImageProcessingConfigurationDefines } from "../imageProcessingCon
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
+import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1071,6 +1072,8 @@ export class NodeMaterial extends PushMaterial {
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
+        MaterialHelperGeometryRendering.PrepareDefines(this.getScene().getEngine().currentRenderPassId, mesh, defines);
+        
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
