@@ -274,8 +274,10 @@ export class Viewer implements IDisposable {
 
     /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
+     * @remarks
+     * The event argument is the source that was loaded, or null if no model is loaded.
      */
-    public readonly onModelChanged = new Observable<void>();
+    public readonly onModelChanged = new Observable<Nullable<string | File | ArrayBufferView>>();
 
     /**
      * Fired when an error occurs while loading a model.
@@ -785,7 +787,7 @@ export class Viewer implements IDisposable {
                 this._updateCamera();
                 this._updateLight();
                 this._applyAnimationSpeed();
-                this.onModelChanged.notifyObservers();
+                this.onModelChanged.notifyObservers(source ?? null);
             } catch (e) {
                 this.onModelError.notifyObservers(e);
                 throw e;
