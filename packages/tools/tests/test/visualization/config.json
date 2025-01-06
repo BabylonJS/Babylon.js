@@ -2393,8 +2393,16 @@
             "playgroundId": "#GAGVQO#1"
         },
         {
+            "title": "FrameGraph nrge glow layer",
+            "playgroundId": "#IG8NRC"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017"
+        },
+        {
+            "title": "FrameGraph nrg glow layer",
+            "playgroundId": "#9YU4C5"
         },
         {
             "title": "FrameGraph custom rendering",
