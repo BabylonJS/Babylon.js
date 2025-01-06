@@ -1073,7 +1073,7 @@ export class NodeMaterial extends PushMaterial {
         PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
         MaterialHelperGeometryRendering.PrepareDefines(this.getScene().getEngine().currentRenderPassId, mesh, defines);
-        
+
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
