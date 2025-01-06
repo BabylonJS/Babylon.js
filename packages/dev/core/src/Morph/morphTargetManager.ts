@@ -204,6 +204,41 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
+     * Gets a boolean indicating if this manager has data for morphing positions
+     */
+    public get hasPositions(): boolean {
+        return this._supportsPositions;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager has data for morphing normals
+     */
+    public get hasNormals(): boolean {
+        return this._supportsNormals;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager has data for morphing tangents
+     */
+    public get hasTangents(): boolean {
+        return this._supportsTangents;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager has data for morphing texture coordinates
+     */
+    public get hasUVs(): boolean {
+        return this._supportsUVs;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager has data for morphing texture coordinates 2
+     */
+    public get hasUV2s(): boolean {
+        return this._supportsUV2s;
+    }
+
+    /**
      * Gets the number of targets stored in this manager
      */
     public get numTargets(): number {
@@ -349,6 +384,7 @@ export class MorphTargetManager implements IDisposable {
             copy.addTarget(target.clone());
         }
 
+        copy.enablePositionMorphing = this.enablePositionMorphing;
         copy.enableNormalMorphing = this.enableNormalMorphing;
         copy.enableTangentMorphing = this.enableTangentMorphing;
         copy.enableUVMorphing = this.enableUVMorphing;

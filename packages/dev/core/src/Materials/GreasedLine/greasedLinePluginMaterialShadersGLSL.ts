@@ -106,11 +106,17 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
     if (shaderType === "fragment") {
         return {
             CUSTOM_FRAGMENT_DEFINITIONS: `
+                    #ifdef PBR
+                         #define grlFinalColor finalColor
+                    #else
+                         #define grlFinalColor color
+                    #endif
+
                     varying float grlCounters;
                     varying float grlColorPointer;
                     uniform sampler2D grl_colors;
                 `,
-            CUSTOM_FRAGMENT_MAIN_END: `
+            CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
                     float grlColorMode = grl_colorMode_visibility_colorsWidth_useColors.x;
                     float grlVisibility = grl_colorMode_visibility_colorsWidth_useColors.y;
                     float grlColorsWidth = grl_colorMode_visibility_colorsWidth_useColors.z;
@@ -121,21 +127,21 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     float grlDashOffset = grl_dashOptions.z;
                     float grlDashRatio = grl_dashOptions.w;
 
-                    gl_FragColor.a *= step(grlCounters, grlVisibility);
-                    if(gl_FragColor.a == 0.) discard;
+                    grlFinalColor.a *= step(grlCounters, grlVisibility);
+                    if(grlFinalColor.a == 0.) discard;
 
                     if(grlUseDash == 1.){
-                        gl_FragColor.a *= ceil(mod(grlCounters + grlDashOffset, grlDashArray) - (grlDashArray * grlDashRatio));
-                        if (gl_FragColor.a == 0.) discard;
+                        grlFinalColor.a *= ceil(mod(grlCounters + grlDashOffset, grlDashArray) - (grlDashArray * grlDashRatio));
+                        if (grlFinalColor.a == 0.) discard;
                     }
 
                     #ifdef GREASED_LINE_HAS_COLOR
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                            gl_FragColor.rgb = grl_singleColor;
+                            grlFinalColor.rgb = grl_singleColor;
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            gl_FragColor.rgb += grl_singleColor;
+                            grlFinalColor.rgb += grl_singleColor;
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            gl_FragColor.rgb *= grl_singleColor;
+                            grlFinalColor.rgb *= grl_singleColor;
                         }
                     #else
                         if (grlUseColors == 1.) {
@@ -146,11 +152,11 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                                 vec4 grlColor = texture2D(grl_colors, lookup, 0.0);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                                gl_FragColor = grlColor;
+                                grlFinalColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                                gl_FragColor += grlColor;
+                                grlFinalColor += grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                                gl_FragColor *= grlColor;
+                                grlFinalColor *= grlColor;
                             }
                         }
                     #endif

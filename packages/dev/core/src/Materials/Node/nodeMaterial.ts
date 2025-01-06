@@ -70,6 +70,7 @@ import type { IImageProcessingConfigurationDefines } from "../imageProcessingCon
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
+import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -158,6 +159,16 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    /** Morph target support positions */
+    public MORPHTARGETTEXTURE_HASPOSITIONS = false;
+    /** Morph target support normals */
+    public MORPHTARGETTEXTURE_HASNORMALS = false;
+    /** Morph target support tangents */
+    public MORPHTARGETTEXTURE_HASTANGENTS = false;
+    /** Morph target support uvs */
+    public MORPHTARGETTEXTURE_HASUVS = false;
+    /** Morph target support uv2s */
+    public MORPHTARGETTEXTURE_HASUV2S = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */
@@ -1060,6 +1071,8 @@ export class NodeMaterial extends PushMaterial {
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         PrepareDefinesForPrePass(this.getScene(), defines, !oit);
+
+        MaterialHelperGeometryRendering.PrepareDefines(this.getScene().getEngine().currentRenderPassId, mesh, defines);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
