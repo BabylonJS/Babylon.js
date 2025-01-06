@@ -5,7 +5,7 @@ module.exports = (env) => {
     const commonConfig = commonConfigGenerator({
         mode: env.production ? "production" : "development",
         devPackageName: "viewer",
-        devPackageAliasPath: `../../../tools/viewer/dist`,
+        devPackageAliasPath: `../../../tools/viewer-legacy/dist`,
         namespace: "BabylonViewer",
         maxMode: true,
         outputPath: path.resolve(__dirname),
@@ -22,11 +22,9 @@ module.exports = (env) => {
                 rules: require("@dev/build-tools").webpackTools.getRules({
                     sideEffects: true,
                     includeCSS: true,
-    
                 }),
             },
-        }
-
+        },
     });
     return commonConfig;
 };

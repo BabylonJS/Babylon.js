@@ -78,7 +78,7 @@
             <babylon-viewer
                 engine="WebGPU"
                 source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-                environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
+                environment="../../../../../public/@babylonjs/viewer/assets/photoStudio.env"
                 animation-speed="1.5"
                 selected-animation="1"
                 camera-orbit="auto auto auto"
@@ -142,7 +142,7 @@
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
         </div>
-        <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
+        <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
@@ -172,7 +172,7 @@
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
-                // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
+                // Alternatively, we could just await import("/packages/tools/viewer/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
 
                 // setInterval(() => {

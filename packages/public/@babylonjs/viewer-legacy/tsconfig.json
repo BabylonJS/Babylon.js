@@ -3,5 +3,5 @@
 
     "compilerOptions": {},
 
-    "include": ["../../../tools/viewer-alpha/src/**/*"]
+    "include": ["../../../tools/viewer-legacy/src/**/*"]
 }

@@ -1,4 +1,4 @@
-import type { ViewerConfiguration } from "./../configuration";
+import type { ViewerConfiguration } from "../configuration";
 import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error, loading, close } from "babylonjs-viewer-assets";
 
 /**

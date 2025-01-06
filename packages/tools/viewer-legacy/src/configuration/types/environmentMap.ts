@@ -1,4 +1,4 @@
-import type { ViewerConfiguration } from "./../configuration";
+import type { ViewerConfiguration } from "../configuration";
 
 /**
  * Lab-oriented default .env support

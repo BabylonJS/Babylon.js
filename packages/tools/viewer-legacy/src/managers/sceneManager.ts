@@ -18,7 +18,7 @@ import { extendClassWithConfig, deepmerge } from "../helper/index";
 import { CameraBehavior } from "../interfaces";
 import { ViewerLabs } from "../labs/viewerLabs";
 import { getCustomOptimizerByName } from "../optimizer/custom/index";
-import type { ObservablesManager } from "../managers/observablesManager";
+import type { ObservablesManager } from "./observablesManager";
 import type { ConfigurationContainer } from "../configuration/configurationContainer";
 import type { IEnvironmentMapConfiguration } from "../configuration/interfaces/environmentMapConfiguration";
 import { Observable } from "core/Misc/observable";

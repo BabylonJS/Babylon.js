@@ -510,7 +510,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Viewer (Alpha - Web)",
+            "label": "Viewer (Web)",
             "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",

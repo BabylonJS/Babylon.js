@@ -9,7 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const legacyPackageJsonPath = path.resolve(__dirname, "../viewer/package.json");
+const legacyPackageJsonPath = path.resolve(__dirname, "../viewer-legacy/package.json");
 const alphaPackageJsonPath = path.resolve(__dirname, "package.json");
 
 const legacyPackageJsonContent = require(legacyPackageJsonPath);

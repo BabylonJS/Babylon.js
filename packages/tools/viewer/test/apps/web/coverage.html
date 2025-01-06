@@ -20,11 +20,11 @@
     <body>
         <babylon-viewer
             source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
+            environment="../../../../../public/@babylonjs/viewer/assets/photoStudio.env"
         >
         </babylon-viewer>
         <button id="saveCoverageButton" style="position: absolute; top: 10px; left: 10px" onclick="saveCoverage()">Collect Coverage</button>
-        <script type="module" src="/packages/tools/viewer-alpha/dist/coverage/instrumented/tools/viewer-alpha/src/index.js"></script>
+        <script type="module" src="/packages/tools/viewer/dist/coverage/instrumented/tools/viewer/src/index.js"></script>
         <script>
             async function saveCoverage() {
                 const coverageButton = document.getElementById("saveCoverageButton");
@@ -32,7 +32,7 @@
                 console.log("Saving coverage...");
                 try {
                     // This sends the coverage data to the Vite server.
-                    // See packages/tools/viewer-alpha/vite.config.mjs
+                    // See packages/tools/viewer/vite.config.mjs
                     await fetch("/api/saveCoverage", {
                         method: "POST",
                         headers: {

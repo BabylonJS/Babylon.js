@@ -8,7 +8,7 @@ import { minifyTemplateLiterals } from "rollup-plugin-minify-template-literals";
 const source = "dev";
 
 const commonConfig = {
-    input: "../../../tools/viewer-alpha/src/index.ts",
+    input: "../../../tools/viewer/src/index.ts",
     output: {
         dir: "dist",
         sourcemap: true,

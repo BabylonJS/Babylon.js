@@ -2,10 +2,10 @@
     "extends": "../../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "outDir": "./",
-        "rootDir": "../../../tools/viewer/src",
-        "declaration": true,
-        "target": "es5",
+        "outDir": "./lib",
+        "rootDir": "../../../",
+        "declaration": false,
+        "target": "ES2020",
         "importHelpers": true,
         "plugins": [
             {

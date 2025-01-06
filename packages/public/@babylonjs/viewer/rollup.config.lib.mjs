@@ -3,7 +3,7 @@ import { dts } from "rollup-plugin-dts";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 const commonConfig = {
-    input: "../../../tools/viewer-alpha/src/index.ts",
+    input: "../../../tools/viewer/src/index.ts",
     external: (id) => /^@babylonjs\/(core|loaders)(\/|$)/.test(id),
 };
 
