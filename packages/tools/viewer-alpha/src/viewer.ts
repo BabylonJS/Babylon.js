@@ -129,11 +129,6 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
 
 export type ViewerDetails = {
     /**
-     * Gets the Viewer instance.
-     */
-    viewer: Viewer;
-
-    /**
      * Provides access to the Scene managed by the Viewer.
      */
     scene: Scene;
@@ -438,7 +433,6 @@ export class Viewer implements IDisposable {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const viewer = this;
         options?.onInitialized?.({
-            viewer,
             scene: viewer._scene,
             camera: viewer._camera,
             get model() {

@@ -11,6 +11,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
+import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
 import { isToneMapping, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
@@ -68,12 +69,15 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Displays a 3D model using the Babylon.js Viewer.
+ * Base class for the viewer custom element.
  */
-@customElement("babylon-viewer")
-export class HTML3DElement extends LitElement {
+export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    protected _viewerDetails?: Readonly<ViewerDetails>;
+    private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+
+    protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
+        super();
+    }
 
     // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
     private readonly _propertyBindings = [
@@ -479,7 +483,7 @@ export class HTML3DElement extends LitElement {
      * The engine to use for rendering.
      */
     @property({
-        converter: (value: string | null): HTML3DElement["engine"] => {
+        converter: (value: string | null): ViewerElement["engine"] => {
             if (value === "WebGL" || value === "WebGPU") {
                 return value;
             }
@@ -506,7 +510,7 @@ export class HTML3DElement extends LitElement {
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
-        hasChanged: (newValue: HTML3DElement["environment"], oldValue: HTML3DElement["environment"]) => {
+        hasChanged: (newValue: ViewerElement["environment"], oldValue: ViewerElement["environment"]) => {
             return newValue.lighting !== oldValue.lighting || newValue.skybox !== oldValue.skybox;
         },
     })
@@ -996,15 +1000,15 @@ export class HTML3DElement extends LitElement {
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.
     private _createPropertyBinding(
-        property: keyof HTML3DElement,
-        getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
-        updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
-        updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
+        property: keyof ViewerElement,
+        getObservable: (viewerDetails: NonNullable<this["viewerDetails"]>) => Observable<any>,
+        updateViewer: (viewerDetails: NonNullable<this["viewerDetails"]>) => void,
+        updateElement: (viewerDetails: NonNullable<this["viewerDetails"]>) => void
     ) {
         return {
             property,
             // Called each time a Viewer instance is created.
-            onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
+            onInitialized: (viewerDetails: NonNullable<this["viewerDetails"]>) => {
                 getObservable(viewerDetails).add(() => {
                     updateElement(viewerDetails);
                 });
@@ -1018,7 +1022,7 @@ export class HTML3DElement extends LitElement {
             },
             // Called to re-sync the HTML3DElement property with its corresponding attribute.
             syncToAttribute: () => {
-                const descriptor = HTML3DElement.elementProperties.get(property);
+                const descriptor = ViewerElement.elementProperties.get(property);
                 if (descriptor) {
                     if (descriptor.attribute) {
                         const attributeName = descriptor.attribute === true ? property : descriptor.attribute;
@@ -1054,10 +1058,20 @@ export class HTML3DElement extends LitElement {
                 canvas.setAttribute("touch-action", "none");
                 this._canvasContainer.appendChild(canvas);
 
-                await this._createViewer(canvas, {
+                {
+                    const detailsDeferred = new Deferred<ViewerDetails>();
+                    const viewer = await this._createViewer(canvas, {
                     engine: this.engine,
                     onInitialized: (details) => {
-                        this._viewerDetails = details;
+                            detailsDeferred.resolve(details);
+                        },
+                    });
+                    const details = await detailsDeferred.promise;
+
+                    this._viewerDetails = Object.assign(details, { viewer });
+                }
+
+                const details = this._viewerDetails;
 
                         details.viewer.onEnvironmentChanged.add(() => {
                             this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
@@ -1114,16 +1128,14 @@ export class HTML3DElement extends LitElement {
                         this._updateEnv({ lighting: true, skybox: true });
 
                         this._propertyBindings.forEach((binding) => binding.onInitialized(details));
-                    },
-                });
 
                 this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }
         });
     }
 
-    protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<Viewer> {
-        return createViewerForCanvas(canvas, options);
+    protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
+        return createViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {

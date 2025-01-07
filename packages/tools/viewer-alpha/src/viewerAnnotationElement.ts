@@ -3,7 +3,7 @@ import type { IDisposable, Nullable } from "core/index";
 
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { HTML3DElement } from "./viewerElement";
+import { ViewerElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";
 
 /**
@@ -46,7 +46,7 @@ export class HTML3DAnnotationElement extends LitElement {
         super.connectedCallback();
         this._internals.states?.add("invalid");
 
-        if (!(this.parentElement instanceof HTML3DElement)) {
+        if (!(this.parentElement instanceof ViewerElement)) {
             // eslint-disable-next-line no-console
             console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
             return;

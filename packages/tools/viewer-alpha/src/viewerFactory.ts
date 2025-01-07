@@ -45,7 +45,7 @@ export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: Canva
  */
 export async function createViewerForCanvas(
     canvas: HTMLCanvasElement,
-    options?: CanvasViewerOptions & { viewer?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
+    options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
     const finalOptions = { ...defaultCanvasViewerOptions, ...options };
     const disposeActions: (() => void)[] = [];
@@ -107,7 +107,7 @@ export async function createViewerForCanvas(
     };
 
     // Instantiate the Viewer with the engine and options.
-    const viewerClass = options?.viewer ?? Viewer;
+    const viewerClass = options?.viewerClass ?? Viewer;
     const viewer = new viewerClass(engine, finalOptions);
     disposeActions.push(viewer.dispose.bind(viewer));
 

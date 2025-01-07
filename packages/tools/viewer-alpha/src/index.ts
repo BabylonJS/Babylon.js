@@ -2,6 +2,6 @@ export type { CameraAutoOrbit, EnvironmentOptions, LoadModelOptions, PostProcess
 export type { CanvasViewerOptions } from "./viewerFactory";
 
 export { Viewer, ViewerHotSpotResult } from "./viewer";
-export { HTML3DElement } from "./viewerElement";
+export { HTML3DElement, ViewerElement } from "./viewerElement";
 export { createViewerForCanvas } from "./viewerFactory";
 export { HTML3DAnnotationElement } from "./viewerAnnotationElement";
