@@ -53,7 +53,7 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
 type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number, radius: number] };
 
 // Custom events for the HTML3DElement.
-interface HTML3DElementEventMap extends HTMLElementEventMap {
+interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     viewerrender: Event;
     environmentchange: Event;
@@ -944,16 +944,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     // eslint-disable-next-line babylonjs/available
-    override addEventListener<K extends keyof HTML3DElementEventMap>(
+    override addEventListener<K extends keyof ViewerElementEventMap>(
         type: K,
-        listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
         options?: boolean | AddEventListenerOptions
     ): void;
     override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(type: TEvent, event: (type: TEvent) => HTML3DElementEventMap[TEvent]) {
+    private _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
