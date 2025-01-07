@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Camera } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
 import { DirectionalLight } from "../../../Lights/directionalLight";
@@ -169,32 +167,11 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         }
     }
 
-    private _camera: Camera;
-    /**
-     * Gets or sets the camera used to generate the shadow generator.
-     */
-    public get camera() {
-        return this._camera;
-    }
-
-    public set camera(camera: Camera) {
-        this._camera = camera;
-        this._setupShadowGenerator();
-    }
-
-    public override record() {
-        if (this.camera === undefined) {
-            throw new Error(`FrameGraphCascadedShadowGeneratorTask ${this.name}: camera is required`);
-        }
-
-        super.record();
-    }
-
     protected override _createShadowGenerator() {
         if (!(this.light instanceof DirectionalLight)) {
             throw new Error(`FrameGraphCascadedShadowGeneratorTask ${this.name}: the CSM shadow generator only supports directional lights.`);
         }
-        this._shadowGenerator = new CascadedShadowGenerator(this.mapSize, this.light, this.useFloat32TextureType, this._camera, this.useRedTextureFormat);
+        this._shadowGenerator = new CascadedShadowGenerator(this.mapSize, this.light, this.useFloat32TextureType, this.camera, this.useRedTextureFormat);
         this._shadowGenerator.numCascades = this._numCascades;
     }
 

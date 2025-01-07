@@ -221,6 +221,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * Define the camera used to calculate the LOD of the objects.
+     * If not defined, activeCamera will be used. If not defined nor activeCamera, scene's active camera will be used.
+     */
+    public get cameraForLOD(): Nullable<Camera> {
+        return this._objectRenderer.cameraForLOD;
+    }
+
+    public set cameraForLOD(value: Nullable<Camera>) {
+        this._objectRenderer.cameraForLOD = value;
+    }
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public get customIsReadyFunction(): (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean {
