@@ -435,11 +435,15 @@ export class Viewer implements IDisposable {
 
         this._beginRendering();
 
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const viewer = this;
         options?.onInitialized?.({
-            viewer: this,
-            scene: this._scene,
-            camera: this._camera,
-            model: this._model,
+            viewer,
+            scene: viewer._scene,
+            camera: viewer._camera,
+            get model() {
+                return viewer._model;
+            },
             suspendRendering: () => this._suspendRendering(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
@@ -976,7 +980,11 @@ export class Viewer implements IDisposable {
      * @returns true if hotspot found
      */
     public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        if (!this._model) {
+        return this._getHotSpotToRef(this._model, query, result);
+    }
+
+    protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
+        if (!assetContainer) {
             return false;
         }
 
@@ -985,7 +993,7 @@ export class Viewer implements IDisposable {
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            const mesh = this._model.meshes[query.meshIndex];
+            const mesh = assetContainer.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }

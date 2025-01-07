@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, Viewer, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -73,7 +73,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    private _viewerDetails?: Readonly<ViewerDetails>;
+    protected _viewerDetails?: Readonly<ViewerDetails>;
 
     // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
     private readonly _propertyBindings = [
@@ -1054,7 +1054,7 @@ export class HTML3DElement extends LitElement {
                 canvas.setAttribute("touch-action", "none");
                 this._canvasContainer.appendChild(canvas);
 
-                await createViewerForCanvas(canvas, {
+                await this._createViewer(canvas, {
                     engine: this.engine,
                     onInitialized: (details) => {
                         this._viewerDetails = details;
@@ -1120,6 +1120,10 @@ export class HTML3DElement extends LitElement {
                 });
             }
         });
+    }
+
+    protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<Viewer> {
+        return createViewerForCanvas(canvas, options);
     }
 
     private async _tearDownViewer() {
