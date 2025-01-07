@@ -960,8 +960,7 @@ export class GaussianSplattingMesh extends Mesh {
     };
 
     private _makeSplat(
-        sourceIndex: number,
-        destinationIndex: number,
+        index: number,
         fBuffer: Float32Array,
         uBuffer: Uint8Array,
         covA: Uint16Array,
@@ -975,26 +974,26 @@ export class GaussianSplattingMesh extends Mesh {
         const quaternion = TmpVectors.Quaternion[0];
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
-        const x = fBuffer[8 * sourceIndex + 0];
-        const y = -fBuffer[8 * sourceIndex + 1];
-        const z = fBuffer[8 * sourceIndex + 2];
+        const x = fBuffer[8 * index + 0];
+        const y = -fBuffer[8 * index + 1];
+        const z = fBuffer[8 * index + 2];
 
-        this._splatPositions![4 * sourceIndex + 0] = x;
-        this._splatPositions![4 * sourceIndex + 1] = y;
-        this._splatPositions![4 * sourceIndex + 2] = z;
+        this._splatPositions![4 * index + 0] = x;
+        this._splatPositions![4 * index + 1] = y;
+        this._splatPositions![4 * index + 2] = z;
 
         minimum.minimizeInPlaceFromFloats(x, y, z);
         maximum.maximizeInPlaceFromFloats(x, y, z);
 
         quaternion.set(
-            (uBuffer[32 * sourceIndex + 28 + 1] - 127.5) / 127.5,
-            (uBuffer[32 * sourceIndex + 28 + 2] - 127.5) / 127.5,
-            (uBuffer[32 * sourceIndex + 28 + 3] - 127.5) / 127.5,
-            -(uBuffer[32 * sourceIndex + 28 + 0] - 127.5) / 127.5
+            (uBuffer[32 * index + 28 + 1] - 127.5) / 127.5,
+            (uBuffer[32 * index + 28 + 2] - 127.5) / 127.5,
+            (uBuffer[32 * index + 28 + 3] - 127.5) / 127.5,
+            -(uBuffer[32 * index + 28 + 0] - 127.5) / 127.5
         );
         quaternion.toRotationMatrix(matrixRotation);
 
-        Matrix.ScalingToRef(fBuffer[8 * sourceIndex + 3 + 0] * 2, fBuffer[8 * sourceIndex + 3 + 1] * 2, fBuffer[8 * sourceIndex + 3 + 2] * 2, matrixScale);
+        Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);
 
         const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
@@ -1012,21 +1011,21 @@ export class GaussianSplattingMesh extends Mesh {
             factor = Math.max(factor, Math.abs(covariances[covIndex]));
         }
 
-        this._splatPositions![4 * sourceIndex + 3] = factor;
+        this._splatPositions![4 * index + 3] = factor;
         const transform = factor;
 
-        covA[destinationIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
-        covA[destinationIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
-        covA[destinationIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
-        covA[destinationIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
-        covB[destinationIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
-        covB[destinationIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
+        covA[index * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[index * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[index * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[index * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[index * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[index * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
         // colors
-        colorArray[destinationIndex * 4 + 0] = uBuffer[32 * sourceIndex + 24 + 0];
-        colorArray[destinationIndex * 4 + 1] = uBuffer[32 * sourceIndex + 24 + 1];
-        colorArray[destinationIndex * 4 + 2] = uBuffer[32 * sourceIndex + 24 + 2];
-        colorArray[destinationIndex * 4 + 3] = uBuffer[32 * sourceIndex + 24 + 3];
+        colorArray[index * 4 + 0] = uBuffer[32 * index + 24 + 0];
+        colorArray[index * 4 + 1] = uBuffer[32 * index + 24 + 1];
+        colorArray[index * 4 + 2] = uBuffer[32 * index + 24 + 2];
+        colorArray[index * 4 + 3] = uBuffer[32 * index + 24 + 3];
     }
 
     private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
@@ -1127,7 +1126,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const updateLine = partIndex * lineCountUpdate;
                 const splatIndexBase = updateLine * textureSize.x;
                 for (let i = 0; i < textureLengthPerUpdate; i++) {
-                    this._makeSplat(splatIndexBase + i, splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
                 }
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
@@ -1144,7 +1143,7 @@ export class GaussianSplattingMesh extends Mesh {
             this._sortIsDirty = true;
         } else {
             for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
