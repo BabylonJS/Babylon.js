@@ -381,8 +381,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                             default:
                                 throw new Error("Unsupported Splat mode");
                         }
+                        resolve(babylonMeshesArray);
                     });
-                    resolve(babylonMeshesArray);
                 });
         });
     }
