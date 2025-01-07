@@ -1114,10 +1114,10 @@ export class HTML3DElement extends LitElement {
                         this._updateEnv({ lighting: true, skybox: true });
 
                         this._propertyBindings.forEach((binding) => binding.onInitialized(details));
-
-                        this._dispatchCustomEvent("viewerready", (type) => new Event(type));
                     },
                 });
+
+                this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }
         });
     }
