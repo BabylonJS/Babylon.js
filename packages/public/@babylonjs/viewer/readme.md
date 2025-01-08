@@ -12,7 +12,7 @@ The Babylon Viewer aims to simplify a specific but common Babylon.js use case: l
 Install the package using npm:
 
 ```bash
-npm install @babylonjs/viewer@preview
+npm install @babylonjs/viewer
 ```
 
 To use the `HTML3DElement` you can import the `@babylonjs/viewer` module and then reference the `<babylon-viewer>` custom element in your HTML like this:
@@ -36,7 +36,7 @@ If you want to use the viewer directly in a browser without any build tools, you
 ```html
 <html lang="en">
     <body>
-        <script type="module" src="https://cdn.jsdelivr.net/npm/@babylonjs/viewer@preview/dist/babylon-viewer.esm.min.js"></script>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/@babylonjs/viewer/dist/babylon-viewer.esm.min.js"></script>
         <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
     </body>
 </html>
