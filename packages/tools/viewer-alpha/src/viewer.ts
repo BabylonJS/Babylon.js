@@ -240,6 +240,7 @@ type Model = IDisposable &
     Readonly<{
         assetContainer: AssetContainer;
         materialVariantsController: Nullable<MaterialVariantsController>;
+        getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
     }>;
 
 /**
@@ -824,6 +825,9 @@ export class Viewer implements IDisposable {
             return {
                 assetContainer,
                 materialVariantsController,
+                getHotSpotToRef: (query, result) => {
+                    return this._getHotSpotToRef(assetContainer, query, result);
+                },
                 dispose: () => {
                     this._snapshotHelper.disableSnapshotRendering();
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
@@ -1034,7 +1038,7 @@ export class Viewer implements IDisposable {
      * @returns true if hotspot found
      */
     public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        return this._getHotSpotToRef(this._modelInfo?.assetContainer ?? null, query, result);
+        return this._modelInfo?.getHotSpotToRef(query, result) ?? false;
     }
 
     protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
