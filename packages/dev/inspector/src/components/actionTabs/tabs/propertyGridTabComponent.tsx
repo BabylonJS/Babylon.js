@@ -87,7 +87,7 @@ import { DirectionalLightPropertyGridComponent } from "./propertyGrids/lights/di
 import type { DirectionalLight } from "core/Lights/directionalLight";
 import type { SpotLight } from "core/Lights/spotLight";
 import { SpotLightPropertyGridComponent } from "./propertyGrids/lights/spotLightPropertyGridComponent";
-import { AreaLightPropertyGridComponent } from "./propertyGrids/lights/areaLightPropertyGridComponent";
+import { RectAreaLightPropertyGridComponent } from "./propertyGrids/lights/rectAreaLightPropertyGridComponent";
 import type { LensRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
 import { LensRenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
@@ -113,7 +113,7 @@ import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { AreaLight } from "core/Lights";
+import type { RectAreaLight } from "core/Lights";
 
 /**
  *
@@ -321,10 +321,10 @@ export class PropertyGridTabComponent extends PaneComponent {
                 );
             }
 
-            if (className === "AreaLight") {
-                const pointLight = entity as AreaLight;
+            if (className === "RectAreaLight") {
+                const pointLight = entity as RectAreaLight;
                 return (
-                    <AreaLightPropertyGridComponent
+                    <RectAreaLightPropertyGridComponent
                         globalState={this.props.globalState}
                         light={pointLight}
                         lockObject={this._lockObject}
