@@ -3,7 +3,7 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _CleanUrl } from "../soundTools";
-import type { IStaticSoundOptions } from "../staticSound";
+import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { _StaticSoundInstance } from "../staticSoundInstance";
@@ -29,7 +29,7 @@ export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffe
 export async function CreateSoundAsync(
     name: string,
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-    options: Nullable<IStaticSoundOptions> = null,
+    options: Partial<IStaticSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSound> {
     const webAudioEngine = _GetWebAudioEngine(engine);
@@ -49,7 +49,7 @@ export async function CreateSoundAsync(
  */
 export async function CreateSoundBufferAsync(
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-    options: Nullable<IStaticSoundOptions> = null,
+    options: Partial<IStaticSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
     const webAudioEngine = _GetWebAudioEngine(engine);
@@ -74,14 +74,14 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     public audioContext: AudioContext | OfflineAudioContext;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStaticSound._SubGraph(this);
     }
 
     /** @internal */
-    public async init(source: StaticSoundSourceType, options: Nullable<IStaticSoundOptions> = null): Promise<void> {
+    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
         this.audioContext = this.engine.audioContext;
 
         if (source instanceof WebAudioStaticSoundBuffer) {
@@ -142,7 +142,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     }
 
     protected _createInstance(): WebAudioStaticSoundInstance {
-        return new WebAudioStaticSoundInstance(this);
+        return new WebAudioStaticSoundInstance(this, this._options);
     }
 
     protected override _connect(node: IWebAudioInNode): void {
@@ -219,7 +219,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         super(engine);
     }
 
-    public async init(source: StaticSoundSourceType, options: Nullable<IStaticSoundOptions> = null): Promise<void> {
+    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
         if (source instanceof AudioBuffer) {
             this.audioBuffer = source;
         } else if (typeof source === "string") {
@@ -268,14 +268,11 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
 /** @internal */
 class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
-    /** @internal */
-    public override readonly engine: _WebAudioEngine;
-
-    private _duration: Nullable<number> = null;
-    private _loop: boolean = false;
-
     private _enginePlayTime: number = 0;
     private _enginePauseTime: number = 0;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
 
     /** @internal */
     get startTime(): number {
@@ -293,7 +290,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         }
 
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
-        return this._enginePauseTime + timeSinceLastStart + this._startOffset;
+        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
     }
 
     set currentTime(value: number) {
@@ -304,7 +301,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
             this._deinitSourceNode();
         }
 
-        this._startOffset = value;
+        this.options.startOffset = value;
 
         if (restart) {
             this.play();
@@ -316,8 +313,8 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
             return;
         }
 
-        if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._enginePlayTime, this._startOffset, this._duration);
+        if (this.options.loop && this.state === SoundState.Starting) {
+            this.play();
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -328,10 +325,14 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     /** @internal */
     public sourceNode: Nullable<AudioBufferSourceNode>;
 
-    public constructor(sound: WebAudioStaticSound) {
-        super(sound);
+    /** @internal */
+    public volumeNode: GainNode;
+
+    public constructor(sound: WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
+        super(sound, options);
+
+        this.volumeNode = new GainNode(sound.audioContext);
         this._initSourceNode();
-        this._loop = sound.loop;
     }
 
     /** @internal */
@@ -346,35 +347,43 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     }
 
     public get outNode(): Nullable<AudioNode> {
-        return this.sourceNode;
+        return this.volumeNode;
     }
 
     /** @internal */
-    public play(startOffset: Nullable<number> = null, duration: Nullable<number> = null, waitTime: Nullable<number> = null): void {
+    public play(options: Partial<IStaticSoundPlayOptions> = this.options): void {
         if (this._state === SoundState.Started) {
             return;
         }
 
-        this._duration = duration;
+        if (options.duration !== undefined) {
+            this.options.duration = options.duration;
+        }
+        if (options.waitTime !== undefined) {
+            this.options.waitTime = options.waitTime;
+        }
+
+        let startOffset = 0;
 
         if (this._state === SoundState.Paused) {
             // TODO: Make this fall within loop points when loop start/end is set.
-            startOffset = (this.currentTime + this._startOffset) % this._sound.buffer.duration;
-            waitTime = 0;
-        } else if (startOffset) {
-            this._startOffset = startOffset;
-        } else {
-            startOffset = this._startOffset;
+            startOffset = (this.currentTime + this.options.startOffset) % this._sound.buffer.duration;
+            this.options.waitTime = 0;
+        } else if (options.startOffset !== undefined) {
+            startOffset = options.startOffset;
+            this.options.startOffset = options.startOffset;
         }
 
-        this._enginePlayTime = this.engine.currentTime + (waitTime ?? 0);
+        this._enginePlayTime = this.engine.currentTime + this.options.waitTime;
+
+        this.volumeNode.gain.value = options?.volume ?? this.options.volume;
 
         this._initSourceNode();
 
         if (this.engine.state === "running") {
             this._setState(SoundState.Started);
-            this.sourceNode?.start(this._enginePlayTime, startOffset ?? 0, duration === null ? undefined : duration);
-        } else if (this._loop) {
+            this.sourceNode?.start(this._enginePlayTime, startOffset, this.options.duration > 0 ? this.options.duration : undefined);
+        } else if (this.options.loop) {
             this._setState(SoundState.Starting);
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
         }
@@ -401,14 +410,15 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     }
 
     /** @internal */
-    public stop(waitTime: Nullable<number> = null): void {
+    public stop(options: Partial<IStaticSoundStopOptions> = {}): void {
         if (this._state === SoundState.Stopped) {
             return;
         }
 
         this._setState(SoundState.Stopped);
 
-        this.sourceNode?.stop(waitTime ? this.engine.currentTime + waitTime : 0);
+        const engineStopTime = this.engine.currentTime + (options?.waitTime ?? 0);
+        this.sourceNode?.stop(engineStopTime);
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
@@ -429,7 +439,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         super._connect(node);
 
         if (node instanceof WebAudioStaticSound && node.inNode) {
-            this.sourceNode?.connect(node.inNode);
+            this.outNode?.connect(node.inNode);
         }
     }
 
@@ -437,7 +447,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         super._disconnect(node);
 
         if (node instanceof WebAudioStaticSound && node.inNode) {
-            this.sourceNode?.disconnect(node.inNode);
+            this.outNode?.disconnect(node.inNode);
         }
     }
 
@@ -448,14 +458,16 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
 
         this.sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
             buffer: this._sound.buffer.audioBuffer,
-            detune: this._sound.pitch,
-            loop: this._sound.loop,
-            loopEnd: this._sound.loopEnd,
-            loopStart: this._sound.loopStart,
-            playbackRate: this._sound.playbackRate,
+            detune: this.options.pitch,
+            loop: this.options.loop,
+            loopEnd: this.options.loopEnd,
+            loopStart: this.options.loopStart,
+            playbackRate: this.options.playbackRate,
         });
 
         this.sourceNode.addEventListener("ended", this._onEnded, { once: true });
+        this.sourceNode.connect(this.volumeNode);
+
         this._connect(this._sound);
     }
 
@@ -465,6 +477,8 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         }
 
         this._disconnect(this._sound);
+
+        this.sourceNode.disconnect(this.volumeNode);
         this.sourceNode.removeEventListener("ended", this._onEnded);
 
         this.sourceNode = null;

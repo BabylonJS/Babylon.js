@@ -39,7 +39,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
  * @param options - The options for creating the audio engine.
  * @returns A promise that resolves with the created audio engine.
  */
-export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AudioEngineV2> {
+export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
     await engine.init(options);
     return engine;
@@ -192,7 +192,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public constructor(options: Nullable<IWebAudioEngineOptions> = null) {
+    public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
         super();
 
         this._volume = options?.volume ?? 1;
@@ -204,10 +204,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
-        this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
-        this._resumeOnPause = options?.resumeOnPause ?? true;
-        this._resumeOnPauseRetryInterval = options?.resumeOnPauseRetryInterval ?? 1000;
+    public async init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
+        this._resumeOnInteraction = options.resumeOnInteraction ?? true;
+        this._resumeOnPause = options.resumeOnPause ?? true;
+        this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
 
         document.addEventListener("click", this._onUserGesture);
 

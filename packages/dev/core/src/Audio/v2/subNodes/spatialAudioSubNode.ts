@@ -38,62 +38,62 @@ export interface ISpatialAudioOptions {
     /**
      * The spatial cone inner angle. Default is 360.
      */
-    spatialConeInnerAngle?: number;
+    spatialConeInnerAngle: number;
     /**
      * The spatial cone outer angle. Default is 360.
      */
-    spatialConeOuterAngle?: number;
+    spatialConeOuterAngle: number;
     /**
      * The spatial cone outer gain. Default is 0.
      */
-    spatialConeOuterVolume?: number;
+    spatialConeOuterVolume: number;
     /**
      * The spatial distance model. Default is "inverse".
      */
-    spatialDistanceModel?: "linear" | "inverse" | "exponential";
+    spatialDistanceModel: "linear" | "inverse" | "exponential";
     /**
      * Enable spatial audio. Default is false.
      */
-    spatialEnabled?: boolean;
+    spatialEnabled: boolean;
     /**
      * The spatial max distance. Default is 10000.
      */
-    spatialMaxDistance?: number;
+    spatialMaxDistance: number;
     /**
      * The spatial panning model. Default is "equalpower".
      */
-    spatialPanningModel?: "equalpower" | "HRTF";
+    spatialPanningModel: "equalpower" | "HRTF";
     /**
      * The spatial position. Default is (0, 0, 0).
      */
-    spatialPosition?: Vector3;
+    spatialPosition: Vector3;
     /**
      * The spatial reference distance. Default is 1.
      */
-    spatialReferenceDistance?: number;
+    spatialReferenceDistance: number;
     /**
      * The spatial rolloff factor. Default is 1.
      */
-    spatialRolloffFactor?: number;
+    spatialRolloffFactor: number;
     /**
      * The spatial rotation.
      */
-    spatialRotation?: Vector3;
+    spatialRotation: Vector3;
     /**
      * The spatial rotation quaternion.
      */
-    spatialRotationQuaternion?: Quaternion;
+    spatialRotationQuaternion: Quaternion;
     /**
      * The transform node to track spatially.
      */
-    spatialTransformNode?: TransformNode;
+    spatialTransformNode: TransformNode;
 }
 
 /**
  * @param options The spatial audio options to check.
  * @returns `true` if spatial audio options are defined, otherwise `false`.
  */
-export function _HasSpatialAudioOptions(options: ISpatialAudioOptions): boolean {
+export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>): boolean {
     return (
         options.spatialEnabled ||
         options.spatialConeInnerAngle !== undefined ||
@@ -157,28 +157,26 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract get outNode(): AudioNode;
 
     /** @internal */
-    public setOptions(options: Nullable<ISpatialAudioOptions>): void {
-        if (!options) {
-            return;
+    public setOptions(options: Partial<ISpatialAudioOptions>): void {
+        this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefault.ConeInnerAngle;
+        this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefault.ConeOuterAngle;
+        this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefault.ConeOuterVolume;
+        this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefault.DistanceModel;
+        this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefault.MaxDistance;
+        this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefault.PanningModel;
+        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefault.ReferenceDistance;
+        this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefault.RolloffFactor;
+
+        if (options.spatialPosition !== undefined) {
+            this.position = options.spatialPosition.clone();
         }
 
-        this.coneInnerAngle = options.spatialConeInnerAngle !== undefined ? options.spatialConeInnerAngle : _SpatialAudioDefault.ConeInnerAngle;
-        this.coneOuterAngle = options.spatialConeOuterAngle !== undefined ? options.spatialConeOuterAngle : _SpatialAudioDefault.ConeOuterAngle;
-
-        this.coneOuterVolume = options.spatialConeOuterVolume !== undefined ? options.spatialConeOuterVolume : _SpatialAudioDefault.ConeOuterVolume;
-        this.distanceModel = options.spatialDistanceModel !== undefined ? options.spatialDistanceModel : _SpatialAudioDefault.DistanceModel;
-        this.maxDistance = options.spatialMaxDistance !== undefined ? options.spatialMaxDistance : _SpatialAudioDefault.MaxDistance;
-        this.panningModel = options.spatialPanningModel !== undefined ? options.spatialPanningModel : _SpatialAudioDefault.PanningModel;
-        this.position = options.spatialPosition !== undefined ? options.spatialPosition : _SpatialAudioDefault.Position.clone();
-        this.referenceDistance = options.spatialReferenceDistance !== undefined ? options.spatialReferenceDistance : _SpatialAudioDefault.ReferenceDistance;
-        this.rolloffFactor = options.spatialRolloffFactor !== undefined ? options.spatialRolloffFactor : _SpatialAudioDefault.RolloffFactor;
-
         if (options.spatialRotationQuaternion !== undefined) {
-            this.rotationQuaternion = options.spatialRotationQuaternion;
+            this.rotationQuaternion = options.spatialRotationQuaternion.clone();
         } else if (options.spatialRotation !== undefined) {
-            this.rotation = options.spatialRotation;
+            this.rotation = options.spatialRotation.clone();
         } else {
-            this.rotationQuaternion = _SpatialAudioDefault.RotationQuaternion;
+            this.rotationQuaternion = _SpatialAudioDefault.RotationQuaternion.clone();
         }
 
         this.transformNode = options.spatialTransformNode ?? null;

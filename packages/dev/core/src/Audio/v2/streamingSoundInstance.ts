@@ -1,10 +1,13 @@
 import { Observable } from "../../Misc/observable";
-import type { AbstractSound } from "./abstractSound";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
+import type { IStreamingSoundOptions, StreamingSound } from "./streamingSound";
 
 /** @internal */
 export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     private _resolvePreloadedPromise: () => void;
+
+    /** @internal */
+    public override options: IStreamingSoundOptions;
 
     /** @internal */
     public readonly preloadedPromise = new Promise<void>((resolve) => {
@@ -14,15 +17,10 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     /** @internal */
     public onReadyObservable = new Observable<_StreamingSoundInstance>();
 
-    protected constructor(sound: AbstractSound) {
-        super(sound);
+    protected constructor(sound: StreamingSound, options: Partial<IStreamingSoundOptions>) {
+        super(sound, options);
 
         this.onReadyObservable.add(this._resolvePreloadedPromise);
-    }
-
-    /** @internal */
-    public set startOffset(value: number) {
-        this._startOffset = value;
     }
 
     /** @internal */

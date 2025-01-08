@@ -1,6 +1,7 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import type { IAbstractSoundPlayOptions } from "../abstractSound";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { SoundState } from "../soundState";
 import { _CleanUrl } from "../soundTools";
@@ -27,7 +28,7 @@ export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 export async function CreateStreamingSoundAsync(
     name: string,
     source: HTMLMediaElement | string | string[],
-    options: Nullable<IStreamingSoundOptions> = null,
+    options: Partial<IStreamingSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
     const webAudioEngine = _GetWebAudioEngine(engine);
@@ -55,14 +56,14 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     public audioContext: AudioContext;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
 
         this._subGraph = new WebAudioStreamingSound._SubGraph(this);
     }
 
     /** @internal */
-    public async init(source: StreamingSoundSourceType, options: Nullable<IStreamingSoundOptions> = null): Promise<void> {
+    public async init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
         const audioContext = this.engine.audioContext;
 
         if (!(audioContext instanceof AudioContext)) {
@@ -86,7 +87,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         }
 
         if (options?.autoplay) {
-            this.play();
+            this.play(options);
         }
 
         this.engine.addNode(this);
@@ -128,7 +129,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     }
 
     protected _createInstance(): WebAudioStreamingSoundInstance {
-        return new WebAudioStreamingSoundInstance(this);
+        return new WebAudioStreamingSoundInstance(this, this._options);
     }
 
     protected override _connect(node: IWebAudioInNode): void {
@@ -165,9 +166,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
-    private _loop: boolean = false;
-    private _preloadType: "" | "none" | "metadata" | "auto" = "auto";
-
     private _isReady: boolean = false;
 
     private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
@@ -194,6 +192,9 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
 
+    /** @internal */
+    public volumeNode: GainNode;
+
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
 
@@ -206,7 +207,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         }
 
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
-        return this._enginePauseTime + timeSinceLastStart + this._startOffset;
+        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
     }
 
     set currentTime(value: number) {
@@ -217,7 +218,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
             this._setState(SoundState.Stopped);
         }
 
-        this._startOffset = value;
+        this.options.startOffset = value;
 
         if (restart) {
             this.play();
@@ -240,18 +241,17 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
             return;
         }
 
-        if (this._loop && this.state === SoundState.Starting) {
-            this.play(this._startOffset);
+        if (this.options.loop && this.state === SoundState.Starting) {
+            this.play();
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     };
 
-    public constructor(sound: WebAudioStreamingSound) {
-        super(sound);
+    public constructor(sound: WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
+        super(sound, options);
 
-        this._loop = sound.loop;
-        this._preloadType = sound.preloadType;
+        this.volumeNode = new GainNode(sound.audioContext);
 
         if (typeof sound.source === "string") {
             this._initFromUrl(sound.source);
@@ -285,8 +285,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
 
         mediaElement.controls = false;
-        mediaElement.loop = this._loop;
-        mediaElement.preload = this._preloadType;
+        mediaElement.loop = this.options.loop;
+        mediaElement.preload = this.options.preloadType;
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         mediaElement.addEventListener("ended", this._onEnded, { once: true });
@@ -294,6 +294,8 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         mediaElement.load();
 
         this.sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this.sourceNode.connect(this.volumeNode);
+
         this._connect(this._sound);
 
         this.mediaElement = mediaElement;
@@ -305,6 +307,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
         this.stop();
 
+        this.sourceNode?.disconnect(this.volumeNode);
         this.sourceNode = null;
 
         this.mediaElement.removeEventListener("ended", this._onEnded);
@@ -318,24 +321,28 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     }
 
     public get outNode(): Nullable<AudioNode> {
-        return this.sourceNode;
+        return this.volumeNode;
     }
 
     /** @internal */
-    public play(startOffset: Nullable<number> = null): void {
+    public play(options: Partial<IAbstractSoundPlayOptions> = this.options): void {
         if (this._state === SoundState.Started) {
             return;
         }
 
+        this.volumeNode.gain.value = options?.volume ?? this.options.volume;
+
+        let startOffset = options?.startOffset ?? null;
+
         if (this._currentTimeChangedWhilePaused) {
-            startOffset = this._startOffset;
+            startOffset = this.options.startOffset;
             this._currentTimeChangedWhilePaused = false;
         } else if (this._state === SoundState.Paused) {
-            startOffset = this.currentTime + this._startOffset;
-        } else if (startOffset) {
-            this._startOffset = startOffset;
+            startOffset = this.currentTime + this.options.startOffset;
+        } else if (startOffset !== null) {
+            this.options.startOffset = startOffset;
         } else {
-            startOffset = this._startOffset;
+            startOffset = this.options.startOffset;
         }
 
         if (startOffset && startOffset > 0) {
@@ -362,7 +369,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         if (this._state === SoundState.Paused) {
             this.play();
         } else if (this._currentTimeChangedWhilePaused) {
-            this.play(this._startOffset);
+            this.play(this.options);
         }
     }
 
@@ -384,7 +391,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         super._connect(node);
 
         if (node instanceof WebAudioStreamingSound && node.inNode) {
-            this.sourceNode?.connect(node.inNode);
+            this.outNode?.connect(node.inNode);
         }
     }
 
@@ -392,7 +399,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         super._disconnect(node);
 
         if (node instanceof WebAudioStreamingSound && node.inNode) {
-            this.sourceNode?.disconnect(node.inNode);
+            this.outNode?.disconnect(node.inNode);
         }
     }
 
@@ -420,11 +427,11 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
             result.catch(() => {
                 this._setState(SoundState.FailedToStart);
 
-                if (this._loop) {
+                if (this.options.loop) {
                     this.engine.userGestureObservable.addOnce(this._onUserGesture);
                 }
             });
-        } else if (this._loop) {
+        } else if (this.options.loop) {
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
         } else {
             this.stop();

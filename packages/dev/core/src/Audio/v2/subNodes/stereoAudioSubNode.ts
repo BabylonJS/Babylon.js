@@ -1,4 +1,3 @@
-import type { Nullable } from "../../../types";
 import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { _AudioSubNode } from "./audioSubNode";
@@ -14,18 +13,18 @@ export interface IStereoAudioOptions {
     /**
      * Enable stereo. Default is false.
      */
-    stereoEnabled?: boolean;
+    stereoEnabled: boolean;
     /**
      * The stereo pan from -1 (left) to 1 (right). Default is 0.
      */
-    stereoPan?: number;
+    stereoPan: number;
 }
 
 /**
  * @param options The stereo audio options to check.
  * @returns `true` if stereo audio options are defined, otherwise `false`.
  */
-export function _HasStereoAudioOptions(options: IStereoAudioOptions): boolean {
+export function _HasStereoAudioOptions(options: Partial<IStereoAudioOptions>): boolean {
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 
@@ -41,11 +40,7 @@ export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
     abstract set pan(value: number);
 
     /** @internal */
-    public setOptions(options: Nullable<IStereoAudioOptions>): void {
-        if (!options) {
-            return;
-        }
-
-        this.pan = options.stereoPan !== undefined ? options.stereoPan : _StereoAudioDefault.Pan;
+    public setOptions(options: Partial<IStereoAudioOptions>): void {
+        this.pan = options.stereoPan ?? _StereoAudioDefault.Pan;
     }
 }

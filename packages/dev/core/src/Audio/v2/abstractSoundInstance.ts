@@ -1,14 +1,12 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
 import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
-import type { AbstractSound } from "./abstractSound";
+import type { AbstractSound, IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
 import { SoundState } from "./soundState";
 
 /** @internal */
 export abstract class _AbstractSoundInstance extends AbstractAudioNode {
-    protected _state: SoundState = SoundState.Stopped;
     protected _sound: AbstractSound;
-    protected _startOffset: number = 0;
+    protected _state: SoundState = SoundState.Stopped;
 
     /** Observable triggered when the sound instance's playback ends */
     public readonly onEndedObservable = new Observable<_AbstractSoundInstance>();
@@ -16,11 +14,15 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
-    protected constructor(sound: AbstractSound) {
+    /** @internal */
+    public options = {} as IAbstractSoundOptions;
+
+    protected constructor(sound: AbstractSound, options: Partial<IAbstractSoundOptions>) {
         super(sound.engine, _AudioNodeType.Out);
 
+        Object.assign(this.options, options);
+
         this._sound = sound;
-        this._startOffset = sound.startOffset;
     }
 
     /** @internal */
@@ -32,6 +34,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
 
     public abstract get currentTime(): number;
     public abstract set currentTime(value: number);
+
     public abstract get startTime(): number;
 
     /** The playback state of sound instance */
@@ -39,7 +42,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
         return this._state;
     }
 
-    public abstract play(startOffset?: Nullable<number>, duration?: Nullable<number>): void;
+    public abstract play(options: Partial<IAbstractSoundPlayOptions>): void;
     public abstract pause(): void;
     public abstract resume(): void;
     public abstract stop(): void;

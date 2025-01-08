@@ -22,7 +22,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     protected _inNode: Nullable<AudioNode> = null;
 
     /** @internal */
-    public override async init(options: Nullable<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
+    public override async init(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
         super.init(options);
 
         let hasSpatialOptions = false;

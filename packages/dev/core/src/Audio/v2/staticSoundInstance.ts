@@ -1,8 +1,11 @@
-import type { Nullable } from "../../types";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
+import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "./staticSound";
 
 /** @internal */
 export abstract class _StaticSoundInstance extends _AbstractSoundInstance {
-    public abstract override play(startOffset?: Nullable<number>, duration?: Nullable<number>, waitTime?: Nullable<number>): void;
-    public abstract override stop(waitTime?: Nullable<number>): void;
+    /** @internal */
+    public override options: IStaticSoundOptions;
+
+    public abstract override play(options: Partial<IStaticSoundPlayOptions>): void;
+    public abstract override stop(options?: Partial<IStaticSoundStopOptions>): void;
 }

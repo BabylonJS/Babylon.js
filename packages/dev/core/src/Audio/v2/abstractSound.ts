@@ -15,71 +15,52 @@ import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio"
 import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
 /**
+ * Options for playing a sound.
+ */
+export interface IAbstractSoundPlayOptions extends IVolumeAudioOptions {
+    /**
+     * The amount of time to play the sound for, in seconds.
+     */
+    duration: number;
+    /**
+     * The amount of time into the sound buffer to start playing at, in seconds.
+     */
+    startOffset: number;
+}
+
+/**
  * Options for creating a new sound.
  */
-export interface IAbstractSoundOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {
+export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
      * Whether the sound should start playing immediately.
      */
-    autoplay?: boolean;
-    /**
-     * How long to play the sound in seconds.
-     */
-    duration?: number;
+    autoplay: boolean;
     /**
      * Whether the sound should loop.
      */
-    loop?: boolean;
+    loop: boolean;
     /**
      * The maximum number of instances that can play at the same time.
      */
-    maxInstances?: number;
+    maxInstances: number;
     /**
      * The output bus for the sound.
      */
-    outBus?: AbstractPrimaryAudioBus;
-    /**
-     * The sound's start offset in seconds.
-     */
-    startOffset?: number;
+    outBus: AbstractPrimaryAudioBus;
 }
 
 /**
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends NamedAbstractAudioNode {
+    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
     private _state: SoundState = SoundState.Stopped;
 
     protected _instances = new Set<_AbstractSoundInstance>();
+    protected _options = {} as IAbstractSoundOptions;
 
     protected abstract _subGraph: _AbstractAudioSubGraph;
-
-    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
-
-    /**
-     * Whether the sound should start playing automatically.
-     */
-    public readonly autoplay: boolean;
-
-    /**
-     * How long to play the sound, in seconds.
-     */
-    public duration: number;
-
-    /**
-     * Whether the sound should loop.
-     */
-    public loop: boolean;
-
-    /**
-     * The maximum number of instances that can play at the same time.
-     */
-    public maxInstances: number;
-
-    /**
-     * The sound's start offset in seconds.
-     */
-    public startOffset: number;
 
     /**
      * Observable for when the sound ends.
@@ -95,7 +76,7 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
     }
 
     public set currentTime(value: number) {
-        this.startOffset = value;
+        this._options.startOffset = value;
 
         const instance = this._getNewestInstance();
         if (instance) {
@@ -133,25 +114,78 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
         }
     }
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractSoundOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAbstractSoundOptions> = {}) {
         super(name, engine, _AudioNodeType.Out);
 
-        this.autoplay = options?.autoplay ?? false;
-        this.duration = options?.duration ?? 0;
-        this.loop = options?.loop ?? false;
-        this.maxInstances = options?.maxInstances ?? Infinity;
-        this.startOffset = options?.startOffset ?? 0;
+        Object.assign(this._options, options);
+        this._options.autoplay ??= false;
+        this._options.duration ??= 0;
+        this._options.loop ??= false;
+        this._options.maxInstances ??= Infinity;
+        this._options.startOffset ??= 0;
+        this._options.volume ??= _VolumeAudio.DefaultVolume;
+    }
+
+    /**
+     * Whether the sound should start playing immediately.
+     */
+    public get autoplay(): boolean {
+        return this._options.autoplay;
+    }
+
+    /**
+     * The amount of time to play the sound for in seconds.
+     */
+    public get duration(): number {
+        return this._options.duration;
+    }
+    public set duration(value: number) {
+        this._options.duration = value;
+    }
+
+    /**
+     * Whether the sound should loop.
+     */
+    public get loop(): boolean {
+        return this._options.loop;
+    }
+    public set loop(value: boolean) {
+        this._options.loop = value;
+    }
+
+    /**
+     * The maximum number of instances that can play at the same time.
+     */
+    public get maxInstances(): number {
+        return this._options.maxInstances;
+    }
+    public set maxInstances(value: number) {
+        this._options.maxInstances = value;
     }
 
     public abstract get spatial(): AbstractSpatialAudio;
-    public abstract get stereo(): AbstractStereoAudio;
 
-    /** */
-    public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
+    /**
+     * The amount of time into the sound buffer to start playing at in seconds.
+     */
+    public get startOffset(): number {
+        return this._options.startOffset;
+    }
+    public set startOffset(value: number) {
+        this._options.startOffset = value;
     }
 
+    public abstract get stereo(): AbstractStereoAudio;
+
+    /**
+     * The sound's volume/gain.
+     */
+    public get volume(): number {
+        return this._options.volume;
+    }
     public set volume(value: number) {
+        this._options.volume = value;
+
         this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
         });
@@ -174,7 +208,7 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
 
     protected abstract _createInstance(): _AbstractSoundInstance;
 
-    public abstract play(): void;
+    public abstract play(options?: Partial<IAbstractSoundPlayOptions>): void;
 
     /**
      * Pauses the sound.
@@ -259,8 +293,8 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
     }
 
     protected _stopExcessInstances(): void {
-        if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
+        if (this._options.maxInstances < Infinity) {
+            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this._options.maxInstances;
             const it = this._instances.values();
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {

@@ -15,7 +15,7 @@ import { _GetWebAudioEngine } from "./webAudioTools";
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
-export async function CreateMainAudioBusAsync(name: string, options: Nullable<IMainAudioBusOptions> = null, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
+export async function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
     const webAudioEngine = _GetWebAudioEngine(engine);
 
     const bus = new _WebAudioMainBus(name, webAudioEngine);
@@ -43,7 +43,7 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     }
 
     /** @internal */
-    public async init(options: Nullable<IMainAudioBusOptions>): Promise<void> {
+    public async init(options: Partial<IMainAudioBusOptions>): Promise<void> {
         await this._subGraph.init(options);
 
         if (this.engine.mainOut) {

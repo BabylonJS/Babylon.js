@@ -22,7 +22,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public readonly audioContext: AudioContext;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Nullable<IAudioBusOptions> = null) {
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IAudioBusOptions> = {}) {
         super(name, engine, options);
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
@@ -31,7 +31,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     }
 
     /** @internal */
-    public async init(options: Nullable<IAudioBusOptions>): Promise<void> {
+    public async init(options: Partial<IAudioBusOptions>): Promise<void> {
         await this._subGraph.init(options);
 
         this.engine.addNode(this);

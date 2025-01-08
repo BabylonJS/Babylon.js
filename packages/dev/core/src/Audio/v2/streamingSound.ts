@@ -1,5 +1,4 @@
-import type { Nullable } from "../../types";
-import type { IAbstractSoundOptions } from "./abstractSound";
+import type { IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
@@ -14,30 +13,35 @@ export interface IStreamingSoundOptions extends IAbstractSoundOptions {
     /**
      * The number of instances to preload
      * */
-    preloadCount?: number;
+    preloadCount: number;
 
     /**
-     * The preload type of the sound's instance.
+     * The preload type of the sound's instances.
      */
-    preloadType?: "none" | "metadata" | "auto";
+    preloadType: "none" | "metadata" | "auto";
 }
 
 /**
- * Abstract class representing a streaming sound in the audio engine.
+ * Abstract class representing a streaming sound.
  */
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();
     private _preloadedInstancesPromises = new Array<Promise<void>>();
 
-    /**
-     * The preload type for the sound stream.
-     */
-    public preloadType: StreamingSoundPreloadType;
+    protected override _options: IStreamingSoundOptions;
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Nullable<IStreamingSoundOptions> = null) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
 
-        this.preloadType = options?.preloadType ?? "auto";
+        this._options.preloadCount ??= Infinity;
+        this._options.preloadType ??= "auto";
+    }
+
+    /**
+     * The number of instances to preload.
+     */
+    public get preloadCount(): number {
+        return this._options.preloadCount;
     }
 
     /**
@@ -45,6 +49,16 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public get preloadedInstanceCount(): number {
         return this._preloadedInstances.length;
+    }
+
+    /**
+     * The preload type of the sound's instances.
+     */
+    public get preloadType(): StreamingSoundPreloadType {
+        return this._options.preloadType;
+    }
+    public set preloadType(value: StreamingSoundPreloadType) {
+        this._options.preloadType = value;
     }
 
     /**
@@ -74,8 +88,9 @@ export abstract class StreamingSound extends AbstractSound {
 
     /**
      * Plays the sound.
+     * @param options - The options to use when playing the sound.
      */
-    public play(): void {
+    public play(options: Partial<IAbstractSoundPlayOptions> = {}): void {
         if (this._isPaused && this._instances.size > 0) {
             this.resume();
             return;
@@ -85,7 +100,7 @@ export abstract class StreamingSound extends AbstractSound {
 
         if (this.preloadedInstanceCount > 0) {
             instance = this._preloadedInstances[0];
-            instance.startOffset = this.startOffset;
+            instance.options.startOffset = this._options.startOffset;
             this._removePreloadedInstance(instance);
         } else {
             instance = this._createInstance();
@@ -99,8 +114,18 @@ export abstract class StreamingSound extends AbstractSound {
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
 
+        if (options.startOffset === undefined) {
+            options.startOffset = this._options.startOffset;
+        }
+        if (options.duration === undefined) {
+            options.duration = this._options.duration;
+        }
+        if (options.volume === undefined) {
+            options.volume = 1;
+        }
+
         this._beforePlay(instance);
-        instance.play(this.startOffset, this.duration != 0 ? this.duration : null);
+        instance.play(options);
         this._afterPlay(instance);
     }
 
