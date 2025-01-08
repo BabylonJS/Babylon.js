@@ -128,6 +128,15 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
         this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, this.depthOfField._dofMerge);
 
+        this.onTexturesAllocatedObservable.add((context) => {
+            this._circleOfConfusion.onTexturesAllocatedObservable.notifyObservers(context);
+            for (let i = 0; i < blurCount; i++) {
+                this._blurX[i].onTexturesAllocatedObservable.notifyObservers(context);
+                this._blurY[i].onTexturesAllocatedObservable.notifyObservers(context);
+            }
+            this._merge.onTexturesAllocatedObservable.notifyObservers(context);
+        });
+
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 

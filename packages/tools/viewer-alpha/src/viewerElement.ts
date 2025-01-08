@@ -49,7 +49,12 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
 
-type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number, radius: number] };
+export type HotSpot = ViewerHotSpotQuery & {
+    /**
+     * An optional camera pose to associate with the hotspot.
+     */
+    cameraOrbit?: [alpha: number, beta: number, radius: number];
+};
 
 // Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
@@ -57,7 +62,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerrender: Event;
     environmentchange: Event;
     environmenterror: ErrorEvent;
-    modelchange: Event;
+    modelchange: CustomEvent<Nullable<string | File | ArrayBufferView>>;
     modelerror: ErrorEvent;
     loadingprogresschange: Event;
     selectedanimationchange: Event;
@@ -1067,7 +1072,7 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                         });
 
-                        details.viewer.onModelChanged.add(() => {
+                        details.viewer.onModelChanged.add((source) => {
                             this._animations = [...details.viewer.animations];
 
                             // When attributes are explicitly set, they are re-applied when a new model is loaded.
@@ -1083,7 +1088,7 @@ export class HTML3DElement extends LitElement {
                                 details.viewer.playAnimation();
                             }
 
-                            this._dispatchCustomEvent("modelchange", (type) => new Event(type));
+                            this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                         });
 
                         details.viewer.onModelError.add((error) => {
@@ -1168,13 +1173,15 @@ export class HTML3DElement extends LitElement {
                     }
                 }
 
-                updates.forEach(async ([url, options]) => {
+                const promises = updates.map(async ([url, options]) => {
                     if (url) {
                         await this._viewerDetails?.viewer.loadEnvironment(url, options);
                     } else {
                         await this._viewerDetails?.viewer.resetEnvironment(options);
                     }
                 });
+
+                await Promise.all(promises);
             } catch (error) {
                 Logger.Log(error);
             }

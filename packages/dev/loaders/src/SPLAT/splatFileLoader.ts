@@ -185,8 +185,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const ubuf = new Uint8Array(data);
         const ubufu32 = new Uint32Array(data);
         // debug infos
-        //Logger.Log(`SPZ version ${ubufu32[1]}`);
-        //Logger.Log(`num points ${ubufu32[2]}`);
         const splatCount = ubufu32[2];
 
         const shDegree = ubuf[12];
@@ -227,7 +225,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         // positions
         for (let i = 0; i < splatCount; i++) {
             position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
-            position[i * 8 + 1] = -read24bComponent(ubuf, byteOffset + 3);
+            position[i * 8 + 1] = read24bComponent(ubuf, byteOffset + 3);
             position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
             byteOffset += 9;
         }
@@ -269,7 +267,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             rot[i * 32 + 28 + 2] = y;
             rot[i * 32 + 28 + 3] = z;
             const v = 1 - (nx * nx + ny * ny + nz * nz);
-            rot[i * 32 + 28 + 0] = 127.5 - Math.sqrt(v < 0 ? 0 : v) * 127.5;
+            rot[i * 32 + 28 + 0] = 127.5 + Math.sqrt(v < 0 ? 0 : v) * 127.5;
+
             byteOffset += 3;
         }
 
@@ -381,8 +380,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                             default:
                                 throw new Error("Unsupported Splat mode");
                         }
+                        resolve(babylonMeshesArray);
                     });
-                    resolve(babylonMeshesArray);
                 });
         });
     }
