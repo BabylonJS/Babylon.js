@@ -13,6 +13,7 @@ import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
+import { Scalar } from "core/Maths/math.scalar";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -240,7 +241,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 // be useful to represent base colors that are out of range if the higher spherical harmonics bands
                 // bring them back into range so we multiply by a smaller value.
                 const value = (byteValue - 127.5) / (0.15 * 255);
-                rgba[i * 32 + 24 + component] = Math.max(Math.min((0.5 + SH_C0 * value) * 255, 255), 0);
+                rgba[i * 32 + 24 + component] = Scalar.Clamp((0.5 + SH_C0 * value) * 255, 0, 255);
             }
 
             rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
