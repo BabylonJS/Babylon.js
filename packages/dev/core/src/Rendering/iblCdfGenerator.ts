@@ -180,7 +180,8 @@ export class IblCdfGenerator {
             size.width *= 4;
             size.height *= 2;
             // Force the resolution to be a power of 2 because we rely on the
-            // auto-mipmap generation for the scaled luminance texture.
+            // auto-mipmap generation for the scaled luminance texture to produce
+            // a 1x1 mip that represents the true average pixel intensity of the IBL.
             size.width = 1 << Math.floor(Math.log2(size.width));
             size.height = 1 << Math.floor(Math.log2(size.height));
         }
