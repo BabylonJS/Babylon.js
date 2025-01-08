@@ -233,16 +233,16 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         // colors
         const SH_C0 = 0.282;
         for (let i = 0; i < splatCount; i++) {
-            const r = ubuf[byteOffset + splatCount + i * 3 + 0];
-            const g = ubuf[byteOffset + splatCount + i * 3 + 1];
-            const b = ubuf[byteOffset + splatCount + i * 3 + 2];
-            // color boost:
-            // not exactly what is computed with Niantic version but close enough
-            // remap color value from [0..1] to [-SH_C0..1-SH_C0] then scale by 1. + 4*SH_C0
-            // and clamp/remap result back to [0..255]
-            rgba[i * 32 + 24 + 0] = Math.max(Math.min((r / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
-            rgba[i * 32 + 24 + 1] = Math.max(Math.min((g / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
-            rgba[i * 32 + 24 + 2] = Math.max(Math.min((b / 255 - SH_C0) * (1 + SH_C0 * 4) * 255, 255), 0);
+            for (let component = 0; component < 3; component++) {
+                const byteValue = ubuf[byteOffset + splatCount + i * 3 + component];
+                // 0.15 is hard coded value form spz
+                // Scale factor for DC color components. To convert to RGB, we should multiply by 0.282, but it can
+                // be useful to represent base colors that are out of range if the higher spherical harmonics bands
+                // bring them back into range so we multiply by a smaller value.
+                const value = (byteValue - 127.5) / (0.15 * 255);
+                rgba[i * 32 + 24 + component] = Math.max(Math.min((0.5 + SH_C0 * value) * 255, 255), 0);
+            }
+
             rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
         }
         byteOffset += splatCount * 4;
@@ -255,7 +255,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             byteOffset += 3;
         }
 
-        // rotations
+
+        // convert quaternion
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
             const y = ubuf[byteOffset + 1];
