@@ -7,11 +7,12 @@ import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 enum FrameGraphPassType {
-    Render = 0,
-    Cull = 1,
-    Compute = 2,
+    Normal = 0,
+    Render = 1,
+    Cull = 2,
 }
 
 /**
@@ -77,6 +78,16 @@ export class FrameGraph {
     }
 
     /**
+     * Adds a pass to a task. This method can only be called during a Task.record execution.
+     * @param name The name of the pass
+     * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
+     * @returns The render pass created
+     */
+    public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
+        return this._addPass(name, FrameGraphPassType.Normal, whenTaskDisabled) as FrameGraphPass<FrameGraphContext>;
+    }
+
+    /**
      * Adds a render pass to a task. This method can only be called during a Task.record execution.
      * @param name The name of the pass
      * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
@@ -127,25 +138,36 @@ export class FrameGraph {
     public build(): void {
         this.textureManager._releaseTextures(false);
 
-        for (const task of this._tasks) {
-            task._reset();
+        try {
+            for (const task of this._tasks) {
+                task._reset();
 
-            this._currentProcessedTask = task;
-            this.textureManager._isRecordingTask = true;
+                this._currentProcessedTask = task;
+                this.textureManager._isRecordingTask = true;
 
-            task.record();
+                task.record();
 
-            this.textureManager._isRecordingTask = false;
+                this.textureManager._isRecordingTask = false;
+                this._currentProcessedTask = null;
+            }
+
+            this.textureManager._allocateTextures();
+
+            for (const task of this._tasks) {
+                task._checkTask();
+            }
+
+            for (const task of this._tasks) {
+                task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
+            }
+
+            this.onBuildObservable.notifyObservers(this);
+        } catch (e) {
+            this._tasks.length = 0;
             this._currentProcessedTask = null;
+            this.textureManager._isRecordingTask = false;
+            throw e;
         }
-
-        this.textureManager._allocateTextures();
-
-        for (const task of this._tasks) {
-            task._checkTask();
-        }
-
-        this.onBuildObservable.notifyObservers(this);
     }
 
     /**
@@ -156,19 +178,18 @@ export class FrameGraph {
      */
     public whenReadyAsync(timeout = 16): Promise<void> {
         return new Promise((resolve) => {
-            const checkReady = () => {
-                let ready = this._renderContext._isReady();
-                for (const task of this._tasks) {
-                    ready = task.isReady() && ready;
-                }
-                if (ready) {
-                    resolve();
-                } else {
-                    setTimeout(checkReady, timeout);
-                }
-            };
-
-            checkReady();
+            _retryWithInterval(
+                () => {
+                    let ready = this._renderContext._isReady();
+                    for (const task of this._tasks) {
+                        ready = task.isReady() && ready;
+                    }
+                    return ready;
+                },
+                resolve,
+                undefined,
+                timeout
+            );
         });
     }
 

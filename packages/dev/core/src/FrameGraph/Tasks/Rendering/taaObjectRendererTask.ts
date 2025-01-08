@@ -39,6 +39,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the back buffer color/depth textures are not allowed. Use regular textures instead.`);
         }
 
+        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
+
         const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
         let depthEnabled = false;
@@ -82,6 +86,8 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._textureHeight = outputTextureDescription.size.height;
 
         let pingPongRenderTargetWrapper: FrameGraphRenderTarget | undefined;
+
+        this._setLightsForShadow();
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
@@ -128,12 +134,5 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         passDisabled.setExecuteFunc((context) => {
             context.copyTexture(this.destinationTexture);
         });
-
-        if (this.dependencies !== undefined) {
-            for (const handle of this.dependencies) {
-                pass.useTexture(handle);
-                passDisabled.useTexture(handle);
-            }
-        }
     }
 }

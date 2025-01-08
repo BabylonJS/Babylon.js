@@ -75,9 +75,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this._outputWidth = outputTextureDescription.size.width;
         this._outputHeight = outputTextureDescription.size.height;
 
+        this._internalDependencies.push(this.sourceTexture);
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this.sourceTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);

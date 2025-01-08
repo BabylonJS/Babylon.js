@@ -152,7 +152,7 @@ float getAttenuation(float cosAngle, float exponent) {
 
 float getIESAttenuation(float cosAngle, sampler2D iesLightSampler) {
 	float angle = acos(cosAngle) / PI;
-	return texture2D(iesLightSampler, vec2(angle, 0.), 0.).r;
+	return texture2D(iesLightSampler, vec2(angle, 0.)).r;
 }
 
 lightingInfo basicSpotLighting(vec3 viewDirectionW, vec3 lightVectorW, vec3 vNormal, float attenuation, vec3 diffuseColor, vec3 specularColor, float glossiness) {

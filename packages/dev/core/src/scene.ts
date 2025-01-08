@@ -950,6 +950,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onEnvironmentTextureChangedObservable = new Observable<Nullable<BaseTexture>>();
 
     /**
+     * An event triggered when the state of mesh under pointer, for a specific pointerId, changes.
+     */
+    public onMeshUnderPointerUpdatedObservable = new Observable<{ mesh: Nullable<AbstractMesh>; pointerId: number }>();
+
+    /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
@@ -1154,7 +1159,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
+        const eyePosition = this._forcedViewPosition
+            ? this._forcedViewPosition
+            : this._mirroredCameraPosition
+              ? this._mirroredCameraPosition
+              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
@@ -4279,7 +4288,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
+            let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
+            if (currentLOD) {
+                currentLOD[1] = -1;
+            } else {
+                currentLOD = [mesh, -1];
+                mesh._internalAbstractMeshDataInfo._currentLOD.set(this.activeCamera, currentLOD);
+            }
             if (mesh.isBlocked) {
                 continue;
             }
@@ -4299,8 +4314,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
+            currentLOD[0] = meshToRender;
+            currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -5290,6 +5305,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onScenePerformancePriorityChangedObservable.clear();
         this.onClearColorChangedObservable.clear();
         this.onEnvironmentTextureChangedObservable.clear();
+        this.onMeshUnderPointerUpdatedObservable.clear();
         this._isDisposed = true;
     }
 
@@ -5578,7 +5594,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param filter a predicate to filter for tags
      * @returns
      */
-    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
+    private _getByTags<T>(list: T[], tagsQuery: string, filter?: (item: T) => boolean): T[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;

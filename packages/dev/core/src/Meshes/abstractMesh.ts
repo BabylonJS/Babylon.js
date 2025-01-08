@@ -209,8 +209,7 @@ class _InternalAbstractMeshDataInfo {
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
-    public _currentLOD: Nullable<AbstractMesh> = null;
-    public _currentLODIsUpToDate: boolean = false;
+    public _currentLOD: Map<Camera, [Nullable<AbstractMesh>, number]> = new Map();
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
@@ -2744,6 +2743,26 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
         this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+        return this;
+    }
+
+    /**
+     * Optimize the indices order so that we keep the faces with similar indices together
+     * @returns the current mesh
+     */
+    public async optimizeIndicesAsync(): Promise<AbstractMesh> {
+        const indices = this.getIndices();
+
+        if (!indices) {
+            return this;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { OptimizeIndices } = await import("./mesh.vertexData.functions");
+
+        OptimizeIndices(indices);
+
+        this.setIndices(indices, this.getTotalVertices());
         return this;
     }
 

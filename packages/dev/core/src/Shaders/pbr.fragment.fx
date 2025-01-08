@@ -1,4 +1,6 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+﻿#define CUSTOM_FRAGMENT_EXTENSION
+
+#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -299,8 +301,7 @@ void main(void) {
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
+                    , icdfSampler
                 #endif
             #endif
             );
@@ -538,8 +539,7 @@ void main(void) {
                         , reflectionSampler
                         , vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
-                            , icdfxSampler
-                            , icdfySampler
+                            , icdfSampler
                         #endif
                     #endif
                 #endif

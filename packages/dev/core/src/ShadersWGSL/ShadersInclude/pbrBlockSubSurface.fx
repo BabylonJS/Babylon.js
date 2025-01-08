@@ -190,10 +190,8 @@ struct subSurfaceOutParams
                     , reflectionSamplerSampler: sampler
                     , vReflectionFilteringInfo: vec2f
                     #ifdef IBL_CDF_FILTERING
-                        , icdfxSampler: texture_2d<f32>
-                        , icdfxSamplerSampler: sampler
-                        , icdfySampler: texture_2d<f32>
-                        , icdfySamplerSampler: sampler
+                        , icdfSampler: texture_2d<f32>
+                        , icdfSamplerSampler: sampler
                     #endif
                 #endif
             #endif
@@ -521,10 +519,8 @@ struct subSurfaceOutParams
             #if defined(REALTIME_FILTERING)
                 var refractionIrradiance: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfxSamplerSampler
-                    , icdfySampler
-                    , icdfySamplerSampler
+                    , icdfSampler
+                    , icdfSamplerSampler
                 #endif
                 );
             #else

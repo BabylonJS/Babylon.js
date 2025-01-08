@@ -65,6 +65,7 @@ export class FilesInput {
      * @param onReloadCallback callback called when a reload is requested
      * @param errorCallback callback call if an error occurs
      * @param useAppend defines if the file loaded must be appended (true) or have the scene replaced (false, default behavior)
+     * @param dontInjectRenderLoop defines if the render loop mustn't be injected into engine (default is false). Used only if useAppend is false.
      */
     constructor(
         engine: AbstractEngine,
@@ -76,7 +77,8 @@ export class FilesInput {
         startingProcessingFilesCallback: Nullable<(files?: File[]) => void>,
         onReloadCallback: Nullable<(sceneFile: File) => void>,
         errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>,
-        public readonly useAppend = false
+        public readonly useAppend = false,
+        public readonly dontInjectRenderLoop = false
     ) {
         this._engine = engine;
         this._currentScene = scene;
@@ -324,9 +326,11 @@ export class FilesInput {
                             if (this.displayLoadingUI) {
                                 this._engine.hideLoadingUI();
                             }
-                            this._engine.runRenderLoop(() => {
-                                this._renderFunction();
-                            });
+                            if (!this.dontInjectRenderLoop) {
+                                this._engine.runRenderLoop(() => {
+                                    this._renderFunction();
+                                });
+                            }
                         });
                     } else {
                         if (this.displayLoadingUI) {

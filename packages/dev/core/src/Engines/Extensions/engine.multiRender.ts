@@ -204,6 +204,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     const gl = this._gl;
     // Create the framebuffer
+    const currentFramebuffer = this._currentFramebuffer;
     const framebuffer = gl.createFramebuffer();
     this._bindUnboundFramebuffer(framebuffer);
 
@@ -389,7 +390,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         gl.drawBuffers(attachments);
     }
 
-    this._bindUnboundFramebuffer(null);
+    this._bindUnboundFramebuffer(currentFramebuffer);
 
     rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
@@ -410,7 +411,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         if (textureCount > 0 && initializeBuffers) {
             this._bindUnboundFramebuffer(framebuffer);
             gl.drawBuffers(attachments);
-            this._bindUnboundFramebuffer(null);
+            this._bindUnboundFramebuffer(currentFramebuffer);
         }
     }
 
@@ -568,4 +569,5 @@ ThinEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWr
     }
 
     gl.drawBuffers(attachments);
+    gl.bindFramebuffer(this._gl.FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
 };
