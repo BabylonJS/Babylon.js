@@ -235,7 +235,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         for (let i = 0; i < splatCount; i++) {
             for (let component = 0; component < 3; component++) {
                 const byteValue = ubuf[byteOffset + splatCount + i * 3 + component];
-                // 0.15 is hard coded value form spz
+                // 0.15 is hard coded value from spz
                 // Scale factor for DC color components. To convert to RGB, we should multiply by 0.282, but it can
                 // be useful to represent base colors that are out of range if the higher spherical harmonics bands
                 // bring them back into range so we multiply by a smaller value.
