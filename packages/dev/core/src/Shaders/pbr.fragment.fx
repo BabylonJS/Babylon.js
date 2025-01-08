@@ -286,10 +286,8 @@ void main(void) {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , vEnvironmentIrradiance
             #endif
-            #if defined(USESPHERICALFROMREFLECTIONMAP) || defined(USEIRRADIANCEMAP)
-                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    , reflectionMatrix
-                #endif
+            #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                , reflectionMatrix
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
