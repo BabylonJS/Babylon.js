@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, Viewer, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -13,7 +13,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
-import { isToneMapping, ViewerHotSpotResult } from "./viewer";
+import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -1061,8 +1061,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
                     const viewer = await this._createViewer(canvas, {
-                    engine: this.engine,
-                    onInitialized: (details) => {
+                        engine: this.engine,
+                        onInitialized: (details) => {
                             detailsDeferred.resolve(details);
                         },
                     });
@@ -1073,61 +1073,61 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 const details = this._viewerDetails;
 
-                        details.viewer.onEnvironmentChanged.add(() => {
-                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
-                        });
+                details.viewer.onEnvironmentChanged.add(() => {
+                    this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
+                });
 
-                        details.viewer.onEnvironmentError.add((error) => {
-                            this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
-                        });
+                details.viewer.onEnvironmentError.add((error) => {
+                    this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
+                });
 
-                        details.viewer.onModelChanged.add(() => {
-                            this._animations = [...details.viewer.animations];
+                details.viewer.onModelChanged.add(() => {
+                    this._animations = [...details.viewer.animations];
 
-                            // When attributes are explicitly set, they are re-applied when a new model is loaded.
-                            this._propertyBindings.forEach((binding) => binding.syncToAttribute());
+                    // When attributes are explicitly set, they are re-applied when a new model is loaded.
+                    this._propertyBindings.forEach((binding) => binding.syncToAttribute());
 
-                            // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
-                            // (since the underlying Babylon camera already has these properties).
-                            this._cameraOrbitCoercer?.(details.camera);
-                            this._cameraTargetCoercer?.(details.camera);
+                    // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
+                    // (since the underlying Babylon camera already has these properties).
+                    this._cameraOrbitCoercer?.(details.camera);
+                    this._cameraTargetCoercer?.(details.camera);
 
-                            // If animation auto play was set, then start the default animation (if possible).
-                            if (this.animationAutoPlay) {
-                                details.viewer.playAnimation();
-                            }
+                    // If animation auto play was set, then start the default animation (if possible).
+                    if (this.animationAutoPlay) {
+                        details.viewer.playAnimation();
+                    }
 
-                            this._dispatchCustomEvent("modelchange", (type) => new Event(type));
-                        });
+                    this._dispatchCustomEvent("modelchange", (type) => new Event(type));
+                });
 
-                        details.viewer.onModelError.add((error) => {
-                            this._animations = [...details.viewer.animations];
-                            this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
-                        });
+                details.viewer.onModelError.add((error) => {
+                    this._animations = [...details.viewer.animations];
+                    this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
+                });
 
-                        details.viewer.onLoadingProgressChanged.add(() => {
-                            this._loadingProgress = details.viewer.loadingProgress;
-                            this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
-                        });
+                details.viewer.onLoadingProgressChanged.add(() => {
+                    this._loadingProgress = details.viewer.loadingProgress;
+                    this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
+                });
 
-                        details.viewer.onIsAnimationPlayingChanged.add(() => {
-                            this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
-                            this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
-                        });
+                details.viewer.onIsAnimationPlayingChanged.add(() => {
+                    this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
+                    this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
+                });
 
-                        details.viewer.onAnimationProgressChanged.add(() => {
-                            this.animationProgress = details.viewer.animationProgress ?? 0;
-                            this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
-                        });
+                details.viewer.onAnimationProgressChanged.add(() => {
+                    this.animationProgress = details.viewer.animationProgress ?? 0;
+                    this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                });
 
-                        details.scene.onAfterRenderCameraObservable.add(() => {
-                            this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
-                        });
+                details.scene.onAfterRenderCameraObservable.add(() => {
+                    this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
+                });
 
-                        this._updateModel();
-                        this._updateEnv({ lighting: true, skybox: true });
+                this._updateModel();
+                this._updateEnv({ lighting: true, skybox: true });
 
-                        this._propertyBindings.forEach((binding) => binding.onInitialized(details));
+                this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
                 this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }
@@ -1195,5 +1195,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 Logger.Log(error);
             }
         }
+    }
+}
+
+/**
+ * Displays a 3D model using the Babylon.js Viewer.
+ */
+@customElement("babylon-viewer")
+export class HTML3DElement extends ViewerElement {
+    /**
+     * Creates a new HTML3DElement.
+     */
+    public constructor() {
+        super(Viewer);
     }
 }
