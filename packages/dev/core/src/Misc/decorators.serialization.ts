@@ -60,6 +60,8 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
                 case 4: // Vector2
                 case 5: // Vector3
                 case 7: // Color Curves
+                case 8: // Color 4
+                case 9: // Image Processing
                 case 10: // Quaternion
                 case 12: // Matrix
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
