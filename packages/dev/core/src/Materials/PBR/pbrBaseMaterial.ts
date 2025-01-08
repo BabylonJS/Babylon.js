@@ -292,6 +292,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public DEBUGMODE = 0;
 
+    public ALTERNATE_ROUGH_RADIANCE = false;
+
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -766,6 +768,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @internal
      */
     public _forceIrradianceInFragment = false;
+
+    public _useAlternateRoughRadiance = false;
 
     private _realTimeFiltering: boolean = false;
     /**
@@ -1732,6 +1736,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                                 defines.USESPHERICALINVERTEX = true;
                             }
                         }
+                    }
+
+                    if (this._useAlternateRoughRadiance) {
+                        defines.ALTERNATE_ROUGH_RADIANCE = true;
                     }
                 } else {
                     defines.REFLECTION = false;
