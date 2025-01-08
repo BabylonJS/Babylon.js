@@ -1,7 +1,6 @@
 {
-    "name": "@babylonjs/viewer-alpha",
-    "version": "1.0.0",
-    "private": true,
+    "name": "@babylonjs/viewer",
+    "version": "7.42.0",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",

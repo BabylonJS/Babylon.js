@@ -520,7 +520,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/viewer-alpha"],
+            "args": ["run", "serve", "-w", "@tools/viewer"],
             "isBackground": true,
             "problemMatcher": {
                 "pattern": "$tsc",

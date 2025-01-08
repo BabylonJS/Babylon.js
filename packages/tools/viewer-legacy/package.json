@@ -1,5 +1,5 @@
 {
-    "name": "@tools/viewer",
+    "name": "@tools/viewer-legacy",
     "version": "1.0.0",
     "private": true,
     "sideEffects": true,
