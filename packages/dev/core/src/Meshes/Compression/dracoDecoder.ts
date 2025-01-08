@@ -20,7 +20,7 @@ declare let DracoDecoderModule: DracoDecoderModule;
  *
  * This class wraps the Draco decoder module.
  *
- * By default, the configuration points to a copy of the Draco decoder files for glTF from the Babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * By default, the configuration points to a copy of the Draco decoder files for glTF from the Babylon.js cdn https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js.
  *
  * To update the configuration, use the following code:
  * ```javascript

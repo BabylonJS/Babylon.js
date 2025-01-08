@@ -129,7 +129,7 @@ const DefaultEncoderOptions: IDracoEncoderOptions = {
  *
  * This class wraps the Draco encoder module.
  *
- * By default, the configuration points to a copy of the Draco encoder files from the Babylon.js preview cdn https://preview.babylonjs.com/draco_encoder_wasm_wrapper.js.
+ * By default, the configuration points to a copy of the Draco encoder files from the Babylon.js cdn https://cdn.babylonjs.com/draco_encoder_wasm_wrapper.js.
  *
  * To update the configuration, use the following code:
  * ```javascript
