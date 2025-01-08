@@ -5,9 +5,10 @@ import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
 import { buildSceneLTCTextures } from "core/Lights/LTC/ltcTextureTool";
+import { serialize } from "../Misc/decorators";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
-    return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
+    return () => new AreaLight(name, Vector3.Zero(), 1, 1, scene);
 });
 
 /**
@@ -22,6 +23,60 @@ export class AreaLight extends Light {
     protected _height: Vector3;
 
     /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    @serialize()
+    public get width(): number {
+        return this._width.x;
+    }
+    /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    public set width(value: number) {
+        this._width.x = value;
+    }
+
+    /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    @serialize()
+    public get height(): number {
+        return this._height.y;
+    }
+    /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    public set height(value: number) {
+        this._height.y = value;
+    }
+
+    /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    @serialize()
+    public get position(): Vector3 {
+        return this._position;
+    }
+    /**
+     * Only used in gltf falloff mode, this defines the angle where
+     * the directional falloff will start before cutting at angle which could be seen
+     * as outer angle.
+     */
+    public set position(value: Vector3) {
+        this._position = value;
+    }
+
+    /**
      * Creates a area light object.
      * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light
@@ -30,11 +85,11 @@ export class AreaLight extends Light {
      * @param height The height of the area light.
      * @param scene The scene the light belongs to
      */
-    constructor(name: string, position: Vector3, width: Vector3, height: Vector3, scene?: Scene) {
+    constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
         super(name, scene);
         this._position = position;
-        this._width = width;
-        this._height = height;
+        this._width = Vector3.Right().multiplyByFloats(width, width, width);
+        this._height = Vector3.Up().multiplyByFloats(height, height, height);
     }
 
     /**

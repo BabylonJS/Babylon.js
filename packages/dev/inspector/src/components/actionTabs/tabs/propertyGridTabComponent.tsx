@@ -87,6 +87,7 @@ import { DirectionalLightPropertyGridComponent } from "./propertyGrids/lights/di
 import type { DirectionalLight } from "core/Lights/directionalLight";
 import type { SpotLight } from "core/Lights/spotLight";
 import { SpotLightPropertyGridComponent } from "./propertyGrids/lights/spotLightPropertyGridComponent";
+import { AreaLightPropertyGridComponent } from "./propertyGrids/lights/areaLightPropertyGridComponent";
 import type { LensRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
 import { LensRenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
@@ -112,6 +113,7 @@ import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import type { AreaLight } from "core/Lights";
 
 /**
  *
@@ -310,6 +312,19 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const pointLight = entity as SpotLight;
                 return (
                     <SpotLightPropertyGridComponent
+                        globalState={this.props.globalState}
+                        light={pointLight}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "AreaLight") {
+                const pointLight = entity as AreaLight;
+                return (
+                    <AreaLightPropertyGridComponent
                         globalState={this.props.globalState}
                         light={pointLight}
                         lockObject={this._lockObject}
