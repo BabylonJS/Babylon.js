@@ -37,6 +37,19 @@ const attributeAsUniform: { [name: string]: boolean } = {
     particle_texturemask: true,
 };
 
+const attributeDefine: { [name: string]: string } = {
+    normal: "NORMAL",
+    tangent: "TANGENT",
+    uv: "UV1",
+    uv2: "UV2",
+    uv3: "UV3",
+    uv4: "UV4",
+    uv5: "UV5",
+    uv6: "UV6",
+    uv7: "UV7",
+    uv8: "UV8",
+};
+
 /**
  * Block used to expose an input value
  */
@@ -602,12 +615,30 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
                     if (!alreadyDeclared) {
-                        state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
+                        const defineName = attributeDefine[this.name];
+                        if (defineName) {
+                            state._attributeDeclaration += `#ifdef ${defineName}\n`;
+                            state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
+                            state._attributeDeclaration += `#else\n`;
+                            state._attributeDeclaration += `let ${this.declarationVariableName}: ${state._getShaderType(this.type)} = ${state._getShaderType(this.type)}(0.);\n`;
+                            state._attributeDeclaration += `#endif\n`;
+                        } else {
+                            state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
+                        }
                     }
                     this._prefix = `vertexInputs.`;
                 } else {
                     if (!alreadyDeclared) {
-                        state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
+                        const defineName = attributeDefine[this.name];
+                        if (defineName) {
+                            state._attributeDeclaration += `#ifdef ${defineName}\n`;
+                            state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
+                            state._attributeDeclaration += `#else\n`;
+                            state._attributeDeclaration += `${state._getShaderType(this.type)} ${this.declarationVariableName} = ${state._getShaderType(this.type)}(0.);\n`;
+                            state._attributeDeclaration += `#endif\n`;
+                        } else {
+                            state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
+                        }
                     }
                 }
                 if (define && !alreadyDeclared) {

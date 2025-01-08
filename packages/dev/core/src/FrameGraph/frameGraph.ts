@@ -157,6 +157,10 @@ export class FrameGraph {
                 task._checkTask();
             }
 
+            for (const task of this._tasks) {
+                task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
+            }
+
             this.onBuildObservable.notifyObservers(this);
         } catch (e) {
             this._tasks.length = 0;

@@ -98,7 +98,6 @@ export class MorphTargetManager implements IDisposable {
             if (this._blockCounter <= 0) {
                 this._blockCounter = 0;
 
-                this._mustSynchronize = true;
                 this._syncActiveTargets();
             }
         }

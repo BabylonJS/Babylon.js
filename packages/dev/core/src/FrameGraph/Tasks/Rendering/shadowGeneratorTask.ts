@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, AbstractEngine, FrameGraphTextureHandle } from "core/index";
+import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, AbstractEngine, FrameGraphTextureHandle, Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
@@ -26,6 +26,19 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._light = value;
+        this._setupShadowGenerator();
+    }
+
+    private _camera: Camera;
+    /**
+     * Gets or sets the camera used to generate the shadow generator.
+     */
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(camera: Camera) {
+        this._camera = camera;
         this._setupShadowGenerator();
     }
 
@@ -265,7 +278,11 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             shadowGenerator.useOpacityTextureForTransparentShadow = this._useOpacityTextureForTransparentShadow;
             shadowGenerator.filter = this._filter;
             shadowGenerator.filteringQuality = this._filteringQuality;
-            shadowGenerator.getShadowMap()!._disableEngineStages = true;
+
+            const shadowMap = shadowGenerator.getShadowMap()!;
+            shadowMap._disableEngineStages = true;
+            shadowMap.cameraForLOD = this._camera;
+
             (this.shadowGenerator as WritableObject<ShadowGenerator | undefined>) = shadowGenerator;
         }
     }
@@ -293,8 +310,8 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
     }
 
     public record() {
-        if (this.light === undefined || this.objectList === undefined) {
-            throw new Error(`FrameGraphShadowGeneratorTask ${this.name}: light and objectList are required`);
+        if (this.light === undefined || this.objectList === undefined || this.camera === undefined) {
+            throw new Error(`FrameGraphShadowGeneratorTask ${this.name}: light, objectList and camera are required`);
         }
 
         // Make sure the renderList / particleSystemList are set when FrameGraphShadowGeneratorTask.isReady() is called!
