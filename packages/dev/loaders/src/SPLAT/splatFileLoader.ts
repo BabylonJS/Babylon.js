@@ -255,7 +255,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             byteOffset += 3;
         }
 
-
         // convert quaternion
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
