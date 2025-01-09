@@ -126,6 +126,7 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     public set rotation(value: Vector3) {
         Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TempQuaternion);
         this.rotationQuaternion = TempQuaternion;
+        this._rotationAnglesDirty = true;
     }
 
     /** @internal */
