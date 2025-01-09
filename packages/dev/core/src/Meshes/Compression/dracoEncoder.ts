@@ -79,36 +79,6 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
     return attributes;
 }
 
-/**
- * Copies `data` of each `attribute` into a single buffer for fast transfer to the worker.
- * @internal
- */
-function UseTransferableBuffer(attributes: Array<IDracoAttributeData>, indices: Nullable<Uint32Array | Uint16Array>): ArrayBuffer {
-    // Allocate the buffer
-    let byteSize = 0;
-    for (const attribute of attributes) {
-        byteSize += attribute.data.byteLength;
-    }
-    byteSize += indices ? indices.byteLength : 0;
-
-    const buffer = new ArrayBuffer(byteSize);
-
-    // Copy attributes and indices data into buffer, remapping attributes.data to new bufferviews for the buffer
-    let offsetBytes = 0;
-    for (const attribute of attributes) {
-        const bufferView = new Float32Array(buffer, offsetBytes, attribute.data.length);
-        bufferView.set(attribute.data);
-        attribute.data = bufferView;
-        offsetBytes += bufferView.byteLength;
-    }
-    if (indices) {
-        const bufferView = new (indices instanceof Uint32Array ? Uint32Array : Uint16Array)(buffer, offsetBytes, indices.length);
-        bufferView.set(indices);
-    }
-
-    return buffer;
-}
-
 const DefaultEncoderOptions: IDracoEncoderOptions = {
     decodeSpeed: 5,
     encodeSpeed: 5,
@@ -250,7 +220,7 @@ export class DracoEncoder extends DracoCodec {
             mergedOptions.method = "MESH_SEQUENTIAL_ENCODING";
         }
 
-        const indices = PrepareIndicesForDraco(input);
+        let indices = PrepareIndicesForDraco(input);
         const attributes = PrepareAttributesForDraco(input, mergedOptions.excludedAttributes);
 
         if (this._workerPoolPromise) {
@@ -276,9 +246,18 @@ export class DracoEncoder extends DracoCodec {
                     worker.addEventListener("error", onError);
                     worker.addEventListener("message", onMessage);
 
-                    // Manually copy all of our attribute data into our own transferable buffer to ensure we're only copying what we need
-                    const buffer = UseTransferableBuffer(attributes, indices);
-                    worker.postMessage({ id: "encodeMesh", attributes: attributes, indices: indices, options: mergedOptions, buffer: buffer }, [buffer]);
+                    // Manually create copies of our attribute data and add them to the transfer list to ensure we only copy the ArrayBuffer data we need.
+                    const transferList = [];
+                    attributes.forEach((attribute) => {
+                        attribute.data = attribute.data.slice();
+                        transferList.push(attribute.data.buffer);
+                    });
+                    if (indices) {
+                        indices = indices.slice();
+                        transferList.push(indices.buffer);
+                    }
+
+                    worker.postMessage({ id: "encodeMesh", attributes: attributes, indices: indices, options: mergedOptions }, transferList);
                 });
             });
         }

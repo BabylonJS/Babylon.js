@@ -24,8 +24,7 @@ export function EncodeMesh(
     module: unknown /** EncoderModule */,
     attributes: Array<IDracoAttributeData>,
     indices: Nullable<Uint16Array | Uint32Array>,
-    options: IDracoEncoderOptions,
-    destination?: ArrayBuffer
+    options: IDracoEncoderOptions
 ): Nullable<IDracoEncodedMeshData> {
     const encoderModule = module as EncoderModule;
     let encoder: Nullable<Encoder> = null;
@@ -84,10 +83,7 @@ export function EncodeMesh(
         }
 
         // Copy the native buffer data to worker heap
-        // Reuse `destination` buffer if possible (which should always be the case for our default worker method).
-        const availableBytes = destination ? destination.byteLength : 0;
-        const buffer = availableBytes < encodedLength ? new ArrayBuffer(encodedLength) : destination!;
-        const encodedData = new Int8Array(buffer, 0, encodedLength);
+        const encodedData = new Int8Array(encodedLength);
         for (let i = 0; i < encodedLength; i++) {
             encodedData[i] = encodedNativeBuffer.GetValue(i);
         }
@@ -134,7 +130,7 @@ export function EncoderWorkerFunction(): void {
                     throw new Error("Draco encoder module is not available");
                 }
                 encoderPromise.then((encoder) => {
-                    const result = EncodeMesh(encoder, message.attributes, message.indices, message.options, message.buffer);
+                    const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
                     postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
                 });
                 break;
