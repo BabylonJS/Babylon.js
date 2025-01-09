@@ -7,6 +7,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial, GreasedLineUseOffsetsSimpleMaterialDefine } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
+import { GreasedLineSimpleMaterial, GreasedLineUseOffsetsSimpleMaterialDefine } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { FloatArray, IndicesArray } from "../../types";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
@@ -289,7 +290,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      */
     set offsets(offsets: number[]) {
         if (this.material instanceof GreasedLineSimpleMaterial) {
-            this.material.setDefine(GreasedLineUseOffsetsSimpleMaterialDefine, offsets?.length > 0);
+            this.material.setDefine(GreasedLineUseOffsetsSimpleMaterialDefine, offsets.length > 0);
         }
         this._offsets = offsets;
         if (!this._offsetsBuffer) {

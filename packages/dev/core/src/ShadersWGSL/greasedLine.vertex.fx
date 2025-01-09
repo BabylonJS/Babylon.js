@@ -49,6 +49,20 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
         let grlNext: vec3f = input.grl_nextAndCounters.xyz;
         vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
+
+        #ifdef GREASED_LINE_USE_OFFSETS
+            var grlPositionOffset: vec3f = input.grl_offsets;
+        #else
+            var grlPositionOffset = vec3f(0.);
+        #endif
+        let grlFinalPosition: vec4f = grlMatrix * vec4f(vertexInputs.position + grlPositionOffset , 1.0);
+        let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
+        let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
+
+        let grlCurrentP: vec2f = grlFix(grlFinalPosition, uniforms.grlAspect);
+        let grlPrevP: vec2f = grlFix(grlPrevPos, uniforms.grlAspect);
+        let grlNextP: vec2f= grlFix(grlNextPos, uniforms.grlAspect);
+
         let grlWidth:f32 = grlBaseWidth * input.grl_widths;
 
         #ifdef GREASED_LINE_USE_OFFSETS

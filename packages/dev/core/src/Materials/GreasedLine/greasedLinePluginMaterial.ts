@@ -20,6 +20,7 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GetCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
 import { GetCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
 import type { GreasedLineBaseMesh } from "../../Meshes";
+import type { GreasedLineBaseMesh } from "../../Meshes";
 
 /**
  * @internal
@@ -53,7 +54,7 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
     GREASED_LINE_CAMERA_FACING = true;
 
     /**
-     * True if the line uses offsets
+     * True if the line is in camera facing mode
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_USE_OFFSETS = false;
