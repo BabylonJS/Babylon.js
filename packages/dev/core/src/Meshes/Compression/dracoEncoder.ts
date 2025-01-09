@@ -20,7 +20,7 @@ declare let DracoEncoderModule: DracoEncoderModule;
  * Map the Babylon.js attribute kind to the Draco attribute kind, defined by the `GeometryAttributeType` enum.
  * @internal
  */
-function getDracoAttributeName(kind: string): DracoAttributeName {
+function GetDracoAttributeName(kind: string): DracoAttributeName {
     if (kind === VertexBuffer.PositionKind) {
         return "POSITION";
     } else if (kind === VertexBuffer.NormalKind) {
@@ -73,7 +73,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
         if (!(data instanceof Float32Array)) {
             data = Float32Array.from(data!);
         }
-        attributes.push({ babylonAttribute: kind, dracoAttribute: getDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
+        attributes.push({ babylonAttribute: kind, dracoAttribute: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
     }
 
     return attributes;
