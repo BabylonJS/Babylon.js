@@ -287,7 +287,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      */
     set offsets(offsets: number[]) {
         if (this.material instanceof GreasedLineSimpleMaterial) {
-            this.material.setDefine(GreasedLineUseOffsetsSimpleMaterialDefine, offsets.length > 0);
+            this.material.setDefine(GreasedLineUseOffsetsSimpleMaterialDefine, offsets?.length > 0);
         }
         this._offsets = offsets;
         if (!this._offsetsBuffer) {
