@@ -9,7 +9,7 @@ import type { Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import type { EncoderModule } from "draco3d";
-import { AreIndices32Bits } from "core/Buffers";
+import { AreIndices32Bits } from "core/Buffers/bufferUtils";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
