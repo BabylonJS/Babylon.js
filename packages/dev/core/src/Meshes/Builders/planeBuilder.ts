@@ -23,8 +23,8 @@ export function CreatePlaneVertexData(options: { size?: number; width?: number; 
     const normals = [];
     const uvs = [];
 
-    const width: number = options.width || options.size || 1;
-    const height: number = options.height || options.size || 1;
+    const width: number = typeof options.width !== "undefined" ? options.width : typeof options.size !== "undefined" ? options.size : 1;
+    const height: number = typeof options.height !== "undefined" ? options.height : typeof options.size !== "undefined" ? options.size : 1;
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     // Vertices
