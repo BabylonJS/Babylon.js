@@ -20,7 +20,7 @@ import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
 import { Epsilon } from "../Maths/math.constants";
 import { Logger } from "../Misc/logger";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for plane rotation gizmo
