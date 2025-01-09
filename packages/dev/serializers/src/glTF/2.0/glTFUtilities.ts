@@ -355,18 +355,6 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     return true;
 }
 
-export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
-    if (indices) {
-        if (indices instanceof Array) {
-            return indices.some((value) => value >= 65536);
-        }
-
-        return indices.BYTES_PER_ELEMENT === 4;
-    }
-
-    return count >= 65536;
-}
-
 export function IndicesArrayToUint8Array(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint8Array {
     if (indices instanceof Array) {
         const subarray = indices.slice(start, start + count);
