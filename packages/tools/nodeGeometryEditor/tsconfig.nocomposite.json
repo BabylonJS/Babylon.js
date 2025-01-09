@@ -17,13 +17,10 @@
             "node-editor/*": ["tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
-            "viewer/*": ["tools/viewer/dist/*"],
+            "viewer-legacy/*": ["tools/viewer-legacy/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"]
         }
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
-    "exclude": [
-        "**/node_modules",
-        "**/dist",
-    ]
+    "exclude": ["**/node_modules", "**/dist"]
 }

@@ -40,7 +40,6 @@ import { GLTFMaterialExporter } from "./glTFMaterialExporter";
 import type { IExportOptions } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
-    AreIndices32Bits,
     ConvertToRightHandedPosition,
     ConvertToRightHandedRotation,
     CreateAccessor,
@@ -65,7 +64,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
-import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
+import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
