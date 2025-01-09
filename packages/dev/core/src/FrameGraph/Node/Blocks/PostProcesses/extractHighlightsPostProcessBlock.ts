@@ -1,16 +1,15 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphExtractHighlightsTask } from "core/FrameGraph/Tasks/PostProcesses/extractHighlightsTask";
 import { ThinExtractHighlightsPostProcess } from "core/PostProcesses/thinExtractHighlightsPostProcess";
+import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 
 /**
  * Block that implements the extract highlights post process
  */
-export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphExtractHighlightsTask;
 
     /**
@@ -29,28 +28,9 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this._addDependenciesInput();
-        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
-
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = () => {
-            return this.destination.isConnected ? this.destination : this.source;
-        };
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphExtractHighlightsTask(this.name, frameGraph, new ThinExtractHighlightsPostProcess(name, scene.getEngine()));
-    }
-
-    /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
-    public get sourceSamplingMode() {
-        return this._frameGraphTask.sourceSamplingMode;
-    }
-
-    public set sourceSamplingMode(value: number) {
-        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** The luminance threshold, pixels below this value will be set to black. */
@@ -71,54 +51,21 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
         return "NodeRenderGraphExtractHighlightsPostProcessBlock";
     }
 
-    /**
-     * Gets the source input component
-     */
-    public get source(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
-     * Gets the destination input component
-     */
-    public get destination(): NodeRenderGraphConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
-    }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-
-        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
-
-        this._frameGraphTask.sourceTexture = this.source.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
-    }
-
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.threshold = ${this.threshold};`);
-        codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.threshold = this.threshold;
-        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.threshold = serializationObject.threshold;
-        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
     }
 }
 
