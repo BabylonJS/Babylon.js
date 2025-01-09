@@ -9,6 +9,7 @@ import type { Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import type { EncoderModule } from "draco3d";
+import { AreIndices32Bits } from "core/Buffers";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
@@ -40,12 +41,11 @@ function GetDracoAttributeName(kind: string): DracoAttributeName {
  * @internal
  */
 function PrepareIndicesForDraco(input: Mesh | Geometry): Nullable<Uint32Array | Uint16Array> {
-    // Process indices
     let indices = input.getIndices();
 
-    // Convert number[] to typed array, if needed
+    // Convert number[] and Int32Array types, if needed
     if (indices && !(indices instanceof Uint32Array) && !(indices instanceof Uint16Array)) {
-        indices = (indices.length > 65535 ? Uint32Array : Uint16Array).from(indices);
+        indices = (AreIndices32Bits(indices, indices.length) ? Uint32Array : Uint16Array).from(indices);
     }
 
     return indices;
