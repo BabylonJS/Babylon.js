@@ -584,6 +584,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clz": getSimpleInputMapping(FlowGraphBlockNames.LeadingZeros),
     "math/ctz": getSimpleInputMapping(FlowGraphBlockNames.TrailingZeros),
     "math/popcnt": getSimpleInputMapping(FlowGraphBlockNames.OneBitsCounter),
+    "math/rad": getSimpleInputMapping(FlowGraphBlockNames.DegToRad),
+    "math/deg": getSimpleInputMapping(FlowGraphBlockNames.RadToDeg),
     "type/boolToInt": getSimpleInputMapping(FlowGraphBlockNames.BooleanToInt),
     "type/boolToFloat": getSimpleInputMapping(FlowGraphBlockNames.BooleanToFloat),
     "type/intToBool": getSimpleInputMapping(FlowGraphBlockNames.IntToBoolean),
