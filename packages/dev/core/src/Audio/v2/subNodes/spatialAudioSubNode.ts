@@ -36,11 +36,11 @@ export class _SpatialAudioDefault {
  */
 export interface ISpatialAudioOptions {
     /**
-     * The spatial cone inner angle. Default is 360.
+     * The spatial cone inner angle, in degrees. Default is 360.
      */
     spatialConeInnerAngle: number;
     /**
-     * The spatial cone outer angle. Default is 360.
+     * The spatial cone outer angle, in degrees. Default is 360.
      */
     spatialConeOuterAngle: number;
     /**
