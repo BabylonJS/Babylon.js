@@ -20,6 +20,7 @@ export * from "./Tasks/PostProcesses/blurTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/extractHighlightsTask";
+export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 
 export * from "./Tasks/Texture/clearTextureTask";
