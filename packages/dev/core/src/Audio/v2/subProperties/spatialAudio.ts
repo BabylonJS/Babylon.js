@@ -67,6 +67,10 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     public set maxDistance(value: number) {
+        if (value <= 0) {
+            value = 0.000001;
+        }
+
         this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
             node.maxDistance = value;
         });
