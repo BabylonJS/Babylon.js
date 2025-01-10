@@ -50,6 +50,13 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
 
     /** @internal */
     public async init(options: Partial<IAudioBusOptions>): Promise<void> {
+        if (options.outBus) {
+            this.outBus = options.outBus;
+        } else {
+            await this.engine.isReadyPromise;
+            this.outBus = this.engine.defaultMainBus;
+        }
+
         await this._subGraph.init(options);
 
         this.engine.addNode(this);
