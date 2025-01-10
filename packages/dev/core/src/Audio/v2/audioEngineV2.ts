@@ -86,21 +86,7 @@ export abstract class AudioEngineV2 {
         Instances.push(this);
     }
 
-    /**
-     *
-     */
-    public get listenerEnabled(): boolean {
-        return this.listener !== null;
-    }
-    public set listenerEnabled(value: boolean) {
-        if (value) {
-            this.enableListener();
-        } else {
-            this.disableListener();
-        }
-    }
-
-    public abstract get listener(): Nullable<AbstractSpatialAudioListener>;
+    public abstract get listener(): AbstractSpatialAudioListener;
 
     public abstract get volume(): number;
     public abstract set volume(value: number);
@@ -121,9 +107,6 @@ export abstract class AudioEngineV2 {
         this._nodes.clear();
         this._mainBuses.clear();
     }
-
-    public abstract disableListener(): void;
-    public abstract enableListener(): Promise<void>;
 
     /**
      * Checks if the specified format is valid.

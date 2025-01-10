@@ -8,7 +8,7 @@ const TempMatrix = new Matrix();
 const TempVector = new Vector3();
 
 /** @internal */
-export async function _CreateSpatialAudioListenerAsync(engine: _WebAudioEngine): Promise<AbstractSpatialAudioListener> {
+export function _CreateSpatialAudioListener(engine: _WebAudioEngine): AbstractSpatialAudioListener {
     return new _SpatialWebAudioListener(engine);
 }
 

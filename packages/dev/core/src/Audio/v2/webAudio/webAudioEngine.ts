@@ -5,7 +5,7 @@ import type { IAudioEngineV2Options } from "../audioEngineV2";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import type { AbstractSpatialAudioListener } from "../subProperties/abstractSpatialAudioListener";
-import { _CreateSpatialAudioListenerAsync } from "./subProperties/spatialWebAudioListener";
+import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOut } from "./webAudioMainOut";
 import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
@@ -154,8 +154,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get listener(): Nullable<AbstractSpatialAudioListener> {
-        return this._listener;
+    public get listener(): AbstractSpatialAudioListener {
+        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this));
     }
 
     /** @internal */
@@ -194,19 +194,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         await this._initAudioContext();
 
-        if (options?.listenerEnabled || options?.listenerPosition || options?.listenerRotation) {
-            await this.enableListener();
-
-            if (!this._listener) {
-                throw new Error("Failed to create listener.");
-            }
-
-            if (options.listenerPosition) {
-                this._listener.position = options.listenerPosition;
-            }
-            if (options.listenerRotation) {
-                this._listener.rotation = options.listenerRotation;
-            }
+        if (options.listenerEnabled) {
+            this._listener = _CreateSpatialAudioListener(this);
+        }
+        if (options.listenerPosition) {
+            this.listener.position = options.listenerPosition;
+        }
+        if (options.listenerRotation) {
+            this.listener.rotation = options.listenerRotation;
         }
 
         this._resolveIsReadyPromise();
@@ -224,20 +219,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         document.removeEventListener("click", this._onUserGesture);
         this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
-    }
-
-    /** @internal */
-    public disableListener(): void {
-        this._listener = null;
-    }
-
-    /** @internal */
-    public async enableListener(): Promise<void> {
-        if (this._listener) {
-            return;
-        }
-
-        this._listener = await _CreateSpatialAudioListenerAsync(this);
     }
 
     /** @internal */
