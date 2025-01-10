@@ -17,22 +17,22 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
     /**
      * The audio context to be used by the engine.
      */
-    audioContext?: AudioContext;
+    audioContext: AudioContext;
 
     /**
      * Set to `true` to automatically resume the audio context when the user interacts with the page. Default is `true`.
      */
-    resumeOnInteraction?: boolean;
+    resumeOnInteraction: boolean;
 
     /**
      * Set to `true` to automatically resume the audio context when the browser pauses audio playback. Default is `true`.
      */
-    resumeOnPause?: boolean;
+    resumeOnPause: boolean;
 
     /**
      * The interval in milliseconds to try resuming audio playback when `resumeOnPause` is `true`. Default is `1000`.
      */
-    resumeOnPauseRetryInterval?: number;
+    resumeOnPauseRetryInterval: number;
 }
 
 /**
@@ -180,8 +180,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
         super();
 
-        this._volume = options?.volume ?? 1;
-        this.audioContext = options?.audioContext ?? new AudioContext();
+        this._volume = options.volume ?? 1;
+        this.audioContext = options.audioContext ?? new AudioContext();
     }
 
     /** @internal */
