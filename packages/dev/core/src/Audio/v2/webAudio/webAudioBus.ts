@@ -7,6 +7,24 @@ import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
 import { _StereoAudio } from "../subProperties/stereoAudio";
 import { _SpatialAudio } from "../subProperties/spatialAudio";
+import type { AudioEngineV2 } from "../audioEngineV2";
+import { _GetWebAudioEngine } from "./webAudioTools";
+
+/**
+ * Creates a new audio bus.
+ * @param name - The name of the audio bus.
+ * @param options - The options to use when creating the audio bus.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves with the created audio bus.
+ */
+export async function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
+    const webAudioEngine = _GetWebAudioEngine(engine);
+
+    const bus = new _WebAudioBus(name, webAudioEngine);
+    await bus.init(options);
+
+    return bus;
+}
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {

@@ -2,6 +2,7 @@ export { AbstractAudioBus } from "./abstractAudioBus";
 export { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
 export { AbstractSound } from "./abstractSound";
 export type { IAbstractSoundPlayOptions } from "./abstractSound";
+export { AudioBus } from "./audioBus";
 export type { PrimaryAudioBus } from "./audioBus";
 export { AudioEngineV2 } from "./audioEngineV2";
 export { MainAudioBus } from "./mainAudioBus";
@@ -15,6 +16,7 @@ export type { IStreamingSoundOptions, StreamingSoundPreloadType } from "./stream
 export { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 export { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";
 export { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
+export { CreateAudioBusAsync } from "./webAudio/webAudioBus";
 export { CreateAudioEngineAsync } from "./webAudio/webAudioEngine";
 export type { IWebAudioEngineOptions } from "./webAudio/webAudioEngine";
 export { CreateMainAudioBusAsync } from "./webAudio/webAudioMainBus";
