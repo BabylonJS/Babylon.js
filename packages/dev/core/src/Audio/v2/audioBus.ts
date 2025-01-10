@@ -17,7 +17,7 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
     /**
      * The output bus of the audio bus.
      */
-    outBus?: PrimaryAudioBus;
+    outBus: PrimaryAudioBus;
 }
 
 /**

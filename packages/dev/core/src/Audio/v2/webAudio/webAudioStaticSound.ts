@@ -90,7 +90,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
             this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
         }
 
-        if (options?.outBus) {
+        if (options.outBus) {
             this.outBus = options.outBus;
         } else {
             await this.engine.isReadyPromise;
@@ -99,7 +99,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 
         await this._subGraph.init(options);
 
-        if (options?.autoplay) {
+        if (options.autoplay) {
             this.play();
         }
 
@@ -225,7 +225,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         } else if (typeof source === "string") {
             await this._initFromUrl(source);
         } else if (Array.isArray(source)) {
-            await this._initFromUrls(source, options?.skipCodecCheck ?? false);
+            await this._initFromUrls(source, options.skipCodecCheck ?? false);
         } else if (source instanceof ArrayBuffer) {
             await this._initFromArrayBuffer(source);
         }
@@ -376,7 +376,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
 
         this._enginePlayTime = this.engine.currentTime + this.options.waitTime;
 
-        this.volumeNode.gain.value = options?.volume ?? this.options.volume;
+        this.volumeNode.gain.value = options.volume ?? this.options.volume;
 
         this._initSourceNode();
 
@@ -417,7 +417,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
 
         this._setState(SoundState.Stopped);
 
-        const engineStopTime = this.engine.currentTime + (options?.waitTime ?? 0);
+        const engineStopTime = this.engine.currentTime + (options.waitTime ?? 0);
         this.sourceNode?.stop(engineStopTime);
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);

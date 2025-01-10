@@ -73,7 +73,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         this.audioContext = audioContext;
         this.source = source;
 
-        if (options?.outBus) {
+        if (options.outBus) {
             this.outBus = options.outBus;
         } else {
             await this.engine.isReadyPromise;
@@ -82,11 +82,11 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
 
         await this._subGraph.init(options);
 
-        if (options?.preloadCount) {
+        if (options.preloadCount) {
             await this.preloadInstances(options.preloadCount);
         }
 
-        if (options?.autoplay) {
+        if (options.autoplay) {
             this.play(options);
         }
 
@@ -330,9 +330,9 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
             return;
         }
 
-        this.volumeNode.gain.value = options?.volume ?? this.options.volume;
+        this.volumeNode.gain.value = options.volume ?? this.options.volume;
 
-        let startOffset = options?.startOffset ?? null;
+        let startOffset = options.startOffset ?? null;
 
         if (this._currentTimeChangedWhilePaused) {
             startOffset = this.options.startOffset;
