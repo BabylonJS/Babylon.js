@@ -420,15 +420,18 @@ export class WebGPUTextureManager {
                 (processorOptions.processor as WebGPUShaderProcessorWGSL).pureMode = false;
 
                 const vertexModule = this._device.createShaderModule({
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_InternalVertexShader_${index}`,
                     code: final.vertexCode,
                 });
                 const fragmentModule = this._device.createShaderModule({
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_InternalFragmentShader_${index}`,
                     code: final.fragmentCode,
                 });
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
 
             const pipeline = this._device.createRenderPipeline({
+                label: `BabylonWebGPUDevice${this._engine.uniqueId}_InternalPipeline_${format}_${index}`,
                 layout: WebGPUConstants.AutoLayoutMode.Auto,
                 vertex: {
                     module: modules[0],
@@ -468,15 +471,17 @@ export class WebGPUTextureManager {
             if (!modules) {
                 const vertexModule = this._device.createShaderModule({
                     code: copyVideoToTextureVertexSource,
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_CopyVideoToTexture_VertexShader`,
                 });
                 const fragmentModule = this._device.createShaderModule({
                     code: index === 0 ? copyVideoToTextureFragmentSource : copyVideoToTextureInvertYFragmentSource,
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_CopyVideoToTexture_FragmentShader_${index === 0 ? "DontInvertY" : "InvertY"}`,
                 });
                 modules = this._videoCompiledShaders[index] = [vertexModule, fragmentModule];
             }
 
             const pipeline = this._device.createRenderPipeline({
-                label: `BabylonWebGPUDevice${this._engine.uniqueId}_CopyVideoToTexture_${format}_${index === 0 ? "DontInvertY" : "InvertY"}`,
+                label: `BabylonWebGPUDevice${this._engine.uniqueId}_InternalVideoPipeline_${format}_${index === 0 ? "DontInvertY" : "InvertY"}`,
                 layout: WebGPUConstants.AutoLayoutMode.Auto,
                 vertex: {
                     module: modules[0],

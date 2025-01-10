@@ -1,5 +1,14 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph, IShadowLight, FrameGraphObjectList, FrameGraphShadowGeneratorTask } from "core/index";
+import type {
+    NodeRenderGraphConnectionPoint,
+    Scene,
+    NodeRenderGraphBuildState,
+    FrameGraph,
+    IShadowLight,
+    FrameGraphObjectList,
+    FrameGraphShadowGeneratorTask,
+    Camera,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -29,6 +38,8 @@ export class NodeRenderGraphBaseShadowGeneratorBlock extends NodeRenderGraphBloc
 
         this.registerInput("light", NodeRenderGraphBlockConnectionPointTypes.ShadowLight);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
+        this._addDependenciesInput();
 
         this.registerOutput("generator", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
@@ -194,6 +205,13 @@ export class NodeRenderGraphBaseShadowGeneratorBlock extends NodeRenderGraphBloc
     }
 
     /**
+     * Gets the camera input component
+     */
+    public get camera(): NodeRenderGraphConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the shadow generator component
      */
     public get generator(): NodeRenderGraphConnectionPoint {
@@ -212,6 +230,7 @@ export class NodeRenderGraphBaseShadowGeneratorBlock extends NodeRenderGraphBloc
 
         this._frameGraphTask.light = this.light.connectedPoint?.value as IShadowLight;
         this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
+        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
 
         // Important: the shadow generator object is created by the task when we set the light, that's why we must set generator.value after setting the light!
         this.generator.value = this._frameGraphTask;

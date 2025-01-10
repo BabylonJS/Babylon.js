@@ -13,10 +13,13 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
         const obj: any = {
             CUSTOM_VERTEX_DEFINITIONS: `
                 attribute grl_widths: f32;
-                attribute grl_offsets: vec3f;
                 attribute grl_colorPointers: f32;
                 varying grlCounters: f32;
                 varying grlColorPointer: f32;
+
+                #ifdef GREASED_LINE_USE_OFFSETS
+                    attribute grl_offsets: vec3f;   
+                #endif
 
                 #ifdef GREASED_LINE_CAMERA_FACING
                     attribute grl_previousAndSide : vec4f;
@@ -35,11 +38,16 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                 `,
             CUSTOM_VERTEX_UPDATE_POSITION: `
-                #ifdef GREASED_LINE_CAMERA_FACING
+                #ifdef GREASED_LINE_USE_OFFSETS
                     var grlPositionOffset: vec3f = input.grl_offsets;
+                #else
+                    var grlPositionOffset = vec3f(0.);
+                #endif
+
+                #ifdef GREASED_LINE_CAMERA_FACING
                     positionUpdated += grlPositionOffset;
                 #else
-                    positionUpdated = (positionUpdated + input.grl_offsets) + (input.grl_slopes * input.grl_widths);
+                    positionUpdated = (positionUpdated + grlPositionOffset) + (input.grl_slopes * input.grl_widths);
                 #endif
                 `,
             CUSTOM_VERTEX_MAIN_END: `

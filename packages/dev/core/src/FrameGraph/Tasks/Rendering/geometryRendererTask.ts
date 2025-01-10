@@ -240,6 +240,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
         }
 
+        // Make sure the renderList / particleSystemList are set when FrameGraphGeometryRendererTask.isReady() is called!
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
+
         const outputTextureHandle = this._createMultiRenderTargetTexture();
 
         const depthEnabled = this._checkDepthTextureCompatibility();

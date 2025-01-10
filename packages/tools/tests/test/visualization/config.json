@@ -683,6 +683,11 @@
             "referenceImage": "draco.png"
         },
         {
+            "title": "Draco Decoder/Encoder roundtrip",
+            "playgroundId": "#JNW207#4",
+            "referenceImage": "dracoRoundtrip.png"
+        },
+        {
             "title": "GLTF Normals",
             "playgroundId": "#SMEAEB#0",
             "referenceImage": "gltfnormals.png"
@@ -2375,6 +2380,42 @@
             "title": "UV2 Morphing",
             "playgroundId": "#N5DLM7#1",
             "referenceImage": "UV2-Morphing.png"
+        },
+        {
+            "title": "FrameGraph nrge shadows",
+            "playgroundId": "#JWKDME#13"
+        },
+        {
+            "title": "FrameGraph nrge csm shadows",
+            "playgroundId": "#JWKDME#12"
+        },
+        {
+            "title": "FrameGraph nrge custom rendering",
+            "playgroundId": "#1QCA2M"
+        },
+        {
+            "title": "FrameGraph nrge depth of field",
+            "playgroundId": "#GAGVQO#1"
+        },
+        {
+            "title": "FrameGraph nrge glow layer",
+            "playgroundId": "#IG8NRC"
+        },
+        {
+            "title": "FrameGraph nrg gui bloom",
+            "playgroundId": "#3LB017"
+        },
+        {
+            "title": "FrameGraph nrg glow layer",
+            "playgroundId": "#9YU4C5"
+        },
+        {
+            "title": "FrameGraph custom rendering",
+            "playgroundId": "#RM56RY#3"
+        },
+        {
+            "title": "FrameGraph gui bloom",
+            "playgroundId": "#RM56RY#2"
         }
     ]
 }

@@ -1,8 +1,7 @@
 {
     "extends": "../../../../tsconfig.json",
 
-    "compilerOptions": {
-    },
+    "compilerOptions": {},
 
     "include": ["../../../tools/viewer/src/**/*"]
 }
