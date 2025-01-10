@@ -12,6 +12,8 @@ import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 
+export const GreasedLineUseOffsetsSimpleMaterialDefine = "GREASED_LINE_USE_OFFSETS";
+
 /**
  * GreasedLineSimpleMaterial
  */
