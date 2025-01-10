@@ -1,10 +1,11 @@
-import { Vector3 } from "../../../Maths/math.vector";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { NamedAbstractAudioNode } from "../abstractAudioNode";
 import type { IAudioEngineV2Options } from "../audioEngineV2";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
+import type { AbstractSpatialAudioListener } from "../subProperties/abstractSpatialAudioListener";
+import { _CreateSpatialAudioListenerAsync } from "./subProperties/spatialWebAudioListener";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOut } from "./webAudioMainOut";
 import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
@@ -68,7 +69,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _validFormats = new Set<string>();
     private _volume = 1;
 
-    private _listenerPosition: Vector3 = Vector3.Zero();
+    private _listener: Nullable<AbstractSpatialAudioListener> = null;
 
     /** @internal */
     public readonly audioContext: AudioContext;
@@ -153,24 +154,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get listenerPosition(): Vector3 {
-        return this._listenerPosition;
-    }
-
-    public set listenerPosition(value: Vector3) {
-        if (this._listenerPosition.equals(value)) {
-            return;
-        }
-
-        this._listenerPosition.copyFrom(value);
-
-        if (this.audioContext.listener.positionX !== undefined) {
-            this.audioContext.listener.positionX.value = value.x;
-            this.audioContext.listener.positionY.value = value.y;
-            this.audioContext.listener.positionZ.value = value.z;
-        } else {
-            this.audioContext.listener.setPosition(value.x, value.y, value.z);
-        }
+    public get listener(): Nullable<AbstractSpatialAudioListener> {
+        return this._listener;
     }
 
     /** @internal */
@@ -197,10 +182,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._volume = options?.volume ?? 1;
         this.audioContext = options?.audioContext ?? new AudioContext();
-
-        if (options?.listenerPosition) {
-            this.listenerPosition = options.listenerPosition;
-        }
     }
 
     /** @internal */
@@ -212,6 +193,22 @@ export class _WebAudioEngine extends AudioEngineV2 {
         document.addEventListener("click", this._onUserGesture);
 
         await this._initAudioContext();
+
+        if (options?.listenerEnabled || options?.listenerPosition || options?.listenerRotation) {
+            await this.enableListener();
+
+            if (!this._listener) {
+                throw new Error("Failed to create listener.");
+            }
+
+            if (options.listenerPosition) {
+                this._listener.position = options.listenerPosition;
+            }
+            if (options.listenerRotation) {
+                this._listener.rotation = options.listenerRotation;
+            }
+        }
+
         this._resolveIsReadyPromise();
     }
 
@@ -219,12 +216,28 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public override dispose(): void {
         super.dispose();
 
+        this._listener = null;
+
         if (this.audioContext.state !== "closed") {
             this.audioContext.close();
         }
 
         document.removeEventListener("click", this._onUserGesture);
         this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
+    }
+
+    /** @internal */
+    public disableListener(): void {
+        this._listener = null;
+    }
+
+    /** @internal */
+    public async enableListener(): Promise<void> {
+        if (this._listener) {
+            return;
+        }
+
+        this._listener = await _CreateSpatialAudioListenerAsync(this);
     }
 
     /** @internal */

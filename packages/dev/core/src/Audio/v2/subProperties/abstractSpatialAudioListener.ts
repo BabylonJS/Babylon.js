@@ -1,0 +1,10 @@
+import type { Vector3 } from "core/Maths/math.vector";
+
+/** */
+export abstract class AbstractSpatialAudioListener {
+    public abstract get position(): Vector3;
+    public abstract set position(value: Vector3);
+
+    public abstract get rotation(): Vector3;
+    public abstract set rotation(value: Vector3);
+}

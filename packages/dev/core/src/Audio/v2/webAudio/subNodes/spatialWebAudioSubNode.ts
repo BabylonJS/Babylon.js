@@ -16,6 +16,7 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+    private _position = Vector3.Zero();
     private _rotationQuaternion: Quaternion = _SpatialAudioDefault.RotationQuaternion.clone();
     private _rotationAngles: Vector3 = _SpatialAudioDefault.Rotation.clone();
     private _rotationAnglesDirty = false;
@@ -91,13 +92,13 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public get position(): Vector3 {
-        return new Vector3(this.node.positionX.value, this.node.positionY.value, this.node.positionZ.value);
+        return this._position;
     }
 
     public set position(value: Vector3) {
-        this.node.positionX.value = value.x;
-        this.node.positionY.value = value.y;
-        this.node.positionZ.value = value.z;
+        this.node.positionX.value = this._position.x = value.x;
+        this.node.positionY.value = this._position.y = value.y;
+        this.node.positionZ.value = this._position.z = value.z;
     }
 
     /** @internal */

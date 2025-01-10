@@ -2,6 +2,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
+import type { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";
 
 const Instances: AudioEngineV2[] = [];
 
@@ -19,11 +20,19 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
 
 /** */
 export interface IAudioEngineV2Options {
-    /** */
-    listenerPosition?: Vector3;
+    /**
+     *
+     */
+    listenerEnabled: boolean;
 
     /** */
-    volume?: number;
+    listenerPosition: Vector3;
+
+    /** */
+    listenerRotation: Vector3;
+
+    /** */
+    volume: number;
 }
 
 /**
@@ -77,14 +86,21 @@ export abstract class AudioEngineV2 {
         Instances.push(this);
     }
 
-    public abstract get listenerPosition(): Vector3;
-    public abstract set listenerPosition(value: Vector3);
+    /**
+     *
+     */
+    public get listenerEnabled(): boolean {
+        return this.listener !== null;
+    }
+    public set listenerEnabled(value: boolean) {
+        if (value) {
+            this.enableListener();
+        } else {
+            this.disableListener();
+        }
+    }
 
-    // public abstract get listenerForward(): Vector3;
-    // public abstract set listenerForward(value: Vector3);
-
-    // public abstract get listenerUp(): Vector3;
-    // public abstract set listenerUp(value: Vector3);
+    public abstract get listener(): Nullable<AbstractSpatialAudioListener>;
 
     public abstract get volume(): number;
     public abstract set volume(value: number);
@@ -105,6 +121,9 @@ export abstract class AudioEngineV2 {
         this._nodes.clear();
         this._mainBuses.clear();
     }
+
+    public abstract disableListener(): void;
+    public abstract enableListener(): Promise<void>;
 
     /**
      * Checks if the specified format is valid.
