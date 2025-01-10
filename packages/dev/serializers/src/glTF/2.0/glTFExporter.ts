@@ -245,9 +245,6 @@ export class GLTFExporter {
 
     private readonly _options: Required<IExportOptions>;
 
-    /**
-     *
-     */
     public readonly _materialExporter = new GLTFMaterialExporter(this);
 
     private readonly _extensions: { [name: string]: IGLTFExporterExtensionV2 } = {};
@@ -260,9 +257,6 @@ export class GLTFExporter {
     private readonly _nodeMap = new Map<Node, number>();
 
     // Babylon material -> glTF material index
-    /**
-     *
-     */
     public readonly _materialMap = new Map<Material, number>();
     private readonly _camerasMap = new Map<Camera, ICamera>();
     private readonly _nodesCameraMap = new Map<ICamera, INode[]>();
@@ -270,9 +264,6 @@ export class GLTFExporter {
     private readonly _nodesSkinMap = new Map<ISkin, INode[]>();
 
     // A material in this set requires UVs
-    /**
-     *
-     */
     public readonly _materialNeedsUVsSet = new Set<Material>();
 
     private static readonly _ExtensionNames = new Array<string>();
