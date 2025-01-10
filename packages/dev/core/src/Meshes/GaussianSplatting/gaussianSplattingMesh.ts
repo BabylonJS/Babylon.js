@@ -1093,9 +1093,22 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the loaded splat buffer without SH coefficient, whether ply contains or not SH.
      */
     public static *ConvertPLYToSplat(data: ArrayBuffer, useCoroutine = false) {
-        const splatObject = GaussianSplattingMesh.ConvertPLYWithSHToSplat(data, useCoroutine);
-        yield;
-        return (splatObject as any).buffer;
+        const header = GaussianSplattingMesh.ParseHeader(data);
+        if (!header) {
+            return data;
+        }
+
+        const offset = { value: 0 };
+        const compressedChunks = GaussianSplattingMesh._GetCompressedChunks(header, offset);
+
+        for (let i = 0; i < header.vertexCount; i++) {
+            GaussianSplattingMesh._GetSplat(header, i, compressedChunks, offset);
+            if (i % GaussianSplattingMesh._PlyConversionBatchSize === 0 && useCoroutine) {
+                yield;
+            }
+        }
+
+        return header.buffer;
     }
 
     /**
@@ -1108,6 +1121,15 @@ export class GaussianSplattingMesh extends Mesh {
         return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYToSplat(data, true), createYieldingScheduler());
     }
 
+    /**
+     * Converts a .ply with SH data array buffer to splat
+     * if data array buffer is not ply, returns the original buffer
+     * @param data the .ply data to load
+     * @returns the loaded splat buffer with SH
+     */
+    public static async ConvertPLYWithSHToSplatAsync(data: ArrayBuffer) {
+        return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYWithSHToSplat(data, true), createYieldingScheduler());
+    }
     /**
      * Loads a .splat Gaussian Splatting array buffer asynchronously
      * @param data arraybuffer containing splat file
