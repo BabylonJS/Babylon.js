@@ -79,6 +79,8 @@ interface CompressedPLYChunk {
     max: Vector3;
     minScale: Vector3;
     maxScale: Vector3;
+    minColor: Vector3;
+    maxColor: Vector3;
 }
 
 /**
@@ -137,6 +139,14 @@ const enum PLYValue {
     ROT_1,
     ROT_2,
     ROT_3,
+
+    MIN_COLOR_R,
+    MIN_COLOR_G,
+    MIN_COLOR_B,
+
+    MAX_COLOR_R,
+    MAX_COLOR_G,
+    MAX_COLOR_B,
 
     UNDEFINED,
 }
@@ -502,6 +512,18 @@ export class GaussianSplattingMesh extends Mesh {
                 return PLYValue.ROT_2;
             case "rot_3":
                 return PLYValue.ROT_3;
+            case "min_r":
+                return PLYValue.MIN_COLOR_R;
+            case "min_g":
+                return PLYValue.MIN_COLOR_G;
+            case "min_b":
+                return PLYValue.MIN_COLOR_B;
+            case "max_r":
+                return PLYValue.MAX_COLOR_R;
+            case "max_g":
+                return PLYValue.MAX_COLOR_G;
+            case "max_b":
+                return PLYValue.MAX_COLOR_B;
         }
 
         return PLYValue.UNDEFINED;
@@ -595,7 +617,14 @@ export class GaussianSplattingMesh extends Mesh {
         const dataView = header.dataView;
         const compressedChunks = new Array<CompressedPLYChunk>(header.chunkCount);
         for (let i = 0; i < header.chunkCount; i++) {
-            const currentChunk = { min: new Vector3(), max: new Vector3(), minScale: new Vector3(), maxScale: new Vector3() };
+            const currentChunk = {
+                min: new Vector3(),
+                max: new Vector3(),
+                minScale: new Vector3(),
+                maxScale: new Vector3(),
+                minColor: new Vector3(0, 0, 0),
+                maxColor: new Vector3(1, 1, 1),
+            };
             compressedChunks[i] = currentChunk;
             for (let propertyIndex = 0; propertyIndex < header.chunkProperties.length; propertyIndex++) {
                 const property = header.chunkProperties[propertyIndex];
@@ -644,6 +673,24 @@ export class GaussianSplattingMesh extends Mesh {
                         break;
                     case PLYValue.MAX_SCALE_Z:
                         currentChunk.maxScale.z = value;
+                        break;
+                    case PLYValue.MIN_COLOR_R:
+                        currentChunk.minColor.x = value;
+                        break;
+                    case PLYValue.MIN_COLOR_G:
+                        currentChunk.minColor.y = value;
+                        break;
+                    case PLYValue.MIN_COLOR_B:
+                        currentChunk.minColor.z = value;
+                        break;
+                    case PLYValue.MAX_COLOR_R:
+                        currentChunk.maxColor.x = value;
+                        break;
+                    case PLYValue.MAX_COLOR_G:
+                        currentChunk.maxColor.y = value;
+                        break;
+                    case PLYValue.MAX_COLOR_B:
+                        currentChunk.maxColor.z = value;
                         break;
                 }
             }
@@ -698,7 +745,7 @@ export class GaussianSplattingMesh extends Mesh {
                         const compressedChunk = compressedChunks![chunkIndex];
                         unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
-                        position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                        position[1] = Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
                         position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
                     }
                     break;
@@ -706,9 +753,9 @@ export class GaussianSplattingMesh extends Mesh {
                     {
                         unpackRot(value, q);
                         r0 = q.w;
-                        r1 = q.z;
+                        r1 = -q.z;
                         r2 = q.y;
-                        r3 = q.x;
+                        r3 = -q.x;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
@@ -721,7 +768,13 @@ export class GaussianSplattingMesh extends Mesh {
                     }
                     break;
                 case PLYValue.PACKED_COLOR:
-                    unpack8888(value, rgba);
+                    {
+                        const compressedChunk = compressedChunks![chunkIndex];
+                        unpack8888(value, rgba);
+                        rgba[0] = Scalar.Lerp(compressedChunk.minColor.x, compressedChunk.maxColor.x, rgba[0] / 255) * 255;
+                        rgba[1] = Scalar.Lerp(compressedChunk.minColor.y, compressedChunk.maxColor.y, rgba[1] / 255) * 255;
+                        rgba[2] = Scalar.Lerp(compressedChunk.minColor.z, compressedChunk.maxColor.z, rgba[2] / 255) * 255;
+                    }
                     break;
                 case PLYValue.X:
                     position[0] = value;
