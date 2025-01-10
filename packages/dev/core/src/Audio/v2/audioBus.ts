@@ -8,7 +8,7 @@ import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
-export type AbstractPrimaryAudioBus = MainAudioBus | AudioBus;
+export type PrimaryAudioBus = MainAudioBus | AudioBus;
 
 /**
  * Options for creating a new audio bus.
@@ -17,14 +17,14 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
     /**
      * The output bus of the audio bus.
      */
-    outBus?: AbstractPrimaryAudioBus;
+    outBus?: PrimaryAudioBus;
 }
 
 /**
  * Abstract class for an audio bus.
  */
 export abstract class AudioBus extends AbstractAudioBus {
-    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
+    private _outBus: Nullable<PrimaryAudioBus> = null;
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAudioBusOptions> = {}) {
         super(name, engine);
@@ -37,14 +37,14 @@ export abstract class AudioBus extends AbstractAudioBus {
     /**
      * Gets the output bus of the audio bus.
      */
-    public get outBus(): Nullable<AbstractPrimaryAudioBus> {
+    public get outBus(): Nullable<PrimaryAudioBus> {
         return this._outBus;
     }
 
     /**
      * Sets the output bus of the audio bus.
      */
-    public set outBus(outBus: Nullable<AbstractPrimaryAudioBus>) {
+    public set outBus(outBus: Nullable<PrimaryAudioBus>) {
         if (this._outBus === outBus) {
             return;
         }

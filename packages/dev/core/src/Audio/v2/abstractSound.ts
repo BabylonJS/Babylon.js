@@ -2,7 +2,7 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { _AudioNodeType, NamedAbstractAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
-import type { AbstractPrimaryAudioBus } from "./audioBus";
+import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
@@ -47,14 +47,14 @@ export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpati
     /**
      * The output bus for the sound.
      */
-    outBus: AbstractPrimaryAudioBus;
+    outBus: PrimaryAudioBus;
 }
 
 /**
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends NamedAbstractAudioNode {
-    private _outBus: Nullable<AbstractPrimaryAudioBus> = null;
+    private _outBus: Nullable<PrimaryAudioBus> = null;
     private _state: SoundState = SoundState.Stopped;
 
     protected _instances = new Set<_AbstractSoundInstance>();
@@ -94,11 +94,11 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
     /**
      * The output bus for the sound.
      */
-    public get outBus(): Nullable<AbstractPrimaryAudioBus> {
+    public get outBus(): Nullable<PrimaryAudioBus> {
         return this._outBus;
     }
 
-    public set outBus(outBus: Nullable<AbstractPrimaryAudioBus>) {
+    public set outBus(outBus: Nullable<PrimaryAudioBus>) {
         if (this._outBus === outBus) {
             return;
         }
