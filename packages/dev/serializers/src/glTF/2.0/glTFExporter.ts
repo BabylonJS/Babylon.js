@@ -217,69 +217,24 @@ class ExporterState {
 
 /** @internal */
 export class GLTFExporter {
-    /**
-     *
-     */
     public readonly _glTF: IGLTF = {
         asset: { generator: `Babylon.js v${Engine.Version}`, version: "2.0" },
     };
 
-    /**
-     *
-     */
     public readonly _animations: IAnimation[] = [];
-    /**
-     *
-     */
     public readonly _accessors: IAccessor[] = [];
-    /**
-     *
-     */
     public readonly _bufferViews: IBufferView[] = [];
-    /**
-     *
-     */
     public readonly _cameras: ICamera[] = [];
-    /**
-     *
-     */
     public readonly _images: IImage[] = [];
-    /**
-     *
-     */
     public readonly _materials: IMaterial[] = [];
-    /**
-     *
-     */
     public readonly _meshes: IMesh[] = [];
-    /**
-     *
-     */
     public readonly _nodes: INode[] = [];
-    /**
-     *
-     */
     public readonly _samplers: ISampler[] = [];
-    /**
-     *
-     */
     public readonly _scenes: IScene[] = [];
-    /**
-     *
-     */
     public readonly _skins: ISkin[] = [];
-    /**
-     *
-     */
     public readonly _textures: ITexture[] = [];
 
-    /**
-     *
-     */
     public readonly _babylonScene: Scene;
-    /**
-     *
-     */
     public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
     private readonly _orderedImageData: Array<{ data: ArrayBuffer; mimeType: ImageMimeType }> = [];
 
