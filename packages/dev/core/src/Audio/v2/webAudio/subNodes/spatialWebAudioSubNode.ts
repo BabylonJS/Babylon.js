@@ -64,6 +64,11 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set distanceModel(value: "linear" | "inverse" | "exponential") {
         this.node.distanceModel = value;
+
+        // Wiggle the max distance to make the change take effect.
+        const maxDistance = this.node.maxDistance;
+        this.node.maxDistance = maxDistance + 0.001;
+        this.node.maxDistance = maxDistance;
     }
 
     /** @internal */
