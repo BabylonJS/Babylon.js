@@ -753,9 +753,9 @@ export class GaussianSplattingMesh extends Mesh {
                     {
                         unpackRot(value, q);
                         r0 = q.w;
-                        r1 = q.z;
+                        r1 = -q.z;
                         r2 = q.y;
-                        r3 = q.x;
+                        r3 = -q.x;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
