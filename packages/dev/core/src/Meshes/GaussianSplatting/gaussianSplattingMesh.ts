@@ -18,6 +18,7 @@ import { ToHalfFloat } from "core/Misc/textureTools";
 import type { Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
+import { EngineStore } from "core/Engines/engineStore";
 
 interface DelayedTextureUpdate {
     covA: Uint16Array;
@@ -83,6 +84,11 @@ interface CompressedPLYChunk {
     maxColor: Vector3;
 }
 
+// @internal
+interface PLYConversionBuffers {
+    buffer: ArrayBuffer;
+    sh?: [];
+}
 /**
  * Representation of the types
  */
@@ -1018,16 +1024,16 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Converts a .ply data array buffer to splat
+     * Converts a .ply data with SH coefficients splat
      * if data array buffer is not ply, returns the original buffer
      * @param data the .ply data to load
      * @param useCoroutine use coroutine and yield
-     * @returns the loaded splat buffer
+     * @returns the loaded splat buffer and optional array of sh coefficients
      */
-    public static *ConvertPLYToSplat(data: ArrayBuffer, useCoroutine = false) {
+    public static *ConvertPLYWithSHToSplat(data: ArrayBuffer, useCoroutine = false) {
         const header = GaussianSplattingMesh.ParseHeader(data);
         if (!header) {
-            return data;
+            return { buffer: data };
         }
 
         const offset = { value: 0 };
@@ -1040,7 +1046,56 @@ export class GaussianSplattingMesh extends Mesh {
             }
         }
 
-        return header.buffer;
+        let sh = null;
+        // make SH texture buffers
+        if (header.shDegree && header.shBuffer) {
+            const textureCount = Math.ceil(header.shCoefficientCount / 16); // 4 components can be stored per texture, 4 sh per component
+            let shIndexRead = 0;
+            const ubuf = new Uint8Array(header.shBuffer);
+
+            // sh is an array of uint8array that will be used to create sh textures
+            sh = [];
+
+            const splatCount = header.vertexCount;
+            const engine = EngineStore.LastCreatedEngine;
+            if (engine) {
+                const width = engine.getCaps().maxTextureSize;
+                const height = Math.ceil(splatCount / width);
+                // create array for the number of textures needed.
+                for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
+                    const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
+                    sh.push(texture);
+                }
+
+                for (let i = 0; i < splatCount; i++) {
+                    for (let shIndexWrite = 0; shIndexWrite < header.shCoefficientCount; shIndexWrite++) {
+                        const shValue = ubuf[shIndexRead++];
+
+                        const textureIndex = Math.floor(shIndexWrite / 16);
+                        const shArray = sh[textureIndex];
+
+                        const byteIndexInTexture = shIndexWrite % 16; // [0..15]
+                        const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
+                        shArray[byteIndexInTexture + offsetPerSplat] = shValue;
+                    }
+                }
+            }
+        }
+
+        return { buffer: header.buffer, sh: sh };
+    }
+
+    /**
+     * Converts a .ply data array buffer to splat
+     * if data array buffer is not ply, returns the original buffer
+     * @param data the .ply data to load
+     * @param useCoroutine use coroutine and yield
+     * @returns the loaded splat buffer without SH coefficient, whether ply contains or not SH.
+     */
+    public static *ConvertPLYToSplat(data: ArrayBuffer, useCoroutine = false) {
+        const splatObject = GaussianSplattingMesh.ConvertPLYWithSHToSplat(data, useCoroutine);
+        yield;
+        return (splatObject as any).buffer;
     }
 
     /**
@@ -1071,8 +1126,8 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
-            GaussianSplattingMesh.ConvertPLYToSplatAsync(plyBuffer).then((splatsData) => {
-                this.updateDataAsync(splatsData);
+            (GaussianSplattingMesh.ConvertPLYWithSHToSplat(plyBuffer) as any).then((splatsData: PLYConversionBuffers) => {
+                this.updateDataAsync(splatsData.buffer, splatsData.sh);
             });
         });
     }
