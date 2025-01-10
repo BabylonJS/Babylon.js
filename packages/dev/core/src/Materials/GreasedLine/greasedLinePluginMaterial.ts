@@ -53,7 +53,7 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
     GREASED_LINE_CAMERA_FACING = true;
 
     /**
-     * True if the line is in camera facing mode
+     * True if the line uses offsets
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_USE_OFFSETS = false;
