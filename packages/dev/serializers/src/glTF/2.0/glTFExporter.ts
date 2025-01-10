@@ -71,6 +71,7 @@ import type { MorphTarget } from "core/Morph";
 import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
+import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 class ExporterState {
@@ -216,24 +217,69 @@ class ExporterState {
 
 /** @internal */
 export class GLTFExporter {
+    /**
+     *
+     */
     public readonly _glTF: IGLTF = {
         asset: { generator: `Babylon.js v${Engine.Version}`, version: "2.0" },
     };
 
+    /**
+     *
+     */
     public readonly _animations: IAnimation[] = [];
+    /**
+     *
+     */
     public readonly _accessors: IAccessor[] = [];
+    /**
+     *
+     */
     public readonly _bufferViews: IBufferView[] = [];
+    /**
+     *
+     */
     public readonly _cameras: ICamera[] = [];
+    /**
+     *
+     */
     public readonly _images: IImage[] = [];
+    /**
+     *
+     */
     public readonly _materials: IMaterial[] = [];
+    /**
+     *
+     */
     public readonly _meshes: IMesh[] = [];
+    /**
+     *
+     */
     public readonly _nodes: INode[] = [];
+    /**
+     *
+     */
     public readonly _samplers: ISampler[] = [];
+    /**
+     *
+     */
     public readonly _scenes: IScene[] = [];
+    /**
+     *
+     */
     public readonly _skins: ISkin[] = [];
+    /**
+     *
+     */
     public readonly _textures: ITexture[] = [];
 
+    /**
+     *
+     */
     public readonly _babylonScene: Scene;
+    /**
+     *
+     */
     public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
     private readonly _orderedImageData: Array<{ data: ArrayBuffer; mimeType: ImageMimeType }> = [];
 
@@ -244,6 +290,9 @@ export class GLTFExporter {
 
     private readonly _options: Required<IExportOptions>;
 
+    /**
+     *
+     */
     public readonly _materialExporter = new GLTFMaterialExporter(this);
 
     private readonly _extensions: { [name: string]: IGLTFExporterExtensionV2 } = {};
@@ -256,6 +305,9 @@ export class GLTFExporter {
     private readonly _nodeMap = new Map<Node, number>();
 
     // Babylon material -> glTF material index
+    /**
+     *
+     */
     public readonly _materialMap = new Map<Material, number>();
     private readonly _camerasMap = new Map<Camera, ICamera>();
     private readonly _nodesCameraMap = new Map<ICamera, INode[]>();
@@ -263,6 +315,9 @@ export class GLTFExporter {
     private readonly _nodesSkinMap = new Map<ISkin, INode[]>();
 
     // A material in this set requires UVs
+    /**
+     *
+     */
     public readonly _materialNeedsUVsSet = new Set<Material>();
 
     private static readonly _ExtensionNames = new Array<string>();
@@ -1485,11 +1540,8 @@ export class GLTFExporter {
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
         const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
-        let isLinesMesh = false;
-
-        if (babylonMesh instanceof LinesMesh) {
-            isLinesMesh = true;
-        }
+        const isLinesMesh = babylonMesh instanceof LinesMesh;
+        const isGreasedLineMesh = babylonMesh instanceof GreasedLineBaseMesh;
 
         const subMeshes = babylonMesh.subMeshes;
         if (vertexBuffers && subMeshes && subMeshes.length > 0) {
@@ -1498,8 +1550,26 @@ export class GLTFExporter {
 
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
 
-                // Special case for LinesMesh
-                if (isLinesMesh) {
+                if (isGreasedLineMesh) {
+                    const material: IMaterial = {
+                        name: babylonMaterial.name,
+                    };
+
+                    const babylonLinesMesh = babylonMesh as GreasedLineBaseMesh;
+
+                    const colorWhite = Color3.White();
+                    const alpha = babylonLinesMesh.material?.alpha ?? 1;
+                    const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
+                    if (!color.equals(colorWhite) || alpha < 1) {
+                        material.pbrMetallicRoughness = {
+                            baseColorFactor: [...color.asArray(), alpha],
+                        };
+                    }
+
+                    this._materials.push(material);
+                    primitive.material = this._materials.length - 1;
+                } else if (isLinesMesh) {
+                    // Special case for LinesMesh
                     const material: IMaterial = {
                         name: babylonMaterial.name,
                     };
@@ -1520,7 +1590,7 @@ export class GLTFExporter {
                 }
 
                 // Index buffer
-                const fillMode = isLinesMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
+                const fillMode = isLinesMesh || isGreasedLineMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
 
