@@ -148,6 +148,52 @@ const enum PLYValue {
     MAX_COLOR_G,
     MAX_COLOR_B,
 
+    SH_0,
+    SH_1,
+    SH_2,
+    SH_3,
+    SH_4,
+    SH_5,
+    SH_6,
+    SH_7,
+    SH_8,
+    SH_9,
+    SH_10,
+    SH_11,
+    SH_12,
+    SH_13,
+    SH_14,
+    SH_15,
+    SH_16,
+    SH_17,
+    SH_18,
+    SH_19,
+    SH_20,
+    SH_21,
+    SH_22,
+    SH_23,
+    SH_24,
+    SH_25,
+    SH_26,
+    SH_27,
+    SH_28,
+    SH_29,
+    SH_30,
+    SH_31,
+    SH_32,
+    SH_33,
+    SH_34,
+    SH_35,
+    SH_36,
+    SH_37,
+    SH_38,
+    SH_39,
+    SH_40,
+    SH_41,
+    SH_42,
+    SH_43,
+    SH_44,
+
     UNDEFINED,
 }
 
@@ -205,6 +251,18 @@ export interface PLYHeader {
      * buffer for the data view
      */
     buffer: ArrayBuffer;
+    /**
+     * degree of SH coefficients
+     */
+    shDegree: number;
+    /**
+     * number of coefficient per splat
+     */
+    shCoefficientCount: number;
+    /**
+     * buffer for SH coefficients
+     */
+    shBuffer: ArrayBuffer | null;
 }
 /**
  * Class used to render a gaussian splatting mesh
@@ -524,6 +582,96 @@ export class GaussianSplattingMesh extends Mesh {
                 return PLYValue.MAX_COLOR_G;
             case "max_b":
                 return PLYValue.MAX_COLOR_B;
+            case "f_rest_0":
+                return PLYValue.SH_0;
+            case "f_rest_1":
+                return PLYValue.SH_1;
+            case "f_rest_2":
+                return PLYValue.SH_2;
+            case "f_rest_3":
+                return PLYValue.SH_3;
+            case "f_rest_4":
+                return PLYValue.SH_4;
+            case "f_rest_5":
+                return PLYValue.SH_5;
+            case "f_rest_6":
+                return PLYValue.SH_6;
+            case "f_rest_7":
+                return PLYValue.SH_7;
+            case "f_rest_8":
+                return PLYValue.SH_8;
+            case "f_rest_9":
+                return PLYValue.SH_9;
+            case "f_rest_10":
+                return PLYValue.SH_10;
+            case "f_rest_11":
+                return PLYValue.SH_11;
+            case "f_rest_12":
+                return PLYValue.SH_12;
+            case "f_rest_13":
+                return PLYValue.SH_13;
+            case "f_rest_14":
+                return PLYValue.SH_14;
+            case "f_rest_15":
+                return PLYValue.SH_15;
+            case "f_rest_16":
+                return PLYValue.SH_16;
+            case "f_rest_17":
+                return PLYValue.SH_17;
+            case "f_rest_18":
+                return PLYValue.SH_18;
+            case "f_rest_19":
+                return PLYValue.SH_19;
+            case "f_rest_20":
+                return PLYValue.SH_20;
+            case "f_rest_21":
+                return PLYValue.SH_21;
+            case "f_rest_22":
+                return PLYValue.SH_22;
+            case "f_rest_23":
+                return PLYValue.SH_23;
+            case "f_rest_24":
+                return PLYValue.SH_24;
+            case "f_rest_25":
+                return PLYValue.SH_25;
+            case "f_rest_26":
+                return PLYValue.SH_26;
+            case "f_rest_27":
+                return PLYValue.SH_27;
+            case "f_rest_28":
+                return PLYValue.SH_28;
+            case "f_rest_29":
+                return PLYValue.SH_29;
+            case "f_rest_30":
+                return PLYValue.SH_30;
+            case "f_rest_31":
+                return PLYValue.SH_31;
+            case "f_rest_32":
+                return PLYValue.SH_32;
+            case "f_rest_33":
+                return PLYValue.SH_33;
+            case "f_rest_34":
+                return PLYValue.SH_34;
+            case "f_rest_35":
+                return PLYValue.SH_35;
+            case "f_rest_36":
+                return PLYValue.SH_36;
+            case "f_rest_37":
+                return PLYValue.SH_37;
+            case "f_rest_38":
+                return PLYValue.SH_38;
+            case "f_rest_39":
+                return PLYValue.SH_39;
+            case "f_rest_40":
+                return PLYValue.SH_40;
+            case "f_rest_41":
+                return PLYValue.SH_41;
+            case "f_rest_42":
+                return PLYValue.SH_42;
+            case "f_rest_43":
+                return PLYValue.SH_43;
+            case "f_rest_44":
+                return PLYValue.SH_44;
         }
 
         return PLYValue.UNDEFINED;
@@ -569,11 +717,20 @@ export class GaussianSplattingMesh extends Mesh {
         const vertexProperties: PlyProperty[] = [];
         const chunkProperties: PlyProperty[] = [];
         const filtered = header.slice(0, headerEndIndex).split("\n");
+        let shDegree = 0;
         for (const prop of filtered) {
             if (prop.startsWith("property ")) {
                 const [, typeName, name] = prop.split(" ");
 
                 const value = GaussianSplattingMesh._ValueNameToEnum(name);
+                // SH degree 1,2 or 3 for 9, 24 or 45 values
+                if (value >= PLYValue.SH_8) {
+                    shDegree = 1;
+                } else if (value >= PLYValue.SH_24) {
+                    shDegree = 2;
+                } else if (value >= PLYValue.SH_44) {
+                    shDegree = 3;
+                }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
                 if (chunkMode == ElementMode.Chunk) {
                     chunkProperties.push({ value, type, offset: rowChunkOffset });
@@ -599,6 +756,14 @@ export class GaussianSplattingMesh extends Mesh {
         const dataView = new DataView(data, headerEndIndex + headerEnd.length);
         const buffer = new ArrayBuffer(GaussianSplattingMesh._RowOutputLength * vertexCount);
 
+        let shBuffer = null;
+        let shCoefficientCount = 0;
+        if (shDegree) {
+            const shVectorCount = (shDegree + 1) * (shDegree + 1) - 1;
+            shCoefficientCount = shVectorCount * 3;
+            shBuffer = new ArrayBuffer(shCoefficientCount * vertexCount);
+        }
+
         return {
             vertexCount: vertexCount,
             chunkCount: chunkCount,
@@ -608,6 +773,9 @@ export class GaussianSplattingMesh extends Mesh {
             chunkProperties: chunkProperties,
             dataView: dataView,
             buffer: buffer,
+            shDegree: shDegree,
+            shCoefficientCount: shCoefficientCount,
+            shBuffer: shBuffer,
         };
     }
     private static _GetCompressedChunks(header: PLYHeader, offset: { value: number }): Array<CompressedPLYChunk> | null {
@@ -710,6 +878,10 @@ export class GaussianSplattingMesh extends Mesh {
         const scale = new Float32Array(buffer, index * rowOutputLength + 12, 3);
         const rgba = new Uint8ClampedArray(buffer, index * rowOutputLength + 24, 4);
         const rot = new Uint8ClampedArray(buffer, index * rowOutputLength + 28, 4);
+        let sh = null;
+        if (header.shBuffer) {
+            sh = new Uint8ClampedArray(header.shBuffer, index * header.shCoefficientCount, header.shCoefficientCount);
+        }
         const chunkIndex = index >> 8;
         let r0: number = 255;
         let r1: number = 0;
@@ -830,6 +1002,9 @@ export class GaussianSplattingMesh extends Mesh {
                 case PLYValue.ROT_3:
                     r3 = value;
                     break;
+            }
+            if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
+                sh[property.value - PLYValue.SH_0] = Scalar.Clamp(value * 255, 0, 255);
             }
         }
 
