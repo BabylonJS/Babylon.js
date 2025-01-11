@@ -25,21 +25,21 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
         this._sound = sound;
     }
 
-    /** @internal */
-    public override dispose(): void {
-        super.dispose();
-        this.stop();
-        this.onStateChangedObservable.clear();
-    }
-
     public abstract get currentTime(): number;
     public abstract set currentTime(value: number);
 
     public abstract get startTime(): number;
 
-    /** The playback state of sound instance */
+    /** The playback state of the sound instance */
     public get state(): SoundState {
         return this._state;
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+        this.stop();
+        this.onStateChangedObservable.clear();
     }
 
     public abstract play(options: Partial<IAbstractSoundPlayOptions>): void;
