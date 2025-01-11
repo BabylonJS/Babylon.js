@@ -42,6 +42,12 @@ export interface IAudioEngineV2Options {
 }
 
 /**
+ * The state of a v2 audio engine.
+ * @see {@link AudioEngineV2.state}
+ */
+export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspended";
+
+/**
  * Abstract base class for v2 audio engines.
  */
 export abstract class AudioEngineV2 {
@@ -65,7 +71,7 @@ export abstract class AudioEngineV2 {
     /**
      * The current state of the audio engine.
      */
-    public abstract get state(): string;
+    public abstract get state(): AudioEngineV2State;
 
     /**
      * The elapsed time since the audio engine was started, in seconds.

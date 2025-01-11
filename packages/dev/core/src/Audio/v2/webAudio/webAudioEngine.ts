@@ -1,7 +1,7 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { NamedAbstractAudioNode } from "../abstractAudioNode";
-import type { IAudioEngineV2Options } from "../audioEngineV2";
+import type { AudioEngineV2State, IAudioEngineV2Options } from "../audioEngineV2";
 import { AudioEngineV2 } from "../audioEngineV2";
 import type { MainAudioBus } from "../mainAudioBus";
 import type { AbstractSpatialAudioListener } from "../subProperties/abstractSpatialAudioListener";
@@ -141,7 +141,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public userGestureObservable: Observable<void> = new Observable();
 
     /** @internal */
-    public get state(): string {
+    public get state(): AudioEngineV2State {
         return this.audioContext.state;
     }
 
