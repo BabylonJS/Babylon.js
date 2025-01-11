@@ -5,24 +5,26 @@ type AudioNodeType = number;
 
 /** @internal */
 export class _AudioNodeType {
-    /**
-     * Input nodes receive audio data from an upstream node.
-     */
+    /** @internal */
     public static readonly In = 1;
-
-    /**
-     * Output nodes send audio data to a downstream node.
-     */
+    /** @internal */
     public static readonly Out = 2;
-
-    /**
-     * Input/Output nodes receive audio data from an upstream node and send audio data to a downstream node.
-     */
+    /** @internal */
     public static readonly InOut = _AudioNodeType.In | _AudioNodeType.Out;
 }
 
 /**
  * Abstract class for an audio node.
+ *
+ * An audio node is a processing unit that can receive audio data from an upstream node and/or send audio data to a
+ * downstream node.
+ *
+ * Nodes can be connected to other nodes to create an audio graph. The audio graph represents the flow of audio data.
+ *
+ * There are 3 types of audio nodes:
+ * 1. Input: Receives audio data from an upstream node.
+ * 2. Output: Sends audio data to a downstream node.
+ * 3. Input/Output: Receives audio data from an upstream node and sends audio data to a downstream node.
  */
 export abstract class AbstractAudioNode {
     /**
