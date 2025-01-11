@@ -6,7 +6,7 @@ import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 export interface IMainAudioBusOptions extends IVolumeAudioOptions {}
 
 /**
- * Abstract class representing the main audio bus in the audio engine.
+ * Abstract class representing a main audio bus.
  */
 export abstract class MainAudioBus extends AbstractAudioBus {
     protected constructor(name: string, engine: AudioEngineV2) {

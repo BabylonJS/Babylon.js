@@ -19,7 +19,7 @@ export enum SoundState {
      */
     Started,
     /**
-     * The sound failed to start, most likely due to the user not interacting with the page.
+     * The sound failed to start, most likely due to the user not interacting with the page, yet.
      */
     FailedToStart,
     /**

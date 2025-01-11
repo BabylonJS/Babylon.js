@@ -19,11 +19,11 @@ import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
  */
 export interface IAbstractSoundPlayOptions extends IVolumeAudioOptions {
     /**
-     * The amount of time to play the sound for, in seconds.
+     * The amount of time to play the sound for, in seconds. If not specified, the sound will play for its full duration.
      */
     duration: number;
     /**
-     * The amount of time into the sound buffer to start playing at, in seconds.
+     * The time within the sound buffer to start playing at, in seconds.
      */
     startOffset: number;
 }
@@ -33,19 +33,20 @@ export interface IAbstractSoundPlayOptions extends IVolumeAudioOptions {
  */
 export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
-     * Whether the sound should start playing immediately.
+     * Whether the sound should start playing immediately. Default is `false`.
      */
     autoplay: boolean;
     /**
-     * Whether the sound should loop.
+     * Whether the sound should loop. Default is `false`.
      */
     loop: boolean;
     /**
-     * The maximum number of instances that can play at the same time.
+     * The maximum number of instances that can play at the same time. Default is `Infinity`.
      */
     maxInstances: number;
     /**
-     * The output bus for the sound.
+     * The output bus for the sound. Default is the audio engine's default main bus.
+     * @see {@link AudioEngineV2.defaultMainBus}
      */
     outBus: PrimaryAudioBus;
 }
