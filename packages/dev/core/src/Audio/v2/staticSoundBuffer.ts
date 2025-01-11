@@ -9,12 +9,27 @@ export abstract class StaticSoundBuffer {
      */
     public readonly engine: AudioEngineV2;
 
-    public abstract get sampleRate(): number;
-    public abstract get length(): number;
-    public abstract get duration(): number;
-    public abstract get channelCount(): number;
-
     protected constructor(engine: AudioEngineV2) {
         this.engine = engine;
     }
+
+    /**
+     * The sample rate of the sound buffer.
+     */
+    public abstract get sampleRate(): number;
+
+    /**
+     * The length of the sound buffer, in sample frames.
+     */
+    public abstract get length(): number;
+
+    /**
+     * The duration of the sound buffer, in seconds.
+     */
+    public abstract get duration(): number;
+
+    /**
+     * The number of channels in the sound buffer.
+     */
+    public abstract get channelCount(): number;
 }
