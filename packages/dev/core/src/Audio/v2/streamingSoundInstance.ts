@@ -7,15 +7,15 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
     private _resolvePreloadedPromise: () => void;
 
     /** @internal */
+    public readonly onReadyObservable = new Observable<_StreamingSoundInstance>();
+
+    /** @internal */
     public override options: IStreamingSoundOptions;
 
     /** @internal */
     public readonly preloadedPromise = new Promise<void>((resolve) => {
         this._resolvePreloadedPromise = resolve;
     });
-
-    /** @internal */
-    public onReadyObservable = new Observable<_StreamingSoundInstance>();
 
     protected constructor(sound: StreamingSound, options: Partial<IStreamingSoundOptions>) {
         super(sound, options);
