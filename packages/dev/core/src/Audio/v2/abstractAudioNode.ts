@@ -27,15 +27,13 @@ export class _AudioNodeType {
 export abstract class AbstractAudioNode {
     /**
      * The connected downstream audio nodes.
-     *
-     * Undefined for input nodes.
+     * - Undefined for input nodes.
      */
     protected readonly _downstreamNodes?: Set<AbstractAudioNode> | undefined;
 
     /**
      * The connected upstream audio nodes.
-     *
-     * Undefined for output nodes.
+     * - Undefined for output nodes.
      */
     protected readonly _upstreamNodes?: Set<AbstractAudioNode> | undefined;
 
@@ -63,6 +61,8 @@ export abstract class AbstractAudioNode {
 
     /**
      * Releases associated resources.
+     * - Triggers `onDisposeObservable`.
+     * @see {@link onDisposeObservable}
      */
     public dispose(): void {
         if (this._downstreamNodes) {
@@ -110,7 +110,7 @@ export abstract class AbstractAudioNode {
     }
 
     /**
-     * Disconnect from a downstream audio input node.
+     * Disconnects a downstream audio input node.
      * @param node - The downstream audio input node to disconnect
      */
     protected _disconnect(node: AbstractAudioNode): void {
@@ -164,22 +164,14 @@ export abstract class NamedAbstractAudioNode extends AbstractAudioNode {
         this._name = name;
     }
 
-    public override dispose(): void {
-        super.dispose();
-
-        this.onNameChangedObservable.clear();
-    }
-
     /**
      * The name of the audio node.
+     * - Triggers `onNameChangedObservable` when changed.
+     * @see {@link onNameChangedObservable}
      */
     public get name(): string {
         return this._name;
     }
-
-    /**
-     * Sets the name of the audio node.
-     */
     public set name(name: string) {
         if (this._name === name) {
             return;
@@ -190,5 +182,11 @@ export abstract class NamedAbstractAudioNode extends AbstractAudioNode {
         this._name = name;
 
         this.onNameChangedObservable.notifyObservers({ oldName, node: this });
+    }
+
+    public override dispose(): void {
+        super.dispose();
+
+        this.onNameChangedObservable.clear();
     }
 }
