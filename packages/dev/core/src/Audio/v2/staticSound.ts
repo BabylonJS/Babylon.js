@@ -10,7 +10,7 @@ import type { _StaticSoundInstance } from "./staticSoundInstance";
  */
 export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions {
     /**
-     * The time to wait before playing the sound in seconds.
+     * The time to wait before playing the sound, in seconds.
      */
     waitTime: number;
 }
@@ -20,7 +20,7 @@ export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions {
  */
 export interface IStaticSoundStopOptions {
     /**
-     * The time to wait before stopping the sound in seconds.
+     * The time to wait before stopping the sound, in seconds.
      */
     waitTime: number;
 }
@@ -29,34 +29,53 @@ export interface IStaticSoundStopOptions {
  */
 export interface IStaticSoundOptions extends IStaticSoundPlayOptions, IAbstractSoundOptions {
     /**
-     * The start of the loop range in seconds.
+     * The start of the loop range in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the loop starts at the beginning of the sound.
+     * - Has no effect if {@link loop} is `false`.
+     *
      */
     loopStart: number;
     /**
-     * The end of the loop range in seconds.
+     * The end of the loop range in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the loop plays for the sound's full duration.
+     * - Has no effect if {@link loop} is `false`.
      */
     loopEnd: number;
     /**
      * The pitch of the sound, in cents.
+     * - Can be combined with {@link playbackRate}.
      */
     pitch: number;
     /**
      * The playback rate of the sound.
+     * - Can be combined with {@link pitch}.
      */
     playbackRate: number;
     /**
      * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
+     * - Has no effect if the sound's source is not a string array.
+     * @see {@link CreateSoundAsync} `source` parameter.
      */
     skipCodecCheck: boolean;
 }
 
 /**
  * Abstract class representing a static sound in the audio engine.
+ *
+ * A static sound has a sound buffer that is loaded into memory all at once. This allows it to have more capabilities
+ * than a streaming sound, such as loop points and playback rate changes, but it also means that the sound must be
+ * fully downloaded and decoded before it can be played, which may take a long time for sounds with long durations.
+ *
+ * To prevent downloading and decoding a sound multiple times, a sound's buffer can be shared with other sounds.
+ * See {@link CreateSoundBufferAsync}, {@link StaticSoundBuffer} and {@link StaticSound.buffer} for more information.
  */
 export abstract class StaticSound extends AbstractSound {
-    public abstract readonly buffer: StaticSoundBuffer;
-
     protected override _options: IStaticSoundOptions;
+
+    /**
+     * The sound buffer that the sound uses.
+     */
+    public abstract readonly buffer: StaticSoundBuffer;
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
@@ -70,27 +89,32 @@ export abstract class StaticSound extends AbstractSound {
     }
 
     /**
-     * The start of the loop range in seconds.
+     * The start of the loop range, in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the loop starts at the beginning of the sound.
      */
     public get loopStart(): number {
         return this._options.loopStart;
     }
+
     public set loopStart(value: number) {
         this._options.loopStart = value;
     }
 
     /**
-     * The end of the loop range in seconds.
+     * The end of the loop range, in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the loop plays for the sound's full duration.
      */
     public get loopEnd(): number {
         return this._options.loopEnd;
     }
+
     public set loopEnd(value: number) {
         this._options.loopEnd = value;
     }
 
     /**
      * The pitch of the sound, in cents.
+     * - Gets combined with {@link playbackRate} to determine the final pitch.
      */
     public get pitch(): number {
         return this._options.pitch;
@@ -101,6 +125,7 @@ export abstract class StaticSound extends AbstractSound {
 
     /**
      * The playback rate of the sound.
+     * - Gets combined with {@link pitch} to determine the final playback rate.
      */
     public get playbackRate(): number {
         return this._options.playbackRate;
@@ -111,10 +136,8 @@ export abstract class StaticSound extends AbstractSound {
 
     protected abstract override _createInstance(): _StaticSoundInstance;
 
-    /**
-     * Plays the sound.
-     * @param options - The options to use when playing the sound.
-     */
+    // Inherits doc from AbstractSound.
+    // eslint-disable-next-line babylonjs/available
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this._isPaused && this._instances.size > 0) {
             this.resume();
@@ -146,6 +169,7 @@ export abstract class StaticSound extends AbstractSound {
 
     /**
      * Stops the sound.
+     * - Triggers `onEndedObservable` if the sound is playing.
      * @param options - The options to use when stopping the sound.
      */
     public stop(options: Partial<IStaticSoundStopOptions> = {}): void {
