@@ -21,30 +21,40 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
 /** */
 export interface IAudioEngineV2Options {
     /**
-     *
+     * Whether the audio engine listener should be enabled when the audio engine is created. Defaults to `false`.
      */
     listenerEnabled: boolean;
 
-    /** */
+    /**
+     * The initial position of the audio engine listener. Defaults to `(0, 0, 0)`.
+     */
     listenerPosition: Vector3;
 
-    /** */
+    /**
+     * The initial rotation of the audio engine listener. Defaults to `(0, 0, 0)`.
+     */
     listenerRotation: Vector3;
 
-    /** */
+    /**
+     * The initial output volume of the audio engine. Defaults to `1`.
+     */
     volume: number;
 }
 
 /**
- * Abstract base class for audio engines.
+ * Abstract base class for v2 audio engines.
  */
 export abstract class AudioEngineV2 {
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    // Not owned, but all items should be in `_nodes` container, too, which is owned.
+    /**
+     * Not owned, but all items should be in `_nodes` container, too, which is owned.
+     */
     private readonly _mainBuses = new Set<MainAudioBus>();
 
-    // Owned top-level sound and bus nodes.
+    /**
+     * Owned top-level sound and bus nodes.
+     */
     private readonly _nodes = new Set<NamedAbstractAudioNode>();
 
     /**
@@ -58,17 +68,20 @@ export abstract class AudioEngineV2 {
     public abstract get state(): string;
 
     /**
-     * The current time in seconds.
+     * The elapsed time since the audio engine was started, in seconds.
      */
     public abstract get currentTime(): number;
 
     /**
      * The main output node.
+     * - This is the last node in the audio graph before the audio is sent to the audio hardware.
      */
     public abstract get mainOut(): AbstractAudioNode;
 
     /**
-     * The default main bus.
+     * The default main bus that will be used for audio busses and sounds if their `outBus` option is not set.
+     * @see {@link IAudioBusOptions.outBus}
+     * @see {@link IAbstractSoundOptions.outBus}
      */
     public get defaultMainBus(): Nullable<MainAudioBus> {
         if (this._mainBuses.size === 0) {
@@ -86,8 +99,14 @@ export abstract class AudioEngineV2 {
         Instances.push(this);
     }
 
+    /**
+     * The listener for spatial audio properties.
+     */
     public abstract get listener(): AbstractSpatialAudioListener;
 
+    /**
+     * The output volume of the audio engine.
+     */
     public abstract get volume(): number;
     public abstract set volume(value: number);
 
@@ -129,6 +148,7 @@ export abstract class AudioEngineV2 {
 
     /**
      * Unlocks the audio engine if it is locked.
+     * - Note that the returned promise resolves immediately if the audio engine is already unlocked.
      * @returns A promise that resolves when the audio engine is unlocked.
      */
     public unlock(): Promise<void> {
