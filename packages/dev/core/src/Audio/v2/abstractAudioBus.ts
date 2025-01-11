@@ -7,6 +7,9 @@ import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Abstract class representing an audio bus with volume control.
+ *
+ * An audio bus is a node in the audio graph that can have multiple inputs and outputs. It is typically used to group
+ * sounds together and apply effects to them.
  */
 export abstract class AbstractAudioBus extends NamedAbstractAudioNode {
     protected abstract _subGraph: _AbstractAudioSubGraph;

@@ -69,7 +69,7 @@ export abstract class AudioEngineV2 {
     public abstract get currentTime(): number;
 
     /**
-     * The default main bus that will be used for audio busses and sounds if their `outBus` option is not set.
+     * The default main bus that will be used for audio buses and sounds if their `outBus` option is not set.
      * @see {@link IAudioBusOptions.outBus}
      * @see {@link IAbstractSoundOptions.outBus}
      */
