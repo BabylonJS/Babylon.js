@@ -22,7 +22,7 @@ export abstract class AbstractAudioBus extends NamedAbstractAudioNode {
         return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
     }
     public set volume(value: number) {
-        // Note that the volume sub-node is created at initialization time and it always exists, so the callback that
+        // Note that the volume subnode is created at initialization time and it always exists, so the callback that
         // sets the node's volume is always called synchronously.
         this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
