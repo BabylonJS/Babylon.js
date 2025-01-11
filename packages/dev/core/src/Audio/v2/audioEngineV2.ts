@@ -125,8 +125,10 @@ export abstract class AudioEngineV2 {
             next.value.dispose();
         }
 
-        this._nodes.clear();
         this._mainBuses.clear();
+        this._nodes.clear();
+
+        this._defaultMainBus = null;
     }
 
     /**
