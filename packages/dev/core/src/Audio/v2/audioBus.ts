@@ -70,4 +70,12 @@ export abstract class AudioBus extends AbstractAudioBus {
      * The stereo audio properties of the audio bus.
      */
     public abstract get stereo(): AbstractStereoAudio;
+
+    /**
+     * Releases associated resources.
+     */
+    public override dispose(): void {
+        super.dispose();
+        this._outBus = null;
+    }
 }
