@@ -286,7 +286,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
         mediaElement.controls = false;
         mediaElement.loop = this.options.loop;
-        mediaElement.preload = this.options.preloadType;
+        mediaElement.preload = "auto";
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         mediaElement.addEventListener("ended", this._onEnded, { once: true });

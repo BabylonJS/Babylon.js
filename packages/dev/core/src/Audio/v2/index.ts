@@ -13,7 +13,7 @@ export { StaticSound } from "./staticSound";
 export type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "./staticSound";
 export { StaticSoundBuffer } from "./staticSoundBuffer";
 export { StreamingSound } from "./streamingSound";
-export type { IStreamingSoundOptions, StreamingSoundPreloadType } from "./streamingSound";
+export type { IStreamingSoundOptions } from "./streamingSound";
 export { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 export { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";
 export { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";

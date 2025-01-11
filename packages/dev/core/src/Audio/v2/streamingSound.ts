@@ -4,8 +4,6 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import { SoundState } from "./soundState";
 import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 
-export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
-
 /**
  * Options for creating a new streaming sound.
  */
@@ -14,11 +12,6 @@ export interface IStreamingSoundOptions extends IAbstractSoundOptions {
      * The number of instances to preload
      * */
     preloadCount: number;
-
-    /**
-     * The preload type of the sound's instances.
-     */
-    preloadType: "none" | "metadata" | "auto";
 }
 
 /**
@@ -34,7 +27,6 @@ export abstract class StreamingSound extends AbstractSound {
         super(name, engine, options);
 
         this._options.preloadCount ??= Infinity;
-        this._options.preloadType ??= "auto";
     }
 
     /**
@@ -49,16 +41,6 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public get preloadedInstanceCount(): number {
         return this._preloadedInstances.length;
-    }
-
-    /**
-     * The preload type of the sound's instances.
-     */
-    public get preloadType(): StreamingSoundPreloadType {
-        return this._options.preloadType;
-    }
-    public set preloadType(value: StreamingSoundPreloadType) {
-        this._options.preloadType = value;
     }
 
     /**
