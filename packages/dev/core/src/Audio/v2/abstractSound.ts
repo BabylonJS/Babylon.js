@@ -179,12 +179,14 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
     public abstract get stereo(): AbstractStereoAudio;
 
     /**
-     * The sound's volume/gain.
+     * The output volume of the sound.
      */
     public get volume(): number {
         return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
     }
     public set volume(value: number) {
+        // Note that the volume sub-node is created at initialization time and it always exists, so the callback that
+        // sets the node's volume is always called synchronously.
         this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
         });

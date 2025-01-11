@@ -6,7 +6,7 @@ import type { _VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
 
 /**
- * Abstract class representing an audio bus node with volume control.
+ * Abstract class representing an audio bus with volume control.
  */
 export abstract class AbstractAudioBus extends NamedAbstractAudioNode {
     protected abstract _subGraph: _AbstractAudioSubGraph;
