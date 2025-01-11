@@ -5,17 +5,27 @@ import { SoundState } from "./soundState";
 import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 
 /**
- * Options for creating a new streaming sound.
+ * Options for creating a streaming sound.
  */
 export interface IStreamingSoundOptions extends IAbstractSoundOptions {
     /**
-     * The number of instances to preload
+     * The number of instances to preload.
      * */
     preloadCount: number;
 }
 
 /**
  * Abstract class representing a streaming sound.
+ *
+ * Streaming sounds are created by the {@link CreateStreamingSoundAsync} function.
+ *
+ * A streaming sound has a sound buffer that is loaded into memory in chunks as it is played. This allows it to be played
+ * more quickly than a static sound, but it also means that it cannot have loop points or playback rate changes.
+ *
+ * Due to the way streaming sounds are typically implemented, there can be a significant delay when attempting to play
+ * a streaming sound for the first time. To prevent this delay, it is recommended to preload instances of the sound
+ * using the {@link IStreamingSoundOptions.preloadCount} options, or the {@link preloadInstance} and
+ * {@link preloadInstances} methods before calling the `play` method.
  */
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();
@@ -37,7 +47,7 @@ export abstract class StreamingSound extends AbstractSound {
     }
 
     /**
-     * Returns the number of preloaded instances.
+     * Returns the number of instances that have been preloaded.
      */
     public get preloadedInstanceCount(): number {
         return this._preloadedInstances.length;
@@ -45,6 +55,7 @@ export abstract class StreamingSound extends AbstractSound {
 
     /**
      * Preloads an instance of the sound.
+     * @returns A promise that resolves when the instance is preloaded.
      */
     public async preloadInstance(): Promise<void> {
         const instance = this._createInstance();
@@ -57,6 +68,7 @@ export abstract class StreamingSound extends AbstractSound {
     /**
      * Preloads the given number of instances of the sound.
      * @param count - The number of instances to preload.
+     * @returns A promise that resolves when all instances are preloaded.
      */
     public async preloadInstances(count: number): Promise<void> {
         for (let i = 0; i < count; i++) {
@@ -65,8 +77,6 @@ export abstract class StreamingSound extends AbstractSound {
 
         await Promise.all(this._preloadedInstancesPromises);
     }
-
-    protected abstract override _createInstance(): _StreamingSoundInstance;
 
     /**
      * Plays the sound.
@@ -125,6 +135,8 @@ export abstract class StreamingSound extends AbstractSound {
             instance.stop();
         }
     }
+
+    protected abstract override _createInstance(): _StreamingSoundInstance;
 
     protected get _instancesPreloadedPromise() {
         return Promise.all(this._preloadedInstancesPromises);
