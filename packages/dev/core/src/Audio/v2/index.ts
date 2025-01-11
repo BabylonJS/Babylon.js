@@ -1,9 +1,10 @@
 export { AbstractAudioBus } from "./abstractAudioBus";
 export { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
 export { AbstractSound } from "./abstractSound";
+export type { IAbstractSoundOptions } from "./abstractSound";
 export type { IAbstractSoundPlayOptions } from "./abstractSound";
 export { AudioBus } from "./audioBus";
-export type { PrimaryAudioBus } from "./audioBus";
+export type { IAudioBusOptions, PrimaryAudioBus } from "./audioBus";
 export { AudioEngineV2 } from "./audioEngineV2";
 export { MainAudioBus } from "./mainAudioBus";
 export type { IMainAudioBusOptions } from "./mainAudioBus";
