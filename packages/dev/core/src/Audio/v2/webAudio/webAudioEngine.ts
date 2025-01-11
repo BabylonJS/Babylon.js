@@ -63,7 +63,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _resumePromise: Nullable<Promise<void>> = null;
 
-    private _mainOutput: _WebAudioMainOut;
+    private _mainOut: _WebAudioMainOut;
 
     private _invalidFormats = new Set<string>();
     private _validFormats = new Set<string>();
@@ -93,14 +93,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get mainOut(): _WebAudioMainOut {
-        return this._mainOutput;
+        return this._mainOut;
     }
 
     private _initAudioContext: () => Promise<void> = async () => {
         this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
-        this._mainOutput = await _CreateMainAudioOutAsync(this);
-        this._mainOutput.volume = this._volume;
+        this._mainOut = await _CreateMainAudioOutAsync(this);
+        this._mainOut.volume = this._volume;
 
         await CreateMainAudioBusAsync("default", this);
     };
@@ -171,8 +171,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._volume = value;
 
-        if (this._mainOutput) {
-            this._mainOutput.volume = value;
+        if (this._mainOut) {
+            this._mainOut.volume = value;
         }
     }
 
