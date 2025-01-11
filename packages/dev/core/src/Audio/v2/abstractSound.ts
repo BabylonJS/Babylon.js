@@ -45,7 +45,7 @@ export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpati
      */
     maxInstances: number;
     /**
-     * The output bus for the sound. Defaults to audio engine's default main bus.
+     * The output bus for the sound. Defaults to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
     outBus: PrimaryAudioBus;
@@ -139,7 +139,7 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
     }
 
     /**
-     * The output bus for the sound. Defaults to audio engine's default main bus.
+     * The output bus for the sound. Defaults to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
     public get outBus(): Nullable<PrimaryAudioBus> {

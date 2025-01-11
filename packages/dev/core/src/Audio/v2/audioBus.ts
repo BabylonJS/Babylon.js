@@ -16,7 +16,7 @@ export type PrimaryAudioBus = MainAudioBus | AudioBus;
  */
 export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {
     /**
-     * The output bus of the audio bus. Defaults to audio engine's default main bus.
+     * The output bus of the audio bus. Defaults to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
     outBus: PrimaryAudioBus;
@@ -39,7 +39,7 @@ export abstract class AudioBus extends AbstractAudioBus {
     }
 
     /**
-     * The output bus of the audio bus. Defaults to audio engine's default main bus.
+     * The output bus of the audio bus. Defaults to the audio engine's default main bus.
      */
     public get outBus(): Nullable<PrimaryAudioBus> {
         return this._outBus;
