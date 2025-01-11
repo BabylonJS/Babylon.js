@@ -12,7 +12,7 @@ import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 export type PrimaryAudioBus = MainAudioBus | AudioBus;
 
 /**
- * Options for creating a new audio bus.
+ * Options for creating an audio bus.
  */
 export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOptions, IVolumeAudioOptions {
     /**
@@ -24,6 +24,8 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
 
 /**
  * Abstract class for an audio bus that has spatial audio and stereo output capabilities.
+ *
+ * Audio buses are created by the {@link CreateAudioBusAsync} function.
  *
  * Instances of this class can be connected to other audio buses.
  */

@@ -49,6 +49,8 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
 
 /**
  * Abstract base class for v2 audio engines.
+ *
+ * A v2 audio engine based on the WebAudio API can be created with the {@link CreateAudioEngineAsync} function.
  */
 export abstract class AudioEngineV2 {
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */

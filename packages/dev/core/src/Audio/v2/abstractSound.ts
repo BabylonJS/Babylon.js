@@ -29,7 +29,7 @@ export interface IAbstractSoundPlayOptions extends IVolumeAudioOptions {
 }
 
 /**
- * Options for creating a new sound.
+ * Options for creating a sound.
  */
 export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**

@@ -8,6 +8,8 @@ export interface IMainAudioBusOptions extends IVolumeAudioOptions {}
 /**
  * Abstract class representing a main audio bus.
  *
+ * Main audio buses are created by the {@link CreateMainAudioBusAsync} function.
+ *
  * Main audio buses are the last bus in the audio graph.
  *
  * Unlike {@link AudioBus} instances, `MainAudioBus` instances have no spatial audio and stereo output capabilities,

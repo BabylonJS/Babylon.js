@@ -25,7 +25,7 @@ export interface IStaticSoundStopOptions {
     waitTime: number;
 }
 /**
- * Options for creating a new static sound.
+ * Options for creating a static sound.
  */
 export interface IStaticSoundOptions extends IStaticSoundPlayOptions, IAbstractSoundOptions {
     /**
@@ -60,7 +60,9 @@ export interface IStaticSoundOptions extends IStaticSoundPlayOptions, IAbstractS
 }
 
 /**
- * Abstract class representing a static sound in the audio engine.
+ * Abstract class representing a static sound.
+ *
+ * Static sounds are created by the {@link CreateSoundAsync} function.
  *
  * A static sound has a sound buffer that is loaded into memory all at once. This allows it to have more capabilities
  * than a streaming sound, such as loop points and playback rate changes, but it also means that the sound must be

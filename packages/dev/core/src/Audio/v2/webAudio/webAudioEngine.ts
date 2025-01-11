@@ -11,7 +11,7 @@ import type { _WebAudioMainOut } from "./webAudioMainOut";
 import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
 
 /**
- * Options for creating a new v2 audio engine that uses the WebAudio API.
+ * Options for creating a v2 audio engine that uses the WebAudio API.
  */
 export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
     /**
