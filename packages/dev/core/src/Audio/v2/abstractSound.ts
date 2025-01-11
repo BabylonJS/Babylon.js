@@ -182,11 +182,9 @@ export abstract class AbstractSound extends NamedAbstractAudioNode {
      * The sound's volume/gain.
      */
     public get volume(): number {
-        return this._options.volume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
     }
     public set volume(value: number) {
-        this._options.volume = value;
-
         this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
         });
