@@ -15,20 +15,25 @@ export abstract class AbstractAudioBus extends NamedAbstractAudioNode {
         super(name, engine, _AudioNodeType.InOut);
     }
 
-    /** */
-    public override dispose(): void {
-        super.dispose();
-        this._subGraph.dispose();
-    }
-
-    /** */
+    /**
+     * The output volume of the bus.
+     */
     public get volume(): number {
         return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
     }
-
     public set volume(value: number) {
+        // Note that the volume sub-node is created at initialization time and it always exists, so the callback that
+        // sets the node's volume is always called synchronously.
         this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
             node.volume = value;
         });
+    }
+
+    /**
+     * Releases associated resources.
+     */
+    public override dispose(): void {
+        super.dispose();
+        this._subGraph.dispose();
     }
 }
