@@ -91,13 +91,14 @@ export abstract class AudioEngineV2 {
     public abstract get isWebAudio(): boolean;
 
     /**
-     * The listener for spatial audio properties.
+     * The spatial audio listener properties for the audio engine.
+     * - Each audio engine has exactly one listener.
      */
     public abstract get listener(): AbstractSpatialAudioListener;
 
     /**
      * The main output node.
-     * - This is the last node in the audio graph before the audio is sent to the audio hardware.
+     * - This is the last node in the audio graph before the audio is sent to the speakers.
      */
     public abstract get mainOut(): AbstractAudioNode;
 
