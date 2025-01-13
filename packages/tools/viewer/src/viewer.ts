@@ -238,8 +238,19 @@ export class ViewerHotSpotResult {
 
 export type Model = IDisposable &
     Readonly<{
+        /**
+         * The asset container representing the model.
+         */
         assetContainer: AssetContainer;
+
+        /**
+         * The material variants controller for the model.
+         */
         materialVariantsController: Nullable<MaterialVariantsController>;
+
+        /**
+         * Returns the world position and visibility of a hot spot.
+         */
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
     }>;
 
