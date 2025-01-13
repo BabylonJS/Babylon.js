@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
-import type { PropertyValues, TemplateResult } from "lit";
+import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
@@ -160,7 +160,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static override styles = css`
+    public static override styles: CSSResultGroup = css`
         :host {
             --ui-foreground-color: white;
             --ui-background-hue: 233;
