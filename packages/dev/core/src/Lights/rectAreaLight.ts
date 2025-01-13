@@ -42,27 +42,21 @@ export class RectAreaLight extends Light {
         return this._height.length();
     }
     /**
-     * Only used in gltf falloff mode, this defines the angle where
-     * the directional falloff will start before cutting at angle which could be seen
-     * as outer angle.
+     * Height of the area light.
      */
     public set height(value: number) {
         this._height = Vector3.Up().multiplyByFloats(value, value, value);
     }
 
     /**
-     * Only used in gltf falloff mode, this defines the angle where
-     * the directional falloff will start before cutting at angle which could be seen
-     * as outer angle.
+     * Area Light positon.
      */
     @serialize()
     public get position(): Vector3 {
         return this._position;
     }
     /**
-     * Only used in gltf falloff mode, this defines the angle where
-     * the directional falloff will start before cutting at angle which could be seen
-     * as outer angle.
+     * Area Light positon.
      */
     public set position(value: Vector3) {
         this._position = value;
@@ -157,10 +151,12 @@ export class RectAreaLight extends Light {
      * @returns The light
      */
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        // TO DO: Implement this to add support for NME.
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        // TO DO: Implement this to add support for NME.
         return this;
     }
 
