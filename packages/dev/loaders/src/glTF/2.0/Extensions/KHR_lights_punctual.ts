@@ -123,11 +123,6 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
                 this._loader._babylonLights.push(babylonLight);
 
-                // Making sure we enable enough lights to have all lights together
-                for (const material of this._loader.babylonScene.materials) {
-                    (material as PBRMaterial).maxSimultaneousLights = Math.max((material as PBRMaterial).maxSimultaneousLights, this._loader.babylonScene.lights.length);
-                }
-
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
 
                 assign(babylonMesh);

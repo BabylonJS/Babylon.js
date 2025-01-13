@@ -460,6 +460,15 @@ export class GLTFLoader implements IGLTFLoader {
                         this._rootBabylonMesh.setEnabled(true);
                     }
 
+                    // Making sure we enable enough lights to have all lights together
+                    for (const material of this._babylonScene.materials) {
+                        const mat = material as any;
+
+                        if (mat.maxSimultaneousLights !== undefined) {
+                            mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights, this._babylonScene.lights.length);
+                        }
+                    }
+
                     this._extensionsOnReady();
                     this._parent._setState(GLTFLoaderState.READY);
 
@@ -2185,11 +2194,6 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
-
-        // Making sure we enable enough lights to have all lights together
-        for (const material of this._babylonScene.materials) {
-            (material as PBRMaterial).maxSimultaneousLights = Math.max((material as PBRMaterial).maxSimultaneousLights, this._babylonScene.lights.length);
-        }
 
         return babylonMaterial;
     }

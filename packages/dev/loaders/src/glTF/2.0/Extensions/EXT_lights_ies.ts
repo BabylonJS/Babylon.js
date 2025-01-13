@@ -102,11 +102,6 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
 
                 this._loader._babylonLights.push(babylonSpotLight);
 
-                // Making sure we enable enough lights to have all lights together
-                for (const material of this._loader.babylonScene.materials) {
-                    (material as PBRMaterial).maxSimultaneousLights = Math.max((material as PBRMaterial).maxSimultaneousLights, this._loader.babylonScene.lights.length);
-                }
-
                 GLTFLoader.AddPointerMetadata(babylonSpotLight, extensionContext);
 
                 assign(babylonMesh);
