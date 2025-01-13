@@ -62,23 +62,11 @@ function getLTCTextureFromArray(ltc: ArrayBufferView, scene: Scene): BaseTexture
  * @param scene defines the hosting scene
  * @returns the environment BRDF texture
  */
-export const buildSceneLTCTextures = async (scene: Scene): Promise<void> => {
+export async function buildSceneLTCTextures(scene: Scene): Promise<void> {
     if (!_loadingLTC) {
         _loadingLTC = true;
         const arrayData = await decodeLTCTextures();
         scene.ltc1Texture = getLTCTextureFromArray(arrayData[0], scene);
         scene.ltc2Texture = getLTCTextureFromArray(arrayData[1], scene);
     }
-};
-
-/**
- * Class used to host texture specific utilities
- */
-export const LTC1TextureTools = {
-    /**
-     * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
-     * @param scene defines the hosting scene
-     * @returns the environment BRDF texture
-     */
-    buildSceneLTCTextures,
-};
+}
