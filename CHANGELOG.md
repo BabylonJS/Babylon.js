@@ -1,5 +1,45 @@
 # Changelog
 
+## 7.43.0
+
+### Core
+
+- Shader material improvements - by [kircher1](https://github.com/kircher1) ([#16048](https://github.com/BabylonJS/Babylon.js/pull/16048))
+- Mesh: Make cloning thin instances optional - by [Popov72](https://github.com/Popov72) ([#16046](https://github.com/BabylonJS/Babylon.js/pull/16046))
+- WebGPU: fix crashes in Firefox and Safari - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16045](https://github.com/BabylonJS/Babylon.js/pull/16045))
+- Fix lineMesh cloned alpha values - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#16043](https://github.com/BabylonJS/Babylon.js/pull/16043))
+- Mesh: fix LOD management - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16038](https://github.com/BabylonJS/Babylon.js/pull/16038))
+- Morph target manager: Don't recreate texture if not needed when updates are re-enabled - by [Popov72](https://github.com/Popov72) ([#16036](https://github.com/BabylonJS/Babylon.js/pull/16036))
+- If HTTP connection closed prematurely, consider retry - by [djn24](https://github.com/djn24) ([#16025](https://github.com/BabylonJS/Babylon.js/pull/16025))
+- FrameGraph: Add support for node materials to the frame graph geometry renderer - by [Popov72](https://github.com/Popov72) ([#16034](https://github.com/BabylonJS/Babylon.js/pull/16034))
+- GreasedLine OIT support - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16033](https://github.com/BabylonJS/Babylon.js/pull/16033))
+- Fix Animation loop in CreateAndStartAnimation - by [sebavan](https://github.com/sebavan) ([#16032](https://github.com/BabylonJS/Babylon.js/pull/16032))
+- Add getter for tagged entities in asset container - by [HoferMarkus](https://github.com/HoferMarkus) ([#16029](https://github.com/BabylonJS/Babylon.js/pull/16029))
+- SubMesh: pre-allocate buffers for _getLinesIndexBuffer - by [kzhsw](https://github.com/kzhsw) ([#16030](https://github.com/BabylonJS/Babylon.js/pull/16030))
+- Make position morph binding as optional in renderers + enable other attrib type morph - by [noname0310](https://github.com/noname0310) ([#16024](https://github.com/BabylonJS/Babylon.js/pull/16024))
+- FrameGraph: add glow layer block and task - by [Popov72](https://github.com/Popov72) ([#16026](https://github.com/BabylonJS/Babylon.js/pull/16026))
+- WebGPU: Fix conflicting variable type in GreasedLine shader - by [Propolisa](https://github.com/Propolisa) ([#16027](https://github.com/BabylonJS/Babylon.js/pull/16027))
+
+### GUI
+
+- Minor allocation optimization - by [kircher1](https://github.com/kircher1) ([#16031](https://github.com/BabylonJS/Babylon.js/pull/16031))
+
+### Inspector
+
+- Take new viewer out of preview/alpha - by [ryantrem](https://github.com/ryantrem) ([#16049](https://github.com/BabylonJS/Babylon.js/pull/16049))
+
+### Loaders
+
+- Fix asset container mesh for GS - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16035](https://github.com/BabylonJS/Babylon.js/pull/16035))
+
+### Materials
+
+- Fix NormalMaterial with ThinInstances - by [sebavan](https://github.com/sebavan) ([#16028](https://github.com/BabylonJS/Babylon.js/pull/16028))
+
+### Node Editor
+
+- Take new viewer out of preview/alpha - by [ryantrem](https://github.com/ryantrem) ([#16049](https://github.com/BabylonJS/Babylon.js/pull/16049))
+
 ## 7.42.0
 
 ### Core

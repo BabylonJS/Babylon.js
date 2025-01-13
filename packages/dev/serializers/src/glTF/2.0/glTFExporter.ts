@@ -40,7 +40,6 @@ import { GLTFMaterialExporter } from "./glTFMaterialExporter";
 import type { IExportOptions } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
-    AreIndices32Bits,
     ConvertToRightHandedPosition,
     ConvertToRightHandedRotation,
     CreateAccessor,
@@ -65,13 +64,14 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
-import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
+import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
+import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 class ExporterState {
@@ -1486,11 +1486,8 @@ export class GLTFExporter {
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
         const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
-        let isLinesMesh = false;
-
-        if (babylonMesh instanceof LinesMesh) {
-            isLinesMesh = true;
-        }
+        const isLinesMesh = babylonMesh instanceof LinesMesh;
+        const isGreasedLineMesh = babylonMesh instanceof GreasedLineBaseMesh;
 
         const subMeshes = babylonMesh.subMeshes;
         if (vertexBuffers && subMeshes && subMeshes.length > 0) {
@@ -1499,8 +1496,26 @@ export class GLTFExporter {
 
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
 
-                // Special case for LinesMesh
-                if (isLinesMesh) {
+                if (isGreasedLineMesh) {
+                    const material: IMaterial = {
+                        name: babylonMaterial.name,
+                    };
+
+                    const babylonLinesMesh = babylonMesh as GreasedLineBaseMesh;
+
+                    const colorWhite = Color3.White();
+                    const alpha = babylonLinesMesh.material?.alpha ?? 1;
+                    const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
+                    if (!color.equals(colorWhite) || alpha < 1) {
+                        material.pbrMetallicRoughness = {
+                            baseColorFactor: [...color.asArray(), alpha],
+                        };
+                    }
+
+                    this._materials.push(material);
+                    primitive.material = this._materials.length - 1;
+                } else if (isLinesMesh) {
+                    // Special case for LinesMesh
                     const material: IMaterial = {
                         name: babylonMaterial.name,
                     };
@@ -1521,7 +1536,7 @@ export class GLTFExporter {
                 }
 
                 // Index buffer
-                const fillMode = isLinesMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
+                const fillMode = isLinesMesh || isGreasedLineMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
 

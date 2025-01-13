@@ -1,7 +1,7 @@
 ﻿uniform color: vec4f;
 
 #ifdef ALPHATEST
-varying vUV: vec2;
+varying vUV: vec2f;
 var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
 #endif

@@ -1,7 +1,8 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture } from "core/index";
+import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Represents a task in a frame graph.
@@ -53,6 +54,11 @@ export abstract class FrameGraphTask {
     public abstract record(): void;
 
     /**
+     * An observable that is triggered after the textures have been allocated.
+     */
+    public onTexturesAllocatedObservable: Observable<FrameGraphRenderContext> = new Observable();
+
+    /**
      * Checks if the task is ready to be executed.
      * @returns True if the task is ready to be executed, else false.
      */
@@ -65,6 +71,7 @@ export abstract class FrameGraphTask {
      */
     public dispose() {
         this._reset();
+        this.onTexturesAllocatedObservable.clear();
     }
 
     /**

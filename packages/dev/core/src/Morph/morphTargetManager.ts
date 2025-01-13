@@ -38,6 +38,7 @@ export class MorphTargetManager implements IDisposable {
     private _canUseTextureForTargets = false;
     private _blockCounter = 0;
     private _mustSynchronize = true;
+    private _forceUpdateWhenUnfrozen = false;
 
     /** @internal */
     public _textureVertexStride = 0;
@@ -98,8 +99,8 @@ export class MorphTargetManager implements IDisposable {
             if (this._blockCounter <= 0) {
                 this._blockCounter = 0;
 
-                this._mustSynchronize = true;
-                this._syncActiveTargets();
+                this._syncActiveTargets(this._forceUpdateWhenUnfrozen);
+                this._forceUpdateWhenUnfrozen = false;
             }
         }
     }
@@ -330,6 +331,9 @@ export class MorphTargetManager implements IDisposable {
         this._targets.push(target);
         this._targetInfluenceChangedObservers.push(
             target.onInfluenceChanged.add((needUpdate) => {
+                if (this.areUpdatesFrozen && needUpdate) {
+                    this._forceUpdateWhenUnfrozen = true;
+                }
                 this._syncActiveTargets(needUpdate);
             })
         );

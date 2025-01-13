@@ -39,6 +39,7 @@ export * from "./thinBlurPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinPassPostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";

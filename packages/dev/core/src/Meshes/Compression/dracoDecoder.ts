@@ -7,17 +7,11 @@ import { Logger } from "../../Misc/logger";
 import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
-import { decodeMesh, workerFunction } from "./dracoCompressionWorker";
-import type { AttributeData, Message } from "./dracoCompressionWorker";
+import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
+import type { AttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
-
-export interface MeshData {
-    indices?: Uint16Array | Uint32Array;
-    attributes: Array<AttributeData>;
-    totalVertices: number;
-}
 
 /**
  * @experimental This class is an experimental version of `DracoCompression` and is subject to change.
@@ -26,7 +20,7 @@ export interface MeshData {
  *
  * This class wraps the Draco decoder module.
  *
- * By default, the configuration points to a copy of the Draco decoder files for glTF from the Babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * By default, the configuration points to a copy of the Draco decoder files for glTF from the Babylon.js cdn https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js.
  *
  * To update the configuration, use the following code:
  * ```javascript
@@ -95,13 +89,13 @@ export class DracoDecoder extends DracoCodec {
         return typeof DracoDecoderModule !== "undefined";
     }
 
-    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: any): Promise<{ module: any /** DecoderModule */ }> {
+    protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: unknown /** DracoDecoderModule */): Promise<{ module: unknown /** DecoderModule */ }> {
         const module = await ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary });
         return { module };
     }
 
     protected override _getWorkerContent(): string {
-        return `${decodeMesh}(${workerFunction})()`;
+        return `${DecodeMesh}(${DecoderWorkerFunction})()`;
     }
 
     /**
@@ -154,7 +148,7 @@ export class DracoDecoder extends DracoCodec {
                             onComplete();
                         };
 
-                        const onMessage = (event: MessageEvent<Message>) => {
+                        const onMessage = (event: MessageEvent<DecoderMessage>) => {
                             const message = event.data;
                             switch (message.id) {
                                 case "indices": {
@@ -197,7 +191,7 @@ export class DracoDecoder extends DracoCodec {
                 let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
                 const resultAttributes: Array<AttributeData> = [];
 
-                const numPoints = decodeMesh(
+                const numPoints = DecodeMesh(
                     decoder.module,
                     dataView,
                     attributes,

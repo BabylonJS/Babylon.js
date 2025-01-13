@@ -209,8 +209,7 @@ class _InternalAbstractMeshDataInfo {
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
-    public _currentLOD: Nullable<AbstractMesh> = null;
-    public _currentLODIsUpToDate: boolean = false;
+    public _currentLOD: Map<Camera, [Nullable<AbstractMesh>, number]> = new Map();
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;

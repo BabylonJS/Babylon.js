@@ -1,16 +1,16 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph, Camera } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCircleOfConfusionTask } from "core/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask";
 import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
+import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 
 /**
  * Block that implements the circle of confusion post process
  */
-export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphCircleOfConfusionTask;
 
     /**
@@ -29,34 +29,16 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this._addDependenciesInput();
-        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = () => {
-            return this.destination.isConnected ? this.destination : this.source;
-        };
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphCircleOfConfusionTask(
             this.name,
             frameGraph,
             new ThinCircleOfConfusionPostProcess(name, scene.getEngine(), { depthNotNormalized: true })
         );
-    }
-
-    /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
-    public get sourceSamplingMode() {
-        return this._frameGraphTask.sourceSamplingMode;
-    }
-
-    public set sourceSamplingMode(value: number) {
-        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** Sampling mode used to sample from the depth texture */
@@ -118,23 +100,9 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     }
 
     /**
-     * Gets the source input component
-     */
-    public get source(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
      * Gets the geometry view depth input component
      */
     public get geomViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the destination input component
-     */
-    public get destination(): NodeRenderGraphConnectionPoint {
         return this._inputs[2];
     }
 
@@ -145,21 +113,10 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         return this._inputs[3];
     }
 
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
-    }
-
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this.output.value = this._frameGraphTask.outputTexture;
-
-        this._frameGraphTask.sourceTexture = this.source.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.geomViewDepth.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
     }
 
@@ -169,7 +126,6 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         codes.push(`${this._codeVariableName}.fStop = ${this.fStop};`);
         codes.push(`${this._codeVariableName}.focusDistance = ${this.focusDistance};`);
         codes.push(`${this._codeVariableName}.focalLength = ${this.focalLength};`);
-        codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         codes.push(`${this._codeVariableName}.depthSamplingMode = ${this.depthSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -180,7 +136,6 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         serializationObject.fStop = this.fStop;
         serializationObject.focusDistance = this.focusDistance;
         serializationObject.focalLength = this.focalLength;
-        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         serializationObject.depthSamplingMode = this.depthSamplingMode;
         return serializationObject;
     }
@@ -191,7 +146,6 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         this.fStop = serializationObject.fStop;
         this.focusDistance = serializationObject.focusDistance;
         this.focalLength = serializationObject.focalLength;
-        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
         this.depthSamplingMode = serializationObject.depthSamplingMode;
     }
 }
