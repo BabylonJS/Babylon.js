@@ -592,14 +592,15 @@ export class Viewer implements IDisposable {
         return this._modelInfo;
     }
 
-    protected set _model(value: Nullable<Model>) {
-        if (value !== this._modelInfo) {
-            this._modelInfo = value;
+    protected _setModel(...args: [model: null] | [model: Model, source?: string | File | ArrayBufferView]): void {
+        const [model, source] = args;
+        if (model !== this._modelInfo) {
+            this._modelInfo = model;
             this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this.onModelChanged.notifyObservers(null);
+            this.onModelChanged.notifyObservers(source ?? null);
         }
     }
 
@@ -855,11 +856,11 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             throwIfAborted(abortSignal, abortController.signal);
             this._model?.dispose();
-            this._model = null;
+            this._setModel(null);
             this.selectedAnimation = -1;
 
             if (source) {
-                this._model = await this._loadModel(source, options, abortController.signal);
+                this._setModel(await this._loadModel(source, options, abortController.signal), source);
                 this._selectAnimation(options?.defaultAnimation ?? 0, false);
             }
         });

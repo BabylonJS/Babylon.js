@@ -10,7 +10,7 @@ export class Viewer2 extends Viewer {
     public async loadAnotherModel() {
         const model = await this._loadModel("https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/flightHelmet.glb");
         (model.assetContainer.rootNodes[0] as TransformNode).scaling.setAll(0.03);
-        this._model = model;
+        this._setModel(model);
         return model;
     }
 }
