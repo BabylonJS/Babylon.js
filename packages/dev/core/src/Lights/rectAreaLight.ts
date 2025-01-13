@@ -25,13 +25,13 @@ export class RectAreaLight extends Light {
      */
     @serialize()
     public get width(): number {
-        return this._width.length();
+        return this._width.x;
     }
     /**
      * Width of the area Light.
      */
     public set width(value: number) {
-        this._width = Vector3.Right().multiplyByFloats(value, value, value);
+        this._width.x = value;
     }
 
     /**
@@ -39,13 +39,13 @@ export class RectAreaLight extends Light {
      */
     @serialize()
     public get height(): number {
-        return this._height.length();
+        return this._height.y;
     }
     /**
      * Height of the area light.
      */
     public set height(value: number) {
-        this._height = Vector3.Up().multiplyByFloats(value, value, value);
+        this._height.y = value;
     }
 
     /**
@@ -74,8 +74,8 @@ export class RectAreaLight extends Light {
     constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
         super(name, scene);
         this._position = position;
-        this._width = Vector3.Right().multiplyByFloats(width, width, width);
-        this._height = Vector3.Up().multiplyByFloats(height, height, height);
+        this._width = new Vector3(width, 0, 0);
+        this._height = new Vector3(0, height, 0);
     }
 
     /**
