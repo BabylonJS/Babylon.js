@@ -593,7 +593,7 @@ export class Viewer implements IDisposable {
     protected set _model(value: Nullable<Model>) {
         if (value !== this._modelInfo) {
             this._modelInfo = value;
-            this._updateCamera();
+            this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
             this.onSelectedMaterialVariantChanged.notifyObservers();
