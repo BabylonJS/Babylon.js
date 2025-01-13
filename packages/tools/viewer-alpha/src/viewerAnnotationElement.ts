@@ -42,10 +42,14 @@ export class HTML3DAnnotationElement extends LitElement {
     public hotSpot: string = "";
 
     /** @internal */
-    public override connectedCallback(): void {
+    public override async connectedCallback(): Promise<void> {
         super.connectedCallback();
         this._internals.states?.add("invalid");
 
+        // Sometimes override parent element is not defined yet.
+        if (this.parentElement?.matches(":not(:defined)")) {
+            await customElements.whenDefined(this.parentElement?.tagName.toLowerCase());
+        }
         if (!(this.parentElement instanceof ViewerElement)) {
             // eslint-disable-next-line no-console
             console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
