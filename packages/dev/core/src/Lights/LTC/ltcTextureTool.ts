@@ -58,9 +58,8 @@ function getLTCTextureFromArray(ltc: ArrayBufferView, scene: Scene): BaseTexture
 }
 
 /**
- * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
+ * Builds the LTC textures used by Area Lights.
  * @param scene defines the hosting scene
- * @returns the environment BRDF texture
  */
 export async function buildSceneLTCTextures(scene: Scene): Promise<void> {
     if (!_loadingLTC) {
