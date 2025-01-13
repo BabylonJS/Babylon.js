@@ -14,7 +14,6 @@ import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { PBRMaterial } from "core/Materials";
 
 const NAME = "KHR_lights_punctual";
 

@@ -12,7 +12,6 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { Texture } from "core/Materials/Textures/texture";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 const NAME = "EXT_lights_ies";
 
