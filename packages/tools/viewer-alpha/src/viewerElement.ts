@@ -53,7 +53,7 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
 type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number, radius: number] };
 
 // Custom events for the HTML3DElement.
-interface ViewerElementEventMap extends HTMLElementEventMap {
+export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     viewerrender: Event;
     environmentchange: Event;
@@ -953,7 +953,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
+    protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
