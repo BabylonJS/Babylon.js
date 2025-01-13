@@ -236,7 +236,7 @@ export class ViewerHotSpotResult {
     public visibility: number = NaN;
 }
 
-type Model = IDisposable &
+export type Model = IDisposable &
     Readonly<{
         assetContainer: AssetContainer;
         materialVariantsController: Nullable<MaterialVariantsController>;
