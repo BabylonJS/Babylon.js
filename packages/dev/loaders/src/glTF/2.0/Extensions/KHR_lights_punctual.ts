@@ -14,6 +14,7 @@ import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { PBRMaterial } from "core/Materials";
 
 const NAME = "KHR_lights_punctual";
 
@@ -121,6 +122,11 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 babylonLight.parent = babylonMesh;
 
                 this._loader._babylonLights.push(babylonLight);
+
+                // Making sure we enable enough lights to have all lights together
+                for (const material of this._loader.babylonScene.materials) {
+                    (material as PBRMaterial).maxSimultaneousLights = Math.max((material as PBRMaterial).maxSimultaneousLights, this._loader.babylonScene.lights.length);
+                }
 
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
 

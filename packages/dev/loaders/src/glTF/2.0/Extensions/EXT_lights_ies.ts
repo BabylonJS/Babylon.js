@@ -12,6 +12,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { Texture } from "core/Materials/Textures/texture";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 const NAME = "EXT_lights_ies";
 
@@ -100,6 +101,11 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
                 babylonSpotLight.parent = babylonMesh;
 
                 this._loader._babylonLights.push(babylonSpotLight);
+
+                // Making sure we enable enough lights to have all lights together
+                for (const material of this._loader.babylonScene.materials) {
+                    (material as PBRMaterial).maxSimultaneousLights = Math.max((material as PBRMaterial).maxSimultaneousLights, this._loader.babylonScene.lights.length);
+                }
 
                 GLTFLoader.AddPointerMetadata(babylonSpotLight, extensionContext);
 
