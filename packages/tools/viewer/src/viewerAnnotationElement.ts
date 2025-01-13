@@ -34,6 +34,7 @@ export class HTML3DAnnotationElement extends LitElement {
 
     private readonly _internals = this.attachInternals();
     private _viewerAttachment: Nullable<IDisposable> = null;
+    private _connectingAbortController: Nullable<AbortController> = null;
 
     /**
      * The name of the hotspot to track.
@@ -42,54 +43,67 @@ export class HTML3DAnnotationElement extends LitElement {
     public hotSpot: string = "";
 
     /** @internal */
-    public override async connectedCallback(): Promise<void> {
+    public override connectedCallback(): void {
         super.connectedCallback();
         this._internals.states?.add("invalid");
+        this._connectingAbortController?.abort();
+        this._connectingAbortController = new AbortController();
+        const abortSignal = this._connectingAbortController.signal;
 
-        // Custom element registration can happen at any time via a call to customElements.define, which means it is possible
-        // the parent custom element hasn't been defined yet. This especially can happen if the order of imports and exports
-        // results in the parent element being defined after the HTML3DAnnotationElement within the final JS bundle.
-        if (this.parentElement?.matches(":not(:defined)")) {
-            await customElements.whenDefined(this.parentElement?.tagName.toLowerCase());
-        }
+        (async () => {
+            // Custom element registration can happen at any time via a call to customElements.define, which means it is possible
+            // the parent custom element hasn't been defined yet. This especially can happen if the order of imports and exports
+            // results in the parent element being defined after the HTML3DAnnotationElement within the final JS bundle.
+            if (this.parentElement?.matches(":not(:defined)")) {
+                await customElements.whenDefined(this.parentElement?.tagName.toLowerCase());
 
-        if (!(this.parentElement instanceof ViewerElement)) {
-            // eslint-disable-next-line no-console
-            console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
-            return;
-        }
-
-        const viewerElement = this.parentElement;
-        const hotSpotResult = new ViewerHotSpotResult();
-        const onViewerRendered = () => {
-            if (this.hotSpot) {
-                if (viewerElement.queryHotSpot(this.hotSpot, hotSpotResult)) {
-                    const [screenX, screenY] = hotSpotResult.screenPosition;
-                    this.style.transform = `translate(${screenX}px, ${screenY}px)`;
-                    this._internals.states?.delete("invalid");
-
-                    if (hotSpotResult.visibility <= 0) {
-                        this._internals.states?.add("back-facing");
-                    } else {
-                        this._internals.states?.delete("back-facing");
-                    }
-                } else {
-                    this._internals.states?.add("invalid");
+                // If the element has since been disconnected or reconnected, abort this connection process.
+                if (abortSignal.aborted) {
+                    return;
                 }
             }
-        };
 
-        viewerElement.addEventListener("viewerrender", onViewerRendered);
-        this._viewerAttachment = {
-            dispose() {
-                viewerElement.removeEventListener("viewerrender", onViewerRendered);
-            },
-        };
+            if (!(this.parentElement instanceof ViewerElement)) {
+                // eslint-disable-next-line no-console
+                console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
+                return;
+            }
+
+            const viewerElement = this.parentElement;
+            const hotSpotResult = new ViewerHotSpotResult();
+            const onViewerRendered = () => {
+                if (this.hotSpot) {
+                    if (viewerElement.queryHotSpot(this.hotSpot, hotSpotResult)) {
+                        const [screenX, screenY] = hotSpotResult.screenPosition;
+                        this.style.transform = `translate(${screenX}px, ${screenY}px)`;
+                        this._internals.states?.delete("invalid");
+
+                        if (hotSpotResult.visibility <= 0) {
+                            this._internals.states?.add("back-facing");
+                        } else {
+                            this._internals.states?.delete("back-facing");
+                        }
+                    } else {
+                        this._internals.states?.add("invalid");
+                    }
+                }
+            };
+
+            viewerElement.addEventListener("viewerrender", onViewerRendered);
+            this._viewerAttachment = {
+                dispose() {
+                    viewerElement.removeEventListener("viewerrender", onViewerRendered);
+                },
+            };
+        })();
     }
 
     /** @internal */
     public override disconnectedCallback(): void {
         super.disconnectedCallback();
+
+        this._connectingAbortController?.abort();
+        this._connectingAbortController = null;
 
         this._viewerAttachment?.dispose();
         this._viewerAttachment = null;
