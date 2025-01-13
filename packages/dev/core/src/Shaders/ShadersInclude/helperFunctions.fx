@@ -1,6 +1,9 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float TWO_PI = 6.283185307179586;
+const float HALF_PI = 1.5707963267948966;
 const float RECIPROCAL_PI = 0.3183098861837907;
 const float RECIPROCAL_PI2 = 0.15915494309189535;
+const float RECIPROCAL_PI4 = 0.07957747154594767;
 const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
@@ -158,7 +161,7 @@ float pow5(float value) {
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 float getLuminance(vec3 color)
 {
-    return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
+    return saturate(dot(color, LuminanceEncodeApprox));
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
@@ -174,19 +177,19 @@ float dither(vec2 seed, float varianceAmount) {
 }
 
 // Check if configurable value is needed.
-const float rgbdMaxRange = 255.0;
+const float rgbdMaxRange = 255.;
 
 vec4 toRGBD(vec3 color) {
     float maxRGB = maxEps(max(color.r, max(color.g, color.b)));
     float D      = max(rgbdMaxRange / maxRGB, 1.);
-    D            = clamp(floor(D) / 255.0, 0., 1.);
-    // vec3 rgb = color.rgb * (D * (255.0 / rgbdMaxRange));
+    D            = saturate(floor(D) / 255.);
+    // vec3 rgb = color.rgb * (D * (255. / rgbdMaxRange));
     vec3 rgb = color.rgb * D;
 
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
 
-    return vec4(clamp(rgb, 0., 1.), D); 
+    return vec4(saturate(rgb), D);
 }
 
 vec3 fromRGBD(vec4 rgbd) {
@@ -200,7 +203,7 @@ vec3 fromRGBD(vec4 rgbd) {
 
 vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cubePos ) {
 	// Find the ray intersection with box plane
-	vec3 invOrigVec = vec3(1.0,1.0,1.0) / origVec;
+	vec3 invOrigVec = vec3(1.) / origVec;
 	vec3 halfSize = cubeSize * 0.5;
 	vec3 intersecAtMaxPlane = (cubePos + halfSize - vertexPos) * invOrigVec;
 	vec3 intersecAtMinPlane = (cubePos - halfSize - vertexPos) * invOrigVec;
@@ -212,4 +215,23 @@ vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cu
 	vec3 intersectPositionWS = vertexPos + origVec * distance;
 	// Get corrected vector
 	return intersectPositionWS - cubePos;
+}
+
+vec3 equirectangularToCubemapDirection(vec2 uv) {
+    float longitude = uv.x * TWO_PI - PI;
+    float latitude = HALF_PI - uv.y * PI;
+    vec3 direction;
+    direction.x = cos(latitude) * sin(longitude);
+    direction.y = sin(latitude);
+    direction.z = cos(latitude) * cos(longitude);
+    return direction;
+}
+
+// Since a sqrt of a negative value is undefined in GLSL, this function clamps the input value to 0.0.
+float sqrtClamped(float value) {
+    return sqrt(max(value, 0.));
+}
+
+float avg(vec3 value) {
+    return dot(value, vec3(0.333333333));
 }

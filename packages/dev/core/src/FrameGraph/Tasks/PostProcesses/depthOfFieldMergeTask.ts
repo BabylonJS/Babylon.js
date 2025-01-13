@@ -2,6 +2,7 @@
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
+import { Constants } from "../../../Engines/constants";
 
 /**
  * @internal
@@ -13,6 +14,10 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldMergePostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldMergePostProcess(name, frameGraph.engine));
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.blurSteps[this.blurSteps.length - 1], Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -29,9 +34,9 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
             });
         });
 
-        pass.useTexture(this.circleOfConfusionTexture);
+        this._internalDependencies.push(this.circleOfConfusionTexture);
         for (const handle of this.blurSteps) {
-            pass.useTexture(handle);
+            this._internalDependencies.push(handle);
         }
 
         return pass;

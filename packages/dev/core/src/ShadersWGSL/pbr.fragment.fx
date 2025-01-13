@@ -272,10 +272,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , fragmentInputs.vEnvironmentIrradiance
             #endif
-            #ifdef USESPHERICALFROMREFLECTIONMAP
-                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    , uniforms.reflectionMatrix
-                #endif
+            #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                , uniforms.reflectionMatrix
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
@@ -289,6 +287,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , uniforms.vReflectionFilteringInfo
+                #ifdef IBL_CDF_FILTERING
+                    , icdfSampler
+                    , icdfSamplerSampler
+                #endif
             #endif
             );
         #else
@@ -377,10 +379,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var iridescenceOut: iridescenceOutParams;
 
         #ifdef IRIDESCENCE_TEXTURE
-            var iridescenceMapData: vec2f = textureSample(iridescenceSampler, iridescenceSamplerSampler, fragmentInputs.vIridescenceUV + uvOffset).rg * vIridescenceInfos.y;
+            var iridescenceMapData: vec2f = textureSample(iridescenceSampler, iridescenceSamplerSampler, fragmentInputs.vIridescenceUV + uvOffset).rg * uniforms.vIridescenceInfos.y;
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            var iridescenceThicknessMapData: vec2f = textureSample(iridescenceThicknessSampler, iridescenceThicknessSamplerSampler, fragmentInputs.vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
+            var iridescenceThicknessMapData: vec2f = textureSample(iridescenceThicknessSampler, iridescenceThicknessSamplerSampler, fragmentInputs.vIridescenceThicknessUV + uvOffset).rg * uniforms.vIridescenceInfos.w;
         #endif
 
         iridescenceOut = iridescenceBlock(
@@ -531,6 +533,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                         , reflectionSampler
                         , reflectionSamplerSampler
                         , vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , icdfSampler
+                            , icdfSamplerSampler
+                        #endif
                     #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP

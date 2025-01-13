@@ -24,7 +24,7 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public record() {
@@ -32,9 +32,9 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
             throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture is required`);
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
         if (!outputTextureDescription.options.createMipMaps) {
             throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture must have createMipMaps set to true`);

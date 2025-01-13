@@ -514,6 +514,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._environmentTexture = value;
+        this.onEnvironmentTextureChangedObservable.notifyObservers(value);
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -920,6 +921,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onAnimationFileImportedObservable = new Observable<Scene>();
 
     /**
+     * An event triggered when the environmentTexture is changed.
+     */
+    public onEnvironmentTextureChangedObservable = new Observable<Nullable<BaseTexture>>();
+
+    /**
+     * An event triggered when the state of mesh under pointer, for a specific pointerId, changes.
+     */
+    public onMeshUnderPointerUpdatedObservable = new Observable<{ mesh: Nullable<AbstractMesh>; pointerId: number }>();
+
+    /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
@@ -1124,7 +1135,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
+        const eyePosition = this._forcedViewPosition
+            ? this._forcedViewPosition
+            : this._mirroredCameraPosition
+              ? this._mirroredCameraPosition
+              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
@@ -2650,7 +2665,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             newMesh._addToSceneRootNodes();
         }
 
-        this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        Tools.SetImmediate(() => {
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        });
 
         if (recursive) {
             newMesh.getChildMeshes().forEach((m) => {
@@ -2974,7 +2991,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        this.onNewLightAddedObservable.notifyObservers(newLight);
+        Tools.SetImmediate(() => {
+            this.onNewLightAddedObservable.notifyObservers(newLight);
+        });
     }
 
     /**
@@ -2996,7 +3015,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this.cameras.push(newCamera);
-        this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        Tools.SetImmediate(() => {
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        });
 
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
@@ -3012,7 +3033,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.skeletons.push(newSkeleton);
-        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+
+        Tools.SetImmediate(() => {
+            this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+        });
     }
 
     /**
@@ -3057,7 +3081,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
-        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        Tools.SetImmediate(() => {
+            this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        });
     }
 
     /**
@@ -3076,7 +3102,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        Tools.SetImmediate(() => {
+            this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        });
     }
 
     /**
@@ -3483,7 +3511,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.addGeometry(geometry);
 
-        this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        Tools.SetImmediate(() => {
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        });
 
         return true;
     }
@@ -4234,7 +4264,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
+            let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
+            if (currentLOD) {
+                currentLOD[1] = -1;
+            } else {
+                currentLOD = [mesh, -1];
+                mesh._internalAbstractMeshDataInfo._currentLOD.set(this.activeCamera, currentLOD);
+            }
             if (mesh.isBlocked) {
                 continue;
             }
@@ -4254,8 +4290,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
+            currentLOD[0] = meshToRender;
+            currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -5134,6 +5170,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release lights
         this._disposeList(this.lights);
 
+        // Release materials
+        if (this._defaultMaterial) {
+            this._defaultMaterial.dispose();
+        }
+        this._disposeList(this.multiMaterials);
+        this._disposeList(this.materials);
+
         // Release meshes
         this._disposeList(this.meshes, (item) => item.dispose(true));
         this._disposeList(this.transformNodes, (item) => item.dispose(true));
@@ -5141,13 +5184,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release cameras
         const cameras = this.cameras;
         this._disposeList(cameras);
-
-        // Release materials
-        if (this._defaultMaterial) {
-            this._defaultMaterial.dispose();
-        }
-        this._disposeList(this.multiMaterials);
-        this._disposeList(this.materials);
 
         // Release particles
         this._disposeList(this.particleSystems);
@@ -5244,6 +5280,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
         this.onClearColorChangedObservable.clear();
+        this.onEnvironmentTextureChangedObservable.clear();
+        this.onMeshUnderPointerUpdatedObservable.clear();
         this._isDisposed = true;
     }
 
@@ -5532,7 +5570,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param filter a predicate to filter for tags
      * @returns
      */
-    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
+    private _getByTags<T>(list: T[], tagsQuery: string, filter?: (item: T) => boolean): T[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;

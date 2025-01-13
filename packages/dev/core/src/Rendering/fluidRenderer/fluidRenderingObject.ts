@@ -268,5 +268,6 @@ export abstract class FluidRenderingObject {
     public dispose(): void {
         this._depthEffectWrapper?.dispose(false);
         this._thicknessEffectWrapper?.dispose(false);
+        this.onParticleSizeChanged.clear();
     }
 }

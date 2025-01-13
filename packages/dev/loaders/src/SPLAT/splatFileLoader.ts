@@ -13,6 +13,7 @@ import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
+import { Scalar } from "core/Maths/math.scalar";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -31,6 +32,7 @@ const enum Mode {
     Splat = 0,
     PointCloud = 1,
     Mesh = 2,
+    Reject = 3,
 }
 
 /**
@@ -41,6 +43,7 @@ interface ParsedPLY {
     mode: Mode;
     faces?: number[];
     hasVertexColors?: boolean;
+    sh?: Uint8Array[];
 }
 
 /**
@@ -179,46 +182,208 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
+    private _parseSPZ(data: ArrayBuffer, scene: Scene): Promise<ParsedPLY> {
+        const ubuf = new Uint8Array(data);
+        const ubufu32 = new Uint32Array(data);
+        // debug infos
+        const splatCount = ubufu32[2];
+
+        const shDegree = ubuf[12];
+        const fractionalBits = ubuf[13];
+        //const flags = ubuf[14];
+        const reserved = ubuf[15];
+
+        // check magic and version
+        if (reserved || ubufu32[0] != 0x5053474e || ubufu32[1] != 2) {
+            // reserved must be 0
+            return new Promise((resolve) => {
+                resolve({ mode: Mode.Reject, data: buffer, hasVertexColors: false });
+            });
+        }
+
+        const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
+        const buffer = new ArrayBuffer(rowOutputLength * splatCount);
+
+        const positionScale = 1.0 / (1 << fractionalBits);
+
+        const int32View = new Int32Array(1);
+        const uint8View = new Uint8Array(int32View.buffer);
+        const read24bComponent = function (u8: Uint8Array, offset: number) {
+            uint8View[0] = u8[offset + 0];
+            uint8View[1] = u8[offset + 1];
+            uint8View[2] = u8[offset + 2];
+            uint8View[3] = u8[offset + 2] & 0x80 ? 0xff : 0x00;
+            return int32View[0] * positionScale;
+        };
+
+        let byteOffset = 16;
+
+        const position = new Float32Array(buffer);
+        const scale = new Float32Array(buffer);
+        const rgba = new Uint8ClampedArray(buffer);
+        const rot = new Uint8ClampedArray(buffer);
+
+        // positions
+        for (let i = 0; i < splatCount; i++) {
+            position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
+            position[i * 8 + 1] = read24bComponent(ubuf, byteOffset + 3);
+            position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
+            byteOffset += 9;
+        }
+
+        // colors
+        const SH_C0 = 0.282;
+        for (let i = 0; i < splatCount; i++) {
+            for (let component = 0; component < 3; component++) {
+                const byteValue = ubuf[byteOffset + splatCount + i * 3 + component];
+                // 0.15 is hard coded value from spz
+                // Scale factor for DC color components. To convert to RGB, we should multiply by 0.282, but it can
+                // be useful to represent base colors that are out of range if the higher spherical harmonics bands
+                // bring them back into range so we multiply by a smaller value.
+                const value = (byteValue - 127.5) / (0.15 * 255);
+                rgba[i * 32 + 24 + component] = Scalar.Clamp((0.5 + SH_C0 * value) * 255, 0, 255);
+            }
+
+            rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
+        }
+        byteOffset += splatCount * 4;
+
+        // scales
+        for (let i = 0; i < splatCount; i++) {
+            scale[i * 8 + 3 + 0] = Math.exp(ubuf[byteOffset + 0] / 16.0 - 10.0);
+            scale[i * 8 + 3 + 1] = Math.exp(ubuf[byteOffset + 1] / 16.0 - 10.0);
+            scale[i * 8 + 3 + 2] = Math.exp(ubuf[byteOffset + 2] / 16.0 - 10.0);
+            byteOffset += 3;
+        }
+
+        // convert quaternion
+        for (let i = 0; i < splatCount; i++) {
+            const x = ubuf[byteOffset + 0];
+            const y = ubuf[byteOffset + 1];
+            const z = ubuf[byteOffset + 2];
+            const nx = x / 127.5 - 1;
+            const ny = y / 127.5 - 1;
+            const nz = z / 127.5 - 1;
+            rot[i * 32 + 28 + 1] = x;
+            rot[i * 32 + 28 + 2] = y;
+            rot[i * 32 + 28 + 3] = z;
+            const v = 1 - (nx * nx + ny * ny + nz * nz);
+            rot[i * 32 + 28 + 0] = 127.5 + Math.sqrt(v < 0 ? 0 : v) * 127.5;
+
+            byteOffset += 3;
+        }
+
+        //SH
+        if (shDegree) {
+            // shVectorCount is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
+            // number of vec3 vector needed per splat
+            const shVectorCount = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
+            // number of component values : 3 per vector3 (45)
+            const shComponentCount = shVectorCount * 3;
+
+            const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
+            let shIndexRead = byteOffset;
+
+            // sh is an array of uint8array that will be used to create sh textures
+            const sh: Uint8Array[] = [];
+
+            const engine = scene.getEngine();
+            const width = engine.getCaps().maxTextureSize;
+            const height = Math.ceil(splatCount / width);
+            // create array for the number of textures needed.
+            for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
+                const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
+                sh.push(texture);
+            }
+
+            for (let i = 0; i < splatCount; i++) {
+                for (let shIndexWrite = 0; shIndexWrite < shComponentCount; shIndexWrite++) {
+                    const shValue = ubuf[shIndexRead++];
+
+                    const textureIndex = Math.floor(shIndexWrite / 16);
+                    const shArray = sh[textureIndex];
+
+                    const byteIndexInTexture = shIndexWrite % 16; // [0..15]
+                    const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
+                    shArray[byteIndexInTexture + offsetPerSplat] = shValue;
+                }
+            }
+
+            return new Promise((resolve) => {
+                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+            });
+        }
+
+        return new Promise((resolve) => {
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false });
+        });
+    }
+
     private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
-        return SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
-            const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
-            switch (parsedPLY.mode) {
-                case Mode.Splat:
-                    {
+        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+
+        const readableStream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(new Uint8Array(data)); // Enqueue the ArrayBuffer as a Uint8Array
+                controller.close();
+            },
+        });
+
+        // Use GZip DecompressionStream
+        const decompressionStream = new DecompressionStream("gzip");
+        const decompressedStream = readableStream.pipeThrough(decompressionStream);
+
+        return new Promise((resolve) => {
+            new Response(decompressedStream)
+                .arrayBuffer()
+                .then((buffer) => {
+                    this._parseSPZ(buffer, scene).then((parsedSPZ) => {
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        await gaussianSplatting.updateDataAsync(parsedPLY.data);
-                    }
-                    break;
-                case Mode.PointCloud:
-                    {
-                        const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
-                        if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
-                            return Promise.all([pointcloud.buildMeshAsync()]).then((mesh) => {
-                                babylonMeshesArray.push(mesh[0]);
-                                return babylonMeshesArray;
-                            });
-                        } else {
-                            pointcloud.dispose();
+                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
+                    });
+                    resolve(babylonMeshesArray);
+                })
+                .catch(() => {
+                    // Catch any decompression errors
+                    SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
+                        switch (parsedPLY.mode) {
+                            case Mode.Splat:
+                                {
+                                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                    gaussianSplatting._parentContainer = this._assetContainer;
+                                    babylonMeshesArray.push(gaussianSplatting);
+                                    gaussianSplatting.updateData(parsedPLY.data);
+                                }
+                                break;
+                            case Mode.PointCloud:
+                                {
+                                    const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
+                                    if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
+                                        await pointcloud.buildMeshAsync().then((mesh) => {
+                                            babylonMeshesArray.push(mesh);
+                                        });
+                                    } else {
+                                        pointcloud.dispose();
+                                    }
+                                }
+                                break;
+                            case Mode.Mesh:
+                                {
+                                    if (parsedPLY.faces) {
+                                        babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
+                                    } else {
+                                        throw new Error("PLY mesh doesn't contain face informations.");
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new Error("Unsupported Splat mode");
                         }
-                    }
-                    break;
-                case Mode.Mesh:
-                    {
-                        if (parsedPLY.faces) {
-                            babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
-                        } else {
-                            throw new Error("PLY mesh doesn't contain face informations.");
-                        }
-                    }
-                    break;
-                default:
-                    throw new Error("Unsupported Splat mode");
-            }
-            return new Promise((resolve) => {
-                resolve(babylonMeshesArray);
-            });
+                        resolve(babylonMeshesArray);
+                    });
+                });
         });
     }
 

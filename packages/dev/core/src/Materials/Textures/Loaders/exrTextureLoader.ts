@@ -97,6 +97,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
      * @param _createPolynomials will be true if polynomials have been requested
      * @param _onLoad defines the callback to trigger once the texture is ready
      * @param _onError defines the callback to trigger in case of error
+     * Cube texture are not supported by .exr files
      */
     public loadCubeData(
         _data: ArrayBufferView | ArrayBufferView[],

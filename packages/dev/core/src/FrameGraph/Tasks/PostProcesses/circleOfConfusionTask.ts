@@ -52,7 +52,7 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
             }
         );
 
-        pass.useTexture(this.depthTexture);
+        this._internalDependencies.push(this.depthTexture);
 
         return pass;
     }

@@ -1,5 +1,424 @@
 # Changelog
 
+## 7.43.0
+
+### Core
+
+- Shader material improvements - by [kircher1](https://github.com/kircher1) ([#16048](https://github.com/BabylonJS/Babylon.js/pull/16048))
+- Mesh: Make cloning thin instances optional - by [Popov72](https://github.com/Popov72) ([#16046](https://github.com/BabylonJS/Babylon.js/pull/16046))
+- WebGPU: fix crashes in Firefox and Safari - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16045](https://github.com/BabylonJS/Babylon.js/pull/16045))
+- Fix lineMesh cloned alpha values - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#16043](https://github.com/BabylonJS/Babylon.js/pull/16043))
+- Mesh: fix LOD management - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16038](https://github.com/BabylonJS/Babylon.js/pull/16038))
+- Morph target manager: Don't recreate texture if not needed when updates are re-enabled - by [Popov72](https://github.com/Popov72) ([#16036](https://github.com/BabylonJS/Babylon.js/pull/16036))
+- If HTTP connection closed prematurely, consider retry - by [djn24](https://github.com/djn24) ([#16025](https://github.com/BabylonJS/Babylon.js/pull/16025))
+- FrameGraph: Add support for node materials to the frame graph geometry renderer - by [Popov72](https://github.com/Popov72) ([#16034](https://github.com/BabylonJS/Babylon.js/pull/16034))
+- GreasedLine OIT support - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16033](https://github.com/BabylonJS/Babylon.js/pull/16033))
+- Fix Animation loop in CreateAndStartAnimation - by [sebavan](https://github.com/sebavan) ([#16032](https://github.com/BabylonJS/Babylon.js/pull/16032))
+- Add getter for tagged entities in asset container - by [HoferMarkus](https://github.com/HoferMarkus) ([#16029](https://github.com/BabylonJS/Babylon.js/pull/16029))
+- SubMesh: pre-allocate buffers for _getLinesIndexBuffer - by [kzhsw](https://github.com/kzhsw) ([#16030](https://github.com/BabylonJS/Babylon.js/pull/16030))
+- Make position morph binding as optional in renderers + enable other attrib type morph - by [noname0310](https://github.com/noname0310) ([#16024](https://github.com/BabylonJS/Babylon.js/pull/16024))
+- FrameGraph: add glow layer block and task - by [Popov72](https://github.com/Popov72) ([#16026](https://github.com/BabylonJS/Babylon.js/pull/16026))
+- WebGPU: Fix conflicting variable type in GreasedLine shader - by [Propolisa](https://github.com/Propolisa) ([#16027](https://github.com/BabylonJS/Babylon.js/pull/16027))
+
+### GUI
+
+- Minor allocation optimization - by [kircher1](https://github.com/kircher1) ([#16031](https://github.com/BabylonJS/Babylon.js/pull/16031))
+
+### Inspector
+
+- Take new viewer out of preview/alpha - by [ryantrem](https://github.com/ryantrem) ([#16049](https://github.com/BabylonJS/Babylon.js/pull/16049))
+
+### Loaders
+
+- Fix asset container mesh for GS - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16035](https://github.com/BabylonJS/Babylon.js/pull/16035))
+
+### Materials
+
+- Fix NormalMaterial with ThinInstances - by [sebavan](https://github.com/sebavan) ([#16028](https://github.com/BabylonJS/Babylon.js/pull/16028))
+
+### Node Editor
+
+- Take new viewer out of preview/alpha - by [ryantrem](https://github.com/ryantrem) ([#16049](https://github.com/BabylonJS/Babylon.js/pull/16049))
+
+## 7.42.0
+
+### Core
+
+- Fix volume refresh for GS - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16021](https://github.com/BabylonJS/Babylon.js/pull/16021))
+
+### Serializers
+
+
+## 7.41.1
+
+### Core
+
+- use _retryWithInterval where possible - by [sebavan](https://github.com/sebavan) ([#16020](https://github.com/BabylonJS/Babylon.js/pull/16020))
+- Morph target manager: Refactor of code + ability to disable position morphing - [_Breaking Change_] by [Popov72](https://github.com/Popov72) ([#16014](https://github.com/BabylonJS/Babylon.js/pull/16014))
+- Mesh: Fix wireframe for unindexed meshes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16016](https://github.com/BabylonJS/Babylon.js/pull/16016))
+
+### Serializers
+
+- Allow exporting children of skipped nodes in glTF exporter - by [alexchuber](https://github.com/alexchuber) ([#16017](https://github.com/BabylonJS/Babylon.js/pull/16017))
+
+## 7.41.0
+
+### Core
+
+- Add useFill parameter to CreateScreenshot - by [alexchuber](https://github.com/alexchuber) ([#16013](https://github.com/BabylonJS/Babylon.js/pull/16013))
+- More common shader constants and helpers for helperFunctions.fx - by [kircher1](https://github.com/kircher1) ([#16011](https://github.com/BabylonJS/Babylon.js/pull/16011))
+
+### Serializers
+
+
+## 7.40.4
+
+### Core
+
+- Add BitArray and use it in OptimizeIndices - by [ryantrem](https://github.com/ryantrem) ([#16012](https://github.com/BabylonJS/Babylon.js/pull/16012))
+- use _retryWithInterval where possible - by [RaananW](https://github.com/RaananW) ([#15988](https://github.com/BabylonJS/Babylon.js/pull/15988))
+- Add a new optimizeIndices features to improve cache hit on large models - by [deltakosh](https://github.com/deltakosh) ([#16009](https://github.com/BabylonJS/Babylon.js/pull/16009))
+- Allow CustomRequestModifiers to modify URL - by [chubei-urus](https://github.com/chubei-urus) ([#16003](https://github.com/BabylonJS/Babylon.js/pull/16003))
+- Adding normalization to realtime irradiance filtering - by [MiiBond](https://github.com/MiiBond) ([#15963](https://github.com/BabylonJS/Babylon.js/pull/15963))
+- Integrate direct glow support in NME - by [deltakosh](https://github.com/deltakosh) ([#16002](https://github.com/BabylonJS/Babylon.js/pull/16002))
+- Support loading color grading texture from blob url - by [chubei-urus](https://github.com/chubei-urus) ([#16004](https://github.com/BabylonJS/Babylon.js/pull/16004))
+
+### Inspector
+
+- Adding normalization to realtime irradiance filtering - by [MiiBond](https://github.com/MiiBond) ([#15963](https://github.com/BabylonJS/Babylon.js/pull/15963))
+
+### Node Editor
+
+- Integrate direct glow support in NME - by [deltakosh](https://github.com/deltakosh) ([#16002](https://github.com/BabylonJS/Babylon.js/pull/16002))
+
+## 7.40.3
+
+### Core
+
+- Effect timeout 30 seconds for older devices - by [RaananW](https://github.com/RaananW) ([#16000](https://github.com/BabylonJS/Babylon.js/pull/16000))
+- WebGPU: Fix crash when using LDR merge in glow layer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15999](https://github.com/BabylonJS/Babylon.js/pull/15999))
+- Add UV2 morph support and load UV and UV2 morph targets from glTF - by [chubei-urus](https://github.com/chubei-urus) ([#15602](https://github.com/BabylonJS/Babylon.js/pull/15602))
+- Factor out DracoCompression - by [alexchuber](https://github.com/alexchuber) ([#15961](https://github.com/BabylonJS/Babylon.js/pull/15961))
+- Mesh: loss of thin instances during mesh cloning - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15997](https://github.com/BabylonJS/Babylon.js/pull/15997))
+
+### Inspector
+
+- Inspector: Don't display empty morph targets - by [Popov72](https://github.com/Popov72) ([#15998](https://github.com/BabylonJS/Babylon.js/pull/15998))
+
+### Loaders
+
+- Add UV2 morph support and load UV and UV2 morph targets from glTF - by [chubei-urus](https://github.com/chubei-urus) ([#15602](https://github.com/BabylonJS/Babylon.js/pull/15602))
+- Factor out DracoCompression - by [alexchuber](https://github.com/alexchuber) ([#15961](https://github.com/BabylonJS/Babylon.js/pull/15961))
+
+## 7.40.2
+
+### Core
+
+- Fix XR's near interaction's selection mesh positioning - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#15993](https://github.com/BabylonJS/Babylon.js/pull/15993))
+
+## 7.40.1
+
+### Core
+
+- rgbdEncoder is needed in a different place - by [RaananW](https://github.com/RaananW) ([#15992](https://github.com/BabylonJS/Babylon.js/pull/15992))
+- Fix camera getFrontPosition - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15991](https://github.com/BabylonJS/Babylon.js/pull/15991))
+
+## 7.40.0
+
+## 7.39.3
+
+### Core
+
+- Fix leaking state on context lost - by [sebavan](https://github.com/sebavan) ([#15990](https://github.com/BabylonJS/Babylon.js/pull/15990))
+
+## 7.39.2
+
+### Core
+
+- Match Babylon's RHS - by [RaananW](https://github.com/RaananW) ([#15983](https://github.com/BabylonJS/Babylon.js/pull/15983))
+- WebGL shaders: Add new EXTENSION injection points - by [Popov72](https://github.com/Popov72) ([#15979](https://github.com/BabylonJS/Babylon.js/pull/15979))
+- Grl webgl ubo fix - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15981](https://github.com/BabylonJS/Babylon.js/pull/15981))
+- Adding KHR_node_hoverability - by [RaananW](https://github.com/RaananW) ([#15982](https://github.com/BabylonJS/Babylon.js/pull/15982))
+- FrameGraph: add "execute" task and block - by [Popov72](https://github.com/Popov72) ([#15975](https://github.com/BabylonJS/Babylon.js/pull/15975))
+- Viewer docs related changes - by [ryantrem](https://github.com/ryantrem) ([#15977](https://github.com/BabylonJS/Babylon.js/pull/15977))
+- MaterialPluginBase: add doNotSerialize - by [kzhsw](https://github.com/kzhsw) ([#15971](https://github.com/BabylonJS/Babylon.js/pull/15971))
+- FrameGraph: add support for shadow generators (CSM included) - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15962](https://github.com/BabylonJS/Babylon.js/pull/15962))
+- Fix issue when using core with exactOptionalPropertyTypes: true - by [RaananW](https://github.com/RaananW) ([#15973](https://github.com/BabylonJS/Babylon.js/pull/15973))
+- Update dependencies and a small fix for Launch.json - by [RaananW](https://github.com/RaananW) ([#15969](https://github.com/BabylonJS/Babylon.js/pull/15969))
+
+### GUI
+
+- FrameGraph: add "execute" task and block - by [Popov72](https://github.com/Popov72) ([#15975](https://github.com/BabylonJS/Babylon.js/pull/15975))
+
+### Inspector
+
+- FrameGraph: add support for shadow generators (CSM included) - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15962](https://github.com/BabylonJS/Babylon.js/pull/15962))
+- Add support for glTF extension EXT_lights_ies - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15970](https://github.com/BabylonJS/Babylon.js/pull/15970))
+
+### Loaders
+
+- Add KHR_node_hoverability to dynamic.ts - by [ryantrem](https://github.com/ryantrem) ([#15985](https://github.com/BabylonJS/Babylon.js/pull/15985))
+- Adding KHR_node_hoverability - by [RaananW](https://github.com/RaananW) ([#15982](https://github.com/BabylonJS/Babylon.js/pull/15982))
+- Add support for glTF extension EXT_lights_ies - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15970](https://github.com/BabylonJS/Babylon.js/pull/15970))
+
+### Serializers
+
+
+## 7.39.1
+
+### Core
+
+- Material: Fix disposing resources when disposing of a material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15967](https://github.com/BabylonJS/Babylon.js/pull/15967))
+- Keep splats datas in ram - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15968](https://github.com/BabylonJS/Babylon.js/pull/15968))
+- Fix camera serialization - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15965](https://github.com/BabylonJS/Babylon.js/pull/15965))
+
+## 7.39.0
+
+### Core
+
+- Fix an issue with effect reference counting - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15964](https://github.com/BabylonJS/Babylon.js/pull/15964))
+- Physics Character Controller - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15897](https://github.com/BabylonJS/Babylon.js/pull/15897))
+- WebGPU: fix crash when enabling fog - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15955](https://github.com/BabylonJS/Babylon.js/pull/15955))
+
+### Inspector
+
+
+## 7.38.0
+
+## 7.37.2
+
+### Core
+
+- Grl webgpu simplematerial - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15946](https://github.com/BabylonJS/Babylon.js/pull/15946))
+- Introduce IES file support - by [deltakosh](https://github.com/deltakosh) ([#15949](https://github.com/BabylonJS/Babylon.js/pull/15949))
+- Various small Viewer fixes - by [ryantrem](https://github.com/ryantrem) ([#15943](https://github.com/BabylonJS/Babylon.js/pull/15943))
+- Do not pick during a multi-touch gesture - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#15950](https://github.com/BabylonJS/Babylon.js/pull/15950))
+- GLTF Serializer rework. - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#15869](https://github.com/BabylonJS/Babylon.js/pull/15869))
+- Instanced BoundingBoxRenderer - by [kzhsw](https://github.com/kzhsw) ([#15911](https://github.com/BabylonJS/Babylon.js/pull/15911))
+- Add an option on NGE to hide an input block in the property window - by [deltakosh](https://github.com/deltakosh) ([#15942](https://github.com/BabylonJS/Babylon.js/pull/15942))
+- Posterize block in NME throwing type mismatch when re-wiring - by [deltakosh](https://github.com/deltakosh) ([#15928](https://github.com/BabylonJS/Babylon.js/pull/15928))
+- Edge Renderer: Fix edges not displayed the second time we enable the edge renderer for a mesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15926](https://github.com/BabylonJS/Babylon.js/pull/15926))
+- Fix audio engine init issue - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#15922](https://github.com/BabylonJS/Babylon.js/pull/15922))
+
+### Inspector
+
+- GLTF Serializer rework. - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#15869](https://github.com/BabylonJS/Babylon.js/pull/15869))
+
+### Loaders
+
+- Various small Viewer fixes - by [ryantrem](https://github.com/ryantrem) ([#15943](https://github.com/BabylonJS/Babylon.js/pull/15943))
+
+### Node Editor
+
+- Posterize block in NME throwing type mismatch when re-wiring - by [deltakosh](https://github.com/deltakosh) ([#15928](https://github.com/BabylonJS/Babylon.js/pull/15928))
+
+### Serializers
+
+- GLTF Serializer rework. - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#15869](https://github.com/BabylonJS/Babylon.js/pull/15869))
+
+## 7.37.1
+
+### Core
+
+- Grl webgpu - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15917](https://github.com/BabylonJS/Babylon.js/pull/15917))
+- Viewer panning sensitivity - by [ryantrem](https://github.com/ryantrem) ([#15924](https://github.com/BabylonJS/Babylon.js/pull/15924))
+- feat(virtualjoystick): also handle pointercancel events - by [pjoe](https://github.com/pjoe) ([#15925](https://github.com/BabylonJS/Babylon.js/pull/15925))
+- Separate CDF Renderer from IBL Shadows and use for realtime filtering - by [MiiBond](https://github.com/MiiBond) ([#15878](https://github.com/BabylonJS/Babylon.js/pull/15878))
+- Fix potential WebGPU leak - by [sebavan](https://github.com/sebavan) ([#15919](https://github.com/BabylonJS/Babylon.js/pull/15919))
+- Add param for interpolation factor to ArcRotateCamera.interpolateTo - by [ryantrem](https://github.com/ryantrem) ([#15923](https://github.com/BabylonJS/Babylon.js/pull/15923))
+- Better preview mode + new MatrixSplitter - by [deltakosh](https://github.com/deltakosh) ([#15921](https://github.com/BabylonJS/Babylon.js/pull/15921))
+- SPZ splat file loader - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15849](https://github.com/BabylonJS/Babylon.js/pull/15849))
+- WebGPU: Fix crash when generating shadows for a point light - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15918](https://github.com/BabylonJS/Babylon.js/pull/15918))
+- Scalar should not be deprecated because it is used in UMD - by [RaananW](https://github.com/RaananW) ([#15914](https://github.com/BabylonJS/Babylon.js/pull/15914))
+- WebGPU: fix OIT - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15912](https://github.com/BabylonJS/Babylon.js/pull/15912))
+
+### Inspector
+
+- Separate CDF Renderer from IBL Shadows and use for realtime filtering - by [MiiBond](https://github.com/MiiBond) ([#15878](https://github.com/BabylonJS/Babylon.js/pull/15878))
+
+### Loaders
+
+- Viewer material variants - by [ryantrem](https://github.com/ryantrem) ([#15920](https://github.com/BabylonJS/Babylon.js/pull/15920))
+- SPZ splat file loader - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15849](https://github.com/BabylonJS/Babylon.js/pull/15849))
+
+### Node Editor
+
+- Better preview mode + new MatrixSplitter - by [deltakosh](https://github.com/deltakosh) ([#15921](https://github.com/BabylonJS/Babylon.js/pull/15921))
+
+### Playground
+
+- Added UI tests sandbox and graph-based tool - by [RaananW](https://github.com/RaananW) ([#15908](https://github.com/BabylonJS/Babylon.js/pull/15908))
+
+## 7.37.0
+
+### Core
+
+- Snapshot rendering helper: add support for gaussian splatting meshes - by [Popov72](https://github.com/Popov72) ([#15906](https://github.com/BabylonJS/Babylon.js/pull/15906))
+- feat: add normed 16 bit texture formats - by [pohlt](https://github.com/pohlt) ([#15895](https://github.com/BabylonJS/Babylon.js/pull/15895))
+- Parallel Compilation with no engine - by [RaananW](https://github.com/RaananW) ([#15898](https://github.com/BabylonJS/Babylon.js/pull/15898))
+
+### GUI Editor
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Node Editor
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Playground
+
+- SCSS - run an update of dependencies, move to modern API - v2 - by [RaananW](https://github.com/RaananW) ([#15884](https://github.com/BabylonJS/Babylon.js/pull/15884))
+
+### Serializers
+
+
+### Viewer
+
+
+## 7.36.0
+
+### Core
+
+- WebGPU: Fix iridescence in PBR material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15902](https://github.com/BabylonJS/Babylon.js/pull/15902))
+- Chakra support for weakref as strongref - by [sebavan](https://github.com/sebavan) ([#15894](https://github.com/BabylonJS/Babylon.js/pull/15894))
+- Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes - by [Popov72](https://github.com/Popov72) ([#15874](https://github.com/BabylonJS/Babylon.js/pull/15874))
+- fix: Load boundingInfo when use KHR_draco_mesh_compression - by [Starryi](https://github.com/Starryi) ([#15882](https://github.com/BabylonJS/Babylon.js/pull/15882))
+- MSAA render targets: Resolve the depth texture (if any) and allow for manual resolve - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15888](https://github.com/BabylonJS/Babylon.js/pull/15888))
+- WebGPU: Fix crash when using depth bias with line and point topology - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15896](https://github.com/BabylonJS/Babylon.js/pull/15896))
+- Allow node editors to let the properties be injected onto the nodes - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15890](https://github.com/BabylonJS/Babylon.js/pull/15890))
+
+### GUI
+
+- Frame graph: refactor to use InternalTexture instead of RenderTargetWrapper + misc changes - by [Popov72](https://github.com/Popov72) ([#15874](https://github.com/BabylonJS/Babylon.js/pull/15874))
+
+### Loaders
+
+- fix: Load boundingInfo when use KHR_draco_mesh_compression - by [Starryi](https://github.com/Starryi) ([#15882](https://github.com/BabylonJS/Babylon.js/pull/15882))
+
+### Node Editor
+
+- Solve preview height issue - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15891](https://github.com/BabylonJS/Babylon.js/pull/15891))
+
+### Playground
+
+- Allow overriding the playground URL for testing - by [RaananW](https://github.com/RaananW) ([#15901](https://github.com/BabylonJS/Babylon.js/pull/15901))
+- Preparation for playground snapshots and testing - by [RaananW](https://github.com/RaananW) ([#15889](https://github.com/BabylonJS/Babylon.js/pull/15889))
+
+## 7.35.2
+
+### Core
+
+- New visual clue for type conversions - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15887](https://github.com/BabylonJS/Babylon.js/pull/15887))
+- facetParameters disableFacetData() doesn't block reuse of updateFacet… - by [ricardovg4](https://github.com/ricardovg4) ([#15885](https://github.com/BabylonJS/Babylon.js/pull/15885))
+- Allow EquiRectangularCuteTexture to work in a Worker environment - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15886](https://github.com/BabylonJS/Babylon.js/pull/15886))
+- WebGPU: Fix glow layer when using opacity - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15883](https://github.com/BabylonJS/Babylon.js/pull/15883))
+- Weak ref - by [deltakosh](https://github.com/deltakosh) ([#15863](https://github.com/BabylonJS/Babylon.js/pull/15863))
+- Fix LatticePluginMaterial TypeScript error - by [AmoebaChant](https://github.com/AmoebaChant) ([#15881](https://github.com/BabylonJS/Babylon.js/pull/15881))
+- Misc viewer related fixes - by [ryantrem](https://github.com/ryantrem) ([#15879](https://github.com/BabylonJS/Babylon.js/pull/15879))
+
+## 7.35.1
+
+### Core
+
+- add forcedExtension to ITextureCreationOptions - by [noname0310](https://github.com/noname0310) ([#15872](https://github.com/BabylonJS/Babylon.js/pull/15872))
+- CSG2: make FromMesh return CSG2 - by [kzhsw](https://github.com/kzhsw) ([#15873](https://github.com/BabylonJS/Babylon.js/pull/15873))
+- Detect invalid hotspots - by [ryantrem](https://github.com/ryantrem) ([#15865](https://github.com/BabylonJS/Babylon.js/pull/15865))
+- Fixes AnimationGroup isPlaying when mask is applied & played more than once - by [s207152](https://github.com/s207152) ([#15862](https://github.com/BabylonJS/Babylon.js/pull/15862))
+
+### GUI Editor
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
+### Materials
+
+- Clipping for GridMaterial - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15866](https://github.com/BabylonJS/Babylon.js/pull/15866))
+
+### Node Editor
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
+### Playground
+
+- Revert "SCSS - run an update of dependencies, move to modern API" - by [AmoebaChant](https://github.com/AmoebaChant) ([#15876](https://github.com/BabylonJS/Babylon.js/pull/15876))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+- SCSS - run an update of dependencies, move to modern API - by [RaananW](https://github.com/RaananW) ([#15867](https://github.com/BabylonJS/Babylon.js/pull/15867))
+
+## 7.35.0
+
+### Core
+
+- fixed leaking observables in Rendering - by [ricardovg4](https://github.com/ricardovg4) ([#15860](https://github.com/BabylonJS/Babylon.js/pull/15860))
+- Add missing Bone.dispose() - by [deltakosh](https://github.com/deltakosh) ([#15861](https://github.com/BabylonJS/Babylon.js/pull/15861))
+- PostProcess: fix shader imports not being ready in ES6 - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15859](https://github.com/BabylonJS/Babylon.js/pull/15859))
+- EffectLayer: Fix isReady to check readiness for post processes and merge effect - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15858](https://github.com/BabylonJS/Babylon.js/pull/15858))
+
+### Playground
+
+- Add missing Bone.dispose() - by [deltakosh](https://github.com/deltakosh) ([#15861](https://github.com/BabylonJS/Babylon.js/pull/15861))
+
+## 7.34.4
+
+### Core
+
+- Some small Viewer bug fixes - by [ryantrem](https://github.com/ryantrem) ([#15856](https://github.com/BabylonJS/Babylon.js/pull/15856))
+
+## 7.34.3
+
+### Core
+
+- PointerDragBehavior: Support all dragAxis - [_Bug Fix_] by [fabsharp](https://github.com/fabsharp) ([#15844](https://github.com/BabylonJS/Babylon.js/pull/15844))
+- Fix ktx texture orientation in sandbox - by [bghgary](https://github.com/bghgary) ([#15853](https://github.com/BabylonJS/Babylon.js/pull/15853))
+- Goal of this PR is to make sure we raise the onNewXXX when the entity… - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15848](https://github.com/BabylonJS/Babylon.js/pull/15848))
+
+### GUI Editor
+
+
+### Inspector
+
+
+### Node Editor
+
+
+### Playground
+
+
+## 7.34.2
+
+### Core
+
+- fixed leaking observables in XR - by [ricardovg4](https://github.com/ricardovg4) ([#15846](https://github.com/BabylonJS/Babylon.js/pull/15846))
+- added onboxhover observable that returns the hovered mesh to boundingboxgizmo - by [ricardovg4](https://github.com/ricardovg4) ([#15813](https://github.com/BabylonJS/Babylon.js/pull/15813))
+- Fix AnimationGroup isPlaying when mask is applied - by [s207152](https://github.com/s207152) ([#15836](https://github.com/BabylonJS/Babylon.js/pull/15836))
+- PBR material: Fix isScatteringEnabled switch not working as expected - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15832](https://github.com/BabylonJS/Babylon.js/pull/15832))
+- WebGPU: Fix crash when using sub-surface scattering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15831](https://github.com/BabylonJS/Babylon.js/pull/15831))
+- Extract ObjectRenderer from RenderTargetTexture - by [Popov72](https://github.com/Popov72) ([#15821](https://github.com/BabylonJS/Babylon.js/pull/15821))
+- Add display name texture property - by [HoferMarkus](https://github.com/HoferMarkus) ([#15828](https://github.com/BabylonJS/Babylon.js/pull/15828))
+- Yet another voxelization fix for IBL shadows - by [MiiBond](https://github.com/MiiBond) ([#15825](https://github.com/BabylonJS/Babylon.js/pull/15825))
+- hotspot visibility - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15814](https://github.com/BabylonJS/Babylon.js/pull/15814))
+
+### GUI Editor
+
+- Needed changes to enable the inspector on the viewer - by [RaananW](https://github.com/RaananW) ([#15780](https://github.com/BabylonJS/Babylon.js/pull/15780))
+
+### Inspector
+
+- Needed changes to enable the inspector on the viewer - by [RaananW](https://github.com/RaananW) ([#15780](https://github.com/BabylonJS/Babylon.js/pull/15780))
+- Add display name texture property - by [HoferMarkus](https://github.com/HoferMarkus) ([#15828](https://github.com/BabylonJS/Babylon.js/pull/15828))
+- Add tags display for Inspector - by [deltakosh](https://github.com/deltakosh) ([#15822](https://github.com/BabylonJS/Babylon.js/pull/15822))
+
+### Materials
+
+- Terrain material: Fix bug when using Cascaded Shadow Maps - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15841](https://github.com/BabylonJS/Babylon.js/pull/15841))
+
+### Node Editor
+
+- Needed changes to enable the inspector on the viewer - by [RaananW](https://github.com/RaananW) ([#15780](https://github.com/BabylonJS/Babylon.js/pull/15780))
+- Better message - by [deltakosh](https://github.com/deltakosh) ([#15819](https://github.com/BabylonJS/Babylon.js/pull/15819))
+
 ## 7.34.1
 
 ### Core

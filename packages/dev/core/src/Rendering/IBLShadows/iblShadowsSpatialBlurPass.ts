@@ -153,7 +153,7 @@ export class _IblShadowsSpatialBlurPass {
             textureOptions,
             false,
             false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._outputTexture.refreshRate = -1;
         this._outputTexture.autoClear = false;

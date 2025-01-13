@@ -301,6 +301,11 @@ export abstract class AbstractEngine {
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
+     * Observable event triggered each time an effect compilation fails
+     */
+    public onEffectErrorObservable = new Observable<{ effect: Effect; errors: string }>();
+
+    /**
      * Turn this value on if you want to pause FPS computation when in background
      */
     public disablePerformanceMonitorInBackground = false;
@@ -794,7 +799,7 @@ export abstract class AbstractEngine {
                 cubeData,
                 1,
                 Constants.TEXTUREFORMAT_RGBA,
-                Constants.TEXTURETYPE_UNSIGNED_INT,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 false,
                 false,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE
@@ -1206,6 +1211,19 @@ export abstract class AbstractEngine {
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
     public abstract unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+
+    /**
+     * Generates mipmaps for the texture of the (single) render target
+     * @param texture The render target containing the texture to generate the mipmaps for
+     */
+    public abstract generateMipMapsFramebuffer(texture: RenderTargetWrapper): void;
+
+    /**
+     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Note that if "texture" is not a MSAA render target, no resolve is performed.
+     * @param texture The render target texture containing the MSAA texture to resolve
+     */
+    public abstract resolveFramebuffer(texture: RenderTargetWrapper): void;
 
     /**Gets driver info if available */
     public abstract extractDriverInfo(): string;
@@ -1795,14 +1813,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.34.1";
+        return "babylonjs@7.43.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.34.1";
+        return "7.43.0";
     }
 
     /**
@@ -2153,7 +2171,7 @@ export abstract class AbstractEngine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
@@ -2180,7 +2198,7 @@ export abstract class AbstractEngine {
      * @param data defines the array of data to use to create each face
      * @param size defines the size of the textures
      * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_BYTE)
      * @param generateMipMaps  defines if the engine should generate the mip levels
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
@@ -2596,6 +2614,7 @@ export abstract class AbstractEngine {
         this.onCanvasFocusObservable.clear();
         this.onCanvasPointerOutObservable.clear();
         this.onNewSceneAddedObservable.clear();
+        this.onEffectErrorObservable.clear();
 
         if (IsWindowObjectExist()) {
             window.removeEventListener("resize", this._checkForMobile);

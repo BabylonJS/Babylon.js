@@ -44,6 +44,7 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
             switch (propertyType) {
                 case 0: // Value
                 case 6: // Mesh reference
+                case 9: // Image processing configuration reference
                 case 11: // Camera reference
                     (<any>destination)[property] = sourceProperty;
                     break;
@@ -60,6 +61,7 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
                 case 4: // Vector2
                 case 5: // Vector3
                 case 7: // Color Curves
+                case 8: // Color 4
                 case 10: // Quaternion
                 case 12: // Matrix
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();

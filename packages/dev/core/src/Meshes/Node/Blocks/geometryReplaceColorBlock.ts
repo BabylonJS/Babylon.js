@@ -15,7 +15,7 @@ export class GeometryReplaceColorBlock extends NodeGeometryBlock {
 
         this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerInput("reference", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("distance", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("distance", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("replacement", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
@@ -75,7 +75,7 @@ export class GeometryReplaceColorBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock() {
-        if (!this.value.isConnected || !this.reference.isConnected || !this.distance.isConnected || !this.replacement.isConnected) {
+        if (!this.value.isConnected || !this.reference.isConnected || !this.replacement.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;

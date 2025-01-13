@@ -28,6 +28,7 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
         super(name, frameGraph, scene);
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
@@ -60,14 +61,9 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this._propagateInputValueToOutput(this.texture, this.output);
 
-        const textureConnectedPoint = this.texture.connectedPoint;
-        if (textureConnectedPoint) {
-            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.destinationTexture = this.texture.connectedPoint?.value as FrameGraphTextureHandle;
     }
 }
 

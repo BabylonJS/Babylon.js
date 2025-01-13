@@ -143,7 +143,7 @@ export interface IHighlightLayerOptions {
     renderingGroupId: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
      */
     mainTextureType: number;
 
@@ -304,11 +304,7 @@ export class HighlightLayer extends EffectLayer {
      * @param scene The scene to use the layer in
      * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
      */
-    constructor(
-        public override name: string,
-        scene?: Scene,
-        options?: Partial<IHighlightLayerOptions>
-    ) {
+    constructor(name: string, scene?: Scene, options?: Partial<IHighlightLayerOptions>) {
         super(name, scene, options !== undefined ? !!options.forceGLSL : false);
 
         this.neutralColor = HighlightLayer.NeutralColor;
@@ -327,7 +323,7 @@ export class HighlightLayer extends EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             forceGLSL: false,
             ...options,
         };
@@ -412,7 +408,7 @@ export class HighlightLayer extends EffectLayer {
         if (this._engine.getCaps().textureHalfFloatRender) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
         this._blurTexture = new RenderTargetTexture(

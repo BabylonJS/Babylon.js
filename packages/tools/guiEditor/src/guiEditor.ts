@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
-import { Popup } from "shared-ui-components/lines/popup";
+import { CreatePopup } from "shared-ui-components/popupHelper";
 import type { Observable } from "core/Misc/observable";
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
@@ -23,6 +23,8 @@ export interface IGUIEditorOptions {
  */
 export class GUIEditor {
     private static _CurrentState: GlobalState;
+    /** @internal */
+    public static _PopupWindow: Window | null = null;
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
@@ -44,11 +46,10 @@ export class GUIEditor {
         }
 
         if (!hostElement) {
-            const popupWindow = (Popup as any)["gui-editor"];
-            if (popupWindow) {
-                popupWindow.close();
+            if (this._PopupWindow) {
+                this._PopupWindow.close();
             }
-            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800)!;
+            hostElement = CreatePopup("BABYLON.JS GUI EDITOR", { onWindowCreateCallback: (w) => (this._PopupWindow = w), width: 1200, height: 800 })!;
         }
 
         const globalState = new GlobalState();
@@ -89,12 +90,10 @@ export class GUIEditor {
         this._CurrentState = globalState;
 
         // Close the popup window when the page is refreshed or scene is disposed
-        const popupWindow = (Popup as any)["gui-editor"];
-        if (popupWindow) {
+        if (this._PopupWindow) {
             window.onbeforeunload = () => {
-                const popupWindow = (Popup as any)["gui-editor"];
-                if (popupWindow) {
-                    popupWindow.close();
+                if (this._PopupWindow) {
+                    this._PopupWindow.close();
                 }
             };
         }

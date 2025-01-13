@@ -157,6 +157,39 @@ class _InternalMeshDataInfo {
 }
 
 /**
+ * Options used to clone a mesh
+ */
+export interface MeshCloneOptions {
+    /** The parent of the mesh, if it has one */
+    parent?: Nullable<Node>;
+
+    /** Skips cloning child meshes of source (default: false. When false, achieved by calling a clone(), also passing False. This will make creation of children, recursive. */
+    doNotCloneChildren?: boolean;
+
+    /** Includes cloning mesh physics impostor (default: true) */
+    clonePhysicsImpostor?: boolean;
+
+    /** Includes cloning thin instances (default: false) */
+    cloneThinInstances?: boolean;
+}
+
+/**
+ * Options used to create a mesh
+ */
+export interface MeshCreationOptions extends MeshCloneOptions {
+    /** An optional Mesh from which the new mesh will be cloned from (geometry will be shared) */
+    source?: Nullable<Mesh>;
+}
+
+const meshCreationOptions: MeshCreationOptions = {
+    source: null,
+    parent: null,
+    doNotCloneChildren: false,
+    clonePhysicsImpostor: true,
+    cloneThinInstances: false,
+};
+
+/**
  * Class used to represent renderable models
  */
 export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -575,7 +608,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.forceMatrixUpdates = value;
     }
 
-    protected _copySource(source: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
+    protected _copySource(source: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true, cloneThinInstances: boolean = false): void {
         const scene = this.getScene();
         // Geometry
         if (source._geometry) {
@@ -693,7 +726,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (let index = 0; index < directDescendants.length; index++) {
                 const child = directDescendants[index];
 
-                if ((<any>child).clone) {
+                if ((<any>child)._isMesh) {
+                    meshCreationOptions.parent = this;
+                    meshCreationOptions.doNotCloneChildren = doNotCloneChildren;
+                    meshCreationOptions.clonePhysicsImpostor = clonePhysicsImpostor;
+                    meshCreationOptions.cloneThinInstances = cloneThinInstances;
+                    (<Mesh>child).clone(this.name + "." + child.name, meshCreationOptions);
+                } else if ((<any>child).clone) {
                     (<any>child).clone(this.name + "." + child.name, this);
                 }
             }
@@ -733,9 +772,46 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         this.skeleton = source.skeleton;
 
+        // Thin instances
+        if (cloneThinInstances) {
+            if (source._thinInstanceDataStorage.matrixData) {
+                this.thinInstanceSetBuffer(
+                    "matrix",
+                    new Float32Array(source._thinInstanceDataStorage.matrixData),
+                    16,
+                    !source._thinInstanceDataStorage.matrixBuffer!.isUpdatable()
+                );
+                this._thinInstanceDataStorage.matrixBufferSize = source._thinInstanceDataStorage.matrixBufferSize;
+                this._thinInstanceDataStorage.instancesCount = source._thinInstanceDataStorage.instancesCount;
+            } else {
+                this._thinInstanceDataStorage.matrixBufferSize = source._thinInstanceDataStorage.matrixBufferSize;
+            }
+
+            if (source._userThinInstanceBuffersStorage) {
+                const userThinInstance = source._userThinInstanceBuffersStorage;
+                for (const kind in userThinInstance.data) {
+                    this.thinInstanceSetBuffer(
+                        kind,
+                        new Float32Array(userThinInstance.data[kind]),
+                        userThinInstance.strides[kind],
+                        !userThinInstance.vertexBuffers?.[kind]?.isUpdatable()
+                    );
+                    this._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
+                }
+            }
+        }
+
         this.refreshBoundingInfo(true, true);
         this.computeWorldMatrix(true);
     }
+
+    /**
+     * Constructor
+     * @param name The value used by scene.getMeshByName() to do a lookup.
+     * @param scene The scene to add this mesh to.
+     * @param options Options used to create the mesh
+     */
+    constructor(name: string, scene?: Nullable<Scene>, options?: MeshCreationOptions);
 
     /**
      * Constructor
@@ -748,10 +824,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      *                  This will make creation of children, recursive.
      * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
      */
+    constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
+
+    /** @internal */
     constructor(
         name: string,
         scene: Nullable<Scene> = null,
-        parent: Nullable<Node> = null,
+        parentOrOptions: Nullable<Node> | MeshCreationOptions = null,
         source: Nullable<Mesh> = null,
         doNotCloneChildren?: boolean,
         clonePhysicsImpostor: boolean = true
@@ -776,8 +855,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
+        let parent: Nullable<Node> = null;
+        let cloneThinInstances = false;
+
+        if (parentOrOptions && (parentOrOptions as Node)._addToSceneRootNodes === undefined) {
+            const options = parentOrOptions as MeshCreationOptions;
+
+            parent = options.parent ?? null;
+            source = options.source ?? null;
+            doNotCloneChildren = options.doNotCloneChildren ?? false;
+            clonePhysicsImpostor = options.clonePhysicsImpostor ?? true;
+            cloneThinInstances = options.cloneThinInstances ?? false;
+        } else {
+            parent = parentOrOptions as Nullable<Node>;
+        }
+
         if (source) {
-            this._copySource(source, doNotCloneChildren, clonePhysicsImpostor);
+            this._copySource(source, doNotCloneChildren, clonePhysicsImpostor, cloneThinInstances);
         }
 
         // Parent
@@ -1534,7 +1628,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         this.releaseSubMeshes();
-        return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
+        return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices() || totalVertices, this); // getTotalIndices() can be zero if the mesh is unindexed
     }
 
     /**
@@ -2952,13 +3046,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns a new Mesh object generated from the current mesh properties.
      * This method must not get confused with createInstance()
      * @param name is a string, the name given to the new mesh
-     * @param newParent can be any Node object (default `null`)
+     * @param newParent can be any Node object (default `null`) or an instance of MeshCloneOptions. If the latter, doNotCloneChildren and clonePhysicsImpostor are unused.
      * @param doNotCloneChildren allows/denies the recursive cloning of the original mesh children if any (default `false`)
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public override clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
-        return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
+    public override clone(name: string = "", newParent: Nullable<Node> | MeshCloneOptions = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
+        if (newParent && (newParent as Node)._addToSceneRootNodes === undefined) {
+            const cloneOptions = newParent as MeshCloneOptions;
+
+            meshCreationOptions.source = this;
+            meshCreationOptions.doNotCloneChildren = cloneOptions.doNotCloneChildren;
+            meshCreationOptions.clonePhysicsImpostor = cloneOptions.clonePhysicsImpostor;
+            meshCreationOptions.cloneThinInstances = cloneOptions.cloneThinInstances;
+
+            return new Mesh(name, this.getScene(), meshCreationOptions);
+        }
+
+        return new Mesh(name, this.getScene(), newParent as Nullable<Node>, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 
     /**
@@ -4003,6 +4108,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uvs) {
                     this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
                 }
+
+                const uv2s = morphTarget.getUV2s();
+                if (uv2s) {
+                    this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
+                }
             }
         } else {
             let index = 0;
@@ -4019,6 +4129,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
                 }
                 index++;
             }

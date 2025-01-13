@@ -29,7 +29,7 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public record() {
@@ -37,11 +37,12 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and destinationTexture are required`);
         }
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+
+        this._internalDependencies.push(this.sourceTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this.sourceTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             context.copyTexture(this.sourceTexture);

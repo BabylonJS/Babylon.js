@@ -226,7 +226,7 @@ export class EnvironmentHelper {
             groundMirrorAmount: 1,
             groundMirrorFresnelWeight: 1,
             groundMirrorFallOffDistance: 0,
-            groundMirrorTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            groundMirrorTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
 
             groundYBias: 0.00001,
 

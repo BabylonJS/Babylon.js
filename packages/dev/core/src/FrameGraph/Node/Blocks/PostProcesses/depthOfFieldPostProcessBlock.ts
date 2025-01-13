@@ -1,16 +1,16 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph, Camera } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphDepthOfFieldTask } from "../../../Tasks/PostProcesses/depthOfFieldTask";
 import { ThinDepthOfFieldEffectBlurLevel } from "core/PostProcesses/thinDepthOfFieldEffect";
+import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 
 /**
  * Block that implements the depth of field post process
  */
-export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphDepthOfFieldTask;
 
     /**
@@ -33,17 +33,10 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
 
         this._additionalConstructionParameters = [blurLevel, hdr];
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = () => {
-            return this.destination.isConnected ? this.destination : this.source;
-        };
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, scene.getEngine(), blurLevel, hdr);
     }
@@ -93,16 +86,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
 
     public set hdr(value: boolean) {
         this._createTask(this._frameGraphTask.depthOfField.blurLevel, value);
-    }
-
-    /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
-    public get sourceSamplingMode() {
-        return this._frameGraphTask.sourceSamplingMode;
-    }
-
-    public set sourceSamplingMode(value: number) {
-        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** Sampling mode used to sample from the depth texture */
@@ -164,23 +147,9 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     }
 
     /**
-     * Gets the source input component
-     */
-    public get source(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
      * Gets the geometry view depth input component
      */
     public get geomViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the destination input component
-     */
-    public get destination(): NodeRenderGraphConnectionPoint {
         return this._inputs[2];
     }
 
@@ -191,39 +160,13 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         return this._inputs[3];
     }
 
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
-    }
-
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this.output.value = this._frameGraphTask.outputTexture;
 
-        const sourceConnectedPoint = this.source.connectedPoint;
-        if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const geomViewDepthConnectedPoint = this.geomViewDepth.connectedPoint;
-        if (geomViewDepthConnectedPoint) {
-            this._frameGraphTask.depthTexture = geomViewDepthConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const cameraConnectedPoint = this.camera.connectedPoint;
-        if (cameraConnectedPoint) {
-            this._frameGraphTask.camera = cameraConnectedPoint.value as Camera;
-        }
+        this._frameGraphTask.depthTexture = this.geomViewDepth.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
     }
 
     protected override _dumpPropertiesCode() {
@@ -232,7 +175,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         codes.push(`${this._codeVariableName}.fStop = ${this.fStop};`);
         codes.push(`${this._codeVariableName}.focusDistance = ${this.focusDistance};`);
         codes.push(`${this._codeVariableName}.focalLength = ${this.focalLength};`);
-        codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         codes.push(`${this._codeVariableName}.depthSamplingMode = ${this.depthSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -243,7 +185,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         serializationObject.fStop = this.fStop;
         serializationObject.focusDistance = this.focusDistance;
         serializationObject.focalLength = this.focalLength;
-        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         serializationObject.depthSamplingMode = this.depthSamplingMode;
         return serializationObject;
     }
@@ -254,7 +195,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         this.fStop = serializationObject.fStop;
         this.focusDistance = serializationObject.focusDistance;
         this.focalLength = serializationObject.focalLength;
-        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
         this.depthSamplingMode = serializationObject.depthSamplingMode;
     }
 }

@@ -95,6 +95,7 @@ class NormalMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
     public LIGHTING = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
@@ -191,7 +192,7 @@ export class NormalMaterial extends PushMaterial {
         PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false, null, subMesh.getRenderingMesh().hasThinInstances);
 
         defines.LIGHTING = !this._disableLighting;
 

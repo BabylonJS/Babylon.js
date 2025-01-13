@@ -143,7 +143,7 @@ export type PostProcessOptions = EffectWrapperCreationOptions & {
      */
     reusable?: boolean;
     /**
-     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_INT)
+     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
     textureType?: number;
     /**
@@ -602,7 +602,7 @@ export class PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
@@ -623,7 +623,7 @@ export class PostProcess {
             engine = options.engine;
             reusable = options.reusable;
             defines = Array.isArray(options.defines) ? options.defines.join("\n") : (options.defines ?? null);
-            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;
@@ -656,9 +656,9 @@ export class PostProcess {
                 defines,
                 vertexUrl,
                 indexParameters,
-                blockCompilation,
+                blockCompilation: true,
                 shaderLanguage,
-                extraInitializations,
+                extraInitializations: undefined,
             });
 
         this.name = name;
@@ -929,15 +929,15 @@ export class PostProcess {
     /**
      * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
      * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
-     * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
+     * @param cameraOrScene The camera that will be used in the post process. This camera will be used when calling onActivateObservable. You can also pass the scene if no camera is available.
      * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
      * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
      * @returns The render target wrapper that was bound to be written to.
      */
-    public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): RenderTargetWrapper {
-        camera = camera || this._camera;
+    public activate(cameraOrScene: Nullable<Camera> | Scene, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): RenderTargetWrapper {
+        const camera = cameraOrScene === null || (cameraOrScene as Camera).cameraRigMode !== undefined ? (cameraOrScene as Camera) || this._camera : null;
 
-        const scene = camera.getScene();
+        const scene = camera?.getScene() ?? (cameraOrScene as Scene);
         const engine = scene.getEngine();
         const maxSize = engine.getCaps().maxTextureSize;
 
@@ -1003,7 +1003,7 @@ export class PostProcess {
 
         this._engine._debugInsertMarker?.(`post process ${this.name} input`);
 
-        this.onActivateObservable.notifyObservers(camera);
+        this.onActivateObservable.notifyObservers(camera!);
 
         // Clear
         if (this.autoClear && (this.alphaMode === Constants.ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {

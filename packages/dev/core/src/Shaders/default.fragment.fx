@@ -1,4 +1,6 @@
-﻿#include<__decl__defaultFragment>
+﻿#define CUSTOM_FRAGMENT_EXTENSION
+
+#include<__decl__defaultFragment>
 
 #if defined(BUMP) || !defined(NORMAL)
 #extension GL_OES_standard_derivatives : enable

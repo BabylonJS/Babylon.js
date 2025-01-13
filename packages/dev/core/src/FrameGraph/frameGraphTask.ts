@@ -1,17 +1,19 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { RenderTargetWrapper, FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle } from "core/index";
+import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Represents a task in a frame graph.
  * @experimental
  */
 export abstract class FrameGraphTask {
-    protected _frameGraph: FrameGraph;
+    protected readonly _frameGraph: FrameGraph;
+    protected readonly _internalDependencies: FrameGraphTextureHandle[] = [];
 
-    private _passes: IFrameGraphPass[] = [];
-    private _passesDisabled: IFrameGraphPass[] = [];
+    private readonly _passes: IFrameGraphPass[] = [];
+    private readonly _passesDisabled: IFrameGraphPass[] = [];
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     // Same thing for the disabled property
@@ -42,9 +44,19 @@ export abstract class FrameGraphTask {
     }
 
     /**
+     * The (texture) dependencies of the task (optional).
+     */
+    public dependencies?: FrameGraphTextureHandle[];
+
+    /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
      */
     public abstract record(): void;
+
+    /**
+     * An observable that is triggered after the textures have been allocated.
+     */
+    public onTexturesAllocatedObservable: Observable<FrameGraphRenderContext> = new Observable();
 
     /**
      * Checks if the task is ready to be executed.
@@ -59,6 +71,7 @@ export abstract class FrameGraphTask {
      */
     public dispose() {
         this._reset();
+        this.onTexturesAllocatedObservable.clear();
     }
 
     /**
@@ -76,6 +89,7 @@ export abstract class FrameGraphTask {
     public _reset() {
         this._passes.length = 0;
         this._passesDisabled.length = 0;
+        this._internalDependencies.length = 0;
     }
 
     /** @internal */
@@ -89,8 +103,8 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _checkTask() {
-        let outputTexture: Nullable<RenderTargetWrapper> = null;
-        let outputDepthTexture: Nullable<RenderTargetWrapper> = null;
+        let outputTexture: Nullable<Nullable<InternalTexture>[]> = null;
+        let outputDepthTexture: Nullable<InternalTexture> = null;
         let outputObjectList: FrameGraphObjectList | undefined;
 
         for (const pass of this._passes!) {
@@ -99,16 +113,22 @@ export abstract class FrameGraphTask {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
             }
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
-                outputTexture = this._frameGraph.getTexture(pass.renderTarget);
-                outputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.getTexture(pass.renderTargetDepth) : null;
+                const handles = Array.isArray(pass.renderTarget) ? pass.renderTarget : [pass.renderTarget];
+                outputTexture = [];
+                for (const handle of handles) {
+                    if (handle !== undefined) {
+                        outputTexture.push(this._frameGraph.textureManager.getTextureFromHandle(handle));
+                    }
+                }
+                outputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
             } else if (FrameGraphCullPass.IsCullPass(pass)) {
                 outputObjectList = pass.objectList;
             }
         }
 
-        let disabledOutputTexture: Nullable<RenderTargetWrapper> = null;
-        let disabledOutputTextureHandle: FrameGraphTextureHandle = -1;
-        let disabledOutputDepthTexture: Nullable<RenderTargetWrapper> = null;
+        let disabledOutputTexture: Nullable<Nullable<InternalTexture>[]> = null;
+        let disabledOutputTextureHandle: (FrameGraphTextureHandle | undefined)[] = [];
+        let disabledOutputDepthTexture: Nullable<InternalTexture> = null;
         let disabledOutputObjectList: FrameGraphObjectList | undefined;
 
         for (const pass of this._passesDisabled!) {
@@ -117,17 +137,30 @@ export abstract class FrameGraphTask {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
             }
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
-                disabledOutputTexture = this._frameGraph.getTexture(pass.renderTarget);
-                disabledOutputTextureHandle = pass.renderTarget;
-                disabledOutputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.getTexture(pass.renderTargetDepth) : null;
+                const handles = Array.isArray(pass.renderTarget) ? pass.renderTarget : [pass.renderTarget];
+                disabledOutputTexture = [];
+                for (const handle of handles) {
+                    if (handle !== undefined) {
+                        disabledOutputTexture.push(this._frameGraph.textureManager.getTextureFromHandle(handle));
+                    }
+                }
+                disabledOutputTextureHandle = handles;
+                disabledOutputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
             } else if (FrameGraphCullPass.IsCullPass(pass)) {
                 disabledOutputObjectList = pass.objectList;
             }
         }
 
         if (this._passesDisabled.length > 0) {
-            if (outputTexture !== disabledOutputTexture) {
-                if (!this._frameGraph.isHistoryTexture(disabledOutputTextureHandle)) {
+            if (!this._checkSameRenderTarget(outputTexture, disabledOutputTexture)) {
+                let ok = true;
+                for (const handle of disabledOutputTextureHandle) {
+                    if (handle !== undefined && !this._frameGraph.textureManager.isHistoryTexture(handle)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (!ok) {
                     throw new Error(`The output texture of the task "${this.name}" is different when it is enabled or disabled.`);
                 }
             }
@@ -143,5 +176,23 @@ export abstract class FrameGraphTask {
     /** @internal */
     public _getPasses(): IFrameGraphPass[] {
         return this.disabled && this._passesDisabled.length > 0 ? this._passesDisabled : this._passes;
+    }
+
+    private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {
+        if (src === null || dst === null) {
+            return src === dst;
+        }
+
+        if (src.length !== dst.length) {
+            return false;
+        }
+
+        for (let i = 0; i < src.length; i++) {
+            if (src[i] !== dst[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

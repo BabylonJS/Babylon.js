@@ -10,7 +10,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
-import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -287,16 +287,21 @@ export class OutlineRenderer implements ISceneComponent {
 
         const scene = mesh.getScene();
 
+        let uv1 = false;
+        let uv2 = false;
+
         // Alpha test
         if (material.needAlphaTesting()) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
                 defines.push("#define UV1");
+                uv1 = true;
             }
             if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                 attribs.push(VertexBuffer.UV2Kind);
                 defines.push("#define UV2");
+                uv2 = true;
             }
         }
         //Logarithmic depth
@@ -331,21 +336,19 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Morph targets
-        const morphTargetManager = (mesh as Mesh).morphTargetManager;
-        let numMorphInfluencers = 0;
-        if (morphTargetManager) {
-            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
-            if (numMorphInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-
-                if (morphTargetManager.isUsingTextureForTargets) {
-                    defines.push("#define MORPHTARGETS_TEXTURE");
-                }
-
-                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
-            }
-        }
+        const numMorphInfluencers = mesh.morphTargetManager
+            ? PrepareDefinesAndAttributesForMorphTargets(
+                  mesh.morphTargetManager,
+                  defines,
+                  attribs,
+                  mesh,
+                  true, // usePositionMorph
+                  true, // useNormalMorph
+                  false, // useTangentMorph
+                  uv1, // useUVMorph
+                  uv2 // useUV2Morph
+              )
+            : 0;
 
         // Instances
         if (useInstances) {

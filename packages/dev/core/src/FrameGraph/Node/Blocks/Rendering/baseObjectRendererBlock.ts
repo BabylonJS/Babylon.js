@@ -1,5 +1,4 @@
 import type {
-    NodeRenderGraphConnectionPoint,
     Scene,
     NodeRenderGraphBuildState,
     FrameGraph,
@@ -7,11 +6,14 @@ import type {
     FrameGraphObjectList,
     Camera,
     FrameGraphObjectRendererTask,
+    NodeRenderGraphResourceContainerBlock,
+    FrameGraphShadowGeneratorTask,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 
 /**
  * @internal
@@ -39,14 +41,15 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
-        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this._addDependenciesInput();
+        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.dependencies.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.shadowGenerators.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
 
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -116,6 +119,13 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /**
+     * Gets the shadowGenerators input component
+     */
+    public get shadowGenerators(): NodeRenderGraphConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeRenderGraphConnectionPoint {
@@ -132,37 +142,29 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture; // the value of the outputDepth connection point is the "outputDepth" texture of the task
 
-        const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
+        this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
 
-        const depthConnectedPoint = this.depth.connectedPoint;
-        if (depthConnectedPoint) {
-            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.shadowGenerators = [];
 
-        const cameraConnectedPoint = this.camera.connectedPoint;
-        if (cameraConnectedPoint) {
-            this._frameGraphTask.camera = cameraConnectedPoint.value as Camera;
-        }
-
-        const objectsConnectedPoint = this.objects.connectedPoint;
-        if (objectsConnectedPoint) {
-            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
-        }
-
-        this._frameGraphTask.dependencies = [];
-
-        const dependenciesConnectedPoint = this.dependencies.connectedPoint;
-        if (dependenciesConnectedPoint) {
-            this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
+        const shadowGeneratorsConnectedPoint = this.shadowGenerators.connectedPoint;
+        if (shadowGeneratorsConnectedPoint) {
+            if (shadowGeneratorsConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = shadowGeneratorsConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                container.inputs.forEach((input) => {
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsShadowGenerator(input.connectedPoint.value)) {
+                        this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
+                    }
+                });
+            } else if (NodeRenderGraphConnectionPoint.IsShadowGenerator(shadowGeneratorsConnectedPoint.value)) {
+                this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as FrameGraphShadowGeneratorTask;
+            }
         }
     }
 
