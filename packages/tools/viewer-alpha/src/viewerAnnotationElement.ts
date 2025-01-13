@@ -46,10 +46,13 @@ export class HTML3DAnnotationElement extends LitElement {
         super.connectedCallback();
         this._internals.states?.add("invalid");
 
-        // Sometimes override parent element is not defined yet.
+        // Custom element registration can happen at any time via a call to customElements.define, which means it is possible
+        // the parent custom element hasn't been defined yet. This especially can happen if the order of imports and exports
+        // results in the parent element being defined after the HTML3DAnnotationElement within the final JS bundle.
         if (this.parentElement?.matches(":not(:defined)")) {
             await customElements.whenDefined(this.parentElement?.tagName.toLowerCase());
         }
+
         if (!(this.parentElement instanceof ViewerElement)) {
             // eslint-disable-next-line no-console
             console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
