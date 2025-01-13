@@ -16,50 +16,40 @@ Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
  * The light is emitted from the rectangular area in the -Z direction.
  */
 export class RectAreaLight extends Light {
-    protected _position: Vector3;
     protected _width: Vector3;
     protected _height: Vector3;
 
     /**
-     * Width of the Area Light.
+     * Rect Area Light positon.
+     */
+    public position: Vector3;
+
+    /**
+     * Rect Area Light width.
      */
     @serialize()
     public get width(): number {
         return this._width.x;
     }
     /**
-     * Width of the area Light.
+     * Rect Area Light width.
      */
     public set width(value: number) {
         this._width.x = value;
     }
 
     /**
-     * Height of the area light.
+     * Rect Area Light height.
      */
     @serialize()
     public get height(): number {
         return this._height.y;
     }
     /**
-     * Height of the area light.
+     * Rect Area Light height.
      */
     public set height(value: number) {
         this._height.y = value;
-    }
-
-    /**
-     * Area Light positon.
-     */
-    @serialize()
-    public get position(): Vector3 {
-        return this._position;
-    }
-    /**
-     * Area Light positon.
-     */
-    public set position(value: Vector3) {
-        this._position = value;
     }
 
     /**
@@ -73,13 +63,13 @@ export class RectAreaLight extends Light {
      */
     constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
         super(name, scene);
-        this._position = position;
+        this.position = position;
         this._width = new Vector3(width, 0, 0);
         this._height = new Vector3(0, height, 0);
     }
 
     /**
-     * Returns the string "PointLight"
+     * Returns the string "RectAreaLight"
      * @returns the class name
      */
     public override getClassName(): string {
@@ -87,7 +77,7 @@ export class RectAreaLight extends Light {
     }
 
     /**
-     * Returns the integer 0.
+     * Returns the integer 4.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
     public override getTypeID(): number {
@@ -116,7 +106,7 @@ export class RectAreaLight extends Light {
                 this._pointTransformedWidth = Vector3.Zero();
                 this._pointCTransformedHeight = Vector3.Zero();
             }
-            Vector3.TransformCoordinatesToRef(this._position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
+            Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
             Vector3.TransformNormalToRef(this._width, this.parent.getWorldMatrix(), this._pointTransformedWidth);
             Vector3.TransformNormalToRef(this._height, this.parent.getWorldMatrix(), this._pointCTransformedHeight);
             return true;
@@ -137,7 +127,7 @@ export class RectAreaLight extends Light {
             this._uniformBuffer.updateFloat4("vLightWidth", this._pointTransformedWidth.x, this._pointTransformedWidth.y, this._pointTransformedWidth.z, 0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightHeight", this._pointCTransformedHeight.x, this._pointCTransformedHeight.y, this._pointCTransformedHeight.z, 0, lightIndex);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this._position.x, this._position.y, this._position.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0.0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightHeight", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
         }
