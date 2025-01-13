@@ -342,7 +342,7 @@ export class NodeMaterial extends PushMaterial {
 
     /** Gets or sets the active shader language */
     public override get shaderLanguage(): ShaderLanguage {
-        return this._options.shaderLanguage;
+        return this._options?.shaderLanguage || NodeMaterial.DefaultShaderLanguage;
     }
 
     public override set shaderLanguage(value: ShaderLanguage) {
@@ -2557,6 +2557,7 @@ export class NodeMaterial extends PushMaterial {
      * @param skipBuild defines whether to build the node material
      * @param targetMaterial defines a material to use instead of creating a new one
      * @param urlRewriter defines a function used to rewrite urls
+     * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
     public static async ParseFromFileAsync(
@@ -2566,9 +2567,10 @@ export class NodeMaterial extends PushMaterial {
         rootUrl: string = "",
         skipBuild: boolean = false,
         targetMaterial?: NodeMaterial,
-        urlRewriter?: (url: string) => string
+        urlRewriter?: (url: string) => string,
+        options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
-        const material = targetMaterial ?? new NodeMaterial(name, scene);
+        const material = targetMaterial ?? new NodeMaterial(name, scene, options);
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
@@ -2588,6 +2590,7 @@ export class NodeMaterial extends PushMaterial {
      * @param skipBuild defines whether to build the node material
      * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
      * @param urlRewriter defines a function used to rewrite urls
+     * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(
@@ -2597,7 +2600,8 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial?: NodeMaterial,
         skipBuild: boolean = false,
         waitForTextureReadyness: boolean = false,
-        urlRewriter?: (url: string) => string
+        urlRewriter?: (url: string) => string,
+        options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
@@ -2612,7 +2616,7 @@ export class NodeMaterial extends PushMaterial {
                         const serializationObject = JSON.parse(snippet.nodeMaterial);
 
                         if (!nodeMaterial) {
-                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene, options), serializationObject, scene, rootUrl);
                             nodeMaterial.uniqueId = scene.getUniqueId();
                         }
 
