@@ -1312,6 +1312,20 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "Prefiltering Irradiance on load",
+            "playgroundId": "#FEEK7G#1111",
+            "renderCount": 5,
+            "referenceImage": "prefilteringIrradiance.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Prefiltering Irradiance on load with CDF",
+            "playgroundId": "#FEEK7G#1110",
+            "renderCount": 5,
+            "referenceImage": "prefilteringIrradianceCDF.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OBJ loader test (legacy)",
             "playgroundId": "#SYQW69#1213",
             "referenceImage": "objTestLoaderLegacy.png"

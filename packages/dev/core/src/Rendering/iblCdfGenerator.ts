@@ -16,24 +16,26 @@ import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
+import type { Nullable } from "../types";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
  */
 export class IblCdfGenerator {
-    private _scene: Scene;
+    private _scene: Nullable<Scene>;
     private _engine: AbstractEngine;
 
     private _cdfyPT: ProceduralTexture;
     private _cdfxPT: ProceduralTexture;
     private _icdfPT: ProceduralTexture;
     private _scaledLuminancePT: ProceduralTexture;
-    private _iblSource: BaseTexture;
+    private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
     /**
      * Gets the IBL source texture being used by the CDF renderer
      */
-    public get iblSource(): BaseTexture {
+    public get iblSource(): Nullable<BaseTexture> {
         return this._iblSource;
     }
 
@@ -41,12 +43,15 @@ export class IblCdfGenerator {
      * Sets the IBL source texture to be used by the CDF renderer.
      * This will trigger recreation of the CDF assets.
      */
-    public set iblSource(source: BaseTexture) {
+    public set iblSource(source: Nullable<BaseTexture>) {
         if (this._iblSource === source) {
             return;
         }
         this._disposeTextures();
         this._iblSource = source;
+        if (!source) {
+            return;
+        }
         if (source.isCube) {
             if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl();
@@ -127,15 +132,27 @@ export class IblCdfGenerator {
 
     /**
      * Instanciates the CDF renderer
-     * @param scene Scene to attach to
+     * @param sceneOrEngine Scene to attach to
      * @returns The CDF renderer
      */
-    constructor(scene: Scene) {
-        this._scene = scene;
-        this._engine = scene.getEngine();
+    constructor(sceneOrEngine: Nullable<Scene | AbstractEngine>) {
+        if (sceneOrEngine) {
+            if (IblCdfGenerator._IsScene(sceneOrEngine)) {
+                this._scene = sceneOrEngine;
+            } else {
+                this._engine = sceneOrEngine;
+            }
+        } else {
+            this._scene = EngineStore.LastCreatedScene;
+        }
+        if (this._scene) {
+            this._engine = this._scene.getEngine();
+        }
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
-        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
-        IblCdfGenerator._SceneComponentInitialization(this._scene);
+        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
+        if (this._scene) {
+            IblCdfGenerator._SceneComponentInitialization(this._scene);
+        }
     }
 
     /**
@@ -150,7 +167,7 @@ export class IblCdfGenerator {
                 new Uint8Array([255]),
                 1,
                 1,
-                this._scene,
+                this._engine,
                 false,
                 false,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
@@ -162,6 +179,11 @@ export class IblCdfGenerator {
         if (this._iblSource!.isCube) {
             size.width *= 4;
             size.height *= 2;
+            // Force the resolution to be a power of 2 because we rely on the
+            // auto-mipmap generation for the scaled luminance texture to produce
+            // a 1x1 mip that represents the true average pixel intensity of the IBL.
+            size.width = 1 << Math.floor(Math.log2(size.width));
+            size.height = 1 << Math.floor(Math.log2(size.height));
         }
 
         const isWebGPU = this._engine.isWebGPU;
@@ -173,6 +195,7 @@ export class IblCdfGenerator {
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            gammaSpace: false,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
                     await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")]);
@@ -188,6 +211,7 @@ export class IblCdfGenerator {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            gammaSpace: false,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
                     await Promise.all([import("../ShadersWGSL/iblIcdf.fragment")]);
@@ -260,8 +284,8 @@ export class IblCdfGenerator {
         }
         const isWebGPU = this._engine.isWebGPU;
         const debugOptions: PostProcessOptions = {
-            width: this._scene.getEngine().getRenderWidth(),
-            height: this._scene.getEngine().getRenderHeight(),
+            width: this._engine.getRenderWidth(),
+            height: this._engine.getRenderHeight(),
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine: this._engine,
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
@@ -324,5 +348,9 @@ export class IblCdfGenerator {
             this._debugPass.dispose();
         }
         this.onGeneratedObservable.clear();
+    }
+
+    private static _IsScene(sceneOrEngine: Scene | AbstractEngine): sceneOrEngine is Scene {
+        return sceneOrEngine.getClassName() === "Scene";
     }
 }
