@@ -587,7 +587,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         if (depthInfo === null) {
             return;
         }
-        const { texture, width, height, textureType, rawValueToMeters, imageIndex, normDepthBufferFromNormView } = depthInfo as XRWebGLDepthInformation;
+        const { texture, width, height, textureType, rawValueToMeters, normDepthBufferFromNormView } = depthInfo as XRWebGLDepthInformation;
 
         globalRawValueToMeters = rawValueToMeters;
         alphaLuminanceTexture = dataFormat === "luminance-alpha";
