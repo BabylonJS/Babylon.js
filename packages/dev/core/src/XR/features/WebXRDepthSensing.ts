@@ -9,7 +9,7 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { ThinEngine } from "../../Engines/thinEngine";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -20,6 +20,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { RegisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import type { Camera } from "core/Cameras/camera";
 import { Matrix } from "core/Maths/math.vector";
+import type { Engine } from "core/Engines/engine";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -141,7 +142,7 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     }
 
     constructor(material: Material) {
-        super(material, "DepthSensing", 222, new DepthSensingMaterialDefines(), true, false);
+        super(material, "DepthSensing", 222, new DepthSensingMaterialDefines());
         this._varColorName = material instanceof PBRBaseMaterial ? "finalColor" : "color";
         managedMaterialPlugins.push(this);
     }
@@ -202,12 +203,18 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
         return shaderType === "vertex"
             ? {
                   CUSTOM_VERTEX_MAIN_BEGIN: `
+                #ifdef DEPTH_SENSING
                 #ifdef MULTIVIEW
                     ds_viewIndexMultiview = float(gl_ViewID_OVR);
                 #endif
+                #endif
                 `,
                   CUSTOM_VERTEX_DEFINITIONS: `
+                #ifdef DEPTH_SENSING
+                #ifdef MULTIVIEW
                     varying float ds_viewIndexMultiview;
+                #endif
+                #endif
                 `,
               }
             : {
@@ -292,7 +299,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _cachedDepthBuffer: Nullable<ArrayBuffer> = null;
     private _cachedWebGLTexture: Nullable<WebGLTexture> = null;
     private _cachedDepthImageTexture: Nullable<RawTexture> = null;
-    private _viewIndexes: { [key: string]: number } = {};
     private _onCameraObserver: Nullable<Observer<Camera>> = null;
 
     /**
@@ -584,7 +590,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         globalRawValueToMeters = rawValueToMeters;
         alphaLuminanceTexture = dataFormat === "luminance-alpha";
-        this._viewIndexes[view.eye] = imageIndex ?? 0;
         uvTransform.fromArray(normDepthBufferFromNormView.matrix);
 
         if (this._cachedWebGLTexture) {
@@ -665,7 +670,13 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         if (!this._width || !this._height || !this._cachedWebGLTexture) {
             throw new Error("Depth information is not available");
         }
-        const internalTexture = new InternalTexture(engine, InternalTextureSource.Unknown, true);
+        const internalTexture = (engine as Engine).wrapWebGLTexture(
+            this._cachedWebGLTexture,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            this._width || 256,
+            this._height || 256
+        );
         internalTexture.isCube = false;
         internalTexture.invertY = false;
         internalTexture._useSRGBBuffer = false;
@@ -673,14 +684,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.generateMipMaps = false;
         internalTexture.type =
             dataFormat === "float" ? Constants.TEXTURETYPE_FLOAT : dataFormat === "ushort" ? Constants.TEXTURETYPE_UNSIGNED_SHORT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        internalTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        internalTexture.width = this._width ?? 512;
-        internalTexture.height = this._height ?? 512;
         internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
         internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
         internalTexture._hardwareTexture = new WebGLHardwareTexture(this._cachedWebGLTexture, (engine as ThinEngine)._gl);
         internalTexture.is2DArray = textureType === "texture-array";
-        internalTexture.isReady = true;
 
         return internalTexture;
     }
