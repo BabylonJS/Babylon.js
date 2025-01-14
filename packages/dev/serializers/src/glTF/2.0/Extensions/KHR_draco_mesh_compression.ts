@@ -45,6 +45,9 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
     /** Accessors that were replaced with Draco data, which may be eligible for removal after Draco encoding */
     private _accessorsUsed: Set<IAccessor> = new Set();
 
+    /** Promise pool for Draco encoding work */
+    private _encodePromises: Promise<void>[] = [];
+
     private _wasUsed = false;
 
     /** @internal */
@@ -69,14 +72,14 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
     }
 
     /** @internal */
-    public async postExportMeshPrimitiveAsync(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): Promise<IMeshPrimitive> {
+    public postExportMeshPrimitive(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): void {
         if (!this.enabled) {
-            return primitive;
+            return;
         }
 
         if (primitive.mode !== MeshPrimitiveMode.TRIANGLES && primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP) {
             Logger.Warn("Cannot compress primitive with mode " + primitive.mode + ".");
-            return primitive;
+            return;
         }
 
         // Prepare indices for Draco encoding
@@ -119,24 +122,26 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             method: primitive.targets ? "MESH_SEQUENTIAL_ENCODING" : "MESH_EDGEBREAKER_ENCODING",
         };
 
-        const encodedData = await DracoEncoder.Default._encodeAsync(attributes, indices, options);
-        if (!encodedData) {
-            return primitive; // Draco encoding failed
-        }
+        this._encodePromises.push(
+            DracoEncoder.Default._encodeAsync(attributes, indices, options).then((encodedData) => {
+                if (!encodedData) {
+                    Logger.Warn("Draco encoding failed for primitive.");
+                    return;
+                }
 
-        const dracoInfo: IKHRDracoMeshCompression = {
-            bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
-            attributes: encodedData.attributeIDs,
-        };
-        const bufferView = bufferManager.createBufferView(encodedData.data);
-        bufferManager.setBufferView(dracoInfo, bufferView);
+                const dracoInfo: IKHRDracoMeshCompression = {
+                    bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
+                    attributes: encodedData.attributeIDs,
+                };
+                const bufferView = bufferManager.createBufferView(encodedData.data);
+                bufferManager.setBufferView(dracoInfo, bufferView);
 
-        primitive.extensions ||= {};
-        primitive.extensions[NAME] = dracoInfo;
+                primitive.extensions ||= {};
+                primitive.extensions[NAME] = dracoInfo;
+            })
+        );
 
         this._wasUsed = true;
-
-        return primitive; // TODO: Why return this? No need.
     }
 
     /** @internal */
@@ -144,6 +149,8 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         if (!this.enabled) {
             return;
         }
+
+        await Promise.all(this._encodePromises);
 
         // Cull obsolete bufferViews that are no longer needed, as they were replaced with Draco data
         for (const bufferView of this._bufferViewsUsed) {

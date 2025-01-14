@@ -299,11 +299,14 @@ export class GLTFExporter {
         return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
-    public _extensionsPostExportMeshPrimitiveAsync(primitive: IMeshPrimitive): Promise<Nullable<IMeshPrimitive>> {
-        return this._applyExtensions(
-            primitive,
-            (extension, node) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(node, this._bufferManager, this._accessors)
-        );
+    public _extensionsPostExportMeshPrimitive(primitive: IMeshPrimitive): void {
+        for (const name of GLTFExporter._ExtensionNames) {
+            const extension = this._extensions[name];
+
+            if (extension.postExportMeshPrimitive) {
+                extension.postExportMeshPrimitive(primitive, this._bufferManager, this._accessors);
+            }
+        }
     }
 
     public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
@@ -346,7 +349,7 @@ export class GLTFExporter {
             const extension = this._extensions[name];
 
             if (extension.preGenerateBinaryAsync) {
-                extension.preGenerateBinaryAsync(this._bufferManager);
+                await extension.preGenerateBinaryAsync(this._bufferManager);
             }
         }
     }
@@ -1487,7 +1490,7 @@ export class GLTFExporter {
                 }
 
                 mesh.primitives.push(primitive);
-                await this._extensionsPostExportMeshPrimitiveAsync(primitive);
+                this._extensionsPostExportMeshPrimitive(primitive);
             }
         }
 

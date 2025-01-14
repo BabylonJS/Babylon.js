@@ -40,7 +40,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * Define this method to modify the default behavior when exporting a mesh primitive
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): Promise<IMeshPrimitive>;
+    postExportMeshPrimitive?(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): void;
 
     /**
      * Define this method to modify the default behavior when exporting a node
