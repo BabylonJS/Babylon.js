@@ -1259,13 +1259,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._checkScenePerformancePriority();
 
-        if (defines["AREALIGHTUSED"]) {
-            if (!Scene.IsAreaLightsReady(scene)) {
-                Scene.LoadLTCTextures(scene);
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -2383,11 +2376,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
                 BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
-            }
-
-            // Binds LTC textures if Area Lights are used.
-            if (defines["AREALIGHTUSED"]) {
-                Scene.BindAreaLightsLTCTextures(scene, effect);
             }
 
             // View

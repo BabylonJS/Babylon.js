@@ -1541,14 +1541,6 @@ export class StandardMaterial extends PushMaterial {
         drawWrapper._wasPreviouslyUsingInstances = useInstances;
 
         this._checkScenePerformancePriority();
-
-        if (defines["AREALIGHTUSED"]) {
-            if (!Scene.IsAreaLightsReady(scene)) {
-                Scene.LoadLTCTextures(scene);
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -1849,11 +1841,6 @@ export class StandardMaterial extends PushMaterial {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
                 BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
-            }
-
-            // Binds LTC textures if Area Lights are used.
-            if (defines["AREALIGHTUSED"]) {
-                Scene.BindAreaLightsLTCTextures(scene, effect);
             }
 
             // View

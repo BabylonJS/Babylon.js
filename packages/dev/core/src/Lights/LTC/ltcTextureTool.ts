@@ -67,5 +67,15 @@ export async function buildSceneLTCTextures(scene: Scene): Promise<void> {
         const arrayData = await decodeLTCTextures();
         scene.ltc1Texture = getLTCTextureFromArray(arrayData[0], scene);
         scene.ltc2Texture = getLTCTextureFromArray(arrayData[1], scene);
+        for (const mesh of scene.meshes) {
+            if (mesh.lightSources.filter((a) => a.getClassName() === "RectAreaLight")) {
+                mesh._markSubMeshesAsLightDirty();
+            }
+        }
+
+        scene.onDisposeObservable.addOnce(() => {
+            scene.ltc1Texture.dispose();
+            scene.ltc2Texture.dispose();
+        });
     }
 }

@@ -189,14 +189,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("DefaultCollisionCoordinator");
     }
 
-    public static BindAreaLightsLTCTextures(scene: Scene, effect: Effect): void {
-        throw _WarnImport("RectAreaLight");
-    }
-
-    public static LoadLTCTextures(scene: Scene): void {
-        throw _WarnImport("RectAreaLight");
-    }
-
     public static IsAreaLightsReady(scene: Scene): boolean {
         throw _WarnImport("RectAreaLight");
     }
@@ -268,18 +260,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * The material properties need to be setup according to the type of texture in use.
      */
     public environmentBRDFTexture: BaseTexture;
-
-    /**
-     * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
-     * The material properties need to be setup according to the type of texture in use.
-     */
-    public ltc1Texture: BaseTexture;
-
-    /**
-     * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
-     * The material properties need to be setup according to the type of texture in use.
-     */
-    public ltc2Texture: BaseTexture;
 
     /**
      * Intensity of the environment in all pbr material.

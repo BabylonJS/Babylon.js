@@ -1,4 +1,3 @@
-import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
@@ -6,10 +5,36 @@ import type { Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
 import { buildSceneLTCTextures } from "core/Lights/LTC/ltcTextureTool";
 import { serialize } from "../Misc/decorators";
+import type { BaseTexture } from "core/Materials";
+import type { Scene } from "core/scene";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);
 });
+
+declare module "../scene" {
+    export interface Scene {
+        /**
+         * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
+         * The material properties need to be setup according to the type of texture in use.
+         */
+        ltc1Texture: BaseTexture;
+
+        /**
+         * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
+         * The material properties need to be setup according to the type of texture in use.
+         */
+        ltc2Texture: BaseTexture;
+    }
+}
+
+function IsAreaLightsReady(scene: Scene): boolean {
+    if (scene.ltc1Texture && scene.ltc2Texture) {
+        return scene.ltc1Texture.isReady() && scene.ltc2Texture.isReady();
+    }
+
+    return false;
+}
 
 /**
  * A rectangular area light defined by an unique point in world space, a width and a height.
@@ -66,6 +91,8 @@ export class RectAreaLight extends Light {
         this.position = position;
         this._width = new Vector3(width, 0, 0);
         this._height = new Vector3(0, height, 0);
+
+        buildSceneLTCTextures(this._scene);
     }
 
     /**
@@ -137,11 +164,11 @@ export class RectAreaLight extends Light {
     /**
      * Sets the passed Effect "effect" with the Light textures.
      * @param effect The effect to update
-     * @param lightIndex The index of the light in the effect to update
      * @returns The light
      */
-    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
-        // TO DO: Implement this to add support for NME.
+    public override transferTexturesToEffect(effect: Effect): Light {
+        effect.setTexture("areaLightsLTC1Sampler", this._scene.ltc1Texture);
+        effect.setTexture("areaLightsLTC2Sampler", this._scene.ltc2Texture);
         return this;
     }
 
@@ -157,26 +184,9 @@ export class RectAreaLight extends Light {
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["AREALIGHT" + lightIndex] = true;
-        defines["AREALIGHTUSED"] = true;
+        defines["AREALIGHTUSED"] = IsAreaLightsReady(this._scene);
     }
 }
 
 // Register Class Name
 RegisterClass("BABYLON.RectAreaLight", RectAreaLight);
-
-Scene.BindAreaLightsLTCTextures = (scene: Scene, effect: Effect) => {
-    effect.setTexture("areaLightsLTC1Sampler", scene.ltc1Texture);
-    effect.setTexture("areaLightsLTC2Sampler", scene.ltc2Texture);
-};
-
-Scene.LoadLTCTextures = async (scene: Scene) => {
-    await buildSceneLTCTextures(scene);
-};
-
-Scene.IsAreaLightsReady = (scene: Scene): boolean => {
-    if (scene.ltc1Texture && scene.ltc2Texture) {
-        return scene.ltc1Texture.isReady() && scene.ltc2Texture.isReady();
-    }
-
-    return false;
-};
