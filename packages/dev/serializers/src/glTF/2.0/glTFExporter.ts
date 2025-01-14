@@ -911,6 +911,9 @@ export class GLTFExporter {
             const vertexBuffers = babylonNode.geometry.getVertexBuffers();
             if (vertexBuffers) {
                 for (const kind in vertexBuffers) {
+                    if (!IsStandardVertexAttribute(kind)) {
+                        continue;
+                    }
                     const vertexBuffer = vertexBuffers[kind];
                     state.setHasVertexColorAlpha(vertexBuffer, babylonNode.hasVertexAlpha);
                     const buffer = vertexBuffer._buffer;
