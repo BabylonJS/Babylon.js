@@ -1046,7 +1046,7 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * retrun world and canvas coordinates of an hot spot
+     * Return world and canvas coordinates of an hot spot
      * @param query mesh index and surface information to query the hot spot positions
      * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
@@ -1100,6 +1100,64 @@ export class Viewer implements IDisposable {
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 
         return true;
+    }
+
+    /**
+     * Creates a new `ArcRotateCamera` positioned at the same location as the given camera and targeted at a computed point.
+     * - The target point is determined based on the camera's forward ray:
+     *   - If an intersection with the main model is found, the first hit point is used as the target.
+     *   - If no intersection is detected, a fallback target is calculated by projecting
+     *     the distance between the camera and the main model's center along the forward ray.
+     *
+     * @param camera The reference camera used to set the position and compute the target.
+     * @returns A new `ArcRotateCamera` instance targeted at the determined point, or `null` if no target is available.
+     */
+    public async generateArcRotateCamera(camera: Camera): Promise<Nullable<ArcRotateCamera>> {
+        await import("core/Culling/ray");
+        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition);
+
+        if (this._model) {
+            const assetContainer = this._model.assetContainer;
+            let rootMesh: Nullable<AbstractMesh> = null; // the mesh with name "__root__" or the first of model.meshes
+
+            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
+            assetContainer.meshes.forEach((mesh) => {
+                if (!rootMesh || mesh.name === "__root__") rootMesh = mesh;
+
+                let cache = this._meshDataCache.get(mesh);
+                if (!cache) {
+                    cache = {};
+                    this._meshDataCache.set(mesh, cache);
+                }
+                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+            });
+
+            let targetPoint: Nullable<Vector3>;
+            const pickingInfo = this._scene.pickWithRay(ray, (mesh) => assetContainer.meshes.includes(mesh));
+            if (pickingInfo && pickingInfo.hit) {
+                targetPoint = pickingInfo.pickedPoint;
+            } else {
+                const direction = ray.direction.clone();
+                const cameraPosition = camera.globalPosition;
+                targetPoint = cameraPosition.clone();
+
+                const rootMeshCenter = rootMesh ? (rootMesh as AbstractMesh).getBoundingInfo().boundingBox.centerWorld : null;
+                const distance = rootMeshCenter ? Vector3.Distance(cameraPosition, rootMeshCenter) : 0.1;
+
+                direction.scaleAndAddToRef(distance, targetPoint);
+            }
+
+            const newCamera = new ArcRotateCamera("ArcRotateCamera " + camera.name, 0, 0, 1, Vector3.Zero(), this._scene);
+            if (targetPoint) {
+                newCamera.setPosition(camera.globalPosition.clone());
+                newCamera.setTarget(targetPoint);
+                return newCamera;
+            }
+
+            return null;
+        }
+
+        return null;
     }
 
     protected _suspendRendering(): IDisposable {
