@@ -184,30 +184,12 @@ export type EnvironmentOptions = Partial<
          * Whether to use the environment for the skybox.
          */
         skybox: boolean;
-
-        /**
-         * The environment lighting intensity.
-         */
-        intensity?: number;
-
-        /**
-         * The environment blur level.
-         */
-        blurLevel?: number;
-
-        /**
-         * The environment rotation in radians.
-         */
-        rotation?: number;
     }>
 >;
 
 const defaultLoadEnvironmentOptions = {
     lighting: true,
     skybox: true,
-    intensity: 1,
-    blurLevel: 0.3,
-    rotation: 0,
 } as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
@@ -356,8 +338,7 @@ export class Viewer implements IDisposable {
     private _renderLoopController: Nullable<IDisposable> = null;
     private _materialVariantsController: Nullable<MaterialVariantsController> = null;
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur: number = defaultLoadEnvironmentOptions.blurLevel;
-    private _skyboxRotation: number = defaultLoadEnvironmentOptions.rotation;
+    private _skyboxBlur: number = 0.3;
     private _reflectionTexture: Nullable<CubeTexture> = null;
     private _reflectionsIntensity: number = 1;
     private _reflectionsRotation: number = 0;
@@ -532,21 +513,19 @@ export class Viewer implements IDisposable {
      * The rotation of the skybox in radians.
      */
     public get environmentRotation(): number {
-        return this._skyboxRotation;
+        return this._reflectionsRotation;
     }
 
     public set environmentRotation(value: number) {
-        this._skyboxRotation = value;
         this._reflectionsRotation = -value;
 
-        // If has the skybox activated
         if (this._reflectionTexture) {
             this._reflectionTexture.rotationY = this._reflectionsRotation;
         }
         if (this._details.scene.environmentTexture) {
             (this._details.scene.environmentTexture as CubeTexture).rotationY = this._reflectionsRotation;
         }
-        this.onEnvironmentRotationChanged.notifyObservers();
+        // this.onEnvironmentRotationChanged.notifyObservers();
     }
 
     /**
@@ -937,10 +916,13 @@ export class Viewer implements IDisposable {
 
                     if (options.lighting) {
                         this._details.scene.environmentTexture = cubeTexture;
+                        cubeTexture.level = this.environmentIntensity;
+                        cubeTexture.rotationY = this.environmentRotation;
                     }
                     if (options.skybox) {
                         this._reflectionTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._reflectionTexture.level = options.intensity || defaultLoadEnvironmentOptions.intensity;
+                        this._reflectionTexture.level = this.environmentIntensity;
+                        this._reflectionTexture.rotationY = this.environmentRotation;
                         this._skybox = createSkybox(this._details.scene, this._details.camera, this._reflectionTexture, this.skyboxBlur);
                         this._snapshotHelper.fixMeshes([this._skybox]);
                         this._details.scene.autoClear = false;

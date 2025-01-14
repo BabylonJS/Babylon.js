@@ -95,6 +95,18 @@ export class HTML3DElement extends LitElement {
             (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
         ),
         this._createPropertyBinding(
+            "environmentIntensity",
+            (details) => details.viewer.onEnvironmentIntensityChanged,
+            (details) => (details.viewer.environmentIntensity = this.environmentIntensity ?? details.viewer.environmentIntensity),
+            (details) => (this.environmentIntensity = details.viewer.environmentIntensity)
+        ),
+        this._createPropertyBinding(
+            "environmentRotation",
+            (details) => details.viewer.onEnvironmentRotationChanged,
+            (details) => (details.viewer.environmentRotation = this.environmentRotation ?? details.viewer.environmentRotation),
+            (details) => (this.environmentRotation = details.viewer.environmentRotation)
+        ),
+        this._createPropertyBinding(
             "toneMapping",
             (details) => details.viewer.onPostProcessingChanged,
             (details) => {
@@ -534,6 +546,28 @@ export class HTML3DElement extends LitElement {
      */
     @property({ attribute: "environment-skybox" })
     public environmentSkybox: Nullable<string> = null;
+
+    /**
+     * A value between 0 and 2 that specifies the intensity of the environment lighting.
+     */
+    @property({ type: Number, attribute: "environment-intensity" })
+    public environmentIntensity: Nullable<number> = null;
+
+    /**
+     * A value in degrees that specifies the rotation of the environment.
+     */
+    @property({
+        type: Number,
+        attribute: "environment-rotation",
+        converter: (value: string | null) => {
+            const rotation = value ? parseFloat(value) : null;
+            if (rotation) {
+                return (rotation * Math.PI) / 180;
+            }
+            return 0;
+        },
+    })
+    public environmentRotation: Nullable<number> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1160,7 +1194,7 @@ export class HTML3DElement extends LitElement {
     private async _updateEnv(options: EnvironmentOptions) {
         if (this._viewerDetails) {
             try {
-                const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
+                const updates: [url: Nullable<string | number>, options: EnvironmentOptions][] = [];
 
                 if (options.lighting && options.skybox && this.environmentLighting === this.environmentSkybox) {
                     updates.push([this.environmentLighting, { lighting: true, skybox: true }]);
@@ -1175,7 +1209,7 @@ export class HTML3DElement extends LitElement {
 
                 const promises = updates.map(async ([url, options]) => {
                     if (url) {
-                        await this._viewerDetails?.viewer.loadEnvironment(url, options);
+                        await this._viewerDetails?.viewer.loadEnvironment(url as string, options);
                     } else {
                         await this._viewerDetails?.viewer.resetEnvironment(options);
                     }
