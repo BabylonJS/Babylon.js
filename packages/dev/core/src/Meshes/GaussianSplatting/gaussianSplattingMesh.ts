@@ -730,12 +730,12 @@ export class GaussianSplattingMesh extends Mesh {
 
                 const value = GaussianSplattingMesh._ValueNameToEnum(name);
                 // SH degree 1,2 or 3 for 9, 24 or 45 values
-                if (value >= PLYValue.SH_8) {
-                    shDegree = 1;
+                if (value >= PLYValue.SH_44) {
+                    shDegree = 3;
                 } else if (value >= PLYValue.SH_24) {
                     shDegree = 2;
-                } else if (value >= PLYValue.SH_44) {
-                    shDegree = 3;
+                } else if (value >= PLYValue.SH_8) {
+                    shDegree = 1;
                 }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
                 if (chunkMode == ElementMode.Chunk) {
@@ -1010,7 +1010,9 @@ export class GaussianSplattingMesh extends Mesh {
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
-                sh[property.value - PLYValue.SH_0] = Scalar.Clamp(value * 255, 0, 255);
+                const clampedValue = Scalar.Clamp(value * 127.5 + 127.5, 0, 255);
+                const shIndex = property.value - PLYValue.SH_0;
+                sh[shIndex] = clampedValue;
             }
         }
 
