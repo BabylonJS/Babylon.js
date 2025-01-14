@@ -6,8 +6,6 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Tuple } from "core/types";
 
-let _loadingLTC = false;
-
 async function decodeLTCTextures(): Promise<Tuple<Uint16Array, 2>> {
     const _ltc1 = new Uint16Array(64 * 64 * 4);
     const _ltc2 = new Uint16Array(64 * 64 * 4);
@@ -62,8 +60,8 @@ function getLTCTextureFromArray(ltc: ArrayBufferView, scene: Scene): BaseTexture
  * @param scene defines the hosting scene
  */
 export async function buildSceneLTCTextures(scene: Scene): Promise<void> {
-    if (!_loadingLTC) {
-        _loadingLTC = true;
+    if (!scene.isLoadingAreaLights) {
+        scene.isLoadingAreaLights = true;
         const arrayData = await decodeLTCTextures();
         scene.ltc1Texture = getLTCTextureFromArray(arrayData[0], scene);
         scene.ltc2Texture = getLTCTextureFromArray(arrayData[1], scene);

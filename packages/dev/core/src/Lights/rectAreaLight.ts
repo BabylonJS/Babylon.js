@@ -25,6 +25,11 @@ declare module "../scene" {
          * The material properties need to be setup according to the type of texture in use.
          */
         ltc2Texture: BaseTexture;
+
+        /**
+         * True if scene is already loading area lights.
+         */
+        isLoadingAreaLights: boolean;
     }
 }
 
