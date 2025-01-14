@@ -1150,7 +1150,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
-            (GaussianSplattingMesh.ConvertPLYWithSHToSplat(plyBuffer) as any).then((splatsData: PLYConversionBuffers) => {
+            (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: PLYConversionBuffers) => {
                 this.updateDataAsync(splatsData.buffer, splatsData.sh);
             });
         });

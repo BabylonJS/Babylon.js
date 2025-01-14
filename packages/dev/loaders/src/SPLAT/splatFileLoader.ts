@@ -512,7 +512,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const rowVertexLength = rowVertexOffset;
         const rowChunkLength = rowChunkOffset;
 
-        return (GaussianSplattingMesh.ConvertPLYWithSHToSplat(data) as any).then((splatsData: any) => {
+        return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(data) as any).then((splatsData: any) => {
             const dataView = new DataView(data, headerEndIndex + headerEnd.length);
             let offset = rowChunkLength * chunkCount + rowVertexLength * vertexCount;
             // faces
