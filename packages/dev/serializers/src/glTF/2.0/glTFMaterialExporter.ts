@@ -1,6 +1,6 @@
 /* eslint-disable babylonjs/available */
 
-import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler } from "babylonjs-gltf2interface";
+import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
 import type { Nullable } from "core/types";
@@ -960,25 +960,34 @@ export class GLTFMaterialExporter {
     }
 
     private _exportImage(name: string, mimeType: ImageMimeType, data: ArrayBuffer): number {
-        const imageData = this._exporter._imageData;
+        const images = this._exporter._images;
 
-        const baseName = name.replace(/\.\/|\/|\.\\|\\/g, "_");
-        const extension = GetFileExtensionFromMimeType(mimeType);
-        let fileName = baseName + extension;
-        if (fileName in imageData) {
-            fileName = `${baseName}_${Tools.RandomId()}${extension}`;
+        let image: IImage;
+        if (this._exporter._shouldUseGlb) {
+            image = {
+                name: name,
+                mimeType: mimeType,
+                bufferView: undefined, // Will be updated later by DataManager
+            };
+            const bufferView = this._exporter._dataManager.createBufferView(new Uint8Array(data));
+            this._exporter._dataManager.setBufferView(image, bufferView);
+        } else {
+            // Build a unique URI
+            const baseName = name.replace(/\.\/|\/|\.\\|\\/g, "_");
+            const extension = GetFileExtensionFromMimeType(mimeType);
+            let fileName = baseName + extension;
+            if (images.some((image) => image.uri === fileName)) {
+                fileName = `${baseName}_${Tools.RandomId()}${extension}`;
+            }
+
+            image = {
+                name: name,
+                uri: fileName,
+            };
+            this._exporter._imageData[fileName] = { data: data, mimeType: mimeType };
         }
 
-        imageData[fileName] = {
-            data: data,
-            mimeType: mimeType,
-        };
-
-        const images = this._exporter._images;
-        images.push({
-            name: name,
-            uri: fileName,
-        });
+        images.push(image);
 
         return images.length - 1;
     }

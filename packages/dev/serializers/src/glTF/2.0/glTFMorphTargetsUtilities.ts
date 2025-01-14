@@ -3,7 +3,7 @@ import { AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
 import type { MorphTarget } from "core/Morph/morphTarget";
 import type { DataWriter } from "./dataWriter";
 
-import { CreateAccessor, CreateBufferView, NormalizeTangent } from "./glTFUtilities";
+import { NormalizeTangent } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
@@ -38,18 +38,16 @@ export function BuildMorphTargetBuffers(
     const difference = Vector3.Zero();
     let vertexStart = 0;
     let vertexCount = 0;
-    let byteOffset = 0;
-    let bufferViewIndex = 0;
 
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;
         const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true);
 
         if (originalPositions) {
+            const positionData = new Float32Array(originalPositions.length);
             const min = [Infinity, Infinity, Infinity];
             const max = [-Infinity, -Infinity, -Infinity];
             vertexCount = originalPositions.length / 3;
-            byteOffset = dataWriter.byteOffset;
             vertexStart = 0;
             for (let i = vertexStart; i < vertexCount; ++i) {
                 const originalPosition = Vector3.FromArray(originalPositions, i * 3);
@@ -66,14 +64,14 @@ export function BuildMorphTargetBuffers(
                 min[2] = Math.min(min[2], difference.z);
                 max[2] = Math.max(max[2], difference.z);
 
-                dataWriter.writeFloat32(difference.x);
-                dataWriter.writeFloat32(difference.y);
-                dataWriter.writeFloat32(difference.z);
+                positionData[i * 3] = difference.x;
+                positionData[i * 3 + 1] = difference.y;
+                positionData[i * 3 + 2] = difference.z;
             }
 
-            bufferViews.push(CreateBufferView(0, byteOffset, morphPositions.length * floatSize, floatSize * 3));
-            bufferViewIndex = bufferViews.length - 1;
-            accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max }));
+            const bufferView = dataWriter.createBufferView(positionData, floatSize * 3);
+            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max });
+            accessors.push(accessor);
             result.attributes["POSITION"] = accessors.length - 1;
         } else {
             Tools.Warn(`Morph target positions for mesh ${mesh.name} were not exported. Mesh does not have position vertex data`);
@@ -85,21 +83,22 @@ export function BuildMorphTargetBuffers(
         const originalNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true);
 
         if (originalNormals) {
+            const normalData = new Float32Array(originalNormals.length);
             vertexCount = originalNormals.length / 3;
-            byteOffset = dataWriter.byteOffset;
             vertexStart = 0;
             for (let i = vertexStart; i < vertexCount; ++i) {
                 const originalNormal = Vector3.FromArray(originalNormals, i * 3).normalize();
                 const morphNormal = Vector3.FromArray(morphNormals, i * 3).normalize();
                 morphNormal.subtractToRef(originalNormal, difference);
-                dataWriter.writeFloat32(difference.x * flipX);
-                dataWriter.writeFloat32(difference.y);
-                dataWriter.writeFloat32(difference.z);
+
+                normalData[i * 3] = difference.x * flipX;
+                normalData[i * 3 + 1] = difference.y;
+                normalData[i * 3 + 2] = difference.z;
             }
 
-            bufferViews.push(CreateBufferView(0, byteOffset, morphNormals.length * floatSize, floatSize * 3));
-            bufferViewIndex = bufferViews.length - 1;
-            accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0));
+            const bufferView = dataWriter.createBufferView(normalData, floatSize * 3);
+            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0);
+            accessors.push(accessor);
             result.attributes["NORMAL"] = accessors.length - 1;
         } else {
             Tools.Warn(`Morph target normals for mesh ${mesh.name} were not exported. Mesh does not have normals vertex data`);
@@ -112,8 +111,8 @@ export function BuildMorphTargetBuffers(
 
         if (originalTangents) {
             vertexCount = originalTangents.length / 4;
+            const tangentData = new Float32Array(vertexCount * 3);
             vertexStart = 0;
-            byteOffset = dataWriter.byteOffset;
             for (let i = vertexStart; i < vertexCount; ++i) {
                 // Only read the x, y, z components and ignore w
                 const originalTangent = Vector3.FromArray(originalTangents, i * 4);
@@ -124,14 +123,13 @@ export function BuildMorphTargetBuffers(
                 NormalizeTangent(morphTangent);
 
                 morphTangent.subtractToRef(originalTangent, difference);
-                dataWriter.writeFloat32(difference.x * flipX);
-                dataWriter.writeFloat32(difference.y);
-                dataWriter.writeFloat32(difference.z);
+                tangentData[i * 3] = difference.x * flipX;
+                tangentData[i * 3 + 1] = difference.y;
+                tangentData[i * 3 + 2] = difference.z;
             }
-
-            bufferViews.push(CreateBufferView(0, byteOffset, vertexCount * floatSize * 3, floatSize * 3));
-            bufferViewIndex = bufferViews.length - 1;
-            accessors.push(CreateAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0));
+            const bufferView = dataWriter.createBufferView(tangentData, floatSize * 3);
+            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0);
+            accessors.push(accessor);
             result.attributes["TANGENT"] = accessors.length - 1;
         } else {
             Tools.Warn(`Morph target tangents for mesh ${mesh.name} were not exported. Mesh does not have tangents vertex data`);

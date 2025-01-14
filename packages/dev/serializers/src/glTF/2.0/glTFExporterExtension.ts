@@ -1,9 +1,8 @@
-import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
+import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo, IAccessor } from "babylonjs-gltf2interface";
 import type { Node } from "core/node";
 import type { Nullable } from "core/types";
 
 import type { Texture } from "core/Materials/Textures/texture";
-import type { SubMesh } from "core/Meshes/subMesh";
 import type { IDisposable } from "core/scene";
 
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
@@ -39,12 +38,9 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
 
     /**
      * Define this method to modify the default behavior when exporting a mesh primitive
-     * @param context The context when loading the asset
-     * @param meshPrimitive glTF mesh primitive
-     * @param babylonSubMesh Babylon submesh
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh): Promise<IMeshPrimitive>;
+    postExportMeshPrimitiveAsync?(primitive: IMeshPrimitive, dataManager: DataWriter, accessors: IAccessor[]): Promise<IMeshPrimitive>;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -79,6 +75,12 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @returns List of textures
      */
     postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+
+    /**
+     * todo
+     * @returns todo
+     */
+    preGenerateBinaryAsync?(dataManager: DataWriter): Promise<void>;
 
     /** Gets a boolean indicating that this extension was used */
     wasUsed: boolean;

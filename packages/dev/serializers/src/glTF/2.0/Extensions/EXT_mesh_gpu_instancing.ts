@@ -1,4 +1,4 @@
-import type { IBufferView, IAccessor, INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import type { INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 import { AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import type { DataWriter } from "../dataWriter";
@@ -8,7 +8,6 @@ import type { Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
-import { VertexBuffer } from "core/Buffers/buffer";
 import { ConvertToRightHandedPosition, ConvertToRightHandedRotation } from "../glTFUtilities";
 
 const NAME = "EXT_mesh_gpu_instancing";
@@ -49,7 +48,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param babylonNode the corresponding babylon node
      * @param nodeMap map from babylon node id to node index
      * @param convertToRightHanded true if we need to convert data from left hand to right hand system.
-     * @param dataWriter binary writer
+     * @param dataManager binary writer
      * @returns nullable promise, resolves with the node
      */
     public postExportNodeAsync(
@@ -58,7 +57,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         babylonNode: Node,
         nodeMap: Map<Node, number>,
         convertToRightHanded: boolean,
-        dataWriter: DataWriter
+        dataManager: DataWriter
     ): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
             if (node && babylonNode instanceof Mesh) {
@@ -117,18 +116,24 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             translationBuffer,
                             AccessorType.VEC3,
                             babylonNode.thinInstanceCount,
-                            dataWriter,
+                            dataManager,
                             AccessorComponentType.FLOAT
                         );
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
                         const componentType = AccessorComponentType.FLOAT; // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
-                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, dataWriter, componentType);
+                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, dataManager, componentType);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
-                        extension.attributes["SCALE"] = this._buildAccessor(scaleBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, dataWriter, AccessorComponentType.FLOAT);
+                        extension.attributes["SCALE"] = this._buildAccessor(
+                            scaleBuffer,
+                            AccessorType.VEC3,
+                            babylonNode.thinInstanceCount,
+                            dataManager,
+                            AccessorComponentType.FLOAT
+                        );
                     }
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
@@ -140,46 +145,50 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, binaryWriter: DataWriter, componentType: AccessorComponentType): number {
+    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, dataManager: DataWriter, componentType: AccessorComponentType): number {
         // write the buffer
-        const bufferOffset = binaryWriter.byteOffset;
+        let data;
         switch (componentType) {
             case AccessorComponentType.FLOAT: {
+                data = new Float32Array(buffer.length);
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.writeFloat32(buffer[i]);
+                    data[i] = buffer[i];
                 }
                 break;
             }
             case AccessorComponentType.BYTE: {
+                data = new Int8Array(buffer.length);
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.writeInt8(buffer[i] * 127);
+                    data[i] = buffer[i] * 127;
                 }
                 break;
             }
             case AccessorComponentType.SHORT: {
+                data = new Int16Array(buffer.length);
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.writeInt16(buffer[i] * 32767);
+                    data[i] = buffer[i] * 32767;
                 }
-
                 break;
+            }
+            default: {
+                throw new Error(`Unsupported componentType ${componentType}`);
             }
         }
         // build the buffer view
-        const bv: IBufferView = { buffer: 0, byteOffset: bufferOffset, byteLength: buffer.length * VertexBuffer.GetTypeByteLength(componentType) };
-        const bufferViewIndex = this._exporter._bufferViews.length;
-        this._exporter._bufferViews.push(bv);
+        const bv = dataManager.createBufferView(data);
 
         // finally build the accessor
-        const accessorIndex = this._exporter._accessors.length;
-        const accessor: IAccessor = {
-            bufferView: bufferViewIndex,
-            componentType: componentType,
-            count: count,
-            type: type,
-            normalized: componentType == AccessorComponentType.BYTE || componentType == AccessorComponentType.SHORT,
-        };
+        const accessor = dataManager.createAccessor(
+            bv,
+            type,
+            componentType,
+            count,
+            undefined,
+            undefined,
+            componentType == AccessorComponentType.BYTE || componentType == AccessorComponentType.SHORT
+        );
         this._exporter._accessors.push(accessor);
-        return accessorIndex;
+        return this._exporter._accessors.length - 1;
     }
 }
 
