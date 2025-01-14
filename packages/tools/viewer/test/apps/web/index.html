@@ -75,7 +75,7 @@
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
         <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
-            <babylon-viewer-2
+            <babylon-viewer
                 engine="WebGPU"
                 source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
                 environment="../../../../../public/@babylonjs/viewer/assets/photoStudio.env"
@@ -144,7 +144,7 @@
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
-            const viewerElement = document.querySelector("babylon-viewer-2");
+            const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
 
