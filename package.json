@@ -47,7 +47,7 @@
         "selenium-webdriver": "^4.3.1",
         "ts-jest": "~29.1.0",
         "ts-node": "~10.9.0",
-        "ts-patch": "3.2.1",
+        "ts-patch": "3.3.0",
         "tslib": "^2.4.0",
         "typedoc": "^0.27.6",
         "typescript": "~5.7.0",
