@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
-import type { AudioEngineV2 } from "../audioEngineV2";
-import { LastCreatedAudioEngine } from "../audioEngineV2";
+import type { AudioEngineV2 } from "../abstract/audioEngineV2";
+import { LastCreatedAudioEngine } from "../abstract/audioEngineV2";
 import type { _WebAudioEngine } from "./webAudioEngine";
 
 /**

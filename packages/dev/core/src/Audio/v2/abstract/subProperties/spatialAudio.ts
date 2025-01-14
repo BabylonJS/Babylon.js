@@ -1,6 +1,6 @@
-import type { Vector3, Quaternion } from "../../../Maths/math.vector";
-import type { TransformNode } from "../../../Meshes/transformNode";
-import type { Nullable } from "../../../types";
+import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { TransformNode } from "../../../../Meshes/transformNode";
+import type { Nullable } from "../../../../types";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";

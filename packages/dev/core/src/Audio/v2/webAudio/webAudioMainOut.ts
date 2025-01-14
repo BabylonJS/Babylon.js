@@ -1,5 +1,5 @@
-import type { AudioEngineV2 } from "../audioEngineV2";
-import { MainAudioOut } from "../mainAudioOut";
+import type { AudioEngineV2 } from "../abstract/audioEngineV2";
+import { MainAudioOut } from "../abstract/mainAudioOut";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode } from "./webAudioNode";
 

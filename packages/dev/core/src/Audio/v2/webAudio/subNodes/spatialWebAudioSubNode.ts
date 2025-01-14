@@ -1,7 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import type { Nullable } from "../../../../types";
-import { _SpatialAudioDefault, _SpatialAudioSubNode } from "../../subNodes/spatialAudioSubNode";
+import { _SpatialAudioDefault, _SpatialAudioSubNode } from "../../abstract/subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 

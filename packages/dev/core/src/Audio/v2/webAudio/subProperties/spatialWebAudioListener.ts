@@ -1,7 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import type { Nullable } from "../../../../types";
-import { AbstractSpatialAudioListener } from "../../subProperties/abstractSpatialAudioListener";
+import { AbstractSpatialAudioListener } from "../../abstract/subProperties/abstractSpatialAudioListener";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TempMatrix = new Matrix();

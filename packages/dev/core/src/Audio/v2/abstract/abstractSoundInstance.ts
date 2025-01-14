@@ -1,7 +1,7 @@
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../../Misc/observable";
+import { SoundState } from "../soundState";
 import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSound, IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
-import { SoundState } from "./soundState";
 
 /** @internal */
 export abstract class _AbstractSoundInstance extends AbstractAudioNode {

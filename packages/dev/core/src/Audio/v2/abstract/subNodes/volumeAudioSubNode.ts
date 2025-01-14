@@ -1,5 +1,5 @@
-import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
+import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { _AudioSubNode } from "./audioSubNode";
 
 /** @internal */

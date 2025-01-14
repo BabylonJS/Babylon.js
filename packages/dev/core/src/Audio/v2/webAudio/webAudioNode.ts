@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
-import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { _AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
+import type { AbstractAudioNode } from "../abstract/abstractAudioNode";
+import type { _AbstractAudioSubNode } from "../abstract/subNodes/abstractAudioSubNode";
 import type { _WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */

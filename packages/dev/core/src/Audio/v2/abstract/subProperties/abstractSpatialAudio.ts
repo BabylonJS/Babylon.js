@@ -1,6 +1,6 @@
-import type { Vector3, Quaternion } from "../../../Maths/math.vector";
-import type { TransformNode } from "../../../Meshes/transformNode";
-import type { Nullable } from "../../../types";
+import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { TransformNode } from "../../../../Meshes/transformNode";
+import type { Nullable } from "../../../../types";
 
 /** */
 export abstract class AbstractSpatialAudio {

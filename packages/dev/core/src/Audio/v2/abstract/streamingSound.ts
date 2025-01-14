@@ -1,7 +1,7 @@
+import { SoundState } from "../soundState";
 import type { IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import { SoundState } from "./soundState";
 import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 
 /**

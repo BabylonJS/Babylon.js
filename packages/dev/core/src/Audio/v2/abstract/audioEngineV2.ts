@@ -1,5 +1,5 @@
-import type { Vector3 } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
+import type { Vector3 } from "../../../Maths/math.vector";
+import type { Nullable } from "../../../types";
 import type { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";

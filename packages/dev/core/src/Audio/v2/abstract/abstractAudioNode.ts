@@ -1,4 +1,4 @@
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../../Misc/observable";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 type AudioNodeType = number;

@@ -1,4 +1,4 @@
-import type { Vector3 } from "core/Maths/math.vector";
+import type { Vector3 } from "../../../../Maths/math.vector";
 
 /** */
 export abstract class AbstractSpatialAudioListener {
