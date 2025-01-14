@@ -8,7 +8,7 @@ import type { IDisposable } from "core/scene";
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { DataWriter } from "./dataWriter";
+import type { BufferManager } from "./bufferManager";
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
@@ -40,7 +40,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * Define this method to modify the default behavior when exporting a mesh primitive
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(primitive: IMeshPrimitive, dataManager: DataWriter, accessors: IAccessor[]): Promise<IMeshPrimitive>;
+    postExportMeshPrimitiveAsync?(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): Promise<IMeshPrimitive>;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -57,7 +57,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
         babylonNode: Node,
         nodeMap: Map<Node, number>,
         convertToRightHanded: boolean,
-        dataWriter: DataWriter
+        bufferManager: BufferManager
     ): Promise<Nullable<INode>>;
 
     /**
@@ -80,7 +80,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * todo
      * @returns todo
      */
-    preGenerateBinaryAsync?(dataManager: DataWriter): Promise<void>;
+    preGenerateBinaryAsync?(bufferManager: BufferManager): Promise<void>;
 
     /** Gets a boolean indicating that this extension was used */
     wasUsed: boolean;

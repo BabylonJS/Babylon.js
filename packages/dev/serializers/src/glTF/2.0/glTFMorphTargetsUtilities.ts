@@ -1,7 +1,7 @@
 import type { IBufferView, IAccessor } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
 import type { MorphTarget } from "core/Morph/morphTarget";
-import type { DataWriter } from "./dataWriter";
+import type { BufferManager } from "./bufferManager";
 
 import { NormalizeTangent } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes/mesh";
@@ -22,7 +22,7 @@ export interface IMorphTargetData {
 export function BuildMorphTargetBuffers(
     morphTarget: MorphTarget,
     mesh: Mesh,
-    dataWriter: DataWriter,
+    bufferManager: BufferManager,
     bufferViews: IBufferView[],
     accessors: IAccessor[],
     convertToRightHanded: boolean
@@ -69,8 +69,8 @@ export function BuildMorphTargetBuffers(
                 positionData[i * 3 + 2] = difference.z;
             }
 
-            const bufferView = dataWriter.createBufferView(positionData, floatSize * 3);
-            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max });
+            const bufferView = bufferManager.createBufferView(positionData, floatSize * 3);
+            const accessor = bufferManager.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max });
             accessors.push(accessor);
             result.attributes["POSITION"] = accessors.length - 1;
         } else {
@@ -96,8 +96,8 @@ export function BuildMorphTargetBuffers(
                 normalData[i * 3 + 2] = difference.z;
             }
 
-            const bufferView = dataWriter.createBufferView(normalData, floatSize * 3);
-            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0);
+            const bufferView = bufferManager.createBufferView(normalData, floatSize * 3);
+            const accessor = bufferManager.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0);
             accessors.push(accessor);
             result.attributes["NORMAL"] = accessors.length - 1;
         } else {
@@ -127,8 +127,8 @@ export function BuildMorphTargetBuffers(
                 tangentData[i * 3 + 1] = difference.y;
                 tangentData[i * 3 + 2] = difference.z;
             }
-            const bufferView = dataWriter.createBufferView(tangentData, floatSize * 3);
-            const accessor = dataWriter.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0);
+            const bufferView = bufferManager.createBufferView(tangentData, floatSize * 3);
+            const accessor = bufferManager.createAccessor(bufferView, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0);
             accessors.push(accessor);
             result.attributes["TANGENT"] = accessors.length - 1;
         } else {

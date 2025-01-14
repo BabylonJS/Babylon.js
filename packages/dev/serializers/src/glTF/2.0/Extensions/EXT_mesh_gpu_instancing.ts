@@ -1,7 +1,7 @@
 import type { INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 import { AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import type { DataWriter } from "../dataWriter";
+import type { BufferManager } from "../bufferManager";
 import { GLTFExporter } from "../glTFExporter";
 import type { Nullable } from "core/types";
 import type { Node } from "core/node";
@@ -48,7 +48,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param babylonNode the corresponding babylon node
      * @param nodeMap map from babylon node id to node index
      * @param convertToRightHanded true if we need to convert data from left hand to right hand system.
-     * @param dataManager binary writer
+     * @param bufferManager binary writer
      * @returns nullable promise, resolves with the node
      */
     public postExportNodeAsync(
@@ -57,7 +57,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         babylonNode: Node,
         nodeMap: Map<Node, number>,
         convertToRightHanded: boolean,
-        dataManager: DataWriter
+        bufferManager: BufferManager
     ): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
             if (node && babylonNode instanceof Mesh) {
@@ -116,14 +116,14 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             translationBuffer,
                             AccessorType.VEC3,
                             babylonNode.thinInstanceCount,
-                            dataManager,
+                            bufferManager,
                             AccessorComponentType.FLOAT
                         );
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
                         const componentType = AccessorComponentType.FLOAT; // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
-                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, dataManager, componentType);
+                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, bufferManager, componentType);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
@@ -131,7 +131,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             scaleBuffer,
                             AccessorType.VEC3,
                             babylonNode.thinInstanceCount,
-                            dataManager,
+                            bufferManager,
                             AccessorComponentType.FLOAT
                         );
                     }
@@ -145,7 +145,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, dataManager: DataWriter, componentType: AccessorComponentType): number {
+    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, bufferManager: BufferManager, componentType: AccessorComponentType): number {
         // write the buffer
         let data;
         switch (componentType) {
@@ -175,10 +175,10 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
             }
         }
         // build the buffer view
-        const bv = dataManager.createBufferView(data);
+        const bv = bufferManager.createBufferView(data);
 
         // finally build the accessor
-        const accessor = dataManager.createAccessor(
+        const accessor = bufferManager.createAccessor(
             bv,
             type,
             componentType,

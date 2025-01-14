@@ -967,10 +967,10 @@ export class GLTFMaterialExporter {
             image = {
                 name: name,
                 mimeType: mimeType,
-                bufferView: undefined, // Will be updated later by DataManager
+                bufferView: undefined, // Will be updated later by BufferManager
             };
-            const bufferView = this._exporter._dataManager.createBufferView(new Uint8Array(data));
-            this._exporter._dataManager.setBufferView(image, bufferView);
+            const bufferView = this._exporter._bufferManager.createBufferView(new Uint8Array(data));
+            this._exporter._bufferManager.setBufferView(image, bufferView);
         } else {
             // Build a unique URI
             const baseName = name.replace(/\.\/|\/|\.\\|\\/g, "_");

@@ -2,7 +2,7 @@ import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { IAccessor, IBufferView, IKHRDracoMeshCompression, IMeshPrimitive } from "babylonjs-gltf2interface";
-import type { DataWriter } from "../dataWriter";
+import type { BufferManager } from "../bufferManager";
 import { DracoEncoder } from "core/Meshes/Compression/dracoEncoder";
 import { GetFloatData, GetTypeByteLength } from "core/Buffers/bufferUtils";
 import { GetAccessorElementCount } from "../glTFUtilities";
@@ -69,7 +69,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
     }
 
     /** @internal */
-    public async postExportMeshPrimitiveAsync(primitive: IMeshPrimitive, dataManager: DataWriter, accessors: IAccessor[]): Promise<IMeshPrimitive> {
+    public async postExportMeshPrimitiveAsync(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): Promise<IMeshPrimitive> {
         if (!this.enabled) {
             return primitive;
         }
@@ -83,21 +83,21 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         let indices: Nullable<Uint32Array | Uint16Array> = null;
         if (primitive.indices !== undefined) {
             const accessor = accessors[primitive.indices];
-            const bufferView = dataManager.getBufferView(accessor);
+            const bufferView = bufferManager.getBufferView(accessor);
             this._bufferViewsUsed.add(bufferView);
             this._accessorsUsed.add(accessor);
             // Per exportIndices, indices must be either Uint16Array or Uint32Array
-            indices = dataManager.getData(bufferView) as Uint32Array | Uint16Array;
+            indices = bufferManager.getData(bufferView) as Uint32Array | Uint16Array;
         }
 
         // Prepare attributes for Draco encoding
         const attributes: IDracoAttributeData[] = [];
         for (const [name, accessorIndex] of Object.entries(primitive.attributes)) {
             const accessor = accessors[accessorIndex];
-            const bufferView = dataManager.getBufferView(accessor);
+            const bufferView = bufferManager.getBufferView(accessor);
             this._bufferViewsUsed.add(bufferView);
             this._accessorsUsed.add(accessor);
-            const data = dataManager.getData(bufferView);
+            const data = bufferManager.getData(bufferView);
 
             const size = GetAccessorElementCount(accessor.type);
             // TODO: In future, find a way to preserve original data type to avoid copying in some cases
@@ -128,8 +128,8 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
             attributes: encodedData.attributeIDs,
         };
-        const bufferView = dataManager.createBufferView(encodedData.data);
-        dataManager.setBufferView(dracoInfo, bufferView);
+        const bufferView = bufferManager.createBufferView(encodedData.data);
+        bufferManager.setBufferView(dracoInfo, bufferView);
 
         primitive.extensions ||= {};
         primitive.extensions[NAME] = dracoInfo;
@@ -140,21 +140,21 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
     }
 
     /** @internal */
-    public async preGenerateBinaryAsync(dataManager: DataWriter): Promise<void> {
+    public async preGenerateBinaryAsync(bufferManager: BufferManager): Promise<void> {
         if (!this.enabled) {
             return;
         }
 
         // Cull obsolete bufferViews that are no longer needed, as they were replaced with Draco data
         for (const bufferView of this._bufferViewsUsed) {
-            const references = dataManager.getProperties(bufferView);
+            const references = bufferManager.getProperties(bufferView);
 
             const bufferViewOnlyUsedByDraco = references.every((object) => {
                 return this._accessorsUsed.has(object as IAccessor); // has() can handle any object, but TS doesn't know that
             });
 
             if (bufferViewOnlyUsedByDraco) {
-                dataManager.removeBufferView(bufferView);
+                bufferManager.removeBufferView(bufferView);
             }
         }
 

@@ -15,7 +15,7 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
-import type { DataWriter } from "./dataWriter";
+import type { BufferManager } from "./bufferManager";
 import { GetAccessorElementCount, ConvertToRightHandedPosition, ConvertCameraRotationToGLTF, ConvertToRightHandedRotation } from "./glTFUtilities";
 
 /**
@@ -224,7 +224,7 @@ export class _GLTFAnimation {
      * @param idleGLTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -235,7 +235,7 @@ export class _GLTFAnimation {
         idleGLTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
         nodes: INode[],
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -264,7 +264,7 @@ export class _GLTFAnimation {
                             animationInfo.dataAccessorType,
                             animationInfo.animationChannelTargetPath,
                             nodeMap,
-                            binaryWriter,
+                            bufferManager,
                             bufferViews,
                             accessors,
                             animationInfo.useQuaternion,
@@ -288,7 +288,7 @@ export class _GLTFAnimation {
      * @param idleGLTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -299,7 +299,7 @@ export class _GLTFAnimation {
         idleGLTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
         nodes: INode[],
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -353,7 +353,7 @@ export class _GLTFAnimation {
                                 animationInfo.dataAccessorType,
                                 animationInfo.animationChannelTargetPath,
                                 nodeMap,
-                                binaryWriter,
+                                bufferManager,
                                 bufferViews,
                                 accessors,
                                 animationInfo.useQuaternion,
@@ -378,7 +378,7 @@ export class _GLTFAnimation {
      * @param glTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -387,7 +387,7 @@ export class _GLTFAnimation {
         babylonScene: Scene,
         glTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -430,7 +430,7 @@ export class _GLTFAnimation {
                                     animationInfo.dataAccessorType,
                                     animationInfo.animationChannelTargetPath,
                                     nodeMap,
-                                    binaryWriter,
+                                    bufferManager,
                                     bufferViews,
                                     accessors,
                                     animationInfo.useQuaternion,
@@ -527,7 +527,7 @@ export class _GLTFAnimation {
                             animationInfo.dataAccessorType,
                             animationInfo.animationChannelTargetPath,
                             nodeMap,
-                            binaryWriter,
+                            bufferManager,
                             bufferViews,
                             accessors,
                             animationInfo.useQuaternion,
@@ -552,7 +552,7 @@ export class _GLTFAnimation {
         dataAccessorType: AccessorType,
         animationChannelTargetPath: AnimationChannelTargetPath,
         nodeMap: Map<Node, number>,
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         useQuaternion: boolean,
@@ -592,8 +592,8 @@ export class _GLTFAnimation {
 
             // Create buffer view and accessor for key frames.
             let data = new Float32Array(animationData.inputs);
-            bufferView = binaryWriter.createBufferView(data);
-            accessor = binaryWriter.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
+            bufferView = bufferManager.createBufferView(data);
+            accessor = bufferManager.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
                 min: [animationData.inputsMin],
                 max: [animationData.inputsMax],
             });
@@ -658,8 +658,8 @@ export class _GLTFAnimation {
             });
 
             // Create buffer view and accessor for keyed values.
-            bufferView = binaryWriter.createBufferView(data);
-            accessor = binaryWriter.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
+            bufferView = bufferManager.createBufferView(data);
+            accessor = bufferManager.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
 

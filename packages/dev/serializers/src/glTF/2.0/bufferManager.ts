@@ -1,17 +1,15 @@
 import type { TypedArray } from "core/types";
 import type { AccessorComponentType, AccessorType, IAccessor, IBufferView } from "babylonjs-gltf2interface";
 
-type IPropertyWithBufferView = {
+interface IPropertyWithBufferView {
     bufferView?: number;
-    [key: string]: any;
-};
+}
 
 /**
  * Utility class to centralize the management of binary data, bufferViews, and the objects that reference them.
- * TODO: Rename to BufferManager..?
  * @internal
  */
-export class DataWriter {
+export class BufferManager {
     // BufferView -> data
     private _bufferViewToData: Map<IBufferView, TypedArray> = new Map<IBufferView, TypedArray>();
 

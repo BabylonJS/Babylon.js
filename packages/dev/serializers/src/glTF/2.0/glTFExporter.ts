@@ -56,7 +56,7 @@ import {
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
 } from "./glTFUtilities";
-import { DataWriter } from "./dataWriter";
+import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -247,7 +247,7 @@ export class GLTFExporter {
 
     private readonly _extensions: { [name: string]: IGLTFExporterExtensionV2 } = {};
 
-    public readonly _dataManager = new DataWriter();
+    public readonly _bufferManager = new BufferManager();
 
     private readonly _shouldExportNodeMap = new Map<Node, boolean>();
 
@@ -302,14 +302,14 @@ export class GLTFExporter {
     public _extensionsPostExportMeshPrimitiveAsync(primitive: IMeshPrimitive): Promise<Nullable<IMeshPrimitive>> {
         return this._applyExtensions(
             primitive,
-            (extension, node) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(node, this._dataManager, this._accessors)
+            (extension, node) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(node, this._bufferManager, this._accessors)
         );
     }
 
     public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return this._applyExtensions(
             node,
-            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._dataManager)
+            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._bufferManager)
         );
     }
 
@@ -346,7 +346,7 @@ export class GLTFExporter {
             const extension = this._extensions[name];
 
             if (extension.preGenerateBinaryAsync) {
-                extension.preGenerateBinaryAsync(this._dataManager);
+                extension.preGenerateBinaryAsync(this._bufferManager);
             }
         }
     }
@@ -533,7 +533,7 @@ export class GLTFExporter {
     private async _generateBinaryAsync(): Promise<Uint8Array> {
         await this._exportSceneAsync();
         await this._extensionsPreGenerateBinaryAsync();
-        return this._dataManager.generateBinary(this._bufferViews);
+        return this._bufferManager.generateBinary(this._bufferViews);
     }
 
     /**
@@ -800,8 +800,8 @@ export class GLTFExporter {
                     });
                 });
                 // Create buffer view and accessor
-                const bufferView = this._dataManager.createBufferView(inverseBindMatricesData, byteStride);
-                this._accessors.push(this._dataManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
+                const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData, byteStride);
+                this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
                 skin.inverseBindMatrices = this._accessors.length - 1;
 
                 this._skins.push(skin);
@@ -865,7 +865,7 @@ export class GLTFExporter {
                 this._babylonScene,
                 this._animations,
                 this._nodeMap,
-                this._dataManager,
+                this._bufferManager,
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
@@ -1057,7 +1057,7 @@ export class GLTFExporter {
             }
 
             // Create buffer view, but defer accessor creation for later. Instead, track it via ExporterState.
-            const bufferView = this._dataManager.createBufferView(bytes, byteStride);
+            const bufferView = this._bufferManager.createBufferView(bytes, byteStride);
             state.setVertexBufferView(buffer, bufferView);
 
             const floatMatricesIndices = new Map<VertexBuffer, FloatArray>();
@@ -1099,7 +1099,7 @@ export class GLTFExporter {
                 for (let index = 0; index < array.length; index++) {
                     newArray[index] = array[index];
                 }
-                const bufferView = this._dataManager.createBufferView(newArray, 4 * (is16Bit ? 2 : 1));
+                const bufferView = this._bufferManager.createBufferView(newArray, 4 * (is16Bit ? 2 : 1));
                 state.setRemappedBufferView(buffer, vertexBuffer, bufferView);
             }
         }
@@ -1113,7 +1113,7 @@ export class GLTFExporter {
                 continue;
             }
 
-            const glTFMorphTarget = BuildMorphTargetBuffers(morphTarget, meshes[0], this._dataManager, this._bufferViews, this._accessors, state.convertToRightHanded);
+            const glTFMorphTarget = BuildMorphTargetBuffers(morphTarget, meshes[0], this._bufferManager, this._bufferViews, this._accessors, state.convertToRightHanded);
 
             for (const mesh of meshes) {
                 state.bindMorphDataToMesh(mesh, glTFMorphTarget);
@@ -1159,7 +1159,7 @@ export class GLTFExporter {
                     idleGLTFAnimations,
                     this._nodeMap,
                     this._nodes,
-                    this._dataManager,
+                    this._bufferManager,
                     this._bufferViews,
                     this._accessors,
                     this._animationSampleRate,
@@ -1173,7 +1173,7 @@ export class GLTFExporter {
                         idleGLTFAnimations,
                         this._nodeMap,
                         this._nodes,
-                        this._dataManager,
+                        this._bufferManager,
                         this._bufferViews,
                         this._accessors,
                         this._animationSampleRate,
@@ -1339,10 +1339,10 @@ export class GLTFExporter {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
                 const bytes = IndicesArrayToTypedArray(indicesToExport, start, count, is32Bits);
-                const bufferView = this._dataManager.createBufferView(bytes);
+                const bufferView = this._bufferManager.createBufferView(bytes);
 
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
-                this._accessors.push(this._dataManager.createAccessor(bufferView, AccessorType.SCALAR, componentType, count, 0));
+                this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.SCALAR, componentType, count, 0));
                 accessorIndex = this._accessors.length - 1;
                 state.setIndicesAccessor(indices, start, count, offset, flip, accessorIndex);
             }
@@ -1381,7 +1381,7 @@ export class GLTFExporter {
 
             const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
             this._accessors.push(
-                this._dataManager.createAccessor(
+                this._bufferManager.createAccessor(
                     bufferView,
                     GetAccessorType(kind, state.hasVertexColorAlpha(vertexBuffer)),
                     vertexBufferType,
