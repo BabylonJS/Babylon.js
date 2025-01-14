@@ -1,5 +1,6 @@
 import type { TypedArray } from "core/types";
 import type { AccessorComponentType, AccessorType, IAccessor, IBufferView } from "babylonjs-gltf2interface";
+import { DataWriter } from "./dataWriter";
 
 interface IPropertyWithBufferView {
     bufferView?: number;
@@ -25,72 +26,30 @@ export class BufferManager {
      * @returns The binary buffer
      */
     public generateBinary(bufferViews: IBufferView[]): Uint8Array {
-        // Allocate the ArrayBuffer
+        // Construct a DataWriter with the total byte length to prevent resizing
         let totalByteLength = 0;
-        for (const bufferView of this._bufferViewToData.keys()) {
-            bufferView.byteOffset = totalByteLength;
-            totalByteLength += bufferView.byteLength;
-        }
-        const buffer = new ArrayBuffer(totalByteLength);
-        const dataView = new DataView(buffer); // To write in little endian
+        this._bufferViewToData.forEach((data) => {
+            totalByteLength += data.byteLength;
+        });
+        const dataWriter = new DataWriter(totalByteLength);
 
         // Fill in the bufferViews list and missing bufferView index references while writing the binary
-        let byteOffset = 0;
-        for (const [bufferView, data] of this._bufferViewToData.entries()) {
-            bufferView.byteOffset = byteOffset;
+        this._bufferViewToData.forEach((data, bufferView) => {
+            bufferView.byteOffset = dataWriter.byteOffset;
             bufferViews.push(bufferView);
 
             const bufferViewIndex = bufferViews.length - 1;
-            const properties = this._bufferViewToProperties.get(bufferView)!;
+            const properties = this.getProperties(bufferView);
             for (const object of properties) {
                 object.bufferView = bufferViewIndex;
             }
 
-            const type = data.constructor.name;
-            for (let i = 0; i < data.length; i++) {
-                const value = data[i];
-                switch (type) {
-                    case "Int8Array":
-                        dataView.setInt8(byteOffset, value);
-                        byteOffset += 1;
-                        break;
-                    case "Uint8Array":
-                        dataView.setUint8(byteOffset, value);
-                        byteOffset += 1;
-                        break;
-                    case "Int16Array":
-                        dataView.setInt16(byteOffset, value, true);
-                        byteOffset += 2;
-                        break;
-                    case "Uint16Array":
-                        dataView.setUint16(byteOffset, value, true);
-                        byteOffset += 2;
-                        break;
-                    case "Int32Array":
-                        dataView.setInt32(byteOffset, value, true);
-                        byteOffset += 4;
-                        break;
-                    case "Uint32Array":
-                        dataView.setUint32(byteOffset, value, true);
-                        byteOffset += 4;
-                        break;
-                    case "Float32Array":
-                        dataView.setFloat32(byteOffset, value, true);
-                        byteOffset += 4;
-                        break;
-                    case "Float64Array":
-                        dataView.setFloat64(byteOffset, value, true);
-                        byteOffset += 8;
-                        break;
-                    default:
-                        throw new Error("Unsupported TypedArray type: " + type);
-                }
-            }
+            dataWriter.writeTypedArray(data);
 
-            this._bufferViewToData.delete(bufferView);
-        }
+            this._bufferViewToData.delete(bufferView); // Try to free up memory ASAP
+        });
 
-        return new Uint8Array(buffer, 0, byteOffset);
+        return dataWriter.getOutputData();
     }
 
     /**
@@ -193,12 +152,10 @@ export class BufferManager {
             throw new Error(`BufferView ${bufferView} not found in DataWriter.`);
         }
 
-        const properties = this._bufferViewToProperties.get(bufferView);
-        if (properties) {
-            for (const object of properties) {
-                if (object.bufferView) {
-                    delete object.bufferView;
-                }
+        const properties = this.getProperties(bufferView);
+        for (const object of properties) {
+            if (object.bufferView !== undefined) {
+                delete object.bufferView;
             }
         }
 
@@ -207,7 +164,7 @@ export class BufferManager {
         this._accessorToBufferView.forEach((bv, accessor) => {
             if (bv === bufferView) {
                 // Additionally, remove byteOffset from accessor referencing this bufferView
-                if (accessor.byteOffset) {
+                if (accessor.byteOffset !== undefined) {
                     delete accessor.byteOffset;
                 }
                 this._accessorToBufferView.delete(accessor);
