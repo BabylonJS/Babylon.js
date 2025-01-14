@@ -136,8 +136,9 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
             case ShaderLanguage.GLSL:
                 return true;
             default:
-                // no webgpu for webxr yet
-                return false;
+                // no webgpu for webxr yet, however - if this is not true the plugin fails to load.
+                // webxr is currently only supported on webgl, and the plugin is disabled per default.
+                return true;
         }
     }
 
