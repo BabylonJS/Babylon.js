@@ -5,6 +5,7 @@ import { AbstractSpatialAudioListener } from "../../abstract/subProperties/abstr
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TempMatrix = new Matrix();
+const TempQuaternion = new Quaternion();
 const TempVector = new Vector3();
 
 /** @internal */
@@ -16,9 +17,9 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine): AbstractSp
 class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
     private _audioContext: AudioContext;
     private _position: Vector3 = Vector3.Zero();
-    private _rotation: Vector3 = Vector3.Zero();
-    private _rotationQuaternion: Quaternion = Quaternion.FromEulerVector(this._rotation);
-    private _rotationQuaternionDirty = false;
+    private _rotationAngles: Vector3 = Vector3.Zero();
+    private _rotationAnglesDirty = false;
+    private _rotationQuaternion: Quaternion = Quaternion.FromEulerVector(this._rotationAngles);
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
@@ -40,13 +41,29 @@ class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
 
     /** @internal */
     public get rotation(): Vector3 {
-        return this._rotation;
+        if (this._rotationAnglesDirty) {
+            this._rotationAnglesDirty = false;
+            this._rotationQuaternion.toEulerAnglesToRef(this._rotationAngles);
+        }
+
+        return this._rotationAngles;
     }
 
     public set rotation(value: Vector3) {
-        this._rotation.copyFrom(value);
+        Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TempQuaternion);
+        this.rotationQuaternion = TempQuaternion;
+        this._rotationAnglesDirty = true;
+    }
 
-        const mat = Matrix.RotationYawPitchRollToRef(value.y, value.x, value.z, TempMatrix);
+    /** @internal */
+    public get rotationQuaternion(): Quaternion {
+        return this._rotationQuaternion;
+    }
+
+    public set rotationQuaternion(value: Quaternion) {
+        this._rotationQuaternion.copyFrom(value);
+
+        const mat = Matrix.FromQuaternionToRef(value, TempMatrix);
 
         const forward = Vector3.TransformNormalToRef(Vector3.Forward(), mat, TempVector);
         this._audioContext.listener.forwardX.value = forward.x;
@@ -57,21 +74,6 @@ class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
         this._audioContext.listener.upX.value = up.x;
         this._audioContext.listener.upY.value = up.y;
         this._audioContext.listener.upZ.value = up.z;
-
-        this._rotationQuaternionDirty = true;
-    }
-
-    /** @internal */
-    public get rotationQuaternion(): Quaternion {
-        if (this._rotationQuaternionDirty) {
-            Quaternion.FromEulerVectorToRef(this._rotation, this._rotationQuaternion);
-            this._rotationQuaternionDirty = false;
-        }
-        return this._rotationQuaternion;
-    }
-
-    public set rotationQuaternion(value: Quaternion) {
-        this.rotation = value.toEulerAnglesToRef(TempVector);
     }
 
     /** @internal */
