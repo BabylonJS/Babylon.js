@@ -1,6 +1,4 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import type { TransformNode } from "../../../../Meshes/transformNode";
-import type { Nullable } from "../../../../types";
 import { AbstractSpatialAudioListener } from "../../abstract/subProperties/abstractSpatialAudioListener";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
@@ -74,15 +72,5 @@ class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
         this._audioContext.listener.upX.value = up.x;
         this._audioContext.listener.upY.value = up.y;
         this._audioContext.listener.upZ.value = up.z;
-    }
-
-    /** @internal */
-    public get transformNode(): Nullable<TransformNode> {
-        // TODO: Implement `transformNode` property.
-        return null;
-    }
-
-    public set transformNode(value: Nullable<TransformNode>) {
-        // TODO: Implement `transformNode` property.
     }
 }
