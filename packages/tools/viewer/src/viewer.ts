@@ -517,7 +517,7 @@ export class Viewer implements IDisposable {
     }
 
     public set environmentRotation(value: number) {
-        this._reflectionsRotation = -value;
+        this._reflectionsRotation = value;
 
         if (this._reflectionTexture) {
             this._reflectionTexture.rotationY = this._reflectionsRotation;
@@ -525,7 +525,7 @@ export class Viewer implements IDisposable {
         if (this._details.scene.environmentTexture) {
             (this._details.scene.environmentTexture as CubeTexture).rotationY = this._reflectionsRotation;
         }
-        // this.onEnvironmentRotationChanged.notifyObservers();
+        this.onEnvironmentRotationChanged.notifyObservers();
     }
 
     /**
