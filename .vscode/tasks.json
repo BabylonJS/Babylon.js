@@ -510,7 +510,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Viewer (Alpha - Web)",
+            "label": "Viewer (Web)",
             "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",
@@ -520,7 +520,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/viewer-alpha"],
+            "args": ["run", "serve", "-w", "@tools/viewer"],
             "isBackground": true,
             "problemMatcher": {
                 "pattern": "$tsc",

@@ -244,7 +244,7 @@ export class _IblShadowsVoxelTracingPass {
                 uniforms: ["sizeParams"],
                 samplers: ["debugSampler"],
                 engine: this._engine,
-                reusable: false,
+                reusable: true,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
                 extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
                     if (useWebGPU) {

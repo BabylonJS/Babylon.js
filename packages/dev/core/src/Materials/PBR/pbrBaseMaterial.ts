@@ -1722,6 +1722,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         if (reflectionTexture.irradianceTexture) {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
+                            defines.USESPHERICALINVERTEX = false;
                         }
                         // Assume using spherical polynomial if the reflection texture is a cube map
                         else if (reflectionTexture.isCube) {

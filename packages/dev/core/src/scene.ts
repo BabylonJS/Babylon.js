@@ -5222,10 +5222,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         if (EngineStore._LastCreatedScene === this) {
-            if (this._engine.scenes.length > 0) {
-                EngineStore._LastCreatedScene = this._engine.scenes[this._engine.scenes.length - 1];
-            } else {
-                EngineStore._LastCreatedScene = null;
+            EngineStore._LastCreatedScene = null;
+            let engineIndex = EngineStore.Instances.length - 1;
+            while (engineIndex >= 0) {
+                const engine = EngineStore.Instances[engineIndex];
+                if (engine.scenes.length > 0) {
+                    EngineStore._LastCreatedScene = engine.scenes[this._engine.scenes.length - 1];
+                    break;
+                }
+                engineIndex--;
             }
         }
 

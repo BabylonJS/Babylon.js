@@ -20,6 +20,7 @@ import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
 import { Epsilon } from "../Maths/math.constants";
 import { Logger } from "../Misc/logger";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for plane rotation gizmo
@@ -291,6 +292,16 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeScale = new Vector3(1, 1, 1);
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
+                const attachedNodeTransform = this._attachedNode as TransformNode;
+                // check there is an active pivot for the TransformNode attached
+                if (attachedNodeTransform && attachedNodeTransform.isUsingPivotMatrix && attachedNodeTransform.isUsingPivotMatrix() && attachedNodeTransform.position) {
+                    // When a TransformNode has an active pivot, even without parenting,
+                    // translation from the world matrix is different from TransformNode.position.
+                    // Pivot works like a virtual parent that's using the node orientation.
+                    // As the world matrix is transformed by the gizmo and then decomposed to TRS
+                    // its translation part must be set to the Node's position.
+                    attachedNodeTransform.getWorldMatrix().setTranslation(attachedNodeTransform.position);
+                }
 
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
                 // uniform scaling of absolute value of components
