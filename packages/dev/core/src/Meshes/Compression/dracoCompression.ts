@@ -35,7 +35,8 @@ export interface IDracoCompressionOptions extends Pick<IDracoCodecConfiguration,
  *
  * **Decoder**
  *
- * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js cdn https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * The configuration is shared with the DracoDecoder class.
  *
  * To update the configuration, use the following code:
  * ```javascript
