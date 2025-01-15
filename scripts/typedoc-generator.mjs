@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
-const TypeDoc = require("typedoc");
-const fs = require("fs");
-const glob = require("glob");
-const { commentAnalyzer } = require("./comment-analyzer");
+import { Application } from "typedoc";
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
+import { globSync } from "glob";
+import { commentAnalyzer } from "./comment-analyzer.mjs";
 // const { run } = require("jest");
-const exec = require("child_process").exec;
+import { exec } from "child_process";
 
 function runCommand(command) {
     return new Promise((resolve, reject) => {
@@ -34,7 +34,7 @@ function generateMessageFromError(error) {
 }
 
 async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
-    const app = await TypeDoc.Application.bootstrapWithPlugins(
+    const app = await Application.bootstrapWithPlugins(
         {
             entryPoints,
             skipErrorChecking: true,
@@ -60,7 +60,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
         const outputDir = "tmp";
         await app.generateJson(project, `${outputDir}/typedoc.json`);
 
-        const data = JSON.parse(fs.readFileSync(`${outputDir}/typedoc.json`, "utf8"));
+        const data = JSON.parse(readFileSync(`${outputDir}/typedoc.json`, "utf8"));
         console.log("Analyzing...");
         const msgs = commentAnalyzer(data);
         // check if the message is in one of the files that has been changed
@@ -81,14 +81,14 @@ async function main() {
     const packages = process.argv.includes("--packages") ? process.argv[process.argv.indexOf("--packages") + 1].split(",") : ["core", "loaders", "materials", "gui", "serializers"];
     const full = process.argv.includes("--full");
     const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
-    const files = glob.globSync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
+    const files = globSync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
     console.log(files);
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
     });
 
-    if (!fs.existsSync("tmp")) {
-        fs.mkdirSync("tmp");
+    if (!existsSync("tmp")) {
+        mkdirSync("tmp");
     }
 
     await generateTypedocAndAnalyze(dirList, full ? undefined : filesChanged);
@@ -110,13 +110,13 @@ async function main() {
             .join("\n")}
     </testsuite>
 </testsuites>`;
-        fs.writeFileSync("junit.xml", xml);
+        writeFileSync("junit.xml", xml);
         // if in CI, save to errors.txt
         if (process.env.CI) {
             const messages = Object.keys(warnings)
                 .map((w) => `${w} ${generateMessageFromError(Object.keys(warnings)[w])}`)
                 .join("\n");
-            fs.writeFileSync("errors.txt", messages);
+            writeFileSync("errors.txt", messages);
             // log to the console
             console.log(`
 Found ${Object.keys(warnings).length} typedoc errors:

@@ -209,9 +209,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , ${worldPosVarName}.xyz
                 , viewDirectionW
                 , ${refractionView}
-                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionInfosName ?? ""}
-                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._refractionMatrixName ?? ""}
-                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + (refractionBlock?._vRefractionInfosName ?? "")}
+                , ${(isWebGPU ? "uniforms." : "") + (refractionBlock?._refractionMatrixName ?? "")}
+                , ${(isWebGPU ? "uniforms." : "") + (refractionBlock?._vRefractionMicrosurfaceInfosName ?? "")}
                 , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     , alpha
