@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
-export * from "./abstract/index";
+export * from "./abstract";
 export * from "./soundState";
-export * from "./webAudio/index";
+export * from "./webAudio";
