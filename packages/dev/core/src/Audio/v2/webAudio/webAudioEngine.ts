@@ -58,120 +58,30 @@ const FormatMimeTypeMap = new Map<string, string>([
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
-    private _resumePromise: Nullable<Promise<void>> = null;
-
-    private _mainOut: _WebAudioMainOut;
-
     private _invalidFormats = new Set<string>();
+    private _listener: Nullable<AbstractSpatialAudioListener> = null;
+    private _mainOut: _WebAudioMainOut;
+    private _resumeOnInteraction = true;
+    private _resumeOnPause = true;
+    private _resumeOnPauseRetryInterval = 1000;
+    private _resumeOnPauseTimerId: any = null;
+    private _resumePromise: Nullable<Promise<void>> = null;
     private _validFormats = new Set<string>();
     private _volume = 1;
 
-    private _listener: Nullable<AbstractSpatialAudioListener> = null;
-
     /** @internal */
     public readonly audioContext: AudioContext;
-
-    /** @internal */
-    public get isWebAudio(): boolean {
-        return true;
-    }
 
     /** @internal */
     public readonly isReadyPromise: Promise<void> = new Promise((resolve) => {
         this._resolveIsReadyPromise = resolve;
     });
 
-    private _resolveIsReadyPromise: () => void;
-
-    /** @internal */
-    public get currentTime(): number {
-        return this.audioContext.currentTime ?? 0;
-    }
-
-    /** @internal */
-    public get mainOut(): _WebAudioMainOut {
-        return this._mainOut;
-    }
-
-    private _initAudioContext: () => Promise<void> = async () => {
-        this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
-
-        this._mainOut = await _CreateMainAudioOutAsync(this);
-        this._mainOut.volume = this._volume;
-
-        await CreateMainAudioBusAsync("default", this);
-    };
-
-    private _onUserGesture: () => void = async () => {
-        if (this._resumeOnInteraction) {
-            await this.audioContext.resume();
-        }
-
-        this.userGestureObservable.notifyObservers();
-    };
-
-    private _onAudioContextStateChange = () => {
-        if (this.state === "running") {
-            clearInterval(this._resumeOnPauseTimerId);
-            this._audioContextStarted = true;
-            this._resumePromise = null;
-        }
-        if (this.state === "suspended" || this.state === "interrupted") {
-            if (this._audioContextStarted && this._resumeOnPause) {
-                clearInterval(this._resumeOnPauseTimerId);
-
-                this._resumeOnPauseTimerId = setInterval(() => {
-                    this.resume();
-                }, this._resumeOnPauseRetryInterval);
-            }
-        }
-
-        this.stateChangedObservable.notifyObservers(this.state);
-    };
-
-    private _resumeOnInteraction = true;
-    private _resumeOnPause = true;
-    private _resumeOnPauseRetryInterval = 1000;
-    private _resumeOnPauseTimerId: any = null;
-
-    /** @internal */
-    public userGestureObservable: Observable<void> = new Observable();
-
-    /** @internal */
-    public get state(): AudioEngineV2State {
-        return this.audioContext.state;
-    }
-
     /** @internal */
     public stateChangedObservable: Observable<string> = new Observable();
 
     /** @internal */
-    public get inNode(): AudioNode {
-        return this.audioContext.destination;
-    }
-
-    /** @internal */
-    public get listener(): AbstractSpatialAudioListener {
-        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this));
-    }
-
-    /** @internal */
-    public get volume(): number {
-        return this._volume;
-    }
-
-    /** @internal */
-    public set volume(value: number) {
-        if (this._volume === value) {
-            return;
-        }
-
-        this._volume = value;
-
-        if (this._mainOut) {
-            this._mainOut.volume = value;
-        }
-    }
+    public userGestureObservable: Observable<void> = new Observable();
 
     /** @internal */
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
@@ -202,6 +112,54 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._resolveIsReadyPromise();
+    }
+
+    /** @internal */
+    public get currentTime(): number {
+        return this.audioContext.currentTime ?? 0;
+    }
+
+    /** @internal */
+    public get inNode(): AudioNode {
+        return this.audioContext.destination;
+    }
+
+    /** @internal */
+    public get isWebAudio(): boolean {
+        return true;
+    }
+
+    /** @internal */
+    public get mainOut(): _WebAudioMainOut {
+        return this._mainOut;
+    }
+
+    /** @internal */
+    public get listener(): AbstractSpatialAudioListener {
+        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this));
+    }
+
+    /** @internal */
+    public get state(): AudioEngineV2State {
+        return this.audioContext.state;
+    }
+
+    /** @internal */
+    public get volume(): number {
+        return this._volume;
+    }
+
+    /** @internal */
+    public set volume(value: number) {
+        if (this._volume === value) {
+            return;
+        }
+
+        this._volume = value;
+
+        if (this._mainOut) {
+            this._mainOut.volume = value;
+        }
     }
 
     /** @internal */
@@ -283,4 +241,42 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public removeNode(node: AbstractNamedAudioNode): void {
         this._removeNode(node);
     }
+
+    private _initAudioContext: () => Promise<void> = async () => {
+        this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
+
+        this._mainOut = await _CreateMainAudioOutAsync(this);
+        this._mainOut.volume = this._volume;
+
+        await CreateMainAudioBusAsync("default", this);
+    };
+
+    private _onAudioContextStateChange = () => {
+        if (this.state === "running") {
+            clearInterval(this._resumeOnPauseTimerId);
+            this._audioContextStarted = true;
+            this._resumePromise = null;
+        }
+        if (this.state === "suspended" || this.state === "interrupted") {
+            if (this._audioContextStarted && this._resumeOnPause) {
+                clearInterval(this._resumeOnPauseTimerId);
+
+                this._resumeOnPauseTimerId = setInterval(() => {
+                    this.resume();
+                }, this._resumeOnPauseRetryInterval);
+            }
+        }
+
+        this.stateChangedObservable.notifyObservers(this.state);
+    };
+
+    private _onUserGesture: () => void = async () => {
+        if (this._resumeOnInteraction) {
+            await this.audioContext.resume();
+        }
+
+        this.userGestureObservable.notifyObservers();
+    };
+
+    private _resolveIsReadyPromise: () => void;
 }
