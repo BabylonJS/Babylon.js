@@ -1210,7 +1210,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private async _updateEnv(options: EnvironmentOptions) {
         if (this._viewerDetails) {
             try {
-                const updates: [url: Nullable<string | number>, options: EnvironmentOptions][] = [];
+                const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
 
                 if (options.lighting && options.skybox && this.environmentLighting === this.environmentSkybox) {
                     updates.push([this.environmentLighting, { lighting: true, skybox: true }]);
