@@ -25,9 +25,9 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
 /**
  * Abstract class for an audio bus that has spatial audio and stereo output capabilities.
  *
- * Audio buses are created by the {@link CreateAudioBusAsync} function.
- *
  * Instances of this class can be connected to other audio buses.
+ *
+ * Audio buses are created by the {@link CreateAudioBusAsync} function.
  */
 export abstract class AudioBus extends AbstractAudioBus {
     private _outBus: Nullable<PrimaryAudioBus> = null;

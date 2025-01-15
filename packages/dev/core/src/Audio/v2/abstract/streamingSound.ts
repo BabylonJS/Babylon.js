@@ -17,8 +17,6 @@ export interface IStreamingSoundOptions extends IAbstractSoundOptions {
 /**
  * Abstract class representing a streaming sound.
  *
- * Streaming sounds are created by the {@link CreateStreamingSoundAsync} function.
- *
  * A streaming sound has a sound buffer that is loaded into memory in chunks as it is played. This allows it to be played
  * more quickly than a static sound, but it also means that it cannot have loop points or playback rate changes.
  *
@@ -26,6 +24,8 @@ export interface IStreamingSoundOptions extends IAbstractSoundOptions {
  * a streaming sound for the first time. To prevent this delay, it is recommended to preload instances of the sound
  * using the {@link IStreamingSoundOptions.preloadCount} options, or the {@link preloadInstance} and
  * {@link preloadInstances} methods before calling the `play` method.
+ *
+ * Streaming sounds are created by the {@link CreateStreamingSoundAsync} function.
  */
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();

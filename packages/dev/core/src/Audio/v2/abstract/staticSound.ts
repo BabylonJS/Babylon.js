@@ -63,14 +63,14 @@ export interface IStaticSoundOptions extends IAbstractSoundOptions {
 /**
  * Abstract class representing a static sound.
  *
- * Static sounds are created by the {@link CreateSoundAsync} function.
- *
  * A static sound has a sound buffer that is loaded into memory all at once. This allows it to have more capabilities
  * than a streaming sound, such as loop points and playback rate changes, but it also means that the sound must be
  * fully downloaded and decoded before it can be played, which may take a long time for sounds with long durations.
  *
  * To prevent downloading and decoding a sound multiple times, a sound's buffer can be shared with other sounds.
  * See {@link CreateSoundBufferAsync}, {@link StaticSoundBuffer} and {@link StaticSound.buffer} for more information.
+ *
+ * Static sounds are created by the {@link CreateSoundAsync} function.
  */
 export abstract class StaticSound extends AbstractSound {
     protected override _instances: Set<_StaticSoundInstance>;
@@ -78,6 +78,8 @@ export abstract class StaticSound extends AbstractSound {
 
     /**
      * The sound buffer that the sound uses.
+     *
+     * This buffer can be shared with other static sounds.
      */
     public abstract readonly buffer: StaticSoundBuffer;
 
