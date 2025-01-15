@@ -28,13 +28,11 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasSpatialOptions = false;
         let hasStereoOptions = false;
 
-        if (options) {
-            if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-                this._createAndAddSubNode(_AudioSubNode.Spatial);
-            }
-            if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-                this._createAndAddSubNode(_AudioSubNode.Stereo);
-            }
+        if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
+            this._createAndAddSubNode(_AudioSubNode.Spatial);
+        }
+        if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
+            this._createAndAddSubNode(_AudioSubNode.Stereo);
         }
 
         await this._createSubNodePromisesResolved();
