@@ -69,6 +69,23 @@ export type CameraAutoOrbit = {
     delay: number;
 };
 
+export type EnvironmentParams = {
+    /**
+     * The intensity of the environment lighting.
+     */
+    intensity: number;
+
+    /**
+     * The blur applied to the environment lighting.
+     */
+    blur: number;
+
+    /**
+     * The rotation of the environment lighting in degrees.
+     */
+    rotation: number;
+};
+
 export type PostProcessing = {
     /**
      * The tone mapping to use for rendering the scene.
@@ -507,13 +524,36 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * The environment configuration.
+     */
+    public get environment(): Readonly<EnvironmentParams> {
+        return {
+            intensity: this.environmentIntensity,
+            blur: this.skyboxBlur,
+            rotation: this.environmentRotation,
+        };
+    }
+
+    public set environment(value: Partial<Readonly<EnvironmentParams>>) {
+        if (value.blur !== undefined) {
+            this.skyboxBlur = value.blur;
+        }
+        if (value.intensity !== undefined) {
+            this.environmentIntensity = value.intensity;
+        }
+        if (value.rotation !== undefined) {
+            this.environmentRotation = value.rotation;
+        }
+    }
+
+    /**
      * A value between 0 and 1 that specifies how much to blur the skybox.
      */
-    public get skyboxBlur(): number {
+    get skyboxBlur(): number {
         return this._skyboxBlur;
     }
 
-    public set skyboxBlur(value: number) {
+    set skyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
             if (this._skybox) {
@@ -531,11 +571,11 @@ export class Viewer implements IDisposable {
     /**
      * The rotation of the skybox in radians.
      */
-    public get environmentRotation(): number {
+    get environmentRotation(): number {
         return this._reflectionsRotation;
     }
 
-    public set environmentRotation(value: number) {
+    set environmentRotation(value: number) {
         this._reflectionsRotation = value;
 
         if (this._skyboxTexture) {
@@ -550,11 +590,11 @@ export class Viewer implements IDisposable {
     /**
      * The intensity of the environment lighting.
      */
-    public get environmentIntensity(): number {
+    get environmentIntensity(): number {
         return this._reflectionsIntensity;
     }
 
-    public set environmentIntensity(value: number) {
+    set environmentIntensity(value: number) {
         this._reflectionsIntensity = value;
         if (this._skyboxTexture) {
             this._skyboxTexture.level = this._reflectionsIntensity;
