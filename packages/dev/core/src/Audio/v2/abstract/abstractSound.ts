@@ -1,7 +1,7 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import { SoundState } from "../soundState";
-import { _AudioNodeType, NamedAbstractAudioNode } from "./abstractAudioNode";
+import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
@@ -54,7 +54,7 @@ export interface IAbstractSoundOptions extends IAbstractSoundPlayOptions, ISpati
 /**
  * Abstract class representing a sound in the audio engine.
  */
-export abstract class AbstractSound extends NamedAbstractAudioNode {
+export abstract class AbstractSound extends AbstractNamedAudioNode {
     private _outBus: Nullable<PrimaryAudioBus> = null;
     private _state: SoundState = SoundState.Stopped;
 

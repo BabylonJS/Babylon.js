@@ -1,4 +1,4 @@
-import { _AudioNodeType, NamedAbstractAudioNode } from "./abstractAudioNode";
+import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
@@ -11,7 +11,7 @@ import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
  * An audio bus is a node in the audio graph that can have multiple inputs and outputs. It is typically used to group
  * sounds together and apply effects to them.
  */
-export abstract class AbstractAudioBus extends NamedAbstractAudioNode {
+export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     protected constructor(name: string, engine: AudioEngineV2) {

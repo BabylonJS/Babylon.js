@@ -1,6 +1,6 @@
 import type { Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
-import type { AbstractAudioNode, NamedAbstractAudioNode } from "./abstractAudioNode";
+import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";
 
@@ -57,7 +57,7 @@ export abstract class AudioEngineV2 {
     private readonly _mainBuses = new Set<MainAudioBus>();
 
     /** Owned top-level sound and bus nodes. */
-    private readonly _nodes = new Set<NamedAbstractAudioNode>();
+    private readonly _nodes = new Set<AbstractNamedAudioNode>();
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
@@ -175,11 +175,11 @@ export abstract class AudioEngineV2 {
         this._removeNode(mainBus);
     }
 
-    protected _addNode(node: NamedAbstractAudioNode): void {
+    protected _addNode(node: AbstractNamedAudioNode): void {
         this._nodes.add(node);
     }
 
-    protected _removeNode(node: NamedAbstractAudioNode): void {
+    protected _removeNode(node: AbstractNamedAudioNode): void {
         this._nodes.delete(node);
     }
 }

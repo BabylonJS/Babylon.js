@@ -152,13 +152,13 @@ export abstract class AbstractAudioNode {
 /**
  * Abstract class for a named audio node.
  */
-export abstract class NamedAbstractAudioNode extends AbstractAudioNode {
+export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
     private _name: string;
 
     /**
      * Observable for when the audio node is renamed.
      */
-    public readonly onNameChangedObservable = new Observable<{ oldName: string; node: NamedAbstractAudioNode }>();
+    public readonly onNameChangedObservable = new Observable<{ oldName: string; node: AbstractNamedAudioNode }>();
 
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);

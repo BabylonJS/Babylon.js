@@ -1,11 +1,11 @@
 import type { Nullable } from "../../../../types";
-import type { AbstractAudioNode, NamedAbstractAudioNode } from "../abstractAudioNode";
+import type { AbstractAudioNode, AbstractNamedAudioNode } from "../abstractAudioNode";
 import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 
 /** @internal */
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises = new Map<string, Promise<_AbstractAudioSubNode>>();
-    private _subNodes = new Map<string, Set<NamedAbstractAudioNode>>();
+    private _subNodes = new Map<string, Set<AbstractNamedAudioNode>>();
 
     /**
      * Releases associated resources.
@@ -46,7 +46,7 @@ export abstract class _AbstractAudioSubGraph {
     }
 
     /** @internal */
-    public getSubNode<T extends NamedAbstractAudioNode>(name: string): Nullable<T> {
+    public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
         const set = this._subNodes.get(name);
 
         if (!set) {
@@ -68,18 +68,18 @@ export abstract class _AbstractAudioSubGraph {
         await Promise.all(this._createSubNodePromises.values());
     }
 
-    private _getSubNodeSet(name: string): Set<NamedAbstractAudioNode> {
+    private _getSubNodeSet(name: string): Set<AbstractNamedAudioNode> {
         let set = this._subNodes.get(name);
 
         if (!set) {
-            set = new Set<NamedAbstractAudioNode>();
+            set = new Set<AbstractNamedAudioNode>();
             this._subNodes.set(name, set);
         }
 
         return set;
     }
 
-    private _addSubNode(node: NamedAbstractAudioNode): void {
+    private _addSubNode(node: AbstractNamedAudioNode): void {
         this._getSubNodeSet(node.name).add(node);
         this._onSubNodesChanged();
 
@@ -104,13 +104,13 @@ export abstract class _AbstractAudioSubGraph {
     }
 
     private _onSubNodeDisposed = (node: AbstractAudioNode) => {
-        const subNode = node as NamedAbstractAudioNode;
+        const subNode = node as AbstractNamedAudioNode;
 
         this._getSubNodeSet(subNode.name).delete(subNode);
         this._onSubNodesChanged();
     };
 
-    private _onSubNodeNameChanged = (event: { oldName: string; node: NamedAbstractAudioNode }) => {
+    private _onSubNodeNameChanged = (event: { oldName: string; node: AbstractNamedAudioNode }) => {
         const set = this._subNodes.get(event.oldName);
 
         if (!set) {
