@@ -76,15 +76,13 @@
         <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
             <babylon-viewer
-                engine="WebGL"
-                source="http://localhost:3000/glb/sphere.glb"
+                ngine="WebGPU"
+                source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
                 environment="../../../../../public/@babylonjs/viewer/assets/photoStudio.env"
                 animation-speed="1.5"
                 selected-animation="1"
                 camera-orbit="auto auto auto"
                 camera-target="auto auto auto"
-                environment-rotation="0"
-                skybox-blur="0"
                 hotspots='{
                     "antenna": {
                         "type": "surface",
