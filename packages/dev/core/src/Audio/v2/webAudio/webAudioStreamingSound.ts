@@ -170,25 +170,19 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
         this._resolveIsReadyPromise = resolve;
     });
+    private _mediaElement: HTMLMediaElement;
+    private _sourceNode: Nullable<MediaElementAudioSourceNode>;
+    private _volumeNode: GainNode;
 
     protected override _sound: _WebAudioStreamingSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
-    /** @internal */
-    public mediaElement: HTMLMediaElement;
-
-    /** @internal */
-    public sourceNode: Nullable<MediaElementAudioSourceNode>;
-
-    /** @internal */
-    public volumeNode: GainNode;
-
     public constructor(sound: _WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
         super(sound, options);
 
-        this.volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound.audioContext);
 
         if (typeof sound.source === "string") {
             this._initFromUrl(sound.source);
@@ -213,7 +207,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
 
         if (restart) {
-            this.mediaElement.pause();
+            this._mediaElement.pause();
             this._setState(SoundState.Stopped);
         }
 
@@ -227,7 +221,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     public get outNode(): Nullable<AudioNode> {
-        return this.volumeNode;
+        return this._volumeNode;
     }
 
     /** @internal */
@@ -245,13 +239,13 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         this.stop();
 
-        this.sourceNode?.disconnect(this.volumeNode);
-        this.sourceNode = null;
+        this._sourceNode?.disconnect(this._volumeNode);
+        this._sourceNode = null;
 
-        this.mediaElement.removeEventListener("ended", this._onEnded);
-        this.mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
-        for (const source of Array.from(this.mediaElement.children)) {
-            this.mediaElement.removeChild(source);
+        this._mediaElement.removeEventListener("ended", this._onEnded);
+        this._mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
+        for (const source of Array.from(this._mediaElement.children)) {
+            this._mediaElement.removeChild(source);
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -264,7 +258,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             return;
         }
 
-        this.volumeNode.gain.value = options.volume ?? this.options.volume;
+        this._volumeNode.gain.value = options.volume ?? this.options.volume;
 
         let startOffset = options.startOffset ?? null;
 
@@ -280,7 +274,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         if (startOffset && startOffset > 0) {
-            this.mediaElement.currentTime = startOffset;
+            this._mediaElement.currentTime = startOffset;
         }
 
         this._play();
@@ -295,7 +289,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._setState(SoundState.Paused);
         this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
-        this.mediaElement.pause();
+        this._mediaElement.pause();
     }
 
     /** @internal */
@@ -349,12 +343,12 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         mediaElement.load();
 
-        this.sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
-        this.sourceNode.connect(this.volumeNode);
+        this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this._sourceNode.connect(this._volumeNode);
 
         this._connect(this._sound);
 
-        this.mediaElement = mediaElement;
+        this._mediaElement = mediaElement;
     }
 
     private _initFromUrl(url: string): void {
@@ -377,7 +371,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _onCanPlayThrough: () => void = () => {
         this._isReady = true;
-        this._resolveIsReadyPromise(this.mediaElement);
+        this._resolveIsReadyPromise(this._mediaElement);
         this.onReadyObservable.notifyObservers(this);
     };
 
@@ -415,7 +409,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         if (this.engine.state === "running") {
-            const result = this.mediaElement.play();
+            const result = this._mediaElement.play();
 
             this._enginePlayTime = this.engine.currentTime;
             this._setState(SoundState.Started);
@@ -446,7 +440,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
 
     private _stop(): void {
-        this.mediaElement.pause();
+        this._mediaElement.pause();
         this._setState(SoundState.Stopped);
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);

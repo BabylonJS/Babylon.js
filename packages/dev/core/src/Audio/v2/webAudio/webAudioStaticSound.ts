@@ -270,22 +270,18 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
     private _enginePlayTime: number = 0;
     private _enginePauseTime: number = 0;
+    private _sourceNode: Nullable<AudioBufferSourceNode>;
+    private _volumeNode: GainNode;
 
     protected override _sound: _WebAudioStaticSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
-    /** @internal */
-    public sourceNode: Nullable<AudioBufferSourceNode>;
-
-    /** @internal */
-    public volumeNode: GainNode;
-
     public constructor(sound: _WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
         super(sound, options);
 
-        this.volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound.audioContext);
         this._initSourceNode();
     }
 
@@ -315,7 +311,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     public get outNode(): Nullable<AudioNode> {
-        return this.volumeNode;
+        return this._volumeNode;
     }
 
     /** @internal */
@@ -365,13 +361,13 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
-        this.volumeNode.gain.value = options.volume ?? this.options.volume;
+        this._volumeNode.gain.value = options.volume ?? this.options.volume;
 
         this._initSourceNode();
 
         if (this.engine.state === "running") {
             this._setState(SoundState.Started);
-            this.sourceNode?.start(this._enginePlayTime, startOffset, this.options.duration > 0 ? this.options.duration : undefined);
+            this._sourceNode?.start(this._enginePlayTime, startOffset, this.options.duration > 0 ? this.options.duration : undefined);
         } else if (this.options.loop) {
             this._setState(SoundState.Starting);
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
@@ -387,7 +383,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this._setState(SoundState.Paused);
         this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
-        this.sourceNode?.stop();
+        this._sourceNode?.stop();
         this._deinitSourceNode();
     }
 
@@ -407,7 +403,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this._setState(SoundState.Stopped);
 
         const engineStopTime = this.engine.currentTime + (options.waitTime ?? 0);
-        this.sourceNode?.stop(engineStopTime);
+        this._sourceNode?.stop(engineStopTime);
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
@@ -436,24 +432,24 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     };
 
     private _deinitSourceNode(): void {
-        if (!this.sourceNode) {
+        if (!this._sourceNode) {
             return;
         }
 
         this._disconnect(this._sound);
 
-        this.sourceNode.disconnect(this.volumeNode);
-        this.sourceNode.removeEventListener("ended", this._onEnded);
+        this._sourceNode.disconnect(this._volumeNode);
+        this._sourceNode.removeEventListener("ended", this._onEnded);
 
-        this.sourceNode = null;
+        this._sourceNode = null;
     }
 
     private _initSourceNode(): void {
-        if (this.sourceNode) {
+        if (this._sourceNode) {
             return;
         }
 
-        this.sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
+        this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
             buffer: this._sound.buffer.audioBuffer,
             detune: this.options.pitch,
             loop: this.options.loop,
@@ -462,8 +458,8 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             playbackRate: this.options.playbackRate,
         });
 
-        this.sourceNode.addEventListener("ended", this._onEnded, { once: true });
-        this.sourceNode.connect(this.volumeNode);
+        this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
+        this._sourceNode.connect(this._volumeNode);
 
         this._connect(this._sound);
     }
