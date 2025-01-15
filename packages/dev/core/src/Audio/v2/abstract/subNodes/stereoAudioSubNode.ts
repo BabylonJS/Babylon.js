@@ -3,7 +3,7 @@ import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { _AudioSubNode } from "./audioSubNode";
 
 /** @internal */
-export class _StereoAudioDefault {
+export class _StereoAudioDefaults {
     /** @internal */
     public static readonly Pan = 0;
 }
@@ -41,6 +41,6 @@ export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<IStereoAudioOptions>): void {
-        this.pan = options.stereoPan ?? _StereoAudioDefault.Pan;
+        this.pan = options.stereoPan ?? _StereoAudioDefaults.Pan;
     }
 }

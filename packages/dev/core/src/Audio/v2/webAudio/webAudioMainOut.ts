@@ -1,5 +1,5 @@
 import type { AudioEngineV2 } from "../abstract/audioEngineV2";
-import { MainAudioOut } from "../abstract/mainAudioOut";
+import { _MainAudioOut } from "../abstract/mainAudioOut";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode } from "./webAudioNode";
 
@@ -14,7 +14,7 @@ export async function _CreateMainAudioOutAsync(engine: AudioEngineV2): Promise<_
 }
 
 /** @internal */
-export class _WebAudioMainOut extends MainAudioOut implements IWebAudioInNode {
+export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     private _destinationNode: AudioDestinationNode;
     private _gainNode: GainNode;
 

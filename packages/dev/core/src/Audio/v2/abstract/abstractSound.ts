@@ -10,7 +10,7 @@ import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
 import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
-import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
+import { _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
 import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
 
@@ -77,7 +77,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this._options.loop ??= false;
         this._options.maxInstances ??= Infinity;
         this._options.startOffset ??= 0;
-        this._options.volume ??= _VolumeAudio.DefaultVolume;
+        this._options.volume ??= _VolumeAudioDefaults.Volume;
     }
 
     /**
@@ -194,7 +194,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The output volume of the sound.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudioDefaults.Volume;
     }
 
     public set volume(value: number) {

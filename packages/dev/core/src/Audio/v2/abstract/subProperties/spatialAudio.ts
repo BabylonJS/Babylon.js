@@ -4,7 +4,7 @@ import type { Nullable } from "../../../../types";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
-import { _SpatialAudioDefault } from "../subNodes/spatialAudioSubNode";
+import { _SpatialAudioDefaults } from "../subNodes/spatialAudioSubNode";
 import { AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
@@ -19,7 +19,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get coneInnerAngle(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneInnerAngle ?? _SpatialAudioDefault.ConeInnerAngle;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneInnerAngle ?? _SpatialAudioDefaults.ConeInnerAngle;
     }
 
     public set coneInnerAngle(value: number) {
@@ -30,7 +30,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterAngle ?? _SpatialAudioDefault.ConeOuterAngle;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterAngle ?? _SpatialAudioDefaults.ConeOuterAngle;
     }
 
     public set coneOuterAngle(value: number) {
@@ -41,7 +41,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get coneOuterVolume(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterVolume ?? _SpatialAudioDefault.ConeOuterVolume;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.coneOuterVolume ?? _SpatialAudioDefaults.ConeOuterVolume;
     }
 
     public set coneOuterVolume(value: number) {
@@ -52,7 +52,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get distanceModel(): "linear" | "inverse" | "exponential" {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.distanceModel ?? _SpatialAudioDefault.DistanceModel;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.distanceModel ?? _SpatialAudioDefaults.DistanceModel;
     }
 
     public set distanceModel(value: "linear" | "inverse" | "exponential") {
@@ -63,7 +63,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get maxDistance(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.maxDistance ?? _SpatialAudioDefault.MaxDistance;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.maxDistance ?? _SpatialAudioDefaults.MaxDistance;
     }
 
     public set maxDistance(value: number) {
@@ -78,7 +78,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get panningModel(): "equalpower" | "HRTF" {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.panningModel ?? _SpatialAudioDefault.PanningModel;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.panningModel ?? _SpatialAudioDefaults.PanningModel;
     }
 
     public set panningModel(value: "equalpower" | "HRTF") {
@@ -89,7 +89,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get position(): Vector3 {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.position ?? _SpatialAudioDefault.Position;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.position ?? _SpatialAudioDefaults.Position;
     }
 
     public set position(value: Vector3) {
@@ -100,7 +100,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get referenceDistance(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.referenceDistance ?? _SpatialAudioDefault.ReferenceDistance;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.referenceDistance ?? _SpatialAudioDefaults.ReferenceDistance;
     }
 
     public set referenceDistance(value: number) {
@@ -111,7 +111,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get rolloffFactor(): number {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rolloffFactor ?? _SpatialAudioDefault.RolloffFactor;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rolloffFactor ?? _SpatialAudioDefaults.RolloffFactor;
     }
 
     public set rolloffFactor(value: number) {
@@ -122,7 +122,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get rotation(): Vector3 {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotation ?? _SpatialAudioDefault.Rotation;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotation ?? _SpatialAudioDefaults.Rotation;
     }
 
     public set rotation(value: Vector3) {
@@ -133,7 +133,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get rotationQuaternion(): Quaternion {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotationQuaternion ?? _SpatialAudioDefault.RotationQuaternion;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.rotationQuaternion ?? _SpatialAudioDefaults.RotationQuaternion;
     }
 
     public set rotationQuaternion(value: Quaternion) {

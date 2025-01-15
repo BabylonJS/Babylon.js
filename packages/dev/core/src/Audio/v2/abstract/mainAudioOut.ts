@@ -9,7 +9,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
  * @see {@link AudioEngineV2.mainOut}
  * @internal
  */
-export abstract class MainAudioOut extends AbstractAudioNode {
+export abstract class _MainAudioOut extends AbstractAudioNode {
     protected constructor(engine: AudioEngineV2) {
         super(engine, _AudioNodeType.In);
     }

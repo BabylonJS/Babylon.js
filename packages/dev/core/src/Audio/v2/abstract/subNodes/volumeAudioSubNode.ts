@@ -3,9 +3,9 @@ import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { _AudioSubNode } from "./audioSubNode";
 
 /** @internal */
-export class _VolumeAudio {
+export class _VolumeAudioDefaults {
     /** @internal */
-    public static readonly DefaultVolume = 1;
+    public static readonly Volume = 1;
 }
 
 /**
@@ -29,6 +29,6 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<IVolumeAudioOptions>): void {
-        this.volume = options.volume ?? _VolumeAudio.DefaultVolume;
+        this.volume = options.volume ?? _VolumeAudioDefaults.Volume;
     }
 }

@@ -1,7 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import type { Nullable } from "../../../../types";
-import { _SpatialAudioDefault, _SpatialAudioSubNode } from "../../abstract/subNodes/spatialAudioSubNode";
+import { _SpatialAudioDefaults, _SpatialAudioSubNode } from "../../abstract/subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
@@ -25,9 +25,9 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 /** @internal */
 class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _position = Vector3.Zero();
-    private _rotationAngles: Vector3 = _SpatialAudioDefault.Rotation.clone();
+    private _rotationAngles: Vector3 = _SpatialAudioDefaults.Rotation.clone();
     private _rotationAnglesDirty = false;
-    private _rotationQuaternion: Quaternion = _SpatialAudioDefault.RotationQuaternion.clone();
+    private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.RotationQuaternion.clone();
 
     /** @internal */
     public readonly node: PannerNode;

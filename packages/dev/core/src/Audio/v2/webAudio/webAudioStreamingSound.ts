@@ -33,14 +33,14 @@ export async function CreateStreamingSoundAsync(
 ): Promise<StreamingSound> {
     const webAudioEngine = _GetWebAudioEngine(engine);
 
-    const sound = new WebAudioStreamingSound(name, webAudioEngine, options);
+    const sound = new _WebAudioStreamingSound(name, webAudioEngine, options);
     await sound.init(source, options);
 
     return sound;
 }
 
 /** @internal */
-class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
+class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
     private _spatial: Nullable<_SpatialAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
@@ -59,7 +59,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
 
-        this._subGraph = new WebAudioStreamingSound._SubGraph(this);
+        this._subGraph = new _WebAudioStreamingSound._SubGraph(this);
     }
 
     /** @internal */
@@ -136,8 +136,8 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         }
     }
 
-    protected _createInstance(): WebAudioStreamingSoundInstance {
-        return new WebAudioStreamingSoundInstance(this, this._options);
+    protected _createInstance(): _WebAudioStreamingSoundInstance {
+        return new _WebAudioStreamingSoundInstance(this, this._options);
     }
 
     protected override _disconnect(node: IWebAudioInNode): void {
@@ -149,7 +149,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
-        protected override _owner: WebAudioStreamingSound;
+        protected override _owner: _WebAudioStreamingSound;
 
         protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._downstreamNodes ?? null;
@@ -162,7 +162,7 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
 }
 
 /** @internal */
-class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
+class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
     private _currentTimeChangedWhilePaused = false;
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
@@ -171,7 +171,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this._resolveIsReadyPromise = resolve;
     });
 
-    protected override _sound: WebAudioStreamingSound;
+    protected override _sound: _WebAudioStreamingSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -185,7 +185,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     /** @internal */
     public volumeNode: GainNode;
 
-    public constructor(sound: WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
+    public constructor(sound: _WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
         super(sound, options);
 
         this.volumeNode = new GainNode(sound.audioContext);
@@ -324,7 +324,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node instanceof WebAudioStreamingSound && node.inNode) {
+        if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.connect(node.inNode);
         }
     }
@@ -332,7 +332,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node instanceof WebAudioStreamingSound && node.inNode) {
+        if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.disconnect(node.inNode);
         }
     }

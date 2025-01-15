@@ -6,7 +6,7 @@ import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { _AudioSubNode } from "./audioSubNode";
 
 /** @internal */
-export class _SpatialAudioDefault {
+export class _SpatialAudioDefaults {
     /** @internal */
     public static readonly ConeInnerAngle = 2 * Math.PI;
     /** @internal */
@@ -28,7 +28,7 @@ export class _SpatialAudioDefault {
     /** @internal */
     public static readonly Rotation = Vector3.Zero();
     /** @internal */
-    public static readonly RotationQuaternion = Quaternion.FromEulerVector(_SpatialAudioDefault.Rotation);
+    public static readonly RotationQuaternion = Quaternion.FromEulerVector(_SpatialAudioDefaults.Rotation);
 }
 
 /**
@@ -158,14 +158,14 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<ISpatialAudioOptions>): void {
-        this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefault.ConeInnerAngle;
-        this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefault.ConeOuterAngle;
-        this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefault.ConeOuterVolume;
-        this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefault.DistanceModel;
-        this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefault.MaxDistance;
-        this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefault.PanningModel;
-        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefault.ReferenceDistance;
-        this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefault.RolloffFactor;
+        this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefaults.ConeInnerAngle;
+        this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefaults.ConeOuterAngle;
+        this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefaults.ConeOuterVolume;
+        this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefaults.DistanceModel;
+        this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.MaxDistance;
+        this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.PanningModel;
+        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.ReferenceDistance;
+        this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.RolloffFactor;
 
         if (options.spatialPosition !== undefined) {
             this.position = options.spatialPosition.clone();
@@ -176,7 +176,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         } else if (options.spatialRotation !== undefined) {
             this.rotation = options.spatialRotation.clone();
         } else {
-            this.rotationQuaternion = _SpatialAudioDefault.RotationQuaternion.clone();
+            this.rotationQuaternion = _SpatialAudioDefaults.RotationQuaternion.clone();
         }
 
         this.transformNode = options.spatialTransformNode ?? null;

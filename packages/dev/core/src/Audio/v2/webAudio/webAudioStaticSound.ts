@@ -16,7 +16,7 @@ import { _GetWebAudioEngine } from "./webAudioTools";
 
 const FileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
-export type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
+type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
 /**
  * Creates a new static sound.
@@ -34,7 +34,7 @@ export async function CreateSoundAsync(
 ): Promise<StaticSound> {
     const webAudioEngine = _GetWebAudioEngine(engine);
 
-    const sound = new WebAudioStaticSound(name, webAudioEngine, options);
+    const sound = new _WebAudioStaticSound(name, webAudioEngine, options);
     await sound.init(source, options);
 
     return sound;
@@ -54,14 +54,14 @@ export async function CreateSoundBufferAsync(
 ): Promise<StaticSoundBuffer> {
     const webAudioEngine = _GetWebAudioEngine(engine);
 
-    const buffer = new WebAudioStaticSoundBuffer(webAudioEngine);
+    const buffer = new _WebAudioStaticSoundBuffer(webAudioEngine);
     await buffer.init(source, options);
     return buffer;
 }
 
 /** @internal */
-class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
-    private _buffer: WebAudioStaticSoundBuffer;
+class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
+    private _buffer: _WebAudioStaticSoundBuffer;
     private _spatial: Nullable<_SpatialAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
@@ -77,17 +77,17 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
 
-        this._subGraph = new WebAudioStaticSound._SubGraph(this);
+        this._subGraph = new _WebAudioStaticSound._SubGraph(this);
     }
 
     /** @internal */
     public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
         this.audioContext = this.engine.audioContext;
 
-        if (source instanceof WebAudioStaticSoundBuffer) {
-            this._buffer = source as WebAudioStaticSoundBuffer;
+        if (source instanceof _WebAudioStaticSoundBuffer) {
+            this._buffer = source as _WebAudioStaticSoundBuffer;
         } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
-            this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as WebAudioStaticSoundBuffer;
+            this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as _WebAudioStaticSoundBuffer;
         }
 
         if (options.outBus) {
@@ -107,7 +107,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     }
 
     /** @internal */
-    public get buffer(): WebAudioStaticSoundBuffer {
+    public get buffer(): _WebAudioStaticSoundBuffer {
         return this._buffer;
     }
 
@@ -154,8 +154,8 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         }
     }
 
-    protected _createInstance(): WebAudioStaticSoundInstance {
-        return new WebAudioStaticSoundInstance(this, this._options);
+    protected _createInstance(): _WebAudioStaticSoundInstance {
+        return new _WebAudioStaticSoundInstance(this, this._options);
     }
 
     protected override _disconnect(node: IWebAudioInNode): void {
@@ -174,7 +174,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
-        protected override _owner: WebAudioStaticSound;
+        protected override _owner: _WebAudioStaticSound;
 
         protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._downstreamNodes ?? null;
@@ -187,7 +187,7 @@ class WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 }
 
 /** @internal */
-class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
+class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     /** @internal */
     public audioBuffer: AudioBuffer;
 
@@ -267,11 +267,11 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 }
 
 /** @internal */
-class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
+class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
     private _enginePlayTime: number = 0;
     private _enginePauseTime: number = 0;
 
-    protected override _sound: WebAudioStaticSound;
+    protected override _sound: _WebAudioStaticSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -282,7 +282,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     /** @internal */
     public volumeNode: GainNode;
 
-    public constructor(sound: WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
+    public constructor(sound: _WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
         super(sound, options);
 
         this.volumeNode = new GainNode(sound.audioContext);
@@ -415,7 +415,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        if (node instanceof WebAudioStaticSound && node.inNode) {
+        if (node instanceof _WebAudioStaticSound && node.inNode) {
             this.outNode?.connect(node.inNode);
         }
     }
@@ -423,7 +423,7 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node instanceof WebAudioStaticSound && node.inNode) {
+        if (node instanceof _WebAudioStaticSound && node.inNode) {
             this.outNode?.disconnect(node.inNode);
         }
     }

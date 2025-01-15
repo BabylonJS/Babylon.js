@@ -3,7 +3,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
 import type { _VolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
-import { _VolumeAudio } from "./subNodes/volumeAudioSubNode";
+import { _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
 
 /**
  * Abstract class representing an audio bus with volume control.
@@ -22,7 +22,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
      * The output volume of the bus.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudio.DefaultVolume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudioDefaults.Volume;
     }
 
     public set volume(value: number) {
