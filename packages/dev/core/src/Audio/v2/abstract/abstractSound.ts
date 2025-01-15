@@ -58,7 +58,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected _instances = new Set<_AbstractSoundInstance>();
     protected _options = {} as IAbstractSoundOptions;
-
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
