@@ -33,11 +33,7 @@ function IsAreaLightsReady(scene: Scene): boolean {
 export class RectAreaLight extends Light {
     protected _width: Vector3;
     protected _height: Vector3;
-
-    /**
-     * Rect Area Light positon.
-     */
-    public position: Vector3;
+    protected _position: Vector3;
 
     /**
      * Rect Area Light width.
@@ -65,6 +61,20 @@ export class RectAreaLight extends Light {
      */
     public set height(value: number) {
         this._height.y = value;
+    }
+
+    /**
+     * Rect Area Light position.
+     */
+    @serialize()
+    public get position(): Vector3 {
+        return this._position;
+    }
+    /**
+     * Rect Area Light position.
+     */
+    public set position(value: Vector3) {
+        this._position = value;
     }
 
     /**
@@ -175,7 +185,7 @@ export class RectAreaLight extends Light {
      * @param lightIndex defines the index of the light for the effect
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["AREALIGHT" + lightIndex] = true;
+        defines["AREALIGHT" + lightIndex] = IsAreaLightsReady(this._scene);
         defines["AREALIGHTUSED"] = IsAreaLightsReady(this._scene);
     }
 }

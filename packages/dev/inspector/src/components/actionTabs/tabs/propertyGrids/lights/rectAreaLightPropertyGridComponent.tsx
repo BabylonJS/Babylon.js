@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
-import type { RectAreaLight } from "core/Lights/rectAreaLights";
+import type { RectAreaLight } from "core/Lights/rectAreaLight";
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";

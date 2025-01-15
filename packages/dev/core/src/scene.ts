@@ -189,10 +189,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("DefaultCollisionCoordinator");
     }
 
-    public static IsAreaLightsReady(scene: Scene): boolean {
-        throw _WarnImport("RectAreaLight");
-    }
-
     // Members
 
     /** @internal */
