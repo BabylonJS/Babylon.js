@@ -1,5 +1,5 @@
 import { SoundState } from "../soundState";
-import type { IBaseSoundOptions, IBaseSoundPlayOptions } from "./abstractSound";
+import type { ICommonSoundOptions, ICommonSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
@@ -34,7 +34,7 @@ interface ICommonStaticSoundOptions {
 /**
  * Options for playing a static sound.
  */
-export interface IStaticSoundPlayOptions extends IBaseSoundPlayOptions, ICommonStaticSoundOptions {
+export interface IStaticSoundPlayOptions extends ICommonSoundPlayOptions, ICommonStaticSoundOptions {
     /**
      * The time to wait before playing the sound, in seconds.
      */
@@ -54,7 +54,7 @@ export interface IStaticSoundStopOptions {
 /**
  * Options for creating a static sound.
  */
-export interface IStaticSoundOptions extends IBaseSoundOptions, ICommonStaticSoundOptions {
+export interface IStaticSoundOptions extends ICommonSoundOptions, ICommonStaticSoundOptions {
     /**
      * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
      * - Has no effect if the sound's source is not a string array.

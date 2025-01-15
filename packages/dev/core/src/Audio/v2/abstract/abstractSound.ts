@@ -15,7 +15,7 @@ import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/a
 /**
  * Options for playing a sound.
  */
-export interface IBaseSoundPlayOptions extends IVolumeAudioOptions {
+export interface ICommonSoundPlayOptions extends IVolumeAudioOptions {
     /**
      * The amount of time to play the sound for, in seconds. If not specified, the sound plays for its full duration.
      */
@@ -33,7 +33,7 @@ export interface IBaseSoundPlayOptions extends IVolumeAudioOptions {
 /**
  * Options for creating a sound.
  */
-export interface IBaseSoundOptions extends IBaseSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
+export interface ICommonSoundOptions extends ICommonSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
      * Whether the sound should start playing immediately. Defaults to `false`.
      */
@@ -57,7 +57,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     private _state: SoundState = SoundState.Stopped;
 
     protected _instances = new Set<_AbstractSoundInstance>();
-    protected _options = {} as IBaseSoundOptions;
+    protected _options = {} as ICommonSoundOptions;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
@@ -65,7 +65,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      */
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IBaseSoundOptions> = {}) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
         super(name, engine, _AudioNodeType.Out);
 
         Object.assign(this._options, options);
@@ -226,7 +226,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * - Triggers `onEndedObservable` if played for the full duration and the `loop` option is not set.
      * @param options The options to use when playing the sound. Options set here override the sound's options.
      */
-    public abstract play(options?: Partial<IBaseSoundPlayOptions>): void;
+    public abstract play(options?: Partial<ICommonSoundPlayOptions>): void;
 
     /**
      * Pauses the sound.

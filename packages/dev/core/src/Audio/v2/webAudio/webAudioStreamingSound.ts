@@ -1,7 +1,7 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstract/abstractAudioNode";
-import type { IBaseSoundPlayOptions } from "../abstract/abstractSound";
+import type { ICommonSoundPlayOptions } from "../abstract/abstractSound";
 import type { AudioEngineV2 } from "../abstract/audioEngineV2";
 import type { IStreamingSoundOptions } from "../abstract/streamingSound";
 import { StreamingSound } from "../abstract/streamingSound";
@@ -253,7 +253,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     /** @internal */
-    public play(options: Partial<IBaseSoundPlayOptions> = this.options): void {
+    public play(options: Partial<ICommonSoundPlayOptions> = this.options): void {
         if (this._state === SoundState.Started) {
             return;
         }
