@@ -2,7 +2,21 @@ import type { Nullable } from "../../../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "../abstractAudioNode";
 import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 
-/** @internal */
+/**
+ * Adds common sub graph functionality to an audio node.
+ *
+ * Audio nodes such as static sounds, streaming sounds, and buses can use audio sub graphs to process audio internally
+ * before sending it to connected downstream audio nodes. This is useful for applying effects, spatial audio, and other
+ * audio processing tasks common to multiple audio node classes.
+ *
+ * A key feature of audio sub graphs is their audio sub nodes are created asynchronously on demand so the minimum set
+ * of sub nodes are used at all times to save memory and CPU resources. The tradeoff is there a small delay when first
+ * setting a property backed by a sub node. This delay is avoided by using the appropriate options to initialize the
+ * sub node on creation, e.g. `spatialEnabled` and `stereoEnabled`, or by setting any creation option backed by the
+ * sub node, e.g. `spatialPosition` and `stereoPan`.
+ *
+ * @internal
+ */
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises = new Map<string, Promise<_AbstractAudioSubNode>>();
     private _subNodes = new Map<string, Set<AbstractNamedAudioNode>>();
@@ -26,7 +40,8 @@ export abstract class _AbstractAudioSubGraph {
     /**
      * Executes the given callback with the named sub node, creating the sub node if needed.
      *
-     * Note that `callback` is executed synchronously if the sub node exists, otherwise it is executed asynchronously.
+     * Note that `callback` is executed synchronously if the sub node already exists, otherwise the sub node is created
+     * asynchronously before `callback` is executed.
      *
      * @param name The name of the sub node
      * @param callback The function to call with the named sub node
@@ -45,7 +60,12 @@ export abstract class _AbstractAudioSubGraph {
         });
     }
 
-    /** @internal */
+    /**
+     * Gets a previously created sub node.
+     * @param name - The name of the sub node
+     * @returns The named sub node, or `null` if has not been created, yet
+     * @internal
+     * */
     public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
         const set = this._subNodes.get(name);
 
