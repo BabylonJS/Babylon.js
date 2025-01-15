@@ -3,9 +3,9 @@ import { Node } from "../node";
 import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
-import { buildSceneLTCTextures } from "core/Lights/LTC/ltcTextureTool";
+import { DefaultAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
+import type { IAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
 import { serialize } from "../Misc/decorators";
-import type { BaseTexture } from "core/Materials";
 import type { Scene } from "core/scene";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
@@ -14,28 +14,13 @@ Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
 
 declare module "../scene" {
     export interface Scene {
-        /**
-         * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
-         * The material properties need to be setup according to the type of texture in use.
-         */
-        ltc1Texture: BaseTexture;
-
-        /**
-         * This is use to calculate Linearly Transformed Cossine functions for Area Lights.
-         * The material properties need to be setup according to the type of texture in use.
-         */
-        ltc2Texture: BaseTexture;
-
-        /**
-         * True if scene is already loading area lights.
-         */
-        isLoadingAreaLights: boolean;
+        areaLightLTCProvider: IAreaLightLTCProvider;
     }
 }
 
 function IsAreaLightsReady(scene: Scene): boolean {
-    if (scene.ltc1Texture && scene.ltc2Texture) {
-        return scene.ltc1Texture.isReady() && scene.ltc2Texture.isReady();
+    if (scene.areaLightLTCProvider.ltc1Texture && scene.areaLightLTCProvider.ltc2Texture) {
+        return scene.areaLightLTCProvider.ltc1Texture.isReady() && scene.areaLightLTCProvider.ltc2Texture.isReady();
     }
 
     return false;
@@ -97,7 +82,9 @@ export class RectAreaLight extends Light {
         this._width = new Vector3(width, 0, 0);
         this._height = new Vector3(0, height, 0);
 
-        buildSceneLTCTextures(this._scene);
+        if (!this._scene.areaLightLTCProvider) {
+            this._scene.areaLightLTCProvider = new DefaultAreaLightLTCProvider(this._scene);
+        }
     }
 
     /**
@@ -172,8 +159,8 @@ export class RectAreaLight extends Light {
      * @returns The light
      */
     public override transferTexturesToEffect(effect: Effect): Light {
-        effect.setTexture("areaLightsLTC1Sampler", this._scene.ltc1Texture);
-        effect.setTexture("areaLightsLTC2Sampler", this._scene.ltc2Texture);
+        effect.setTexture("areaLightsLTC1Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
+        effect.setTexture("areaLightsLTC2Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
         return this;
     }
 
