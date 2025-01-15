@@ -9,6 +9,14 @@ const TempMatrix = new Matrix();
 const TempQuaternion = new Quaternion();
 const TempVector = new Vector3();
 
+function d2r(degrees: number): number {
+    return (degrees * Math.PI) / 180;
+}
+
+function r2d(radians: number): number {
+    return (radians * 180) / Math.PI;
+}
+
 /** @internal */
 export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
     return new _SpatialWebAudioSubNode(engine);
@@ -17,9 +25,9 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 /** @internal */
 class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _position = Vector3.Zero();
-    private _rotationQuaternion: Quaternion = _SpatialAudioDefault.RotationQuaternion.clone();
     private _rotationAngles: Vector3 = _SpatialAudioDefault.Rotation.clone();
     private _rotationAnglesDirty = false;
+    private _rotationQuaternion: Quaternion = _SpatialAudioDefault.RotationQuaternion.clone();
 
     /** @internal */
     public readonly node: PannerNode;
@@ -33,20 +41,20 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public get coneInnerAngle(): number {
-        return this.node.coneInnerAngle;
+        return d2r(this.node.coneInnerAngle);
     }
 
     public set coneInnerAngle(value: number) {
-        this.node.coneInnerAngle = value;
+        this.node.coneInnerAngle = r2d(value);
     }
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return this.node.coneOuterAngle;
+        return d2r(this.node.coneOuterAngle);
     }
 
     public set coneOuterAngle(value: number) {
-        this.node.coneOuterAngle = value;
+        this.node.coneOuterAngle = r2d(value);
     }
 
     /** @internal */

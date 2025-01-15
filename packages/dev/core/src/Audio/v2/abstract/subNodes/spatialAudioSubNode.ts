@@ -8,9 +8,9 @@ import { _AudioSubNode } from "./audioSubNode";
 /** @internal */
 export class _SpatialAudioDefault {
     /** @internal */
-    public static readonly ConeInnerAngle = 360;
+    public static readonly ConeInnerAngle = 2 * Math.PI;
     /** @internal */
-    public static readonly ConeOuterAngle = 360;
+    public static readonly ConeOuterAngle = 2 * Math.PI;
     /** @internal */
     public static readonly ConeOuterVolume = 0;
     /** @internal */
@@ -36,11 +36,11 @@ export class _SpatialAudioDefault {
  */
 export interface ISpatialAudioOptions {
     /**
-     * The spatial cone inner angle, in degrees. Default is 360.
+     * The spatial cone inner angle, in radians. Default is 2π.
      */
     spatialConeInnerAngle: number;
     /**
-     * The spatial cone outer angle, in degrees. Default is 360.
+     * The spatial cone outer angle, in radians. Default is 2π.
      */
     spatialConeOuterAngle: number;
     /**
