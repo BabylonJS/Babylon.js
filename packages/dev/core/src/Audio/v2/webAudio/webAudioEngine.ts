@@ -20,15 +20,15 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
      */
     audioContext: AudioContext;
     /**
-     * Set to `true` to automatically resume the audio context when the user interacts with the page. Default is `true`.
+     * Set to `true` to automatically resume the audio context when the user interacts with the page. Defaults to `true`.
      */
     resumeOnInteraction: boolean;
     /**
-     * Set to `true` to automatically resume the audio context when the browser pauses audio playback. Default is `true`.
+     * Set to `true` to automatically resume the audio context when the browser pauses audio playback. Defaults to `true`.
      */
     resumeOnPause: boolean;
     /**
-     * The interval in milliseconds to try resuming audio playback when `resumeOnPause` is `true`. Default is `1000`.
+     * The interval in milliseconds to try resuming audio playback when `resumeOnPause` is `true`. Defaults to `1000`.
      */
     resumeOnPauseRetryInterval: number;
 }

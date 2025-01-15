@@ -7,7 +7,7 @@ export class _StereoAudioDefaults {
 /** */
 export interface IStereoAudioOptions {
     /**
-     * Enable stereo. Default is false.
+     * Enable stereo. Defaults to false.
      *
      * When set to `true`, the audio node's stereo properties will be initialized on creation and there will be no
      * delay when setting the first stereo value.
@@ -19,7 +19,7 @@ export interface IStereoAudioOptions {
      */
     stereoEnabled: boolean;
     /**
-     * The stereo pan from -1 (left) to 1 (right). Default is 0.
+     * The stereo pan from -1 (left) to 1 (right). Defaults to 0.
      */
     stereoPan: number;
 }
@@ -35,7 +35,7 @@ export function _HasStereoAudioOptions(options: Partial<IStereoAudioOptions>): b
 /** */
 export abstract class AbstractStereoAudio {
     /**
-     * The stereo pan from -1 (left) to 1 (right). Default is 0.
+     * The stereo pan from -1 (left) to 1 (right). Defaults to 0.
      */
     public abstract get pan(): number;
     public abstract set pan(value: number);
