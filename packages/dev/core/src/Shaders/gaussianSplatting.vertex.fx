@@ -49,6 +49,7 @@ void main () {
 
 #if SH_DEGREE > 0
     vec3 dir = normalize(worldPos.xyz - vEyePosition.xyz);
+    dir.y *= -1.; // Up is inverted. This corresponds to change in _makeSplat method
     vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif
 

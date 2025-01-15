@@ -29,7 +29,24 @@ export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
  * @param options The options to use when creating the Viewer and binding it to the specified canvas.
  * @returns A Viewer instance that is bound to the specified canvas.
  */
-export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
+export function createViewerForCanvas<DerivedViewer extends Viewer>(
+    canvas: HTMLCanvasElement,
+    options: CanvasViewerOptions & {
+        /**
+         * The Viewer subclass to use when creating the Viewer instance.
+         */
+        viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => DerivedViewer;
+    }
+): Promise<DerivedViewer>;
+export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer>;
+
+/**
+ * @internal
+ */
+export async function createViewerForCanvas(
+    canvas: HTMLCanvasElement,
+    options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
+): Promise<Viewer> {
     const finalOptions = { ...defaultCanvasViewerOptions, ...options };
     const disposeActions: (() => void)[] = [];
 
@@ -90,7 +107,8 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
     };
 
     // Instantiate the Viewer with the engine and options.
-    const viewer = new Viewer(engine, finalOptions);
+    const viewerClass = options?.viewerClass ?? Viewer;
+    const viewer = new viewerClass(engine, finalOptions);
     disposeActions.push(viewer.dispose.bind(viewer));
 
     disposeActions.push(() => engine.dispose());
