@@ -36,43 +36,65 @@ export class _SpatialAudioDefaults {
  */
 export interface ISpatialAudioOptions {
     /**
-     * The spatial cone inner angle, in radians. Default is 2π.
+     * The spatial cone inner angle, in radians. Defaults to 2π.
+     * - When the listener is inside the cone inner angle, the volume is at its maximum.
      */
     spatialConeInnerAngle: number;
     /**
-     * The spatial cone outer angle, in radians. Default is 2π.
+     * The spatial cone outer angle, in radians. Defaults to 2π.
+     * - When the listener is between the the cone inner and outer angles, the volume fades to its minimum as the listener approaches the outer angle.
+     * - When the listener is outside the cone outer angle, the volume is at its minimum.
      */
     spatialConeOuterAngle: number;
     /**
-     * The spatial cone outer gain. Default is 0.
+     * The amount of volume reduction outside the {@link spatialConeOuterAngle}. Defaults to 0.
      */
     spatialConeOuterVolume: number;
     /**
-     * The spatial distance model. Default is "inverse".
+     * The algorithm to use to reduce the volume of the audio source as it moves away from the listener. Defaults to "inverse".
+     * @see {@link spatialMaxDistance}
+     * @see {@link spatialReferenceDistance}
+     * @see {@link spatialRolloffFactor}
      */
     spatialDistanceModel: "linear" | "inverse" | "exponential";
     /**
-     * Enable spatial audio. Default is false.
+     * Enable spatial audio. Defaults to false.
+     *
+     * When set to `true`, the audio node's spatial properties will be initialized on creation and there will be no
+     * delay when setting the first spatial value.
+     *
+     * When not specified, or set to `false`, the audio node's spatial properties will not be initialized on creation
+     * and there will be a small delay when setting the first spatial value.
+     *
+     * - This option is ignored if any other spatial options are set.
      */
     spatialEnabled: boolean;
     /**
-     * The spatial max distance. Default is 10000.
+     * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
+     * - This value is used only when the {@link spatialDistanceModel} is set to `"linear"`.
+     * @see {@link spatialDistanceModel}
      */
     spatialMaxDistance: number;
     /**
-     * The spatial panning model. Default is "equalpower".
+     * The spatial panning model. Defaults to "equalpower".
+     * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
+     * - "HRTF" requires more CPU but is more realistic for listeners with headphones or speakers close to the ears.
      */
     spatialPanningModel: "equalpower" | "HRTF";
     /**
-     * The spatial position. Default is (0, 0, 0).
+     * The spatial position. Defaults to (0, 0, 0).
      */
     spatialPosition: Vector3;
     /**
-     * The spatial reference distance. Default is 1.
+     * The distance for reducing volume as the audio source moves away from the listener – i.e. the distance the volume reduction starts at. Defaults to 1.
+     * - This value is used by all distance models.
+     * @see {@link spatialDistanceModel}
      */
     spatialReferenceDistance: number;
     /**
-     * The spatial rolloff factor. Default is 1.
+     * How quickly the volume is reduced as the source moves away from the listener. Defaults to 1.
+     * - This value is used by all distance models.
+     * @see {@link spatialDistanceModel}
      */
     spatialRolloffFactor: number;
     /**

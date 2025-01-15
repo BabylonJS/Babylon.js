@@ -12,6 +12,14 @@ export class _StereoAudioDefaults {
 export interface IStereoAudioOptions {
     /**
      * Enable stereo. Default is false.
+     *
+     * When set to `true`, the audio node's stereo properties will be initialized on creation and there will be no
+     * delay when setting the first stereo value.
+     *
+     * When not specified, or set to `false`, the audio node's stereo properties will not be initialized on creation
+     * and there will be a small delay when setting the first stereo value.
+     *
+     * - This option is ignored if any other stereo options are set.
      */
     stereoEnabled: boolean;
     /**
