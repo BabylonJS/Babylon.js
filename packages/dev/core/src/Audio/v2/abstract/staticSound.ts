@@ -27,7 +27,7 @@ export interface IStaticSoundStopOptions {
 /**
  * Options for creating a static sound.
  */
-export interface IStaticSoundOptions extends IStaticSoundPlayOptions, IAbstractSoundOptions {
+export interface IStaticSoundOptions extends IAbstractSoundOptions {
     /**
      * The start of the loop range in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
@@ -72,6 +72,7 @@ export interface IStaticSoundOptions extends IStaticSoundPlayOptions, IAbstractS
  * See {@link CreateSoundBufferAsync}, {@link StaticSoundBuffer} and {@link StaticSound.buffer} for more information.
  */
 export abstract class StaticSound extends AbstractSound {
+    protected override _instances: Set<_StaticSoundInstance>;
     protected override _options: IStaticSoundOptions;
 
     /**
@@ -87,7 +88,6 @@ export abstract class StaticSound extends AbstractSound {
         this._options.pitch ??= 0;
         this._options.playbackRate ??= 1;
         this._options.skipCodecCheck ??= false;
-        this._options.waitTime ??= 0;
     }
 
     /**
@@ -186,7 +186,7 @@ export abstract class StaticSound extends AbstractSound {
         }
 
         for (const instance of Array.from(this._instances)) {
-            (instance as _StaticSoundInstance).stop(options);
+            instance.stop(options);
         }
     }
 }

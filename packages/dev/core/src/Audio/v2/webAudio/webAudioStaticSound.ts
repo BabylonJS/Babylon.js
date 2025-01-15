@@ -359,22 +359,18 @@ class WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAu
         if (options.duration !== undefined) {
             this.options.duration = options.duration;
         }
-        if (options.waitTime !== undefined) {
-            this.options.waitTime = options.waitTime;
-        }
 
         let startOffset = 0;
 
         if (this._state === SoundState.Paused) {
             // TODO: Make this fall within loop points when loop start/end is set.
             startOffset = (this.currentTime + this.options.startOffset) % this._sound.buffer.duration;
-            this.options.waitTime = 0;
         } else if (options.startOffset !== undefined) {
             startOffset = options.startOffset;
             this.options.startOffset = options.startOffset;
         }
 
-        this._enginePlayTime = this.engine.currentTime + this.options.waitTime;
+        this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
         this.volumeNode.gain.value = options.volume ?? this.options.volume;
 
