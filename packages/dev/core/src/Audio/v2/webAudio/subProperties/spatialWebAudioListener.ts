@@ -1,5 +1,5 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import { AbstractSpatialAudioListener } from "../../abstract/subProperties/abstractSpatialAudioListener";
+import { _SpatialAudioListener } from "../../abstract/subProperties/spatialAudioListener";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TempMatrix = new Matrix();
@@ -7,7 +7,7 @@ const TempQuaternion = new Quaternion();
 const TempVector = new Vector3();
 
 /** @internal */
-export function _CreateSpatialAudioListener(engine: _WebAudioEngine): AbstractSpatialAudioListener {
+export function _CreateSpatialAudioListener(engine: _WebAudioEngine): _SpatialAudioListener {
     return new _SpatialWebAudioListener(engine);
 }
 
@@ -16,7 +16,7 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine): AbstractSp
  *
  * @internal
  */
-class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
+class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _audioContext: AudioContext;
     private _position: Vector3 = Vector3.Zero();
     private _rotationAngles: Vector3 = Vector3.Zero();

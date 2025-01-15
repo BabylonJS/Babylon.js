@@ -4,7 +4,8 @@ import type { AbstractNamedAudioNode } from "../abstract/abstractAudioNode";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstract/audioEngineV2";
 import { AudioEngineV2 } from "../abstract/audioEngineV2";
 import type { MainAudioBus } from "../abstract/mainAudioBus";
-import type { AbstractSpatialAudioListener } from "../abstract/subProperties/abstractSpatialAudioListener";
+import { _HasSpatialAudioListenerOptions, type AbstractSpatialAudioListener } from "../abstract/subProperties/abstractSpatialAudioListener";
+import type { _SpatialAudioListener } from "../abstract/subProperties/spatialAudioListener";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOut } from "./webAudioMainOut";
@@ -59,7 +60,7 @@ const FormatMimeTypeMap = new Map<string, string>([
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
-    private _listener: Nullable<AbstractSpatialAudioListener> = null;
+    private _listener: Nullable<_SpatialAudioListener> = null;
     private _mainOut: _WebAudioMainOut;
     private _resumeOnInteraction = true;
     private _resumeOnPause = true;
@@ -101,17 +102,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         await this._initAudioContext();
 
-        if (options.listenerEnabled) {
+        if (_HasSpatialAudioListenerOptions(options)) {
             this._listener = _CreateSpatialAudioListener(this);
-        }
-        if (options.listenerPosition) {
-            this.listener.position = options.listenerPosition;
-        }
-        if (options.listenerRotation) {
-            this.listener.rotation = options.listenerRotation;
-        }
-        if (options.listenerRotationQuaternion) {
-            this.listener.rotationQuaternion = options.listenerRotationQuaternion;
+            this._listener.setOptions(options);
         }
 
         this._resolveIsReadyPromise();
