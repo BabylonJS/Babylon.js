@@ -110,6 +110,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
         if (options.listenerRotation) {
             this.listener.rotation = options.listenerRotation;
         }
+        if (options.listenerRotationQuaternion) {
+            this.listener.rotationQuaternion = options.listenerRotationQuaternion;
+        }
 
         this._resolveIsReadyPromise();
     }

@@ -15,7 +15,7 @@ import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioTools";
 
-export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
+type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /**
  * Creates a new streaming sound.

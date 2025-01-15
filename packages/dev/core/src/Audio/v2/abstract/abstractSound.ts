@@ -7,12 +7,10 @@ import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "./subNodes/audioSubNode";
-import type { ISpatialAudioOptions } from "./subNodes/spatialAudioSubNode";
-import type { IStereoAudioOptions } from "./subNodes/stereoAudioSubNode";
 import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
-import type { AbstractSpatialAudio } from "./subProperties/abstractSpatialAudio";
-import type { AbstractStereoAudio } from "./subProperties/abstractStereoAudio";
+import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
+import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 
 /**
  * Options for playing a sound.

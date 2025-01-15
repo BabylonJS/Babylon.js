@@ -1,11 +1,8 @@
 import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import type { TransformNode } from "../../../../Meshes/transformNode";
-import type { Nullable } from "../../../../types";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
-import { _SpatialAudioDefaults } from "../subNodes/spatialAudioSubNode";
-import { AbstractSpatialAudio } from "./abstractSpatialAudio";
+import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
 export class _SpatialAudio extends AbstractSpatialAudio {
@@ -139,17 +136,6 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     public set rotationQuaternion(value: Quaternion) {
         this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
             node.rotationQuaternion = value;
-        });
-    }
-
-    /** @internal */
-    public get transformNode(): Nullable<TransformNode> {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.transformNode ?? null;
-    }
-
-    public set transformNode(value: Nullable<TransformNode>) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial, (node) => {
-            node.transformNode = value;
         });
     }
 }

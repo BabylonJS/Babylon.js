@@ -11,7 +11,11 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine): AbstractSp
     return new _SpatialWebAudioListener(engine);
 }
 
-/** @internal */
+/**
+ * This sub property is not backed by a sub node and all properties are set directly on the audio context listener.
+ *
+ * @internal
+ */
 class _SpatialWebAudioListener extends AbstractSpatialAudioListener {
     private _audioContext: AudioContext;
     private _position: Vector3 = Vector3.Zero();

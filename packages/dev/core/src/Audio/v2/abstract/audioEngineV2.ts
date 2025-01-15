@@ -1,8 +1,7 @@
-import type { Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
-import type { AbstractSpatialAudioListener } from "./subProperties/abstractSpatialAudioListener";
+import type { AbstractSpatialAudioListener, ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";
 
 const Instances: AudioEngineV2[] = [];
 
@@ -19,19 +18,7 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
 }
 
 /** */
-export interface IAudioEngineV2Options {
-    /**
-     * Whether the audio engine listener should be enabled when the audio engine is created. Defaults to `false`.
-     */
-    listenerEnabled: boolean;
-    /**
-     * The initial position of the audio engine listener. Defaults to `(0, 0, 0)`.
-     */
-    listenerPosition: Vector3;
-    /**
-     * The initial rotation of the audio engine listener. Defaults to `(0, 0, 0)`.
-     */
-    listenerRotation: Vector3;
+export interface IAudioEngineV2Options extends ISpatialAudioListenerOptions {
     /**
      * The initial output volume of the audio engine. Defaults to `1`.
      */
