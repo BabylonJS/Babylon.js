@@ -68,13 +68,25 @@ export class DracoCompression {
      * - wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm"
      * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
      */
-    public static Configuration: IDracoCompressionConfiguration = { decoder: { ...DracoDecoder.DefaultConfiguration } }; // Use copy
+    public static get Configuration(): IDracoCompressionConfiguration {
+        return {
+            get decoder() {
+                return DracoDecoder.DefaultConfiguration;
+            },
+            set decoder(value: IDracoCodecConfiguration) {
+                DracoDecoder.DefaultConfiguration = value;
+            },
+        };
+    }
+    public static set Configuration(value: IDracoCompressionConfiguration) {
+        DracoDecoder.DefaultConfiguration = value.decoder;
+    }
 
     /**
      * Returns true if the decoder configuration is available.
      */
     public static get DecoderAvailable(): boolean {
-        return _IsConfigurationAvailable(DracoCompression.Configuration.decoder);
+        return _IsConfigurationAvailable(DracoDecoder.DefaultConfiguration);
     }
 
     /**
@@ -115,8 +127,8 @@ export class DracoCompression {
     constructor(numWorkersOrOptions: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
         const configuration =
             typeof numWorkersOrOptions === "number"
-                ? { ...DracoCompression.Configuration.decoder, numWorkers: numWorkersOrOptions }
-                : { ...DracoCompression.Configuration.decoder, ...numWorkersOrOptions };
+                ? { ...DracoDecoder.DefaultConfiguration, numWorkers: numWorkersOrOptions }
+                : { ...DracoDecoder.DefaultConfiguration, ...numWorkersOrOptions };
         this._decoder = new DracoDecoder(configuration);
     }
 
