@@ -1,6 +1,4 @@
 import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import type { TransformNode } from "../../../../Meshes/transformNode";
-import type { Nullable } from "../../../../types";
 
 /** */
 export abstract class AbstractSpatialAudio {
@@ -83,7 +81,4 @@ export abstract class AbstractSpatialAudio {
      */
     public abstract get rotationQuaternion(): Quaternion;
     public abstract set rotationQuaternion(value: Quaternion);
-
-    public abstract get transformNode(): Nullable<TransformNode>;
-    public abstract set transformNode(value: Nullable<TransformNode>);
 }

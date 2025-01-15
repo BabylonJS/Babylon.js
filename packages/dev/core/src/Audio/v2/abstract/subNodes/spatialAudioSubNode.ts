@@ -105,10 +105,6 @@ export interface ISpatialAudioOptions {
      * The spatial rotation quaternion.
      */
     spatialRotationQuaternion: Quaternion;
-    /**
-     * The transform node to track spatially.
-     */
-    spatialTransformNode: TransformNode;
 }
 
 /**
@@ -128,8 +124,7 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialReferenceDistance !== undefined ||
         options.spatialRolloffFactor !== undefined ||
         options.spatialRotation !== undefined ||
-        options.spatialRotationQuaternion !== undefined ||
-        options.spatialTransformNode !== undefined
+        options.spatialRotationQuaternion !== undefined
     );
 }
 
@@ -200,7 +195,5 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         } else {
             this.rotationQuaternion = _SpatialAudioDefaults.RotationQuaternion.clone();
         }
-
-        this.transformNode = options.spatialTransformNode ?? null;
     }
 }
