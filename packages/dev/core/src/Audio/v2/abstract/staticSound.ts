@@ -24,6 +24,7 @@ export interface IStaticSoundStopOptions {
      */
     waitTime: number;
 }
+
 /**
  * Options for creating a static sound.
  */
@@ -121,6 +122,7 @@ export abstract class StaticSound extends AbstractSound {
     public get pitch(): number {
         return this._options.pitch;
     }
+
     public set pitch(value: number) {
         this._options.pitch = value;
     }
@@ -132,6 +134,7 @@ export abstract class StaticSound extends AbstractSound {
     public get playbackRate(): number {
         return this._options.playbackRate;
     }
+
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
     }

@@ -24,17 +24,14 @@ export interface IAudioEngineV2Options {
      * Whether the audio engine listener should be enabled when the audio engine is created. Defaults to `false`.
      */
     listenerEnabled: boolean;
-
     /**
      * The initial position of the audio engine listener. Defaults to `(0, 0, 0)`.
      */
     listenerPosition: Vector3;
-
     /**
      * The initial rotation of the audio engine listener. Defaults to `(0, 0, 0)`.
      */
     listenerRotation: Vector3;
-
     /**
      * The initial output volume of the audio engine. Defaults to `1`.
      */

@@ -47,13 +47,13 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public source: StreamingSoundSourceType;
+    public audioContext: AudioContext;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public source: StreamingSoundSourceType;
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions> = {}) {
@@ -94,16 +94,6 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     }
 
     /** @internal */
-    public override dispose(): void {
-        super.dispose();
-
-        this._spatial = null;
-        this._stereo = null;
-
-        this.engine.removeNode(this);
-    }
-
-    /** @internal */
     public get inNode() {
         return this._subGraph.inNode;
     }
@@ -124,12 +114,18 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "WebAudioStreamingSound";
+    public override dispose(): void {
+        super.dispose();
+
+        this._spatial = null;
+        this._stereo = null;
+
+        this.engine.removeNode(this);
     }
 
-    protected _createInstance(): WebAudioStreamingSoundInstance {
-        return new WebAudioStreamingSoundInstance(this, this._options);
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStreamingSound";
     }
 
     protected override _connect(node: IWebAudioInNode): void {
@@ -138,6 +134,10 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
         if (this._subGraph.inNode) {
             this.outNode?.connect(this._subGraph.inNode);
         }
+    }
+
+    protected _createInstance(): WebAudioStreamingSoundInstance {
+        return new WebAudioStreamingSoundInstance(this, this._options);
     }
 
     protected override _disconnect(node: IWebAudioInNode): void {
@@ -163,28 +163,18 @@ class WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNod
 
 /** @internal */
 class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
-    /** @internal */
-    public override readonly engine: _WebAudioEngine;
-
+    private _currentTimeChangedWhilePaused = false;
+    private _enginePlayTime: number = Infinity;
+    private _enginePauseTime: number = 0;
     private _isReady: boolean = false;
-
     private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
         this._resolveIsReadyPromise = resolve;
     });
-    private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
-
-    private _onCanPlayThrough: () => void = () => {
-        this._isReady = true;
-        this._resolveIsReadyPromise(this.mediaElement);
-        this.onReadyObservable.notifyObservers(this);
-    };
-
-    private _onEnded: () => void = () => {
-        this.onEndedObservable.notifyObservers(this);
-        this.dispose();
-    };
 
     protected override _sound: WebAudioStreamingSound;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
 
     /** @internal */
     public mediaElement: HTMLMediaElement;
@@ -195,13 +185,22 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
     /** @internal */
     public volumeNode: GainNode;
 
-    private _enginePlayTime: number = Infinity;
-    private _enginePauseTime: number = 0;
+    public constructor(sound: WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
+        super(sound, options);
 
-    private _currentTimeChangedWhilePaused = false;
+        this.volumeNode = new GainNode(sound.audioContext);
+
+        if (typeof sound.source === "string") {
+            this._initFromUrl(sound.source);
+        } else if (Array.isArray(sound.source)) {
+            this._initFromUrls(sound.source);
+        } else if (sound.source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(sound.source);
+        }
+    }
 
     /** @internal */
-    get currentTime(): number {
+    public get currentTime(): number {
         if (this._state === SoundState.Stopped) {
             return 0;
         }
@@ -210,7 +209,7 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
     }
 
-    set currentTime(value: number) {
+    public set currentTime(value: number) {
         const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
 
         if (restart) {
@@ -227,78 +226,17 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         }
     }
 
+    public get outNode(): Nullable<AudioNode> {
+        return this.volumeNode;
+    }
+
     /** @internal */
-    get startTime(): number {
+    public get startTime(): number {
         if (this._state === SoundState.Stopped) {
             return 0;
         }
 
         return this._enginePlayTime;
-    }
-
-    private _onEngineStateChanged = () => {
-        if (this.engine.state !== "running") {
-            return;
-        }
-
-        if (this.options.loop && this.state === SoundState.Starting) {
-            this.play();
-        }
-
-        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
-    };
-
-    public constructor(sound: WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
-        super(sound, options);
-
-        this.volumeNode = new GainNode(sound.audioContext);
-
-        if (typeof sound.source === "string") {
-            this._initFromUrl(sound.source);
-        } else if (Array.isArray(sound.source)) {
-            this._initFromUrls(sound.source);
-        } else if (sound.source instanceof HTMLMediaElement) {
-            this._initFromMediaElement(sound.source);
-        }
-    }
-
-    private _initFromUrl(url: string): void {
-        // TODO: Maybe use the existing file loading tools to clean the URL.
-        const audio = new Audio(_CleanUrl(url));
-        this._initFromMediaElement(audio);
-    }
-
-    private _initFromUrls(urls: string[]): void {
-        const audio = new Audio();
-
-        for (const url of urls) {
-            const source = document.createElement("source");
-            // TODO: Maybe use the existing file loading tools to clean the URL.
-            source.src = _CleanUrl(url);
-            audio.appendChild(source);
-        }
-
-        this._initFromMediaElement(audio);
-    }
-
-    private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
-        Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
-
-        mediaElement.controls = false;
-        mediaElement.loop = this.options.loop;
-        mediaElement.preload = "auto";
-
-        mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
-        mediaElement.addEventListener("ended", this._onEnded, { once: true });
-
-        mediaElement.load();
-
-        this.sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
-        this.sourceNode.connect(this.volumeNode);
-
-        this._connect(this._sound);
-
-        this.mediaElement = mediaElement;
     }
 
     /** @internal */
@@ -318,10 +256,6 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
         this.engine.userGestureObservable.removeCallback(this._onUserGesture);
-    }
-
-    public get outNode(): Nullable<AudioNode> {
-        return this.volumeNode;
     }
 
     /** @internal */
@@ -403,6 +337,71 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         }
     }
 
+    private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
+        Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
+
+        mediaElement.controls = false;
+        mediaElement.loop = this.options.loop;
+        mediaElement.preload = "auto";
+
+        mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
+        mediaElement.addEventListener("ended", this._onEnded, { once: true });
+
+        mediaElement.load();
+
+        this.sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this.sourceNode.connect(this.volumeNode);
+
+        this._connect(this._sound);
+
+        this.mediaElement = mediaElement;
+    }
+
+    private _initFromUrl(url: string): void {
+        const audio = new Audio(_CleanUrl(url));
+        this._initFromMediaElement(audio);
+    }
+
+    private _initFromUrls(urls: string[]): void {
+        const audio = new Audio();
+
+        for (const url of urls) {
+            const source = document.createElement("source");
+            // TODO: Maybe use the existing file loading tools to clean the URL.
+            source.src = _CleanUrl(url);
+            audio.appendChild(source);
+        }
+
+        this._initFromMediaElement(audio);
+    }
+
+    private _onCanPlayThrough: () => void = () => {
+        this._isReady = true;
+        this._resolveIsReadyPromise(this.mediaElement);
+        this.onReadyObservable.notifyObservers(this);
+    };
+
+    private _onEnded: () => void = () => {
+        this.onEndedObservable.notifyObservers(this);
+        this.dispose();
+    };
+
+    private _onEngineStateChanged = () => {
+        if (this.engine.state !== "running") {
+            return;
+        }
+
+        if (this.options.loop && this.state === SoundState.Starting) {
+            this.play();
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    };
+
+    private _onUserGesture = () => {
+        this.play();
+    };
+
     private _play(): void {
         this._setState(SoundState.Starting);
 
@@ -444,14 +443,12 @@ class WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements 
         this._play();
     }
 
+    private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
+
     private _stop(): void {
         this.mediaElement.pause();
         this._setState(SoundState.Stopped);
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
-
-    private _onUserGesture = () => {
-        this.play();
-    };
 }

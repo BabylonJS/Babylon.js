@@ -174,6 +174,7 @@ export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
     public get name(): string {
         return this._name;
     }
+
     public set name(name: string) {
         if (this._name === name) {
             return;
