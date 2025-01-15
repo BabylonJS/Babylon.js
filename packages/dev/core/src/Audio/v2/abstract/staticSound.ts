@@ -1,5 +1,5 @@
 import { SoundState } from "../soundState";
-import type { IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
+import type { IBaseSoundOptions, IBaseSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
@@ -8,7 +8,7 @@ import type { _StaticSoundInstance } from "./staticSoundInstance";
 /**
  * Options for playing a static sound.
  */
-export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions {
+export interface IStaticSoundPlayOptions extends IBaseSoundPlayOptions {
     /**
      * The time to wait before playing the sound, in seconds.
      */
@@ -28,7 +28,7 @@ export interface IStaticSoundStopOptions {
 /**
  * Options for creating a static sound.
  */
-export interface IStaticSoundOptions extends IAbstractSoundOptions {
+export interface IStaticSoundOptions extends IBaseSoundOptions {
     /**
      * The start of the loop range in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.

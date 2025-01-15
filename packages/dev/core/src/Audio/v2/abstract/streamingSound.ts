@@ -1,5 +1,5 @@
 import { SoundState } from "../soundState";
-import type { IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
+import type { IBaseSoundOptions, IBaseSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _StreamingSoundInstance } from "./streamingSoundInstance";
@@ -7,7 +7,7 @@ import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 /**
  * Options for creating a streaming sound.
  */
-export interface IStreamingSoundOptions extends IAbstractSoundOptions {
+export interface IStreamingSoundOptions extends IBaseSoundOptions {
     /**
      * The number of instances to preload.
      * */
@@ -82,7 +82,7 @@ export abstract class StreamingSound extends AbstractSound {
      * Plays the sound.
      * @param options - The options to use when playing the sound.
      */
-    public play(options: Partial<IAbstractSoundPlayOptions> = {}): void {
+    public play(options: Partial<IBaseSoundPlayOptions> = {}): void {
         if (this._isPaused && this._instances.size > 0) {
             this.resume();
             return;

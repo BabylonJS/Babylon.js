@@ -1,7 +1,7 @@
 import { Observable } from "../../../Misc/observable";
 import { SoundState } from "../soundState";
 import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
-import type { AbstractSound, IAbstractSoundOptions, IAbstractSoundPlayOptions } from "./abstractSound";
+import type { AbstractSound, IBaseSoundOptions, IBaseSoundPlayOptions } from "./abstractSound";
 
 /** @internal */
 export abstract class _AbstractSoundInstance extends AbstractAudioNode {
@@ -15,9 +15,9 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
     /** @internal */
-    public options = {} as IAbstractSoundOptions;
+    public options = {} as IBaseSoundOptions;
 
-    protected constructor(sound: AbstractSound, options: Partial<IAbstractSoundOptions>) {
+    protected constructor(sound: AbstractSound, options: Partial<IBaseSoundOptions>) {
         super(sound.engine, _AudioNodeType.Out);
 
         Object.assign(this.options, options);
@@ -42,7 +42,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
         this.onStateChangedObservable.clear();
     }
 
-    public abstract play(options: Partial<IAbstractSoundPlayOptions>): void;
+    public abstract play(options: Partial<IBaseSoundPlayOptions>): void;
     public abstract pause(): void;
     public abstract resume(): void;
     public abstract stop(): void;
