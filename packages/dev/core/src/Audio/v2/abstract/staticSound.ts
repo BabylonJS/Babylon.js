@@ -5,30 +5,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
 import type { _StaticSoundInstance } from "./staticSoundInstance";
 
-/**
- * Options for playing a static sound.
- */
-export interface IStaticSoundPlayOptions extends IBaseSoundPlayOptions {
-    /**
-     * The time to wait before playing the sound, in seconds.
-     */
-    waitTime: number;
-}
-
-/**
- * Options for stopping a static sound.
- */
-export interface IStaticSoundStopOptions {
-    /**
-     * The time to wait before stopping the sound, in seconds.
-     */
-    waitTime: number;
-}
-
-/**
- * Options for creating a static sound.
- */
-export interface IStaticSoundOptions extends IBaseSoundOptions {
+interface ICommonStaticSoundOptions {
     /**
      * The start of the loop range in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
@@ -52,6 +29,32 @@ export interface IStaticSoundOptions extends IBaseSoundOptions {
      * - Can be combined with {@link pitch}.
      */
     playbackRate: number;
+}
+
+/**
+ * Options for playing a static sound.
+ */
+export interface IStaticSoundPlayOptions extends IBaseSoundPlayOptions, ICommonStaticSoundOptions {
+    /**
+     * The time to wait before playing the sound, in seconds.
+     */
+    waitTime: number;
+}
+
+/**
+ * Options for stopping a static sound.
+ */
+export interface IStaticSoundStopOptions {
+    /**
+     * The time to wait before stopping the sound, in seconds.
+     */
+    waitTime: number;
+}
+
+/**
+ * Options for creating a static sound.
+ */
+export interface IStaticSoundOptions extends IBaseSoundOptions, ICommonStaticSoundOptions {
     /**
      * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
      * - Has no effect if the sound's source is not a string array.
@@ -152,11 +155,32 @@ export abstract class StaticSound extends AbstractSound {
         }
 
         if (options) {
+            if (options.duration === undefined) {
+                options.duration = this._options.duration;
+            }
+            if (options.loop === undefined) {
+                options.loop = this._options.loop;
+            }
+            if (options.loopStart === undefined) {
+                options.loopStart = this._options.loopStart;
+            }
+            if (options.loopEnd === undefined) {
+                options.loopEnd = this._options.loopEnd;
+            }
+            if (options.pitch === undefined) {
+                options.pitch = this._options.pitch;
+            }
+            if (options.playbackRate === undefined) {
+                options.playbackRate = this._options.playbackRate;
+            }
             if (options.startOffset === undefined) {
                 options.startOffset = this._options.startOffset;
             }
-            if (options.duration === undefined) {
-                options.duration = this._options.duration;
+            if (options.volume === undefined) {
+                options.volume = 1;
+            }
+            if (options.waitTime === undefined) {
+                options.waitTime = 0;
             }
         } else {
             options = this._options;

@@ -21,6 +21,10 @@ export interface IBaseSoundPlayOptions extends IVolumeAudioOptions {
      */
     duration: number;
     /**
+     * Whether the sound should loop. Defaults to `false`.
+     */
+    loop: boolean;
+    /**
      * The time within the sound buffer to start playing at, in seconds. Defaults to `0`.
      */
     startOffset: number;
@@ -34,10 +38,6 @@ export interface IBaseSoundOptions extends IBaseSoundPlayOptions, ISpatialAudioO
      * Whether the sound should start playing immediately. Defaults to `false`.
      */
     autoplay: boolean;
-    /**
-     * Whether the sound should loop. Defaults to `false`.
-     */
-    loop: boolean;
     /**
      * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
      */

@@ -348,20 +348,38 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         if (options.duration !== undefined) {
             this.options.duration = options.duration;
         }
+        if (options.loop !== undefined) {
+            this.options.loop = options.loop;
+        }
+        if (options.loopStart !== undefined) {
+            this.options.loopStart = options.loopStart;
+        }
+        if (options.loopEnd !== undefined) {
+            this.options.loopEnd = options.loopEnd;
+        }
+        if (options.pitch !== undefined) {
+            this.options.pitch = options.pitch;
+        }
+        if (options.playbackRate !== undefined) {
+            this.options.playbackRate = options.playbackRate;
+        }
+        if (options.startOffset !== undefined) {
+            this.options.startOffset = options.startOffset;
+        }
+        if (options.volume !== undefined) {
+            this.options.volume = options.volume;
+        }
 
-        let startOffset = 0;
+        let startOffset = this.options.startOffset;
 
         if (this._state === SoundState.Paused) {
-            // TODO: Make this fall within loop points when loop start/end is set.
-            startOffset = (this.currentTime + this.options.startOffset) % this._sound.buffer.duration;
-        } else if (options.startOffset !== undefined) {
-            startOffset = options.startOffset;
-            this.options.startOffset = options.startOffset;
+            startOffset += this.currentTime;
+            startOffset %= this._sound.buffer.duration;
         }
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
-        this._volumeNode.gain.value = options.volume ?? this.options.volume;
+        this._volumeNode.gain.value = this.options.volume;
 
         this._initSourceNode();
 

@@ -260,17 +260,13 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         this._volumeNode.gain.value = options.volume ?? this.options.volume;
 
-        let startOffset = options.startOffset ?? null;
+        let startOffset = options.startOffset;
 
         if (this._currentTimeChangedWhilePaused) {
             startOffset = this.options.startOffset;
             this._currentTimeChangedWhilePaused = false;
         } else if (this._state === SoundState.Paused) {
             startOffset = this.currentTime + this.options.startOffset;
-        } else if (startOffset !== null) {
-            this.options.startOffset = startOffset;
-        } else {
-            startOffset = this.options.startOffset;
         }
 
         if (startOffset && startOffset > 0) {
