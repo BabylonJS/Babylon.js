@@ -1,7 +1,14 @@
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 /**
- * Abstract class for static sound buffer.
+ * Abstract class representing a static sound buffer.
+ *
+ * A static sound buffer is a fully downloaded and decoded sound buffer that is ready to be played.
+ *
+ * Static sound buffers can be reused multiple times by different {@link StaticSound} instances.
+ *
+ * @see {@link CreateSoundBufferAsync}
+ * @see {@link StaticSound.buffer}
  */
 export abstract class StaticSoundBuffer {
     /**
