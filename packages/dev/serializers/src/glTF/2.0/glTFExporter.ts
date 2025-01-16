@@ -794,8 +794,7 @@ export class GLTFExporter {
             // Only create skeleton if it has at least one joint and is used by a mesh.
             if (skin.joints.length > 0 && skinedNodes !== undefined) {
                 // Put IBM data into TypedArraybuffer view
-                const byteStride = 64; // 4 x 4 matrix of 32 bit float
-                const byteLength = inverseBindMatrices.length * byteStride;
+                const byteLength = inverseBindMatrices.length * 64; // Always a 4 x 4 matrix of 32 bit float
                 const inverseBindMatricesData = new Float32Array(byteLength / 4);
                 inverseBindMatrices.forEach((mat: Matrix, index: number) => {
                     mat.m.forEach((cell: number, cellIndex: number) => {
@@ -803,7 +802,7 @@ export class GLTFExporter {
                     });
                 });
                 // Create buffer view and accessor
-                const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData, byteStride);
+                const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData);
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
                 skin.inverseBindMatrices = this._accessors.length - 1;
 
