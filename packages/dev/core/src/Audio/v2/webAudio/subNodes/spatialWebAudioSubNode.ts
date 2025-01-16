@@ -1,6 +1,4 @@
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import type { TransformNode } from "../../../../Meshes/transformNode";
-import type { Nullable } from "../../../../types";
 import { _SpatialAudioDefaults } from "../../abstractAudio";
 import { _SpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
@@ -159,16 +157,6 @@ class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         this.node.orientationX.value = TmpVector.x;
         this.node.orientationY.value = TmpVector.y;
         this.node.orientationZ.value = TmpVector.z;
-    }
-
-    /** @internal */
-    public get transformNode(): Nullable<TransformNode> {
-        // TODO: Implement `transformNode` property.
-        return null;
-    }
-
-    public set transformNode(value: Nullable<TransformNode>) {
-        // TODO: Implement `transformNode` property.
     }
 
     /** @internal */
