@@ -49,7 +49,7 @@ export abstract class StreamingSound extends AbstractSound {
     /**
      * Returns the number of instances that have been preloaded.
      */
-    public get preloadedInstanceCount(): number {
+    public get preloadedCount(): number {
         return this._preloadedInstances.length;
     }
 
@@ -90,7 +90,7 @@ export abstract class StreamingSound extends AbstractSound {
 
         let instance: _StreamingSoundInstance;
 
-        if (this.preloadedInstanceCount > 0) {
+        if (this.preloadedCount > 0) {
             instance = this._preloadedInstances[0];
             instance.options.startOffset = this._options.startOffset;
             this._removePreloadedInstance(instance);
