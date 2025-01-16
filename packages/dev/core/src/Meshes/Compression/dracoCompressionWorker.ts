@@ -232,7 +232,8 @@ export function DecodeMesh(
             const ptr = decoderModule._malloc(byteLength);
             try {
                 decoder.GetAttributeDataArrayForAllPoints(geometry, attribute, dataType, byteLength, ptr);
-                const data = new info.typedArrayConstructor(info.heap.buffer, ptr, numValues);
+                // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
+                const data = new (info.typedArrayConstructor as Float32ArrayConstructor)(info.heap.buffer, ptr, numValues);
                 onAttributeData(kind, data.slice(), numComponents, byteOffset, byteStride, normalized);
             } finally {
                 decoderModule._free(ptr);

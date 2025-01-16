@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
-import type { PropertyValues, TemplateResult } from "lit";
+import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
@@ -11,8 +11,9 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
+import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
-import { isToneMapping, ViewerHotSpotResult } from "./viewer";
+import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -57,7 +58,7 @@ export type HotSpot = ViewerHotSpotQuery & {
 };
 
 // Custom events for the HTML3DElement.
-interface HTML3DElementEventMap extends HTMLElementEventMap {
+export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     viewerrender: Event;
     environmentchange: Event;
@@ -73,12 +74,15 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Displays a 3D model using the Babylon.js Viewer.
+ * Base class for the viewer custom element.
  */
-@customElement("babylon-viewer")
-export class HTML3DElement extends LitElement {
+export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    private _viewerDetails?: Readonly<ViewerDetails>;
+    private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+
+    protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
+        super();
+    }
 
     // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
     private readonly _propertyBindings = [
@@ -161,7 +165,7 @@ export class HTML3DElement extends LitElement {
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static override styles = css`
+    public static override styles: CSSResultGroup = css`
         :host {
             --ui-foreground-color: white;
             --ui-background-hue: 233;
@@ -484,7 +488,7 @@ export class HTML3DElement extends LitElement {
      * The engine to use for rendering.
      */
     @property({
-        converter: (value: string | null): HTML3DElement["engine"] => {
+        converter: (value: string | null): ViewerElement["engine"] => {
             if (value === "WebGL" || value === "WebGPU") {
                 return value;
             }
@@ -511,7 +515,7 @@ export class HTML3DElement extends LitElement {
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
-        hasChanged: (newValue: HTML3DElement["environment"], oldValue: HTML3DElement["environment"]) => {
+        hasChanged: (newValue: ViewerElement["environment"], oldValue: ViewerElement["environment"]) => {
             return newValue.lighting !== oldValue.lighting || newValue.skybox !== oldValue.skybox;
         },
     })
@@ -945,16 +949,16 @@ export class HTML3DElement extends LitElement {
     }
 
     // eslint-disable-next-line babylonjs/available
-    override addEventListener<K extends keyof HTML3DElementEventMap>(
+    override addEventListener<K extends keyof ViewerElementEventMap>(
         type: K,
-        listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
         options?: boolean | AddEventListenerOptions
     ): void;
     override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(type: TEvent, event: (type: TEvent) => HTML3DElementEventMap[TEvent]) {
+    protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
@@ -1001,15 +1005,15 @@ export class HTML3DElement extends LitElement {
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.
     private _createPropertyBinding(
-        property: keyof HTML3DElement,
-        getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
-        updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
-        updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
+        property: keyof ViewerElement,
+        getObservable: (viewerDetails: NonNullable<this["viewerDetails"]>) => Observable<any>,
+        updateViewer: (viewerDetails: NonNullable<this["viewerDetails"]>) => void,
+        updateElement: (viewerDetails: NonNullable<this["viewerDetails"]>) => void
     ) {
         return {
             property,
             // Called each time a Viewer instance is created.
-            onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
+            onInitialized: (viewerDetails: NonNullable<this["viewerDetails"]>) => {
                 getObservable(viewerDetails).add(() => {
                     updateElement(viewerDetails);
                 });
@@ -1023,7 +1027,7 @@ export class HTML3DElement extends LitElement {
             },
             // Called to re-sync the HTML3DElement property with its corresponding attribute.
             syncToAttribute: () => {
-                const descriptor = HTML3DElement.elementProperties.get(property);
+                const descriptor = ViewerElement.elementProperties.get(property);
                 if (descriptor) {
                     if (descriptor.attribute) {
                         const attributeName = descriptor.attribute === true ? property : descriptor.attribute;
@@ -1059,72 +1063,84 @@ export class HTML3DElement extends LitElement {
                 canvas.setAttribute("touch-action", "none");
                 this._canvasContainer.appendChild(canvas);
 
-                await createViewerForCanvas(canvas, {
-                    engine: this.engine,
-                    onInitialized: (details) => {
-                        this._viewerDetails = details;
+                {
+                    const detailsDeferred = new Deferred<ViewerDetails>();
+                    const viewer = await this._createViewer(canvas, {
+                        engine: this.engine,
+                        onInitialized: (details) => {
+                            detailsDeferred.resolve(details);
+                        },
+                    });
+                    const details = await detailsDeferred.promise;
 
-                        details.viewer.onEnvironmentChanged.add(() => {
-                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
-                        });
+                    this._viewerDetails = Object.assign(details, { viewer });
+                }
 
-                        details.viewer.onEnvironmentError.add((error) => {
-                            this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
-                        });
+                const details = this._viewerDetails;
 
-                        details.viewer.onModelChanged.add((source) => {
-                            this._animations = [...details.viewer.animations];
-
-                            // When attributes are explicitly set, they are re-applied when a new model is loaded.
-                            this._propertyBindings.forEach((binding) => binding.syncToAttribute());
-
-                            // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
-                            // (since the underlying Babylon camera already has these properties).
-                            this._cameraOrbitCoercer?.(details.camera);
-                            this._cameraTargetCoercer?.(details.camera);
-
-                            // If animation auto play was set, then start the default animation (if possible).
-                            if (this.animationAutoPlay) {
-                                details.viewer.playAnimation();
-                            }
-
-                            this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
-                        });
-
-                        details.viewer.onModelError.add((error) => {
-                            this._animations = [...details.viewer.animations];
-                            this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
-                        });
-
-                        details.viewer.onLoadingProgressChanged.add(() => {
-                            this._loadingProgress = details.viewer.loadingProgress;
-                            this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
-                        });
-
-                        details.viewer.onIsAnimationPlayingChanged.add(() => {
-                            this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
-                            this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
-                        });
-
-                        details.viewer.onAnimationProgressChanged.add(() => {
-                            this.animationProgress = details.viewer.animationProgress ?? 0;
-                            this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
-                        });
-
-                        details.scene.onAfterRenderCameraObservable.add(() => {
-                            this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
-                        });
-
-                        this._updateModel();
-                        this._updateEnv({ lighting: true, skybox: true });
-
-                        this._propertyBindings.forEach((binding) => binding.onInitialized(details));
-
-                        this._dispatchCustomEvent("viewerready", (type) => new Event(type));
-                    },
+                details.viewer.onEnvironmentChanged.add(() => {
+                    this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
                 });
+
+                details.viewer.onEnvironmentError.add((error) => {
+                    this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
+                });
+
+                details.viewer.onModelChanged.add((source) => {
+                    this._animations = [...details.viewer.animations];
+
+                    // When attributes are explicitly set, they are re-applied when a new model is loaded.
+                    this._propertyBindings.forEach((binding) => binding.syncToAttribute());
+
+                    // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
+                    // (since the underlying Babylon camera already has these properties).
+                    this._cameraOrbitCoercer?.(details.camera);
+                    this._cameraTargetCoercer?.(details.camera);
+
+                    // If animation auto play was set, then start the default animation (if possible).
+                    if (this.animationAutoPlay) {
+                        details.viewer.playAnimation();
+                    }
+
+                    this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
+                });
+
+                details.viewer.onModelError.add((error) => {
+                    this._animations = [...details.viewer.animations];
+                    this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
+                });
+
+                details.viewer.onLoadingProgressChanged.add(() => {
+                    this._loadingProgress = details.viewer.loadingProgress;
+                    this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
+                });
+
+                details.viewer.onIsAnimationPlayingChanged.add(() => {
+                    this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
+                    this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
+                });
+
+                details.viewer.onAnimationProgressChanged.add(() => {
+                    this.animationProgress = details.viewer.animationProgress ?? 0;
+                    this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                });
+
+                details.scene.onAfterRenderCameraObservable.add(() => {
+                    this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
+                });
+
+                this._updateModel();
+                this._updateEnv({ lighting: true, skybox: true });
+
+                this._propertyBindings.forEach((binding) => binding.onInitialized(details));
+
+                this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }
         });
+    }
+
+    protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
+        return createViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {
@@ -1186,5 +1202,18 @@ export class HTML3DElement extends LitElement {
                 Logger.Log(error);
             }
         }
+    }
+}
+
+/**
+ * Displays a 3D model using the Babylon.js Viewer.
+ */
+@customElement("babylon-viewer")
+export class HTML3DElement extends ViewerElement {
+    /**
+     * Creates a new HTML3DElement.
+     */
+    public constructor() {
+        super(Viewer);
     }
 }

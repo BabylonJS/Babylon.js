@@ -166,7 +166,7 @@ export class ToolsTabComponent extends PaneComponent {
         const engine = scene.getEngine();
 
         this._previousRenderingScale = engine.getHardwareScalingLevel();
-        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width ?? 1);
+        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width || 1);
 
         const intervalId = setInterval(() => {
             if (!this._gifRecorder) {
