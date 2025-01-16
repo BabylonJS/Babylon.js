@@ -29,6 +29,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
+    private _depthTest: boolean;
+    private _depthWrite: boolean;
 
     private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
         return (value as ObjectRenderer).initRender !== undefined;
@@ -180,6 +182,22 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         effect._bindTexture(name, texture);
+    }
+
+    /**
+     * Saves the current depth states (depth testing and depth writing)
+     */
+    public saveDepthStates(): void {
+        this._depthTest = this._engine.getDepthBuffer();
+        this._depthWrite = this._engine.getDepthWrite();
+    }
+
+    /**
+     * Restores the depth states saved by saveDepthStates
+     */
+    public restoreDepthStates(): void {
+        this._engine.setDepthBuffer(this._depthTest);
+        this._engine.setDepthWrite(this._depthWrite);
     }
 
     /**
