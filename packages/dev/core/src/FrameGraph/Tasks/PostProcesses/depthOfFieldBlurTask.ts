@@ -32,7 +32,7 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
             }
         );
 
-        this._internalDependencies.push(this.circleOfConfusionTexture);
+        this._addInternalDependencies(this.circleOfConfusionTexture);
 
         return pass;
     }
