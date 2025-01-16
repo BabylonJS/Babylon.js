@@ -570,18 +570,16 @@ export class Viewer implements IDisposable {
 
     /**
      * Change the environment rotation.
-     * @param value the rotation in degrees
+     * @param value the rotation in radians
      */
     private _changeEnvironmentRotation(value: number) {
         this._reflectionsRotation = value;
 
-        const radiansValue = (value * Math.PI) / 180;
-
         if (this._skyboxTexture) {
-            this._skyboxTexture.rotationY = radiansValue;
+            this._skyboxTexture.rotationY = this._reflectionsRotation;
         }
         if (this._reflectionTexture) {
-            this._reflectionTexture.rotationY = radiansValue;
+            this._reflectionTexture.rotationY = this._reflectionsRotation;
         }
         this.onEnvironmentRotationChanged.notifyObservers();
     }
