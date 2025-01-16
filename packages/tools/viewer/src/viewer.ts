@@ -535,14 +535,12 @@ export class Viewer implements IDisposable {
             blur: this._skyboxBlur,
         } as EnvironmentParams;
         if (this._reflectionTexture) {
-            values = { ...values, intensity: this._reflectionTexture.level, rotation: this._reflectionTexture.rotationY };
+            values = { ...values, intensity: this._reflectionsIntensity, rotation: this._reflectionsRotation };
         }
         return values;
     }
 
     public set environment(value: Partial<Readonly<EnvironmentParams>>) {
-        // eslint-disable-next-line no-console
-        console.log("environment", value);
         if (value.blur !== undefined) {
             this._changeSkyboxBlur(value.blur);
         }
@@ -570,14 +568,20 @@ export class Viewer implements IDisposable {
         }
     }
 
+    /**
+     * Change the environment rotation.
+     * @param value the rotation in degrees
+     */
     private _changeEnvironmentRotation(value: number) {
         this._reflectionsRotation = value;
 
+        const radiansValue = (value * Math.PI) / 180;
+
         if (this._skyboxTexture) {
-            this._skyboxTexture.rotationY = this._reflectionsRotation;
+            this._skyboxTexture.rotationY = radiansValue;
         }
         if (this._reflectionTexture) {
-            this._reflectionTexture.rotationY = this._reflectionsRotation;
+            this._reflectionTexture.rotationY = radiansValue;
         }
         this.onEnvironmentRotationChanged.notifyObservers();
     }

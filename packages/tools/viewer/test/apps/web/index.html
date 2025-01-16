@@ -282,9 +282,8 @@
             };
             globalThis.onEnvironmentRotation = () => {
                 const degreValue = document.querySelector("#environmentRotationInput").value;
-                const radians = (degreValue * Math.PI) / 180;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environment = { rotation: radians };
+                viewer.environment = { rotation: parseFloat(degreValue) };
             };
             globalThis.onEnvironmentBlur = () => {
                 const value = document.querySelector("#environmentBlurInput").value;

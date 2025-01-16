@@ -101,11 +101,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._createPropertyBinding(
             "environmentIntensity",
             (details) => details.viewer.onEnvironmentIntensityChanged,
-            (details) => {
-                // eslint-disable-next-line no-console
-                console.log("inteni");
-                details.viewer.environment = { intensity: this.environmentIntensity ?? details.viewer.environment.intensity };
-            },
+            (details) => (details.viewer.environment = { intensity: this.environmentIntensity ?? details.viewer.environment.intensity }),
             (details) => (this.environmentIntensity = details.viewer.environment.intensity)
         ),
         this._createPropertyBinding(
