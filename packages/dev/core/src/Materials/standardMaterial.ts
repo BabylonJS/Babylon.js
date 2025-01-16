@@ -809,7 +809,6 @@ export class StandardMaterial extends PushMaterial {
     public readonly detailMap: DetailMapConfiguration;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
-    protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _cacheHasRenderTargetTextures = false;
 
