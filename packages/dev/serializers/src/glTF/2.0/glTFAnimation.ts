@@ -17,6 +17,7 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { BufferManager } from "./bufferManager";
 import { GetAccessorElementCount, ConvertToRightHandedPosition, ConvertCameraRotationToGLTF, ConvertToRightHandedRotation } from "./glTFUtilities";
+import { DataWriter } from "./dataWriter";
 
 /**
  * @internal
@@ -591,7 +592,7 @@ export class _GLTFAnimation {
             const nodeIndex = nodeMap.get(babylonTransformNode);
 
             // Create buffer view and accessor for key frames.
-            let data = new Float32Array(animationData.inputs);
+            const data = new Float32Array(animationData.inputs);
             bufferView = bufferManager.createBufferView(data);
             accessor = bufferManager.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
                 min: [animationData.inputsMin],
@@ -600,27 +601,29 @@ export class _GLTFAnimation {
             accessors.push(accessor);
             keyframeAccessorIndex = accessors.length - 1;
 
-            // Convert keyed values into a flat array for writing.
+            // Perform conversions on keyed values while also building their buffer.
             const rotationQuaternion = new Quaternion();
             const eulerVec3 = new Vector3();
             const position = new Vector3();
             const isCamera = babylonTransformNode instanceof Camera;
 
-            data = new Float32Array(animationData.outputs.length * GetAccessorElementCount(dataAccessorType));
-            animationData.outputs.forEach(function (output: number[], index: number) {
+            const dataWriter = new DataWriter(animationData.outputs.length * GetAccessorElementCount(dataAccessorType));
+            animationData.outputs.forEach(function (output: number[]) {
                 if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);
                             ConvertToRightHandedPosition(position);
-                            position.toArray(output);
+
+                            dataWriter.writeFloat32(position.x);
+                            dataWriter.writeFloat32(position.y);
+                            dataWriter.writeFloat32(position.z);
                             break;
 
                         case AnimationChannelTargetPath.ROTATION:
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
-                                // TODO: should be impossible to get here, but just in case
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
@@ -633,7 +636,15 @@ export class _GLTFAnimation {
                                 }
                             }
 
-                            rotationQuaternion.toArray(output);
+                            dataWriter.writeFloat32(rotationQuaternion.x);
+                            dataWriter.writeFloat32(rotationQuaternion.y);
+                            dataWriter.writeFloat32(rotationQuaternion.z);
+                            dataWriter.writeFloat32(rotationQuaternion.w);
+                            break;
+                        default:
+                            output.forEach((entry) => {
+                                dataWriter.writeFloat32(entry);
+                            });
                             break;
                     }
                 } else {
@@ -642,7 +653,6 @@ export class _GLTFAnimation {
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
-                                // TODO: should be impossible to get here, but just in case
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
@@ -650,15 +660,22 @@ export class _GLTFAnimation {
                                 ConvertCameraRotationToGLTF(rotationQuaternion);
                             }
 
-                            rotationQuaternion.toArray(output);
+                            dataWriter.writeFloat32(rotationQuaternion.x);
+                            dataWriter.writeFloat32(rotationQuaternion.y);
+                            dataWriter.writeFloat32(rotationQuaternion.z);
+                            dataWriter.writeFloat32(rotationQuaternion.w);
+                            break;
+                        default:
+                            output.forEach((entry) => {
+                                dataWriter.writeFloat32(entry);
+                            });
                             break;
                     }
                 }
-                data.set(output, index * GetAccessorElementCount(dataAccessorType));
             });
 
             // Create buffer view and accessor for keyed values.
-            bufferView = bufferManager.createBufferView(data);
+            bufferView = bufferManager.createBufferView(dataWriter.getOutputData());
             accessor = bufferManager.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;

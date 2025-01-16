@@ -984,7 +984,7 @@ export class GLTFMaterialExporter {
                 name: name,
                 uri: fileName,
             };
-            this._exporter._imageData[fileName] = { data: data, mimeType: mimeType };
+            this._exporter._imageData[fileName] = { data: data, mimeType: mimeType }; // Save image data to be written to file later
         }
 
         images.push(image);

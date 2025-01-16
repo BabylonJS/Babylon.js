@@ -37,8 +37,10 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
     postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
 
     /**
-     * Define this method to modify the default behavior when exporting a mesh primitive
-     * @returns nullable IMeshPrimitive promise
+     * Define this method to get notified when a primitive is created
+     * @param primitive glTF mesh primitive
+     * @param bufferManager Buffer manager
+     * @param accessors List of glTF accessors
      */
     postExportMeshPrimitive?(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): void;
 
@@ -49,6 +51,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining nodes together.
      * @param convertToRightHanded Flag indicating whether to convert values to right-handed
+     * @param bufferManager Buffer manager
      * @returns nullable INode promise
      */
     postExportNodeAsync?(
@@ -77,8 +80,8 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
     postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
 
     /**
-     * todo
-     * @returns todo
+     * Define this method to modify the glTF buffer data before it is finalized and written
+     * @param bufferManager Buffer manager
      */
     preGenerateBinaryAsync?(bufferManager: BufferManager): Promise<void>;
 

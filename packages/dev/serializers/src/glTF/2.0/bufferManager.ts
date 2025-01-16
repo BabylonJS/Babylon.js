@@ -17,13 +17,19 @@ function getHighestByteAlignment(byteLength: number): number {
  * @internal
  */
 export class BufferManager {
-    // BufferView -> data
+    /**
+     * Maps a bufferView to its data
+     */
     private _bufferViewToData: Map<IBufferView, TypedArray> = new Map<IBufferView, TypedArray>();
 
-    // BufferView -> glTF objects
+    /**
+     * Maps a bufferView to glTF objects that reference it via a "bufferView" property (e.g. accessors, images)
+     */
     private _bufferViewToProperties: Map<IBufferView, IPropertyWithBufferView[]> = new Map<IBufferView, IPropertyWithBufferView[]>();
 
-    // Accessor -> bufferView
+    /**
+     * Maps an accessor to its bufferView
+     */
     private _accessorToBufferView: Map<IAccessor, IBufferView> = new Map<IAccessor, IBufferView>();
 
     /**
@@ -98,10 +104,7 @@ export class BufferManager {
         minMax?: { min: number[]; max: number[] },
         normalized?: boolean
     ): IAccessor {
-        if (!this._bufferViewToData.has(bufferView)) {
-            throw new Error(`BufferView ${bufferView} not found in DataWriter.`);
-        }
-
+        this._verifyBufferView(bufferView);
         const accessor: IAccessor = {
             bufferView: undefined, // bufferView will be set to a real index later, once we write the binary and decide bufferView ordering
             componentType: componentType,
@@ -118,49 +121,21 @@ export class BufferManager {
     }
 
     /**
-     * Assigns a bufferView to a glTF object
+     * Assigns a bufferView to a glTF object that references it
      * @param object The glTF object
      * @param bufferView The bufferView to assign
      */
     public setBufferView(object: IPropertyWithBufferView, bufferView: IBufferView) {
-        if (!this._bufferViewToData.has(bufferView)) {
-            throw new Error(`BufferView ${bufferView} not found in DataWriter.`);
-        }
-        const properties = this._bufferViewToProperties.get(bufferView) ?? [];
+        this._verifyBufferView(bufferView);
+        const properties = this.getProperties(bufferView);
         properties.push(object);
-        this._bufferViewToProperties.set(bufferView, properties);
-    }
-
-    public getBufferView(accessor: IAccessor): IBufferView {
-        const bufferView = this._accessorToBufferView.get(accessor);
-        if (!bufferView) {
-            throw new Error(`Accessor ${accessor} not found in DataWriter.`);
-        }
-        return bufferView;
-    }
-
-    public getProperties(bufferView: IBufferView): IPropertyWithBufferView[] {
-        return this._bufferViewToProperties.get(bufferView) ?? [];
-    }
-
-    public getData(bufferView: IBufferView): TypedArray {
-        const data = this._bufferViewToData.get(bufferView);
-        if (!data) {
-            throw new Error(`BufferView ${bufferView} not found in DataWriter.`);
-        }
-        return data;
     }
 
     /**
-     * Removes buffer view from the binary.
-     * Warning: This will also remove the bufferView info from all object that reference it.
+     * Removes buffer view from the binary data, as well as from all its known references
      * @param bufferView the bufferView to remove
      */
     public removeBufferView(bufferView: IBufferView): void {
-        if (!this._bufferViewToData.has(bufferView)) {
-            throw new Error(`BufferView ${bufferView} not found in DataWriter.`);
-        }
-
         const properties = this.getProperties(bufferView);
         for (const object of properties) {
             if (object.bufferView !== undefined) {
@@ -179,5 +154,28 @@ export class BufferManager {
                 this._accessorToBufferView.delete(accessor);
             }
         });
+    }
+
+    public getBufferView(accessor: IAccessor): IBufferView {
+        const bufferView = this._accessorToBufferView.get(accessor);
+        this._verifyBufferView(bufferView);
+        return bufferView!;
+    }
+
+    public getProperties(bufferView: IBufferView): IPropertyWithBufferView[] {
+        this._verifyBufferView(bufferView);
+        this._bufferViewToProperties.set(bufferView, this._bufferViewToProperties.get(bufferView) ?? []);
+        return this._bufferViewToProperties.get(bufferView)!;
+    }
+
+    public getData(bufferView: IBufferView): TypedArray {
+        this._verifyBufferView(bufferView);
+        return this._bufferViewToData.get(bufferView)!;
+    }
+
+    private _verifyBufferView(bufferView?: IBufferView): void {
+        if (bufferView === undefined || !this._bufferViewToData.has(bufferView)) {
+            throw new Error(`BufferView ${bufferView} not found in BufferManager.`);
+        }
     }
 }

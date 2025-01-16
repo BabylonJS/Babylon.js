@@ -56,8 +56,8 @@ export interface IExportOptions {
     includeCoordinateSystemConversionNodes?: boolean;
 
     /**
-     * Indicates if mesh data should be compressed using Draco to reduce binary file size. Defaults to false.
-     * If used, `extensionsRequired` property of the exported file will include "KHR_draco_mesh_compression".
+     * Indicates if geometries should be compressed with Draco. Defaults to false.
+     * NOTE: This may take a while if exporting many meshes.
      */
     useDracoCompression?: boolean;
 }
@@ -78,8 +78,8 @@ export class GLTF2Export {
             await scene.whenReadyAsync();
         }
 
-        const exporter = new GLTFExporter(scene, false, options);
-        const data = await exporter.generateAsync(fileName.replace(/\.[^/.]+$/, ""));
+        const exporter = new GLTFExporter(scene, options);
+        const data = await exporter.generateGLTFAsync(fileName.replace(/\.[^/.]+$/, ""));
         exporter.dispose();
 
         return data;
@@ -97,8 +97,8 @@ export class GLTF2Export {
             await scene.whenReadyAsync();
         }
 
-        const exporter = new GLTFExporter(scene, true, options);
-        const data = await exporter.generateAsync(fileName.replace(/\.[^/.]+$/, ""));
+        const exporter = new GLTFExporter(scene, options);
+        const data = await exporter.generateGLBAsync(fileName.replace(/\.[^/.]+$/, ""));
         exporter.dispose();
 
         return data;

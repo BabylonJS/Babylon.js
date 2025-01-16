@@ -147,7 +147,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
     private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, bufferManager: BufferManager, componentType: AccessorComponentType): number {
         // write the buffer
-        let data;
+        let data: Float32Array | Int8Array | Int16Array;
         switch (componentType) {
             case AccessorComponentType.FLOAT: {
                 data = new Float32Array(buffer.length);

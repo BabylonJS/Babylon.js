@@ -241,7 +241,7 @@ export class GLTFExporter {
 
     private readonly _options: Required<IExportOptions>;
 
-    public readonly _shouldUseGlb: boolean;
+    public _shouldUseGlb: boolean = false;
 
     public readonly _materialExporter = new GLTFMaterialExporter(this);
 
@@ -299,16 +299,6 @@ export class GLTFExporter {
         return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
-    public _extensionsPostExportMeshPrimitive(primitive: IMeshPrimitive): void {
-        for (const name of GLTFExporter._ExtensionNames) {
-            const extension = this._extensions[name];
-
-            if (extension.postExportMeshPrimitive) {
-                extension.postExportMeshPrimitive(primitive, this._bufferManager, this._accessors);
-            }
-        }
-    }
-
     public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return this._applyExtensions(
             node,
@@ -340,6 +330,16 @@ export class GLTFExporter {
 
             if (extension.postExportTexture) {
                 extension.postExportTexture(context, textureInfo, babylonTexture);
+            }
+        }
+    }
+
+    public _extensionsPostExportMeshPrimitive(primitive: IMeshPrimitive): void {
+        for (const name of GLTFExporter._ExtensionNames) {
+            const extension = this._extensions[name];
+
+            if (extension.postExportMeshPrimitive) {
+                extension.postExportMeshPrimitive(primitive, this._bufferManager, this._accessors);
             }
         }
     }
@@ -393,13 +393,12 @@ export class GLTFExporter {
         }
     }
 
-    public constructor(babylonScene: Nullable<Scene> = EngineStore.LastCreatedScene, shouldUseGlb: boolean, options?: IExportOptions) {
+    public constructor(babylonScene: Nullable<Scene> = EngineStore.LastCreatedScene, options?: IExportOptions) {
         if (!babylonScene) {
             throw new Error("No scene available to export");
         }
 
         this._babylonScene = babylonScene;
-        this._shouldUseGlb = shouldUseGlb;
 
         this._options = {
             shouldExportNode: () => true,
@@ -502,13 +501,6 @@ export class GLTFExporter {
         return prettyPrint ? JSON.stringify(this._glTF, null, 2) : JSON.stringify(this._glTF);
     }
 
-    public async generateAsync(glTFPrefix: string): Promise<GLTFData> {
-        if (this._shouldUseGlb) {
-            return this.generateGLBAsync(glTFPrefix);
-        }
-        return this.generateGLTFAsync(glTFPrefix);
-    }
-
     public async generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
         const binaryBuffer = await this._generateBinaryAsync();
 
@@ -552,6 +544,7 @@ export class GLTFExporter {
     }
 
     public async generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
+        this._shouldUseGlb = true;
         const binaryBuffer = await this._generateBinaryAsync();
 
         this._extensionsOnExporting();

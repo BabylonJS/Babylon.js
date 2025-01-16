@@ -61,15 +61,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
     }
 
     /** @internal */
-    public dispose() {
-        this._wasUsed = false;
-        DracoEncoder.ResetDefault();
-    }
-
-    /** @internal */
-    public onExporting(): void {
-        this.dispose();
-    }
+    public dispose() {}
 
     /** @internal */
     public postExportMeshPrimitive(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): void {
@@ -106,7 +98,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             const data = bufferManager.getData(bufferView);
 
             const size = GetAccessorElementCount(accessor.type);
-            // TODO: In future, find a way to preserve original data type to avoid copying in some cases
+            // TODO: In future, find a way to preserve original data type to curb unnecessary copies
             const floatData = GetFloatData(
                 data,
                 size,
@@ -128,8 +120,8 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             method: primitive.targets ? "MESH_SEQUENTIAL_ENCODING" : "MESH_EDGEBREAKER_ENCODING",
         };
 
-        this._encodePromises.push(
-            DracoEncoder.Default._encodeAsync(attributes, indices, options).then((encodedData) => {
+        const promise = DracoEncoder.Default._encodeAsync(attributes, indices, options)
+            .then((encodedData) => {
                 if (!encodedData) {
                     Logger.Warn("Draco encoding failed for primitive.");
                     return;
@@ -152,7 +144,11 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 primitive.extensions ||= {};
                 primitive.extensions[NAME] = dracoInfo;
             })
-        );
+            .catch((error) => {
+                Logger.Warn("Draco encoding failed for primitive: " + error);
+            });
+
+        this._encodePromises.push(promise);
 
         this._wasUsed = true;
     }
@@ -165,13 +161,13 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
 
         await Promise.all(this._encodePromises);
 
-        // Cull obsolete bufferViews that are no longer needed, as they were replaced with Draco data
+        // Cull obsolete bufferViews that were replaced with Draco data
         this._bufferViewsUsed.forEach((bufferView) => {
             const references = bufferManager.getProperties(bufferView);
-            const bufferViewOnlyUsedByDraco = references.every((object) => {
+            const onlyUsedByEncodedPrimitives = references.every((object) => {
                 return this._accessorsUsed.has(object as IAccessor); // has() can handle any object, but TS doesn't know that
             });
-            if (bufferViewOnlyUsedByDraco) {
+            if (onlyUsedByEncodedPrimitives) {
                 bufferManager.removeBufferView(bufferView);
             }
         });
