@@ -61,7 +61,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
         const _ltc1 = new Uint16Array(64 * 64 * 4);
         const _ltc2 = new Uint16Array(64 * 64 * 4);
 
-        const ltcPath = Tools.GetBabylonScriptURL("https://cdn.babylonjs.com/areaLights/areaLightsLTC.bin", true);
+        const ltcPath = Tools.GetBabylonScriptURL("https://assets.babylonjs.com/areaLights/areaLightsLTC.bin", true);
         const file = await Tools.LoadFileAsync(ltcPath);
         const ltcEncoded = new Uint16Array(file);
 
