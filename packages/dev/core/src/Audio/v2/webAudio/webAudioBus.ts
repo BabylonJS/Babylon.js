@@ -40,8 +40,8 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public readonly audioContext: AudioContext;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IAudioBusOptions> = {}) {
-        super(name, engine, options);
+    public constructor(name: string, engine: _WebAudioEngine) {
+        super(name, engine);
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
 
