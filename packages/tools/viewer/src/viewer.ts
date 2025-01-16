@@ -84,6 +84,11 @@ export type EnvironmentParams = {
      * The rotation of the environment lighting in degrees.
      */
     rotation: number;
+
+    /**
+     * If the environment should be visible.
+     */
+    visible: boolean;
 };
 
 export type PostProcessing = {
@@ -549,6 +554,9 @@ export class Viewer implements IDisposable {
         }
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
+        }
+        if (value.visible !== undefined) {
+            this._skybox?.setEnabled(value.visible);
         }
         this.onEnvironmentConfigurationChanged.notifyObservers();
     }

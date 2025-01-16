@@ -153,6 +153,10 @@
                 <span>Environment Blur</span>
                 <input type="range" id="environmentBlurInput" min="0" max="1" step="0.01" oninput="onEnvironmentBlur()" />
             </div>
+            <div>
+                <span>Environment Visibility</span>
+                <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -289,6 +293,11 @@
                 const value = document.querySelector("#environmentBlurInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.environmentConfig = { blur: value };
+            };
+            globalThis.onEnvironmentVisibility = () => {
+                const checked = document.querySelector("#environmentVisibilityInput").checked;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.environment = { visible: checked };
             };
         </script>
     </body>
