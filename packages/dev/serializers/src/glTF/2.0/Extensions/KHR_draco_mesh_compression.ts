@@ -82,15 +82,20 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             return;
         }
 
+        // Collect bufferViews and accessors used by this primitive
+        const primitiveBufferViews: IBufferView[] = [];
+        const primitiveAccessors: IAccessor[] = [];
+
         // Prepare indices for Draco encoding
         let indices: Nullable<Uint32Array | Uint16Array> = null;
         if (primitive.indices !== undefined) {
             const accessor = accessors[primitive.indices];
             const bufferView = bufferManager.getBufferView(accessor);
-            this._bufferViewsUsed.add(bufferView);
-            this._accessorsUsed.add(accessor);
             // Per exportIndices, indices must be either Uint16Array or Uint32Array
             indices = bufferManager.getData(bufferView) as Uint32Array | Uint16Array;
+
+            primitiveBufferViews.push(bufferView);
+            primitiveAccessors.push(accessor);
         }
 
         // Prepare attributes for Draco encoding
@@ -98,8 +103,6 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         for (const [name, accessorIndex] of Object.entries(primitive.attributes)) {
             const accessor = accessors[accessorIndex];
             const bufferView = bufferManager.getBufferView(accessor);
-            this._bufferViewsUsed.add(bufferView);
-            this._accessorsUsed.add(accessor);
             const data = bufferManager.getData(bufferView);
 
             const size = GetAccessorElementCount(accessor.type);
@@ -115,6 +118,9 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             ) as Float32Array; // Because data is a TypedArray, GetFloatData will return a Float32Array
 
             attributes.push({ attribute: name, dracoAttribute: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: floatData });
+
+            primitiveBufferViews.push(bufferView);
+            primitiveAccessors.push(accessor);
         }
 
         // Use sequential encoding to preserve vertex order for cases like morph targets
@@ -135,6 +141,13 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 };
                 const bufferView = bufferManager.createBufferView(encodedData.data);
                 bufferManager.setBufferView(dracoInfo, bufferView);
+
+                for (const bufferView of primitiveBufferViews) {
+                    this._bufferViewsUsed.add(bufferView);
+                }
+                for (const accessor of primitiveAccessors) {
+                    this._accessorsUsed.add(accessor);
+                }
 
                 primitive.extensions ||= {};
                 primitive.extensions[NAME] = dracoInfo;
