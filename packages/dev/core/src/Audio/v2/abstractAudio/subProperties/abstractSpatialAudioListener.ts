@@ -40,14 +40,27 @@ export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioLi
     return options.listenerPosition !== undefined || options.listenerRotation !== undefined || options.listenerRotationQuaternion !== undefined;
 }
 
-/** */
+/**
+ * Abstract class representing the spatial audio `listener` property on an audio engine.
+ *
+ * @see {@link AudioEngineV2.listener}
+ */
 export abstract class AbstractSpatialAudioListener {
+    /**
+     * The listener position. Defaults to (0, 0, 0).
+     */
     public abstract get position(): Vector3;
     public abstract set position(value: Vector3);
 
+    /**
+     * The listener rotation, as Euler angles. Defaults to (0, 0, 0).
+     */
     public abstract get rotation(): Vector3;
     public abstract set rotation(value: Vector3);
 
+    /**
+     * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
+     */
     public abstract get rotationQuaternion(): Quaternion;
     public abstract set rotationQuaternion(value: Quaternion);
 }

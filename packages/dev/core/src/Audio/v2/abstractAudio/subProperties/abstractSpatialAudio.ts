@@ -123,7 +123,11 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
     );
 }
 
-/** */
+/**
+ * Abstract class representing the `spatial` audio property on a sound or audio bus.
+ *
+ * @see {@link AudioEngineV2.listener}
+ */
 export abstract class AbstractSpatialAudio {
     /**
      * The spatial cone inner angle, in radians. Defaults to 2π.

@@ -32,7 +32,11 @@ export function _HasStereoAudioOptions(options: Partial<IStereoAudioOptions>): b
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 
-/** */
+/**
+ * Abstract class representing the `stereo` audio property on a sound or audio bus.
+ *
+ * @see {@link AudioEngineV2.listener}
+ */
 export abstract class AbstractStereoAudio {
     /**
      * The stereo pan from -1 (left) to 1 (right). Defaults to 0.
