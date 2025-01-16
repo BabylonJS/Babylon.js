@@ -205,7 +205,7 @@ fn LTCEdgeVectorFormFactor( v1:vec3f, v2:vec3f ) -> vec3f {
 	}
 	else
 	{
-		thetaSintheta = 0.5 * inverseSqrt( max( 1.0 - x * x, 1e-7 ) ) - v;
+		thetaSintheta = 0.5 * inverseSqrt( max( 1.0 - x * x, 0.00000001 ) ) - v;
 	}
 	return cross( v1, v2 ) * thetaSintheta;
 }
@@ -288,8 +288,13 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 	var fresnel:vec3f = ( specularColor * t2.x + ( vec3f( 1.0 ) - specularColor ) * t2.y );
 	result.specular += specularColor * fresnel * LTCEvaluate( normal, viewDir, position, mInv, rectCoords0, rectCoords1, rectCoords2, rectCoords3 );
 #endif
-	
-	result.diffuse += diffuseColor * LTCEvaluate( normal, viewDir, position, mat3x3<f32>( vec3f( 1.0 ), vec3f( 1.0 ), vec3f( 1.0 )), rectCoords0, rectCoords1, rectCoords2, rectCoords3 );
+	var mInvEmpty:mat3x3<f32> = mat3x3<f32>(
+		vec3f( 1, 0, 0 ),
+		vec3f( 0, 1, 0 ),
+		vec3f( 0, 0, 1 )
+	);
+
+	result.diffuse += diffuseColor * LTCEvaluate( normal, viewDir, position, mInvEmpty, rectCoords0, rectCoords1, rectCoords2, rectCoords3 );
 	return result;
 }
 
