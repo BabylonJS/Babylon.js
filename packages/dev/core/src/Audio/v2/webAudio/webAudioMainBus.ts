@@ -1,8 +1,8 @@
 import type { Nullable } from "../../../types";
-import type { AbstractAudioNode } from "../abstract/abstractAudioNode";
-import type { AudioEngineV2 } from "../abstract/audioEngineV2";
-import type { IMainAudioBusOptions } from "../abstract/mainAudioBus";
-import { MainAudioBus } from "../abstract/mainAudioBus";
+import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import type { IMainAudioBusOptions } from "../abstractAudio/mainAudioBus";
+import { MainAudioBus } from "../abstractAudio/mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subNodes/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";

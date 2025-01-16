@@ -1,10 +1,10 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../abstract/abstractAudioNode";
-import type { IAudioBusOptions } from "../abstract/audioBus";
-import { AudioBus } from "../abstract/audioBus";
-import type { AudioEngineV2 } from "../abstract/audioEngineV2";
-import { _SpatialAudio } from "../abstract/subProperties/spatialAudio";
-import { _StereoAudio } from "../abstract/subProperties/stereoAudio";
+import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { IAudioBusOptions } from "../abstractAudio/audioBus";
+import { AudioBus } from "../abstractAudio/audioBus";
+import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";

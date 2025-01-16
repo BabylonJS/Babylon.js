@@ -1,11 +1,11 @@
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
-import type { AbstractNamedAudioNode } from "../abstract/abstractAudioNode";
-import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstract/audioEngineV2";
-import { AudioEngineV2 } from "../abstract/audioEngineV2";
-import type { MainAudioBus } from "../abstract/mainAudioBus";
-import { _HasSpatialAudioListenerOptions, type AbstractSpatialAudioListener } from "../abstract/subProperties/abstractSpatialAudioListener";
-import type { _SpatialAudioListener } from "../abstract/subProperties/spatialAudioListener";
+import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
+import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import type { MainAudioBus } from "../abstractAudio/mainAudioBus";
+import { _HasSpatialAudioListenerOptions, type AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
+import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";
 import type { _WebAudioMainOut } from "./webAudioMainOut";

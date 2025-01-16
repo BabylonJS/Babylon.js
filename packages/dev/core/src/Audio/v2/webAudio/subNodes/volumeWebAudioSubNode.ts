@@ -1,4 +1,4 @@
-import { _VolumeAudioSubNode } from "../../abstract/subNodes/volumeAudioSubNode";
+import { _VolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 

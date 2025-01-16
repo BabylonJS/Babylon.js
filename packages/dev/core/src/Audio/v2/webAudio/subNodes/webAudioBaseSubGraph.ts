@@ -1,9 +1,9 @@
 import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../../abstract/abstractAudioNode";
-import { _AbstractAudioSubGraph } from "../../abstract/subNodes/abstractAudioSubGraph";
-import type { _AbstractAudioSubNode } from "../../abstract/subNodes/abstractAudioSubNode";
-import { _AudioSubNode } from "../../abstract/subNodes/audioSubNode";
-import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../abstract/subNodes/volumeAudioSubNode";
+import type { AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
+import { _AbstractAudioSubGraph } from "../../abstractAudio/subNodes/abstractAudioSubGraph";
+import type { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
+import { _AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
+import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
 import type { IWebAudioInNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
 import { _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
 
