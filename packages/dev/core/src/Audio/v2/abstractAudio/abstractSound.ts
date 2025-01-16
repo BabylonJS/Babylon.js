@@ -17,10 +17,6 @@ import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/a
  */
 export interface ICommonSoundPlayOptions extends IVolumeAudioOptions {
     /**
-     * The amount of time to play the sound for, in seconds. If not specified, the sound plays for its full duration.
-     */
-    duration: number;
-    /**
      * Whether the sound should loop. Defaults to `false`.
      */
     loop: boolean;
@@ -70,7 +66,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         Object.assign(this._options, options);
         this._options.autoplay ??= false;
-        this._options.duration ??= 0;
         this._options.loop ??= false;
         this._options.maxInstances ??= Infinity;
         this._options.startOffset ??= 0;
@@ -99,18 +94,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         if (instance) {
             instance.currentTime = value;
         }
-    }
-
-    /**
-     * The amount of time to play the sound for, in seconds.
-     * - If less than or equal to `0`, the sound plays for its full duration.
-     */
-    public get duration(): number {
-        return this._options.duration;
-    }
-
-    public set duration(value: number) {
-        this._options.duration = value;
     }
 
     /**
@@ -217,7 +200,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this._outBus = null;
 
         this._instances.clear();
-        this._subGraph.dispose();
         this.onEndedObservable.clear();
     }
 

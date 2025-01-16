@@ -109,9 +109,6 @@ export abstract class StreamingSound extends AbstractSound {
         if (options.startOffset === undefined) {
             options.startOffset = this._options.startOffset;
         }
-        if (options.duration === undefined) {
-            options.duration = this._options.duration;
-        }
         if (options.loop === undefined) {
             options.loop = this._options.loop;
         }

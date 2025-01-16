@@ -7,6 +7,10 @@ import type { _StaticSoundInstance } from "./staticSoundInstance";
 
 interface ICommonStaticSoundOptions {
     /**
+     * The amount of time to play the sound for, in seconds. If not specified, the sound plays for its full duration.
+     */
+    duration: number;
+    /**
      * The start of the loop range in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
      * - Has no effect if {@link loop} is `false`.
@@ -89,11 +93,24 @@ export abstract class StaticSound extends AbstractSound {
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
 
+        this._options.duration ??= 0;
         this._options.loopStart ??= 0;
         this._options.loopEnd ??= 0;
         this._options.pitch ??= 0;
         this._options.playbackRate ??= 1;
         this._options.skipCodecCheck ??= false;
+    }
+
+    /**
+     * The amount of time to play the sound for, in seconds.
+     * - If less than or equal to `0`, the sound plays for its full duration.
+     */
+    public get duration(): number {
+        return this._options.duration;
+    }
+
+    public set duration(value: number) {
+        this._options.duration = value;
     }
 
     /**
