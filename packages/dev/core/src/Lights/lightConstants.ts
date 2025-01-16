@@ -89,7 +89,7 @@ export class LightConstants {
     /**
      * Light type const id of the area light.
      */
-    public static readonly LIGHTTYPEID_AREALIGHT = 4;
+    public static readonly LIGHTTYPEID_RECT_AREALIGHT = 4;
 
     /**
      * Sort function to order lights for rendering.

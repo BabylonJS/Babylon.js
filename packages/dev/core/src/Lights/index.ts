@@ -6,5 +6,6 @@ export * from "./directionalLight";
 export * from "./hemisphericLight";
 export * from "./pointLight";
 export * from "./spotLight";
+export * from "./areaLight";
 export * from "./rectAreaLight";
 export * from "./IES/iesLoader";
