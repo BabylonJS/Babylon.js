@@ -13,9 +13,9 @@
 			vLightGround: vec3f,
 		#endif
 		#if defined(AREALIGHT{X})
-        	vLightWidth: vec4f,
-        	vLightHeight: vec4f,
-    	#endif
+			vLightWidth: vec4f,
+			vLightHeight: vec4f,
+		#endif
 		shadowsInfo: vec4f,
 		depthValues: vec2f
 	} ;

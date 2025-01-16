@@ -33,7 +33,7 @@
 		uniform vLightGround{X}: vec3f;
 	#endif
 	#if defined(AREALIGHT{X})
-        uniform vLightWidth{X}: vec4f;
-        uniform vLightHeight{X}: vec4f;
-    #endif
+		uniform vLightWidth{X}: vec4f;
+		uniform vLightHeight{X}: vec4f;
+	#endif
 #endif
