@@ -391,7 +391,7 @@ export class Effect implements IDisposable {
             }
         }
 
-        this._engine.onReleaseEffectsObservable.add(() => {
+        this._engine.onReleaseEffectsObservable.addOnce(() => {
             if (this.isDisposed) {
                 return;
             }
