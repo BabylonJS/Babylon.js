@@ -10,7 +10,8 @@ import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
-import type { EffectWrapper } from "core/Materials/effectRenderer";
+import type { EffectWrapperCreationOptions } from "core/Materials/effectRenderer";
+import { EffectWrapper } from "core/Materials/effectRenderer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -23,12 +24,77 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
+import type { Vector2 } from "../Maths/math.vector";
+import { Engine } from "core/Engines/engine";
+
+/**
+ * Special Glow Blur post process only blurring the alpha channel
+ * It enforces keeping the most luminous color in the color channel.
+ * @internal
+ */
+export class ThinGlowBlurPostProcess extends EffectWrapper {
+    constructor(
+        name: string,
+        engine: Nullable<AbstractEngine> = null,
+        public direction: Vector2,
+        public kernel: number,
+        options?: EffectWrapperCreationOptions
+    ) {
+        super({
+            ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            useAsPostProcess: true,
+            fragmentShader: "glowBlurPostProcess",
+            uniforms: ["screenSize", "direction", "blurWidth"],
+        });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
+        } else {
+            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
+        }
+
+        super._gatherImports(useWebGPU, list);
+    }
+
+    public textureWidth: number = 0;
+
+    public textureHeight: number = 0;
+
+    public override bind() {
+        super.bind();
+        this._drawWrapper.effect!.setFloat2("screenSize", this.textureWidth, this.textureHeight);
+        this._drawWrapper.effect!.setVector2("direction", this.direction);
+        this._drawWrapper.effect!.setFloat("blurWidth", this.kernel);
+    }
+}
 
 /**
  * Effect layer options. This helps customizing the behaviour
  * of the effect layer.
  */
 export interface IThinEffectLayerOptions {
+    /**
+     * Multiplication factor apply to the canvas size to compute the render target size
+     * used to generated the glowing objects (the smaller the faster). Default: 0.5
+     */
+    mainTextureRatio?: number;
+
+    /**
+     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
+     */
+    mainTextureFixedSize?: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
+     */
+    mainTextureType?: number;
+
     /**
      * Alpha blending mode used to apply the blur. Default depends of the implementation. Default: ALPHA_COMBINE
      */
@@ -56,7 +122,8 @@ export class ThinEffectLayer {
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
-    protected _options: Required<IThinEffectLayerOptions>;
+    /** @internal */
+    public _options: Required<IThinEffectLayerOptions>;
     protected _objectRenderer: ObjectRenderer;
     /** @internal */
     public _shouldRender = true;
@@ -143,6 +210,16 @@ export class ThinEffectLayer {
      * An event triggered when the generated texture has been merged in the scene.
      */
     public onAfterComposeObservable = new Observable<ThinEffectLayer>();
+
+    /**
+     * An event triggered when the layer is being blurred.
+     */
+    public onBeforeBlurObservable = new Observable<ThinEffectLayer>();
+
+    /**
+     * An event triggered when the layer has been blurred.
+     */
+    public onAfterBlurObservable = new Observable<ThinEffectLayer>();
 
     /**
      * Gets the object renderer used to render objects in the layer
@@ -260,6 +337,14 @@ export class ThinEffectLayer {
         return true;
     }
 
+    /**
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
+     * @returns true if the effect requires stencil during the main canvas render pass.
+     */
+    public needStencil(): boolean {
+        return false;
+    }
+
     /** @internal */
     public _createMergeEffect(): Effect {
         throw new Error("Effect Layer: no merge effect defined");
@@ -267,6 +352,9 @@ export class ThinEffectLayer {
 
     /** @internal */
     public _createTextureAndPostProcesses(): void {}
+
+    /** @internal */
+    public bindTexturesForCompose: (effect: Effect) => void;
 
     /** @internal */
     public _internalCompose(_effect: Effect, _renderIndex: number): void {}
@@ -283,6 +371,9 @@ export class ThinEffectLayer {
     public _init(options: IThinEffectLayerOptions): void {
         // Adapt options
         this._options = {
+            mainTextureRatio: 0.5,
+            mainTextureFixedSize: 0,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,

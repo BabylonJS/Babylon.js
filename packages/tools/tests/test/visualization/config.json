@@ -2402,12 +2402,22 @@
             "playgroundId": "#IG8NRC"
         },
         {
+            "title": "FrameGraph nrge highlight layer",
+            "playgroundId": "#QZYNMK"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017"
         },
         {
-            "title": "FrameGraph nrg glow layer",
-            "playgroundId": "#9YU4C5"
+            "title": "FrameGraph glow layer",
+            "playgroundId": "#9YU4C5#1",
+            "referenceImage": "FrameGraph-nrg-glow-layer.png",
+            "errorRatio": 0.1
+        },
+        {
+            "title": "FrameGraph highlight layer",
+            "playgroundId": "#PV8OLY"
         },
         {
             "title": "FrameGraph custom rendering",

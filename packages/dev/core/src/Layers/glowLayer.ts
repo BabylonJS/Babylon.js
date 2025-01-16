@@ -50,25 +50,9 @@ Scene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer
  */
 export interface IGlowLayerOptions extends IThinGlowLayerOptions {
     /**
-     * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster). Default: 0.5
-     */
-    mainTextureRatio?: number;
-
-    /**
-     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
-     */
-    mainTextureFixedSize?: number;
-
-    /**
      * Enable MSAA by choosing the number of samples. Default: 1
      */
     mainTextureSamples?: number;
-
-    /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_BYTE
-     */
-    mainTextureType?: number;
 
     /**
      * Whether or not to generate a stencil buffer. Default: false

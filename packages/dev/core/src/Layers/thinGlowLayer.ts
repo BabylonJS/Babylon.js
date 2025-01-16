@@ -92,7 +92,8 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return this._intensity;
     }
 
-    protected override _options: Required<IThinGlowLayerOptions>;
+    /** @internal */
+    public override _options: Required<IThinGlowLayerOptions>;
 
     private _intensity: number = 1.0;
     private _horizontalBlurPostprocess1: ThinBlurPostProcess;
@@ -131,6 +132,9 @@ export class ThinGlowLayer extends ThinEffectLayer {
 
         // Adapt options
         this._options = {
+            mainTextureRatio: 0.5,
+            mainTextureFixedSize: 0,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             blurKernelSize: 32,
             camera: null,
             renderingGroupId: -1,
@@ -228,14 +232,9 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return super._isSubMeshReady(subMesh, useInstances, emissiveTexture);
     }
 
-    public override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+    public override _canRenderMesh(_mesh: AbstractMesh, _material: Material): boolean {
         return true;
     }
-
-    /**
-     * Binds the textures for the compose pass.
-     */
-    public bindTexturesForCompose: (effect: Effect) => void;
 
     public override _internalCompose(effect: Effect): void {
         // Texture

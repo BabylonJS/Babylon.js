@@ -206,6 +206,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
         }
+
+        return pass;
     }
 
     public override dispose(): void {
