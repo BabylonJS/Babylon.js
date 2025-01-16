@@ -256,6 +256,9 @@ export function CreateScreenshotUsingRenderTarget(
         return;
     }
 
+    // Prevent engine to render on screen while we do the screenshot
+    engine.skipFrameRender = true;
+
     const originalSize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
     engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
 
@@ -312,6 +315,12 @@ export function CreateScreenshotUsingRenderTarget(
                 texture.render(true);
                 engine.setSize(originalSize.width, originalSize.height);
                 camera.getProjectionMatrix(true); // Force cache refresh;
+
+                engine.skipFrameRender = false;
+            },
+            () => {
+                // Restore engine frame rendering on error
+                engine.skipFrameRender = false;
             }
         );
     };

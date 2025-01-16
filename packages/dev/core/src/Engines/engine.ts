@@ -636,30 +636,8 @@ export class Engine extends ThinEngine {
         }
     }
 
-    public override _renderLoop(): void {
-        // Reset the frame handler before rendering a frame to determine if a new frame has been queued.
-        this._frameHandler = 0;
-
-        if (!this._contextWasLost) {
-            let shouldRender = true;
-            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
-                shouldRender = false;
-            }
-
-            if (shouldRender) {
-                // Start new frame
-                this.beginFrame();
-
-                // Child canvases
-                if (!this._renderViews()) {
-                    // Main frame
-                    this._renderFrame();
-                }
-
-                // Present
-                this.endFrame();
-            }
-        }
+    public override _renderLoop(timestamp: number): void {
+        this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
         // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
