@@ -17,7 +17,9 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
     return Instances[Instances.length - 1];
 }
 
-/** */
+/**
+ * Options for creating a v2 audio engine.
+ */
 export interface IAudioEngineV2Options extends ISpatialAudioListenerOptions {
     /**
      * The initial output volume of the audio engine. Defaults to `1`.
