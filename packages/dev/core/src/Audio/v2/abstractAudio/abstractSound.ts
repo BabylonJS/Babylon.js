@@ -88,7 +88,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     public set currentTime(value: number) {
-        this._options.startOffset = value;
+        this.startOffset = value;
 
         const instance = this._getNewestInstance();
         if (instance) {
@@ -271,8 +271,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     protected abstract _createInstance(): _AbstractSoundInstance;
 
     protected _stopExcessInstances(): void {
-        if (this._options.maxInstances < Infinity) {
-            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this._options.maxInstances;
+        if (this.maxInstances < Infinity) {
+            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
             const it = this._instances.values();
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {

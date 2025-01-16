@@ -173,25 +173,25 @@ export abstract class StaticSound extends AbstractSound {
 
         if (options) {
             if (options.duration === undefined) {
-                options.duration = this._options.duration;
+                options.duration = this.duration;
             }
             if (options.loop === undefined) {
-                options.loop = this._options.loop;
+                options.loop = this.loop;
             }
             if (options.loopStart === undefined) {
-                options.loopStart = this._options.loopStart;
+                options.loopStart = this.loopStart;
             }
             if (options.loopEnd === undefined) {
-                options.loopEnd = this._options.loopEnd;
+                options.loopEnd = this.loopEnd;
             }
             if (options.pitch === undefined) {
-                options.pitch = this._options.pitch;
+                options.pitch = this.pitch;
             }
             if (options.playbackRate === undefined) {
-                options.playbackRate = this._options.playbackRate;
+                options.playbackRate = this.playbackRate;
             }
             if (options.startOffset === undefined) {
-                options.startOffset = this._options.startOffset;
+                options.startOffset = this.startOffset;
             }
             if (options.volume === undefined) {
                 options.volume = 1;
