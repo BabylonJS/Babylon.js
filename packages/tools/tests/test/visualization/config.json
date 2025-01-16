@@ -940,6 +940,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GLTF Serializer KHR draco mesh compression",
+            "playgroundId": "#F8BF8N",
+            "referenceImage": "glTFSerializerKhrDracoMeshCompression.png"
+        },
+        {
             "title": "GLTF Serializer KHR materials clearcoat",
             "playgroundId": "#9N6CLU#23",
             "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png",
