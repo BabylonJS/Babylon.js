@@ -120,6 +120,8 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
         this._spatial = null;
         this._stereo = null;
 
+        this._subGraph.dispose();
+
         this.engine.removeNode(this);
     }
 

@@ -22,22 +22,6 @@ export abstract class _AbstractAudioSubGraph {
     private _subNodes = new Map<string, Set<AbstractNamedAudioNode>>();
 
     /**
-     * Releases associated resources.
-     */
-    public dispose() {
-        const subNodeIterator = this._subNodes.values();
-        for (let nextSubNode = subNodeIterator.next(); !nextSubNode.done; nextSubNode = subNodeIterator.next()) {
-            const subNodeSetIterator = nextSubNode.value.values();
-            for (let nextSubNodeSet = subNodeSetIterator.next(); !nextSubNodeSet.done; nextSubNodeSet = subNodeSetIterator.next()) {
-                nextSubNodeSet.value.dispose();
-            }
-        }
-
-        this._subNodes.clear();
-        this._createSubNodePromises.clear();
-    }
-
-    /**
      * Executes the given callback with the named sub node, creating the sub node if needed.
      *
      * Note that `callback` is executed synchronously if the sub node already exists, otherwise the sub node is created
@@ -58,6 +42,22 @@ export abstract class _AbstractAudioSubGraph {
         promise?.then((node) => {
             callback(node as T);
         });
+    }
+
+    /**
+     * Releases associated resources.
+     */
+    public dispose() {
+        const subNodeIterator = this._subNodes.values();
+        for (let nextSubNode = subNodeIterator.next(); !nextSubNode.done; nextSubNode = subNodeIterator.next()) {
+            const subNodeSetIterator = nextSubNode.value.values();
+            for (let nextSubNodeSet = subNodeSetIterator.next(); !nextSubNodeSet.done; nextSubNodeSet = subNodeSetIterator.next()) {
+                nextSubNodeSet.value.dispose();
+            }
+        }
+
+        this._subNodes.clear();
+        this._createSubNodePromises.clear();
     }
 
     /**

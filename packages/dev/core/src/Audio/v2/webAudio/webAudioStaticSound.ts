@@ -138,6 +138,8 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         this._spatial = null;
         this._stereo = null;
 
+        this._subGraph.dispose();
+
         this.engine.removeNode(this);
     }
 
@@ -270,7 +272,7 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
     private _enginePlayTime: number = 0;
     private _enginePauseTime: number = 0;
-    private _sourceNode: Nullable<AudioBufferSourceNode>;
+    private _sourceNode: Nullable<AudioBufferSourceNode> = null;
     private _volumeNode: GainNode;
 
     protected override _sound: _WebAudioStaticSound;
@@ -326,6 +328,8 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     /** @internal */
     public override dispose(): void {
         super.dispose();
+
+        this._sourceNode = null;
 
         this.stop();
 
