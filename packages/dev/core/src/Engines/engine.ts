@@ -636,7 +636,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    public override _renderLoop(timestamp: number): void {
+    public override _renderLoop(timestamp?: number): void {
         this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if

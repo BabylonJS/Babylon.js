@@ -922,7 +922,11 @@ export abstract class AbstractEngine {
         this._minFrameTime = 1000 / (value + 1); // We need to provide a bit of leeway to ensure we don't go under because of vbl sync
     }
 
-    protected _isOverFrameTime(timestamp: number): boolean {
+    protected _isOverFrameTime(timestamp?: number): boolean {
+        if (!timestamp) {
+            return false;
+        }
+
         const elapsedTime = timestamp - this._lastFrameTime;
         if (this._maxFPS === undefined || elapsedTime >= this._minFrameTime) {
             this._lastFrameTime = timestamp;
@@ -932,7 +936,7 @@ export abstract class AbstractEngine {
         return true;
     }
 
-    protected _processFrame(timestamp: number) {
+    protected _processFrame(timestamp?: number) {
         this._frameHandler = 0;
 
         if (!this._contextWasLost && !this._isOverFrameTime(timestamp)) {
@@ -958,7 +962,7 @@ export abstract class AbstractEngine {
     }
 
     /** @internal */
-    public _renderLoop(timestamp: number): void {
+    public _renderLoop(timestamp: number | undefined): void {
         this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
