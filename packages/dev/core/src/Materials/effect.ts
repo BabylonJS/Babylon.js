@@ -1478,6 +1478,12 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Gets or sets a boolean indicating that effect ref counting is disabled
+     * If true, the effect will persist in memory until engine is disposed
+     */
+    public isPersistent: boolean = false;
+
+    /**
      * Release all associated resources.
      * @param force specifies if the effect must be released no matter what
      **/
@@ -1485,6 +1491,9 @@ export class Effect implements IDisposable {
         if (force) {
             this._refCount = 0;
         } else {
+            if (this.isPersistent) {
+                return;
+            }
             this._refCount--;
         }
 
