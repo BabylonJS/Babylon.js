@@ -4048,6 +4048,8 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this._compiledEffects = {};
+
+        this.onReleaseEffectsObservable.notifyObservers(this);
     }
 
     /**

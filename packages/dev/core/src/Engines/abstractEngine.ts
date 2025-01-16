@@ -2555,6 +2555,11 @@ export abstract class AbstractEngine {
     public readonly onDisposeObservable = new Observable<AbstractEngine>();
 
     /**
+     * An event triggered when a global cleanup of all effects is required
+     */
+    public readonly onReleaseEffectsObservable = new Observable<AbstractEngine>();
+
+    /**
      * Dispose and release all associated resources
      */
     public dispose(): void {

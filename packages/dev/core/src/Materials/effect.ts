@@ -390,6 +390,14 @@ export class Effect implements IDisposable {
                 (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
             }
         }
+
+        this._engine.onReleaseEffectsObservable.add(() => {
+            if (this.isDisposed) {
+                return;
+            }
+
+            this.dispose(true);
+        });
     }
 
     /** @internal */
