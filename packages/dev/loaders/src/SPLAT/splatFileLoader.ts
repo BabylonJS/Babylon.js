@@ -512,7 +512,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const rowVertexLength = rowVertexOffset;
         const rowChunkLength = rowChunkOffset;
 
-        return GaussianSplattingMesh.ConvertPLYToSplatAsync(data).then((buffer) => {
+        return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(data) as any).then((splatsData: any) => {
             const dataView = new DataView(data, headerEndIndex + headerEnd.length);
             let offset = rowChunkLength * chunkCount + rowVertexLength * vertexCount;
             // faces
@@ -536,7 +536,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: buffer, faces: faces, hasVertexColors: false });
+                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -558,7 +558,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return new Promise((resolve) => {
-                resolve({ mode: currentMode, data: buffer, faces: faces, hasVertexColors: !!propertyColorCount });
+                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount });
             });
         });
     }

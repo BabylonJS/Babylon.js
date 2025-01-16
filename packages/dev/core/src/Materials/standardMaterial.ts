@@ -6,7 +6,7 @@ import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix } from "../Maths/math.vector";
+import type { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -809,7 +809,6 @@ export class StandardMaterial extends PushMaterial {
     public readonly detailMap: DetailMapConfiguration;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
-    protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _cacheHasRenderTargetTextures = false;
 

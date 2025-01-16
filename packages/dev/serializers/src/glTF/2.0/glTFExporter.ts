@@ -440,7 +440,6 @@ export class GLTFExporter {
 
     private _generateJSON(shouldUseGlb: boolean, bufferByteLength: number, fileName?: string, prettyPrint?: boolean): string {
         const buffer: IBuffer = { byteLength: bufferByteLength };
-        let imageName: string;
         let imageData: { data: ArrayBuffer; mimeType: ImageMimeType };
         let bufferView: IBufferView;
         let byteOffset: number = bufferByteLength;
@@ -496,7 +495,7 @@ export class GLTFExporter {
                         byteOffset += imageData.data.byteLength;
                         this._bufferViews.push(bufferView);
                         image.bufferView = this._bufferViews.length - 1;
-                        image.name = imageName;
+                        image.name = fileName;
                         image.mimeType = imageData.mimeType;
                         image.uri = undefined;
                         this._glTF.images!.push(image);
