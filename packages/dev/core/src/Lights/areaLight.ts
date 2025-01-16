@@ -31,14 +31,14 @@ export abstract class AreaLight extends Light {
     protected _position: Vector3;
 
     /**
-     * Rect Area Light position.
+     * Area Light position.
      */
     @serialize()
     public get position(): Vector3 {
         return this._position;
     }
     /**
-     * Rect Area Light position.
+     * Area Light position.
      */
     public set position(value: Vector3) {
         this._position = value;
