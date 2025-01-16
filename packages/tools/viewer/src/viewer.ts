@@ -530,7 +530,7 @@ export class Viewer implements IDisposable {
     /**
      * Get the current environment configuration.
      */
-    public get environment(): Readonly<EnvironmentParams> {
+    public get environmentConfig(): Readonly<EnvironmentParams> {
         let values = {
             blur: this._skyboxBlur,
         } as EnvironmentParams;
@@ -540,7 +540,7 @@ export class Viewer implements IDisposable {
         return values;
     }
 
-    public set environment(value: Partial<Readonly<EnvironmentParams>>) {
+    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
         if (value.blur !== undefined) {
             this._changeSkyboxBlur(value.blur);
         }
@@ -1026,14 +1026,14 @@ export class Viewer implements IDisposable {
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
                         this._scene.environmentTexture = this._reflectionTexture;
-                        cubeTexture.level = this.environment.intensity;
-                        cubeTexture.rotationY = this.environment.rotation;
+                        cubeTexture.level = this.environmentConfig.intensity;
+                        cubeTexture.rotationY = this.environmentConfig.rotation;
                     }
                     if (options.skybox) {
                         this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._skyboxTexture.level = this.environment.intensity;
-                        this._skyboxTexture.rotationY = this.environment.rotation;
-                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environment.blur);
+                        this._skyboxTexture.level = this.environmentConfig.intensity;
+                        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
+                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
                         this._snapshotHelper.fixMeshes([this._skybox]);
                         this._scene.autoClear = false;
                     }
