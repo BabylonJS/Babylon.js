@@ -278,18 +278,17 @@
             globalThis.onEnvironmentIntensity = () => {
                 const value = document.querySelector("#environmentIntensityInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentIntensity = value;
+                viewer.environment = { intensity: value };
             };
             globalThis.onEnvironmentRotation = () => {
                 const degreValue = document.querySelector("#environmentRotationInput").value;
-                const radians = (degreValue * Math.PI) / 180;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentRotation = radians;
+                viewer.environment = { rotation: parseFloat(degreValue) };
             };
             globalThis.onEnvironmentBlur = () => {
                 const value = document.querySelector("#environmentBlurInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.skyboxBlur = value;
+                viewer.environment = { blur: value };
             };
         </script>
     </body>

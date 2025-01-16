@@ -95,20 +95,20 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._createPropertyBinding(
             "skyboxBlur",
             (details) => details.viewer.onSkyboxBlurChanged,
-            (details) => (details.viewer.skyboxBlur = this.skyboxBlur ?? details.viewer.skyboxBlur),
-            (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
+            (details) => (details.viewer.environment = { blur: this.skyboxBlur ?? details.viewer.environment.blur }),
+            (details) => (this.skyboxBlur = details.viewer.environment.blur)
         ),
         this._createPropertyBinding(
             "environmentIntensity",
             (details) => details.viewer.onEnvironmentIntensityChanged,
-            (details) => (details.viewer.environmentIntensity = this.environmentIntensity ?? details.viewer.environmentIntensity),
-            (details) => (this.environmentIntensity = details.viewer.environmentIntensity)
+            (details) => (details.viewer.environment = { intensity: this.environmentIntensity ?? details.viewer.environment.intensity }),
+            (details) => (this.environmentIntensity = details.viewer.environment.intensity)
         ),
         this._createPropertyBinding(
             "environmentRotation",
             (details) => details.viewer.onEnvironmentRotationChanged,
-            (details) => (details.viewer.environmentRotation = this.environmentRotation ?? details.viewer.environmentRotation),
-            (details) => (this.environmentRotation = details.viewer.environmentRotation)
+            (details) => (details.viewer.environment = { rotation: this.environmentRotation ?? details.viewer.environment.rotation }),
+            (details) => (this.environmentRotation = details.viewer.environment.rotation)
         ),
         this._createPropertyBinding(
             "toneMapping",
