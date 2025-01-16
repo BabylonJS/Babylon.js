@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./abstractAudioBus";
 export * from "./abstractAudioNode";
 export * from "./abstractSound";
@@ -7,4 +8,4 @@ export * from "./mainAudioBus";
 export * from "./staticSound";
 export * from "./staticSoundBuffer";
 export * from "./streamingSound";
-export * from "./subProperties";
+export * from "./subProperties/index";
