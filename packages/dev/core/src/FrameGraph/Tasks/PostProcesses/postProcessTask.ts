@@ -50,6 +50,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+        });
     }
 
     public override isReady() {
@@ -81,7 +85,6 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             additionalExecute?.(context);
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", this.sourceTexture);
