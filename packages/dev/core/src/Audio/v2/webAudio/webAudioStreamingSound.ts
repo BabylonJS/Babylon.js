@@ -82,8 +82,8 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
 
         await this._subGraph.init(options);
 
-        if (options.preloadCount) {
-            await this.preloadInstances(options.preloadCount);
+        if (this.preloadCount) {
+            await this.preloadInstances(this.preloadCount);
         }
 
         if (options.autoplay) {

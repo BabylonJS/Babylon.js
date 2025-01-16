@@ -9,7 +9,7 @@ import type { _StreamingSoundInstance } from "./streamingSoundInstance";
  */
 export interface IStreamingSoundOptions extends ICommonSoundOptions {
     /**
-     * The number of instances to preload.
+     * The number of instances to preload. Defaults to 1.
      * */
     preloadCount: number;
 }
@@ -36,7 +36,7 @@ export abstract class StreamingSound extends AbstractSound {
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
 
-        this._options.preloadCount ??= Infinity;
+        this._options.preloadCount ??= 1;
     }
 
     /**
