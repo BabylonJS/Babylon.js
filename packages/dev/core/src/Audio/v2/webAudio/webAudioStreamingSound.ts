@@ -260,7 +260,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             return;
         }
 
-        this._volumeNode.gain.value = options.volume ?? this.options.volume;
+        if (options.loop !== undefined) {
+            this.options.loop = options.loop;
+        }
+        this._mediaElement.loop = this.options.loop;
 
         let startOffset = options.startOffset;
 
@@ -274,6 +277,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         if (startOffset && startOffset > 0) {
             this._mediaElement.currentTime = startOffset;
         }
+
+        this._volumeNode.gain.value = options.volume ?? this.options.volume;
 
         this._play();
     }

@@ -468,6 +468,14 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     private _initSourceNode(): void {
         if (this._sourceNode) {
+            const node = this._sourceNode;
+
+            node.detune.value = this.options.pitch;
+            node.loop = this.options.loop;
+            node.loopEnd = this.options.loopEnd;
+            node.loopStart = this.options.loopStart;
+            node.playbackRate.value = this.options.playbackRate;
+
             return;
         }
 
