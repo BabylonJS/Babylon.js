@@ -492,24 +492,24 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @param id The id of the target camera to interpolate to.
      * @returns A promise that resolves to `true` if the target camera is found and the interpolation is successful, `false` otherwise.
      */
-    public async interpolateCameraTo(id: string): Promise<boolean> {
-        let result = false;
-        let generatedCamera = false;
-
+    public async matchCameraPOV(id: string): Promise<boolean> {
         if (this._viewerDetails) {
-            let camera = this._viewerDetails.scene.getCameraById(id);
-            if (camera instanceof Camera && !(camera instanceof ArcRotateCamera)) {
-                camera = await this._viewerDetails.viewer.generateArcRotateCamera(camera);
-                generatedCamera = true;
-            }
+            let cameraInfos;
+            this._viewerDetails.viewer.pauseAnimation();
+            const camera = this._viewerDetails.scene.getCameraById(id);
+
             if (camera instanceof ArcRotateCamera) {
-                this._viewerDetails.camera.interpolateTo(camera.alpha, camera.beta, camera.radius, camera.target);
-                if (generatedCamera) camera.dispose();
-                result = true;
+                cameraInfos = { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target };
+            } else if (camera instanceof Camera) {
+                cameraInfos = await this._viewerDetails.viewer.getArcRotateCameraInfos(camera);
+            }
+
+            if (cameraInfos) {
+                this._viewerDetails.camera.interpolateTo(cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius, cameraInfos.target);
+                return true;
             }
         }
-
-        return result;
+        return false;
     }
 
     /**
@@ -1075,7 +1075,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         const cameraId = selectElement.value;
         // We don't actually want a selected value, this is just a one time trigger.
         selectElement.value = "";
-        this.interpolateCameraTo(cameraId);
+        this.matchCameraPOV(cameraId);
     }
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.

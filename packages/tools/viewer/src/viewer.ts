@@ -255,6 +255,11 @@ export type Model = IDisposable &
     }>;
 
 /**
+ * Provides the information of alpha, beta, radius and target of the camera.
+ */
+export type ViewerArcRotateCameraInfos = { alpha: number; beta: number; radius: number; target: Vector3 };
+
+/**
  * @experimental
  * Provides an experience for viewing a single 3D model.
  * @remarks
@@ -349,6 +354,7 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
+    private _modelWorldCenter: Nullable<Vector3> = null;
 
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -1103,58 +1109,70 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Creates a new `ArcRotateCamera` positioned at the same location as the given camera and targeted at a computed point.
-     * - The target point is determined based on the camera's forward ray:
+     * Refresh bounding info to ensure morph target and skeletal animations are taken into account.
+     * @param model The AssetContainer to refresh.
+     */
+    private _refreshBoundingInfo(model: AssetContainer): void {
+        model.meshes.forEach((mesh) => {
+            let cache = this._meshDataCache.get(mesh);
+            if (!cache) {
+                cache = {};
+                this._meshDataCache.set(mesh, cache);
+            }
+            mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+        });
+    }
+
+    /**
+     * Calculates the `alpha`, `beta`, and `radius` angles, along with the target point.
+     * The target point is determined based on the camera's forward ray:
      *   - If an intersection with the main model is found, the first hit point is used as the target.
      *   - If no intersection is detected, a fallback target is calculated by projecting
      *     the distance between the camera and the main model's center along the forward ray.
      *
-     * @param camera The reference camera used to set the position and compute the target.
-     * @returns A new `ArcRotateCamera` instance targeted at the determined point, or `null` if no target is available.
+     * @param camera The reference camera used to computes infos.
+     * @returns An object containing the `alpha`, `beta`, `radius`, and `target` properties, or `null` if no model found.
      */
-    public async generateArcRotateCamera(camera: Camera): Promise<Nullable<ArcRotateCamera>> {
+    public async getArcRotateCameraInfos(camera: Camera): Promise<Nullable<ViewerArcRotateCameraInfos>> {
         await import("core/Culling/ray");
         const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition);
+        const comGlobalPos = camera.globalPosition.clone();
 
-        if (this._model) {
-            const assetContainer = this._model.assetContainer;
-            let rootMesh: Nullable<AbstractMesh> = null; // the mesh with name "__root__" or the first of model.meshes
+        if (this._modelInfo && this._modelWorldCenter) {
+            const assetContainer = this._modelInfo.assetContainer;
+            this._refreshBoundingInfo(assetContainer);
 
-            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            assetContainer.meshes.forEach((mesh) => {
-                if (!rootMesh || mesh.name === "__root__") rootMesh = mesh;
-
-                let cache = this._meshDataCache.get(mesh);
-                if (!cache) {
-                    cache = {};
-                    this._meshDataCache.set(mesh, cache);
-                }
-                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
-            });
-
-            let targetPoint: Nullable<Vector3>;
+            // Target
+            let targetPoint: Vector3 = Vector3.Zero();
             const pickingInfo = this._scene.pickWithRay(ray, (mesh) => assetContainer.meshes.includes(mesh));
             if (pickingInfo && pickingInfo.hit) {
-                targetPoint = pickingInfo.pickedPoint;
+                targetPoint.copyFrom(pickingInfo.pickedPoint!);
             } else {
                 const direction = ray.direction.clone();
-                const cameraPosition = camera.globalPosition;
-                targetPoint = cameraPosition.clone();
-
-                const rootMeshCenter = rootMesh ? (rootMesh as AbstractMesh).getBoundingInfo().boundingBox.centerWorld : null;
-                const distance = rootMeshCenter ? Vector3.Distance(cameraPosition, rootMeshCenter) : 0.1;
-
+                targetPoint.copyFrom(comGlobalPos);
+                const distance = Vector3.Distance(comGlobalPos, this._modelWorldCenter);
                 direction.scaleAndAddToRef(distance, targetPoint);
             }
 
-            const newCamera = new ArcRotateCamera("ArcRotateCamera " + camera.name, 0, 0, 1, Vector3.Zero(), this._scene);
-            if (targetPoint) {
-                newCamera.setPosition(camera.globalPosition.clone());
-                newCamera.setTarget(targetPoint);
-                return newCamera;
+            const computationVector = Vector3.Zero();
+            comGlobalPos.subtractToRef(targetPoint, computationVector);
+
+            // Radius
+            const radius = computationVector.length();
+
+            // Alpha
+            let alpha = Math.PI / 2;
+            if (!(computationVector.x === 0 && computationVector.z === 0)) {
+                alpha = Math.acos(computationVector.x / Math.sqrt(Math.pow(computationVector.x, 2) + Math.pow(computationVector.z, 2)));
+            }
+            if (computationVector.z < 0) {
+                alpha = 2 * Math.PI - alpha;
             }
 
-            return null;
+            // Beta
+            const beta = Math.acos(computationVector.y / radius);
+
+            return { alpha, beta, radius, target: targetPoint };
         }
 
         return null;
@@ -1238,6 +1256,7 @@ export class Viewer implements IDisposable {
 
             const worldSize = worldExtents.max.subtract(worldExtents.min);
             const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
+            this._modelWorldCenter = worldCenter.clone();
 
             goalRadius = worldSize.length() * 1.1;
 
@@ -1307,15 +1326,7 @@ export class Viewer implements IDisposable {
         await import("core/Culling/ray");
         if (this._modelInfo) {
             const model = this._modelInfo?.assetContainer;
-            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            model.meshes.forEach((mesh) => {
-                let cache = this._meshDataCache.get(mesh);
-                if (!cache) {
-                    cache = {};
-                    this._meshDataCache.set(mesh, cache);
-                }
-                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
-            });
+            this._refreshBoundingInfo(model);
 
             const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
             if (pickingInfo.hit) {
