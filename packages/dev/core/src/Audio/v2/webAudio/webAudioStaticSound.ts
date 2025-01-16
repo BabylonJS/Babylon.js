@@ -238,7 +238,6 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     private async _initFromUrl(url: string): Promise<void> {
-        // TODO: Maybe use the existing file loading tools here.
         url = _CleanUrl(url);
         await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
     }

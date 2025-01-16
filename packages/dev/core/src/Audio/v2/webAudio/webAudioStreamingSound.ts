@@ -364,7 +364,6 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         for (const url of urls) {
             const source = document.createElement("source");
-            // TODO: Maybe use the existing file loading tools to clean the URL.
             source.src = _CleanUrl(url);
             audio.appendChild(source);
         }
