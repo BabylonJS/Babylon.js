@@ -287,10 +287,12 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         if (size !== undefined) {
             const sizeString = `${size | 0}px`;
 
-            if (props.direction === SplitDirection.Horizontal) {
-                childArray[current].style.width = sizeString;
-            } else {
-                childArray[current].style.height = sizeString;
+            if (!childArray[current].style.width) {
+                if (props.direction === SplitDirection.Horizontal) {
+                    childArray[current].style.width = sizeString;
+                } else {
+                    childArray[current].style.height = sizeString;
+                }
             }
         } else {
             noInitialSizes[current] = true;

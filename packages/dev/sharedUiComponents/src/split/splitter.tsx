@@ -59,14 +59,16 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             return;
         }
 
-        if (splitContext.direction === SplitDirection.Horizontal) {
-            elementRef.current.style.width = `${props.size}px`;
-            elementRef.current.style.height = `100%`;
-            elementRef.current.classList.add(styles["horizontal"]);
-        } else {
-            elementRef.current.style.height = `${props.size}px`;
-            elementRef.current.style.width = `100%`;
-            elementRef.current.classList.add(styles["vertical"]);
+        if (!elementRef.current.style.width) {
+            if (splitContext.direction === SplitDirection.Horizontal) {
+                elementRef.current.style.width = `${props.size}px`;
+                elementRef.current.style.height = `100%`;
+                elementRef.current.classList.add(styles["horizontal"]);
+            } else {
+                elementRef.current.style.height = `${props.size}px`;
+                elementRef.current.style.width = `100%`;
+                elementRef.current.classList.add(styles["vertical"]);
+            }
         }
 
         splitContext.sync(elementRef.current, props.controlledSide, props.initialSize, props.minSize, props.maxSize);
