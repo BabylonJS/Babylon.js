@@ -6,6 +6,12 @@ interface IPropertyWithBufferView {
     bufferView?: number;
 }
 
+function getHighestByteAlignment(byteLength: number): number {
+    if (byteLength % 4 === 0) return 4;
+    if (byteLength % 2 === 0) return 2;
+    return 1;
+}
+
 /**
  * Utility class to centralize the management of binary data, bufferViews, and the objects that reference them.
  * @internal
@@ -33,8 +39,11 @@ export class BufferManager {
         });
         const dataWriter = new DataWriter(totalByteLength);
 
+        // Order the bufferViews in descending order of their alignment requirements
+        const orderedBufferViews = [...this._bufferViewToData.keys()].sort((a, b) => getHighestByteAlignment(b.byteLength) - getHighestByteAlignment(a.byteLength));
+
         // Fill in the bufferViews list and missing bufferView index references while writing the binary
-        this._bufferViewToData.forEach((data, bufferView) => {
+        for (const bufferView of orderedBufferViews) {
             bufferView.byteOffset = dataWriter.byteOffset;
             bufferViews.push(bufferView);
 
@@ -44,10 +53,10 @@ export class BufferManager {
                 object.bufferView = bufferViewIndex;
             }
 
-            dataWriter.writeTypedArray(data);
+            dataWriter.writeTypedArray(this._bufferViewToData.get(bufferView)!);
 
             this._bufferViewToData.delete(bufferView); // Try to free up memory ASAP
-        });
+        }
 
         return dataWriter.getOutputData();
     }
