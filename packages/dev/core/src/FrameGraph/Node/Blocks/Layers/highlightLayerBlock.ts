@@ -17,7 +17,7 @@ import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGrap
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
 
 /**
- * Block that implements the glow layer
+ * Block that implements the highlight layer
  */
 export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphHighlightLayerTask;
@@ -30,7 +30,7 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new NodeRenderGraphGlowLayerBlock
+     * Create a new NodeRenderGraphHighlightLayerBlock
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
