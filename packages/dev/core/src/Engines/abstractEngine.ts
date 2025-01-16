@@ -914,7 +914,7 @@ export abstract class AbstractEngine {
             return;
         }
 
-        if (value === 0) {
+        if (value <= 0) {
             this._minFrameTime = Number.MAX_VALUE;
             return;
         }
