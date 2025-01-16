@@ -902,7 +902,7 @@ export abstract class AbstractEngine {
      */
     public skipFrameRender = false;
 
-    /** Gets or sets max frame per second allowed */
+    /** Gets or sets max frame per second allowed. Will return undefined if not capped */
     public get maxFPS(): number | undefined {
         return this._maxFPS;
     }
