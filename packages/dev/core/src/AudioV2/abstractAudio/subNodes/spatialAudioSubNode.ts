@@ -1,4 +1,4 @@
-import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { _SpatialAudioDefaults, type ISpatialAudioOptions } from "../subProperties/abstractSpatialAudio";
 import { _AbstractAudioSubNode } from "./abstractAudioSubNode";

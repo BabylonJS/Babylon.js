@@ -1,6 +1,6 @@
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
-import { _AudioSubNode } from "./audioSubNode";
+import { _AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
+import { _AudioSubNode } from "../subNodes/audioSubNode";
 
 /** @internal */
 export class _VolumeAudioDefaults {

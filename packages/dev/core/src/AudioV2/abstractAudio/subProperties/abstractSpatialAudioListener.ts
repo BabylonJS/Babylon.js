@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
 /** @internal */
 export class _SpatialAudioListenerDefaults {

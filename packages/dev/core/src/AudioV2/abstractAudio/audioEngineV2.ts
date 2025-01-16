@@ -1,4 +1,4 @@
-import type { Nullable } from "../../../types";
+import type { Nullable } from "../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { MainAudioBus } from "./mainAudioBus";
 import type { AbstractSpatialAudioListener, ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";

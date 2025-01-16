@@ -1,4 +1,4 @@
-import type { Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";

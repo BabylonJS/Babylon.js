@@ -1,7 +1,7 @@
+import { AbstractStereoAudio, _StereoAudioDefaults } from "../../abstractAudio/subProperties/abstractStereoAudio";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _StereoAudioSubNode } from "../subNodes/stereoAudioSubNode";
-import { AbstractStereoAudio, _StereoAudioDefaults } from "./abstractStereoAudio";
 
 /** @internal */
 export class _StereoAudio extends AbstractStereoAudio {

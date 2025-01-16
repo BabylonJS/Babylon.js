@@ -1,4 +1,4 @@
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { IStreamingSoundOptions, StreamingSound } from "./streamingSound";
 

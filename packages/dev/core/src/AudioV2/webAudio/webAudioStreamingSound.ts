@@ -1,5 +1,5 @@
-import { Tools } from "../../../Misc/tools";
-import type { Nullable } from "../../../types";
+import { Tools } from "../../Misc/tools";
+import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { ICommonSoundPlayOptions } from "../abstractAudio/abstractSound";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";

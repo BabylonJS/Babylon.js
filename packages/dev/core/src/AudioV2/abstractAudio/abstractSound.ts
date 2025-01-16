@@ -1,5 +1,5 @@
-import { Observable } from "../../../Misc/observable";
-import type { Nullable } from "../../../types";
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
 import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
