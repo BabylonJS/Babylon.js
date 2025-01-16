@@ -577,6 +577,18 @@
             "referenceImage": "highlights.png"
         },
         {
+            "title": "Area Lights - Standard Material",
+            "renderCount": 5,
+            "playgroundId": "#EL6DHS#1",
+            "referenceImage": "areaLightsStandardMaterial.png"
+        },
+        {
+            "title": "Area Lights - PBR",
+            "renderCount": 5,
+            "playgroundId": "#EL6DHS",
+            "referenceImage": "areaLightsPBRMaterial.png"
+        },
+        {
             "title": "Lines",
             "scriptToRun": "/Demos/Lines/lines.js",
             "functionToCall": "CreateLinesTestScene",
