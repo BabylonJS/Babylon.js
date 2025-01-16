@@ -286,6 +286,10 @@ export class Viewer implements IDisposable {
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
+    /**
+     * Fired when the environment configuration has changed.
+     */
+    public readonly onEnvironmentConfigurationChanged = new Observable<void>();
 
     /**
      * Fired when an error occurs while loading the environment.
@@ -524,36 +528,34 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The environment configuration.
+     * Get the current environment configuration.
      */
     public get environment(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this.environmentIntensity,
-            blur: this.skyboxBlur,
-            rotation: this.environmentRotation,
-        };
+        let values = {
+            blur: this._skyboxBlur,
+        } as EnvironmentParams;
+        if (this._reflectionTexture) {
+            values = { ...values, intensity: this._reflectionTexture.level, rotation: this._reflectionTexture.rotationY };
+        }
+        return values;
     }
 
     public set environment(value: Partial<Readonly<EnvironmentParams>>) {
+        // eslint-disable-next-line no-console
+        console.log("environment", value);
         if (value.blur !== undefined) {
-            this.skyboxBlur = value.blur;
+            this._changeSkyboxBlur(value.blur);
         }
         if (value.intensity !== undefined) {
-            this.environmentIntensity = value.intensity;
+            this._changeEnvironmentIntensity(value.intensity);
         }
         if (value.rotation !== undefined) {
-            this.environmentRotation = value.rotation;
+            this._changeEnvironmentRotation(value.rotation);
         }
+        this.onEnvironmentConfigurationChanged.notifyObservers();
     }
 
-    /**
-     * A value between 0 and 1 that specifies how much to blur the skybox.
-     */
-    get skyboxBlur(): number {
-        return this._skyboxBlur;
-    }
-
-    set skyboxBlur(value: number) {
+    private _changeSkyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
             if (this._skybox) {
@@ -568,14 +570,7 @@ export class Viewer implements IDisposable {
         }
     }
 
-    /**
-     * The rotation of the skybox in radians.
-     */
-    get environmentRotation(): number {
-        return this._reflectionsRotation;
-    }
-
-    set environmentRotation(value: number) {
+    private _changeEnvironmentRotation(value: number) {
         this._reflectionsRotation = value;
 
         if (this._skyboxTexture) {
@@ -587,14 +582,7 @@ export class Viewer implements IDisposable {
         this.onEnvironmentRotationChanged.notifyObservers();
     }
 
-    /**
-     * The intensity of the environment lighting.
-     */
-    get environmentIntensity(): number {
-        return this._reflectionsIntensity;
-    }
-
-    set environmentIntensity(value: number) {
+    private _changeEnvironmentIntensity(value: number) {
         this._reflectionsIntensity = value;
         if (this._skyboxTexture) {
             this._skyboxTexture.level = this._reflectionsIntensity;
@@ -1036,14 +1024,14 @@ export class Viewer implements IDisposable {
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
                         this._scene.environmentTexture = this._reflectionTexture;
-                        cubeTexture.level = this.environmentIntensity;
-                        cubeTexture.rotationY = this.environmentRotation;
+                        cubeTexture.level = this.environment.intensity;
+                        cubeTexture.rotationY = this.environment.rotation;
                     }
                     if (options.skybox) {
                         this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._skyboxTexture.level = this.environmentIntensity;
-                        this._skyboxTexture.rotationY = this.environmentRotation;
-                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.skyboxBlur);
+                        this._skyboxTexture.level = this.environment.intensity;
+                        this._skyboxTexture.rotationY = this.environment.rotation;
+                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environment.blur);
                         this._snapshotHelper.fixMeshes([this._skybox]);
                         this._scene.autoClear = false;
                     }
