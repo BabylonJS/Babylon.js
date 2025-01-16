@@ -33,7 +33,7 @@ export class BufferManager {
     private _accessorToBufferView: Map<IAccessor, IBufferView> = new Map<IAccessor, IBufferView>();
 
     /**
-     * Generates a binary buffer from the stored bufferViews. Also creates in the bufferViews list.
+     * Generates a binary buffer from the stored bufferViews. Also populates the bufferViews list.
      * @param bufferViews The list of bufferViews to be populated while writing the binary
      * @returns The binary buffer
      */

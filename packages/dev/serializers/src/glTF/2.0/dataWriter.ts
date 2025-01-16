@@ -53,9 +53,9 @@ export class DataWriter {
         this._byteOffset++;
     }
 
-    public writeInt16(value: number): void {
+    public writeInt16(entry: number): void {
         this._checkGrowBuffer(2);
-        this._dataView.setInt16(this._byteOffset, value, true);
+        this._dataView.setInt16(this._byteOffset, entry, true);
         this._byteOffset += 2;
     }
 
@@ -65,9 +65,9 @@ export class DataWriter {
         this._byteOffset += 2;
     }
 
-    public writeInt32(value: number): void {
+    public writeInt32(entry: number): void {
         this._checkGrowBuffer(4);
-        this._dataView.setInt32(this._byteOffset, value, true);
+        this._dataView.setInt32(this._byteOffset, entry, true);
         this._byteOffset += 4;
     }
 

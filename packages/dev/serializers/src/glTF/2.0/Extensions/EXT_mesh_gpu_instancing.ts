@@ -48,7 +48,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param babylonNode the corresponding babylon node
      * @param nodeMap map from babylon node id to node index
      * @param convertToRightHanded true if we need to convert data from left hand to right hand system.
-     * @param bufferManager binary writer
+     * @param bufferManager buffer manager
      * @returns nullable promise, resolves with the node
      */
     public postExportNodeAsync(

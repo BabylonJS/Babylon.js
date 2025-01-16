@@ -642,7 +642,7 @@ export class _GLTFAnimation {
                             dataWriter.writeFloat32(rotationQuaternion.w);
                             break;
                         default:
-                            output.forEach((entry) => {
+                            output.forEach(function (entry) {
                                 dataWriter.writeFloat32(entry);
                             });
                             break;
@@ -666,7 +666,7 @@ export class _GLTFAnimation {
                             dataWriter.writeFloat32(rotationQuaternion.w);
                             break;
                         default:
-                            output.forEach((entry) => {
+                            output.forEach(function (entry) {
                                 dataWriter.writeFloat32(entry);
                             });
                             break;
