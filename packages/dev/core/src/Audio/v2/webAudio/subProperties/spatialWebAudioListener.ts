@@ -2,9 +2,9 @@ import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
-const TempMatrix = new Matrix();
-const TempQuaternion = new Quaternion();
-const TempVector = new Vector3();
+const TmpMatrix = Matrix.Zero();
+const TmpQuaternion = Quaternion.Zero();
+const TmpVector = Vector3.Zero();
 
 /** @internal */
 export function _CreateSpatialAudioListener(engine: _WebAudioEngine): _SpatialAudioListener {
@@ -19,9 +19,9 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine): _SpatialAu
 class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _audioContext: AudioContext;
     private _position: Vector3 = Vector3.Zero();
-    private _rotationAngles: Vector3 = Vector3.Zero();
-    private _rotationAnglesDirty = false;
-    private _rotationQuaternion: Quaternion = Quaternion.FromEulerVector(this._rotationAngles);
+    private _rotation: Vector3 = Vector3.Zero();
+    private _rotationDirty = false;
+    private _rotationQuaternion: Quaternion = Quaternion.FromEulerVector(this._rotation);
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
@@ -36,25 +36,26 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     }
 
     public set position(value: Vector3) {
-        this._audioContext.listener.positionX.value = this._position.x = value.x;
-        this._audioContext.listener.positionY.value = this._position.y = value.y;
-        this._audioContext.listener.positionZ.value = this._position.z = value.z;
+        this._position.copyFrom(value);
+
+        const listener = this._audioContext.listener;
+        listener.positionX.value = value.x;
+        listener.positionY.value = value.y;
+        listener.positionZ.value = value.z;
     }
 
     /** @internal */
     public get rotation(): Vector3 {
-        if (this._rotationAnglesDirty) {
-            this._rotationAnglesDirty = false;
-            this._rotationQuaternion.toEulerAnglesToRef(this._rotationAngles);
+        if (this._rotationDirty) {
+            this._rotationQuaternion.toEulerAnglesToRef(this._rotation);
+            this._rotationDirty = false;
         }
 
-        return this._rotationAngles;
+        return this._rotation;
     }
 
     public set rotation(value: Vector3) {
-        Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TempQuaternion);
-        this.rotationQuaternion = TempQuaternion;
-        this._rotationAnglesDirty = true;
+        this.rotationQuaternion = Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TmpQuaternion);
     }
 
     /** @internal */
@@ -64,17 +65,19 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
     public set rotationQuaternion(value: Quaternion) {
         this._rotationQuaternion.copyFrom(value);
+        this._rotationDirty = true;
 
-        const mat = Matrix.FromQuaternionToRef(value, TempMatrix);
+        Matrix.FromQuaternionToRef(value, TmpMatrix);
+        const listener = this._audioContext.listener;
 
-        const forward = Vector3.TransformNormalToRef(Vector3.Forward(), mat, TempVector);
-        this._audioContext.listener.forwardX.value = forward.x;
-        this._audioContext.listener.forwardY.value = forward.y;
-        this._audioContext.listener.forwardZ.value = forward.z;
+        Vector3.TransformNormalToRef(Vector3.Forward(), TmpMatrix, TmpVector);
+        listener.forwardX.value = TmpVector.x;
+        listener.forwardY.value = TmpVector.y;
+        listener.forwardZ.value = TmpVector.z;
 
-        const up = Vector3.TransformNormalToRef(Vector3.Up(), mat, TempVector);
-        this._audioContext.listener.upX.value = up.x;
-        this._audioContext.listener.upY.value = up.y;
-        this._audioContext.listener.upZ.value = up.z;
+        Vector3.TransformNormalToRef(Vector3.Up(), TmpMatrix, TmpVector);
+        listener.upX.value = TmpVector.x;
+        listener.upY.value = TmpVector.y;
+        listener.upZ.value = TmpVector.z;
     }
 }
