@@ -1,6 +1,8 @@
 // Real-Time Polygonal-Light Shading with Linearly Transformed Cosines
 // by Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt
 // code: https://github.com/selfshadow/ltc_code/
+// Inspired by https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/lights_physical_pars_fragment.glsl.js
+
 fn LTCUv(N: vec3f, V: vec3f, roughness: f32) -> vec2f {
 
 	var LUTSIZE: f32 = 64.0;
