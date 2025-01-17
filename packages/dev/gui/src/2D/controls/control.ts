@@ -2637,10 +2637,12 @@ export class Control implements IAnimatable, IFocusableControl {
         let idealHeight = 0;
         // the host's ideal width and height are influencing the serialization, as they are used in getValue() of ValueAndUnit.
         // for a proper serialization, we need to temporarily set them to 0 and re-set them back afterwards.
-        idealHeight = this.host.idealHeight;
-        idealWidth = this.host.idealWidth;
-        this.host.idealWidth = 0;
-        this.host.idealHeight = 0;
+        if (this.host) {
+            idealHeight = this.host.idealHeight;
+            idealWidth = this.host.idealWidth;
+            this.host.idealWidth = 0;
+            this.host.idealHeight = 0;
+        }
         SerializationHelper.Serialize(this, serializationObject);
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();
@@ -2670,8 +2672,10 @@ export class Control implements IAnimatable, IFocusableControl {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         // re-set the ideal width and height
-        this.host.idealWidth = idealWidth;
-        this.host.idealHeight = idealHeight;
+        if (this.host) {
+            this.host.idealWidth = idealWidth;
+            this.host.idealHeight = idealHeight;
+        }
     }
 
     /**
