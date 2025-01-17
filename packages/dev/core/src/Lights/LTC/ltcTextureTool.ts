@@ -58,8 +58,8 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
 
     // Loads raw binary data from CDN and assigns to the correct texture array data.
     private async _decodeLTCTextureDataAsync(): Promise<Tuple<Uint16Array, 2>> {
-        const _ltc1 = new Uint16Array(64 * 64 * 4);
-        const _ltc2 = new Uint16Array(64 * 64 * 4);
+        const ltc1 = new Uint16Array(64 * 64 * 4);
+        const ltc2 = new Uint16Array(64 * 64 * 4);
 
         const ltcPath = Tools.GetBabylonScriptURL("https://assets.babylonjs.com/areaLights/areaLightsLTC.bin", true);
         const file = await Tools.LoadFileAsync(ltcPath);
@@ -68,18 +68,18 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
         const pixelCount = ltcEncoded.length / 8;
 
         for (let pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
-            _ltc1[pixelIndex * 4] = ltcEncoded[pixelIndex * 8];
-            _ltc1[pixelIndex * 4 + 1] = ltcEncoded[pixelIndex * 8 + 1];
-            _ltc1[pixelIndex * 4 + 2] = ltcEncoded[pixelIndex * 8 + 2];
-            _ltc1[pixelIndex * 4 + 3] = ltcEncoded[pixelIndex * 8 + 3];
+            ltc1[pixelIndex * 4] = ltcEncoded[pixelIndex * 8];
+            ltc1[pixelIndex * 4 + 1] = ltcEncoded[pixelIndex * 8 + 1];
+            ltc1[pixelIndex * 4 + 2] = ltcEncoded[pixelIndex * 8 + 2];
+            ltc1[pixelIndex * 4 + 3] = ltcEncoded[pixelIndex * 8 + 3];
 
-            _ltc2[pixelIndex * 4] = ltcEncoded[pixelIndex * 8 + 4];
-            _ltc2[pixelIndex * 4 + 1] = ltcEncoded[pixelIndex * 8 + 5];
-            _ltc2[pixelIndex * 4 + 2] = ltcEncoded[pixelIndex * 8 + 6];
-            _ltc2[pixelIndex * 4 + 3] = ltcEncoded[pixelIndex * 8 + 7];
+            ltc2[pixelIndex * 4] = ltcEncoded[pixelIndex * 8 + 4];
+            ltc2[pixelIndex * 4 + 1] = ltcEncoded[pixelIndex * 8 + 5];
+            ltc2[pixelIndex * 4 + 2] = ltcEncoded[pixelIndex * 8 + 6];
+            ltc2[pixelIndex * 4 + 3] = ltcEncoded[pixelIndex * 8 + 7];
         }
 
-        return [_ltc1, _ltc2];
+        return [ltc1, ltc2];
     }
 
     // Uses raw binary data to build LTC half float textures.
