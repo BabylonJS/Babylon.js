@@ -562,14 +562,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property({
         type: Number,
-        attribute: "environment-rotation",
-        converter: (value: string | null) => {
-            const rotation = value ? parseFloat(value) : null;
-            if (rotation) {
-                return (rotation * Math.PI) / 180;
-            }
-            return 0;
-        },
+        attribute: "environment-rotation"
     })
     public environmentRotation: Nullable<number> = null;
 
