@@ -988,10 +988,13 @@ export class GLTFExporter {
                     case VertexBuffer.NormalKind:
                     case VertexBuffer.TangentKind: {
                         EnumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
-                            const invLength = 1 / Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
-                            values[0] *= invLength;
-                            values[1] *= invLength;
-                            values[2] *= invLength;
+                            const length = Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
+                            if (length > 0) {
+                                const invLength = 1 / length;
+                                values[0] *= invLength;
+                                values[1] *= invLength;
+                                values[2] *= invLength;
+                            }
                         });
                         break;
                     }
