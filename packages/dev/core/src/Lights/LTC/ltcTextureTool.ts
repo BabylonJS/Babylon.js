@@ -16,7 +16,7 @@ export interface IAreaLightLTCProvider {
     ltc1Texture: BaseTexture;
 
     /**
-     * Linearly trasnformed cossine texture for BRDF.
+     * Linearly trasnformed cossine texture Fresnel Approximation.
      */
     ltc2Texture: BaseTexture;
 }
@@ -41,7 +41,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
 
     // Loads LTC textures from CDN and assigns them to ltc1Texture and ltc2Texture textures.
     private async _buildSceneLTCTextures(scene: Scene): Promise<void> {
-        const textureData = await this._decodeLTCTextureData();
+        const textureData = await this._decodeLTCTextureDataAsync();
         this.ltc1Texture = this._createLTCTextureFromArray(textureData[0], scene);
         this.ltc2Texture = this._createLTCTextureFromArray(textureData[1], scene);
         for (const mesh of scene.meshes) {
@@ -57,7 +57,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
     }
 
     // Loads raw binary data from CDN and assigns to the correct texture array data.
-    private async _decodeLTCTextureData(): Promise<Tuple<Uint16Array, 2>> {
+    private async _decodeLTCTextureDataAsync(): Promise<Tuple<Uint16Array, 2>> {
         const _ltc1 = new Uint16Array(64 * 64 * 4);
         const _ltc2 = new Uint16Array(64 * 64 * 4);
 

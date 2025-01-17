@@ -15,7 +15,7 @@ declare module "../scene" {
     }
 }
 
-function IsAreaLightsReady(scene: Scene): boolean {
+function AreAreaLightsReady(scene: Scene): boolean {
     if (scene.areaLightLTCProvider.ltc1Texture && scene.areaLightLTCProvider.ltc2Texture) {
         return scene.areaLightLTCProvider.ltc1Texture.isReady() && scene.areaLightLTCProvider.ltc2Texture.isReady();
     }
@@ -75,7 +75,7 @@ export abstract class AreaLight extends Light {
      * @param lightIndex defines the index of the light for the effect
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["AREALIGHT" + lightIndex] = IsAreaLightsReady(this._scene);
-        defines["AREALIGHTUSED"] = IsAreaLightsReady(this._scene);
+        defines["AREALIGHT" + lightIndex] = AreAreaLightsReady(this._scene);
+        defines["AREALIGHTUSED"] = AreAreaLightsReady(this._scene);
     }
 }

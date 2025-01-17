@@ -16,8 +16,11 @@ Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
  * The light is emitted from the rectangular area in the -Z direction.
  */
 export class RectAreaLight extends AreaLight {
-    protected _width: Vector3;
-    protected _height: Vector3;
+    private readonly _width: Vector3;
+    private readonly _height: Vector3;
+    protected readonly _pointTransformedPosition: Vector3;
+    protected readonly _pointTransformedWidth: Vector3;
+    protected readonly _pointCTransformedHeight: Vector3;
 
     /**
      * Rect Area Light width.
@@ -58,9 +61,11 @@ export class RectAreaLight extends AreaLight {
      */
     constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
         super(name, position, scene);
-        this.position = position;
         this._width = new Vector3(width, 0, 0);
         this._height = new Vector3(0, height, 0);
+        this._pointTransformedPosition = Vector3.Zero();
+        this._pointTransformedWidth = Vector3.Zero();
+        this._pointCTransformedHeight = Vector3.Zero();
     }
 
     /**
@@ -90,17 +95,8 @@ export class RectAreaLight extends AreaLight {
         this._uniformBuffer.create();
     }
 
-    protected _pointTransformedPosition: Vector3;
-    protected _pointTransformedWidth: Vector3;
-    protected _pointCTransformedHeight: Vector3;
-
     protected _computeTransformedInformation(): boolean {
         if (this.parent && this.parent.getWorldMatrix) {
-            if (!this._pointTransformedPosition) {
-                this._pointTransformedPosition = Vector3.Zero();
-                this._pointTransformedWidth = Vector3.Zero();
-                this._pointCTransformedHeight = Vector3.Zero();
-            }
             Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
             Vector3.TransformNormalToRef(this._width, this.parent.getWorldMatrix(), this._pointTransformedWidth);
             Vector3.TransformNormalToRef(this._height, this.parent.getWorldMatrix(), this._pointCTransformedHeight);

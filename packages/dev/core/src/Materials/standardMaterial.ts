@@ -1539,7 +1539,9 @@ export class StandardMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         drawWrapper._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         drawWrapper._wasPreviouslyUsingInstances = useInstances;
+
         this._checkScenePerformancePriority();
+
         return true;
     }
 
