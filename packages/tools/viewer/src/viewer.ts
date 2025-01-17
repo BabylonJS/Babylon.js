@@ -1023,6 +1023,7 @@ export class Viewer implements IDisposable {
                         this._skyboxTexture.level = this.environmentConfig.intensity;
                         this._skyboxTexture.rotationY = this.environmentConfig.rotation;
                         this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
+                        this._skybox.setEnabled(this.environmentConfig.visible);
                         this._snapshotHelper.fixMeshes([this._skybox]);
                         this._scene.autoClear = false;
                     }
