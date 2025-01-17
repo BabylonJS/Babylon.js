@@ -20,7 +20,7 @@ export class RectAreaLight extends AreaLight {
     private readonly _height: Vector3;
     protected readonly _pointTransformedPosition: Vector3;
     protected readonly _pointTransformedWidth: Vector3;
-    protected readonly _pointCTransformedHeight: Vector3;
+    protected readonly _pointTransformedHeight: Vector3;
 
     /**
      * Rect Area Light width.
@@ -65,7 +65,7 @@ export class RectAreaLight extends AreaLight {
         this._height = new Vector3(0, height, 0);
         this._pointTransformedPosition = Vector3.Zero();
         this._pointTransformedWidth = Vector3.Zero();
-        this._pointCTransformedHeight = Vector3.Zero();
+        this._pointTransformedHeight = Vector3.Zero();
     }
 
     /**
@@ -99,7 +99,7 @@ export class RectAreaLight extends AreaLight {
         if (this.parent && this.parent.getWorldMatrix) {
             Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
             Vector3.TransformNormalToRef(this._width, this.parent.getWorldMatrix(), this._pointTransformedWidth);
-            Vector3.TransformNormalToRef(this._height, this.parent.getWorldMatrix(), this._pointCTransformedHeight);
+            Vector3.TransformNormalToRef(this._height, this.parent.getWorldMatrix(), this._pointTransformedHeight);
             return true;
         }
 
@@ -116,7 +116,7 @@ export class RectAreaLight extends AreaLight {
         if (this._computeTransformedInformation()) {
             this._uniformBuffer.updateFloat4("vLightData", this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z, 0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightWidth", this._pointTransformedWidth.x, this._pointTransformedWidth.y, this._pointTransformedWidth.z, 0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightHeight", this._pointCTransformedHeight.x, this._pointCTransformedHeight.y, this._pointCTransformedHeight.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightHeight", this._pointTransformedHeight.x, this._pointTransformedHeight.y, this._pointTransformedHeight.z, 0, lightIndex);
         } else {
             this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0.0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
