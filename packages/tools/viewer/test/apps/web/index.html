@@ -297,7 +297,7 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environment = { visible: checked };
+                viewer.environmentConfig = { visible: checked };
             };
         </script>
     </body>
