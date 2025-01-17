@@ -46,11 +46,6 @@ export abstract class AreaLight extends Light {
         this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
     }
 
-    /**
-     * Sets the passed Effect "effect" with the Light textures.
-     * @param effect The effect to update
-     * @returns The light
-     */
     public override transferTexturesToEffect(effect: Effect): Light {
         effect.setTexture("areaLightsLTC1Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
         effect.setTexture("areaLightsLTC2Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
