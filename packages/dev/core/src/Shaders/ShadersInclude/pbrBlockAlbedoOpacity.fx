@@ -11,6 +11,7 @@ albedoOpacityOutParams albedoOpacityBlock(
     ,in vec4 albedoTexture
     ,in vec2 albedoInfos
 #endif
+    , in float vBaseWeight
 #ifdef OPACITY
     ,in vec4 opacityMap
     ,in vec2 vOpacityInfos
@@ -22,7 +23,7 @@ albedoOpacityOutParams albedoOpacityBlock(
 #ifdef DECAL
     ,in vec4 decalColor
     ,in vec4 vDecalInfos
-#endif 
+#endif
 )
 {
     albedoOpacityOutParams outParams;

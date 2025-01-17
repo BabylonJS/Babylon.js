@@ -104,6 +104,7 @@ void main(void) {
         , albedoTexture
         , vAlbedoInfos
     #endif
+        , vBaseWeight
     #ifdef OPACITY
         , opacityMap
         , vOpacityInfos
@@ -138,7 +139,7 @@ void main(void) {
     #ifdef AMBIENT
         ambientOcclusionColorMap,
         vAmbientInfos
-    #endif        
+    #endif
     );
 
     #include<pbrBlockLightmapInit>
@@ -257,7 +258,7 @@ void main(void) {
         #endif
             TBN,
             normalW,
-            viewDirectionW            
+            viewDirectionW
         );
     #endif
 

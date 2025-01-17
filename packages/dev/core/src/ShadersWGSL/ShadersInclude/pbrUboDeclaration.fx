@@ -22,6 +22,7 @@ uniform vTangentSpaceParams: vec2f;
 uniform reflectionMatrix: mat4x4f;
 uniform vReflectionColor: vec3f;
 uniform vAlbedoColor: vec4f;
+uniform vBaseWeight: f32;
 uniform vLightingIntensity: vec4f;
 uniform vReflectionMicrosurfaceInfos: vec3f;
 uniform pointSize: f32;

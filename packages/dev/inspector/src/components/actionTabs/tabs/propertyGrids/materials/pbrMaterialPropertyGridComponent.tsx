@@ -273,6 +273,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         isLinear={true}
                     />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Base Weight"
+                        target={material}
+                        propertyName="baseWeight"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <Color3LineComponent
                         lockObject={this.props.lockObject}
                         label="Reflectivity"

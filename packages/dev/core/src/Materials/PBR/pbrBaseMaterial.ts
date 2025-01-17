@@ -559,6 +559,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public _albedoColor = new Color3(1, 1, 1);
 
+    public _baseWeight = 1;
+
     /**
      * AKA Specular Color in other nomenclature.
      * @internal
@@ -1413,6 +1415,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vLightsType",
             "vAmbientColor",
             "vAlbedoColor",
+            "vBaseWeight",
             "vReflectivityColor",
             "vMetallicReflectanceFactors",
             "vEmissiveColor",
@@ -2005,6 +2008,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         ubo.addUniform("vReflectionColor", 3);
         ubo.addUniform("vAlbedoColor", 4);
+        ubo.addUniform("vBaseWeight", 1);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
@@ -2267,6 +2271,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 } else {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
                 }
+
+                ubo.updateFloat("vBaseWeight", this._baseWeight);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;

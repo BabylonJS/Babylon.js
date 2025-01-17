@@ -11,6 +11,7 @@ fn albedoOpacityBlock(
     ,albedoTexture: vec4f
     ,albedoInfos: vec2f
 #endif
+    , vBaseWeight: f32
 #ifdef OPACITY
     ,opacityMap: vec4f
     ,vOpacityInfos: vec2f

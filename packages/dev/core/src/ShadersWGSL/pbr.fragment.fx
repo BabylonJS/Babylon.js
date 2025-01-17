@@ -89,6 +89,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , albedoTexture
         , uniforms.vAlbedoInfos
     #endif
+        , uniforms.baseWeight
     #ifdef OPACITY
         , opacityMap
         , uniforms.vOpacityInfos

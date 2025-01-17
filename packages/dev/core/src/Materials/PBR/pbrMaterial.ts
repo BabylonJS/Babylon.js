@@ -270,6 +270,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoColor = new Color3(1, 1, 1);
 
+    @serializeAsColor3("baseWeight")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public baseWeight = 1;
+
     /**
      * AKA Specular Color in other nomenclature.
      */
