@@ -16,7 +16,7 @@ export interface IAreaLightLTCProvider {
     ltc1Texture: BaseTexture;
 
     /**
-     * Linearly trasnformed cossine texture Fresnel Approximation.
+     * Linearly transformed cosine texture Fresnel Approximation.
      */
     ltc2Texture: BaseTexture;
 
