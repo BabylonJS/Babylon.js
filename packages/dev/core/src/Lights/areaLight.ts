@@ -2,24 +2,27 @@ import type { Vector3 } from "../Maths/math.vector";
 import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
 import { DefaultAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
-import type { IAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
+import type { IAreaLightLTCProvider, ILTCTextures } from "core/Lights/LTC/ltcTextureTool";
 import type { Scene } from "core/scene";
+import { Logger } from "core/Misc";
 
 declare module "../scene" {
     export interface Scene {
         /**
          * Object capable of providing LTC textures for Area Lights.
          */
-        areaLightLTCProvider: IAreaLightLTCProvider;
-    }
-}
+        areaLightLTCProvider?: IAreaLightLTCProvider;
 
-function AreAreaLightsReady(scene: Scene): boolean {
-    if (scene.areaLightLTCProvider.ltc1Texture && scene.areaLightLTCProvider.ltc2Texture) {
-        return scene.areaLightLTCProvider.ltc1Texture.isReady() && scene.areaLightLTCProvider.ltc2Texture.isReady();
-    }
+        /**
+         * @internal
+         */
+        _ltcTexturesPromise?: Promise<ILTCTextures>;
 
-    return false;
+        /**
+         * @internal
+         */
+        _ltcTextures?: ILTCTextures;
+    }
 }
 
 /**
@@ -43,12 +46,38 @@ export abstract class AreaLight extends Light {
         super(name, scene);
         this.position = position;
 
-        this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
+        if (!this._scene._ltcTextures) {
+            this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
+
+            if (!this._scene._ltcTexturesPromise) {
+                this._scene._ltcTexturesPromise = this._scene.areaLightLTCProvider.getTexturesAsync();
+                this._scene.addPendingData(this);
+                this._scene._ltcTexturesPromise
+                    .then((ltcTextures) => {
+                        this._scene._ltcTextures = ltcTextures;
+                        for (const mesh of this._scene.meshes) {
+                            if (mesh.lightSources.some((a) => a.getClassName() === "RectAreaLight")) {
+                                mesh._markSubMeshesAsLightDirty();
+                            }
+                        }
+                        this._scene.removePendingData(this);
+                        this._scene.onDisposeObservable.addOnce(() => {
+                            this._scene._ltcTextures?.LTC1.dispose();
+                            this._scene._ltcTextures?.LTC2.dispose();
+                        });
+                    })
+                    .catch((error) => {
+                        Logger.Error(`Area Light fail to get LTC textures. Check IAreaLightLTCProvider implementation. Error: ${error}`);
+                    });
+            }
+        }
     }
 
     public override transferTexturesToEffect(effect: Effect): Light {
-        effect.setTexture("areaLightsLTC1Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
-        effect.setTexture("areaLightsLTC2Sampler", this._scene.areaLightLTCProvider.ltc1Texture);
+        if (this._scene._ltcTextures) {
+            effect.setTexture("areaLightsLTC1Sampler", this._scene._ltcTextures.LTC1);
+            effect.setTexture("areaLightsLTC2Sampler", this._scene._ltcTextures.LTC2);
+        }
         return this;
     }
 
@@ -58,7 +87,7 @@ export abstract class AreaLight extends Light {
      * @param lightIndex defines the index of the light for the effect
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["AREALIGHT" + lightIndex] = AreAreaLightsReady(this._scene);
-        defines["AREALIGHTUSED"] = AreAreaLightsReady(this._scene);
+        defines["AREALIGHT" + lightIndex] = !!this._scene._ltcTextures;
+        defines["AREALIGHTUSED"] = !!this._scene._ltcTextures;
     }
 }

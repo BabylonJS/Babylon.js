@@ -1,70 +1,51 @@
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Scene } from "core/scene";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Tuple } from "core/types";
+import type { Scene } from "core/scene";
+
+/**
+ * Linearly transformed cosine textures that are used in the Area Lights shaders.
+ */
+export interface ILTCTextures {
+    /**
+     * Linearly transformed cosine texture BRDF Approximation.
+     */
+    LTC1: BaseTexture;
+
+    /**
+     * Linearly transformed cosine texture Fresnel Approximation.
+     */
+    LTC2: BaseTexture;
+}
 
 /**
  * Interface that can provide LTC textures used by area Lights. Users can override the default ones to provide their own LTC textures.
  */
 export interface IAreaLightLTCProvider {
     /**
-     * Linearly transformed cosine texture for BRDF.
+     * Returns the LTC textures used by area lights.
      */
-    ltc1Texture: BaseTexture;
-
-    /**
-     * Linearly transformed cosine texture Fresnel Approximation.
-     */
-    ltc2Texture: BaseTexture;
-
-    /**
-     * Promise to wait for Area Lights are ready.
-     */
-    whenAreaLightsReady: Promise<void>;
+    getTexturesAsync(): Promise<ILTCTextures>;
 }
 
 /**
  * Default provider for LTC textures. This provider will load the LTC data from the Babylon CDN.
  */
 export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
-    /**
-     * LTC Texture 1 loaded from the Babylon.js CDN.
-     */
-    public ltc1Texture: BaseTexture;
-
-    /**
-     * LTC Texture 2 loaded from the Babylon.js CDN.
-     */
-    public ltc2Texture: BaseTexture;
-
-    /**
-     * Promise to wait for Area Lights are ready.
-     */
-    public whenAreaLightsReady: Promise<void>;
+    private _scene: Scene;
 
     public constructor(scene: Scene) {
-        this.whenAreaLightsReady = this._buildSceneLTCTextures(scene);
+        this._scene = scene;
     }
 
-    // Loads LTC textures from CDN and assigns them to ltc1Texture and ltc2Texture textures.
-    private async _buildSceneLTCTextures(scene: Scene): Promise<void> {
+    public async getTexturesAsync(): Promise<ILTCTextures> {
         const textureData = await this._decodeLTCTextureDataAsync();
-        this.ltc1Texture = this._createLTCTextureFromArray(textureData[0], scene);
-        this.ltc2Texture = this._createLTCTextureFromArray(textureData[1], scene);
-        for (const mesh of scene.meshes) {
-            if (mesh.lightSources.some((a) => a.getClassName() === "RectAreaLight")) {
-                mesh._markSubMeshesAsLightDirty();
-                await scene.whenReadyAsync();
-            }
-        }
-
-        scene.onDisposeObservable.addOnce(() => {
-            this.ltc1Texture.dispose();
-            this.ltc2Texture.dispose();
-        });
+        const _ltc1Texture = this._createLTCTextureFromArray(textureData[0], this._scene);
+        const _ltc2Texture = this._createLTCTextureFromArray(textureData[1], this._scene);
+        return { LTC1: _ltc1Texture, LTC2: _ltc2Texture };
     }
 
     // Loads raw binary data from CDN and assigns to the correct texture array data.
