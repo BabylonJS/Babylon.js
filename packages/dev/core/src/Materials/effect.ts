@@ -152,6 +152,12 @@ export class Effect implements IDisposable {
     public static LogShaderCodeOnCompilationError = true;
 
     /**
+     * Gets or sets a boolean indicating that effect ref counting is disabled
+     * If true, the effect will persist in memory until engine is disposed
+     */
+    public static PersistentMode: boolean = false;
+
+    /**
      * Use this with caution
      * See ClearCodeCache function comments
      */
@@ -384,6 +390,14 @@ export class Effect implements IDisposable {
                 (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
             }
         }
+
+        this._engine.onReleaseEffectsObservable.addOnce(() => {
+            if (this.isDisposed) {
+                return;
+            }
+
+            this.dispose(true);
+        });
     }
 
     /** @internal */
@@ -1485,6 +1499,9 @@ export class Effect implements IDisposable {
         if (force) {
             this._refCount = 0;
         } else {
+            if (Effect.PersistentMode) {
+                return;
+            }
             this._refCount--;
         }
 

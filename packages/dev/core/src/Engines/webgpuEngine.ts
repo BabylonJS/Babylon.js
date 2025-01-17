@@ -2202,6 +2202,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         this._compiledEffects = {};
+
+        this.onReleaseEffectsObservable.notifyObservers(this);
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
