@@ -1232,7 +1232,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 const promises = updates.map(async ([url, options]) => {
                     if (url) {
-                        await this._viewerDetails?.viewer.loadEnvironment(url as string, options);
+                        await this._viewerDetails?.viewer.loadEnvironment(url, options);
                     } else {
                         await this._viewerDetails?.viewer.resetEnvironment(options);
                     }
