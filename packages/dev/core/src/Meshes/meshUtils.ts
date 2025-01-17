@@ -3,6 +3,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { FloatArray, Nullable } from "../types";
 import type { AbstractMesh } from "./abstractMesh";
+import { Assert } from "../Misc/assert";
 
 function getExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array<Vector3> {
     const minX = extent.minimum.x;
@@ -181,7 +182,8 @@ export function computeMaxExtents(
                 skeleton.prepare(true);
 
                 const bones = skeleton.bones;
-                const perBoneCorners = skinnedMeshCorners.get(mesh.uniqueId)!;
+                const perBoneCorners = skinnedMeshCorners.get(mesh.uniqueId);
+                Assert(perBoneCorners);
                 perBoneCorners.forEach((corners, boneIndex) => {
                     // Transform the per-bone corners into world space and update the max extent for each corner.
                     for (const corner of corners) {
@@ -193,7 +195,9 @@ export function computeMaxExtents(
                 });
             } else {
                 // Transform the corners into world space and update the max extent for each corner.
-                for (const corner of meshCorners.get(mesh.uniqueId)!) {
+                const corners = meshCorners.get(mesh.uniqueId);
+                Assert(corners);
+                for (const corner of corners) {
                     Vector3.TransformCoordinatesToRef(corner, worldMatrix, position);
                     maxExtents[i].minimum.minimizeInPlace(position);
                     maxExtents[i].maximum.maximizeInPlace(position);
