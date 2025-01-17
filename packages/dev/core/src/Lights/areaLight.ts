@@ -55,9 +55,7 @@ export abstract class AreaLight extends Light {
         super(name, scene);
         this._position = position;
 
-        if (!this._scene.areaLightLTCProvider) {
-            this._scene.areaLightLTCProvider = new DefaultAreaLightLTCProvider(this._scene);
-        }
+        this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
     }
 
     /**
