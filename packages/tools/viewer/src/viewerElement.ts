@@ -94,9 +94,27 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         ),
         this._createPropertyBinding(
             "skyboxBlur",
-            (details) => details.viewer.onSkyboxBlurChanged,
-            (details) => (details.viewer.skyboxBlur = this.skyboxBlur ?? details.viewer.skyboxBlur),
-            (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { blur: this.skyboxBlur ?? details.viewer.environmentConfig.blur }),
+            (details) => (this.skyboxBlur = details.viewer.environmentConfig.blur)
+        ),
+        this._createPropertyBinding(
+            "environmentIntensity",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { intensity: this.environmentIntensity ?? details.viewer.environmentConfig.intensity }),
+            (details) => (this.environmentIntensity = details.viewer.environmentConfig.intensity)
+        ),
+        this._createPropertyBinding(
+            "environmentRotation",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { rotation: this.environmentRotation ?? details.viewer.environmentConfig.rotation }),
+            (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
+        ),
+        this._createPropertyBinding(
+            "environmentVisible",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
+            (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -538,6 +556,29 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property({ attribute: "environment-skybox" })
     public environmentSkybox: Nullable<string> = null;
+
+    /**
+     * A value between 0 and 2 that specifies the intensity of the environment lighting.
+     */
+    @property({ type: Number, attribute: "environment-intensity" })
+    public environmentIntensity: Nullable<number> = null;
+
+    /**
+     * A value in degrees that specifies the rotation of the environment.
+     */
+    @property({
+        type: Number,
+        attribute: "environment-rotation",
+    })
+    public environmentRotation: Nullable<number> = null;
+
+    /**
+     * Wether or not the environment is visible.
+     */
+    @property({
+        attribute: "environment-visible",
+    })
+    public environmentVisible: Nullable<boolean> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
