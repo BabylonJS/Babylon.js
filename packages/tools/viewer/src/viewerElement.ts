@@ -111,6 +111,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
         ),
         this._createPropertyBinding(
+            "environmentVisible",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
+            (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
+        ),
+        this._createPropertyBinding(
             "toneMapping",
             (details) => details.viewer.onPostProcessingChanged,
             (details) => {
@@ -565,6 +571,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "environment-rotation",
     })
     public environmentRotation: Nullable<number> = null;
+
+    /**
+     * Wether or not the environment is visible.
+     */
+    @property({
+        attribute: "environment-visible",
+    })
+    public environmentVisible: Nullable<boolean> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
