@@ -113,7 +113,7 @@ import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { RectAreaLight } from "core/Lights";
+import type { RectAreaLight } from "core/Lights/rectAreaLight";
 
 /**
  *
