@@ -11,7 +11,7 @@ import type { Tuple } from "core/types";
  */
 export interface IAreaLightLTCProvider {
     /**
-     * Linearly trasnformed cossine texture for BRDF.
+     * Linearly transformed cosine texture for BRDF.
      */
     ltc1Texture: BaseTexture;
 
