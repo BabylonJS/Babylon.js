@@ -44,11 +44,11 @@ export interface IDracoAttributeData {
     /**
      * The kind of the attribute.
      */
-    attribute: string;
+    kind: string;
     /**
-     * The Draco kind to use for the attribute.
+     * The Draco name for the kind of the attribute.
      */
-    dracoAttribute: DracoAttributeName;
+    dracoName: DracoAttributeName;
     /**
      * The size of the attribute.
      */

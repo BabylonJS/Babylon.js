@@ -73,7 +73,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
         if (!(data instanceof Float32Array)) {
             data = Float32Array.from(data!);
         }
-        attributes.push({ attribute: kind, dracoAttribute: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
+        attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
     }
 
     return attributes;

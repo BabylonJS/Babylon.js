@@ -109,7 +109,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 accessor.count
             ) as Float32Array; // Because data is a TypedArray, GetFloatData will return a Float32Array
 
-            attributes.push({ attribute: name, dracoAttribute: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: floatData });
+            attributes.push({ kind: name, dracoName: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: floatData });
 
             primitiveBufferViews.push(bufferView);
             primitiveAccessors.push(accessor);
