@@ -1497,6 +1497,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "oitDepthSampler",
             "oitFrontColorSampler",
             "icdfSampler",
+            "areaLightsLTC1Sampler",
+            "areaLightsLTC2Sampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];

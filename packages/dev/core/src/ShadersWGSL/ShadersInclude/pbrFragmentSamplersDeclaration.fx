@@ -89,6 +89,14 @@
     var environmentBrdfSampler: texture_2d<f32>;
 #endif
 
+#ifdef AREALIGHTUSED
+    var areaLightsLTC1SamplerSampler: sampler;
+    var areaLightsLTC1Sampler: texture_2d<f32>;
+    var areaLightsLTC2SamplerSampler: sampler;
+    var areaLightsLTC2Sampler: texture_2d<f32>;
+#endif
+
+
 // SUBSURFACE
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION

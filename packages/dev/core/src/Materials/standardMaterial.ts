@@ -1424,6 +1424,8 @@ export class StandardMaterial extends PushMaterial {
                 "morphTargets",
                 "oitDepthSampler",
                 "oitFrontColorSampler",
+                "areaLightsLTC1Sampler",
+                "areaLightsLTC2Sampler",
             ];
 
             const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -1707,6 +1709,8 @@ export class StandardMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
+                    } else {
+                        ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {

@@ -87,6 +87,11 @@ export class LightConstants {
     public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = 3;
 
     /**
+     * Light type const id of the area light.
+     */
+    public static readonly LIGHTTYPEID_RECT_AREALIGHT = 4;
+
+    /**
      * Sort function to order lights for rendering.
      * @param a First Light object to compare to second.
      * @param b Second Light object to compare first.
