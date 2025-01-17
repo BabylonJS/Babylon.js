@@ -136,8 +136,22 @@ export type Tuple<T, N extends number> = _Tuple<T, N>;
 export type FloatArray = number[] | Float32Array;
 /** Alias type for number array or Float32Array or Int32Array or Uint32Array or Uint16Array */
 export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
-/** Union of all TypedArrays up to 32 bits */
-export type TypedArray = Float32Array | Uint32Array | Uint16Array | Uint8Array | Uint8ClampedArray | Int32Array | Int16Array | Int8Array;
+
+/**
+ * Alias type for all TypedArrays
+ */
+export type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array
+    | BigInt64Array
+    | BigUint64Array;
 
 /**
  * Alias for types that can be used by a Buffer or VertexBuffer.
