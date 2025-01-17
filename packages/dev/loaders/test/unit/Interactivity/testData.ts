@@ -1,7 +1,7 @@
 export const loggerExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
+            type: "event/onStart",
             flows: [
                 {
                     id: "out",
@@ -26,7 +26,7 @@ export const loggerExample = {
             ],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -42,9 +42,7 @@ export const loggerExample = {
 export const mathExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
-            values: [],
-            configuration: [],
+            type: "event/onStart",
             flows: [
                 {
                     id: "out",
@@ -67,15 +65,13 @@ export const mathExample = {
                     type: 4,
                 },
             ],
-            configuration: [],
-            flows: [],
         },
         {
             type: "math/mul",
             values: [
                 {
                     id: "b",
-                    value: 2,
+                    value: [2],
                     type: 2,
                 },
                 {
@@ -84,15 +80,13 @@ export const mathExample = {
                     socket: "value",
                 },
             ],
-            configuration: [],
-            flows: [],
         },
         {
             type: "math/sub",
             values: [
                 {
                     id: "b",
-                    value: 78,
+                    value: [78],
                     type: 2,
                 },
                 {
@@ -101,11 +95,9 @@ export const mathExample = {
                     socket: "value",
                 },
             ],
-            configuration: [],
-            flows: [],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -113,12 +105,8 @@ export const mathExample = {
                     socket: "value",
                 },
             ],
-            configuration: [],
-            flows: [],
         },
     ],
-    variables: [],
-    customEvents: [],
     types: [
         {
             signature: "bool",
@@ -141,7 +129,7 @@ export const mathExample = {
 export const intMathExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
+            type: "event/onStart",
             flows: [
                 {
                     id: "out",
@@ -155,18 +143,18 @@ export const intMathExample = {
             values: [
                 {
                     id: "a",
-                    value: 3,
+                    value: [3],
                     type: 0,
                 },
                 {
                     id: "b",
-                    value: 2,
+                    value: [2],
                     type: 0,
                 },
             ],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -186,7 +174,7 @@ export const intMathExample = {
 export const matrixMathExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
+            type: "event/onStart",
             flows: [
                 {
                     id: "out",
@@ -221,7 +209,7 @@ export const matrixMathExample = {
             ],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -241,7 +229,7 @@ export const matrixMathExample = {
 export const customEventExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
+            type: "event/onStart",
             flows: [
                 {
                     id: "out",
@@ -251,11 +239,11 @@ export const customEventExample = {
             ],
         },
         {
-            type: "customEvent/send",
+            type: "event/send",
             configuration: [
                 {
                     id: "customEvent",
-                    value: 0,
+                    value: [0],
                 },
             ],
             values: [
@@ -267,11 +255,11 @@ export const customEventExample = {
             ],
         },
         {
-            type: "customEvent/receive",
+            type: "event/receive",
             configuration: [
                 {
                     id: "customEvent",
-                    value: 0,
+                    value: [0],
                 },
             ],
             flows: [
@@ -283,7 +271,7 @@ export const customEventExample = {
             ],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -294,7 +282,7 @@ export const customEventExample = {
         },
     ],
     variables: [],
-    customEvents: [
+    events: [
         {
             id: "logTwo",
             values: [
@@ -325,7 +313,7 @@ export const customEventExample = {
 export const worldPointerExample = {
     nodes: [
         {
-            type: "lifecycle/onStart",
+            type: "event/onStart",
             values: [],
             configuration: [],
             flows: [
@@ -337,17 +325,17 @@ export const worldPointerExample = {
             ],
         },
         {
-            type: "world/set",
+            type: "pointer/set",
             values: [
                 {
-                    id: "a",
+                    id: "value",
                     value: [1, 1, 1],
                     type: 4,
                 },
             ],
             configuration: [
                 {
-                    id: "path",
+                    id: "pointer",
                     value: "/nodes/0/translation",
                 },
             ],
@@ -360,24 +348,24 @@ export const worldPointerExample = {
             ],
         },
         {
-            type: "world/get",
+            type: "pointer/get",
             values: [
                 {
                     id: "nodeIndex",
-                    value: 0,
+                    value: [0],
                     type: 1,
                 },
             ],
             configuration: [
                 {
-                    id: "path",
+                    id: "pointer",
                     value: "/nodes/{nodeIndex}/translation",
                 },
             ],
             flows: [],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
@@ -388,7 +376,7 @@ export const worldPointerExample = {
         },
     ],
     variables: [],
-    customEvents: [],
+    events: [],
     types: [
         {
             signature: "bool",
@@ -411,7 +399,7 @@ export const worldPointerExample = {
 export const doNExample = {
     nodes: [
         {
-            type: "lifecycle/onTick",
+            type: "event/onTick",
             values: [],
             configuration: [],
             flows: [
@@ -427,14 +415,14 @@ export const doNExample = {
             values: [
                 {
                     id: "n",
-                    value: 5,
+                    value: [5],
                     type: 1,
                 },
             ],
             configuration: [
                 {
                     id: "startCount",
-                    value: 0,
+                    value: [0],
                 },
             ],
             flows: [
@@ -446,19 +434,19 @@ export const doNExample = {
             ],
         },
         {
-            type: "log",
+            type: "babylon/log",
             values: [
                 {
                     id: "message",
                     node: 1,
-                    socket: "value",
+                    socket: "currentCount",
                 },
             ],
             flows: [],
         },
     ],
     variables: [],
-    customEvents: [],
+    events: [],
     types: [
         {
             signature: "bool",

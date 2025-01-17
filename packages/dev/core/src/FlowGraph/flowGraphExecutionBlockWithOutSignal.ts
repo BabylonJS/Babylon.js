@@ -10,7 +10,8 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
  */
 export abstract class FlowGraphExecutionBlockWithOutSignal extends FlowGraphExecutionBlock {
     /**
-     * Output connection: The signal that is triggered when the execution of this block is done.
+     * Output connection: The signal that is synchronous triggered when the execution of this block is done.
+     * Note that is case of events or async you might want to use the `done` signal instead.
      */
     public readonly out: FlowGraphSignalConnection;
 

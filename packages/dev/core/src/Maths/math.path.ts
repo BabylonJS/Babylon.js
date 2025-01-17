@@ -28,6 +28,9 @@ export class BezierCurve {
      * @returns the interpolated value
      */
     public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
+        if (t === 0) {
+            return 0;
+        }
         // Extract X (which is equal to time here)
         const f0 = 1 - 3 * x2 + 3 * x1;
         const f1 = 3 * x2 - 6 * x1;

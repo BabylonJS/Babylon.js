@@ -5,6 +5,7 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for a switch block.
@@ -20,15 +21,18 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
  * @experimental
  * A block that executes a branch based on a selection.
  */
-export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
+export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
     /**
      * Input connection: The value of the selection.
      */
     public readonly selection: FlowGraphDataConnection<T>;
+
     /**
-     * Output connection: The output flows.
+     * The default case to execute if no other case is found.
      */
-    public outputFlows: FlowGraphSignalConnection[];
+    public readonly default: FlowGraphSignalConnection = this._registerSignalOutput("default");
+
+    private _caseToOutputFlow: Map<T, FlowGraphSignalConnection> = new Map();
 
     constructor(
         /**
@@ -39,31 +43,61 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         super(config);
 
         this.selection = this.registerDataInput("selection", RichTypeAny);
-        this.outputFlows = [];
-        for (let i = 0; i <= this.config.cases.length; i++) {
-            this.outputFlows.push(this._registerSignalOutput(`out${i}`));
-        }
+
+        // iterate the set not using for of
+        this.config.cases.forEach((caseValue) => {
+            this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
+        });
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const selectionValue = this.selection.getValue(context);
 
-        for (let i = 0; i < this.config.cases.length; i++) {
-            if (selectionValue === this.config.cases[i]) {
-                this.outputFlows[i]._activateSignal(context);
-                return;
-            }
+        const outputFlow = this._getOutputFlowForCase(selectionValue);
+        if (outputFlow) {
+            outputFlow._activateSignal(context);
+        } else {
+            this.default._activateSignal(context);
         }
+    }
 
-        // default case
-        this.outputFlows[this.outputFlows.length - 1]._activateSignal(context);
+    /**
+     * Adds a new case to the switch block.
+     * @param newCase the new case to add.
+     */
+    public addCase(newCase: T): void {
+        if (this.config.cases.includes(newCase)) {
+            return;
+        }
+        this.config.cases.push(newCase);
+        this._caseToOutputFlow.set(newCase, this._registerSignalOutput(`out_${newCase}`));
+    }
+
+    /**
+     * Removes a case from the switch block.
+     * @param caseToRemove the case to remove.
+     */
+    public removeCase(caseToRemove: T): void {
+        if (!this.config.cases.includes(caseToRemove)) {
+            return;
+        }
+        const index = this.config.cases.indexOf(caseToRemove);
+        this.config.cases.splice(index, 1);
+        this._caseToOutputFlow.delete(caseToRemove);
+    }
+
+    /**
+     * @internal
+     */
+    public _getOutputFlowForCase(caseValue: T) {
+        return this._caseToOutputFlow.get(caseValue);
     }
 
     /**
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGSwitchBlock";
+        return FlowGraphBlockNames.Switch;
     }
 
     /**
@@ -75,4 +109,4 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         serializationObject.cases = this.config.cases;
     }
 }
-RegisterClass("FGSwitchBlock", FlowGraphSwitchBlock);
+RegisterClass(FlowGraphBlockNames.Switch, FlowGraphSwitchBlock);
