@@ -94,19 +94,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         ),
         this._createPropertyBinding(
             "skyboxBlur",
-            (details) => details.viewer.onSkyboxBlurChanged,
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { blur: this.skyboxBlur ?? details.viewer.environmentConfig.blur }),
             (details) => (this.skyboxBlur = details.viewer.environmentConfig.blur)
         ),
         this._createPropertyBinding(
             "environmentIntensity",
-            (details) => details.viewer.onEnvironmentIntensityChanged,
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { intensity: this.environmentIntensity ?? details.viewer.environmentConfig.intensity }),
             (details) => (this.environmentIntensity = details.viewer.environmentConfig.intensity)
         ),
         this._createPropertyBinding(
             "environmentRotation",
-            (details) => details.viewer.onEnvironmentRotationChanged,
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { rotation: this.environmentRotation ?? details.viewer.environmentConfig.rotation }),
             (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
         ),
@@ -562,7 +562,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property({
         type: Number,
-        attribute: "environment-rotation"
+        attribute: "environment-rotation",
     })
     public environmentRotation: Nullable<number> = null;
 

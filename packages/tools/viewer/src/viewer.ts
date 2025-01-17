@@ -302,21 +302,6 @@ export class Viewer implements IDisposable {
     public readonly onEnvironmentError = new Observable<unknown>();
 
     /**
-     * Fired when the skybox blur changes.
-     */
-    public readonly onSkyboxBlurChanged = new Observable<void>();
-
-    /**
-     * Fired when the environment intensity changes.
-     */
-    public readonly onEnvironmentIntensityChanged = new Observable<void>();
-
-    /**
-     * Fired when the environment rotation changes.
-     */
-    public readonly onEnvironmentRotationChanged = new Observable<void>();
-
-    /**
      * Fired when the post processing state changes.
      */
     public readonly onPostProcessingChanged = new Observable<void>();
@@ -572,7 +557,6 @@ export class Viewer implements IDisposable {
                     this._snapshotHelper.enableSnapshotRendering();
                 }
             }
-            this.onSkyboxBlurChanged.notifyObservers();
         }
     }
 
@@ -589,7 +573,6 @@ export class Viewer implements IDisposable {
         if (this._reflectionTexture) {
             this._reflectionTexture.rotationY = this._reflectionsRotation;
         }
-        this.onEnvironmentRotationChanged.notifyObservers();
     }
 
     private _changeEnvironmentIntensity(value: number) {
@@ -600,7 +583,6 @@ export class Viewer implements IDisposable {
         if (this._reflectionTexture) {
             this._reflectionTexture.level = this._reflectionsIntensity;
         }
-        this.onEnvironmentIntensityChanged.notifyObservers();
     }
 
     /**
@@ -1122,9 +1104,6 @@ export class Viewer implements IDisposable {
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
-        this.onSkyboxBlurChanged.clear();
-        this.onEnvironmentIntensityChanged.clear();
-        this.onEnvironmentRotationChanged.clear();
         this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
