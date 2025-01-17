@@ -1000,6 +1000,7 @@ export class Viewer implements IDisposable {
                 }
                 if (options.skybox) {
                     this._skybox?.dispose(undefined, true);
+                    this._skyboxTexture = null;
                     this._skybox = null;
                     this._scene.autoClear = true;
                 }
