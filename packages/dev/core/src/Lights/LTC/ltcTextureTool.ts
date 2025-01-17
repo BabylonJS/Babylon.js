@@ -35,7 +35,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
      */
     public ltc2Texture: BaseTexture;
 
-    constructor(scene: Scene) {
+    public constructor(scene: Scene) {
         this._buildSceneLTCTextures(scene);
     }
 
