@@ -3,7 +3,6 @@ import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
 import { DefaultAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
 import type { IAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
-import { serialize } from "../Misc/decorators";
 import type { Scene } from "core/scene";
 
 declare module "../scene" {
@@ -28,21 +27,10 @@ function AreAreaLightsReady(scene: Scene): boolean {
  * The light is emitted from the area in the -Z direction.
  */
 export abstract class AreaLight extends Light {
-    protected _position: Vector3;
-
     /**
      * Area Light position.
      */
-    @serialize()
-    public get position(): Vector3 {
-        return this._position;
-    }
-    /**
-     * Area Light position.
-     */
-    public set position(value: Vector3) {
-        this._position = value;
-    }
+    public position: Vector3;
 
     /**
      * Creates a area light object.
@@ -53,7 +41,7 @@ export abstract class AreaLight extends Light {
      */
     constructor(name: string, position: Vector3, scene?: Scene) {
         super(name, scene);
-        this._position = position;
+        this.position = position;
 
         this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
     }
