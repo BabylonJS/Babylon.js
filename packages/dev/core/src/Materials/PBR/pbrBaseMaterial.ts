@@ -420,6 +420,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public _albedoTexture: Nullable<BaseTexture> = null;
 
+    /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * @internal
+     */
     public _baseWeightTexture: Nullable<BaseTexture> = null;
 
     /**
@@ -564,6 +568,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public _albedoColor = new Color3(1, 1, 1);
 
+    /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * @internal
+     */
     public _baseWeight = 1;
 
     /**

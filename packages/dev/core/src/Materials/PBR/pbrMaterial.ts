@@ -92,6 +92,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoTexture: Nullable<BaseTexture>;
 
+    /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public baseWeightTexture: Nullable<BaseTexture>;
@@ -274,6 +277,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoColor = new Color3(1, 1, 1);
 
+    /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     */
     @serialize("baseWeight")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public baseWeight = 1;

@@ -24,7 +24,7 @@ export class MaterialFlags {
 
     private static _BaseWeightTextureEnabled = true;
     /**
-     * Are diffuse textures enabled in the application.
+     * Is the OpenPBR Base Weight texture enabled in the application.
      */
     public static get BaseWeightTextureEnabled(): boolean {
         return this._BaseWeightTextureEnabled;
