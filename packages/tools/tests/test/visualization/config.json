@@ -578,14 +578,12 @@
         },
         {
             "title": "Area Lights - Standard Material",
-            "renderCount": 500,
-            "playgroundId": "#T7FXR8#2",
+            "playgroundId": "#T7FXR8#4",
             "referenceImage": "areaLightsStandardMaterial.png"
         },
         {
             "title": "Area Lights - PBR",
-            "renderCount": 500,
-            "playgroundId": "#T7FXR8#3",
+            "playgroundId": "#T7FXR8#5",
             "referenceImage": "areaLightsPBRMaterial.png"
         },
         {

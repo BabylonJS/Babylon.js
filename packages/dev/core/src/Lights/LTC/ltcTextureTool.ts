@@ -19,6 +19,11 @@ export interface IAreaLightLTCProvider {
      * Linearly trasnformed cossine texture Fresnel Approximation.
      */
     ltc2Texture: BaseTexture;
+
+    /**
+     * Promise to wait for Area Lights are ready.
+     */
+    whenAreaLightsReady: Promise<void>;
 }
 
 /**
@@ -35,8 +40,13 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
      */
     public ltc2Texture: BaseTexture;
 
+    /**
+     * Promise to wait for Area Lights are ready.
+     */
+    public whenAreaLightsReady: Promise<void>;
+
     public constructor(scene: Scene) {
-        this._buildSceneLTCTextures(scene);
+        this.whenAreaLightsReady = this._buildSceneLTCTextures(scene);
     }
 
     // Loads LTC textures from CDN and assigns them to ltc1Texture and ltc2Texture textures.
@@ -47,6 +57,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
         for (const mesh of scene.meshes) {
             if (mesh.lightSources.some((a) => a.getClassName() === "RectAreaLight")) {
                 mesh._markSubMeshesAsLightDirty();
+                await scene.whenReadyAsync();
             }
         }
 
@@ -94,12 +105,6 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
         ltcTexture = RawTexture.CreateRGBATexture(ltc, 64, 64, scene.getEngine(), false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_HALF_FLOAT);
 
         scene._blockEntityCollection = previousState;
-
-        const texturesCache = scene.getEngine().getLoadedTexturesCache();
-        const index1 = texturesCache.indexOf(ltcTexture.getInternalTexture()!);
-        if (index1 !== -1) {
-            texturesCache.splice(index1, 1);
-        }
 
         ltcTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         ltcTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
