@@ -68,6 +68,12 @@ fn albedoOpacityBlock(
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
 
+    #if BASEWEIGHT
+        surfaceAlbedo *= baseWeightTexture.r;
+    #else
+        surfaceAlbedo *= vBaseWeight;
+    #endif
+
     // _____________________________ Alpha Information _______________________________
     #ifdef OPACITY
         #ifdef OPACITYRGB
