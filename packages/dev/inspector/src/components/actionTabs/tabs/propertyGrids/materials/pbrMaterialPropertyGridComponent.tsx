@@ -55,6 +55,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Base Weight"
+                    texture={material.baseWeightTexture}
+                    propertyName="baseWeightTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Metallic Roughness"
                     texture={material.metallicTexture}
                     propertyName="metallicTexture"

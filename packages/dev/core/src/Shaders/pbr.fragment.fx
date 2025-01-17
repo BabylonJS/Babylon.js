@@ -90,6 +90,10 @@ void main(void) {
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
+#ifdef BASEWEIGHT
+    vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
+#endif
+
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 #endif
@@ -105,6 +109,10 @@ void main(void) {
         , vAlbedoInfos
     #endif
         , vBaseWeight
+    #ifdef BASEWEIGHT
+        , baseWeightTexture
+        , vBaseWeightInfos
+    #endif
     #ifdef OPACITY
         , opacityMap
         , vOpacityInfos

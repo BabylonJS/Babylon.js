@@ -12,6 +12,10 @@ fn albedoOpacityBlock(
     ,albedoInfos: vec2f
 #endif
     , vBaseWeight: f32
+#ifdef BASEWEIGHT
+    , baseWeightTexture: vec4f
+    , vBaseWeightInfos: vec2f
+#endif
 #ifdef OPACITY
     ,opacityMap: vec4f
     ,vOpacityInfos: vec2f
@@ -80,7 +84,7 @@ fn albedoOpacityBlock(
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
-        #ifdef ALPHATEST 
+        #ifdef ALPHATEST
             #if DEBUGMODE != 88
                 if (alpha < ALPHATESTVALUE) {
                     discard;

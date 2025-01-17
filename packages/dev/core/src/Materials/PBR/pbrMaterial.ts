@@ -92,6 +92,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoTexture: Nullable<BaseTexture>;
 
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public baseWeightTexture: Nullable<BaseTexture>;
+
     /**
      * AKA Occlusion Texture in other nomenclature.
      */

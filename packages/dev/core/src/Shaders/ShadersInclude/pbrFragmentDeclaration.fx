@@ -20,6 +20,10 @@ uniform vec3 vAmbientColor;
 uniform vec2 vAlbedoInfos;
 #endif
 
+#ifdef BASEWEIGHT
+uniform vec2 vBaseWeightInfos;
+#endif
+
 #ifdef AMBIENT
 uniform vec4 vAmbientInfos;
 #endif
@@ -65,14 +69,14 @@ uniform mat4 view;
 
     #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
 	    uniform vec3 vReflectionPosition;
-	    uniform vec3 vReflectionSize; 
+	    uniform vec3 vReflectionSize;
     #endif
 #endif
 
 // Refraction
 #if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
     uniform vec3 vRefractionPosition;
-    uniform vec3 vRefractionSize; 
+    uniform vec3 vRefractionSize;
 #endif
 
 // Clear Coat

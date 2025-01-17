@@ -75,6 +75,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var albedoTexture: vec4f = textureSample(albedoSampler, albedoSamplerSampler, fragmentInputs.vAlbedoUV + uvOffset);
 #endif
 
+#ifdef BASEWEIGHT
+    var baseWeightTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
+#endif
+
 #ifdef OPACITY
     var opacityMap: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
 #endif
@@ -90,6 +94,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , uniforms.vAlbedoInfos
     #endif
         , uniforms.baseWeight
+    #ifdef BASEWEIGHT
+        , baseWeightTexture
+        , uniforms.vBaseWeightInfos
+    #endif
     #ifdef OPACITY
         , opacityMap
         , uniforms.vOpacityInfos
@@ -124,7 +132,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef AMBIENT
         ambientOcclusionColorMap,
         uniforms.vAmbientInfos
-    #endif        
+    #endif
     );
 
     #include<pbrBlockLightmapInit>
@@ -243,7 +251,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
             TBN,
             normalW,
-            viewDirectionW            
+            viewDirectionW
         );
     #endif
 

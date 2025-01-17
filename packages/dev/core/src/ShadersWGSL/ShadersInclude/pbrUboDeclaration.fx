@@ -1,4 +1,5 @@
 uniform vAlbedoInfos: vec2f;
+uniform vBaseWeightInfos: vec2f;
 uniform vAmbientInfos: vec4f;
 uniform vOpacityInfos: vec2f;
 uniform vEmissiveInfos: vec2f;
@@ -11,6 +12,7 @@ uniform vReflectionPosition: vec3f;
 uniform vReflectionSize: vec3f;
 uniform vBumpInfos: vec3f;
 uniform albedoMatrix: mat4x4f;
+uniform baseWeightMatrix: mat4x4f;
 uniform ambientMatrix: mat4x4f;
 uniform opacityMatrix: mat4x4f;
 uniform emissiveMatrix: mat4x4f;
