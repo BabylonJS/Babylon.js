@@ -112,28 +112,16 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
                     // do we need to write TRANSLATION ?
                     if (hasAnyInstanceWorldTranslation) {
-                        extension.attributes["TRANSLATION"] = this._buildAccessor(
-                            translationBuffer,
-                            AccessorType.VEC3,
-                            babylonNode.thinInstanceCount,
-                            bufferManager,
-                            AccessorComponentType.FLOAT
-                        );
+                        extension.attributes["TRANSLATION"] = this._buildAccessor(translationBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, bufferManager);
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
-                        const componentType = AccessorComponentType.FLOAT; // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
-                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, bufferManager, componentType);
+                        // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
+                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, bufferManager);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
-                        extension.attributes["SCALE"] = this._buildAccessor(
-                            scaleBuffer,
-                            AccessorType.VEC3,
-                            babylonNode.thinInstanceCount,
-                            bufferManager,
-                            AccessorComponentType.FLOAT
-                        );
+                        extension.attributes["SCALE"] = this._buildAccessor(scaleBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, bufferManager);
                     }
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
@@ -145,48 +133,12 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, bufferManager: BufferManager, componentType: AccessorComponentType): number {
-        // write the buffer
-        let data: Float32Array | Int8Array | Int16Array;
-        switch (componentType) {
-            case AccessorComponentType.FLOAT: {
-                data = new Float32Array(buffer.length);
-                for (let i = 0; i != buffer.length; i++) {
-                    data[i] = buffer[i];
-                }
-                break;
-            }
-            case AccessorComponentType.BYTE: {
-                data = new Int8Array(buffer.length);
-                for (let i = 0; i != buffer.length; i++) {
-                    data[i] = buffer[i] * 127;
-                }
-                break;
-            }
-            case AccessorComponentType.SHORT: {
-                data = new Int16Array(buffer.length);
-                for (let i = 0; i != buffer.length; i++) {
-                    data[i] = buffer[i] * 32767;
-                }
-                break;
-            }
-            default: {
-                throw new Error(`Unsupported componentType ${componentType}`);
-            }
-        }
+    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, bufferManager: BufferManager): number {
         // build the buffer view
-        const bv = bufferManager.createBufferView(data);
+        const bv = bufferManager.createBufferView(buffer);
 
         // finally build the accessor
-        const accessor = bufferManager.createAccessor(
-            bv,
-            type,
-            componentType,
-            count,
-            undefined,
-            undefined,
-            componentType == AccessorComponentType.BYTE || componentType == AccessorComponentType.SHORT
-        );
+        const accessor = bufferManager.createAccessor(bv, type, AccessorComponentType.FLOAT, count);
         this._exporter._accessors.push(accessor);
         return this._exporter._accessors.length - 1;
     }
