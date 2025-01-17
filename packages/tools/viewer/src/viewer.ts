@@ -521,13 +521,12 @@ export class Viewer implements IDisposable {
      * Get the current environment configuration.
      */
     public get environmentConfig(): Readonly<EnvironmentParams> {
-        let values = {
-            blur: this._skyboxBlur,
-        } as EnvironmentParams;
-        if (this._reflectionTexture) {
-            values = { ...values, intensity: this._reflectionsIntensity, rotation: this._reflectionsRotation };
-        }
-        return values;
+    return {
+        intensity: this._reflectionsIntensity,
+        blur: this._skyboxBlur,
+        rotation: this._reflectionsRotation,
+        visible: this._skybox?.getEnabled() ?? false,
+    };
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
