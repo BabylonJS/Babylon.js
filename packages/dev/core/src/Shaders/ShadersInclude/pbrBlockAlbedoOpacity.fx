@@ -11,6 +11,11 @@ albedoOpacityOutParams albedoOpacityBlock(
     ,in vec4 albedoTexture
     ,in vec2 albedoInfos
 #endif
+    , in float vBaseWeight
+#ifdef BASEWEIGHT
+    , in vec4 baseWeightTexture
+    , in vec2 vBaseWeightInfos
+#endif
 #ifdef OPACITY
     ,in vec4 opacityMap
     ,in vec2 vOpacityInfos
@@ -22,7 +27,7 @@ albedoOpacityOutParams albedoOpacityBlock(
 #ifdef DECAL
     ,in vec4 decalColor
     ,in vec4 vDecalInfos
-#endif 
+#endif
 )
 {
     albedoOpacityOutParams outParams;
@@ -63,6 +68,11 @@ albedoOpacityOutParams albedoOpacityBlock(
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
 
+    surfaceAlbedo *= vBaseWeight;
+    #if BASEWEIGHT
+        surfaceAlbedo *= baseWeightTexture.r;
+    #endif
+
     // _____________________________ Alpha Information _______________________________
     #ifdef OPACITY
         #ifdef OPACITYRGB
@@ -79,7 +89,7 @@ albedoOpacityOutParams albedoOpacityBlock(
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
-        #ifdef ALPHATEST 
+        #ifdef ALPHATEST
             #if DEBUGMODE != 88
                 if (alpha < ALPHATESTVALUE)
                     discard;

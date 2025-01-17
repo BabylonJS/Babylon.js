@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "OpenPBR Base Weight",
+            "playgroundId": "#DT1XPP#4",
+            "referenceImage": "openpbr_base_weight.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"

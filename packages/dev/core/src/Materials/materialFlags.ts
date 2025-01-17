@@ -22,6 +22,22 @@ export class MaterialFlags {
         AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _BaseWeightTextureEnabled = true;
+    /**
+     * Is the OpenPBR Base Weight texture enabled in the application.
+     */
+    public static get BaseWeightTextureEnabled(): boolean {
+        return this._BaseWeightTextureEnabled;
+    }
+    public static set BaseWeightTextureEnabled(value: boolean) {
+        if (this._BaseWeightTextureEnabled === value) {
+            return;
+        }
+
+        this._BaseWeightTextureEnabled = value;
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _DetailTextureEnabled = true;
     /**
      * Are detail textures enabled in the application.

@@ -100,6 +100,9 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
 
+    public BASEWEIGHT = false;
+    public BASEWEIGHTDIRECTUV = 0;
+
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
     public AMBIENT = false;
@@ -418,6 +421,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public _albedoTexture: Nullable<BaseTexture> = null;
 
     /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * @internal
+     */
+    public _baseWeightTexture: Nullable<BaseTexture> = null;
+
+    /**
      * AKA Occlusion Texture in other nomenclature.
      * @internal
      */
@@ -558,6 +567,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @internal
      */
     public _albedoColor = new Color3(1, 1, 1);
+
+    /**
+     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * @internal
+     */
+    public _baseWeight = 1;
 
     /**
      * AKA Specular Color in other nomenclature.
@@ -1111,6 +1126,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
                 }
 
+                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
+                    if (!this._baseWeightTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                     if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -1413,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vLightsType",
             "vAmbientColor",
             "vAlbedoColor",
+            "vBaseWeight",
             "vReflectivityColor",
             "vMetallicReflectanceFactors",
             "vEmissiveColor",
@@ -1422,6 +1444,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vFogColor",
             "pointSize",
             "vAlbedoInfos",
+            "vBaseWeightInfos",
             "vAmbientInfos",
             "vOpacityInfos",
             "vReflectionInfos",
@@ -1437,6 +1460,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vLightmapInfos",
             "mBones",
             "albedoMatrix",
+            "baseWeightMatrix",
             "ambientMatrix",
             "opacityMatrix",
             "reflectionMatrix",
@@ -1478,6 +1502,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const samplers = [
             "albedoSampler",
+            "baseWeightSampler",
             "reflectivitySampler",
             "ambientSampler",
             "emissiveSampler",
@@ -1612,6 +1637,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
+                defines.BASEWEIGHTDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
                 defines.EMISSIVEDIRECTUV = 0;
@@ -1631,6 +1657,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.GAMMAALBEDO = this._albedoTexture.gammaSpace;
                 } else {
                     defines.ALBEDO = false;
+                }
+
+                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
+                    PrepareDefinesForMergedUV(this._baseWeightTexture, defines, "BASEWEIGHT");
+                } else {
+                    defines.BASEWEIGHT = false;
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -1981,6 +2013,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Order is important !
         const ubo = this._uniformBuffer;
         ubo.addUniform("vAlbedoInfos", 2);
+        ubo.addUniform("vBaseWeightInfos", 2);
         ubo.addUniform("vAmbientInfos", 4);
         ubo.addUniform("vOpacityInfos", 2);
         ubo.addUniform("vEmissiveInfos", 2);
@@ -1993,6 +2026,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectionSize", 3);
         ubo.addUniform("vBumpInfos", 3);
         ubo.addUniform("albedoMatrix", 16);
+        ubo.addUniform("baseWeightMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
@@ -2005,6 +2039,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         ubo.addUniform("vReflectionColor", 3);
         ubo.addUniform("vAlbedoColor", 4);
+        ubo.addUniform("vBaseWeight", 1);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
@@ -2105,6 +2140,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
                         BindTextureMatrix(this._albedoTexture, ubo, "albedo");
+                    }
+
+                    if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
+                        ubo.updateFloat2("vBaseWeightInfos", this._baseWeightTexture.coordinatesIndex, this._baseWeightTexture.level);
+                        BindTextureMatrix(this._baseWeightTexture, ubo, "baseWeight");
                     }
 
                     if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2268,6 +2308,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
                 }
 
+                ubo.updateFloat("vBaseWeight", this._baseWeight);
+
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
@@ -2288,6 +2330,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                     ubo.setTexture("albedoSampler", this._albedoTexture);
+                }
+
+                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
+                    ubo.setTexture("baseWeightSampler", this._baseWeightTexture);
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2424,6 +2470,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._albedoTexture);
         }
 
+        if (this._baseWeightTexture && this._baseWeightTexture.animations && this._baseWeightTexture.animations.length > 0) {
+            results.push(this._baseWeightTexture);
+        }
+
         if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
             results.push(this._ambientTexture);
         }
@@ -2492,6 +2542,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._albedoTexture);
         }
 
+        if (this._baseWeightTexture) {
+            activeTextures.push(this._baseWeightTexture);
+        }
+
         if (this._ambientTexture) {
             activeTextures.push(this._ambientTexture);
         }
@@ -2550,6 +2604,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (this._albedoTexture === texture) {
+            return true;
+        }
+
+        if (this._baseWeightTexture === texture) {
             return true;
         }
 
@@ -2632,6 +2690,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this._albedoTexture?.dispose();
+            this._baseWeightTexture?.dispose();
             this._ambientTexture?.dispose();
             this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
