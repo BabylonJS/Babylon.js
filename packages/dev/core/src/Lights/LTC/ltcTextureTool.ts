@@ -45,7 +45,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
         this.ltc1Texture = this._createLTCTextureFromArray(textureData[0], scene);
         this.ltc2Texture = this._createLTCTextureFromArray(textureData[1], scene);
         for (const mesh of scene.meshes) {
-            if (mesh.lightSources.filter((a) => a.getClassName() === "RectAreaLight")) {
+            if (mesh.lightSources.some((a) => a.getClassName() === "RectAreaLight")) {
                 mesh._markSubMeshesAsLightDirty();
             }
         }
