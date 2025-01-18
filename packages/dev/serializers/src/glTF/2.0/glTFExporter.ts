@@ -791,9 +791,7 @@ export class GLTFExporter {
                 const byteLength = inverseBindMatrices.length * 64; // Always a 4 x 4 matrix of 32 bit float
                 const inverseBindMatricesData = new Float32Array(byteLength / 4);
                 inverseBindMatrices.forEach((mat: Matrix, index: number) => {
-                    mat.m.forEach((cell: number, cellIndex: number) => {
-                        inverseBindMatricesData[index * 16 + cellIndex] = cell;
-                    });
+                    inverseBindMatricesData.set(mat.m, index * 16);
                 });
                 // Create buffer view and accessor
                 const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData);
