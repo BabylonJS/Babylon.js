@@ -606,23 +606,22 @@ export class _GLTFAnimation {
             const position = new Vector3();
             const isCamera = babylonTransformNode instanceof Camera;
 
-            data = new Float32Array(animationData.outputs.length * GetAccessorElementCount(dataAccessorType));
+            const elementCount = GetAccessorElementCount(dataAccessorType);
+            data = new Float32Array(animationData.outputs.length * elementCount);
             animationData.outputs.forEach(function (output: number[], index: number) {
+                let outputToWrite: number[] = output;
                 if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);
                             ConvertToRightHandedPosition(position);
-
-                            data[index] = position.x;
-                            data[index + 1] = position.y;
-                            data[index + 2] = position.z;
+                            position.toArray(outputToWrite);
                             break;
-
                         case AnimationChannelTargetPath.ROTATION:
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
+                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
@@ -635,13 +634,7 @@ export class _GLTFAnimation {
                                 }
                             }
 
-                            data[index] = rotationQuaternion.x;
-                            data[index + 1] = rotationQuaternion.y;
-                            data[index + 2] = rotationQuaternion.z;
-                            data[index + 3] = rotationQuaternion.w;
-                            break;
-                        default:
-                            data.set(output, index);
+                            rotationQuaternion.toArray(outputToWrite);
                             break;
                     }
                 } else {
@@ -650,23 +643,20 @@ export class _GLTFAnimation {
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
+                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
+
                             if (isCamera) {
                                 ConvertCameraRotationToGLTF(rotationQuaternion);
                             }
 
-                            data[index] = rotationQuaternion.x;
-                            data[index + 1] = rotationQuaternion.y;
-                            data[index + 2] = rotationQuaternion.z;
-                            data[index + 3] = rotationQuaternion.w;
-                            break;
-                        default:
-                            data.set(output, index);
+                            rotationQuaternion.toArray(outputToWrite);
                             break;
                     }
                 }
+                data.set(outputToWrite, index * elementCount);
             });
 
             // Create buffer view and accessor for keyed values.
