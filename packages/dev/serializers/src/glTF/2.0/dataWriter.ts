@@ -1,10 +1,35 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
+import type { TypedArray } from "core/types";
+
+const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffset: number, value: number) => void>([
+    [Int8Array, (d, b, v) => d.setInt8(b, v)],
+    [Uint8Array, (dv, bo, v) => dv.setUint8(bo, v)],
+    [Uint8ClampedArray, (dv, bo, v) => dv.setUint8(bo, v)],
+    [Int16Array, (dv, bo, v) => dv.setInt16(bo, v, true)],
+    [Uint16Array, (dv, bo, v) => dv.setUint16(bo, v, true)],
+    [Int32Array, (dv, bo, v) => dv.setInt32(bo, v, true)],
+    [Uint32Array, (dv, bo, v) => dv.setUint32(bo, v, true)],
+    [Float32Array, (dv, bo, v) => dv.setFloat32(bo, v, true)],
+]);
 
 /** @internal */
 export class DataWriter {
     private _data: Uint8Array;
     private _dataView: DataView;
     private _byteOffset: number;
+
+    public writeTypedArray(value: TypedArray): void {
+        this._checkGrowBuffer(value.byteLength);
+        const setMethod = TypedArrayToWriteMethod.get(value.constructor);
+        if (!setMethod) {
+            throw new Error("writeTypedArray: Unsupported type: " + value.constructor.name);
+        }
+        for (let i = 0; i < value.length; i++) {
+            setMethod(this._dataView, this._byteOffset, value[i] as number);
+            this._byteOffset += value.BYTES_PER_ELEMENT;
+        }
+    }
 
     public constructor(byteLength: number) {
         this._data = new Uint8Array(byteLength);
@@ -44,9 +69,15 @@ export class DataWriter {
         this._byteOffset += 2;
     }
 
-    public writeUInt32(entry: number): void {
+    public writeInt32(entry: number): void {
         this._checkGrowBuffer(4);
-        this._dataView.setUint32(this._byteOffset, entry, true);
+        this._dataView.setInt32(this._byteOffset, entry, true);
+        this._byteOffset += 4;
+    }
+
+    public writeUInt32(value: number): void {
+        this._checkGrowBuffer(4);
+        this._dataView.setUint32(this._byteOffset, value, true);
         this._byteOffset += 4;
     }
 
@@ -54,18 +85,6 @@ export class DataWriter {
         this._checkGrowBuffer(4);
         this._dataView.setFloat32(this._byteOffset, value, true);
         this._byteOffset += 4;
-    }
-
-    public writeUint8Array(value: Uint8Array): void {
-        this._checkGrowBuffer(value.byteLength);
-        this._data.set(value, this._byteOffset);
-        this._byteOffset += value.byteLength;
-    }
-
-    public writeUint16Array(value: Uint16Array): void {
-        this._checkGrowBuffer(value.byteLength);
-        this._data.set(value, this._byteOffset);
-        this._byteOffset += value.byteLength;
     }
 
     private _checkGrowBuffer(byteLength: number): void {

@@ -42,13 +42,13 @@ export interface IDracoEncoderOptions {
  */
 export interface IDracoAttributeData {
     /**
-     * The Babylon kind of the attribute.
+     * The kind of the attribute.
      */
-    babylonAttribute: string;
+    kind: string;
     /**
-     * The Draco kind to use for the attribute.
+     * The Draco name for the kind of the attribute.
      */
-    dracoAttribute: DracoAttributeName;
+    dracoName: DracoAttributeName;
     /**
      * The size of the attribute.
      */

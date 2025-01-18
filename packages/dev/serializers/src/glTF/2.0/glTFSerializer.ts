@@ -5,6 +5,11 @@ import type { GLTFData } from "./glTFData";
 import { GLTFExporter } from "./glTFExporter";
 
 /**
+ * Mesh compression methods.
+ */
+export type MeshCompressionMethod = "None" | "Draco";
+
+/**
  * Holds a collection of exporter options and parameters
  */
 export interface IExportOptions {
@@ -54,6 +59,11 @@ export interface IExportOptions {
      * @deprecated Please use removeNoopRootNodes instead
      */
     includeCoordinateSystemConversionNodes?: boolean;
+
+    /**
+     * Indicates what compression method to apply to mesh data.
+     */
+    meshCompressionMethod?: MeshCompressionMethod;
 }
 
 /**

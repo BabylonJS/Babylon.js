@@ -1,15 +1,14 @@
-import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
+import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo, IAccessor } from "babylonjs-gltf2interface";
 import type { Node } from "core/node";
 import type { Nullable } from "core/types";
 
 import type { Texture } from "core/Materials/Textures/texture";
-import type { SubMesh } from "core/Meshes/subMesh";
 import type { IDisposable } from "core/scene";
 
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { DataWriter } from "./dataWriter";
+import type { BufferManager } from "./bufferManager";
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
@@ -38,13 +37,12 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
     postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
 
     /**
-     * Define this method to modify the default behavior when exporting a mesh primitive
-     * @param context The context when loading the asset
-     * @param meshPrimitive glTF mesh primitive
-     * @param babylonSubMesh Babylon submesh
-     * @returns nullable IMeshPrimitive promise
+     * Define this method to get notified when a primitive is created
+     * @param primitive glTF mesh primitive
+     * @param bufferManager Buffer manager
+     * @param accessors List of glTF accessors
      */
-    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh): Promise<IMeshPrimitive>;
+    postExportMeshPrimitive?(primitive: IMeshPrimitive, bufferManager: BufferManager, accessors: IAccessor[]): void;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -53,6 +51,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining nodes together.
      * @param convertToRightHanded Flag indicating whether to convert values to right-handed
+     * @param bufferManager Buffer manager
      * @returns nullable INode promise
      */
     postExportNodeAsync?(
@@ -61,7 +60,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
         babylonNode: Node,
         nodeMap: Map<Node, number>,
         convertToRightHanded: boolean,
-        dataWriter: DataWriter
+        bufferManager: BufferManager
     ): Promise<Nullable<INode>>;
 
     /**
@@ -79,6 +78,12 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @returns List of textures
      */
     postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+
+    /**
+     * Define this method to modify the glTF buffer data before it is finalized and written
+     * @param bufferManager Buffer manager
+     */
+    preGenerateBinaryAsync?(bufferManager: BufferManager): Promise<void>;
 
     /** Gets a boolean indicating that this extension was used */
     wasUsed: boolean;
