@@ -180,8 +180,10 @@ export class ThinHighlightLayer extends ThinEffectLayer {
     private _horizontalBlurPostprocess: IBlurPostProcess;
     private _verticalBlurPostprocess: IBlurPostProcess;
 
-    private _meshes: Nullable<{ [id: string]: Nullable<IHighlightLayerMesh> }> = {};
-    private _excludedMeshes: Nullable<{ [id: string]: Nullable<IHighlightLayerExcludedMesh> }> = {};
+    /** @internal */
+    public _meshes: Nullable<{ [id: string]: Nullable<IHighlightLayerMesh> }> = {};
+    /** @internal */
+    public _excludedMeshes: Nullable<{ [id: string]: Nullable<IHighlightLayerExcludedMesh> }> = {};
 
     /** @internal */
     public _mainObjectRendererRenderPassId = -1;

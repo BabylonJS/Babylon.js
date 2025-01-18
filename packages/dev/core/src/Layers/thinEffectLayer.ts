@@ -33,6 +33,16 @@ import { Engine } from "core/Engines/engine";
  * @internal
  */
 export class ThinGlowBlurPostProcess extends EffectWrapper {
+    /**
+     * The fragment shader url
+     */
+    public static readonly FragmentUrl = "glowBlurPostProcess";
+
+    /**
+     * The list of uniforms used by the effect
+     */
+    public static readonly Uniforms = ["screenSize", "direction", "blurWidth"];
+
     constructor(
         name: string,
         engine: Nullable<AbstractEngine> = null,
@@ -46,8 +56,8 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
-            fragmentShader: "glowBlurPostProcess",
-            uniforms: ["screenSize", "direction", "blurWidth"],
+            fragmentShader: ThinGlowBlurPostProcess.FragmentUrl,
+            uniforms: ThinGlowBlurPostProcess.Uniforms,
         });
     }
 
