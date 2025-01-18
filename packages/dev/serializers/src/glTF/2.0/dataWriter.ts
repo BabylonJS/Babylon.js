@@ -16,8 +16,16 @@ export class DataWriter {
         Uint16Array: this.writeUInt16.bind(this),
         Int32Array: this.writeInt32.bind(this),
         Uint32Array: this.writeUInt32.bind(this),
-        Float32Array: this.writeFloat32.bind(this),
+        Float32Array: this.writeFloat32.bind(this), // update to dataview api (dataview, value)
     };
+
+    public writeTypedArray(value: TypedArray): void {
+        this._checkGrowBuffer(value.byteLength);
+        const setMethod = this._typedArrayToWriteMethod[value.constructor.name]; // use just constructor
+        for (let i = 0; i < value.length; i++) {
+            setMethod(value[i]);
+        }
+    }
 
     public constructor(byteLength: number) {
         this._data = new Uint8Array(byteLength);
@@ -31,14 +39,6 @@ export class DataWriter {
 
     public getOutputData(): Uint8Array {
         return new Uint8Array(this._data.buffer, 0, this._byteOffset);
-    }
-
-    public writeTypedArray(value: TypedArray): void {
-        this._checkGrowBuffer(value.byteLength);
-        const setMethod = this._typedArrayToWriteMethod[value.constructor.name];
-        for (let i = 0; i < value.length; i++) {
-            setMethod(value[i]);
-        }
     }
 
     public writeUInt8(value: number): void {

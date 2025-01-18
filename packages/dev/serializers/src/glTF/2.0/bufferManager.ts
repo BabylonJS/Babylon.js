@@ -54,7 +54,7 @@ export class BufferManager {
             bufferViews.push(bufferView);
 
             const bufferViewIndex = bufferViews.length - 1;
-            const properties = this.getProperties(bufferView);
+            const properties = this.getPropertiesWithBufferView(bufferView);
             for (const object of properties) {
                 object.bufferView = bufferViewIndex;
             }
@@ -127,7 +127,7 @@ export class BufferManager {
      */
     public setBufferView(object: IPropertyWithBufferView, bufferView: IBufferView) {
         this._verifyBufferView(bufferView);
-        const properties = this.getProperties(bufferView);
+        const properties = this.getPropertiesWithBufferView(bufferView);
         properties.push(object);
     }
 
@@ -136,7 +136,7 @@ export class BufferManager {
      * @param bufferView the bufferView to remove
      */
     public removeBufferView(bufferView: IBufferView): void {
-        const properties = this.getProperties(bufferView);
+        const properties = this.getPropertiesWithBufferView(bufferView);
         for (const object of properties) {
             if (object.bufferView !== undefined) {
                 delete object.bufferView;
@@ -162,7 +162,7 @@ export class BufferManager {
         return bufferView!;
     }
 
-    public getProperties(bufferView: IBufferView): IPropertyWithBufferView[] {
+    public getPropertiesWithBufferView(bufferView: IBufferView): IPropertyWithBufferView[] {
         this._verifyBufferView(bufferView);
         this._bufferViewToProperties.set(bufferView, this._bufferViewToProperties.get(bufferView) ?? []);
         return this._bufferViewToProperties.get(bufferView)!;

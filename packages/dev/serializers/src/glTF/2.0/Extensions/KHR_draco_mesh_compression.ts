@@ -163,7 +163,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
 
         // Cull obsolete bufferViews that were replaced with Draco data
         this._bufferViewsUsed.forEach((bufferView) => {
-            const references = bufferManager.getProperties(bufferView);
+            const references = bufferManager.getPropertiesWithBufferView(bufferView);
             const onlyUsedByEncodedPrimitives = references.every((object) => {
                 return this._accessorsUsed.has(object as IAccessor); // has() can handle any object, but TS doesn't know that
             });
