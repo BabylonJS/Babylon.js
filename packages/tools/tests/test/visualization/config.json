@@ -941,7 +941,7 @@
         },
         {
             "title": "GLTF Serializer KHR draco mesh compression",
-            "playgroundId": "#F8BF8N",
+            "playgroundId": "#F8BF8N#3",
             "referenceImage": "glTFSerializerKhrDracoMeshCompression.png"
         },
         {

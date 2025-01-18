@@ -57,7 +57,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
 
     /** @internal */
     constructor(exporter: GLTFExporter) {
-        this.enabled = exporter.options.useDracoCompression && DracoEncoder.DefaultAvailable;
+        this.enabled = exporter.options.meshCompressionMethod === "Draco" && DracoEncoder.DefaultAvailable;
     }
 
     /** @internal */

@@ -410,7 +410,7 @@ export class GLTFExporter {
             exportUnusedUVs: false,
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
-            useDracoCompression: false,
+            meshCompressionMethod: "None",
             ...options,
         };
 
