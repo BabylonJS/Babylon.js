@@ -98,7 +98,8 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             const data = bufferManager.getData(bufferView);
 
             const size = GetAccessorElementCount(accessor.type);
-            // TODO: In future, find a way to preserve original data type to curb unnecessary copies
+            // TODO: Implement a way to preserve original data type, as Draco can handle more than just floats
+            // TODO: Add flag in DracoEncoder API to prevent copying data (a second time) to transferable buffer
             const floatData = GetFloatData(
                 data,
                 size,
