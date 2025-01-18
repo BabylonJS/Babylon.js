@@ -592,7 +592,7 @@ export class _GLTFAnimation {
             const nodeIndex = nodeMap.get(babylonTransformNode);
 
             // Create buffer view and accessor for key frames.
-            const data = new Float32Array(animationData.inputs);
+            let data = new Float32Array(animationData.inputs);
             bufferView = bufferManager.createBufferView(data);
             accessor = bufferManager.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
                 min: [animationData.inputsMin],
@@ -607,17 +607,17 @@ export class _GLTFAnimation {
             const position = new Vector3();
             const isCamera = babylonTransformNode instanceof Camera;
 
-            const dataWriter = new DataWriter(animationData.outputs.length * GetAccessorElementCount(dataAccessorType));
-            animationData.outputs.forEach(function (output: number[]) {
+            data = new Float32Array(animationData.outputs.length * GetAccessorElementCount(dataAccessorType));
+            animationData.outputs.forEach(function (output: number[], index: number) {
                 if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);
                             ConvertToRightHandedPosition(position);
 
-                            dataWriter.writeFloat32(position.x);
-                            dataWriter.writeFloat32(position.y);
-                            dataWriter.writeFloat32(position.z);
+                            data[index] = position.x;
+                            data[index + 1] = position.y;
+                            data[index + 2] = position.z;
                             break;
 
                         case AnimationChannelTargetPath.ROTATION:
@@ -636,15 +636,13 @@ export class _GLTFAnimation {
                                 }
                             }
 
-                            dataWriter.writeFloat32(rotationQuaternion.x);
-                            dataWriter.writeFloat32(rotationQuaternion.y);
-                            dataWriter.writeFloat32(rotationQuaternion.z);
-                            dataWriter.writeFloat32(rotationQuaternion.w);
+                            data[index] = rotationQuaternion.x;
+                            data[index + 1] = rotationQuaternion.y;
+                            data[index + 2] = rotationQuaternion.z;
+                            data[index + 3] = rotationQuaternion.w;
                             break;
                         default:
-                            output.forEach(function (entry) {
-                                dataWriter.writeFloat32(entry);
-                            });
+                            data.set(output, index);
                             break;
                     }
                 } else {
@@ -660,22 +658,20 @@ export class _GLTFAnimation {
                                 ConvertCameraRotationToGLTF(rotationQuaternion);
                             }
 
-                            dataWriter.writeFloat32(rotationQuaternion.x);
-                            dataWriter.writeFloat32(rotationQuaternion.y);
-                            dataWriter.writeFloat32(rotationQuaternion.z);
-                            dataWriter.writeFloat32(rotationQuaternion.w);
+                            data[index] = rotationQuaternion.x;
+                            data[index + 1] = rotationQuaternion.y;
+                            data[index + 2] = rotationQuaternion.z;
+                            data[index + 3] = rotationQuaternion.w;
                             break;
                         default:
-                            output.forEach(function (entry) {
-                                dataWriter.writeFloat32(entry);
-                            });
+                            data.set(output, index);
                             break;
                     }
                 }
             });
 
             // Create buffer view and accessor for keyed values.
-            bufferView = bufferManager.createBufferView(dataWriter.getOutputData());
+            bufferView = bufferManager.createBufferView(data);
             accessor = bufferManager.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
