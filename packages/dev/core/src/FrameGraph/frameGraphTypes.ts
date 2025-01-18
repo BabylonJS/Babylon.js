@@ -81,6 +81,11 @@ export interface IFrameGraphPass {
     name: string;
 
     /**
+     * Whether the pass is disabled.
+     */
+    disabled: boolean;
+
+    /**
      * Sets the function to execute when the pass is executed
      * @param func The function to execute when the pass is executed
      */

@@ -10,7 +10,7 @@ import { Observable } from "core/Misc/observable";
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
-    protected readonly _internalDependencies: FrameGraphTextureHandle[] = [];
+    protected readonly _internalDependencies: Set<FrameGraphTextureHandle> = new Set();
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
@@ -46,7 +46,7 @@ export abstract class FrameGraphTask {
     /**
      * The (texture) dependencies of the task (optional).
      */
-    public dependencies?: FrameGraphTextureHandle[];
+    public dependencies?: Set<FrameGraphTextureHandle>;
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
@@ -89,7 +89,7 @@ export abstract class FrameGraphTask {
     public _reset() {
         this._passes.length = 0;
         this._passesDisabled.length = 0;
-        this._internalDependencies.length = 0;
+        this._internalDependencies.clear();
     }
 
     /** @internal */
@@ -176,6 +176,16 @@ export abstract class FrameGraphTask {
     /** @internal */
     public _getPasses(): IFrameGraphPass[] {
         return this.disabled && this._passesDisabled.length > 0 ? this._passesDisabled : this._passes;
+    }
+
+    protected _addInternalDependencies(dependencies: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
+        if (Array.isArray(dependencies)) {
+            for (const dependency of dependencies) {
+                this._internalDependencies.add(dependency);
+            }
+        } else {
+            this._internalDependencies.add(dependencies);
+        }
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

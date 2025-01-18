@@ -67,11 +67,11 @@ export class RenderTargetWrapper {
 
         this._depthStencilTexture = texture;
 
-        this._generateDepthBuffer = this._generateStencilBuffer = false;
+        this._generateDepthBuffer = this._generateStencilBuffer = this._depthStencilTextureWithStencil = false;
 
         if (texture) {
             this._generateDepthBuffer = true;
-            this._generateStencilBuffer = HasStencilAspect(texture.format);
+            this._generateStencilBuffer = this._depthStencilTextureWithStencil = HasStencilAspect(texture.format);
         }
     }
 

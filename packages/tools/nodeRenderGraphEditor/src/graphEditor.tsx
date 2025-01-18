@@ -52,6 +52,8 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
     embedHostWidth?: string;
 }
 
+const logErrorTrace = true;
+
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
     private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: React.RefObject<HTMLDivElement>;
@@ -299,6 +301,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         try {
             nodeRenderGraph.build();
         } catch (err) {
+            if (logErrorTrace) {
+                (console as any).log(err);
+            }
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }

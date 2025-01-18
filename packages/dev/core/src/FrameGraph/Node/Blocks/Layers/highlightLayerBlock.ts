@@ -11,16 +11,16 @@ import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { FrameGraphGlowLayerTask } from "core/FrameGraph/Tasks/Layers/glowLayerTask";
+import { FrameGraphHighlightLayerTask } from "core/FrameGraph/Tasks/Layers/highlightLayerTask";
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
 
 /**
- * Block that implements the glow layer
+ * Block that implements the highlight layer
  */
-export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphGlowLayerTask;
+export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
+    protected override _frameGraphTask: FrameGraphHighlightLayerTask;
 
     /**
      * Gets the frame graph task associated with this block
@@ -30,27 +30,29 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new NodeRenderGraphGlowLayerBlock
+     * Create a new NodeRenderGraphHighlightLayerBlock
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
-     * @param ldrMerge Forces the merge step to be done in ldr (clamp values &gt; 1). Default: false
      * @param layerTextureRatio multiplication factor applied to the main texture size to compute the size of the layer render target texture (default: 0.5)
      * @param layerTextureFixedSize defines the fixed size of the layer render target texture. Takes precedence over layerTextureRatio if provided (default: undefined)
+     * @param blurTextureSizeRatio defines the factor to apply to the layer texture size to create the blur textures (default: 0.5)
+     * @param isStroke should we display highlight as a solid stroke? (default: false)
      * @param layerTextureType defines the type of the layer texture (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
     public constructor(
         name: string,
         frameGraph: FrameGraph,
         scene: Scene,
-        ldrMerge = false,
         layerTextureRatio = 0.5,
         layerTextureFixedSize?: number,
+        blurTextureSizeRatio = 0.5,
+        isStroke = false,
         layerTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
         super(name, frameGraph, scene);
 
-        this._additionalConstructionParameters = [ldrMerge, layerTextureRatio, layerTextureFixedSize, layerTextureType];
+        this._additionalConstructionParameters = [layerTextureRatio, layerTextureFixedSize, blurTextureSizeRatio, isStroke, layerTextureType];
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -75,43 +77,33 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
 
         this.output._typeConnectionSource = this.destination;
 
-        this._frameGraphTask = new FrameGraphGlowLayerTask(this.name, this._frameGraph, this._scene, {
-            ldrMerge,
+        this._frameGraphTask = new FrameGraphHighlightLayerTask(this.name, this._frameGraph, this._scene, {
             mainTextureRatio: layerTextureRatio,
             mainTextureFixedSize: layerTextureFixedSize,
+            blurTextureSizeRatio,
+            isStroke,
             mainTextureType: layerTextureType,
         });
     }
 
-    private _createTask(ldrMerge: boolean, layerTextureRatio: number, layerTextureFixedSize: number, layerTextureType: number) {
-        const blurKernelSize = this.blurKernelSize;
-        const intensity = this.intensity;
+    private _createTask(layerTextureRatio: number, layerTextureFixedSize: number, blurTextureSizeRatio: number, isStroke: boolean, layerTextureType: number) {
+        const blurHorizontalSize = this.blurHorizontalSize;
+        const blurVerticalSize = this.blurVerticalSize;
 
         this._frameGraphTask?.dispose();
 
-        this._frameGraphTask = new FrameGraphGlowLayerTask(this.name, this._frameGraph, this._scene, {
-            ldrMerge,
+        this._frameGraphTask = new FrameGraphHighlightLayerTask(this.name, this._frameGraph, this._scene, {
             mainTextureRatio: layerTextureRatio,
             mainTextureFixedSize: layerTextureFixedSize,
+            blurTextureSizeRatio,
+            isStroke,
             mainTextureType: layerTextureType,
         });
 
-        this.blurKernelSize = blurKernelSize;
-        this.intensity = intensity;
+        this.blurHorizontalSize = blurHorizontalSize;
+        this.blurVerticalSize = blurVerticalSize;
 
-        this._additionalConstructionParameters = [ldrMerge, layerTextureRatio, layerTextureFixedSize, layerTextureType];
-    }
-
-    /** Forces the merge step to be done in ldr (clamp values &gt; 1). Default: false */
-    @editableInPropertyPage("LDR merge", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get ldrMerge() {
-        return this._frameGraphTask.layer.ldrMerge;
-    }
-
-    public set ldrMerge(value: boolean) {
-        const options = this._frameGraphTask.layer._options;
-
-        this._createTask(value, options.mainTextureRatio, options.mainTextureFixedSize, options.mainTextureType);
+        this._additionalConstructionParameters = [layerTextureRatio, layerTextureFixedSize, blurTextureSizeRatio, isStroke, layerTextureType];
     }
 
     /** Multiplication factor applied to the main texture size to compute the size of the layer render target texture */
@@ -123,7 +115,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     public set layerTextureRatio(value: number) {
         const options = this._frameGraphTask.layer._options;
 
-        this._createTask(options.ldrMerge, value, options.mainTextureFixedSize, options.mainTextureType);
+        this._createTask(value, options.mainTextureFixedSize, options.blurTextureSizeRatio, options.isStroke, options.mainTextureType);
     }
 
     /** Defines the fixed size of the layer render target texture. Takes precedence over layerTextureRatio if provided */
@@ -135,7 +127,31 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     public set layerTextureFixedSize(value: number) {
         const options = this._frameGraphTask.layer._options;
 
-        this._createTask(options.ldrMerge, options.mainTextureRatio, value, options.mainTextureType);
+        this._createTask(options.mainTextureRatio, value, options.blurTextureSizeRatio, options.isStroke, options.mainTextureType);
+    }
+
+    /** Defines the factor to apply to the layer texture size to create the blur textures */
+    @editableInPropertyPage("Blur texture size ratio", PropertyTypeForEdition.Float, "PROPERTIES")
+    public get blurTextureSizeRatio() {
+        return this._frameGraphTask.layer._options.blurTextureSizeRatio;
+    }
+
+    public set blurTextureSizeRatio(value: number) {
+        const options = this._frameGraphTask.layer._options;
+
+        this._createTask(options.mainTextureRatio, options.mainTextureFixedSize, value, options.isStroke, options.mainTextureType);
+    }
+
+    /** Should we display highlight as a solid stroke? */
+    @editableInPropertyPage("Is stroke", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get isStroke() {
+        return this._frameGraphTask.layer._options.isStroke;
+    }
+
+    public set isStroke(value: boolean) {
+        const options = this._frameGraphTask.layer._options;
+
+        this._createTask(options.mainTextureRatio, options.mainTextureFixedSize, options.blurTextureSizeRatio, value, options.mainTextureType);
     }
 
     /** Defines the type of the layer texture */
@@ -147,27 +163,27 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     public set layerTextureType(value: number) {
         const options = this._frameGraphTask.layer._options;
 
-        this._createTask(options.ldrMerge, options.mainTextureRatio, options.mainTextureFixedSize, value);
+        this._createTask(options.mainTextureRatio, options.mainTextureFixedSize, options.blurTextureSizeRatio, options.isStroke, value);
     }
 
-    /** How big is the kernel of the blur texture */
-    @editableInPropertyPage("Blur kernel size", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 256 })
-    public get blurKernelSize() {
-        return this._frameGraphTask.layer.blurKernelSize;
+    /** How big is the horizontal kernel of the blur texture */
+    @editableInPropertyPage("Blur horizontal size", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 4 })
+    public get blurHorizontalSize() {
+        return this._frameGraphTask.layer.blurHorizontalSize;
     }
 
-    public set blurKernelSize(value: number) {
-        this._frameGraphTask.layer.blurKernelSize = value;
+    public set blurHorizontalSize(value: number) {
+        this._frameGraphTask.layer.blurHorizontalSize = value;
     }
 
-    /** The intensity of the glow */
-    @editableInPropertyPage("Intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 5 })
-    public get intensity() {
-        return this._frameGraphTask.layer.intensity;
+    /** How big is the vertical kernel of the blur texture */
+    @editableInPropertyPage("Blur vertical size", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 4 })
+    public get blurVerticalSize() {
+        return this._frameGraphTask.layer.blurVerticalSize;
     }
 
-    public set intensity(value: number) {
-        this._frameGraphTask.layer.intensity = value;
+    public set blurVerticalSize(value: number) {
+        this._frameGraphTask.layer.blurVerticalSize = value;
     }
 
     /**
@@ -175,7 +191,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphGlowLayerBlock";
+        return "NodeRenderGraphHighlightLayerBlock";
     }
 
     /**
@@ -186,7 +202,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the layer texture input component
+     * Gets the layer input component
      */
     public get layer(): NodeRenderGraphConnectionPoint {
         return this._inputs[1];
@@ -218,23 +234,23 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.blurKernelSize = ${this.blurKernelSize};`);
-        codes.push(`${this._codeVariableName}.intensity = ${this.intensity};`);
+        codes.push(`${this._codeVariableName}.blurHorizontalSize = ${this.blurHorizontalSize};`);
+        codes.push(`${this._codeVariableName}.blurVerticalSize = ${this.blurVerticalSize};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.blurKernelSize = this.blurKernelSize;
-        serializationObject.intensity = this.intensity;
+        serializationObject.blurHorizontalSize = this.blurHorizontalSize;
+        serializationObject.blurVerticalSize = this.blurVerticalSize;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-        this.blurKernelSize = serializationObject.blurKernelSize;
-        this.intensity = serializationObject.intensity;
+        this.blurHorizontalSize = serializationObject.blurHorizontalSize;
+        this.blurVerticalSize = serializationObject.blurVerticalSize;
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphGlowLayerBlock", NodeRenderGraphGlowLayerBlock);
+RegisterClass("BABYLON.NodeRenderGraphHighlightLayerBlock", NodeRenderGraphHighlightLayerBlock);

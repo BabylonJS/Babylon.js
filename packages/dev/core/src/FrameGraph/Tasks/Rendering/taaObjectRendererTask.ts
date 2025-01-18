@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget } from "core/index";
+import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget, FrameGraphRenderPass } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
@@ -30,7 +30,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
     }
 
-    public override record() {
+    public override record(): FrameGraphRenderPass {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
@@ -134,5 +134,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         passDisabled.setExecuteFunc((context) => {
             context.copyTexture(this.destinationTexture);
         });
+
+        return pass;
     }
 }

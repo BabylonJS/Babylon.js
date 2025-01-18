@@ -1,4 +1,4 @@
-import { GetTypeForDepthTexture, InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
+import { GetTypeForDepthTexture, HasStencilAspect, InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
@@ -116,10 +116,7 @@ ThinWebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureS
         ...options,
     };
 
-    const hasStencil =
-        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+    const hasStencil = HasStencilAspect(internalOptions.depthTextureFormat);
 
     wrapper._depthStencilTextureWithStencil = hasStencil;
 
