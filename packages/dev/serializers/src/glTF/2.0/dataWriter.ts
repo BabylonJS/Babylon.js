@@ -2,28 +2,31 @@
 /* eslint-disable babylonjs/available */
 import type { TypedArray } from "core/types";
 
+const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffset: number, value: number) => void>([
+    [Int8Array, (d, b, v) => d.setInt8(b, v)],
+    [Uint8Array, (dv, bo, v) => dv.setUint8(bo, v)],
+    [Uint8ClampedArray, (dv, bo, v) => dv.setUint8(bo, v)],
+    [Int16Array, (dv, bo, v) => dv.setInt16(bo, v, true)],
+    [Uint16Array, (dv, bo, v) => dv.setUint16(bo, v, true)],
+    [Int32Array, (dv, bo, v) => dv.setInt32(bo, v, true)],
+    [Uint32Array, (dv, bo, v) => dv.setUint32(bo, v, true)],
+    [Float32Array, (dv, bo, v) => dv.setFloat32(bo, v, true)],
+]);
+
 /** @internal */
 export class DataWriter {
     private _data: Uint8Array;
     private _dataView: DataView;
     private _byteOffset: number;
 
-    private _typedArrayToWriteMethod: Record<string, Function> = {
-        Int8Array: this.writeInt8.bind(this),
-        Uint8Array: this.writeUInt8.bind(this),
-        Uint8ClampedArray: this.writeUInt8.bind(this),
-        Int16Array: this.writeInt16.bind(this),
-        Uint16Array: this.writeUInt16.bind(this),
-        Int32Array: this.writeInt32.bind(this),
-        Uint32Array: this.writeUInt32.bind(this),
-        Float32Array: this.writeFloat32.bind(this), // update to dataview api (dataview, value)
-    };
-
     public writeTypedArray(value: TypedArray): void {
         this._checkGrowBuffer(value.byteLength);
-        const setMethod = this._typedArrayToWriteMethod[value.constructor.name]; // use just constructor
+        const setMethod = TypedArrayToWriteMethod.get(value.constructor);
+        if (!setMethod) {
+            throw new Error("writeTypedArray: Unsupported type: " + value.constructor.name);
+        }
         for (let i = 0; i < value.length; i++) {
-            setMethod(value[i]);
+            setMethod(this._dataView, this._byteOffset, value[i] as number);
         }
     }
 
