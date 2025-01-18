@@ -27,6 +27,7 @@ export class DataWriter {
         }
         for (let i = 0; i < value.length; i++) {
             setMethod(this._dataView, this._byteOffset, value[i] as number);
+            this._byteOffset += value.BYTES_PER_ELEMENT;
         }
     }
 
