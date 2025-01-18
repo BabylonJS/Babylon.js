@@ -114,10 +114,6 @@ class GlowBlurPostProcess extends PostProcess {
 export interface IHighlightLayerOptions extends IThinHighlightLayerOptions {}
 
 /**
- * Storage interface grouping all the information required for glowing a mesh.
- */
-
-/**
  * The highlight layer Helps adding a glow effect around a mesh.
  *
  * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove

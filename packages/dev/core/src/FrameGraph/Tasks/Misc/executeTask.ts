@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphContext } from "core/index";
+import type { FrameGraph, FrameGraphContext, FrameGraphPass } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**
@@ -25,7 +25,7 @@ export class FrameGraphExecuteTask extends FrameGraphTask {
         super(name, frameGraph);
     }
 
-    public record() {
+    public record(): FrameGraphPass<FrameGraphContext> {
         if (!this.func) {
             throw new Error("FrameGraphExecuteTask: Execute task must have a function.");
         }

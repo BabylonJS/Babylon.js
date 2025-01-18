@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Color4 } from "../../../Maths/math.color";
 import { FrameGraphTask } from "../../frameGraphTask";
 
@@ -59,7 +59,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
-    public record() {
+    public record(): FrameGraphRenderPass {
         if (this.destinationTexture === undefined && this.depthTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture and depthTexture can't both be undefined.`);
         }
