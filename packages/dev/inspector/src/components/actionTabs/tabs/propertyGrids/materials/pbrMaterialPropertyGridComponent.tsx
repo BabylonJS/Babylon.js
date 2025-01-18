@@ -1258,7 +1258,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent
                         label="Alternate rough radiance "
                         target={material}
-                        propertyName="useAlternateRoughRadiance"
+                        propertyName="mixRoughRadianceWithIrradiance"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

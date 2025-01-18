@@ -533,7 +533,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAlternateRoughRadiance = false;
+    public mixRoughRadianceWithIrradiance = false;
 
     /**
      * Number of Simultaneous lights allowed on the material.

@@ -292,7 +292,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public DEBUGMODE = 0;
 
-    public ALTERNATE_ROUGH_RADIANCE = false;
+    public MIX_RADIANCE_WITH_IRRADIANCE = false;
 
     /**
      * Initializes the PBR Material defines.
@@ -769,7 +769,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public _forceIrradianceInFragment = false;
 
-    public _useAlternateRoughRadiance = false;
+    public _mixRoughRadianceWithIrradiance = false;
 
     private _realTimeFiltering: boolean = false;
     /**
@@ -1738,9 +1738,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         }
                     }
 
-                    if (this._useAlternateRoughRadiance) {
-                        defines.ALTERNATE_ROUGH_RADIANCE = true;
-                    }
+                    defines.MIX_RADIANCE_WITH_IRRADIANCE = this._mixRoughRadianceWithIrradiance;
                 } else {
                     defines.REFLECTION = false;
                     defines.REFLECTIONMAP_3D = false;

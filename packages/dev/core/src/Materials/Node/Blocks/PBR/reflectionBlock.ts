@@ -59,10 +59,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public useSphericalHarmonics: boolean = true;
 
     /**
-     * Use a different model for rough radiance that tends to better match raytracing.
+     * For rough radiance, blend in irradiance to better match raytracing ground truth.
      */
-    @editableInPropertyPage("Augmented Radiance", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
-    public useAlternateRoughRadiance: boolean = false;
+    @editableInPropertyPage("Mix Rough Radiance with Irradiance", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
+    public mixRoughRadianceWithIrradiance: boolean = false;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
@@ -222,8 +222,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         defines.setValue("RGBDREFLECTION", reflectionTexture!.isRGBD, true);
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
-            if (this.useAlternateRoughRadiance) {
-                defines.setValue("ALTERNATE_ROUGH_RADIANCE", true);
+            if (this.mixRoughRadianceWithIrradiance) {
+                defines.setValue("MIX_RADIANCE_WITH_IRRADIANCE", true);
             }
             if (reflectionTexture.isCube) {
                 defines.setValue("USESPHERICALFROMREFLECTIONMAP", true);
@@ -493,7 +493,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
         codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\n`;
         codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\n`;
-        codeString += `${this._codeVariableName}.useAlternateRoughRadiance = ${this.useAlternateRoughRadiance};\n`;
+        codeString += `${this._codeVariableName}.mixRoughRadianceWithIrradiance = ${this.mixRoughRadianceWithIrradiance};\n`;
 
         return codeString;
     }
@@ -503,7 +503,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
         serializationObject.forceIrradianceInFragment = this.forceIrradianceInFragment;
-        serializationObject.useAlternateRoughRadiance = this.useAlternateRoughRadiance;
+        serializationObject.mixRoughRadianceWithIrradiance = this.mixRoughRadianceWithIrradiance;
         serializationObject.gammaSpace = this.texture?.gammaSpace ?? true;
 
         return serializationObject;
@@ -516,7 +516,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         this.forceIrradianceInFragment = serializationObject.forceIrradianceInFragment;
         if (this.texture) {
             this.texture.gammaSpace = serializationObject.gammaSpace;
-            this.useAlternateRoughRadiance = serializationObject.useAlternateRoughRadiance;
+            this.mixRoughRadianceWithIrradiance = serializationObject.mixRoughRadianceWithIrradiance;
         }
     }
 }
