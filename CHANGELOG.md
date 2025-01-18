@@ -1,5 +1,46 @@
 # Changelog
 
+## 7.44.0
+
+### Core
+
+- standardMaterial: remove _worldViewProjectionMatrix - [_Bug Fix_] by [kzhsw](https://github.com/kzhsw) ([#16071](https://github.com/BabylonJS/Babylon.js/pull/16071))
+- Update to typescript 5.7.3 - by [RaananW](https://github.com/RaananW) ([#16065](https://github.com/BabylonJS/Babylon.js/pull/16065))
+- WebXR depth sensing update - by [RaananW](https://github.com/RaananW) ([#16060](https://github.com/BabylonJS/Babylon.js/pull/16060))
+- Allow for creating a zero size plane - [_Breaking Change_] by [amirt-ms](https://github.com/amirt-ms) ([#16052](https://github.com/BabylonJS/Babylon.js/pull/16052))
+- Fix scene dispose to restore LastCreatedScene correctly - by [deltakosh](https://github.com/deltakosh) ([#16067](https://github.com/BabylonJS/Babylon.js/pull/16067))
+- LogLevels: Improve doc - by [Popov72](https://github.com/Popov72) ([#16059](https://github.com/BabylonJS/Babylon.js/pull/16059))
+- Add CDF explicit render option. - by [MiiBond](https://github.com/MiiBond) ([#16022](https://github.com/BabylonJS/Babylon.js/pull/16022))
+- Morph: Fix morph not updated when updates are unfrozen - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16058](https://github.com/BabylonJS/Babylon.js/pull/16058))
+- Use CDF for irradiance prefiltering - by [MiiBond](https://github.com/MiiBond) ([#16010](https://github.com/BabylonJS/Babylon.js/pull/16010))
+- Fix recursive loop in onPointerOutAction - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#16057](https://github.com/BabylonJS/Babylon.js/pull/16057))
+- GREASED_LINE_USE_OFFSETS - WebGPU fix for Safari/Firefox - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16053](https://github.com/BabylonJS/Babylon.js/pull/16053))
+- GS Compressed colors - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16054](https://github.com/BabylonJS/Babylon.js/pull/16054))
+- Gizmo Rotation plane + pivot fix - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16050](https://github.com/BabylonJS/Babylon.js/pull/16050))
+- Check if TransformNode is parent in removeChild - by [amirt-ms](https://github.com/amirt-ms) ([#16041](https://github.com/BabylonJS/Babylon.js/pull/16041))
+- FrameGraph: refactor pass / passCube post processes for frame graph usage - by [Popov72](https://github.com/Popov72) ([#16051](https://github.com/BabylonJS/Babylon.js/pull/16051))
+- Consider `ImageProcessingConfiguration` when cloning material - by [HoferMarkus](https://github.com/HoferMarkus) ([#16044](https://github.com/BabylonJS/Babylon.js/pull/16044))
+- Add support for Draco encoding - by [alexchuber](https://github.com/alexchuber) ([#16001](https://github.com/BabylonJS/Babylon.js/pull/16001))
+
+### Inspector
+
+- Update to typescript 5.7.3 - by [RaananW](https://github.com/RaananW) ([#16065](https://github.com/BabylonJS/Babylon.js/pull/16065))
+
+### Loaders
+
+- Making sure the loader set the max lights according to the number of … - by [deltakosh](https://github.com/deltakosh) ([#16061](https://github.com/BabylonJS/Babylon.js/pull/16061))
+
+### Serializers
+
+- Update to typescript 5.7.3 - by [RaananW](https://github.com/RaananW) ([#16065](https://github.com/BabylonJS/Babylon.js/pull/16065))
+- Add support for correct mime type - by [deltakosh](https://github.com/deltakosh) ([#16066](https://github.com/BabylonJS/Babylon.js/pull/16066))
+- GreasedLine basic GLTF export - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16056](https://github.com/BabylonJS/Babylon.js/pull/16056))
+- Add support for Draco encoding - by [alexchuber](https://github.com/alexchuber) ([#16001](https://github.com/BabylonJS/Babylon.js/pull/16001))
+
+### Viewer
+
+- Allow for Viewer inheritance - by [ryantrem](https://github.com/ryantrem) ([#16062](https://github.com/BabylonJS/Babylon.js/pull/16062))
+
 ## 7.43.0
 
 ### Core

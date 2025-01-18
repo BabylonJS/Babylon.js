@@ -3,7 +3,9 @@
 #include<meshUboDeclaration>
 
 attribute grl_widths: f32;
-attribute grl_offsets: vec3f;
+#ifdef GREASED_LINE_USE_OFFSETS
+    attribute grl_offsets: vec3f;   
+#endif
 attribute grl_colorPointers: f32;
 attribute position: vec3f;
 
@@ -48,7 +50,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
         let grlNext: vec3f = input.grl_nextAndCounters.xyz;
         vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
-        let grlPositionOffset: vec3f = input.grl_offsets;
+        #ifdef GREASED_LINE_USE_OFFSETS
+            var grlPositionOffset: vec3f = input.grl_offsets;
+        #else
+            var grlPositionOffset = vec3f(0.);
+        #endif
         let grlFinalPosition: vec4f = grlMatrix * vec4f(vertexInputs.position + grlPositionOffset , 1.0);
         let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
         let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);

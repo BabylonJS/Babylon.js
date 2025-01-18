@@ -256,8 +256,35 @@ export function CreateScreenshotUsingRenderTarget(
         return;
     }
 
-    const originalSize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
-    engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
+    // Prevent engine to render on screen while we do the screenshot
+    engine.skipFrameRender = true;
+
+    const originalGetRenderWidth = engine.getRenderWidth;
+    const originalGetRenderHeight = engine.getRenderHeight;
+
+    // Override getRenderWidth and getRenderHeight to return the desired size of the render
+    // A few internal methods are relying on the canvas size to compute the render size
+    // so we need to override these methods to ensure the correct size is used during the preparation of the render
+    // as well as the screenshot
+    engine.getRenderWidth = (useScreen = false) => {
+        if (!useScreen && engine._currentRenderTarget) {
+            return engine._currentRenderTarget.width;
+        }
+
+        return width;
+    };
+    engine.getRenderHeight = (useScreen = false) => {
+        if (!useScreen && engine._currentRenderTarget) {
+            return engine._currentRenderTarget.height;
+        }
+
+        return height;
+    };
+
+    // Trigger a resize event to ensure the intermediate renders have the correct size
+    if (engine.onResizeObservable.hasObservers()) {
+        engine.onResizeObservable.notifyObservers(engine);
+    }
 
     const scene = camera.getScene();
 
@@ -309,9 +336,47 @@ export function CreateScreenshotUsingRenderTarget(
                 });
                 scene.incrementRenderId();
                 scene.resetCachedMaterial();
-                texture.render(true);
-                engine.setSize(originalSize.width, originalSize.height);
-                camera.getProjectionMatrix(true); // Force cache refresh;
+
+                // Record the original scene setup
+                const originalCamera = scene.activeCamera;
+                const originalCameras = scene.activeCameras;
+                const originalOutputRenderTarget = camera.outputRenderTarget;
+                const originalSpritesEnabled = scene.spritesEnabled;
+
+                // Swap with the requested one
+                scene.activeCamera = camera;
+                scene.activeCameras = null;
+                camera.outputRenderTarget = texture;
+                scene.spritesEnabled = renderSprites;
+
+                // render the scene on the RTT
+                try {
+                    scene.render();
+                } finally {
+                    // Restore the original scene camera setup
+                    scene.activeCamera = originalCamera;
+                    scene.activeCameras = originalCameras;
+                    camera.outputRenderTarget = originalOutputRenderTarget;
+                    scene.spritesEnabled = originalSpritesEnabled;
+
+                    engine.getRenderWidth = originalGetRenderWidth;
+                    engine.getRenderHeight = originalGetRenderHeight;
+
+                    // Trigger a resize event to ensure the intermediate renders have the correct size
+                    if (engine.onResizeObservable.hasObservers()) {
+                        engine.onResizeObservable.notifyObservers(engine);
+                    }
+
+                    camera.getProjectionMatrix(true); // Force cache refresh;
+
+                    engine.skipFrameRender = false;
+                }
+            },
+            () => {
+                // Restore engine frame rendering on error
+                engine.skipFrameRender = false;
+                engine.getRenderWidth = originalGetRenderWidth;
+                engine.getRenderHeight = originalGetRenderHeight;
             }
         );
     };
