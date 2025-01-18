@@ -292,6 +292,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public DEBUGMODE = 0;
 
+    public MIX_RADIANCE_WITH_IRRADIANCE = false;
+
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -766,6 +768,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @internal
      */
     public _forceIrradianceInFragment = false;
+
+    public _mixRoughRadianceWithIrradiance = false;
 
     private _realTimeFiltering: boolean = false;
     /**
@@ -1733,6 +1737,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             }
                         }
                     }
+
+                    defines.MIX_RADIANCE_WITH_IRRADIANCE = this._mixRoughRadianceWithIrradiance;
                 } else {
                     defines.REFLECTION = false;
                     defines.REFLECTIONMAP_3D = false;
