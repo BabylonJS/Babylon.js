@@ -17,7 +17,6 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { BufferManager } from "./bufferManager";
 import { GetAccessorElementCount, ConvertToRightHandedPosition, ConvertCameraRotationToGLTF, ConvertToRightHandedRotation } from "./glTFUtilities";
-import { DataWriter } from "./dataWriter";
 
 /**
  * @internal
