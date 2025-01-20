@@ -47,7 +47,7 @@ export abstract class AreaLight extends Light {
         this.position = position;
 
         if (!this._scene._ltcTextures) {
-            this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene, "https://assets.babylonjs.com/areaLights/areaLightsLTC.bin");
+            this._scene.areaLightLTCProvider ||= new DefaultAreaLightLTCProvider(this._scene);
 
             if (!this._scene._ltcTexturesPromise) {
                 this._scene._ltcTexturesPromise = this._scene.areaLightLTCProvider.getTexturesAsync();
