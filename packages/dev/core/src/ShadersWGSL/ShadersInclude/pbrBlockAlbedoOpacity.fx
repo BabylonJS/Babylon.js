@@ -68,6 +68,12 @@ fn albedoOpacityBlock(
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
 
+    // According to OpenPBR:
+    // - for metals, base_weight is a factor to the base_color (F0, thus surfaceAlbedo in
+    //   Babylons.js).
+    // - for dielectrics, base_weight is a factor to the diffuse BRDF (i.e. it should be
+    //   applied in computeDiffuseLighting), but with the diffuse model *currently* used
+    //   in Babylon.js, factoring it into the surfaceAlbedo is equivalent.
     surfaceAlbedo *= vBaseWeight;
     #if BASEWEIGHT
         surfaceAlbedo *= baseWeightTexture.r;
