@@ -360,13 +360,13 @@ export class NodeRenderGraphBlock {
                     for (let i = 0; i < container.inputs.length; i++) {
                         const input = container.inputs[i];
                         if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
-                            this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || [];
-                            this._frameGraphTask.dependencies.push(input.connectedPoint.value as FrameGraphTextureHandle);
+                            this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || new Set();
+                            this._frameGraphTask.dependencies.add(input.connectedPoint.value as FrameGraphTextureHandle);
                         }
                     }
                 } else if (NodeRenderGraphConnectionPoint.IsTextureHandle(dependenciesConnectedPoint.value)) {
-                    this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || [];
-                    this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
+                    this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || new Set();
+                    this._frameGraphTask.dependencies.add(dependenciesConnectedPoint.value as FrameGraphTextureHandle);
                 }
             }
             this._frameGraph.addTask(this._frameGraphTask);

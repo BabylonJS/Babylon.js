@@ -162,12 +162,12 @@ export class ObjectRenderer {
     public readonly onFastPathRenderObservable = new Observable<number>();
 
     protected _scene: Scene;
-    protected _renderingManager: RenderingManager;
+    /** @internal */
+    public _renderingManager: RenderingManager;
     /** @internal */
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
-    protected _doNotChangeAspectRatio: boolean;
 
     /**
      * The options used by the object renderer
@@ -512,7 +512,7 @@ export class ObjectRenderer {
                 currentRenderList = defaultRenderList;
             }
 
-            if (!this._doNotChangeAspectRatio) {
+            if (!this.options.doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -677,9 +677,11 @@ export class ObjectRenderer {
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+     * @param depth Automatically clears depth between groups if true and autoClear is true.
+     * @param stencil Automatically clears stencil between groups if true and autoClear is true.
      */
-    public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
-        this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+    public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth = true, stencil = true): void {
+        this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
         this._renderingManager._useSceneAutoClearSetup = false;
     }
 
