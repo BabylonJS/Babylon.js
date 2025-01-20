@@ -130,7 +130,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");
         }
 
-        this._internalDependencies.push(this.sourceTexture);
+        this._addInternalDependencies(this.sourceTexture);
 
         const sourceTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.sourceTexture);
 

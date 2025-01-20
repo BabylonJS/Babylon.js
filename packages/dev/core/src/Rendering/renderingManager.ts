@@ -47,6 +47,11 @@ export class RenderingGroupInfo {
      * The ID of the renderingGroup being processed
      */
     renderingGroupId: number;
+
+    /**
+     * The rendering manager
+     */
+    renderingManager: RenderingManager;
 }
 
 /**
@@ -184,6 +189,7 @@ export class RenderingManager {
         const info = this._renderingGroupInfo!;
         info.scene = this._scene;
         info.camera = this._scene.activeCamera;
+        info.renderingManager = this;
 
         // Dispatch sprites
         if (this._scene.spriteManagers && renderSprites) {

@@ -2081,8 +2081,8 @@ export class NodeMaterial extends PushMaterial {
 
         const currentScreen = new CurrentScreenBlock("CurrentScreen");
         uv.connectTo(currentScreen);
-
-        currentScreen.texture = new Texture("https://assets.babylonjs.com/nme/currentScreenPostProcess.png", this.getScene());
+        const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/nme/currentScreenPostProcess.png");
+        currentScreen.texture = new Texture(textureUrl, this.getScene());
 
         const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         currentScreen.connectTo(fragmentOutput, { output: "rgba" });

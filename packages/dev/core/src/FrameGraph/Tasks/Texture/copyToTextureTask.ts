@@ -39,7 +39,7 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
 
         this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
 
-        this._internalDependencies.push(this.sourceTexture);
+        this._addInternalDependencies(this.sourceTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
