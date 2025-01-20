@@ -1132,6 +1132,7 @@ export class Viewer implements IDisposable {
      *     the distance between the camera and the main model's center along the forward ray.
      *
      * @param camera The reference camera used to computes infos.
+     * @param predicate Used to define predicate for selecting meshes and instances (if exist)
      * @returns An object containing the `alpha`, `beta`, `radius`, and `target` properties, or `null` if no model found.
      */
     public async getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
