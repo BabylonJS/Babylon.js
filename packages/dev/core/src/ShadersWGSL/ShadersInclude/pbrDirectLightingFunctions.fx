@@ -169,7 +169,8 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         return info.areaLightDiffuse * lightColor;
     }
 
-    fn computeAreaSpecularLighting(info: preLightingInfo) -> vec3f {
-        return info.areaLightSpecular;
+    fn computeAreaSpecularLighting(info: preLightingInfo, specularColor: vec3f) -> vec3f {
+        var fresnel:vec3f  = ( specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
+	    return specularColor * fresnel * info.areaLightSpecular;
     }
 #endif

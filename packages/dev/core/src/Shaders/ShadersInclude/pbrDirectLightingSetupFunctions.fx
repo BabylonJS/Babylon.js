@@ -27,6 +27,7 @@ struct preLightingInfo
 
         #ifdef SPECULARTERM
             vec3 areaLightSpecular;
+            vec4 areaLightFresnel;
         #endif
     #endif
 };
@@ -90,7 +91,7 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 #ifdef AREALIGHTUSED
 #include<ltcHelperFunctions>
 
-preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 specularColor, float roughness ) 
+preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness ) 
 {
 	preLightingInfo result;
     result.lightOffset = lightData.xyz - vPosition;
@@ -98,35 +99,13 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
     // Roughness.
     result.lightDistance = sqrt(result.lightDistanceSquared);
 
-	vec3 normal = vNormal;
-	vec3 viewDir = viewDirectionW;
-	vec3 position = vPosition;
-	vec3 lightPos = lightData.xyz;
-
-	vec3 rectCoords[ 4 ];
-	rectCoords[ 0 ] = lightPos + halfWidth - halfHeight; // counterclockwise; light shines in local neg z direction
-	rectCoords[ 1 ] = lightPos - halfWidth - halfHeight;
-	rectCoords[ 2 ] = lightPos - halfWidth + halfHeight;
-	rectCoords[ 3 ] = lightPos + halfWidth + halfHeight;
-
-	vec2 uv = LTCUv( normal, viewDir, roughness );
-
-	vec4 t1 = texture2D( ltc1, uv );
-	vec4 t2 = texture2D( ltc2, uv );
-
-	mat3 mInv = mat3(
-		vec3( t1.x, 0, t1.y ),
-		vec3(    0, 1,    0 ),
-		vec3( t1.z, 0, t1.w )
-	);
+	areaLightData data = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc2, viewDirectionW, vNormal, vPosition, lightData.xyz, halfWidth, halfHeight, roughness);
 
 #ifdef SPECULARTERM
-	// LTC Fresnel Approximation by Stephen Hill
-	// http://blog.selfshadow.com/publications/s2016-advances/s2016_ltc_fresnel.pdf
-	vec3 fresnel = ( specularColor * t2.x + ( vec3( 1.0 ) - specularColor ) * t2.y );
-	result.areaLightSpecular = specularColor * fresnel * LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
+    result.areaLightFresnel = data.Fresnel;
+    result.areaLightSpecular = data.Specular;	
 #endif
-	result.areaLightDiffuse = LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
+	result.areaLightDiffuse = data.Diffuse;
 	return result;
 }
 #endif

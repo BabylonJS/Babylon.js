@@ -94,3 +94,41 @@ vec3 LTCEvaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in ma
 	float result = LTCClippedSphereFormFactor( vectorFormFactor );
 	return vec3( result );
 }
+
+struct areaLightData
+{
+    vec3 Diffuse;
+	vec3 Specular;
+	vec4 Fresnel;
+};
+
+areaLightData computeAreaLightSpecularDiffuseFresnel(const in sampler2D ltc1, const in sampler2D ltc2, const in vec3 viewDir, const in vec3 normal, const in vec3 position, const in vec3 lightPos, const in vec3 halfWidth, const in vec3 halfHeight, const in float roughness) 
+{
+	areaLightData result;
+	vec3 rectCoords[ 4 ];
+	rectCoords[ 0 ] = lightPos + halfWidth - halfHeight; // counterclockwise; light shines in local neg z direction
+	rectCoords[ 1 ] = lightPos - halfWidth - halfHeight;
+	rectCoords[ 2 ] = lightPos - halfWidth + halfHeight;
+	rectCoords[ 3 ] = lightPos + halfWidth + halfHeight;
+
+	vec2 uv = LTCUv( normal, viewDir, roughness );
+
+	vec4 t1 = texture2D( ltc1, uv );
+
+	// LTC Fresnel Approximation by Stephen Hill
+	// http://blog.selfshadow.com/publications/s2016-advances/s2016_ltc_fresnel.pdf
+	vec4 t2 = texture2D( ltc2, uv );
+
+	mat3 mInv = mat3(
+		vec3( t1.x, 0, t1.y ),
+		vec3(    0, 1,    0 ),
+		vec3( t1.z, 0, t1.w )
+	);
+
+#ifdef SPECULARTERM
+	result.Specular = LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
+	result.Fresnel = t2;
+#endif
+	result.Diffuse = LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
+	return result;
+}
