@@ -25,6 +25,7 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to create a holographic slate
@@ -34,7 +35,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Base Url for the assets.
      */
-    public static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    public static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/core/MRTK/";
     /**
      * File name for the close icon.
      */
@@ -342,9 +343,9 @@ export class HolographicSlate extends ContentDisplay3D {
         closeButton.node!.parent = node;
 
         this._positionElements();
-
-        this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
-        this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
+        const baseUrl = Tools.GetAssetUrl(HolographicSlate.ASSETS_BASE_URL);
+        this._followButton.imageUrl = baseUrl + HolographicSlate.FOLLOW_ICON_FILENAME;
+        this._closeButton.imageUrl = baseUrl + HolographicSlate.CLOSE_ICON_FILENAME;
 
         this._followButton.isBackplateVisible = false;
         this._closeButton.isBackplateVisible = false;
