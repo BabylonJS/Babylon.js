@@ -36,9 +36,16 @@ export interface IAreaLightLTCProvider {
  */
 export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
     private _scene: Scene;
+    private _binaryFileURL: string;
 
-    public constructor(scene: Scene) {
+    /**
+     * Default provider for LTC textures. This provider will load the LTC data from the Babylon CDN.
+     * @param scene Target scene.
+     * @param binaryFileURL URL that points to binary file storing LTC texture data.
+     */
+    public constructor(scene: Scene, binaryFileURL: string) {
         this._scene = scene;
+        this._binaryFileURL = binaryFileURL;
     }
 
     public async getTexturesAsync(): Promise<ILTCTextures> {
@@ -52,9 +59,7 @@ export class DefaultAreaLightLTCProvider implements IAreaLightLTCProvider {
     private async _decodeLTCTextureDataAsync(): Promise<Tuple<Uint16Array, 2>> {
         const ltc1 = new Uint16Array(64 * 64 * 4);
         const ltc2 = new Uint16Array(64 * 64 * 4);
-
-        const ltcPath = Tools.GetBabylonScriptURL("https://assets.babylonjs.com/areaLights/areaLightsLTC.bin", true);
-        const file = await Tools.LoadFileAsync(ltcPath);
+        const file = await Tools.LoadFileAsync(this._binaryFileURL);
         const ltcEncoded = new Uint16Array(file);
 
         const pixelCount = ltcEncoded.length / 8;
