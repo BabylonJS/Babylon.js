@@ -138,25 +138,36 @@ export class FrameGraph {
     public build(): void {
         this.textureManager._releaseTextures(false);
 
-        for (const task of this._tasks) {
-            task._reset();
+        try {
+            for (const task of this._tasks) {
+                task._reset();
 
-            this._currentProcessedTask = task;
-            this.textureManager._isRecordingTask = true;
+                this._currentProcessedTask = task;
+                this.textureManager._isRecordingTask = true;
 
-            task.record();
+                task.record();
 
-            this.textureManager._isRecordingTask = false;
+                this.textureManager._isRecordingTask = false;
+                this._currentProcessedTask = null;
+            }
+
+            this.textureManager._allocateTextures();
+
+            for (const task of this._tasks) {
+                task._checkTask();
+            }
+
+            for (const task of this._tasks) {
+                task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
+            }
+
+            this.onBuildObservable.notifyObservers(this);
+        } catch (e) {
+            this._tasks.length = 0;
             this._currentProcessedTask = null;
+            this.textureManager._isRecordingTask = false;
+            throw e;
         }
-
-        this.textureManager._allocateTextures();
-
-        for (const task of this._tasks) {
-            task._checkTask();
-        }
-
-        this.onBuildObservable.notifyObservers(this);
     }
 
     /**

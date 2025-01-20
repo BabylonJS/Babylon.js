@@ -95,19 +95,19 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
     result += 
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
-        SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
+        SH_C2[2] * (2.0 * zz - xx - yy) * sh[6] +
         SH_C2[3] * xz * sh[7] +
         SH_C2[4] * (xx - yy) * sh[8];
 
 #if SH_DEGREE > 2
     result += 
-        SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
+        SH_C3[0] * y * (3.0 * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
-        SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
-        SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
-        SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
+        SH_C3[2] * y * (4.0 * zz - xx - yy) * sh[11] +
+        SH_C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh[12] +
+        SH_C3[4] * x * (4.0 * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
-        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
+        SH_C3[6] * x * (xx - 3.0 * yy) * sh[15];
 #endif
 #endif
 #endif

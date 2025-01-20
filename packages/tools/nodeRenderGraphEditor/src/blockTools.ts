@@ -1,4 +1,5 @@
 import type { Scene } from "core/scene";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
@@ -23,7 +24,8 @@ import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Bloc
 import { NodeRenderGraphShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock";
 import { NodeRenderGraphCascadedShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock";
 import { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/glowLayerBlock";
+import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -87,6 +89,12 @@ export class BlockTools {
             case "BlurBlock": {
                 return new NodeRenderGraphBlurPostProcessBlock("Blur", frameGraph, scene);
             }
+            case "PassBlock": {
+                return new NodeRenderGraphPassPostProcessBlock("Pass", frameGraph, scene);
+            }
+            case "PassCubeBlock": {
+                return new NodeRenderGraphPassCubePostProcessBlock("Pass cube", frameGraph, scene);
+            }
             case "GUIBlock": {
                 return new NodeRenderGraphGUIBlock("GUI", frameGraph, scene);
             }
@@ -116,6 +124,9 @@ export class BlockTools {
             }
             case "CascadedShadowGeneratorBlock": {
                 return new NodeRenderGraphCascadedShadowGeneratorBlock("Cascaded Shadow Generator", frameGraph, scene);
+            }
+            case "GlowLayerBlock": {
+                return new NodeRenderGraphGlowLayerBlock("Glow Layer", frameGraph, scene);
             }
         }
 

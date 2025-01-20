@@ -151,22 +151,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
         this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
 
-        this._frameGraphTask.dependencies = [];
-
-        const dependenciesConnectedPoint = this.dependencies.connectedPoint;
-        if (dependenciesConnectedPoint) {
-            if (dependenciesConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
-                const container = dependenciesConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
-                container.inputs.forEach((input) => {
-                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
-                        this._frameGraphTask.dependencies!.push(input.connectedPoint.value as FrameGraphTextureHandle);
-                    }
-                });
-            } else if (NodeRenderGraphConnectionPoint.IsTextureHandle(dependenciesConnectedPoint.value)) {
-                this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
-            }
-        }
-
         this._frameGraphTask.shadowGenerators = [];
 
         const shadowGeneratorsConnectedPoint = this.shadowGenerators.connectedPoint;

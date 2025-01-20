@@ -1,7 +1,7 @@
 import { _GetDefaultNumWorkers, _IsConfigurationAvailable } from "./dracoCodec";
 import type { IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
-import type { MeshData } from "./dracoDecoder";
+import type { MeshData } from "./dracoDecoder.types";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { Nullable } from "core/types";
@@ -35,7 +35,8 @@ export interface IDracoCompressionOptions extends Pick<IDracoCodecConfiguration,
  *
  * **Decoder**
  *
- * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js cdn https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js.
+ * The configuration is shared with the DracoDecoder class.
  *
  * To update the configuration, use the following code:
  * ```javascript
@@ -68,13 +69,25 @@ export class DracoCompression {
      * - wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm"
      * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
      */
-    public static Configuration: IDracoCompressionConfiguration = { decoder: { ...DracoDecoder.DefaultConfiguration } }; // Use copy
+    public static get Configuration(): IDracoCompressionConfiguration {
+        return {
+            get decoder() {
+                return DracoDecoder.DefaultConfiguration;
+            },
+            set decoder(value: IDracoCodecConfiguration) {
+                DracoDecoder.DefaultConfiguration = value;
+            },
+        };
+    }
+    public static set Configuration(value: IDracoCompressionConfiguration) {
+        DracoDecoder.DefaultConfiguration = value.decoder;
+    }
 
     /**
      * Returns true if the decoder configuration is available.
      */
     public static get DecoderAvailable(): boolean {
-        return _IsConfigurationAvailable(DracoCompression.Configuration.decoder);
+        return _IsConfigurationAvailable(DracoDecoder.DefaultConfiguration);
     }
 
     /**
@@ -115,8 +128,8 @@ export class DracoCompression {
     constructor(numWorkersOrOptions: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
         const configuration =
             typeof numWorkersOrOptions === "number"
-                ? { ...DracoCompression.Configuration.decoder, numWorkers: numWorkersOrOptions }
-                : { ...DracoCompression.Configuration.decoder, ...numWorkersOrOptions };
+                ? { ...DracoDecoder.DefaultConfiguration, numWorkers: numWorkersOrOptions }
+                : { ...DracoDecoder.DefaultConfiguration, ...numWorkersOrOptions };
         this._decoder = new DracoDecoder(configuration);
     }
 

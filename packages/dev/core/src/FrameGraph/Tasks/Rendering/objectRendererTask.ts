@@ -32,11 +32,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public depthTexture?: FrameGraphTextureHandle;
 
     /**
-     * The dependencies of the task (optional).
-     */
-    public dependencies?: FrameGraphTextureHandle[] = [];
-
-    /**
      * The shadow generators used to render the objects (optional).
      */
     public shadowGenerators?: FrameGraphShadowGeneratorTask[] = [];
@@ -113,6 +108,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     protected _textureHeight: number;
     protected _onBeforeRenderObservable: Nullable<Observer<number>> = null;
     protected _onAfterRenderObservable: Nullable<Observer<number>> = null;
+    protected _externalObjectRenderer = false;
 
     /**
      * Constructs a new object renderer task.
@@ -120,19 +116,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
      * @param options The options of the object renderer.
+     * @param existingObjectRenderer An existing object renderer to use (optional). If provided, the options parameter will be ignored.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions, existingObjectRenderer?: ObjectRenderer) {
         super(name, frameGraph);
 
         this._scene = scene;
-        this._renderer = new ObjectRenderer(name, scene, options);
+        this._externalObjectRenderer = !!existingObjectRenderer;
+        this._renderer = existingObjectRenderer ?? new ObjectRenderer(name, scene, options);
         this.name = name;
 
-        this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
-            if (!this._renderer.options.doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
-        });
+        if (!this._externalObjectRenderer) {
+            this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
+                if (!this._renderer.options.doNotChangeAspectRatio) {
+                    scene.updateTransformMatrix(true);
+                }
+            });
+        }
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -146,6 +146,10 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
+
+        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
 
         const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
@@ -195,33 +199,25 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             additionalExecute?.(context);
         });
 
-        if (this.dependencies !== undefined) {
-            for (const handle of this.dependencies) {
-                pass.useTexture(handle);
-            }
-        }
-
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(this.destinationTexture);
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
-
-            if (this.dependencies !== undefined) {
-                for (const handle of this.dependencies) {
-                    passDisabled.useTexture(handle);
-                }
-            }
         }
     }
 
     public override dispose(): void {
-        this._renderer.dispose();
+        this._renderer.onBeforeRenderObservable.remove(this._onBeforeRenderObservable);
+        this._renderer.onAfterRenderObservable.remove(this._onAfterRenderObservable);
+        if (!this._externalObjectRenderer) {
+            this._renderer.dispose();
+        }
         super.dispose();
     }
 
-    private _setLightsForShadow() {
+    protected _setLightsForShadow() {
         const lightsForShadow: Set<Light> = new Set();
         const shadowEnabled: Map<Light, boolean> = new Map();
 

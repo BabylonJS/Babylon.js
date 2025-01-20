@@ -1,6 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
@@ -297,4 +297,20 @@ export function CopyFloatData(
         const floatData = new Float32Array(input.buffer, offset, count);
         output.set(floatData);
     }
+}
+
+/**
+ * Utility function to determine if an IndicesArray is an Uint32Array.
+ * @param indices The IndicesArray to check. If null, count is used instead.
+ * @param count The number of indices
+ * @returns True if the indices use 32 bits
+ */
+export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
+    if (indices) {
+        if (indices instanceof Array) {
+            return indices.some((value) => value >= 65536);
+        }
+        return indices.BYTES_PER_ELEMENT === 4;
+    }
+    return count >= 65536;
 }

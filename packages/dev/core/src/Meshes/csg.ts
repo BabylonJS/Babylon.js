@@ -568,6 +568,10 @@ export class CSG {
         }
 
         const subMeshes = mesh.subMeshes;
+        if (!subMeshes) {
+            // eslint-disable-next-line no-throw-literal
+            throw "BABYLON.CSG: Mesh has no submeshes";
+        }
 
         for (let sm = 0, sml = subMeshes.length; sm < sml; sm++) {
             for (let i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
