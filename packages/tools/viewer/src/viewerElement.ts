@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, Observable } from "core/index";
-import { ArcRotateCamera, Camera } from "core/index";
+import type { ArcRotateCamera, Camera, Nullable, Observable } from "core/index";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -494,19 +493,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     public async matchCameraPOV(id: string): Promise<boolean> {
         if (this._viewerDetails) {
-            let cameraInfos;
-            this._viewerDetails.viewer.pauseAnimation();
             const camera = this._viewerDetails.scene.getCameraById(id);
 
-            if (camera instanceof ArcRotateCamera) {
-                cameraInfos = { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target };
-            } else if (camera instanceof Camera) {
-                cameraInfos = await this._viewerDetails.viewer.getArcRotateCameraInfos(camera);
-            }
-
-            if (cameraInfos) {
-                this._viewerDetails.camera.interpolateTo(cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius, cameraInfos.target);
-                return true;
+            if (camera) {
+                const cameraInfos = await this._viewerDetails.viewer.getArcRotateCameraInfos(camera);
+                if (cameraInfos) {
+                    this._viewerDetails.viewer.pauseAnimation();
+                    this._viewerDetails.camera.interpolateTo(cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius, cameraInfos.target);
+                    return true;
+                }
             }
         }
         return false;

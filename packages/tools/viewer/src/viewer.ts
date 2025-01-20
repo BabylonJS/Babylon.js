@@ -12,6 +12,7 @@ import type {
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
+    MeshPredicate,
     Nullable,
     Observer,
     PickingInfo,
@@ -1133,32 +1134,32 @@ export class Viewer implements IDisposable {
      * @param camera The reference camera used to computes infos.
      * @returns An object containing the `alpha`, `beta`, `radius`, and `target` properties, or `null` if no model found.
      */
-    public async getArcRotateCameraInfos(camera: Camera): Promise<Nullable<ViewerArcRotateCameraInfos>> {
+    public async getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
+        if (camera instanceof ArcRotateCamera) {
+            return { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target.clone() };
+        }
+
         await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition);
+        const ray = camera.getForwardRay();
         const comGlobalPos = camera.globalPosition.clone();
 
-        if (this._modelInfo && this._modelWorldCenter) {
-            const assetContainer = this._modelInfo.assetContainer;
-            this._refreshBoundingInfo(assetContainer);
-
-            // Target
-            let targetPoint: Vector3 = Vector3.Zero();
-            const pickingInfo = this._scene.pickWithRay(ray, (mesh) => assetContainer.meshes.includes(mesh));
+        if (this._modelWorldCenter) {
+            // Target and radius
+            let radius: number = 0.0001; // Just to avoid division by zero
+            const targetPoint = Vector3.Zero();
+            const pickingInfo = this._scene.pickWithRay(ray, predicate);
             if (pickingInfo && pickingInfo.hit) {
                 targetPoint.copyFrom(pickingInfo.pickedPoint!);
+                radius = Vector3.Distance(comGlobalPos, targetPoint);
             } else {
                 const direction = ray.direction.clone();
                 targetPoint.copyFrom(comGlobalPos);
-                const distance = Vector3.Distance(comGlobalPos, this._modelWorldCenter);
-                direction.scaleAndAddToRef(distance, targetPoint);
+                radius = Vector3.Distance(comGlobalPos, this._modelWorldCenter);
+                direction.scaleAndAddToRef(radius, targetPoint);
             }
 
-            const computationVector = Vector3.Zero();
+            const computationVector = this._tempVectors[0];
             comGlobalPos.subtractToRef(targetPoint, computationVector);
-
-            // Radius
-            const radius = computationVector.length();
 
             // Alpha
             let alpha = Math.PI / 2;
