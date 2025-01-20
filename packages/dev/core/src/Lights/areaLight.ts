@@ -1,10 +1,10 @@
-import type { Vector3 } from "../Maths/math.vector";
-import { Light } from "./light";
+import type { Vector3 } from "core/Maths/math.vector";
+import { Light } from "core/Lights/light";
 import type { Effect } from "core/Materials/effect";
 import { DefaultAreaLightLTCProvider } from "core/Lights/LTC/ltcTextureTool";
 import type { IAreaLightLTCProvider, ILTCTextures } from "core/Lights/LTC/ltcTextureTool";
 import type { Scene } from "core/scene";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 
 declare module "../scene" {
     export interface Scene {
