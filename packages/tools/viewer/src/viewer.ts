@@ -365,6 +365,7 @@ export class Viewer implements IDisposable {
     private _modelInfo: Nullable<Model> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
+    private _skyboxVisible: boolean = true;
     private _skyboxTexture: Nullable<CubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture> = null;
     private _reflectionsIntensity: number = 1;
@@ -525,7 +526,7 @@ export class Viewer implements IDisposable {
             intensity: this._reflectionsIntensity,
             blur: this._skyboxBlur,
             rotation: this._reflectionsRotation,
-            visible: this._skybox?.isEnabled() ?? false,
+            visible: this._skyboxVisible,
         };
     }
 
@@ -540,7 +541,7 @@ export class Viewer implements IDisposable {
             this._changeEnvironmentRotation(value.rotation);
         }
         if (value.visible !== undefined) {
-            this._skybox?.setEnabled(value.visible);
+            this._changeSkyboxVisible(value.visible);
         }
         this.onEnvironmentConfigurationChanged.notifyObservers();
     }
@@ -552,7 +553,7 @@ export class Viewer implements IDisposable {
                 const material = this._skybox.material;
                 if (material instanceof PBRMaterial) {
                     this._snapshotHelper.disableSnapshotRendering();
-                    material.microSurface = 1.0 - value;
+                    material.microSurface = 1.0 - this._skyboxBlur;
                     this._snapshotHelper.enableSnapshotRendering();
                 }
             }
@@ -564,24 +565,49 @@ export class Viewer implements IDisposable {
      * @param value the rotation in radians
      */
     private _changeEnvironmentRotation(value: number) {
-        this._reflectionsRotation = value;
+        if (value !== this._reflectionsRotation) {
+            this._reflectionsRotation = value;
 
-        if (this._skyboxTexture) {
-            this._skyboxTexture.rotationY = this._reflectionsRotation;
-        }
-        if (this._reflectionTexture) {
-            this._reflectionTexture.rotationY = this._reflectionsRotation;
+            this._snapshotHelper.disableSnapshotRendering();
+            if (this._skyboxTexture) {
+                this._skyboxTexture.rotationY = this._reflectionsRotation;
+            }
+            if (this._reflectionTexture) {
+                this._reflectionTexture.rotationY = this._reflectionsRotation;
+            }
+            this._snapshotHelper.enableSnapshotRendering();
         }
     }
 
     private _changeEnvironmentIntensity(value: number) {
-        this._reflectionsIntensity = value;
-        if (this._skyboxTexture) {
-            this._skyboxTexture.level = this._reflectionsIntensity;
+        if (value !== this._reflectionsIntensity) {
+            this._reflectionsIntensity = value;
+
+            this._snapshotHelper.disableSnapshotRendering();
+            if (this._skyboxTexture) {
+                this._skyboxTexture.level = this._reflectionsIntensity;
+            }
+            if (this._reflectionTexture) {
+                this._reflectionTexture.level = this._reflectionsIntensity;
+            }
+            this._snapshotHelper.enableSnapshotRendering();
         }
-        if (this._reflectionTexture) {
-            this._reflectionTexture.level = this._reflectionsIntensity;
+    }
+
+    private _changeSkyboxVisible(value: boolean) {
+        if (value !== this._skyboxVisible) {
+            this._skyboxVisible = value;
+            if (this._skybox) {
+                this._snapshotHelper.disableSnapshotRendering();
+                this._skybox.setEnabled(this._skyboxVisible);
+                this._updateAutoClear();
+                this._snapshotHelper.enableSnapshotRendering();
+            }
         }
+    }
+
+    private _updateAutoClear() {
+        this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
     }
 
     /**
@@ -1002,7 +1028,7 @@ export class Viewer implements IDisposable {
                     this._skybox?.dispose(undefined, true);
                     this._skyboxTexture = null;
                     this._skybox = null;
-                    this._scene.autoClear = true;
+                    this._updateAutoClear();
                 }
             };
 
@@ -1024,9 +1050,9 @@ export class Viewer implements IDisposable {
                         this._skyboxTexture.level = this.environmentConfig.intensity;
                         this._skyboxTexture.rotationY = this.environmentConfig.rotation;
                         this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
-                        this._skybox.setEnabled(this.environmentConfig.visible);
+                        this._skybox.setEnabled(this._skyboxVisible);
                         this._snapshotHelper.fixMeshes([this._skybox]);
-                        this._scene.autoClear = false;
+                        this._updateAutoClear();
                     }
 
                     await new Promise<void>((resolve, reject) => {
@@ -1105,6 +1131,7 @@ export class Viewer implements IDisposable {
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
+        this.onEnvironmentConfigurationChanged.clear();
         this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
