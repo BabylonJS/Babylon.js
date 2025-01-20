@@ -44,7 +44,7 @@ export class PhysicsViewer {
     /** @internal */
     protected _inertiaMeshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
-    protected _constraintMeshes: Array<Nullable<AbstractMesh>> = [];
+    protected _constraintMeshes: Array<Nullable<Array<AbstractMesh>>> = [];
     /** @internal */
     protected _scene: Nullable<Scene>;
     /** @internal */
@@ -71,12 +71,14 @@ export class PhysicsViewer {
     private _debugMeshMeshes = new Array<Mesh>();
 
     private _constraintAxesSize = 0.4;
+    private _constraintAngularSize = 0.4;
 
     /**
      * Creates a new PhysicsViewer
      * @param scene defines the hosting scene
+     * @param size Physics V2 size scalar
      */
-    constructor(scene?: Scene) {
+    constructor(scene?: Scene, size?: number) {
         this._scene = scene || EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
@@ -90,6 +92,10 @@ export class PhysicsViewer {
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+        if (size) {
+            this._constraintAxesSize = 0.4 * size;
+            this._constraintAngularSize = 0.4 * size;
+        }
     }
 
     /**
@@ -211,7 +217,7 @@ export class PhysicsViewer {
             const constraint = this._constraints[i];
             const mesh = this._constraintMeshes[i];
             if (constraint && mesh) {
-                this._updateDebugConstraint(constraint, mesh);
+                this._updateDebugConstraint(constraint, mesh[0]);
             }
         }
     }
@@ -413,7 +419,7 @@ export class PhysicsViewer {
             this._numConstraints++;
         }
 
-        return debugMesh;
+        return debugMesh ? debugMesh[0] : null;
     }
 
     /**
@@ -571,14 +577,16 @@ export class PhysicsViewer {
 
         for (let i = 0; i < this._numConstraints; i++) {
             if (this._constraints[i] === constraint) {
-                const mesh = this._constraintMeshes[i];
+                const meshes = this._constraintMeshes[i];
 
-                if (!mesh) {
+                if (!meshes) {
                     continue;
                 }
 
-                utilityLayerScene.removeMesh(mesh);
-                mesh.dispose();
+                meshes.forEach((mesh) => {
+                    utilityLayerScene.removeMesh(mesh);
+                    mesh.dispose();
+                });
 
                 this._constraints.splice(i, 1);
                 this._constraintMeshes.splice(i, 1);
@@ -882,7 +890,7 @@ export class PhysicsViewer {
 
     private _createAngularConstraintMesh(minLimit: number, maxLimit: number, axisNumber: number, parent: TransformNode, scene: Scene): AbstractMesh {
         const arcAngle = (maxLimit - minLimit) / (Math.PI * 2);
-        const mesh = MeshBuilder.CreateCylinder("cone", { height: 0.01, diameter: 1, arc: arcAngle }, scene);
+        const mesh = MeshBuilder.CreateCylinder("cone", { height: 0.01, diameter: 3 * this._constraintAngularSize, arc: arcAngle }, scene);
         mesh.material = this._getDebugAxisColoredMaterial(axisNumber, scene);
         mesh.parent = parent;
         switch (axisNumber) {
@@ -913,7 +921,7 @@ export class PhysicsViewer {
         return cage;
     }
 
-    private _getDebugConstraintMesh(constraint: PhysicsConstraint): Nullable<AbstractMesh> {
+    private _getDebugConstraintMesh(constraint: PhysicsConstraint): Nullable<Array<AbstractMesh>> {
         if (!this._utilityLayer) {
             return null;
         }
@@ -935,6 +943,9 @@ export class PhysicsViewer {
 
         // First, get a reference to all physic bodies that are using this constraint
         const bodiesUsingConstraint = constraint.getBodiesUsingConstraint();
+
+        const parentedConstraintMeshes = [];
+        parentedConstraintMeshes.push(parentingMesh);
 
         for (const bodyPairInfo of bodiesUsingConstraint) {
             // Create a mesh to keep the pair of constraint axes
@@ -1042,6 +1053,7 @@ export class PhysicsViewer {
                         const maxLimit = engine.getAxisMaxLimit(constraint, axis);
                         const mesh = this._createAngularConstraintMesh(minLimit!, maxLimit!, axisIndex, childBody.transformNode, utilityLayerScene);
                         mesh.position.copyFrom(constraint.options.pivotB!);
+                        parentedConstraintMeshes.push(mesh);
                     }
                 }
             }
@@ -1077,7 +1089,7 @@ export class PhysicsViewer {
             }
         }
 
-        return parentingMesh;
+        return parentedConstraintMeshes;
     }
 
     /**
