@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Camera, Nullable, Observable } from "core/index";
+import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -25,8 +25,6 @@ const arrowResetFilledIcon =
     "M7.20711 2.54289C7.59763 2.93342 7.59763 3.56658 7.20711 3.95711L5.41421 5.75H13.25C17.6683 5.75 21.25 9.33172 21.25 13.75C21.25 18.1683 17.6683 21.75 13.25 21.75C8.83172 21.75 5.25 18.1683 5.25 13.75C5.25 13.1977 5.69772 12.75 6.25 12.75C6.80228 12.75 7.25 13.1977 7.25 13.75C7.25 17.0637 9.93629 19.75 13.25 19.75C16.5637 19.75 19.25 17.0637 19.25 13.75C19.25 10.4363 16.5637 7.75 13.25 7.75H5.41421L7.20711 9.54289C7.59763 9.93342 7.59763 10.5666 7.20711 10.9571C6.81658 11.3476 6.18342 11.3476 5.79289 10.9571L2.29289 7.45711C1.90237 7.06658 1.90237 6.43342 2.29289 6.04289L5.79289 2.54289C6.18342 2.15237 6.81658 2.15237 7.20711 2.54289Z";
 const targetFilledIcon =
     "M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14ZM6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12ZM12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z";
-const cameraFilledIcon =
-    "M8.75 3.5C8.75 3.08579 9.08579 2.75 9.5 2.75H14.5C14.9142 2.75 15.25 3.08579 15.25 3.5C15.25 3.91421 14.9142 4.25 14.5 4.25H9.5C9.08579 4.25 8.75 3.91421 8.75 3.5ZM9.95827 5.25022H14.0414C15.4106 5.25021 16.4955 5.25021 17.3619 5.33834C18.2496 5.42864 18.9906 5.61761 19.6388 6.05074C20.1575 6.39729 20.6028 6.84261 20.9493 7.36126C21.3824 8.00945 21.5715 8.7504 21.6618 9.63802C21.75 10.5047 21.75 11.5901 21.75 12.9601V13.0416C21.75 14.4108 21.75 15.4957 21.6619 16.3621C21.5716 17.2497 21.3826 17.9907 20.9495 18.639C20.6029 19.1576 20.1576 19.6029 19.639 19.9495C18.9907 20.3826 18.2497 20.5716 17.3621 20.6619C16.4957 20.75 15.4108 20.75 14.0416 20.75H9.95844C8.58922 20.75 7.50431 20.75 6.63794 20.6619C5.7503 20.5716 5.00926 20.3826 4.36104 19.9495C3.84239 19.6029 3.39707 19.1576 3.05052 18.639C2.61739 17.9907 2.42841 17.2497 2.33812 16.3621C2.24998 15.4957 2.24999 14.4108 2.25 13.0416V12.9566C2.24999 11.588 2.24998 10.5035 2.3381 9.63749C2.42838 8.75016 2.61733 8.00935 3.05037 7.36126C3.39692 6.84261 3.84224 6.39729 4.36089 6.05074C5.00911 5.61761 5.75015 5.42864 6.6378 5.33834C7.50415 5.25021 8.58906 5.25021 9.95827 5.25022ZM6.7896 6.83064C6.02056 6.90887 5.55492 7.05695 5.19425 7.29795C4.83938 7.53506 4.53469 7.83975 4.29758 8.19462C4.05664 8.5552 3.90861 9.02065 3.83039 9.78933C3.75091 10.5706 3.75 11.5787 3.75 12.9981V13C3.75 14.4201 3.75091 15.4287 3.83041 16.2102C3.90865 16.9793 4.05673 17.4449 4.29772 17.8056C4.53484 18.1605 4.83953 18.4652 5.1944 18.7023C5.55507 18.9433 6.02071 19.0914 6.78975 19.1696C7.57133 19.2491 8.57993 19.25 10 19.25H14C15.4201 19.25 16.4287 19.2491 17.2102 19.1696C17.9793 19.0914 18.4449 18.9433 18.8056 18.7023C19.1605 18.4652 19.4652 18.1605 19.7023 17.8056C19.9433 17.4449 20.0914 16.9793 20.1696 16.2102C20.2491 15.4287 20.25 14.4201 20.25 13C20.25 11.5799 20.2491 10.5714 20.1695 9.7899C20.0913 9.02094 19.9431 8.55533 19.7021 8.19462C19.465 7.83975 19.1603 7.53506 18.8055 7.29795C18.4448 7.05695 17.9791 6.90887 17.2101 6.83064C16.4285 6.75113 15.4199 6.75022 13.9999 6.75022H9.99985C8.57978 6.75022 7.57118 6.75113 6.7896 6.83064ZM12 10.75C10.7574 10.75 9.75 11.7574 9.75 13C9.75 14.2426 10.7574 15.25 12 15.25C13.2426 15.25 14.25 14.2426 14.25 13C14.25 11.7574 13.2426 10.75 12 10.75ZM8.25 13C8.25 10.9289 9.92893 9.25 12 9.25C14.0711 9.25 15.75 10.9289 15.75 13C15.75 15.0711 14.0711 16.75 12 16.75C9.92893 16.75 8.25 15.0711 8.25 13ZM16.75 10C16.75 9.58579 17.0858 9.25 17.5 9.25H18C18.4142 9.25 18.75 9.58579 18.75 10C18.75 10.4142 18.4142 10.75 18 10.75H17.5C17.0858 10.75 16.75 10.4142 16.75 10Z";
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
@@ -487,27 +485,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * Interpolates the default camera to match the point of view of another camera in the scene.
-     * @param id The id of the target camera to interpolate to.
-     * @returns A promise that resolves to `true` if the target camera is found and the interpolation is successful, `false` otherwise.
-     */
-    public async matchCameraPOV(id: string): Promise<boolean> {
-        if (this._viewerDetails) {
-            const camera = this._viewerDetails.scene.getCameraById(id);
-
-            if (camera) {
-                const cameraInfos = await this._viewerDetails.viewer.getArcRotateCameraInfos(camera);
-                if (cameraInfos) {
-                    this._viewerDetails.viewer.pauseAnimation();
-                    this._viewerDetails.camera.interpolateTo(cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius, cameraInfos.target);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * The engine to use for rendering.
      */
     @property({
@@ -706,9 +683,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
-    /**
-     * A string value that encodes one or more hotspots.
-     */
+    private _hotSpots: Record<string, HotSpot> = {};
+
     @property({
         attribute: "hotspots",
         converter: (value) => {
@@ -719,24 +695,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return JSON.parse(value);
         },
     })
-    public hotSpots: Readonly<Record<string, HotSpot>> = {};
+    set hotSpots(value: Record<string, HotSpot>) {
+        this._hotSpots = value;
+    }
+
+    get hotSpots() {
+        return this._hotSpots;
+    }
 
     private get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
-    }
-
-    /**
-     * Get every scene cameras except of the default one
-     */
-    private get _cameras(): Camera[] {
-        const cameras = this.viewerDetails?.scene.cameras.filter((camera) => {
-            return this.viewerDetails?.camera.id !== camera.id;
-        });
-        return cameras ?? [];
-    }
-
-    private get _hasCameras(): boolean {
-        return Object.keys(this._cameras).length > 0;
     }
 
     /**
@@ -800,14 +768,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: "material-variant" })
     public selectedMaterialVariant: Nullable<string> = null;
 
+    /**
+     * True if scene cameras should be used as hotspots.
+     */
+    @property({ attribute: "cameras-as-hotspots", reflect: true, type: Boolean })
+    public camerasAsHotSpots = false;
+
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
 
     @query("#hotSpotSelect")
     private _hotSpotSelect: HTMLSelectElement | undefined;
-
-    @query("#cameraSelect")
-    private _cameraSelect: HTMLSelectElement | undefined;
 
     /**
      * Toggles the play/pause animation state if there is a selected animation.
@@ -842,10 +813,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         if (this._hotSpotSelect) {
             this._hotSpotSelect.value = "";
-        }
-
-        if (this._cameraSelect) {
-            this._cameraSelect.value = "";
         }
 
         if (changedProperties.get("engine")) {
@@ -963,24 +930,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 `);
             }
 
-            // If other cameras exist in the scene, add camera controls.
-            if (this._hasCameras) {
-                toolbarControls.push(html`
-                    <div class="select-container">
-                        <select id="cameraSelect" aria-label="Select Camera" @change="${this._onCamerasChanged}">
-                            <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
-                            ${this._cameras.map((camera) => html`<option value="${camera.id}">${camera.name}&nbsp;&nbsp;</option>`)}
-                        </select>
-                        <!-- This button is not actually interactive, we want input to pass through to the select below. -->
-                        <button style="pointer-events: none">
-                            <svg viewBox="0 0 24 24">
-                                <path d="${cameraFilledIcon}" fill="currentColor"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `);
-            }
-
             // Add a vertical divider between each toolbar control.
             const controlCount = toolbarControls.length;
             const separator = html`<div class="divider"></div>`;
@@ -1063,14 +1012,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         // We don't actually want a selected value, this is just a one time trigger.
         selectElement.value = "";
         this.focusHotSpot(hotSpotName);
-    }
-
-    private _onCamerasChanged(event: Event) {
-        const selectElement = event.target as HTMLSelectElement;
-        const cameraId = selectElement.value;
-        // We don't actually want a selected value, this is just a one time trigger.
-        selectElement.value = "";
-        this.matchCameraPOV(cameraId);
     }
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.
@@ -1193,6 +1134,27 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 details.viewer.onAnimationProgressChanged.add(() => {
                     this.animationProgress = details.viewer.animationProgress ?? 0;
                     this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                });
+
+                details.scene.onNewCameraAddedObservable.add((camera) => {
+                    if (camera.uniqueId !== details.camera.uniqueId && this.camerasAsHotSpots) {
+                        details.viewer.getArcRotateCameraInfos(camera).then((cameraInfos) => {
+                            if (cameraInfos) {
+                                this._hotSpots[`camera-${camera.name}`] = {
+                                    type: "world",
+                                    position: cameraInfos.target.asArray(),
+                                    normal: cameraInfos.target.asArray(),
+                                    cameraOrbit: [cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius],
+                                };
+                                this.hotSpots = { ...this._hotSpots };
+                            }
+                        });
+                    }
+                });
+
+                details.scene.onCameraRemovedObservable.add((camera) => {
+                    delete this._hotSpots[`camera-${camera.name}`];
+                    this.hotSpots = { ...this._hotSpots };
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {

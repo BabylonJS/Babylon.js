@@ -1140,7 +1140,7 @@ export class Viewer implements IDisposable {
         }
 
         await import("core/Culling/ray");
-        const ray = camera.getForwardRay();
+        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // set starting point to camera global position
         const comGlobalPos = camera.globalPosition.clone();
 
         if (this._modelWorldCenter) {
