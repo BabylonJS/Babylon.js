@@ -23,6 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/mrdlBackplate.fragment";
 import "./shaders/mrdlBackplate.vertex";
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
+import { Tools } from "core/Misc/tools";
 
 /** @internal */
 class MRDLBackplateMaterialDefines extends MaterialDefines {
@@ -46,7 +47,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     /**
      * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
      */
-    public static IRIDESCENT_MAP_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-backplate-iridescence.png";
+    public static IRIDESCENT_MAP_TEXTURE_URL = "https://assets.babylonjs.com/core/MRTK/MRDL/mrtk-mrdl-backplate-iridescence.png";
     private _iridescentMapTexture: Texture;
 
     /**
@@ -216,8 +217,8 @@ export class MRDLBackplateMaterial extends PushMaterial {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
-
-        this._iridescentMapTexture = new Texture(MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        const textureUrl = Tools.GetAssetUrl(MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL);
+        this._iridescentMapTexture = new Texture(textureUrl, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public override needAlphaBlending(): boolean {

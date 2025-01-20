@@ -23,6 +23,7 @@ class ParticleSystemSetEmitterCreationOptions {
 export class ParticleSystemSet implements IDisposable {
     /**
      * Gets or sets base Assets URL
+     * Only used when parsing particle systems from JSON, not part of the core assets
      */
     public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 

@@ -23,6 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/mrdlSliderBar.fragment";
 import "./shaders/mrdlSliderBar.vertex";
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
+import { Tools } from "core/Misc/tools";
 
 /** @internal */
 class MRDLSliderBarMaterialDefines extends MaterialDefines {
@@ -48,7 +49,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     /**
      * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
      */
-    public static BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
+    public static BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/core/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
     private _blueGradientTexture: Texture;
     private _decalTexture: Texture;
     private _reflectionMapTexture: Texture;
@@ -487,7 +488,8 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
-        this._blueGradientTexture = new Texture(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        const textureUrl = Tools.GetAssetUrl(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL);
+        this._blueGradientTexture = new Texture(textureUrl, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
         this._decalTexture = new Texture("", this.getScene());
         this._reflectionMapTexture = new Texture("", this.getScene());
         this._indirectEnvTexture = new Texture("", this.getScene());

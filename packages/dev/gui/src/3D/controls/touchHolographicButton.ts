@@ -21,6 +21,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { Scalar } from "core/Maths/math.scalar";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to create a holographic button in 3D
@@ -30,7 +31,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the button model.
      */
-    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/core/MRTK/";
     /**
      * File name for the button model.
      */
@@ -337,8 +338,8 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
-
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
+        const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MODEL_BASE_URL);
+        SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
             const alphaMesh = CreateBox(
                 "${this.name}_alphaMesh",
                 {
