@@ -14,11 +14,6 @@ uniform mat4 baseWeightMatrix;
 uniform vec2 vBaseWeightInfos;
 #endif
 
-#ifdef BASEWEIGHT
-uniform mat4 baseWeightMatrix;
-uniform vec2 vBaseWeightInfos;
-#endif
-
 #ifdef AMBIENT
 uniform mat4 ambientMatrix;
 uniform vec4 vAmbientInfos;
