@@ -121,6 +121,15 @@ export class Tools {
     public static AssetBaseUrl = "";
 
     /**
+     * Sets both the script base URL and the assets base URL to the same value.
+     * Setter only!
+     */
+    public static set CDNBaseUrl(value: string) {
+        Tools.ScriptBaseUrl = value;
+        Tools.AssetBaseUrl = value;
+    }
+
+    /**
      * Sets a preprocessing function to run on a source URL before importing it
      * Note that this function will execute AFTER the base URL is appended to the URL
      */
