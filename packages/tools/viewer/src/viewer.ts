@@ -1170,15 +1170,15 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Calculates the `alpha`, `beta`, and `radius` angles, along with the target point.
+     * Calculates the alpha, beta, and radius along with the target point.
      * The target point is determined based on the camera's forward ray:
      *   - If an intersection with the main model is found, the first hit point is used as the target.
      *   - If no intersection is detected, a fallback target is calculated by projecting
      *     the distance between the camera and the main model's center along the forward ray.
      *
-     * @param camera The reference camera used to computes infos.
+     * @param camera The reference camera used to computes infos
      * @param predicate Used to define predicate for selecting meshes and instances (if exist)
-     * @returns An object containing the `alpha`, `beta`, `radius`, and `target` properties, or `null` if no model found.
+     * @returns An object containing the alpha, beta, radius and target properties, or null if no model found
      */
     public async getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
         if (camera instanceof ArcRotateCamera) {
