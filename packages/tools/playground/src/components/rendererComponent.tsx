@@ -25,6 +25,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _babylonToolkitWasLoaded = false;
     private _tmpErrorEvent?: ErrorEvent;
+    private _inspectorFallback: boolean = false;
 
     public constructor(props: IRenderingComponentProps) {
         super(props);
@@ -53,6 +54,18 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onInspectorRequiredObservable.add(() => {
             if (!this._scene) {
                 return;
+            }
+
+            // support for older versions
+            // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
+            if (this._scene.debugLayer.openedPanes === undefined) {
+                this._inspectorFallback = true;
+            }
+
+            // fallback?
+            if (this._inspectorFallback) {
+                const debugLayer: any = this._scene.debugLayer;
+                debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
             }
 
             if (this._scene.debugLayer.openedPanes === 0) {
