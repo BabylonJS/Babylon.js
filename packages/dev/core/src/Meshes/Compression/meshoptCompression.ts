@@ -116,12 +116,12 @@ export class MeshoptCompression implements IDisposable {
             // a simple debounce to avoid switching back and forth between workers and no workers while decoding
             if (WorkerTimeout !== null) {
                 clearTimeout(WorkerTimeout);
-                WorkerTimeout = setTimeout(() => {
-                    MeshoptDecoder.useWorkers(0);
-                    NumberOfWorkers = 0;
-                    WorkerTimeout = null;
-                }, 500);
             }
+            WorkerTimeout = setTimeout(() => {
+                MeshoptDecoder.useWorkers(0);
+                NumberOfWorkers = 0;
+                WorkerTimeout = null;
+            }, 1000);
             return result;
         });
     }
