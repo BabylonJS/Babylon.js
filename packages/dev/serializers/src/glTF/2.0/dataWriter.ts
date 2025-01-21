@@ -20,12 +20,9 @@ export class DataWriter {
     private _dataView: DataView;
     private _byteOffset: number;
 
-    public writeTypedArray(value: TypedArray): void {
+    public writeTypedArray(value: Exclude<TypedArray, BigInt64Array | BigUint64Array>): void {
         this._checkGrowBuffer(value.byteLength);
-        const setMethod = TypedArrayToWriteMethod.get(value.constructor);
-        if (!setMethod) {
-            throw new Error("writeTypedArray: Unsupported type: " + value.constructor.name);
-        }
+        const setMethod = TypedArrayToWriteMethod.get(value.constructor)!;
         for (let i = 0; i < value.length; i++) {
             setMethod(this._dataView, this._byteOffset, value[i] as number);
             this._byteOffset += value.BYTES_PER_ELEMENT;
