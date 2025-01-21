@@ -1055,6 +1055,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightDiffuse" + lightIndex,
         "vLightSpecular" + lightIndex,
         "vLightDirection" + lightIndex,
+        "vLightWidth" + lightIndex,
+        "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
         "lightMatrix" + lightIndex,
