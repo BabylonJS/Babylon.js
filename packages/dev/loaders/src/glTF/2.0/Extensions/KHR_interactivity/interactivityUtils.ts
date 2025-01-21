@@ -381,7 +381,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    // TODO!!!
     "math/combine2": {
         blocks: [FlowGraphBlockNames.CombineVector2],
         configuration: {},
@@ -977,8 +976,10 @@ export const gltfTypeToBabylonType: {
     float3: FlowGraphTypes.Vector3,
     float4: FlowGraphTypes.Vector4,
     float4x4: FlowGraphTypes.Matrix,
+    float2x2: FlowGraphTypes.Matrix, // we don't have matrix3 and matrix2. We only have 4x4
+    float3x3: FlowGraphTypes.Matrix, // we don't have matrix3 and matrix2. We only have 4x4
     int: FlowGraphTypes.Integer,
-    string: FlowGraphTypes.String,
+    string: FlowGraphTypes.String, // configuration only, not used as value type.
     "int[]": FlowGraphTypes.Any, // int[] is configuration only, not used as value type. Should be IntegerArray?
 };
 
