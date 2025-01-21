@@ -83,6 +83,7 @@
                 selected-animation="1"
                 camera-orbit="auto auto auto"
                 camera-target="auto auto auto"
+                cameras-as-hotspots="true"
                 hotspots='{
                     "antenna": {
                         "type": "surface",
@@ -138,7 +139,7 @@
             <button onclick="onToggleDOM()">Toggle DOM</button>
             <button onclick="onToggleEngine()">Toggle Engine</button>
             <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
-            <!-- <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button> -->
+            <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
         </div>
@@ -235,19 +236,19 @@
                 }
             };
 
-            // let isInspectorVisible = false;
-            // globalThis.onToggleInspector = async () => {
-            //     const { Inspector } = await import("inspector/inspector");
-            //     console.log("toggle inspector");
-            //     if (isInspectorVisible) {
-            //         Inspector.Hide();
-            //     } else {
-            //         console.log(viewerDetails != null);
-            //         console.log(viewerDetails?.scene != null);
-            //         Inspector.Show(viewerDetails.scene, {});
-            //     }
-            //     isInspectorVisible = !isInspectorVisible;
-            // };
+            let isInspectorVisible = false;
+            globalThis.onToggleInspector = async () => {
+                const { Inspector } = await import("inspector/inspector");
+                console.log("toggle inspector");
+                if (isInspectorVisible) {
+                    Inspector.Hide();
+                } else {
+                    console.log(viewerDetails != null);
+                    console.log(viewerDetails?.scene != null);
+                    Inspector.Show(viewerDetails.scene, {});
+                }
+                isInspectorVisible = !isInspectorVisible;
+            };
 
             let isTopContentVisible = false;
             globalThis.onToggleTopContent = () => {

@@ -369,7 +369,6 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
-    private _modelWorldCenter: Nullable<Vector3> = null;
 
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -1187,10 +1186,10 @@ export class Viewer implements IDisposable {
         }
 
         await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // set starting point to camera global position
+        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
         const comGlobalPos = camera.globalPosition.clone();
 
-        if (this._modelWorldCenter) {
+        if (this._modelInfo?.boundingInfo) {
             // Target and radius
             let radius: number = 0.0001; // Just to avoid division by zero
             const targetPoint = Vector3.Zero();
@@ -1201,7 +1200,7 @@ export class Viewer implements IDisposable {
             } else {
                 const direction = ray.direction.clone();
                 targetPoint.copyFrom(comGlobalPos);
-                radius = Vector3.Distance(comGlobalPos, this._modelWorldCenter);
+                radius = Vector3.Distance(comGlobalPos, this._modelInfo?.boundingInfo.worldCenter);
                 direction.scaleAndAddToRef(radius, targetPoint);
             }
 
