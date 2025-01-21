@@ -1089,10 +1089,12 @@ export class PhysicsViewer {
                 ];
                 const linesystem = MeshBuilder.CreateLineSystem("linesystem", { lines: myLines, colors: myColors }, utilityLayerScene);
                 linesystem.parent = parentBody.transformNode;
+                parentedConstraintMeshes.push(linesystem);
             } else {
                 const myLines = [[new Vector3(0, 0, 0), constraint.options.pivotA!.clone()]];
                 const linesystem = MeshBuilder.CreateLineSystem("linesystem", { lines: myLines }, utilityLayerScene);
                 linesystem.parent = parentBody.transformNode;
+                parentedConstraintMeshes.push(linesystem);
             }
         }
 
