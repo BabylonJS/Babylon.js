@@ -142,7 +142,7 @@ export type ViewerDetails = {
     /**
      * Provides access to the currently loaded model.
      */
-    model: Nullable<AssetContainer>;
+    model: Nullable<Model>;
 
     /**
      * Suspends the render loop.
@@ -237,6 +237,15 @@ export class ViewerHotSpotResult {
     public visibility: number = NaN;
 }
 
+export type ModelBoundingInfo = {
+    worldExtents: {
+        min: Vector3;
+        max: Vector3;
+    };
+    worldSize: Vector3;
+    worldCenter: Vector3;
+};
+
 export type Model = IDisposable &
     Readonly<{
         /**
@@ -253,7 +262,12 @@ export type Model = IDisposable &
          * Returns the world position and visibility of a hot spot.
          */
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
-    }>;
+    }> & {
+        /**
+         * The computed bounding info of the model.
+         */
+        boundingInfo?: ModelBoundingInfo;
+    };
 
 /**
  * Provides the information of alpha, beta, radius and target of the camera.
@@ -461,7 +475,7 @@ export class Viewer implements IDisposable {
             scene: viewer._scene,
             camera: viewer._camera,
             get model() {
-                return viewer._modelInfo?.assetContainer ?? null;
+                return viewer._modelInfo ?? null;
             },
             suspendRendering: () => this._suspendRendering(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
@@ -614,6 +628,7 @@ export class Viewer implements IDisposable {
         const [model, source] = args;
         if (model !== this._modelInfo) {
             this._modelInfo = model;
+            this._updateModelBoundingInfo();
             this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
@@ -674,6 +689,7 @@ export class Viewer implements IDisposable {
                     }),
                 ];
 
+                this._updateModelBoundingInfo();
                 this._updateCamera(interpolateCamera);
             }
 
@@ -744,6 +760,36 @@ export class Viewer implements IDisposable {
             this._modelInfo.materialVariantsController.selectedVariant = value;
             this._snapshotHelper.enableSnapshotRendering();
             this.onSelectedMaterialVariantChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
+     */
+    private _updateModelBoundingInfo(): void {
+        if (this._modelInfo?.assetContainer.meshes.length) {
+            const maxExtents = computeMaxExtents(this._modelInfo.assetContainer.meshes, this._activeAnimation);
+            const min = new Vector3(
+                Math.min(...maxExtents.map((e) => e.minimum.x)),
+                Math.min(...maxExtents.map((e) => e.minimum.y)),
+                Math.min(...maxExtents.map((e) => e.minimum.z))
+            );
+            const max = new Vector3(
+                Math.max(...maxExtents.map((e) => e.maximum.x)),
+                Math.max(...maxExtents.map((e) => e.maximum.y)),
+                Math.max(...maxExtents.map((e) => e.maximum.z))
+            );
+            const size = max.subtract(min);
+            const center = min.add(size.scale(0.5));
+
+            this._modelInfo.boundingInfo = {
+                worldExtents: {
+                    min,
+                    max,
+                },
+                worldSize: size,
+                worldCenter: center,
+            };
         }
     }
 
@@ -1245,29 +1291,20 @@ export class Viewer implements IDisposable {
         let goalRadius = 1;
         let goalTarget = currentTarget;
 
-        if (this._modelInfo?.assetContainer.meshes.length) {
+        if (this._modelInfo?.boundingInfo) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const maxExtents = computeMaxExtents(this._modelInfo.assetContainer.meshes, this._activeAnimation);
-            const worldExtents = {
-                min: new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z))),
-                max: new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z))),
-            };
+            const boundingInfo = this._modelInfo.boundingInfo;
+            const worldExtents = boundingInfo.worldExtents;
             framingBehavior.zoomOnBoundingInfo(worldExtents.min, worldExtents.max);
 
-            const worldSize = worldExtents.max.subtract(worldExtents.min);
-            const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
-            this._modelWorldCenter = worldCenter.clone();
-
-            goalRadius = worldSize.length() * 1.1;
-
+            goalRadius = boundingInfo.worldSize.length() * 1.1;
+            goalTarget = boundingInfo.worldCenter.clone();
             if (!isFinite(goalRadius)) {
                 goalRadius = 1;
-                worldCenter.copyFromFloats(0, 0, 0);
+                goalTarget.copyFromFloats(0, 0, 0);
             }
-
-            goalTarget = worldCenter;
         }
         this._camera.alpha = Math.PI / 2;
         this._camera.beta = Math.PI / 2.4;
