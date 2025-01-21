@@ -1187,25 +1187,29 @@ export class Viewer implements IDisposable {
 
         await import("core/Culling/ray");
         const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-        const comGlobalPos = camera.globalPosition.clone();
+        const camGlobalPos = camera.globalPosition.clone();
 
         if (this._modelInfo?.boundingInfo) {
-            // Target and radius
+            // Target
             let radius: number = 0.0001; // Just to avoid division by zero
             const targetPoint = Vector3.Zero();
             const pickingInfo = this._scene.pickWithRay(ray, predicate);
             if (pickingInfo && pickingInfo.hit) {
                 targetPoint.copyFrom(pickingInfo.pickedPoint!);
-                radius = Vector3.Distance(comGlobalPos, targetPoint);
             } else {
                 const direction = ray.direction.clone();
-                targetPoint.copyFrom(comGlobalPos);
-                radius = Vector3.Distance(comGlobalPos, this._modelInfo?.boundingInfo.worldCenter);
+                targetPoint.copyFrom(camGlobalPos);
+                radius = Vector3.Distance(camGlobalPos, this._modelInfo?.boundingInfo.worldCenter);
                 direction.scaleAndAddToRef(radius, targetPoint);
             }
 
             const computationVector = this._tempVectors[0];
-            comGlobalPos.subtractToRef(targetPoint, computationVector);
+            camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+            // Radius
+            if (pickingInfo && pickingInfo.hit) {
+                radius = computationVector.length();
+            }
 
             // Alpha
             let alpha = Math.PI / 2;
