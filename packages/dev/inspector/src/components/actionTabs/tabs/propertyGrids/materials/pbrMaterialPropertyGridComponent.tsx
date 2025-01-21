@@ -1255,13 +1255,6 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         propertyName="useHorizonOcclusion"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <CheckBoxLineComponent
-                        label="Alternate rough radiance "
-                        target={material}
-                        propertyName="mixRoughRadianceWithIrradiance"
-                        onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
