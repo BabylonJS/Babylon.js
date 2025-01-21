@@ -910,12 +910,13 @@ export class PhysicsViewer {
 
     private _createCage(parent: TransformNode, scene: Scene): AbstractMesh {
         const cage = MeshBuilder.CreateBox("cage", { size: 1 }, scene);
+        cage.setPivotPoint(new Vector3(-0.5, -0.5, -0.5));
         const transparentMaterial = new StandardMaterial("cage_material", scene);
         transparentMaterial.alpha = 0; // Fully transparent
         cage.material = transparentMaterial;
 
         cage.enableEdgesRendering();
-        cage.edgesWidth = 2.0;
+        cage.edgesWidth = 4.0;
         cage.edgesColor = new Color4(1, 1, 1, 1);
         cage.parent = parent;
         return cage;
@@ -1026,21 +1027,27 @@ export class PhysicsViewer {
 
                 const min = TmpVectors.Vector3[0];
                 const max = TmpVectors.Vector3[1];
+                const limited = [false, false, false];
 
-                min.x = engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_X)!;
-                max.x = engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_X)!;
-                min.y = engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_Y)!;
-                max.y = engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_Y)!;
-                min.z = engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_Z)!;
-                max.z = engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_Z)!;
+                limited[0] = engine.getAxisMode(constraint, PhysicsConstraintAxis.LINEAR_X) == PhysicsConstraintAxisLimitMode.LIMITED;
+                limited[1] = engine.getAxisMode(constraint, PhysicsConstraintAxis.LINEAR_Y) == PhysicsConstraintAxisLimitMode.LIMITED;
+                limited[2] = engine.getAxisMode(constraint, PhysicsConstraintAxis.LINEAR_Z) == PhysicsConstraintAxisLimitMode.LIMITED;
 
-                cage.position.x = (max.x + min.x) * 0.5;
-                cage.position.y = (max.y + min.y) * 0.5;
-                cage.position.z = (max.z + min.z) * 0.5;
+                min.x = limited[0] ? engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_X)! : 0;
+                max.x = limited[0] ? engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_X)! : 0;
+                min.y = limited[1] ? engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_Y)! : 0;
+                max.y = limited[1] ? engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_Y)! : 0;
+                min.z = limited[2] ? engine.getAxisMinLimit(constraint, PhysicsConstraintAxis.LINEAR_Z)! : 0;
+                max.z = limited[2] ? engine.getAxisMaxLimit(constraint, PhysicsConstraintAxis.LINEAR_Z)! : 0;
 
-                cage.scaling.x = (max.x - min.x) * 0.5;
-                cage.scaling.y = (max.y - min.y) * 0.5;
-                cage.scaling.z = (max.z - min.z) * 0.5;
+                cage.position.x = min.x + 0.5;
+                cage.position.y = min.y + 0.5;
+                cage.position.z = min.z + 0.5;
+
+                cage.scaling.x = max.x - min.x + Epsilon;
+                cage.scaling.y = max.y - min.y + Epsilon;
+                cage.scaling.z = max.z - min.z + Epsilon;
+                parentedConstraintMeshes.push(cage);
             }
 
             // Angular
