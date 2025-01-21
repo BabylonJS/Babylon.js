@@ -22,11 +22,6 @@ enum FrameGraphPassType {
  */
 export class FrameGraph {
     /**
-     * Rejection message (from WhenReadyAsync) when the frame graph has been disposed
-     */
-    public static WhenReadyRejectionDisposed = "FrameGraph: The frame graph has been disposed.";
-
-    /**
      * Gets the texture manager used by the frame graph
      */
     public readonly textureManager: FrameGraphTextureManager;
@@ -36,7 +31,7 @@ export class FrameGraph {
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
     private _currentProcessedTask: FrameGraphTask | null = null;
-    private _isDisposed = false;
+    private _whenReadyAsyncCancel: Nullable<() => void> = null;
 
     /**
      * Observable raised when the node render graph is built
@@ -185,28 +180,38 @@ export class FrameGraph {
      * @returns The promise that resolves when the graph is ready
      */
     public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
-        return new Promise((resolve, reject) => {
-            _retryWithInterval(
+        let firstNotReadyTask: FrameGraphTask | null = null;
+        return new Promise((resolve) => {
+            this._whenReadyAsyncCancel = _retryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {
-                        ready = task.isReady() && ready;
+                        const taskIsReady = task.isReady();
+                        if (!taskIsReady && !firstNotReadyTask) {
+                            firstNotReadyTask = task;
+                        }
+                        ready &&= taskIsReady;
                     }
-                    return this._isDisposed || ready;
+                    return ready;
                 },
                 () => {
-                    if (this._isDisposed) {
-                        reject(FrameGraph.WhenReadyRejectionDisposed);
-                    } else {
+                    this._whenReadyAsyncCancel = null;
                         resolve();
-                    }
                 },
-                (err) => {
-                    if (err.stack) {
+                (err, wasUnexpected) => {
+                    this._whenReadyAsyncCancel = null;
+                    if (wasUnexpected) {
                         Logger.Error("FrameGraph: An unexpected error occurred while waiting for the frame graph to be ready.");
+                        if (err) {
+                            Logger.Error(err);
+                            if (err.stack) {
                         Logger.Error(err.stack);
+                            }
+                        }
                     } else {
-                        Logger.Error("FrameGraph: Timeout while waiting for the frame graph to be ready.");
+                        Logger.Error(
+                            `FrameGraph: Timeout while waiting for the frame graph to be ready.${firstNotReadyTask ? ` First task not ready: ${firstNotReadyTask.name}` : ""}`
+                        );
                         if (err) {
                             Logger.Error(err);
                         }
@@ -240,6 +245,9 @@ export class FrameGraph {
      * The frame graph can be built again after this method is called.
      */
     public clear(): void {
+        this._whenReadyAsyncCancel?.();
+        this._whenReadyAsyncCancel = null;
+
         for (const task of this._tasks) {
             task._reset();
         }
@@ -253,7 +261,8 @@ export class FrameGraph {
      * Disposes the frame graph
      */
     public dispose(): void {
-        this._isDisposed = true;
+        this._whenReadyAsyncCancel?.();
+        this._whenReadyAsyncCancel = null;
         this.clear();
         this.textureManager._dispose();
         this._renderContext._dispose();
