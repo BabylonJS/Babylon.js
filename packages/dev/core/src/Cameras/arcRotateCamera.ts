@@ -1132,6 +1132,35 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Computes the alpha angle based on the source position and the target position.
+     * @param offset The directional offset between the source position and the target position
+     * @returns The alpha angle in radians
+     */
+    public static computeAlpha(offset: Vector3): number {
+        // Default alpha to π/2 to handle the edge case where x and z are both zero (when looking along up axis)
+        let alpha = Math.PI / 2;
+        if (!(offset.x === 0 && offset.z === 0)) {
+            alpha = Math.acos(offset.x / Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.z, 2)));
+        }
+
+        if (offset.z < 0) {
+            alpha = 2 * Math.PI - alpha;
+        }
+
+        return alpha;
+    }
+
+    /**
+     * Computes the beta angle based on the source position and the target position.
+     * @param verticalOffset The y value of the directional offset between the source position and the target position
+     * @param radius The distance between the source position and the target position
+     * @returns The beta angle in radians
+     */
+    public static computeBeta(verticalOffset: number, radius: number): number {
+        return Math.acos(verticalOffset / radius);
+    }
+
+    /**
      * Rebuilds angles (alpha, beta) and radius from the give position and target
      */
     public rebuildAnglesAndRadius(): void {
@@ -1148,25 +1177,15 @@ export class ArcRotateCamera extends TargetCamera {
             this.radius = 0.0001; // Just to avoid division by zero
         }
 
-        // Alpha
+        // Alpha and Beta
         const previousAlpha = this.alpha;
-        if (this._computationVector.x === 0 && this._computationVector.z === 0) {
-            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
-        } else {
-            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
-        }
-
-        if (this._computationVector.z < 0) {
-            this.alpha = 2 * Math.PI - this.alpha;
-        }
+        this.alpha = ArcRotateCamera.computeAlpha(this._computationVector);
+        this.beta = ArcRotateCamera.computeBeta(this._computationVector.y, this.radius);
 
         // Calculate the number of revolutions between the new and old alpha values.
         const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI));
         // Adjust alpha so that its numerical representation is the closest one to the old value.
         this.alpha += alphaCorrectionTurns * 2.0 * Math.PI;
-
-        // Beta
-        this.beta = Math.acos(this._computationVector.y / this.radius);
 
         this._checkLimits();
     }

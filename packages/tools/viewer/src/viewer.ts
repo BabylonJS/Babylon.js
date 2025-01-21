@@ -1211,17 +1211,9 @@ export class Viewer implements IDisposable {
                 radius = computationVector.length();
             }
 
-            // Alpha
-            let alpha = Math.PI / 2;
-            if (!(computationVector.x === 0 && computationVector.z === 0)) {
-                alpha = Math.acos(computationVector.x / Math.sqrt(Math.pow(computationVector.x, 2) + Math.pow(computationVector.z, 2)));
-            }
-            if (computationVector.z < 0) {
-                alpha = 2 * Math.PI - alpha;
-            }
-
-            // Beta
-            const beta = Math.acos(computationVector.y / radius);
+            // Alpha and Beta
+            const alpha = ArcRotateCamera.computeAlpha(computationVector);
+            const beta = ArcRotateCamera.computeBeta(computationVector.y, radius);
 
             return { alpha, beta, radius, target: targetPoint };
         }
