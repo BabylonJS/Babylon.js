@@ -6,7 +6,7 @@ import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix } from "../Maths/math.vector";
+import type { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -156,9 +156,16 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public TWOSIDEDLIGHTING = false;
     public SHADOWFLOAT = false;
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
+    public MORPHTARGETS_UV2 = false;
+    public MORPHTARGETTEXTURE_HASPOSITIONS = false;
+    public MORPHTARGETTEXTURE_HASNORMALS = false;
+    public MORPHTARGETTEXTURE_HASTANGENTS = false;
+    public MORPHTARGETTEXTURE_HASUVS = false;
+    public MORPHTARGETTEXTURE_HASUV2S = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
@@ -802,7 +809,6 @@ export class StandardMaterial extends PushMaterial {
     public readonly detailMap: DetailMapConfiguration;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
-    protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _cacheHasRenderTargetTextures = false;
 

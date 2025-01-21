@@ -29,6 +29,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
+    private _depthTest: boolean;
+    private _depthWrite: boolean;
 
     private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
         return (value as ObjectRenderer).initRender !== undefined;
@@ -183,6 +185,22 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /**
+     * Saves the current depth states (depth testing and depth writing)
+     */
+    public saveDepthStates(): void {
+        this._depthTest = this._engine.getDepthBuffer();
+        this._depthWrite = this._engine.getDepthWrite();
+    }
+
+    /**
+     * Restores the depth states saved by saveDepthStates
+     */
+    public restoreDepthStates(): void {
+        this._engine.setDepthBuffer(this._depthTest);
+        this._engine.setDepthWrite(this._depthWrite);
+    }
+
+    /**
      * Sets the depth states for the current render target
      * @param depthTest If true, depth testing is enabled
      * @param depthWrite If true, depth writing is enabled
@@ -250,10 +268,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
                 this._scene.incrementRenderId();
                 this._scene.resetCachedMaterial();
 
+                this._applyRenderTarget();
+
                 object.prepareRenderList();
+
                 object.initRender(viewportWidth!, viewportHeight!);
 
-                this._applyRenderTarget();
                 object.render();
 
                 object.finishRender();
@@ -297,7 +317,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
-    private _applyRenderTarget() {
+    /** @internal */
+    public _applyRenderTarget() {
         if (this._renderTargetIsBound) {
             return;
         }

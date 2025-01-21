@@ -1,6 +1,1410 @@
 {
-    "fromTag": "7.40.1",
+    "fromTag": "7.43.0",
     "changelog": {
+        "7.43.0": [
+            {
+                "pr": "16049",
+                "title": "Take new viewer out of preview/alpha",
+                "description": "Overall this change removes the ES6 and UMD builds of the legacy viewer (new builds will not be published, but old ones are still available, and same goes for the CDN), renames some directories to make the new viewer be the main viewer directory, and the new viewer is published as @babylonjs/viewer (not -alpha version suffix or @preview tag).\r\n\r\n- Remove public/@babylonjs/viewer\r\n- Remove public/umd/babylonjs-viewer\r\n- Rename tools/viewer to tools/viewer-legacy\r\n- Remove babylonjs-viewer from the umd build\r\n\r\n- Rename public/@babylonjs/viewer-alpha to public/@babylonjs/viewer\r\n- Rename tools/viewer-alpha to tools/viewer\r\n- Update readme to remove references to -alpha and @preview\r\n- Delete the package.json patching script\r\n\r\n- Update various references to file paths based on the above changes",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/public/@babylonjs/viewer-alpha/license.md",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/prepublish.cjs",
+                    "packages/public/@babylonjs/viewer-alpha/readme.md",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.json",
+                    "packages/public/@babylonjs/viewer/assets/photoStudio.env",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/@babylonjs/viewer/readme.md",
+                    "packages/public/@babylonjs/viewer/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer/rollup.config.lib.mjs",
+                    "packages/public/@babylonjs/viewer/test/apps/web/index.html",
+                    "packages/public/@babylonjs/viewer/test/apps/web/published.html",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.dist.json",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.json",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.lib.json",
+                    "packages/public/@babylonjs/viewer/tsconfig.json",
+                    "packages/public/@babylonjs/viewer/vite.config.mjs",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/public/umd/babylonjs-viewer/.npmignore",
+                    "packages/public/umd/babylonjs-viewer/config.json",
+                    "packages/public/umd/babylonjs-viewer/license.md",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/public/umd/babylonjs-viewer/readme.md",
+                    "packages/public/umd/babylonjs-viewer/src/index.ts",
+                    "packages/public/umd/babylonjs-viewer/tsconfig.json",
+                    "packages/public/umd/babylonjs-viewer/webpack.config.js",
+                    "packages/tools/babylonServer/tsconfig.build.json",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/nodeEditor/tsconfig.nocomposite.json",
+                    "packages/tools/nodeGeometryEditor/tsconfig.nocomposite.json",
+                    "packages/tools/nodeRenderGraphEditor/tsconfig.nocomposite.json",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/tsconfig.build.json",
+                    "packages/tools/viewer-legacy/package.json",
+                    "packages/tools/viewer-legacy/public/_headers",
+                    "packages/tools/viewer-legacy/public/_redirects",
+                    "packages/tools/viewer-legacy/public/assets/BrainStem/BrainStem.gltf",
+                    "packages/tools/viewer-legacy/public/assets/BrainStem/BrainStem0.bin",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_NX_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_NY_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_NZ_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_PX_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_PY_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_PZ_256.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/DefaultSkybox_cube_radiance_256.dds",
+                    "packages/tools/viewer-legacy/public/assets/environment/EnvMap_1.2-256.env",
+                    "packages/tools/viewer-legacy/public/assets/environment/EnvMap_2.0-256.env",
+                    "packages/tools/viewer-legacy/public/assets/environment/EnvMap_3.0-256.env",
+                    "packages/tools/viewer-legacy/public/assets/environment/Ground_1.0-1024.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/Ground_2.0-1024.png",
+                    "packages/tools/viewer-legacy/public/assets/environment/Skybox_1.0-128.dds",
+                    "packages/tools/viewer-legacy/public/assets/environment/Skybox_2.0-256.dds",
+                    "packages/tools/viewer-legacy/public/babylon.woff",
+                    "packages/tools/viewer-legacy/public/basicExample.html",
+                    "packages/tools/viewer-legacy/public/config.json",
+                    "packages/tools/viewer-legacy/public/domExample.html",
+                    "packages/tools/viewer-legacy/public/environment.dds",
+                    "packages/tools/viewer-legacy/public/eventsExample.html",
+                    "packages/tools/viewer-legacy/public/external/msft/EnvMap_2.0-256.env",
+                    "packages/tools/viewer-legacy/public/external/msft/EnvMap_3.0-256.env",
+                    "packages/tools/viewer-legacy/public/external/msft/Ground_2.0-1024.png",
+                    "packages/tools/viewer-legacy/public/external/msft/Skybox_3.0-256.dds",
+                    "packages/tools/viewer-legacy/public/external/msft/codeExample.html",
+                    "packages/tools/viewer-legacy/public/external/msft/config.json",
+                    "packages/tools/viewer-legacy/public/external/msft/htmlExample.html",
+                    "packages/tools/viewer-legacy/public/loadModelManually.html",
+                    "packages/tools/viewer-legacy/public/printExample.html",
+                    "packages/tools/viewer-legacy/public/renderOnlyViewer.html",
+                    "packages/tools/viewer-legacy/public/sphereExample.html",
+                    "packages/tools/viewer-legacy/public/ufoExample.html",
+                    "packages/tools/viewer-legacy/src/configuration/configuration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/configurationCompatibility.ts",
+                    "packages/tools/viewer-legacy/src/configuration/configurationContainer.ts",
+                    "packages/tools/viewer-legacy/src/configuration/globals.ts",
+                    "packages/tools/viewer-legacy/src/configuration/index.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/cameraConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/colorGradingConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/defaultRenderingPipelineConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/environmentMapConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/groundConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/imageProcessingConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/index.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/lightConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/modelAnimationConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/modelConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/observersConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/sceneConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/sceneOptimizerConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/skyboxConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/templateConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/interfaces/vrConfiguration.ts",
+                    "packages/tools/viewer-legacy/src/configuration/loader.ts",
+                    "packages/tools/viewer-legacy/src/configuration/mappers.ts",
+                    "packages/tools/viewer-legacy/src/configuration/renderOnlyLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16048",
+                "title": "Shader material improvements",
+                "description": "* Allow `Vector*` uniforms to be set with their `IVector*Like` equivalents.\r\n* Defer some initializations and allocations until if and when they are actually needed (e.g. constructing `EffectFallbacks`)",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16047",
+                "title": "SPZ color conversion",
+                "description": "More consistent with Nianticlabs conversion tool",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16046",
+                "title": "Mesh: Make cloning thin instances optional",
+                "description": "See https://forum.babylonjs.com/t/cloning-after-thin-instance-back-compat-issue/55688/16 for context.\r\n\r\nFollow up to #15997. It removes the breaking change, as the user will now have to explicitely ask for thin instances cloning.\r\n\r\nOriginal PG fixed with the change from this PR:\r\n\r\nhttps://playground.babylonjs.com/#92Y727#461",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16045",
+                "title": "WebGPU: fix crashes in Firefox and Safari",
+                "description": "[This PG](https://playground.babylonjs.com/?webgpu#H1LRZ3#39) crashes in Firefox / Safari because an empty vertex buffer is bound to the pipeline. The fix is simply to call `this._createOffsetsBuffer()` earlier so that the correct vertex buffer is created (cc @RolandCsibrei, to make sure it's the right fix / in the right place).\r\n\r\n[This PG](https://playground.babylonjs.com/?webgpu#LPTLZM#298) crashes for the same reason, but the fix is a bit more complex as we shouldn't use an attribute in a node material if the mesh using that material doesn't support the attribute. So I've added some code to declare a regular (dummy) variable with the same name as the attribute when the latter is not supported.\r\n\r\nNote that I also added some debug code (mostly labels) to ease debugging in WebGPU.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16043",
+                "title": "Fix lineMesh cloned alpha values",
+                "description": "https://forum.babylonjs.com/t/linesystem-clone-method-does-not-copy-value-of-alpha-property/55824",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16038",
+                "title": "Mesh: fix LOD management",
+                "description": "While working on the frame graph, I noticed that we had a problem with LOD management when using custom render target textures.\r\nTake this PG:\r\n\r\nhttps://playground.babylonjs.com/#WSWPUJ#1\r\n\r\nThe large sphere comes from the main rendering, which uses a camera located at a distance of 10 from the sphere.\r\nThe small sphere comes from a render target texture (RTT), which is displayed on a vertical plane and uses a camera located at a distance of 30 from the sphere.\r\nA LOD (box) has been defined for the sphere, at a distance of 15.\r\nWe should therefore see a box instead of the small sphere, as 30 > 15.\r\n\r\n|What we see|What we should see|\r\n|-|-|\r\n|![image](https://github.com/user-attachments/assets/2ef2db32-4007-4349-a19e-b0bba530e7de)|![image](https://github.com/user-attachments/assets/8959f162-3694-4c13-be87-db1fdf7c6dff)|\r\n\r\nThis doesn't work because the LOD is calculated for the main camera and reused for all custom RTTs.\r\nThe PR updates the LOD management by storing the LOD per camera.\r\nIn addition, I've introduced a `cameraForLOD` property in `ObjectRenderer` / `RenderTargetTexture`, because we may want to use a LOD for a camera that is different from `ObjectRenderer.activeCamera` (think of rendering from a light: the LOD should be retrieved from the main camera, not from the light's point of view). If not supplied, `cameraForLOD=activeCamera` to maintain backward compatibility.\r\n\r\nOther changes in this PR are frame graph related:\r\n* added the `camera` entry to the shadow generator frame graph task. I hadn't originally added this entry because we didn't need it for rendering, but we do need it to retrieve a correct LOD (which is also why I added the new `ObjectRenderer.cameraForLOD` property).\r\n* fixed a bug with DoF task in WebGL\r\n* added visualization tests\r\n\r\nOther changes:\r\n* fixed a state problem where the current frame buffer was not reset to the correct value at the end of `createMultipleRenderTarget`.\r\n* fixed `shadowMap.customIsReadyFunction` to correctly check readiness when `ObjectRenderer.isReady` is called.\r\n* improved debugging by updating engine render pass names when `ObjectRenderer.name` is updated\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseShadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/csmShadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/shadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-custom-rendering.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-gui-bloom.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrg-glow-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrg-gui-bloom.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-csm-shadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-custom-rendering.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-depth-of-field.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-glow-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-shadows.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16042",
+                "title": "SPZ splat orientation",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16035",
+                "title": "Fix asset container mesh for GS",
+                "description": "follow up https://forum.babylonjs.com/t/splats-and-asset-containers/55492/9",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16040",
+                "title": "force chrome on WebGPU tests",
+                "description": "This will prevent running webgpu tests on the internal chromium version, which doesn't support WebGPU.\n\nNote that the local chrome version will be used, so if no chrome is installed WebGPU tests will fail.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16037",
+                "title": "Small Viewer fixes",
+                "description": "- In a recent change I introduced the ability to have separate env lighting and skybox textures, but I made a mistake that resulted in loading errors not propagating. This is fixed in this PR.\r\n- Export the `HotSpot` type (makes it much easier to use in consuming code).\r\n- Add the *source* to the `onModelChange` observable. This is transient data (e.g. we don't want to store a `File` or `ArrayBuffer` indefinitely), so it is included in the observable event data. The actual loaded model (not the source) can be accessed through the existing `model` property, which is an `AssetContainer`.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16036",
+                "title": "Morph target manager: Don't recreate texture if not needed when updates are re-enabled",
+                "description": "See https://forum.babylonjs.com/t/morphtargetmanager-performence-issue/55661",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16025",
+                "title": "If HTTP connection closed prematurely, consider retry",
+                "description": "xhr2 (used for HTTP under node) will return response=null if the server returns a response but the connection is closed before the full response has been downloaded. Previously this would lead to a null reference in some handlers, e.g. glTFFileLoader would throw \"Cannot read properties of null (reading 'byteLength')\". With this change onSuccess is not called if the response is null; instead the retry logic can choose to retry or error.",
+                "author": {
+                    "name": "djn24",
+                    "url": "https://github.com/djn24"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16034",
+                "title": "FrameGraph: Add support for node materials to the frame graph geometry renderer",
+                "description": "See https://forum.babylonjs.com/t/nodematerials-that-are-change-geometry-of-their-meshes-usage-with-depthrenderer/55753",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16033",
+                "title": "GreasedLine OIT support",
+                "description": "Added OIT support to `GreasedLinePluginMaterial`, both GLSL and WGSL.\r\n`GreasedLineSimpleMaterial` doesn't support `alpha` so it was not changed.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersGLSL.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16032",
+                "title": "Fix Animation loop in CreateAndStartAnimation",
+                "description": "https://forum.babylonjs.com/t/loop-mode-yoyo-relative-relative-current-not-working-with-createandstartanimation-method/55736",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16029",
+                "title": "Add getter for tagged entities in asset container",
+                "description": "as described in the last point (\"Convenience functions for asset container\") of this [forum post](https://forum.babylonjs.com/t/improve-tags-api/55351).\r\n\r\nSince there is no common base class for the asset container and scene anymore (I think there was one before 🤔) it's just copy and paste from the `scene.ts`.\r\n\r\nAs a side note I'd say that all the other scene getter, starting from [getAnimationGroupByName](https://github.com/BabylonJS/Babylon.js/blob/c64e9c6d4538390d879142625374187b2d83b9be/packages/dev/core/src/scene.ts#L3216) to [getPostProcessByName](https://github.com/BabylonJS/Babylon.js/blob/c64e9c6d4538390d879142625374187b2d83b9be/packages/dev/core/src/scene.ts#L3928) could be interesting on asset container level as well at some point, whereas I don't have a concrete use case for it ATM.\r\nAs far as I have seen these getters have very basic interaction with the entities defined in `IAssetContainer`, so having a common base class with all these getters could keep be very benefitial I'd say.",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16031",
+                "title": "Minor allocation optimization",
+                "description": "Avoids a few redundant string creations in the GUI logic when dimensions/positions are changing.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16030",
+                "title": "SubMesh: pre-allocate buffers for _getLinesIndexBuffer",
+                "description": "## Background\r\n\r\nCurrently in _getLinesIndexBuffer a linesIndices buffer is initialized as array, which size grows dynamically in the loop after it, which could lead to memory reallocations and more gc pressures. Also, uses array to store numbers would result in at least a 8-bytes double pre spec, and likely 24-bytes “heap number” in some chrome v8.\r\n\r\n## Proposal\r\n\r\nPre-allocate buffers as TypedArray, from the loop below we can know that the size of linesIndices should be exactly 2x the size of this.indexCount (aligned down to 3 elements). This can also eliminate the overhead of scanning the buffer in engine._normalizeIndexData.\r\n\r\n## References\r\n\r\nForum post: <https://forum.babylonjs.com/t/submesh-pre-allocate-buffers-for-getlinesindexbuffer/55585>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16028",
+                "title": "Fix NormalMaterial with ThinInstances",
+                "description": "https://forum.babylonjs.com/t/sandbox-display-normals-changes-position-of-thin-instance-mesh/55634",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/materials/src/normal/normalMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16024",
+                "title": "Make position morph binding as optional in renderers + enable other attrib type morph",
+                "description": "In #16014 it is now possible to disable position morphs, but since we changed all renderers that use morph targets to unconditionally add the `MORPHTARGETS_POSITION` define, I tried to use those renderers with meshes that don't have position morphs and found that it caused problems.\r\n\r\nThis PR fixes the issue mentioned above and enables normal, tangent, uv, and uv2 morphing, which were present in the renderers' shader code but not working in practice. (This is an additional issue I discovered while editing the code)\r\n\r\nThis is a list of fixed renderers Each of the morph types supported by these renderers existed in the shader but were not actually working because the isReady function did not add the appropriate attributes and define:\r\n\r\n- DepthRenderer - uv, uv2\r\n- EffectLayer - uv, uv2\r\n- GeometryBufferRenderer - normal, uv, uv2\r\n- OutlineRenderer - normal, uv, uv2\r\n- ShadowGenerator - normal, uv, uv2\r\n- VolumetricLightScatteringPostProcess - uv, uv2\r\n\r\nThis is a list of fixed renderers that had code that did not account for the case where the Morph Target Manager does not support Position Morph:\r\n\r\n- ComputeShaderBoundingHelper\r\n- TransformFeedbackBoundingHelper\r\n- MorphTargetsBlock\r\n\r\nThe following defines have been added to handle cases where the list of morph data types that the MorphTargetManager has on the texture does not match the list of morph data types required by the shader.\r\n\r\n```\r\nMORPHTARGETS_SUPPORTPOSITIONS\r\nMORPHTARGETS_SUPPORTNORMALS\r\nMORPHTARGETS_SUPPORTTANGENTS\r\nMORPHTARGETS_SUPPORTUVS\r\nMORPHTARGETS_SUPPORTUV2S\r\n```\r\n\r\nSee morphTargetsVertex.fx for more details\r\n",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16026",
+                "title": "FrameGraph: add glow layer block and task",
+                "description": "I'm not really happy with the way I've tried to factorize the effect layer code so that it can be used for both the frame graph and the existing code path, so here's a bit of context on how I've implemented it (and I'm open to feedback on how to improve things!).\r\n\r\nI've created a `ThinEffectLayer` and a `ThinGlowLayer`, moving all the code from `EffectLayer` and `GlowLayer` that doesn't deal with texture management. The texture management code remains in the latter classes, and in the case of the frame graph, is managed by the framework + the `FrameGraphGlowLayerTask` class.\r\n\r\nThe `GlowLayer` class is implemented through the `ThinGlowLayer` class (by composition, not inheritance, since it already inherits from the `EffectLayer` class). This means that `EffectLayer` now takes a `ThinEffectLayer` pointer in its constructor, and if it's not provided (as in the case of the highlight layer, which I haven't yet moved to the new architecture, or from existing user code), creates a `ThinEffectLayer` internally.\r\n\r\nWhen a `ThinEffectLayer` pointer is not passed to the `EffectLayer` constructor, this means that part of the code (all the “abstract” methods) is implemented by the class that inherits from `EffectLayer`: this is why the `EffectLayer` constructor binds these methods to the corresponding methods of the `ThinEffectLayer` it has created. When a pointer is passed to the constructor, this means that the methods are implemented in `ThinXXXLayer` (`ThinGlowLayer` for the glow layer), and the implementation of `EffectLayer`'s abstract methods in `XXXLayer` is simply transferred to `ThinXXXLayer` (see `ThinGlowLayer` implementation).\r\n\r\nIn this way, there is no duplication of code: everything (except the texture management code) is implemented in `ThinEffectLayer` and `ThinGlowLayer` and reused in `EffectLayer`, `GlowLayer` and `FrameGraphGlowLayerTask` (the latter class uses `ThinGlowLayer` directly).\r\n\r\nOther changes in this PR:\r\n* I've moved the management of the \"dependencies\" input to the `NodeRenderGraphBlock`, to centralize the code.\r\n* I've added a `dependencies` property to `FrameGraphTask` and removed `useTexture` from `FrameGraphRenderPass`. It makes more sense this way, and is easier to manage.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/glowLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/glowLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/shadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/index.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/Layers/thinGlowLayer.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16027",
+                "title": "WebGPU: Fix conflicting variable type in GreasedLine shader",
+                "description": "Fixes a type mismatch causing an error in this Lazy GreasedLine updates pg: [https://playground.babylonjs.com/#H1LRZ3#39](https://playground.babylonjs.com/#H1LRZ3#39) from the [docs](https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line/#example-pg--H1LRZ3-39) when using the WebGPU engine and latest BabylonJS.",
+                "author": {
+                    "name": "Propolisa",
+                    "url": "https://github.com/Propolisa"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.44.0": [
+            {
+                "pr": "16071",
+                "title": "standardMaterial: remove _worldViewProjectionMatrix",
+                "description": "It's not found elsewhere in this repo, removing it to save some memory.\r\n\r\nForum link: <https://forum.babylonjs.com/t/standardmaterial-is-worldviewprojectionmatrix-still-in-use/55971>\r\n\r\nIf I understand correctly, changelog should be auto generated from this PR, right?",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16065",
+                "title": "Update to typescript 5.7.3",
+                "description": "There is no urgent reason to upgrade, however, check the glTFExporter issue that was not caught by typescript < 5.7 - this should have been reported earlier.\n\nThis PR fixed a few syntax issues 5.7 has, and upgrades typedoc to 0.27 to support ts 5.7\n\nThis doesn't have to be merged and is just a suggestion!",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "scripts/comment-analyzer.mjs",
+                    "scripts/typedoc-generator.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16068",
+                "title": "FIx wrong links for bbhelper",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16060",
+                "title": "WebXR depth sensing update",
+                "description": "This update brings the module to the latest state of the specs:\r\n\r\n1) support of texture-array (as done in the quest 3)\r\n2) A new material plugin will discard pixels that are behind real objects (based on the depth sensing texture). It works both on mobile and on the quest 3. Note that it must be registered BEFORE creating the materials, otherwise it will not work!\r\n3) Options to disable and enable all features\r\n4) Supporting ushort data format as well\r\n\r\nA simpe PG to test with: \r\n#f41v6n#1800\r\nTry it on android, and hide the sphere(s) and plane behind a real object.\r\n\r\nShould look like this, if you have a screen just like mine:\r\n\r\n![image](https://github.com/user-attachments/assets/284af56a-02a4-4065-b0ad-2e000a2fd5f9)\r\n\r\nCloses #15035",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16052",
+                "title": "Allow for creating a zero size plane",
+                "description": "I have a use case for creating a plane with zero width/height and then updating it live. The current method of checking whether a size/width/height is passed does not allow this. These changes check if the value is defined instead of is truthy.",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16067",
+                "title": "Fix scene dispose to restore LastCreatedScene correctly",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16062",
+                "title": "Allow for Viewer inheritance",
+                "description": "FYI @cournoll\r\n\r\nThis change makes it possible to create derivations of Viewer/ViewerElement as a new way of allowing customization of the Viewer. This does not change the *public* API of the Viewer.\r\n\r\n- Viewer class now stores the parts of the \"viewer details\" instead of an instance of ViewerDetails and makes them protected to expose them to subclasses.\r\n- Various other members of Viewer class are now protected as well.\r\n- Viewer class now has a protected function that helps track progress of any async operation, which is fed into the overall loading progress state.\r\n- Viewer class has a protected `_loadModel` function that was factored out of `_updateModel`. It loads a model, but does not unload the current model.\r\n- Viewer class now has an internal concept of a \"model,\" which encapsulates the asset container, the material variant controller, and some of the core functions like hotspot querying scoped to a specific model.\r\n- Viewer class has a protected `_model` property and corresponding `_setModel` function that can be used to specify an \"active\" model (Viewer level functionality like animations, hotspots, etc. target the \"active\" model).\r\n- `createViewerForCanvas` factory function now has an overload that augments the options to allow a custom Viewer derived class to be used.\r\n- Introduced an abstract `ViewerElement` class that is just the pre-existing `HTML3DElement`, but without the custom element registration. `HTML3DElement` is now a trivial subclass of `ViewerElement`.\r\n- `ViewerElement` is generic, and allows a subclass to specify the type of the `Viewer` class it uses and provide typesafe access to it.\r\n- `ViewerElement` has a protected `_createViewer` function that is used by `_setupViewer`, and allows subclasses to do additional async setup work.\r\n- `HTML3DAnnotationElement` now robustly handles the possibility of the parent `ViewerElement` not being registered (e.g. `customElements.define`) until after the `HTML3DAnnotationElement` is connected to the DOM (thanks @cournoll!).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16066",
+                "title": "Add support for correct mime type",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16055",
+                "title": "SH fix for spz",
+                "description": "For reference, using uint32 instead of swizzled uint8. This should have no implication on the shader.\r\n\r\n```\r\nfor (let i = 0; i < splatCount; i++) {\r\n    const c = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];\r\n    for (let j = 0; j < 15; ++j) {\r\n        c[j * 3] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 0];\r\n        c[j * 3 + 1] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 1];\r\n        c[j * 3 + 2] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 2];\r\n    }\r\n    sh[0][i * 4 + 0] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];\r\n    sh[0][i * 4 + 1] = (c[4] << 24) | (c[5] << 16) | (c[6] << 8) | c[7];\r\n    sh[0][i * 4 + 2] = (c[8] << 24) | (c[9] << 16) | (c[10] << 8) | c[11];\r\n    sh[0][i * 4 + 3] = (c[12] << 24) | (c[13] << 16) | (c[14] << 8) | c[15];\r\n\r\n    sh[1][i * 4 + 0] = (c[16] << 24) | (c[17] << 16) | (c[18] << 8) | c[19];\r\n    sh[1][i * 4 + 1] = (c[20] << 24) | (c[21] << 16) | (c[22] << 8) | c[23];\r\n    sh[1][i * 4 + 2] = (c[24] << 24) | (c[25] << 16) | (c[26] << 8) | c[27];\r\n    sh[1][i * 4 + 3] = (c[28] << 24) | (c[29] << 16) | (c[30] << 8) | c[31];\r\n\r\n    sh[2][i * 4 + 0] = (c[32] << 24) | (c[33] << 16) | (c[34] << 8) | c[35];\r\n    sh[2][i * 4 + 1] = (c[36] << 24) | (c[37] << 16) | (c[38] << 8) | c[39];\r\n    sh[2][i * 4 + 2] = (c[40] << 24) | (c[41] << 16) | (c[42] << 8) | c[43];\r\n    sh[2][i * 4 + 3] = c[44] << 24;\r\n}\r\n```\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16059",
+                "title": "LogLevels: Improve doc",
+                "description": "See https://forum.babylonjs.com/t/how-to-disable-the-logging-of-babylonjs-version-in-nullengine/55935/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/logger.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "debug tool"
+                ]
+            },
+            {
+                "pr": "16022",
+                "title": "Add CDF explicit render option.",
+                "description": "This adds the ability to explicitly render the CDF maps. Useful when the scene isn't triggering the render of the procedural textures.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16061",
+                "title": "Making sure the loader set the max lights according to the number of …",
+                "description": "…lights",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16058",
+                "title": "Morph: Fix morph not updated when updates are unfrozen",
+                "description": "See https://forum.babylonjs.com/t/morphtargetmanager-performence-issue/55661/10",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16010",
+                "title": "Use CDF for irradiance prefiltering",
+                "description": "Expanding on the realtime filtering of irradiance, here is the equivalent logic for prefiltering.\r\nIf the user specifies `generateHarmonics = false`, `prefilterOnLoad = true` and `scene.enableIblCdfGenerator()` has been called, then an irradianceTexture will be generated using CDF.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradiance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradianceCDF.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16057",
+                "title": "Fix recursive loop in onPointerOutAction",
+                "description": "https://forum.babylonjs.com/t/actionmanager-onpointerouttrigger-and-uncaught-rangeerror-maximum-call-stack-size-exceeded-error/55879/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16056",
+                "title": "GreasedLine basic GLTF export",
+                "description": "Added basic export of `GreasedLine` in `LineListDrawMode` with single color support.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16053",
+                "title": "GREASED_LINE_USE_OFFSETS - WebGPU fix for Safari/Firefox",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/16045\r\n\r\nWith `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#717\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#122\r\n\r\nWithout `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#29\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#23\r\n\r\nTested on MacOS Chrome and Safari, WebGL and WebGPU.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/ShadersWGSL/greasedLine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16054",
+                "title": "GS Compressed colors",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16050",
+                "title": "Gizmo Rotation plane + pivot fix",
+                "description": "Fix for:\r\n\r\n- https://forum.babylonjs.com/t/rotationgizmo-bug-after-setting-new-pivot-point/55489",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16041",
+                "title": "Check if TransformNode is parent in removeChild",
+                "description": "The function's description is misleading. \"Removes the passed mesh from the current mesh children list\" does not mean removing the parent from the passed mesh.\r\n\r\nThis change updates the function to remove the parent from the passed mesh only if it is the parent of the passed mesh. Otherwise, the parent of the passed mesh is left alone.",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16051",
+                "title": "FrameGraph: refactor pass / passCube post processes for frame graph usage",
+                "description": "I also factored some code for the node render graph post processes, to limit code duplication.\r\n\r\nThis is a prerequisite for converting the highlight layer into a frame graph task, as it uses internal pass-through post-processing.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/extractHighlightsPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/passTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinPassPostProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/outline.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/passCube.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16044",
+                "title": "Consider `ImageProcessingConfiguration` when cloning material",
+                "description": "As described in this [forum post](https://forum.babylonjs.com/t/pbr-materials-image-processing-configuration-not-cloned/55841).\r\nSuccessfully tested with [PG example](https://playground.babylonjs.com/#PO4NA5#1).",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/decorators.serialization.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16001",
+                "title": "Add support for Draco encoding",
+                "description": "Add support for compressing meshes with Draco encoding. Introduces:\r\n\r\n- DracoEncoder class, with same usage pattern as DracoDecoder\r\n- Encoding options per mesh, with several new types to support this\r\n- New worker function and EncodeMesh() function in dracoCompressionWorker\r\n- Type files, separated by DracoEncoder and DracoDecoder, to avoid cluttering dracoCompressionWorker (while still avoiding cyclical dependencies)\r\n\r\nI don't feel particularly content with dracoCompressionWorker-- both because encoding/decoding are present in the same file, and becauase I'm not sure that the worker functions must be separate. Please let me know of better ideas for this :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.types.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.types.ts",
+                    "packages/dev/core/src/Meshes/Compression/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/dracoRoundtrip.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "7.42.0": [
+            {
+                "pr": "16021",
+                "title": "Fix volume refresh for GS",
+                "description": "https://forum.babylonjs.com/t/wrong-z-in-bouding-box-of-gaussian-splat/55481/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16019",
+                "title": "Limit cases where KHR_texture_transform offset is adjusted for non-origin rotation",
+                "description": "I overlooked how scaling affects the calculations here https://github.com/BabylonJS/Babylon.js/pull/16015. For now, just go back to the original behavior (don't export KHR_texture_transform) if we can't adjust this offset. \r\n\r\nWhile here, I also merged preExportTexture into postExportTexture so we don't have to check conditions twice.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.41.1": [
+            {
+                "pr": "16020",
+                "title": "use _retryWithInterval where possible",
+                "description": "cc @RaananW ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16018",
+                "title": "Import pass shader in glTF serializer",
+                "description": "See https://forum.babylonjs.com/t/issue-importing-shader-during-gltf-export/55465",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16017",
+                "title": "Allow exporting children of skipped nodes in glTF exporter",
+                "description": "See https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421/2 . Expected behavior is that all nodes are checked for export using `shouldExportNode()`, regardless of whether parent is being exported or not, but we missed this in https://github.com/BabylonJS/Babylon.js/pull/15869. \r\n\r\nNow children add themselves to their parent instead of parents tracking and adding their children. This helps address a weird situation where a child node is skipped, so its parent needs to add the indices of several grandchildren instead of just the child’s index (which is null anyway). The new `parentNodeChildren` parameter also helps with accessing the glTF root node list, in the case where a root node is skipped but has children that should be reparented to the root.\r\n\r\nAlso factored out the creation of the glTF nodes into _createNodeAsync() so that we can early return a null (meaning skipped) node and still process its children afterwards in _exportNodeAsync().",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16014",
+                "title": "Morph target manager: Refactor of code + ability to disable position morphing",
+                "description": "The morph texture was created too often, which led to problems with the fast snapshot rendering mode in WebGPU.\r\n\r\nSo, I reworked the code and also added the option of not morphing positions.\r\n\r\n[EDIT] Supporting \"positions\" optionally is a breaking change, as I had to add the \"MORPHTARGETS_POSITION\" define in a few places in the code. Let me know if I should remove this feature.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16016",
+                "title": "Mesh: Fix wireframe for unindexed meshes",
+                "description": "See https://forum.babylonjs.com/t/wireframe-not-rendered-for-unindexed-mesh/55460/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
+        "7.41.0": [
+            {
+                "pr": "16015",
+                "title": "Adjust KHR_texture_transform offset for non-zero rotation center",
+                "description": "Forum issue: https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16013",
+                "title": "Add useFill parameter to CreateScreenshot",
+                "description": "CreateScreenshot currently letterboxes the rendering canvas in the screenshot. The `useFill` property, if true, will fill the given `size` dimension of the screenshot with the rendering canvas. If the rendering canvas' aspect ratio does not match the aspect ratio of the dimensions, then it will be clipped to fit. \r\n\r\nOther:\r\n- Early return if using `CreateScreenshotUsingRenderTarget`\r\n- Update comments",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16011",
+                "title": "More common shader constants and helpers for helperFunctions.fx",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx"
+                ],
+                "tags": []
+            }
+        ],
+        "7.40.4": [
+            {
+                "pr": "16012",
+                "title": "Add BitArray and use it in OptimizeIndices",
+                "description": "Booleans can be up to 4 bytes (depending on the JS engine and the scenario). A `BitArray` always uses just 1 bit per boolean, which means up to 32x less memory. Some light reading indicated that some JS engines will optimize Arrays that only contain booleans to use 1 bit per boolean, but this isn't what I saw happening when taking a few heap snapshots in Chrome (rather, I saw a ~5mb Array for a model with ~1.3M indices). Perf is pretty much identical between this `BitArray` and a normal `Array` of `boolean`s, until you have 100,000,000+ entries, in which case the `BitArray` is orders of magnitude faster. Not sure we'll ever have a use case this big, so maybe irrelevant, but good to know its now slower.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts",
+                    "packages/dev/core/src/Misc/bitArray.ts",
+                    "packages/dev/core/src/Misc/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15988",
+                "title": "use _retryWithInterval where possible",
+                "description": "This is an example of how _retryWithInterval can be used instead of setTimout of the calling function.\n\nThere are a few other places in the framework that could benefit from that, but looking for feedback whether or not it makes sense to do the work.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/timingTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16009",
+                "title": "Add a new optimizeIndices features to improve cache hit on large models",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16006",
+                "title": "Switch from uniform to defines",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16003",
+                "title": "Allow CustomRequestModifiers to modify URL",
+                "description": "This can be useful, for example, when the assets are hosted on private S3 buckets and the user signs the URLs that Babylon requests on the fly.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15963",
+                "title": "Adding normalization to realtime irradiance filtering",
+                "description": "Big improvement to importance sampling irradiance using CDF. Previously, we weren't applying the PDF properly to each sample.\r\nNow, the results of real-time irradiance are very close to raytraced ground truth.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdf.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfx.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblIcdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblScaledLuminance.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradiance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFilteringIrradianceCDF.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16002",
+                "title": "Integrate direct glow support in NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-automatic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-glow-manual.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16004",
+                "title": "Support loading color grading texture from blob url",
+                "description": "The old check expects the URL to end with `.3dl`, which won't work for blob URLs.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.40.3": [
+            {
+                "pr": "16000",
+                "title": "Effect timeout 30 seconds for older devices",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15999",
+                "title": "WebGPU: Fix crash when using LDR merge in glow layer",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15602",
+                "title": "Add UV2 morph support and load UV and UV2 morph targets from glTF",
+                "description": "I'm opening this PR following the suggestion in https://forum.babylonjs.com/t/morph-uv2-and-import-the-morph-target-from-gltf/53558/2.\r\n\r\nThe PR adds uv2 morphing to the built-in materials as well as the morph target block in the node material. It also modifies the glTF loader to load the TEXCOORD_0 and TEXCOORD_1 morph target attributes.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/samplerVertexImplementation.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/depth.vertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/Shaders/outline.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/Shaders/shadowMap.vertex.fx",
+                    "packages/dev/core/src/Shaders/volumetricLightScatteringPass.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerVertexImplementation.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/depth.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/outline.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.vertex.fx",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/UV2-Morphing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15961",
+                "title": "Factor out DracoCompression",
+                "description": "Rather than implement the Draco encoding in DracoCompression, we think it'd be best to separate encoding from decoding functionality by creating separate classes for each. This PR factors out common methods and fields of DracoCompression in preparation to be reused for Draco encoding.\r\n\r\n- DracoDecoder: new class to supersede DracoCompression. Manages own `Default` instance and static `DefaultConfiguration`. \r\n- DracoCodec: new base class for Draco. Contains common methods and fields related to Draco module consumption, workers setup, and managing `Default` and `DefaultConfiguration`.\r\n- DracoCompression: deprecated in favor of DracoDecoder. Backwards compat is maintained. While it inherits from DracoDecoder, it maintains its own separate `Default` and `DefaultConfiguration`.\r\n",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15998",
+                "title": "Inspector: Don't display empty morph targets",
+                "description": "See https://forum.babylonjs.com/t/uv-morphing-results-in-two-textures-of-different-types-use-the-same-sampler-location/55346/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15997",
+                "title": "Mesh: loss of thin instances during mesh cloning",
+                "description": "See https://forum.babylonjs.com/t/there-is-an-issue-with-model-cloning/55387/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15996",
+                "title": "Update doc for CreateScreenshotWithResizeAsync",
+                "description": "Nit for clarity. (https://forum.babylonjs.com/t/how-should-i-use-screenshottools-create-screenshot-with-resize-async/55363)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15995",
+                "title": "Upload Draco encoder modules to CDN",
+                "description": "Will be used later by Draco encoder implementation. \r\nUploading ahead of time so I can add tests pointing to the CDN in the same PR as the implementation.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/draco_encoder.js",
+                    "packages/tools/babylonServer/public/draco_encoder.wasm",
+                    "packages/tools/babylonServer/public/draco_encoder_wasm_wrapper.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.40.2": [
             {
                 "pr": "15994",

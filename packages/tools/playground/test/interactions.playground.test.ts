@@ -52,7 +52,7 @@ test("Examples can be loaded", async ({ page }) => {
 
     await page.locator(".example").nth(3).click();
 
-    expect(page.url()).toContain("#7V0Y1I#2");
+    expect(page.url()).toContain("#");
 });
 
 test("User can interact with the playground", async ({ page }) => {

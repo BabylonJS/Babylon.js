@@ -105,13 +105,13 @@ export class LinesMesh extends Mesh {
             shaderLanguage: ShaderLanguage.GLSL,
         };
 
-        if (!useVertexAlpha) {
+        if (!this.useVertexAlpha) {
             options.needAlphaBlending = false;
         } else {
             options.defines!.push("#define VERTEXALPHA");
         }
 
-        if (!useVertexColor) {
+        if (!this.useVertexColor) {
             options.uniforms!.push("color");
             this._color4 = new Color4();
         } else {

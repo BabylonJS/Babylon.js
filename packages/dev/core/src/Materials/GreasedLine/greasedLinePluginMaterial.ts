@@ -19,6 +19,7 @@ import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GetCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
 import { GetCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
+import type { GreasedLineBaseMesh } from "../../Meshes";
 
 /**
  * @internal
@@ -50,6 +51,12 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_CAMERA_FACING = true;
+
+    /**
+     * True if the line uses offsets
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    GREASED_LINE_USE_OFFSETS = false;
 }
 
 /**
@@ -327,14 +334,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Prepare the defines
      * @param defines
      * @param _scene
-     * @param _mesh
+     * @param mesh
      */
-    override prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
+    override prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, mesh: AbstractMesh) {
         defines.GREASED_LINE_HAS_COLOR = !!this.color && !this.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
         defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
         defines.GREASED_LINE_CAMERA_FACING = this._cameraFacing;
+        defines.GREASED_LINE_USE_OFFSETS = !!(mesh as GreasedLineBaseMesh).offsets;
     }
 
     /**

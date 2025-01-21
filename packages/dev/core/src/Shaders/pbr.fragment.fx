@@ -286,10 +286,8 @@ void main(void) {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , vEnvironmentIrradiance
             #endif
-            #ifdef USESPHERICALFROMREFLECTIONMAP
-                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    , reflectionMatrix
-                #endif
+            #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                , reflectionMatrix
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
@@ -301,8 +299,7 @@ void main(void) {
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
-                    , icdfxSampler
-                    , icdfySampler
+                    , icdfSampler
                 #endif
             #endif
             );
@@ -540,8 +537,7 @@ void main(void) {
                         , reflectionSampler
                         , vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
-                            , icdfxSampler
-                            , icdfySampler
+                            , icdfSampler
                         #endif
                     #endif
                 #endif

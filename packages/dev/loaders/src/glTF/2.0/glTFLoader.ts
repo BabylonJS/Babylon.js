@@ -461,6 +461,15 @@ export class GLTFLoader implements IGLTFLoader {
                         this._rootBabylonMesh.setEnabled(true);
                     }
 
+                    // Making sure we enable enough lights to have all lights together
+                    for (const material of this._babylonScene.materials) {
+                        const mat = material as any;
+
+                        if (mat.maxSimultaneousLights !== undefined) {
+                            mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights, this._babylonScene.lights.length);
+                        }
+                    }
+
                     this._extensionsOnReady();
                     this._parent._setState(GLTFLoaderState.READY);
 
@@ -1271,6 +1280,24 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             });
             babylonMorphTarget.setTangents(tangents);
+        });
+
+        loadAttribute("TEXCOORD_0", VertexBuffer.UVKind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUVs(uvs);
+        });
+
+        loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUV2s(uvs);
         });
 
         return Promise.all(promises).then(() => {});
@@ -2169,6 +2196,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
+
         return babylonMaterial;
     }
 

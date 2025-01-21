@@ -9,7 +9,6 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     protected readonly _engine: AbstractEngine;
     protected _renderTarget: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
-    protected readonly _usedTextures: FrameGraphTextureHandle[] = [];
     protected _frameGraphRenderTarget: FrameGraphRenderTarget | undefined;
 
     /**
@@ -39,16 +38,6 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     constructor(name: string, parentTask: FrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
         super(name, parentTask, context);
         this._engine = engine;
-    }
-
-    /**
-     * Indicates that the pass will use the given texture.
-     * Use this method to indicate that the pass will use a texture so that the frame graph can handle the texture's lifecycle.
-     * You don't have to call this method for the render target / render target depth textures.
-     * @param texture The texture used.
-     */
-    public useTexture(texture: FrameGraphTextureHandle) {
-        this._usedTextures.push(texture);
     }
 
     /**

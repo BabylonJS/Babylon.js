@@ -31,8 +31,10 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareAttributesForBakedVertexAnimation,
+    PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
+import type { IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -127,9 +129,9 @@ export class ShaderMaterial extends PushMaterial {
     private _colors3Arrays: { [name: string]: number[] } = {};
     private _colors4: { [name: string]: Color4 } = {};
     private _colors4Arrays: { [name: string]: number[] } = {};
-    private _vectors2: { [name: string]: Vector2 } = {};
-    private _vectors3: { [name: string]: Vector3 } = {};
-    private _vectors4: { [name: string]: Vector4 } = {};
+    private _vectors2: { [name: string]: IVector2Like } = {};
+    private _vectors3: { [name: string]: IVector3Like } = {};
+    private _vectors4: { [name: string]: IVector4Like } = {};
     private _quaternions: { [name: string]: Quaternion } = {};
     private _quaternionsArrays: { [name: string]: number[] } = {};
     private _matrices: { [name: string]: Matrix } = {};
@@ -420,7 +422,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param value Define the value to give to the uniform
      * @returns the material itself allowing "fluent" like uniform updates
      */
-    public setVector2(name: string, value: Vector2): ShaderMaterial {
+    public setVector2(name: string, value: IVector2Like): ShaderMaterial {
         this._checkUniform(name);
         this._vectors2[name] = value;
 
@@ -433,7 +435,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param value Define the value to give to the uniform
      * @returns the material itself allowing "fluent" like uniform updates
      */
-    public setVector3(name: string, value: Vector3): ShaderMaterial {
+    public setVector3(name: string, value: IVector3Like): ShaderMaterial {
         this._checkUniform(name);
         this._vectors3[name] = value;
 
@@ -446,7 +448,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param value Define the value to give to the uniform
      * @returns the material itself allowing "fluent" like uniform updates
      */
-    public setVector4(name: string, value: Vector4): ShaderMaterial {
+    public setVector4(name: string, value: IVector4Like): ShaderMaterial {
         this._checkUniform(name);
         this._vectors4[name] = value;
 
@@ -686,7 +688,7 @@ export class ShaderMaterial extends PushMaterial {
         // Instances
         const defines = [];
         const attribs = [];
-        const fallbacks = new EffectFallbacks();
+        let fallbacks: Nullable<EffectFallbacks> = null;
 
         let shaderName = this._shaderPath,
             uniforms = this._options.uniforms,
@@ -742,6 +744,7 @@ export class ShaderMaterial extends PushMaterial {
             const skeleton = mesh.skeleton;
 
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            fallbacks = new EffectFallbacks();
             fallbacks.addCPUSkinningFallback(0, mesh);
 
             if (skeleton.isUsingTextureForMatrices) {
@@ -769,47 +772,28 @@ export class ShaderMaterial extends PushMaterial {
         let numInfluencers = 0;
         const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
         if (manager) {
-            const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
-            const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
-            const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (uv) {
-                defines.push("#define MORPHTARGETS_UV");
-            }
-            if (tangent) {
-                defines.push("#define MORPHTARGETS_TANGENT");
-            }
-            if (normal) {
-                defines.push("#define MORPHTARGETS_NORMAL");
-            }
-            if (numInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-            }
+            const uv = defines.indexOf("#define UV1") !== -1;
+            const uv2 = defines.indexOf("#define UV2") !== -1;
+            const tangent = defines.indexOf("#define TANGENT") !== -1;
+            const normal = defines.indexOf("#define NORMAL") !== -1;
+            numInfluencers = PrepareDefinesAndAttributesForMorphTargets(
+                manager,
+                defines,
+                attribs,
+                mesh!,
+                true, // usePositionMorph
+                normal, // useNormalMorph
+                tangent, // useTangentMorph
+                uv, // useUVMorph
+                uv2 // useUV2Morph
+            );
             if (manager.isUsingTextureForTargets) {
-                defines.push("#define MORPHTARGETS_TEXTURE");
-
                 if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
                     uniforms.push("morphTargetTextureIndices");
                 }
 
                 if (this._options.samplers.indexOf("morphTargets") === -1) {
                     this._options.samplers.push("morphTargets");
-                }
-            }
-            defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-            for (let index = 0; index < numInfluencers; index++) {
-                attribs.push(VertexBuffer.PositionKind + index);
-
-                if (normal) {
-                    attribs.push(VertexBuffer.NormalKind + index);
-                }
-
-                if (tangent) {
-                    attribs.push(VertexBuffer.TangentKind + index);
-                }
-
-                if (uv) {
-                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
             }
             if (numInfluencers > 0) {
@@ -935,7 +919,7 @@ export class ShaderMaterial extends PushMaterial {
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;
 
-        if (!effect?.isReady() ?? true) {
+        if (!effect?.isReady()) {
             return false;
         }
 
@@ -954,29 +938,28 @@ export class ShaderMaterial extends PushMaterial {
      * @param effectOverride - If provided, use this effect instead of internal effect
      */
     public override bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
-        const scene = this.getScene();
-
         const effect = effectOverride ?? this.getEffect();
-
         if (!effect) {
             return;
         }
 
-        if (this._options.uniforms.indexOf("world") !== -1) {
+        const uniforms = this._options.uniforms;
+        if (uniforms.indexOf("world") !== -1) {
             effect.setMatrix("world", world);
         }
 
-        if (this._options.uniforms.indexOf("worldView") !== -1) {
+        const scene = this.getScene();
+        if (uniforms.indexOf("worldView") !== -1) {
             world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
             effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
-        if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
+        if (uniforms.indexOf("worldViewProjection") !== -1) {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
             effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
         }
 
-        if (this._options.uniforms.indexOf("view") !== -1) {
+        if (uniforms.indexOf("view") !== -1) {
             effect.setMatrix("view", scene.getViewMatrix());
         }
     }
@@ -1223,9 +1206,9 @@ export class ShaderMaterial extends PushMaterial {
 
         if (effect && mesh && (mustRebind || !this.isFrozen)) {
             // Morph targets
-            const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager && manager.numInfluencers > 0) {
-                BindMorphTargetParameters(<Mesh>mesh, effect);
+            BindMorphTargetParameters(mesh, effect);
+            if (mesh.morphTargetManager && mesh.morphTargetManager.isUsingTextureForTargets) {
+                mesh.morphTargetManager._bind(effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
@@ -1560,19 +1543,22 @@ export class ShaderMaterial extends PushMaterial {
         // Vector2
         serializationObject.vectors2 = {};
         for (name in this._vectors2) {
-            serializationObject.vectors2[name] = this._vectors2[name].asArray();
+            const v2 = this._vectors2[name];
+            serializationObject.vectors2[name] = [v2.x, v2.y];
         }
 
         // Vector3
         serializationObject.vectors3 = {};
         for (name in this._vectors3) {
-            serializationObject.vectors3[name] = this._vectors3[name].asArray();
+            const v3 = this._vectors3[name];
+            serializationObject.vectors3[name] = [v3.x, v3.y, v3.z];
         }
 
         // Vector4
         serializationObject.vectors4 = {};
         for (name in this._vectors4) {
-            serializationObject.vectors4[name] = this._vectors4[name].asArray();
+            const v4 = this._vectors4[name];
+            serializationObject.vectors4[name] = [v4.x, v4.y, v4.z, v4.w];
         }
 
         // Quaternion

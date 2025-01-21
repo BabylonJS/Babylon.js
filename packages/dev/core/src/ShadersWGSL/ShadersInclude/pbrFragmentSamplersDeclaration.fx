@@ -126,8 +126,6 @@
 #endif
 
 #ifdef IBL_CDF_FILTERING
-    var icdfxSamplerSampler: sampler;
-    var icdfxSampler: texture_2d<f32>;
-    var icdfySamplerSampler: sampler;
-    var icdfySampler: texture_2d<f32>;
+    var icdfSamplerSampler: sampler;
+    var icdfSampler: texture_2d<f32>;
 #endif

@@ -6,6 +6,15 @@
     "configurations": [
         {
             /*
+            Attach to Playground
+            */
+            "type": "msedge",
+            "request": "launch",
+            "name": "Attach to Playground (Edge)",
+            "url": "http://localhost:1338"
+        },
+        {
+            /*
             Launch the playground to be use to test changes in dev packages
             */
             "type": "msedge",
@@ -491,16 +500,16 @@
         {
             "type": "msedge",
             "request": "launch",
-            "name": "Viewer (Alpha) (Web) (Edge)",
-            "url": "http://localhost:1342/packages/tools/viewer-alpha/test/apps/web/index.html",
-            "preLaunchTask": "Viewer (Alpha - Web)"
+            "name": "Viewer (Web) (Edge)",
+            "url": "http://localhost:1342/packages/tools/viewer/test/apps/web/index.html",
+            "preLaunchTask": "Viewer (Web)"
         },
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Viewer (Alpha) (Web) (Chrome)",
-            "url": "http://localhost:1342/packages/tools/viewer-alpha/test/apps/web/index.html",
-            "preLaunchTask": "Viewer (Alpha - Web)"
+            "name": "Viewer (Web) (Chrome)",
+            "url": "http://localhost:1342/packages/tools/viewer/test/apps/web/index.html",
+            "preLaunchTask": "Viewer (Web)"
         }
     ],
     "inputs": [

@@ -7,6 +7,8 @@ import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
+import { _retryWithInterval } from "core/Misc/timingTools";
+import { Logger } from "core/Misc/logger";
 
 enum FrameGraphPassType {
     Normal = 0,
@@ -20,6 +22,11 @@ enum FrameGraphPassType {
  */
 export class FrameGraph {
     /**
+     * Rejection message (from WhenReadyAsync) when the frame graph has been disposed
+     */
+    public static WhenReadyRejectionDisposed = "FrameGraph: The frame graph has been disposed.";
+
+    /**
      * Gets the texture manager used by the frame graph
      */
     public readonly textureManager: FrameGraphTextureManager;
@@ -29,6 +36,7 @@ export class FrameGraph {
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
     private _currentProcessedTask: FrameGraphTask | null = null;
+    private _isDisposed = false;
 
     /**
      * Observable raised when the node render graph is built
@@ -137,48 +145,76 @@ export class FrameGraph {
     public build(): void {
         this.textureManager._releaseTextures(false);
 
-        for (const task of this._tasks) {
-            task._reset();
+        try {
+            for (const task of this._tasks) {
+                task._reset();
 
-            this._currentProcessedTask = task;
-            this.textureManager._isRecordingTask = true;
+                this._currentProcessedTask = task;
+                this.textureManager._isRecordingTask = true;
 
-            task.record();
+                task.record();
 
-            this.textureManager._isRecordingTask = false;
+                this.textureManager._isRecordingTask = false;
+                this._currentProcessedTask = null;
+            }
+
+            this.textureManager._allocateTextures();
+
+            for (const task of this._tasks) {
+                task._checkTask();
+            }
+
+            for (const task of this._tasks) {
+                task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
+            }
+
+            this.onBuildObservable.notifyObservers(this);
+        } catch (e) {
+            this._tasks.length = 0;
             this._currentProcessedTask = null;
+            this.textureManager._isRecordingTask = false;
+            throw e;
         }
-
-        this.textureManager._allocateTextures();
-
-        for (const task of this._tasks) {
-            task._checkTask();
-        }
-
-        this.onBuildObservable.notifyObservers(this);
     }
 
     /**
      * Returns a promise that resolves when the frame graph is ready to be executed
      * This method must be called after the graph has been built (FrameGraph.build called)!
-     * @param timeout Timeout in ms between retries (default is 16)
+     * @param timeStep Time step in ms between retries (default is 16)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeout = 16): Promise<void> {
-        return new Promise((resolve) => {
-            const checkReady = () => {
-                let ready = this._renderContext._isReady();
-                for (const task of this._tasks) {
-                    ready = task.isReady() && ready;
-                }
-                if (ready) {
-                    resolve();
-                } else {
-                    setTimeout(checkReady, timeout);
-                }
-            };
-
-            checkReady();
+    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+        return new Promise((resolve, reject) => {
+            _retryWithInterval(
+                () => {
+                    let ready = this._renderContext._isReady();
+                    for (const task of this._tasks) {
+                        ready = task.isReady() && ready;
+                    }
+                    return this._isDisposed || ready;
+                },
+                () => {
+                    if (this._isDisposed) {
+                        reject(FrameGraph.WhenReadyRejectionDisposed);
+                    } else {
+                        resolve();
+                    }
+                },
+                (err) => {
+                    if (err.stack) {
+                        Logger.Error("FrameGraph: An unexpected error occurred while waiting for the frame graph to be ready.");
+                        Logger.Error(err.stack);
+                    } else {
+                        Logger.Error("FrameGraph: Timeout while waiting for the frame graph to be ready.");
+                        if (err) {
+                            Logger.Error(err);
+                        }
+                    }
+                },
+                timeStep,
+                maxTimeout
+            );
         });
     }
 
@@ -217,6 +253,7 @@ export class FrameGraph {
      * Disposes the frame graph
      */
     public dispose(): void {
+        this._isDisposed = true;
         this.clear();
         this.textureManager._dispose();
         this._renderContext._dispose();

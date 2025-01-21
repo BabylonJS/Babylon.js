@@ -234,9 +234,16 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NONUNIFORMSCALING = false;
 
     public MORPHTARGETS = false;
+    public MORPHTARGETS_POSITION = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
+    public MORPHTARGETS_UV2 = false;
+    public MORPHTARGETTEXTURE_HASPOSITIONS = false;
+    public MORPHTARGETTEXTURE_HASNORMALS = false;
+    public MORPHTARGETTEXTURE_HASTANGENTS = false;
+    public MORPHTARGETTEXTURE_HASUVS = false;
+    public MORPHTARGETTEXTURE_HASUV2S = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
 
@@ -1489,8 +1496,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
-            "icdfxSampler",
-            "icdfySampler",
+            "icdfSampler",
         ];
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -1714,6 +1720,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         if (reflectionTexture.irradianceTexture) {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
+                            defines.USESPHERICALINVERTEX = false;
                         }
                         // Assume using spherical polynomial if the reflection texture is a cube map
                         else if (reflectionTexture.isCube) {
@@ -2307,8 +2314,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     //if realtime filtering and using CDF maps, set them.
                     const cdfGenerator = this.getScene().iblCdfGenerator;
                     if (this.realTimeFiltering && cdfGenerator) {
-                        ubo.setTexture("icdfxSampler", cdfGenerator.getIcdfxTexture());
-                        ubo.setTexture("icdfySampler", cdfGenerator.getIcdfyTexture());
+                        ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
                     }
                 }
 

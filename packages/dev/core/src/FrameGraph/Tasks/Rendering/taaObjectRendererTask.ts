@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget } from "core/index";
+import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget, FrameGraphRenderPass } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
@@ -30,7 +30,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
     }
 
-    public override record() {
+    public override record(): FrameGraphRenderPass {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
@@ -38,6 +38,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         if (this.destinationTexture === backbufferColorTextureHandle || this.depthTexture === backbufferDepthStencilTextureHandle) {
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the back buffer color/depth textures are not allowed. Use regular textures instead.`);
         }
+
+        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
 
         const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
 
@@ -82,6 +86,8 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._textureHeight = outputTextureDescription.size.height;
 
         let pingPongRenderTargetWrapper: FrameGraphRenderTarget | undefined;
+
+        this._setLightsForShadow();
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
@@ -129,11 +135,6 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             context.copyTexture(this.destinationTexture);
         });
 
-        if (this.dependencies !== undefined) {
-            for (const handle of this.dependencies) {
-                pass.useTexture(handle);
-                passDisabled.useTexture(handle);
-            }
-        }
+        return pass;
     }
 }

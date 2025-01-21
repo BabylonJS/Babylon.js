@@ -4,6 +4,9 @@ export * from "./glowLayer";
 export * from "./highlightLayer";
 export * from "./layer";
 export * from "./layerSceneComponent";
+export * from "./thinEffectLayer";
+export * from "./thinGlowLayer";
+export * from "./thinHighlightLayer";
 
 // EffectLayer
 export * from "../Shaders/glowMapGeneration.fragment";

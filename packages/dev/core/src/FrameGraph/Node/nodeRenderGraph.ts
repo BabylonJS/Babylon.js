@@ -343,11 +343,12 @@ export class NodeRenderGraph {
     /**
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
-     * @param timeout Timeout in ms between retries (default is 16)
+     * @param timeStep Time step in ms between retries (default is 16)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeout = 16): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeout);
+    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
     }
 
     /**

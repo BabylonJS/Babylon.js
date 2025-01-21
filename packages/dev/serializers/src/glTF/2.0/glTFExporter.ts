@@ -40,7 +40,6 @@ import { GLTFMaterialExporter } from "./glTFMaterialExporter";
 import type { IExportOptions } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
-    AreIndices32Bits,
     ConvertToRightHandedPosition,
     ConvertToRightHandedRotation,
     CreateAccessor,
@@ -65,13 +64,14 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
-import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
+import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
+import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 class ExporterState {
@@ -440,7 +440,6 @@ export class GLTFExporter {
 
     private _generateJSON(shouldUseGlb: boolean, bufferByteLength: number, fileName?: string, prettyPrint?: boolean): string {
         const buffer: IBuffer = { byteLength: bufferByteLength };
-        let imageName: string;
         let imageData: { data: ArrayBuffer; mimeType: ImageMimeType };
         let bufferView: IBufferView;
         let byteOffset: number = bufferByteLength;
@@ -496,7 +495,7 @@ export class GLTFExporter {
                         byteOffset += imageData.data.byteLength;
                         this._bufferViews.push(bufferView);
                         image.bufferView = this._bufferViews.length - 1;
-                        image.name = imageName;
+                        image.name = fileName;
                         image.mimeType = imageData.mimeType;
                         image.uri = undefined;
                         this._glTF.images!.push(image);
@@ -922,12 +921,7 @@ export class GLTFExporter {
         this._exportBuffers(babylonRootNodes, state);
 
         for (const babylonNode of babylonRootNodes) {
-            if (this._shouldExportNode(babylonNode)) {
-                const nodeIndex = await this._exportNodeAsync(babylonNode, state);
-                if (nodeIndex !== null) {
-                    nodes.push(nodeIndex);
-                }
-            }
+            await this._exportNodeAsync(babylonNode, nodes, state);
         }
 
         return nodes;
@@ -940,11 +934,7 @@ export class GLTFExporter {
         morphTargetsToMeshesMap: Map<MorphTarget, Mesh[]>,
         state: ExporterState
     ): void {
-        if (!this._shouldExportNode(babylonNode)) {
-            return;
-        }
-
-        if (babylonNode instanceof Mesh && babylonNode.geometry) {
+        if (this._shouldExportNode(babylonNode) && babylonNode instanceof Mesh && babylonNode.geometry) {
             const vertexBuffers = babylonNode.geometry.getVertexBuffers();
             if (vertexBuffers) {
                 for (const kind in vertexBuffers) {
@@ -1175,13 +1165,94 @@ export class GLTFExporter {
 
     /**
      * Processes a node to be exported to the glTF file
-     * @returns A promise that resolves with the node index when the processing is complete, or null if the node should not be exported
+     * @returns A promise that resolves once the node has been exported
      * @internal
      */
-    private async _exportNodeAsync(babylonNode: Node, state: ExporterState): Promise<Nullable<number>> {
+    private async _exportNodeAsync(babylonNode: Node, parentNodeChildren: Array<number>, state: ExporterState): Promise<void> {
         let nodeIndex = this._nodeMap.get(babylonNode);
         if (nodeIndex !== undefined) {
-            return nodeIndex;
+            if (!parentNodeChildren.includes(nodeIndex)) {
+                parentNodeChildren.push(nodeIndex);
+            }
+            return;
+        }
+
+        const node = await this._createNodeAsync(babylonNode, state);
+
+        if (node) {
+            nodeIndex = this._nodes.length;
+            this._nodes.push(node);
+            this._nodeMap.set(babylonNode, nodeIndex);
+            state.pushExportedNode(babylonNode);
+            parentNodeChildren.push(nodeIndex);
+
+            // Process node's animations once the node has been added to nodeMap (TODO: This should be refactored)
+            const runtimeGLTFAnimation: IAnimation = {
+                name: "runtime animations",
+                channels: [],
+                samplers: [],
+            };
+            const idleGLTFAnimations: IAnimation[] = [];
+
+            if (!this._babylonScene.animationGroups.length) {
+                _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
+                    babylonNode,
+                    runtimeGLTFAnimation,
+                    idleGLTFAnimations,
+                    this._nodeMap,
+                    this._nodes,
+                    this._dataWriter,
+                    this._bufferViews,
+                    this._accessors,
+                    this._animationSampleRate,
+                    state.convertToRightHanded,
+                    this._options.shouldExportAnimation
+                );
+                if (babylonNode.animations.length) {
+                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
+                        babylonNode,
+                        runtimeGLTFAnimation,
+                        idleGLTFAnimations,
+                        this._nodeMap,
+                        this._nodes,
+                        this._dataWriter,
+                        this._bufferViews,
+                        this._accessors,
+                        this._animationSampleRate,
+                        state.convertToRightHanded,
+                        this._options.shouldExportAnimation
+                    );
+                }
+            }
+
+            if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
+                this._animations.push(runtimeGLTFAnimation);
+            }
+            idleGLTFAnimations.forEach((idleGLTFAnimation) => {
+                if (idleGLTFAnimation.channels.length && idleGLTFAnimation.samplers.length) {
+                    this._animations.push(idleGLTFAnimation);
+                }
+            });
+        }
+
+        // Begin processing child nodes once parent has been added to the node list
+        const children = node ? [] : parentNodeChildren;
+        for (const babylonChildNode of babylonNode.getChildren()) {
+            await this._exportNodeAsync(babylonChildNode, children, state);
+        }
+
+        if (node && children.length) {
+            node.children = children;
+        }
+    }
+
+    /**
+     * Creates a glTF node from a Babylon.js node. If skipped, returns null.
+     * @internal
+     */
+    private async _createNodeAsync(babylonNode: Node, state: ExporterState): Promise<Nullable<INode>> {
+        if (!this._shouldExportNode(babylonNode)) {
+            return null;
         }
 
         const node: INode = {};
@@ -1232,88 +1303,23 @@ export class GLTFExporter {
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
                         return null; // Skip exporting this node
                     }
-                } else {
-                    if (state.convertToRightHanded) {
-                        ConvertToRightHandedNode(node);
-                        RotateNode180Y(node);
-                    }
-                    this._nodesCameraMap.get(gltfCamera)?.push(node);
                 }
+                if (state.convertToRightHanded) {
+                    ConvertToRightHandedNode(node);
+                    RotateNode180Y(node);
+                }
+                this._nodesCameraMap.get(gltfCamera)?.push(node);
             }
         }
 
-        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
+        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node
         const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
         if (!processedNode) {
             Logger.Warn(`Not exporting node ${babylonNode.name}`);
             return null;
         }
 
-        nodeIndex = this._nodes.length;
-        this._nodes.push(node);
-        this._nodeMap.set(babylonNode, nodeIndex);
-        state.pushExportedNode(babylonNode);
-
-        // Process node's animations once the node has been added to nodeMap (TODO: This should be refactored)
-        const runtimeGLTFAnimation: IAnimation = {
-            name: "runtime animations",
-            channels: [],
-            samplers: [],
-        };
-        const idleGLTFAnimations: IAnimation[] = [];
-
-        if (!this._babylonScene.animationGroups.length) {
-            _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
-                babylonNode,
-                runtimeGLTFAnimation,
-                idleGLTFAnimations,
-                this._nodeMap,
-                this._nodes,
-                this._dataWriter,
-                this._bufferViews,
-                this._accessors,
-                this._animationSampleRate,
-                state.convertToRightHanded,
-                this._options.shouldExportAnimation
-            );
-            if (babylonNode.animations.length) {
-                _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
-                    babylonNode,
-                    runtimeGLTFAnimation,
-                    idleGLTFAnimations,
-                    this._nodeMap,
-                    this._nodes,
-                    this._dataWriter,
-                    this._bufferViews,
-                    this._accessors,
-                    this._animationSampleRate,
-                    state.convertToRightHanded,
-                    this._options.shouldExportAnimation
-                );
-            }
-        }
-
-        if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
-            this._animations.push(runtimeGLTFAnimation);
-        }
-        idleGLTFAnimations.forEach((idleGLTFAnimation) => {
-            if (idleGLTFAnimation.channels.length && idleGLTFAnimation.samplers.length) {
-                this._animations.push(idleGLTFAnimation);
-            }
-        });
-
-        // Begin processing child nodes once parent has been added to the node list
-        for (const babylonChildNode of babylonNode.getChildren()) {
-            if (this._shouldExportNode(babylonChildNode)) {
-                const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
-                if (childNodeIndex !== null) {
-                    node.children ||= [];
-                    node.children.push(childNodeIndex);
-                }
-            }
-        }
-
-        return nodeIndex;
+        return node;
     }
 
     private _exportIndices(
@@ -1479,11 +1485,8 @@ export class GLTFExporter {
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
         const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
-        let isLinesMesh = false;
-
-        if (babylonMesh instanceof LinesMesh) {
-            isLinesMesh = true;
-        }
+        const isLinesMesh = babylonMesh instanceof LinesMesh;
+        const isGreasedLineMesh = babylonMesh instanceof GreasedLineBaseMesh;
 
         const subMeshes = babylonMesh.subMeshes;
         if (vertexBuffers && subMeshes && subMeshes.length > 0) {
@@ -1492,8 +1495,26 @@ export class GLTFExporter {
 
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
 
-                // Special case for LinesMesh
-                if (isLinesMesh) {
+                if (isGreasedLineMesh) {
+                    const material: IMaterial = {
+                        name: babylonMaterial.name,
+                    };
+
+                    const babylonLinesMesh = babylonMesh as GreasedLineBaseMesh;
+
+                    const colorWhite = Color3.White();
+                    const alpha = babylonLinesMesh.material?.alpha ?? 1;
+                    const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
+                    if (!color.equals(colorWhite) || alpha < 1) {
+                        material.pbrMetallicRoughness = {
+                            baseColorFactor: [...color.asArray(), alpha],
+                        };
+                    }
+
+                    this._materials.push(material);
+                    primitive.material = this._materials.length - 1;
+                } else if (isLinesMesh) {
+                    // Special case for LinesMesh
                     const material: IMaterial = {
                         name: babylonMaterial.name,
                     };
@@ -1514,7 +1535,7 @@ export class GLTFExporter {
                 }
 
                 // Index buffer
-                const fillMode = isLinesMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
+                const fillMode = isLinesMesh || isGreasedLineMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
 

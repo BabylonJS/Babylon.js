@@ -95,6 +95,9 @@ export interface RenderTargetTextureOptions {
 
     /** Defines the underlying texture texture space */
     gammaSpace?: boolean;
+
+    /** If not provided (default), a new object renderer instance will be created */
+    existingObjectRenderer?: ObjectRenderer;
 }
 
 /**
@@ -215,6 +218,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
     public set activeCamera(value: Nullable<Camera>) {
         this._objectRenderer.activeCamera = value;
+    }
+
+    /**
+     * Define the camera used to calculate the LOD of the objects.
+     * If not defined, activeCamera will be used. If not defined nor activeCamera, scene's active camera will be used.
+     */
+    public get cameraForLOD(): Nullable<Camera> {
+        return this._objectRenderer.cameraForLOD;
+    }
+
+    public set cameraForLOD(value: Nullable<Camera>) {
+        this._objectRenderer.cameraForLOD = value;
     }
 
     /**
@@ -396,6 +411,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private _currentLayer: number;
     private _currentUseCameraPostProcess: boolean;
     private _currentDumpForDebug: boolean;
+    private _dontDisposeObjectRenderer = false;
 
     /**
      * Current render pass id of the render target texture. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
@@ -495,6 +511,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /** @internal */
     public _disableEngineStages = false; // TODO: remove this when the shadow generator task (frame graph) is reworked (see https://github.com/BabylonJS/Babylon.js/pull/15962#discussion_r1874417607)
 
+    private readonly _onBeforeRenderingManagerRenderObserver: Nullable<Observer<number>>;
+    private readonly _onAfterRenderingManagerRenderObserver: Nullable<Observer<number>>;
+    private readonly _onFastPathRenderObserver: Nullable<Observer<number>>;
+
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
      * or used a shadow, depth texture...
@@ -568,6 +588,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
         let gammaSpace = true;
+        let existingObjectRenderer: ObjectRenderer | undefined = undefined;
         if (typeof generateMipMaps === "object") {
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
@@ -586,6 +607,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             useSRGBBuffer = !!options.useSRGBBuffer;
             colorAttachment = options.colorAttachment;
             gammaSpace = options.gammaSpace ?? gammaSpace;
+            existingObjectRenderer = options.existingObjectRenderer;
         }
 
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -602,15 +624,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
+        this._dontDisposeObjectRenderer = !!existingObjectRenderer;
 
         this._processSizeParameter(size);
 
-        this._objectRenderer = new ObjectRenderer(name, scene, {
-            numPasses: isCube ? 6 : this.getRenderLayers() || 1,
-            doNotChangeAspectRatio,
-        });
+        this._objectRenderer =
+            existingObjectRenderer ??
+            new ObjectRenderer(name, scene, {
+                numPasses: isCube ? 6 : this.getRenderLayers() || 1,
+                doNotChangeAspectRatio,
+            });
 
-        this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
+        this._onBeforeRenderingManagerRenderObserver = this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
             // Before clear
             if (!this._disableEngineStages) {
                 for (const step of this._scene!._beforeRenderTargetClearStage) {
@@ -637,7 +662,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         });
 
-        this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
+        this._onAfterRenderingManagerRenderObserver = this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
             // After Camera Draw
             if (!this._disableEngineStages) {
                 for (const step of this._scene!._afterRenderTargetDrawStage) {
@@ -683,7 +708,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         });
 
-        this._objectRenderer.onFastPathRenderObservable.add(() => {
+        this._onFastPathRenderObserver = this._objectRenderer.onFastPathRenderObservable.add(() => {
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
             } else {
@@ -1264,7 +1289,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this._prePassRenderTarget.dispose();
         }
 
-        this._objectRenderer.dispose();
+        this._objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeRenderingManagerRenderObserver);
+        this._objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterRenderingManagerRenderObserver);
+        this._objectRenderer.onFastPathRenderObservable.remove(this._onFastPathRenderObserver);
+
+        if (!this._dontDisposeObjectRenderer) {
+            this._objectRenderer.dispose();
+        }
 
         this.clearPostProcesses(true);
 

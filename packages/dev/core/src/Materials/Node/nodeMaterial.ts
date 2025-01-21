@@ -70,6 +70,7 @@ import type { IImageProcessingConfigurationDefines } from "../imageProcessingCon
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
+import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -148,12 +149,26 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target position */
+    public MORPHTARGETS_POSITION = false;
     /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
     /** Morph target tangent */
     public MORPHTARGETS_TANGENT = false;
     /** Morph target uv */
     public MORPHTARGETS_UV = false;
+    /** Morph target uv2 */
+    public MORPHTARGETS_UV2 = false;
+    /** Morph target support positions */
+    public MORPHTARGETTEXTURE_HASPOSITIONS = false;
+    /** Morph target support normals */
+    public MORPHTARGETTEXTURE_HASNORMALS = false;
+    /** Morph target support tangents */
+    public MORPHTARGETTEXTURE_HASTANGENTS = false;
+    /** Morph target support uvs */
+    public MORPHTARGETTEXTURE_HASUVS = false;
+    /** Morph target support uv2s */
+    public MORPHTARGETTEXTURE_HASUV2S = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */
@@ -302,6 +317,13 @@ export class NodeMaterial extends PushMaterial {
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
+    /** @internal */
+    public _useAdditionalColor = false;
+
+    public override set _glowModeEnabled(value: boolean) {
+        this._useAdditionalColor = value;
+    }
+
     /** Get the inspector from bundle or global
      * @returns the global NME
      */
@@ -321,7 +343,7 @@ export class NodeMaterial extends PushMaterial {
 
     /** Gets or sets the active shader language */
     public override get shaderLanguage(): ShaderLanguage {
-        return this._options.shaderLanguage;
+        return this._options?.shaderLanguage || NodeMaterial.DefaultShaderLanguage;
     }
 
     public override set shaderLanguage(value: ShaderLanguage) {
@@ -700,6 +722,18 @@ export class NodeMaterial extends PushMaterial {
     @serialize()
     public forceAlphaBlending = false;
 
+    public override get _supportGlowLayer() {
+        if (this._fragmentOutputNodes.length === 0) {
+            return false;
+        }
+
+        if (this._fragmentOutputNodes.some((f) => (f as FragmentOutputBlock).additionalColor && (f as FragmentOutputBlock).additionalColor.isConnected)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
@@ -1037,6 +1071,8 @@ export class NodeMaterial extends PushMaterial {
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         PrepareDefinesForPrePass(this.getScene(), defines, !oit);
+
+        MaterialHelperGeometryRendering.PrepareDefines(this.getScene().getEngine().currentRenderPassId, mesh, defines);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
@@ -1654,7 +1690,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh.materialDefines || typeof subMesh.materialDefines === "string") {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
@@ -2045,8 +2081,8 @@ export class NodeMaterial extends PushMaterial {
 
         const currentScreen = new CurrentScreenBlock("CurrentScreen");
         uv.connectTo(currentScreen);
-
-        currentScreen.texture = new Texture("https://assets.babylonjs.com/nme/currentScreenPostProcess.png", this.getScene());
+        const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/nme/currentScreenPostProcess.png");
+        currentScreen.texture = new Texture(textureUrl, this.getScene());
 
         const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         currentScreen.connectTo(fragmentOutput, { output: "rgba" });
@@ -2524,6 +2560,7 @@ export class NodeMaterial extends PushMaterial {
      * @param skipBuild defines whether to build the node material
      * @param targetMaterial defines a material to use instead of creating a new one
      * @param urlRewriter defines a function used to rewrite urls
+     * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
     public static async ParseFromFileAsync(
@@ -2533,9 +2570,10 @@ export class NodeMaterial extends PushMaterial {
         rootUrl: string = "",
         skipBuild: boolean = false,
         targetMaterial?: NodeMaterial,
-        urlRewriter?: (url: string) => string
+        urlRewriter?: (url: string) => string,
+        options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
-        const material = targetMaterial ?? new NodeMaterial(name, scene);
+        const material = targetMaterial ?? new NodeMaterial(name, scene, options);
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
@@ -2555,6 +2593,7 @@ export class NodeMaterial extends PushMaterial {
      * @param skipBuild defines whether to build the node material
      * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
      * @param urlRewriter defines a function used to rewrite urls
+     * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(
@@ -2564,7 +2603,8 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial?: NodeMaterial,
         skipBuild: boolean = false,
         waitForTextureReadyness: boolean = false,
-        urlRewriter?: (url: string) => string
+        urlRewriter?: (url: string) => string,
+        options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
@@ -2579,7 +2619,7 @@ export class NodeMaterial extends PushMaterial {
                         const serializationObject = JSON.parse(snippet.nodeMaterial);
 
                         if (!nodeMaterial) {
-                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene, options), serializationObject, scene, rootUrl);
                             nodeMaterial.uniqueId = scene.getUniqueId();
                         }
 

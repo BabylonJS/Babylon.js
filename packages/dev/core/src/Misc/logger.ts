@@ -143,7 +143,8 @@ export class Logger {
     }
 
     /**
-     * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
+     * Sets the current log level. This property is a bit field, allowing you to combine different levels (MessageLogLevel / WarningLogLevel / ErrorLogLevel).
+     * Use NoneLogLevel to disable logging and AllLogLevel for a quick way to enable all levels.
      */
     public static set LogLevels(level: number) {
         Logger.Log = Logger._LogDisabled;
