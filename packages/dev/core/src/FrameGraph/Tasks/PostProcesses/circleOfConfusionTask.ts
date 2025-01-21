@@ -50,7 +50,7 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
         });
 
-        this._addInternalDependencies(this.depthTexture);
+        pass.addDependencies(this.depthTexture);
 
         return pass;
     }

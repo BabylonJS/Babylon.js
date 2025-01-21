@@ -130,8 +130,6 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");
         }
 
-        this._addInternalDependencies(this.sourceTexture);
-
         const sourceTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.sourceTexture);
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
@@ -182,6 +180,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._merge.record(true);
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+        passDisabled.addDependencies(this.sourceTexture);
 
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((context) => {
