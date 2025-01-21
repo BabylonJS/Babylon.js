@@ -11,6 +11,7 @@ const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffse
     [Int32Array, (dv, bo, v) => dv.setInt32(bo, v, true)],
     [Uint32Array, (dv, bo, v) => dv.setUint32(bo, v, true)],
     [Float32Array, (dv, bo, v) => dv.setFloat32(bo, v, true)],
+    [Float64Array, (dv, bo, v) => dv.setFloat64(bo, v, true)],
 ]);
 
 /** @internal */
@@ -85,6 +86,12 @@ export class DataWriter {
         this._checkGrowBuffer(4);
         this._dataView.setFloat32(this._byteOffset, value, true);
         this._byteOffset += 4;
+    }
+
+    public writeFloat64(value: number): void {
+        this._checkGrowBuffer(8);
+        this._dataView.setFloat64(this._byteOffset, value, true);
+        this._byteOffset += 8;
     }
 
     private _checkGrowBuffer(byteLength: number): void {
