@@ -1,5 +1,5 @@
 /* eslint-disable import/no-internal-modules */
-import type { Scene, AbstractEngine, FrameGraphTask } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -32,6 +32,11 @@ export class FrameGraph {
     private readonly _renderContext: FrameGraphRenderContext;
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
+
+    /**
+     * Gets or sets a boolean indicating that texture allocation should be optimized (that is, reuse existing textures when possible to limit GPU memory usage) (default: true)
+     */
+    public optimizeTextureAllocation = true;
 
     /**
      * Observable raised when the node render graph is built
@@ -153,7 +158,7 @@ export class FrameGraph {
                 this._currentProcessedTask = null;
             }
 
-            this.textureManager._allocateTextures();
+            this.textureManager._allocateTextures(this.optimizeTextureAllocation ? this._tasks : undefined);
 
             for (const task of this._tasks) {
                 task._checkTask();
@@ -196,7 +201,7 @@ export class FrameGraph {
                 },
                 () => {
                     this._whenReadyAsyncCancel = null;
-                        resolve();
+                    resolve();
                 },
                 (err, wasUnexpected) => {
                     this._whenReadyAsyncCancel = null;
@@ -205,7 +210,7 @@ export class FrameGraph {
                         if (err) {
                             Logger.Error(err);
                             if (err.stack) {
-                        Logger.Error(err.stack);
+                                Logger.Error(err.stack);
                             }
                         }
                     } else {

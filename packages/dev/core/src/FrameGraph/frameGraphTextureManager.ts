@@ -10,6 +10,8 @@ import type {
     FrameGraphTextureOptions,
     FrameGraphTextureDescription,
     RenderTargetWrapper,
+    FrameGraphTask,
+    IFrameGraphPass,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
@@ -18,12 +20,19 @@ import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } fro
 import { Constants } from "../Engines/constants";
 import { InternalTextureSource, GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
 import { FrameGraphRenderTarget } from "./frameGraphRenderTarget";
+import { FrameGraphRenderPass } from "./Passes/renderPass";
+import { Logger } from "../Misc/logger";
 
 type HistoryTexture = {
     textures: Array<Nullable<InternalTexture>>;
     handles: Array<FrameGraphTextureHandle>;
     index: number; // current index in textures array
     references: Array<{ renderTargetWrapper: RenderTargetWrapper; textureIndex: number }>; // render target wrappers that reference this history texture
+};
+
+type TextureLifespan = {
+    firstTask: number;
+    lastTask: number;
 };
 
 type TextureEntry = {
@@ -34,6 +43,9 @@ type TextureEntry = {
     textureIndex?: number; // Index of the texture in the types, formats, etc array of FrameGraphTextureOptions (default: 0)
     debug?: Texture;
     refHandle?: FrameGraphTextureHandle; // Handle of the texture this one is referencing - used for dangling handles
+    textureDescriptionHash?: string; // a hash of the texture creation options
+    lifespan?: TextureLifespan;
+    aliasHandle?: FrameGraphTextureHandle; // Handle of the texture this one is aliasing - can be set after execution of texture allocation optimization
 };
 
 enum FrameGraphTextureNamespace {
@@ -57,6 +69,11 @@ export class FrameGraphTextureManager {
 
     /** @internal */
     public _isRecordingTask = false;
+
+    /**
+     * Gets or sets a boolean indicating if debug logs should be shown when applying texture allocation optimization (default: false)
+     */
+    public showDebugLogsForTextureAllcationOptimization = false;
 
     /**
      * Constructs a new instance of the texture manager
@@ -377,7 +394,11 @@ export class FrameGraphTextureManager {
     }
 
     /** @internal */
-    public _allocateTextures() {
+    public _allocateTextures(tasks?: FrameGraphTask[]): void {
+        if (tasks) {
+            this._optimizeTextureAllocation(tasks);
+        }
+
         this._textures.forEach((entry) => {
             if (!entry.texture) {
                 if (entry.refHandle !== undefined) {
@@ -394,38 +415,44 @@ export class FrameGraphTextureManager {
                         entry.refHandle = backbufferDepthStencilTextureHandle;
                     }
                 } else if (entry.namespace !== FrameGraphTextureNamespace.External) {
-                    const creationOptions = entry.creationOptions;
-                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
-                    const textureIndex = entry.textureIndex || 0;
+                    if (entry.aliasHandle !== undefined) {
+                        const aliasEntry = this._textures.get(entry.aliasHandle)!;
+                        entry.texture = aliasEntry.texture!;
+                        entry.texture.incrementReferences();
+                    } else {
+                        const creationOptions = entry.creationOptions;
+                        const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+                        const textureIndex = entry.textureIndex || 0;
 
-                    const internalTextureCreationOptions: InternalTextureCreationOptions = {
-                        createMipMaps: creationOptions.options.createMipMaps,
-                        samples: creationOptions.options.samples,
-                        type: creationOptions.options.types?.[textureIndex],
-                        format: creationOptions.options.formats?.[textureIndex],
-                        useSRGBBuffer: creationOptions.options.useSRGBBuffers?.[textureIndex],
-                        creationFlags: creationOptions.options.creationFlags?.[textureIndex],
-                        label: creationOptions.options.labels?.[textureIndex] ?? `${entry.name}${textureIndex > 0 ? "#" + textureIndex : ""}`,
-                        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                        createMSAATexture: creationOptions.options.samples! > 1,
-                    };
+                        const internalTextureCreationOptions: InternalTextureCreationOptions = {
+                            createMipMaps: creationOptions.options.createMipMaps,
+                            samples: creationOptions.options.samples,
+                            type: creationOptions.options.types?.[textureIndex],
+                            format: creationOptions.options.formats?.[textureIndex],
+                            useSRGBBuffer: creationOptions.options.useSRGBBuffers?.[textureIndex],
+                            creationFlags: creationOptions.options.creationFlags?.[textureIndex],
+                            label: creationOptions.options.labels?.[textureIndex] ?? `${entry.name}${textureIndex > 0 ? "#" + textureIndex : ""}`,
+                            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                            createMSAATexture: creationOptions.options.samples! > 1,
+                        };
 
-                    const isDepthTexture = IsDepthTexture(internalTextureCreationOptions.format!);
-                    const hasStencil = HasStencilAspect(internalTextureCreationOptions.format!);
-                    const source =
-                        isDepthTexture && hasStencil
-                            ? InternalTextureSource.DepthStencil
-                            : isDepthTexture || hasStencil
-                              ? InternalTextureSource.Depth
-                              : InternalTextureSource.RenderTarget;
+                        const isDepthTexture = IsDepthTexture(internalTextureCreationOptions.format!);
+                        const hasStencil = HasStencilAspect(internalTextureCreationOptions.format!);
+                        const source =
+                            isDepthTexture && hasStencil
+                                ? InternalTextureSource.DepthStencil
+                                : isDepthTexture || hasStencil
+                                  ? InternalTextureSource.Depth
+                                  : InternalTextureSource.RenderTarget;
 
-                    const internalTexture = this.engine._createInternalTexture(size, internalTextureCreationOptions, false, source);
+                        const internalTexture = this.engine._createInternalTexture(size, internalTextureCreationOptions, false, source);
 
-                    if (isDepthTexture) {
-                        internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
+                        if (isDepthTexture) {
+                            internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
+                        }
+
+                        entry.texture = internalTexture;
                     }
-
-                    entry.texture = internalTexture;
                 }
             }
 
@@ -445,6 +472,13 @@ export class FrameGraphTextureManager {
     /** @internal */
     public _releaseTextures(releaseAll = true): void {
         this._textures.forEach((entry, handle) => {
+            if (entry.lifespan) {
+                entry.lifespan.firstTask = Number.MAX_VALUE;
+                entry.lifespan.lastTask = 0;
+            }
+
+            entry.aliasHandle = undefined;
+
             if (releaseAll || entry.namespace !== FrameGraphTextureNamespace.External) {
                 entry.debug?.dispose();
                 entry.debug = undefined;
@@ -582,6 +616,11 @@ export class FrameGraphTextureManager {
             },
             namespace,
             textureIndex,
+            textureDescriptionHash: this._createTextureDescriptionHash(creationOptions),
+            lifespan: {
+                firstTask: Number.MAX_VALUE,
+                lastTask: 0,
+            },
         };
 
         this._textures.set(handle, textureEntry);
@@ -621,6 +660,149 @@ export class FrameGraphTextureManager {
         }
 
         return handle;
+    }
+
+    private _createTextureDescriptionHash(options: FrameGraphTextureCreationOptions): string {
+        const hash: string[] = [];
+
+        hash.push(textureSizeIsObject(options.size) ? `${options.size.width}_${options.size.height}` : `${options.size}`);
+        hash.push(options.sizeIsPercentage ? "%" : "A");
+        hash.push(options.options.createMipMaps ? "M" : "N");
+        hash.push(options.options.samples ? `${options.options.samples}` : "S1");
+        hash.push(options.options.types ? options.options.types.join("_") : `${Constants.TEXTURETYPE_UNSIGNED_BYTE}`);
+        hash.push(options.options.formats ? options.options.formats.join("_") : `${Constants.TEXTUREFORMAT_RGBA}`);
+        hash.push(options.options.useSRGBBuffers ? options.options.useSRGBBuffers.join("_") : "false");
+        hash.push(options.options.creationFlags ? options.options.creationFlags.join("_") : "0");
+
+        return hash.join("_");
+    }
+
+    private _optimizeTextureAllocation(tasks: FrameGraphTask[]): void {
+        this._computeTextureLifespan(tasks);
+
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Optimization of texture allocation ==================`);
+        }
+
+        const cache: Map<string, Array<[FrameGraphTextureHandle, Array<TextureLifespan>]>> = new Map();
+
+        for (const textureHandle of this._textures.keys()) {
+            const textureEntry = this._textures.get(textureHandle)!;
+            if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
+                continue;
+            }
+
+            const textureHash = textureEntry.textureDescriptionHash!;
+            const textureLifespan = textureEntry.lifespan!;
+
+            const cacheEntries = cache.get(textureHash);
+            if (cacheEntries) {
+                let cacheEntryFound = false;
+                for (const cacheEntry of cacheEntries) {
+                    const [sourceHandle, lifespanArray] = cacheEntry;
+
+                    let overlapped = false;
+                    for (const lifespan of lifespanArray) {
+                        if (lifespan.firstTask <= textureLifespan.lastTask && lifespan.lastTask >= textureLifespan.firstTask) {
+                            overlapped = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlapped) {
+                        // No overlap between texture lifespan and all lifespans in the array, this texture can reuse the same entry cache
+                        if (this.showDebugLogsForTextureAllcationOptimization) {
+                            Logger.Log(`Texture ${textureHandle} (${textureEntry.name}) reuses cache entry ${sourceHandle}`);
+                        }
+
+                        lifespanArray.push(textureLifespan);
+                        textureEntry.aliasHandle = sourceHandle;
+                        cacheEntryFound = true;
+
+                        break;
+                    }
+                }
+                if (!cacheEntryFound) {
+                    cacheEntries.push([textureHandle, [textureLifespan]]);
+                }
+            } else {
+                cache.set(textureHash, [[textureHandle, [textureLifespan]]]);
+            }
+        }
+    }
+
+    // Loop through all task/pass dependencies and compute the lifespan of each texture (that is, the first task/pass that uses it and the last task/pass that uses it)
+    private _computeTextureLifespan(tasks: FrameGraphTask[]): void {
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Dump of texture dependencies for all tasks/passes ==================`);
+        }
+
+        for (let t = 0; t < tasks.length; ++t) {
+            const task = tasks[t];
+
+            if (task.passes.length > 0) {
+                this._computeTextureLifespanForPasses(task, t, task.passes);
+            }
+            if (task.passesDisabled.length > 0) {
+                this._computeTextureLifespanForPasses(task, t, task.passesDisabled);
+            }
+        }
+
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Texture lifespans ==================`);
+            for (const textureHandle of this._textures.keys()) {
+                const textureEntry = this._textures.get(textureHandle)!;
+                if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
+                    continue;
+                }
+                Logger.Log(`${textureHandle} (${textureEntry.name}): ${textureEntry.lifespan!.firstTask} - ${textureEntry.lifespan!.lastTask}`);
+            }
+        }
+    }
+
+    private _computeTextureLifespanForPasses(task: FrameGraphTask, taskIndex: number, passes: IFrameGraphPass[]): void {
+        for (let p = 0; p < passes.length; ++p) {
+            const dependencies = new Set<FrameGraphTextureHandle>();
+            const pass = passes[p];
+
+            if (!FrameGraphRenderPass.IsRenderPass(pass)) {
+                continue;
+            }
+
+            pass.collectDependencies(dependencies);
+
+            if (this.showDebugLogsForTextureAllcationOptimization) {
+                Logger.Log(`task#${taskIndex} (${task.name}), pass#${p} (${pass.name})`);
+            }
+
+            // Update the lifespan of each dependency
+            for (const textureHandle of dependencies) {
+                let textureEntry = this._textures.get(textureHandle);
+                if (!textureEntry) {
+                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
+                }
+                let handle = textureHandle;
+                while (textureEntry.refHandle !== undefined) {
+                    handle = textureEntry.refHandle;
+                    textureEntry = this._textures.get(handle);
+                    if (!textureEntry) {
+                        throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
+                    }
+                }
+                if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {
+                    continue;
+                }
+
+                if (this.showDebugLogsForTextureAllcationOptimization) {
+                    Logger.Log(`    ${handle} (${textureEntry.name})`);
+                }
+
+                const passOrderNum = taskIndex * 100 + p;
+
+                textureEntry.lifespan!.firstTask = Math.min(textureEntry.lifespan!.firstTask, passOrderNum);
+                textureEntry.lifespan!.lastTask = Math.max(textureEntry.lifespan!.lastTask, passOrderNum);
+            }
+        }
     }
 
     /**
