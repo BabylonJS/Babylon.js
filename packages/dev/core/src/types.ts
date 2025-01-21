@@ -138,6 +138,22 @@ export type FloatArray = number[] | Float32Array;
 export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
 
 /**
+ * Alias type for all TypedArrays
+ */
+export type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array
+    | BigInt64Array
+    | BigUint64Array;
+
+/**
  * Alias for types that can be used by a Buffer or VertexBuffer.
  */
 export type DataArray = number[] | ArrayBuffer | ArrayBufferView;

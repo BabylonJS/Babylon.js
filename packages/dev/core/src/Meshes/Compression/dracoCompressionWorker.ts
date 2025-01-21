@@ -34,7 +34,7 @@ export function EncodeMesh(
     const attributeIDs: Record<string, number> = {}; // Babylon kind -> Draco unique id
 
     // Double-check that at least a position attribute is provided
-    const positionAttribute = attributes.find((a) => a.babylonAttribute === "position");
+    const positionAttribute = attributes.find((a) => a.dracoName === "POSITION");
     if (!positionAttribute) {
         throw new Error("Position attribute is required for Draco encoding");
     }
@@ -61,9 +61,9 @@ export function EncodeMesh(
         // Add the attributes
         for (const attribute of attributes) {
             const verticesCount = attribute.data.length / attribute.size;
-            attributeIDs[attribute.babylonAttribute] = meshBuilder.AddFloatAttribute(mesh, encoderModule[attribute.dracoAttribute], verticesCount, attribute.size, attribute.data);
-            if (options.quantizationBits && options.quantizationBits[attribute.dracoAttribute]) {
-                encoder.SetAttributeQuantization(encoderModule[attribute.dracoAttribute], options.quantizationBits[attribute.dracoAttribute]);
+            attributeIDs[attribute.kind] = meshBuilder.AddFloatAttribute(mesh, encoderModule[attribute.dracoName], verticesCount, attribute.size, attribute.data);
+            if (options.quantizationBits && options.quantizationBits[attribute.dracoName]) {
+                encoder.SetAttributeQuantization(encoderModule[attribute.dracoName], options.quantizationBits[attribute.dracoName]);
             }
         }
 
