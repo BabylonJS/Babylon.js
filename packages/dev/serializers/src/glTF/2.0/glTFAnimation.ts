@@ -591,8 +591,8 @@ export class _GLTFAnimation {
             const nodeIndex = nodeMap.get(babylonTransformNode);
 
             // Create buffer view and accessor for key frames.
-            let data = new Float32Array(animationData.inputs);
-            bufferView = bufferManager.createBufferView(data);
+            const inputData = new Float32Array(animationData.inputs);
+            bufferView = bufferManager.createBufferView(inputData);
             accessor = bufferManager.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
                 min: [animationData.inputsMin],
                 max: [animationData.inputsMax],
@@ -607,7 +607,7 @@ export class _GLTFAnimation {
             const isCamera = babylonTransformNode instanceof Camera;
 
             const elementCount = GetAccessorElementCount(dataAccessorType);
-            data = new Float32Array(animationData.outputs.length * elementCount);
+            const outputData = new Float32Array(animationData.outputs.length * elementCount);
             animationData.outputs.forEach(function (output: number[], index: number) {
                 let outputToWrite: number[] = output;
                 if (convertToRightHanded) {
@@ -656,11 +656,11 @@ export class _GLTFAnimation {
                             break;
                     }
                 }
-                data.set(outputToWrite, index * elementCount);
+                outputData.set(outputToWrite, index * elementCount);
             });
 
             // Create buffer view and accessor for keyed values.
-            bufferView = bufferManager.createBufferView(data);
+            bufferView = bufferManager.createBufferView(outputData);
             accessor = bufferManager.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
