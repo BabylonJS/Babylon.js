@@ -11,7 +11,7 @@ fn albedoOpacityBlock(
     ,albedoTexture: vec4f
     ,albedoInfos: vec2f
 #endif
-    , vBaseWeight: f32
+    , baseWeight: f32
 #ifdef BASEWEIGHT
     , baseWeightTexture: vec4f
     , vBaseWeightInfos: vec2f
@@ -74,7 +74,7 @@ fn albedoOpacityBlock(
     // - for dielectrics, base_weight is a factor to the diffuse BRDF (i.e. it should be
     //   applied in computeDiffuseLighting), but with the diffuse model *currently* used
     //   in Babylon.js, factoring it into the surfaceAlbedo is equivalent.
-    surfaceAlbedo *= vBaseWeight;
+    surfaceAlbedo *= baseWeight;
     #if BASEWEIGHT
         surfaceAlbedo *= baseWeightTexture.r;
     #endif

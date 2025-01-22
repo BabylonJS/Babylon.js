@@ -108,7 +108,7 @@ void main(void) {
         , albedoTexture
         , vAlbedoInfos
     #endif
-        , vBaseWeight
+        , baseWeight
     #ifdef BASEWEIGHT
         , baseWeightTexture
         , vBaseWeightInfos
@@ -154,7 +154,7 @@ void main(void) {
 
 #ifdef UNLIT
     vec3 diffuseBase = vec3(1., 1., 1.);
-#else
+#else // !UNLIT
 
     // _____________________________ Reflectivity _______________________________
     vec3 baseColor = surfaceAlbedo;
@@ -621,7 +621,7 @@ void main(void) {
 
     // _____________________________ Compute Final Lit Components ________________________
     #include<pbrBlockFinalLitComponents>
-#endif // UNLIT
+#endif // !UNLIT
 
     #include<pbrBlockFinalUnlitComponents>
 

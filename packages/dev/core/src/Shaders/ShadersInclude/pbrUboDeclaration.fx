@@ -49,7 +49,7 @@ uniform Material {
     mat4 reflectionMatrix;
     vec3 vReflectionColor;
     vec4 vAlbedoColor;
-    float vBaseWeight;
+    float baseWeight;
     vec4 vLightingIntensity;
     vec3 vReflectionMicrosurfaceInfos;
     float pointSize;

@@ -1434,7 +1434,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vLightsType",
             "vAmbientColor",
             "vAlbedoColor",
-            "vBaseWeight",
+            "baseWeight",
             "vReflectivityColor",
             "vMetallicReflectanceFactors",
             "vEmissiveColor",
@@ -2039,7 +2039,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         ubo.addUniform("vReflectionColor", 3);
         ubo.addUniform("vAlbedoColor", 4);
-        ubo.addUniform("vBaseWeight", 1);
+        ubo.addUniform("baseWeight", 1);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
@@ -2308,7 +2308,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
                 }
 
-                ubo.updateFloat("vBaseWeight", this._baseWeight);
+                ubo.updateFloat("baseWeight", this._baseWeight);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;

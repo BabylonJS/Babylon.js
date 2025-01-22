@@ -2,7 +2,7 @@ uniform vec4 vEyePosition;
 
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
-uniform float vBaseWeight;
+uniform float baseWeight;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
