@@ -1149,21 +1149,6 @@ export class Viewer implements IDisposable {
         return true;
     }
 
-    /**
-     * Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-     * @param model The AssetContainer to refresh.
-     */
-    private _refreshBoundingInfo(model: AssetContainer): void {
-        model.meshes.forEach((mesh) => {
-            let cache = this._meshDataCache.get(mesh);
-            if (!cache) {
-                cache = {};
-                this._meshDataCache.set(mesh, cache);
-            }
-            mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
-        });
-    }
-
     protected _suspendRendering(): IDisposable {
         this._renderLoopController?.dispose();
         this._suspendRenderCount++;
@@ -1304,7 +1289,15 @@ export class Viewer implements IDisposable {
         await import("core/Culling/ray");
         if (this._modelInfo) {
             const model = this._modelInfo?.assetContainer;
-            this._refreshBoundingInfo(model);
+            // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
+            model.meshes.forEach((mesh) => {
+                let cache = this._meshDataCache.get(mesh);
+                if (!cache) {
+                    cache = {};
+                    this._meshDataCache.set(mesh, cache);
+                }
+                mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
+            });
 
             const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
             if (pickingInfo.hit) {
