@@ -16,3 +16,4 @@ export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./Blocks/index";
+export * from "./CustomTypes/index";

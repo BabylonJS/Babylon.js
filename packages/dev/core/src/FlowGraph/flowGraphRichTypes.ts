@@ -2,6 +2,7 @@ import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vec
 import { Color3, Color4 } from "../Maths/math.color";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { Constants } from "core/Engines/constants";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes";
 
 export const enum FlowGraphTypes {
     Any = "any",
@@ -15,6 +16,8 @@ export const enum FlowGraphTypes {
     Vector4 = "Vector4",
     Quaternion = "Quaternion",
     Matrix = "Matrix",
+    Matrix2D = "Matrix2D",
+    Matrix3D = "Matrix3D",
     Color3 = "Color3",
     Color4 = "Color4",
 }
@@ -67,6 +70,10 @@ export const RichTypeVector4: RichType<Vector4> = new RichType(FlowGraphTypes.Ve
 
 export const RichTypeMatrix: RichType<Matrix> = new RichType(FlowGraphTypes.Matrix, Matrix.Identity(), Constants.ANIMATIONTYPE_MATRIX);
 
+export const RichTypeMatrix2D: RichType<FlowGraphMatrix2D> = new RichType(FlowGraphTypes.Matrix2D, new FlowGraphMatrix2D());
+
+export const RichTypeMatrix3D: RichType<FlowGraphMatrix3D> = new RichType(FlowGraphTypes.Matrix3D, new FlowGraphMatrix3D());
+
 export const RichTypeColor3: RichType<Color3> = new RichType(FlowGraphTypes.Color3, Color3.Black(), Constants.ANIMATIONTYPE_COLOR3);
 
 export const RichTypeColor4: RichType<Color4> = new RichType(FlowGraphTypes.Color4, new Color4(0, 0, 0, 0), Constants.ANIMATIONTYPE_COLOR4);
@@ -108,6 +115,10 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
                         return RichTypeQuaternion as RichType<T>;
                     case FlowGraphTypes.Integer:
                         return RichTypeFlowGraphInteger as RichType<T>;
+                    case FlowGraphTypes.Matrix2D:
+                        return RichTypeMatrix2D as RichType<T>;
+                    case FlowGraphTypes.Matrix3D:
+                        return RichTypeMatrix3D as RichType<T>;
                 }
             }
             return RichTypeAny as RichType<T>;
@@ -145,6 +156,10 @@ export function getRichTypeByFlowGraphType(flowGraphType: string): RichType<any>
             return RichTypeQuaternion;
         case FlowGraphTypes.Integer:
             return RichTypeFlowGraphInteger;
+        case FlowGraphTypes.Matrix2D:
+            return RichTypeMatrix2D;
+        case FlowGraphTypes.Matrix3D:
+            return RichTypeMatrix3D;
         default:
             return RichTypeAny;
     }

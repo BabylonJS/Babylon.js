@@ -145,9 +145,9 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphDotBlock;
         case FlowGraphBlockNames.Cross:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCrossBlock;
-        case FlowGraphBlockNames.Rotate2d:
+        case FlowGraphBlockNames.Rotate2D:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRotate2DBlock;
-        case FlowGraphBlockNames.Rotate3d:
+        case FlowGraphBlockNames.Rotate3D:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRotate3DBlock;
         case FlowGraphBlockNames.Transpose:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransposeBlock;

@@ -391,8 +391,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/normalize": getSimpleInputMapping(FlowGraphBlockNames.Normalize),
     "math/dot": getSimpleInputMapping(FlowGraphBlockNames.Dot, ["a", "b"]),
     "math/cross": getSimpleInputMapping(FlowGraphBlockNames.Cross, ["a", "b"]),
-    "math/rotate2d": getSimpleInputMapping(FlowGraphBlockNames.Rotate2d, ["a", "b"]),
-    "math/rotate3d": getSimpleInputMapping(FlowGraphBlockNames.Rotate3d, ["a", "b", "c"]),
+    "math/rotate2d": getSimpleInputMapping(FlowGraphBlockNames.Rotate2D, ["a", "b"]),
+    "math/rotate3d": getSimpleInputMapping(FlowGraphBlockNames.Rotate3D, ["a", "b", "c"]),
     "math/transform": {
         // glTF transform is vector4 to matrix4x4
         blocks: [FlowGraphBlockNames.TransformVector4],

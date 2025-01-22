@@ -1,11 +1,21 @@
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
-import { RichTypeMatrix, RichTypeNumber, RichTypeVector2, RichTypeVector3, RichTypeVector4, type RichType } from "core/FlowGraph/flowGraphRichTypes";
+import {
+    RichTypeMatrix,
+    RichTypeMatrix2D,
+    RichTypeMatrix3D,
+    RichTypeNumber,
+    RichTypeVector2,
+    RichTypeVector3,
+    RichTypeVector4,
+    type RichType,
+} from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import type { Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 
 abstract class FlowGraphMathCombineBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     constructor(numberOfInputs: number, type: RichType<ResultT>, config?: IFlowGraphBlockConfiguration) {
@@ -149,6 +159,71 @@ RegisterClass(FlowGraphBlockNames.CombineMatrix, FlowGraphCombineMatrixBlock);
 
 /**
  * @experimental
+ * Combines 4 floats into a new Matrix
+ */
+export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix2D> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(4, RichTypeMatrix2D, config);
+    }
+
+    public override _doOperation(context: FlowGraphContext): FlowGraphMatrix2D {
+        if (!context._hasExecutionVariable(this, "cachedMatrix")) {
+            context._setExecutionVariable(this, "cachedMatrix", new FlowGraphMatrix2D());
+        }
+        const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix2D>>(this, "cachedMatrix", null) as FlowGraphMatrix2D;
+        matrix.fromArray([
+            this.getDataInput("input_0")!.getValue(context),
+            this.getDataInput("input_1")!.getValue(context),
+            this.getDataInput("input_2")!.getValue(context),
+            this.getDataInput("input_3")!.getValue(context),
+        ]);
+        return matrix;
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.CombineMatrix2D;
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.CombineMatrix2D, FlowGraphCombineMatrix2DBlock);
+
+/**
+ * @experimental
+ * Combines 9 floats into a new Matrix3D
+ */
+export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix3D> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(9, RichTypeMatrix3D, config);
+    }
+
+    public override _doOperation(context: FlowGraphContext): FlowGraphMatrix3D {
+        if (!context._hasExecutionVariable(this, "cachedMatrix")) {
+            context._setExecutionVariable(this, "cachedMatrix", new FlowGraphMatrix3D());
+        }
+        const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix3D>>(this, "cachedMatrix", null) as FlowGraphMatrix3D;
+        matrix.fromArray([
+            this.getDataInput("input_0")!.getValue(context),
+            this.getDataInput("input_1")!.getValue(context),
+            this.getDataInput("input_2")!.getValue(context),
+            this.getDataInput("input_3")!.getValue(context),
+            this.getDataInput("input_4")!.getValue(context),
+            this.getDataInput("input_5")!.getValue(context),
+            this.getDataInput("input_6")!.getValue(context),
+            this.getDataInput("input_7")!.getValue(context),
+            this.getDataInput("input_8")!.getValue(context),
+        ]);
+        return matrix;
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.CombineMatrix3D;
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.CombineMatrix3D, FlowGraphCombineMatrix3DBlock);
+
+/**
+ * @experimental
  * Extracts two floats from a Vector2
  */
 export class FlowGraphExtractVector2Block extends FlowGraphMathExtractBlock<Vector2> {
@@ -250,3 +325,55 @@ export class FlowGraphExtractMatrixBlock extends FlowGraphMathExtractBlock<Matri
 }
 
 RegisterClass(FlowGraphBlockNames.ExtractMatrix, FlowGraphExtractMatrixBlock);
+
+/**
+ * @experimental
+ * Extracts 4 floats from a Matrix2D
+ */
+export class FlowGraphExtractMatrix2DBlock extends FlowGraphMathExtractBlock<FlowGraphMatrix2D> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(4, RichTypeMatrix2D, config);
+    }
+    public override _updateOutputs(context: FlowGraphContext): void {
+        let input = this.getDataInput("input")?.getValue(context) as FlowGraphMatrix2D;
+        if (!input) {
+            input = new FlowGraphMatrix2D();
+            this.getDataInput("input")!.setValue(input, context);
+        }
+        for (let i = 0; i < 4; i++) {
+            this.getDataOutput(`output_${i}`)!.setValue(input.m[i], context);
+        }
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.ExtractMatrix2D;
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.ExtractMatrix2D, FlowGraphExtractMatrix2DBlock);
+
+/**
+ * @experimental
+ * Extracts 4 floats from a Matrix2D
+ */
+export class FlowGraphExtractMatrix3DBlock extends FlowGraphMathExtractBlock<FlowGraphMatrix3D> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(9, RichTypeMatrix3D, config);
+    }
+    public override _updateOutputs(context: FlowGraphContext): void {
+        let input = this.getDataInput("input")?.getValue(context) as FlowGraphMatrix3D;
+        if (!input) {
+            input = new FlowGraphMatrix3D();
+            this.getDataInput("input")!.setValue(input, context);
+        }
+        for (let i = 0; i < 9; i++) {
+            this.getDataOutput(`output_${i}`)!.setValue(input.m[i], context);
+        }
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.ExtractMatrix3D;
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.ExtractMatrix3D, FlowGraphExtractMatrix3DBlock);

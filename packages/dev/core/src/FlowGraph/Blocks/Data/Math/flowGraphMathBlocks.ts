@@ -6,7 +6,9 @@ import {
     RichTypeBoolean,
     RichTypeFlowGraphInteger,
     RichTypeMatrix,
-    RichTypeNumber,../../../CustomTypes/flowGraphInteger
+    RichTypeMatrix2D,
+    RichTypeMatrix3D,
+    RichTypeNumber,
     RichTypeVector2,
     RichTypeVector3,
     RichTypeVector4,
@@ -16,14 +18,16 @@ import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBl
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
-import { FlowGraphInteger } from "../../../flowGraphInteger";
+import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 
 export type FlowGraphNumber = number | FlowGraphInteger;
 export type FlowGraphVector = Vector2 | Vector3 | Vector4;
-export type FlowGraphMathOperationType = FlowGraphNumber | FlowGraphVector | Matrix | boolean;
+export type FlowGraphMatrix = Matrix | FlowGraphMatrix2D | FlowGraphMatrix3D;
+export type FlowGraphMathOperationType = FlowGraphNumber | FlowGraphVector | FlowGraphMatrix | boolean;
 
 /**
  * @internal
@@ -48,7 +52,7 @@ function _areSameVectorClass(className: string, className2: string) {
  * @returns
  */
 function _areSameMatrixClass(className: string, className2: string) {
-    return className === FlowGraphTypes.Matrix && className2 === FlowGraphTypes.Matrix;
+    return className === className2 && (className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D);
 }
 
 /**
@@ -95,10 +99,10 @@ RegisterClass(FlowGraphBlockNames.Add, FlowGraphAddBlock);
  */
 export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicAdd(a, b), FlowGraphBlockNames.Subtract, config);
+        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicSubtract(a, b), FlowGraphBlockNames.Subtract, config);
     }
 
-    private _polymorphicAdd(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
+    private _polymorphicSubtract(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
         if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName) || _areSameMatrixClass(aClassName, bClassName)) {
@@ -134,29 +138,23 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
         if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).multiply(b as Vector3);
         } else if (_areSameMatrixClass(aClassName, bClassName)) {
-            a = a as Matrix;
-            b = b as Matrix;
             if (this.config?.useMatrixPerComponent) {
                 // this is the definition of multiplication of glTF interactivity
-                return Matrix.FromValues(
-                    a.m[0] * b.m[0],
-                    a.m[4] * b.m[4],
-                    a.m[8] * b.m[8],
-                    a.m[12] * b.m[12],
-                    a.m[1] * b.m[1],
-                    a.m[5] * b.m[5],
-                    a.m[9] * b.m[9],
-                    a.m[13] * b.m[13],
-                    a.m[2] * b.m[2],
-                    a.m[6] * b.m[6],
-                    a.m[10] * b.m[10],
-                    a.m[14] * b.m[14],
-                    a.m[3] * b.m[3],
-                    a.m[7] * b.m[7],
-                    a.m[11] * b.m[11],
-                    a.m[15] * b.m[15]
-                );
+                // get a's m as array, and multiply each component with b's m
+                const aM = (a as FlowGraphMatrix2D).m;
+                for (let i = 0; i < aM.length; i++) {
+                    aM[i] *= (b as FlowGraphMatrix2D).m[i];
+                }
+                if (aClassName === FlowGraphTypes.Matrix2D) {
+                    return new FlowGraphMatrix2D(aM);
+                } else if (aClassName === FlowGraphTypes.Matrix3D) {
+                    return new FlowGraphMatrix3D(aM);
+                } else {
+                    return Matrix.FromArray(aM);
+                }
             } else {
+                a = a as Matrix;
+                b = b as Matrix;
                 return a.multiply(b);
             }
         } else {
@@ -182,28 +180,22 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
             // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).divide(b as Vector3);
         } else if (_areSameMatrixClass(aClassName, bClassName)) {
-            a = a as Matrix;
-            b = b as Matrix;
             if (this.config?.useMatrixPerComponent) {
-                return Matrix.FromValues(
-                    a.m[0] / b.m[0],
-                    a.m[4] / b.m[4],
-                    a.m[8] / b.m[8],
-                    a.m[12] / b.m[12],
-                    a.m[1] / b.m[1],
-                    a.m[5] / b.m[5],
-                    a.m[9] / b.m[9],
-                    a.m[13] / b.m[13],
-                    a.m[2] / b.m[2],
-                    a.m[6] / b.m[6],
-                    a.m[10] / b.m[10],
-                    a.m[14] / b.m[14],
-                    a.m[3] / b.m[3],
-                    a.m[7] / b.m[7],
-                    a.m[11] / b.m[11],
-                    a.m[15] / b.m[15]
-                );
+                // get a's m as array, and divide each component with b's m
+                const aM = (a as FlowGraphMatrix2D).m;
+                for (let i = 0; i < aM.length; i++) {
+                    aM[i] /= (b as FlowGraphMatrix2D).m[i];
+                }
+                if (aClassName === FlowGraphTypes.Matrix2D) {
+                    return new FlowGraphMatrix2D(aM);
+                } else if (aClassName === FlowGraphTypes.Matrix3D) {
+                    return new FlowGraphMatrix3D(aM);
+                } else {
+                    return Matrix.FromArray(aM);
+                }
             } else {
+                a = a as Matrix;
+                b = b as Matrix;
                 return a.divide(b);
             }
         } else {
@@ -320,6 +312,13 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
                 op(a.m[11]),
                 op(a.m[15])
             );
+        case FlowGraphTypes.Matrix2D:
+            a = a as FlowGraphMatrix2D;
+            // reason for not using .map is performance
+            return new FlowGraphMatrix2D([op(a.m[0]), op(a.m[1]), op(a.m[2]), op(a.m[3])]);
+        case FlowGraphTypes.Matrix3D:
+            a = a as FlowGraphMatrix3D;
+            return new FlowGraphMatrix3D([op(a.m[0]), op(a.m[1]), op(a.m[2]), op(a.m[3]), op(a.m[4]), op(a.m[5]), op(a.m[6]), op(a.m[7]), op(a.m[8])]);
         default:
             a = a as number;
             return op(a);
@@ -491,6 +490,24 @@ function _componentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGra
                 op(a.m[11], b.m[11]),
                 op(a.m[15], b.m[15])
             );
+        case FlowGraphTypes.Matrix2D:
+            a = a as FlowGraphMatrix2D;
+            b = b as FlowGraphMatrix2D;
+            return new FlowGraphMatrix2D([op(a.m[0], b.m[0]), op(a.m[1], b.m[1]), op(a.m[2], b.m[2]), op(a.m[3], b.m[3])]);
+        case FlowGraphTypes.Matrix3D:
+            a = a as FlowGraphMatrix3D;
+            b = b as FlowGraphMatrix3D;
+            return new FlowGraphMatrix3D([
+                op(a.m[0], b.m[0]),
+                op(a.m[1], b.m[1]),
+                op(a.m[2], b.m[2]),
+                op(a.m[3], b.m[3]),
+                op(a.m[4], b.m[4]),
+                op(a.m[5], b.m[5]),
+                op(a.m[6], b.m[6]),
+                op(a.m[7], b.m[7]),
+                op(a.m[8], b.m[8]),
+            ]);
         default:
             return op(a as number, b as number);
     }
@@ -595,6 +612,26 @@ function _componentWiseTernaryOperation(
                 op(a.m[11], b.m[11], c.m[11]),
                 op(a.m[15], b.m[15], c.m[15])
             );
+        case FlowGraphTypes.Matrix2D:
+            a = a as FlowGraphMatrix2D;
+            b = b as FlowGraphMatrix2D;
+            c = c as FlowGraphMatrix2D;
+            return new FlowGraphMatrix2D([op(a.m[0], b.m[0], c.m[0]), op(a.m[1], b.m[1], c.m[1]), op(a.m[2], b.m[2], c.m[2]), op(a.m[3], b.m[3], c.m[3])]);
+        case FlowGraphTypes.Matrix3D:
+            a = a as FlowGraphMatrix3D;
+            b = b as FlowGraphMatrix3D;
+            c = c as FlowGraphMatrix3D;
+            return new FlowGraphMatrix3D([
+                op(a.m[0], b.m[0], c.m[0]),
+                op(a.m[1], b.m[1], c.m[1]),
+                op(a.m[2], b.m[2], c.m[2]),
+                op(a.m[3], b.m[3], c.m[3]),
+                op(a.m[4], b.m[4], c.m[4]),
+                op(a.m[5], b.m[5], c.m[5]),
+                op(a.m[6], b.m[6], c.m[6]),
+                op(a.m[7], b.m[7], c.m[7]),
+                op(a.m[8], b.m[8], c.m[8]),
+            ]);
         default:
             return op(a as number, b as number, c as number);
     }
@@ -1216,10 +1253,10 @@ RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
  */
 export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphBlockNames.Rotate2d, config);
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphBlockNames.Rotate2D, config);
     }
 }
-RegisterClass(FlowGraphBlockNames.Rotate2d, FlowGraphRotate2DBlock);
+RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
 
 /**
  * @experimental
@@ -1233,13 +1270,14 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
             RichTypeNumber,
             RichTypeVector3,
             (a, b, c) => Vector3.TransformCoordinates(a, Matrix.RotationAxis(b, c)),
-            FlowGraphBlockNames.Rotate3d,
+            FlowGraphBlockNames.Rotate3D,
             config
         );
     }
 }
-RegisterClass(FlowGraphBlockNames.Rotate3d, FlowGraphRotate3DBlock);
+RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
 
+// TODO address issues with the following transform blocks, and implement 2D as well
 /**
  * @experimental
  * Transform a vector3 by a matrix.
@@ -1264,13 +1302,34 @@ export class FlowGraphTransformVector4Block extends FlowGraphBinaryOperationBloc
 
 RegisterClass(FlowGraphBlockNames.TransformVector4, FlowGraphTransformVector4Block);
 
+function getRichTypeOfMatrix(a?: FlowGraphTypes) {
+    switch (a) {
+        case FlowGraphTypes.Matrix2D:
+            return RichTypeMatrix2D;
+        case FlowGraphTypes.Matrix3D:
+            return RichTypeMatrix3D;
+        case FlowGraphTypes.Matrix:
+        default:
+            return RichTypeMatrix;
+    }
+}
+
+export interface IFlowGraphMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
+    matrixType: FlowGraphTypes;
+}
 /**
  * @experimental
  * Transposes a matrix.
  */
-export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<Matrix, Matrix> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Transpose(a), FlowGraphBlockNames.Transpose, config);
+export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeOfMatrix(config?.matrixType),
+            getRichTypeOfMatrix(config?.matrixType),
+            (a) => (a.transpose ? a.transpose() : Matrix.Transpose(a as Matrix)),
+            FlowGraphBlockNames.Transpose,
+            config
+        );
     }
 }
 RegisterClass(FlowGraphBlockNames.Transpose, FlowGraphTransposeBlock);
@@ -1279,9 +1338,9 @@ RegisterClass(FlowGraphBlockNames.Transpose, FlowGraphTransposeBlock);
  * @experimental
  * Gets the determinant of a matrix.
  */
-export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<Matrix, number> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeMatrix, RichTypeNumber, (a) => a.determinant(), FlowGraphBlockNames.Determinant, config);
+export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, number> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(getRichTypeOfMatrix(config?.matrixType), RichTypeNumber, (a) => a.determinant(), FlowGraphBlockNames.Determinant, config);
     }
 }
 RegisterClass(FlowGraphBlockNames.Determinant, FlowGraphDeterminantBlock);
@@ -1290,9 +1349,15 @@ RegisterClass(FlowGraphBlockNames.Determinant, FlowGraphDeterminantBlock);
  * @experimental
  * Inverts a matrix.
  */
-export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<Matrix, Matrix> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Invert(a), FlowGraphBlockNames.InvertMatrix, config);
+export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeOfMatrix(config?.matrixType),
+            getRichTypeOfMatrix(config?.matrixType),
+            (a) => ((a as FlowGraphMatrix2D).inverse ? (a as FlowGraphMatrix2D).inverse() : Matrix.Invert(a as Matrix)),
+            FlowGraphBlockNames.InvertMatrix,
+            config
+        );
     }
 }
 RegisterClass(FlowGraphBlockNames.InvertMatrix, FlowGraphInvertMatrixBlock);
@@ -1301,9 +1366,16 @@ RegisterClass(FlowGraphBlockNames.InvertMatrix, FlowGraphInvertMatrixBlock);
  * @experimental
  * Multiplies two matrices.
  */
-export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (a, b) => b.multiply(a), FlowGraphBlockNames.MatrixMultiplication, config);
+export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeOfMatrix(config?.matrixType),
+            getRichTypeOfMatrix(config?.matrixType),
+            getRichTypeOfMatrix(config?.matrixType),
+            (a, b) => b.multiply(a as any),
+            FlowGraphBlockNames.MatrixMultiplication,
+            config
+        );
     }
 }
 RegisterClass(FlowGraphBlockNames.MatrixMultiplication, FlowGraphMatrixMultiplicationBlock);
