@@ -105,10 +105,6 @@ export class RawTexture extends Texture {
         return rawTexture;
     }
 
-    /**
-     * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
-     * @returns true if fully ready
-     */
     public override isReady(): boolean {
         return super.isReady() && !this._waitingForData;
     }
