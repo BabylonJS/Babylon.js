@@ -1286,11 +1286,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
         const camGlobalPos = camera.globalPosition.clone();
 
-        if (this.viewerDetails) {
+        if (this.viewerDetails && this.viewerDetails.model) {
             const scene = this.viewerDetails.scene;
             const model = this.viewerDetails.model;
 
-            if (model && model.worldBounds) {
+            const selectedAnimation = this.selectedAnimation ?? 0;
+            let worldBounds = model.worldBounds[selectedAnimation] ?? model.worldBounds[0];
+            if (worldBounds) {
                 // Target
                 let radius: number = 0.0001; // Just to avoid division by zero
                 const targetPoint = Vector3.Zero();
@@ -1300,7 +1302,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 } else {
                     const direction = ray.direction.clone();
                     targetPoint.copyFrom(camGlobalPos);
-                    radius = Vector3.Distance(camGlobalPos, Vector3.FromArray(model.worldBounds.center));
+                    console.log("alors ?", model.worldBounds);
+                    radius = Vector3.Distance(camGlobalPos, Vector3.FromArray(worldBounds.center));
                     direction.scaleAndAddToRef(radius, targetPoint);
                 }
 

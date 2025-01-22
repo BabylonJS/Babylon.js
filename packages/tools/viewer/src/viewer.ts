@@ -127,6 +127,30 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
+/**
+ * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
+ */
+function computeBoundingInfos(assetContainer: AssetContainer, animationGroup: Nullable<AnimationGroup> = null): Nullable<BoundingInfo> {
+    if (assetContainer.meshes.length) {
+        console.log("computeBoundingInfos", animationGroup, assetContainer.meshes);
+        const maxExtents = computeMaxExtents(assetContainer.meshes, animationGroup);
+        const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
+        const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
+        const size = max.subtract(min);
+        const center = min.add(size.scale(0.5));
+
+        return {
+            extents: {
+                min: min.asArray(),
+                max: max.asArray(),
+            },
+            size: size.asArray(),
+            center: center.asArray(),
+        };
+    }
+    return null;
+}
+
 export type ViewerDetails = {
     /**
      * Provides access to the Scene managed by the Viewer.
@@ -258,16 +282,16 @@ export type Model = IDisposable &
         materialVariantsController: Nullable<MaterialVariantsController>;
 
         /**
-         * Returns the world position and visibility of a hot spot.
-         */
-        getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
-    }> & {
-        /**
          * The computed world bounds of the model.
          * The minimum and maximum extents, the size and the center.
          */
-        worldBounds?: BoundingInfo;
-    };
+        worldBounds: Nullable<BoundingInfo>[];
+
+        /**
+         * Returns the world position and visibility of a hot spot.
+         */
+        getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
+    }>;
 
 /**
  * @experimental
@@ -622,7 +646,6 @@ export class Viewer implements IDisposable {
         const [model, source] = args;
         if (model !== this._modelInfo) {
             this._modelInfo = model;
-            this._updateModelBoundingInfo();
             this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
@@ -683,7 +706,9 @@ export class Viewer implements IDisposable {
                     }),
                 ];
 
-                this._updateModelBoundingInfo();
+                if (this._modelInfo && !this._modelInfo.worldBounds[index]) {
+                    this._modelInfo.worldBounds[index] = computeBoundingInfos(this._modelInfo?.assetContainer, this._activeAnimation);
+                }
                 this._updateCamera(interpolateCamera);
             }
 
@@ -754,36 +779,6 @@ export class Viewer implements IDisposable {
             this._modelInfo.materialVariantsController.selectedVariant = value;
             this._snapshotHelper.enableSnapshotRendering();
             this.onSelectedMaterialVariantChanged.notifyObservers();
-        }
-    }
-
-    /**
-     * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
-     */
-    private _updateModelBoundingInfo(): void {
-        if (this._modelInfo?.assetContainer.meshes.length) {
-            const maxExtents = computeMaxExtents(this._modelInfo.assetContainer.meshes, this._activeAnimation);
-            const min = new Vector3(
-                Math.min(...maxExtents.map((e) => e.minimum.x)),
-                Math.min(...maxExtents.map((e) => e.minimum.y)),
-                Math.min(...maxExtents.map((e) => e.minimum.z))
-            );
-            const max = new Vector3(
-                Math.max(...maxExtents.map((e) => e.maximum.x)),
-                Math.max(...maxExtents.map((e) => e.maximum.y)),
-                Math.max(...maxExtents.map((e) => e.maximum.z))
-            );
-            const size = max.subtract(min);
-            const center = min.add(size.scale(0.5));
-
-            this._modelInfo.worldBounds = {
-                extents: {
-                    min: min.asArray(),
-                    max: max.asArray(),
-                },
-                size: size.asArray(),
-                center: center.asArray(),
-            };
         }
     }
 
@@ -895,6 +890,7 @@ export class Viewer implements IDisposable {
                     assetContainer.dispose();
                     this._snapshotHelper.enableSnapshotRendering();
                 },
+                worldBounds: [computeBoundingInfos(assetContainer, assetContainer.animationGroups[0])],
             };
         } catch (e) {
             this.onModelError.notifyObservers(e);
@@ -1214,11 +1210,12 @@ export class Viewer implements IDisposable {
         let goalRadius = 1;
         let goalTarget = currentTarget;
 
-        if (this._modelInfo?.worldBounds) {
+        const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
+        const worldBounds = this._modelInfo?.worldBounds[selectedAnimation];
+        if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldBounds = this._modelInfo.worldBounds;
             const worldExtentsMin = Vector3.FromArray(worldBounds.extents.min);
             const worldExtentsMax = Vector3.FromArray(worldBounds.extents.max);
             framingBehavior.zoomOnBoundingInfo(worldExtentsMin, worldExtentsMax);
