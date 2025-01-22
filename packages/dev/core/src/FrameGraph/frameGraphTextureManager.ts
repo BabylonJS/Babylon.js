@@ -18,10 +18,11 @@ import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/
 import { Texture } from "../Materials/Textures/texture";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import { Constants } from "../Engines/constants";
-import { InternalTextureSource, GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
+import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { FrameGraphRenderTarget } from "./frameGraphRenderTarget";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { Logger } from "../Misc/logger";
+import { GetTextureBlockInformation, GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 type HistoryTexture = {
     textures: Array<Nullable<InternalTexture>>;
@@ -388,6 +389,49 @@ export class FrameGraphTextureManager {
         };
     }
 
+    /**
+     * Calculates the total byte size of all textures used by the frame graph texture manager (including external textures)
+     * @param optimizedSize True if the calculation should not factor in aliased textures
+     * @param outputWidth The output width of the frame graph. Will be used to calculate the size of percentage-based textures
+     * @param outputHeight The output height of the frame graph. Will be used to calculate the size of percentage-based textures
+     * @returns The total size of all textures
+     */
+    public computeTotalTextureSize(optimizedSize: boolean, outputWidth: number, outputHeight: number) {
+        let totalSize = 0;
+
+        this._textures.forEach((entry, handle) => {
+            if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle || entry.refHandle !== undefined) {
+                return;
+            }
+            if (optimizedSize && entry.aliasHandle !== undefined) {
+                return;
+            }
+
+            const options = entry.creationOptions;
+            const textureIndex = entry.textureIndex || 0;
+            const dimensions = options.sizeIsPercentage ? this.getAbsoluteDimensions(options.size, outputWidth, outputHeight) : getDimensionsFromTextureSize(options.size);
+
+            const blockInfo = GetTextureBlockInformation(options.options.types![textureIndex], options.options.formats![textureIndex]);
+
+            const textureByteSize = Math.ceil(dimensions.width / blockInfo.width) * Math.ceil(dimensions.height / blockInfo.height) * blockInfo.length;
+
+            let byteSize = textureByteSize;
+
+            if (options.options.createMipMaps) {
+                byteSize = Math.floor((byteSize * 4) / 3);
+            }
+
+            if ((options.options.samples || 1) > 1) {
+                // We need an additional texture in the case of MSAA
+                byteSize += textureByteSize;
+            }
+
+            totalSize += byteSize;
+        });
+
+        return totalSize;
+    }
+
     /** @internal */
     public _dispose(): void {
         this._releaseTextures();
@@ -417,6 +461,7 @@ export class FrameGraphTextureManager {
                 } else if (entry.namespace !== FrameGraphTextureNamespace.External) {
                     if (entry.aliasHandle !== undefined) {
                         const aliasEntry = this._textures.get(entry.aliasHandle)!;
+
                         entry.texture = aliasEntry.texture!;
                         entry.texture.incrementReferences();
                     } else {
@@ -770,6 +815,11 @@ export class FrameGraphTextureManager {
             }
 
             pass.collectDependencies(dependencies);
+            if (task.dependencies) {
+                for (const dependency of task.dependencies) {
+                    dependencies.add(dependency);
+                }
+            }
 
             if (this.showDebugLogsForTextureAllcationOptimization) {
                 Logger.Log(`task#${taskIndex} (${task.name}), pass#${p} (${pass.name})`);
