@@ -45,7 +45,17 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-export type LoadModelOptions = LoadAssetContainerOptions;
+export type LoadModelOptions = LoadAssetContainerOptions & {
+    /**
+     * The default animation index.
+     */
+    defaultAnimation?: number;
+
+    /**
+     * Whether to play the default animation immediately after loading.
+     */
+    animationAutoPlay?: boolean;
+};
 
 export type CameraAutoOrbit = {
     /**
@@ -963,6 +973,10 @@ export class Viewer implements IDisposable {
 
             if (source) {
                 this._setModel(await this._loadModel(source, options, abortController.signal), source);
+                this._selectAnimation(options?.defaultAnimation ?? 0, false);
+                if (options?.animationAutoPlay) {
+                    this.playAnimation();
+                }
             }
         });
     }
