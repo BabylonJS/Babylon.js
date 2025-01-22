@@ -2445,6 +2445,10 @@
         {
             "title": "FrameGraph gui bloom",
             "playgroundId": "#RM56RY#2"
+        },
+        {
+            "title": "IBL radiance roughness",
+            "playgroundId": "#RNO672#7"
         }
     ]
 }
