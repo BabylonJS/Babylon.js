@@ -270,11 +270,6 @@ export type Model = IDisposable &
     };
 
 /**
- * Provides the information of alpha, beta, radius and target of the camera.
- */
-export type ViewerArcRotateCameraInfos = { alpha: number; beta: number; radius: number; target: Vector3 };
-
-/**
  * @experimental
  * Provides an experience for viewing a single 3D model.
  * @remarks

@@ -4,7 +4,7 @@ import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRota
 import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerArcRotateCameraInfos, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -1147,16 +1147,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.scene.onNewCameraAddedObservable.add((camera) => {
                     if (camera !== details.camera && this.camerasAsHotSpots) {
-                        this._getArcRotateCameraInfos(camera).then((cameraInfos) => {
-                            if (cameraInfos) {
+                        this._cameraToHotSpot(camera).then((hotSpot) => {
+                            if (hotSpot) {
                                 this._camerasHotSpots = {
                                     ...this._camerasHotSpots,
-                                    [`camera-${camera.name}`]: {
-                                        type: "world",
-                                        position: cameraInfos.target.asArray(),
-                                        normal: cameraInfos.target.asArray(),
-                                        cameraOrbit: [cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius],
-                                    },
+                                    [`camera-${camera.name}`]: hotSpot,
                                 };
                             }
                         });
@@ -1248,19 +1243,20 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * Calculates the alpha, beta, and radius along with the target point.
+     * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
      * The target point is determined based on the camera's forward ray:
      *   - If an intersection with the main model is found, the first hit point is used as the target.
      *   - If no intersection is detected, a fallback target is calculated by projecting
      *     the distance between the camera and the main model's center along the forward ray.
      *
-     * @param camera The reference camera used to computes infos
+     * @param camera The reference camera used to computes alpha, beta, radius and target
      * @param predicate Used to define predicate for selecting meshes and instances (if exist)
-     * @returns An object containing the alpha, beta, radius and target properties, or null if no model found
+     * @returns A HotSpot, or null if no model found
      */
-    private async _getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
+    private async _cameraToHotSpot(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
-            return { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target.clone() };
+            const position = camera.target.clone().asArray();
+            return { type: "world", position, normal: position, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
         await import("core/Culling/ray");
@@ -1297,7 +1293,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 const alpha = ComputeAlpha(computationVector);
                 const beta = ComputeBeta(computationVector.y, radius);
 
-                return { alpha, beta, radius, target: targetPoint };
+                const hotSpotPosition = targetPoint.asArray();
+                return { type: "world", position: hotSpotPosition, normal: hotSpotPosition, cameraOrbit: [alpha, beta, radius] };
             }
         }
 
