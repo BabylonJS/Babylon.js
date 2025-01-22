@@ -815,43 +815,47 @@ export class FrameGraphTextureManager {
             }
 
             pass.collectDependencies(dependencies);
-            if (task.dependencies) {
-                for (const dependency of task.dependencies) {
-                    dependencies.add(dependency);
-                }
-            }
 
             if (this.showDebugLogsForTextureAllcationOptimization) {
                 Logger.Log(`task#${taskIndex} (${task.name}), pass#${p} (${pass.name})`);
             }
 
-            // Update the lifespan of each dependency
-            for (const textureHandle of dependencies) {
-                let textureEntry = this._textures.get(textureHandle);
-                if (!textureEntry) {
-                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
-                }
-                let handle = textureHandle;
-                while (textureEntry.refHandle !== undefined) {
-                    handle = textureEntry.refHandle;
-                    textureEntry = this._textures.get(handle);
-                    if (!textureEntry) {
-                        throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
-                    }
-                }
-                if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {
-                    continue;
-                }
+            this._updateLifespan(taskIndex * 100 + p, dependencies);
+        }
 
-                if (this.showDebugLogsForTextureAllcationOptimization) {
-                    Logger.Log(`    ${handle} (${textureEntry.name})`);
-                }
-
-                const passOrderNum = taskIndex * 100 + p;
-
-                textureEntry.lifespan!.firstTask = Math.min(textureEntry.lifespan!.firstTask, passOrderNum);
-                textureEntry.lifespan!.lastTask = Math.max(textureEntry.lifespan!.lastTask, passOrderNum);
+        if (task.dependencies) {
+            if (this.showDebugLogsForTextureAllcationOptimization) {
+                Logger.Log(`task#${taskIndex} (${task.name}), global dependencies`);
             }
+
+            this._updateLifespan(taskIndex * 100 + 99, task.dependencies);
+        }
+    }
+
+    private _updateLifespan(passOrderNum: number, dependencies: Set<FrameGraphTextureHandle>) {
+        for (const textureHandle of dependencies) {
+            let textureEntry = this._textures.get(textureHandle);
+            if (!textureEntry) {
+                throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
+            }
+            let handle = textureHandle;
+            while (textureEntry.refHandle !== undefined) {
+                handle = textureEntry.refHandle;
+                textureEntry = this._textures.get(handle);
+                if (!textureEntry) {
+                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
+                }
+            }
+            if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {
+                continue;
+            }
+
+            if (this.showDebugLogsForTextureAllcationOptimization) {
+                Logger.Log(`    ${handle} (${textureEntry.name})`);
+            }
+
+            textureEntry.lifespan!.firstTask = Math.min(textureEntry.lifespan!.firstTask, passOrderNum);
+            textureEntry.lifespan!.lastTask = Math.max(textureEntry.lifespan!.lastTask, passOrderNum);
         }
     }
 
