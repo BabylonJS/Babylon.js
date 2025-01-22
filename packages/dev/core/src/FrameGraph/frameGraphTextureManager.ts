@@ -731,7 +731,9 @@ export class FrameGraphTextureManager {
 
         const cache: Map<string, Array<[FrameGraphTextureHandle, Array<TextureLifespan>]>> = new Map();
 
-        for (const textureHandle of this._textures.keys()) {
+        const iterator = this._textures.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const textureHandle = key.value;
             const textureEntry = this._textures.get(textureHandle)!;
             if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
                 continue;
@@ -803,7 +805,9 @@ export class FrameGraphTextureManager {
 
         if (this.showDebugLogsForTextureAllcationOptimization) {
             Logger.Log(`================== Texture lifespans ==================`);
-            for (const textureHandle of this._textures.keys()) {
+            const iterator = this._textures.keys();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const textureHandle = key.value;
                 const textureEntry = this._textures.get(textureHandle)!;
                 if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
                     continue;
@@ -833,7 +837,9 @@ export class FrameGraphTextureManager {
     }
 
     private _updateLifespan(passOrderNum: number, dependencies: Set<FrameGraphTextureHandle>) {
-        for (const textureHandle of dependencies) {
+        const iterator = dependencies.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const textureHandle = key.value;
             let textureEntry = this._textures.get(textureHandle);
             if (!textureEntry) {
                 throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);

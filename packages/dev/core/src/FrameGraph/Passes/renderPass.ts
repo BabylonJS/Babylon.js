@@ -76,8 +76,9 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
      * @param dependencies The set of dependencies to update.
      */
     public collectDependencies(dependencies: Set<FrameGraphTextureHandle>): void {
-        for (const dependency of this._dependencies) {
-            dependencies.add(dependency);
+        const iterator = this._dependencies.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            dependencies.add(key.value);
         }
 
         if (this._renderTarget) {
