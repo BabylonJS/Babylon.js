@@ -12,7 +12,6 @@ import type {
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
-    MeshPredicate,
     Nullable,
     Observer,
     PickingInfo,
@@ -237,13 +236,13 @@ export class ViewerHotSpotResult {
     public visibility: number = NaN;
 }
 
-export type ModelBoundingInfo = {
-    worldExtents: {
-        min: Vector3;
-        max: Vector3;
-    };
-    worldSize: Vector3;
-    worldCenter: Vector3;
+export type BoundingInfo = {
+    extents: Readonly<{
+        readonly min: readonly [x: number, y: number, z: number];
+        readonly max: readonly [x: number, y: number, z: number];
+    }>;
+    readonly size: readonly [x: number, y: number, z: number];
+    readonly center: readonly [x: number, y: number, z: number];
 };
 
 export type Model = IDisposable &
@@ -264,9 +263,10 @@ export type Model = IDisposable &
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
     }> & {
         /**
-         * The computed bounding info of the model.
+         * The computed world bounds of the model.
+         * The minimum and maximum extents, the size and the center.
          */
-        boundingInfo?: ModelBoundingInfo;
+        worldBounds?: BoundingInfo;
     };
 
 /**
@@ -781,13 +781,13 @@ export class Viewer implements IDisposable {
             const size = max.subtract(min);
             const center = min.add(size.scale(0.5));
 
-            this._modelInfo.boundingInfo = {
-                worldExtents: {
-                    min,
-                    max,
+            this._modelInfo.worldBounds = {
+                extents: {
+                    min: min.asArray(),
+                    max: max.asArray(),
                 },
-                worldSize: size,
-                worldCenter: center,
+                size: size.asArray(),
+                center: center.asArray(),
             };
         }
     }
@@ -1169,58 +1169,6 @@ export class Viewer implements IDisposable {
         });
     }
 
-    /**
-     * Calculates the alpha, beta, and radius along with the target point.
-     * The target point is determined based on the camera's forward ray:
-     *   - If an intersection with the main model is found, the first hit point is used as the target.
-     *   - If no intersection is detected, a fallback target is calculated by projecting
-     *     the distance between the camera and the main model's center along the forward ray.
-     *
-     * @param camera The reference camera used to computes infos
-     * @param predicate Used to define predicate for selecting meshes and instances (if exist)
-     * @returns An object containing the alpha, beta, radius and target properties, or null if no model found
-     */
-    public async getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
-        if (camera instanceof ArcRotateCamera) {
-            return { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target.clone() };
-        }
-
-        await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-        const camGlobalPos = camera.globalPosition.clone();
-
-        if (this._modelInfo?.boundingInfo) {
-            // Target
-            let radius: number = 0.0001; // Just to avoid division by zero
-            const targetPoint = Vector3.Zero();
-            const pickingInfo = this._scene.pickWithRay(ray, predicate);
-            if (pickingInfo && pickingInfo.hit) {
-                targetPoint.copyFrom(pickingInfo.pickedPoint!);
-            } else {
-                const direction = ray.direction.clone();
-                targetPoint.copyFrom(camGlobalPos);
-                radius = Vector3.Distance(camGlobalPos, this._modelInfo?.boundingInfo.worldCenter);
-                direction.scaleAndAddToRef(radius, targetPoint);
-            }
-
-            const computationVector = this._tempVectors[0];
-            camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-            // Radius
-            if (pickingInfo && pickingInfo.hit) {
-                radius = computationVector.length();
-            }
-
-            // Alpha and Beta
-            const alpha = ArcRotateCamera.computeAlpha(computationVector);
-            const beta = ArcRotateCamera.computeBeta(computationVector.y, radius);
-
-            return { alpha, beta, radius, target: targetPoint };
-        }
-
-        return null;
-    }
-
     protected _suspendRendering(): IDisposable {
         this._renderLoopController?.dispose();
         this._suspendRenderCount++;
@@ -1286,16 +1234,17 @@ export class Viewer implements IDisposable {
         let goalRadius = 1;
         let goalTarget = currentTarget;
 
-        if (this._modelInfo?.boundingInfo) {
+        if (this._modelInfo?.worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const boundingInfo = this._modelInfo.boundingInfo;
-            const worldExtents = boundingInfo.worldExtents;
-            framingBehavior.zoomOnBoundingInfo(worldExtents.min, worldExtents.max);
+            const worldBounds = this._modelInfo.worldBounds;
+            const worldExtentsMin = Vector3.FromArray(worldBounds.extents.min);
+            const worldExtentsMax = Vector3.FromArray(worldBounds.extents.max);
+            framingBehavior.zoomOnBoundingInfo(worldExtentsMin, worldExtentsMax);
 
-            goalRadius = boundingInfo.worldSize.length() * 1.1;
-            goalTarget = boundingInfo.worldCenter.clone();
+            goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
+            goalTarget = Vector3.FromArray(worldBounds.center);
             if (!isFinite(goalRadius)) {
                 goalRadius = 1;
                 goalTarget.copyFromFloats(0, 0, 0);

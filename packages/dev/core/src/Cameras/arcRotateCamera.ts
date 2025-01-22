@@ -28,6 +28,35 @@ Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
 });
 
 /**
+ * Computes the alpha angle based on the source position and the target position.
+ * @param offset The directional offset between the source position and the target position
+ * @returns The alpha angle in radians
+ */
+export function ComputeAlpha(offset: Vector3): number {
+    // Default alpha to π/2 to handle the edge case where x and z are both zero (when looking along up axis)
+    let alpha = Math.PI / 2;
+    if (!(offset.x === 0 && offset.z === 0)) {
+        alpha = Math.acos(offset.x / Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.z, 2)));
+    }
+
+    if (offset.z < 0) {
+        alpha = 2 * Math.PI - alpha;
+    }
+
+    return alpha;
+}
+
+/**
+ * Computes the beta angle based on the source position and the target position.
+ * @param verticalOffset The y value of the directional offset between the source position and the target position
+ * @param radius The distance between the source position and the target position
+ * @returns The beta angle in radians
+ */
+export function ComputeBeta(verticalOffset: number, radius: number): number {
+    return Math.acos(verticalOffset / radius);
+}
+
+/**
  * This represents an orbital type of camera.
  *
  * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
@@ -1132,35 +1161,6 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Computes the alpha angle based on the source position and the target position.
-     * @param offset The directional offset between the source position and the target position
-     * @returns The alpha angle in radians
-     */
-    public static computeAlpha(offset: Vector3): number {
-        // Default alpha to π/2 to handle the edge case where x and z are both zero (when looking along up axis)
-        let alpha = Math.PI / 2;
-        if (!(offset.x === 0 && offset.z === 0)) {
-            alpha = Math.acos(offset.x / Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.z, 2)));
-        }
-
-        if (offset.z < 0) {
-            alpha = 2 * Math.PI - alpha;
-        }
-
-        return alpha;
-    }
-
-    /**
-     * Computes the beta angle based on the source position and the target position.
-     * @param verticalOffset The y value of the directional offset between the source position and the target position
-     * @param radius The distance between the source position and the target position
-     * @returns The beta angle in radians
-     */
-    public static computeBeta(verticalOffset: number, radius: number): number {
-        return Math.acos(verticalOffset / radius);
-    }
-
-    /**
      * Rebuilds angles (alpha, beta) and radius from the give position and target
      */
     public rebuildAnglesAndRadius(): void {
@@ -1179,8 +1179,8 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Alpha and Beta
         const previousAlpha = this.alpha;
-        this.alpha = ArcRotateCamera.computeAlpha(this._computationVector);
-        this.beta = ArcRotateCamera.computeBeta(this._computationVector.y, this.radius);
+        this.alpha = ComputeAlpha(this._computationVector);
+        this.beta = ComputeBeta(this._computationVector.y, this.radius);
 
         // Calculate the number of revolutions between the new and old alpha values.
         const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI));

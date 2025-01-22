@@ -1,8 +1,10 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable, Observable } from "core/index";
+import type { Camera, MeshPredicate, Nullable, Observable } from "core/index";
+import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
+import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, ViewerArcRotateCameraInfos, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -79,6 +81,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+    private readonly _tempVectors = BuildTuple(2, Vector3.Zero);
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -683,8 +686,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
-    private _hotSpots: Record<string, HotSpot> = {};
+    private _hotSpots: Readonly<Record<string, HotSpot>> = {};
 
+    @state()
+    protected _camerasHotSpots: Record<string, HotSpot> = {};
+
+    /**
+     * A string value that encodes one or more hotspots.
+     */
     @property({
         attribute: "hotspots",
         converter: (value) => {
@@ -700,7 +709,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     get hotSpots() {
-        return this._hotSpots;
+        return { ...this._hotSpots, ...this._camerasHotSpots };
     }
 
     private get _hasHotSpots(): boolean {
@@ -1137,24 +1146,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 details.scene.onNewCameraAddedObservable.add((camera) => {
-                    if (camera.uniqueId !== details.camera.uniqueId && this.camerasAsHotSpots) {
-                        details.viewer.getArcRotateCameraInfos(camera).then((cameraInfos) => {
+                    if (camera !== details.camera && this.camerasAsHotSpots) {
+                        this._getArcRotateCameraInfos(camera).then((cameraInfos) => {
                             if (cameraInfos) {
-                                this._hotSpots[`camera-${camera.name}`] = {
-                                    type: "world",
-                                    position: cameraInfos.target.asArray(),
-                                    normal: cameraInfos.target.asArray(),
-                                    cameraOrbit: [cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius],
+                                this._camerasHotSpots = {
+                                    ...this._camerasHotSpots,
+                                    [`camera-${camera.name}`]: {
+                                        type: "world",
+                                        position: cameraInfos.target.asArray(),
+                                        normal: cameraInfos.target.asArray(),
+                                        cameraOrbit: [cameraInfos.alpha, cameraInfos.beta, cameraInfos.radius],
+                                    },
                                 };
-                                this.hotSpots = { ...this._hotSpots };
                             }
                         });
                     }
                 });
 
                 details.scene.onCameraRemovedObservable.add((camera) => {
-                    delete this._hotSpots[`camera-${camera.name}`];
-                    this.hotSpots = { ...this._hotSpots };
+                    delete this._camerasHotSpots[`camera-${camera.name}`];
+                    this._camerasHotSpots = { ...this._camerasHotSpots };
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {
@@ -1234,6 +1245,63 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 Logger.Log(error);
             }
         }
+    }
+
+    /**
+     * Calculates the alpha, beta, and radius along with the target point.
+     * The target point is determined based on the camera's forward ray:
+     *   - If an intersection with the main model is found, the first hit point is used as the target.
+     *   - If no intersection is detected, a fallback target is calculated by projecting
+     *     the distance between the camera and the main model's center along the forward ray.
+     *
+     * @param camera The reference camera used to computes infos
+     * @param predicate Used to define predicate for selecting meshes and instances (if exist)
+     * @returns An object containing the alpha, beta, radius and target properties, or null if no model found
+     */
+    private async _getArcRotateCameraInfos(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<ViewerArcRotateCameraInfos>> {
+        if (camera instanceof ArcRotateCamera) {
+            return { alpha: camera.alpha, beta: camera.beta, radius: camera.radius, target: camera.target.clone() };
+        }
+
+        await import("core/Culling/ray");
+        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+        const camGlobalPos = camera.globalPosition.clone();
+
+        if (this.viewerDetails) {
+            const scene = this.viewerDetails.scene;
+            const model = this.viewerDetails.model;
+
+            if (model && model.worldBounds) {
+                // Target
+                let radius: number = 0.0001; // Just to avoid division by zero
+                const targetPoint = Vector3.Zero();
+                const pickingInfo = scene.pickWithRay(ray, predicate);
+                if (pickingInfo && pickingInfo.hit) {
+                    targetPoint.copyFrom(pickingInfo.pickedPoint!);
+                } else {
+                    const direction = ray.direction.clone();
+                    targetPoint.copyFrom(camGlobalPos);
+                    radius = Vector3.Distance(camGlobalPos, Vector3.FromArray(model.worldBounds.center));
+                    direction.scaleAndAddToRef(radius, targetPoint);
+                }
+
+                const computationVector = this._tempVectors[0];
+                camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+                // Radius
+                if (pickingInfo && pickingInfo.hit) {
+                    radius = computationVector.length();
+                }
+
+                // Alpha and Beta
+                const alpha = ComputeAlpha(computationVector);
+                const beta = ComputeBeta(computationVector.y, radius);
+
+                return { alpha, beta, radius, target: targetPoint };
+            }
+        }
+
+        return null;
     }
 }
 
