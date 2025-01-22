@@ -37,6 +37,7 @@ import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
+import { AbortError } from "core/Misc/error";
 import { Observable } from "core/Misc/observable";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
@@ -957,7 +958,7 @@ export class Viewer implements IDisposable {
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
+        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
         const abortController = (this._loadModelAbortController = new AbortController());
 
         await this._loadModelLock.lockAsync(async () => {
@@ -1004,11 +1005,11 @@ export class Viewer implements IDisposable {
 
         const locks: AsyncLock[] = [];
         if (options.lighting) {
-            this._loadEnvironmentAbortController?.abort("New environment lighting is being loaded before previous environment lighting finished loading.");
+            this._loadEnvironmentAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
             locks.push(this._loadEnvironmentLock);
         }
         if (options.skybox) {
-            this._loadSkyboxAbortController?.abort("New environment skybox is being loaded before previous environment skybox finished loading.");
+            this._loadSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
             locks.push(this._loadSkyboxLock);
         }
 
@@ -1123,8 +1124,8 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentAbortController?.abort("Thew viewer is being disposed.");
-        this._loadModelAbortController?.abort("Thew viewer is being disposed.");
+        this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._scene.dispose();
