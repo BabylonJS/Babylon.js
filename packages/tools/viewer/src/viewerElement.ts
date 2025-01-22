@@ -1204,7 +1204,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (this._viewerDetails) {
             try {
                 if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined, defaultAnimation: this.selectedAnimation ?? 0 });
+                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
+                    this._viewerDetails.viewer.selectedAnimation = this.selectedAnimation ?? 0;
+                    if (this.animationAutoPlay) {
+                        this._viewerDetails.viewer.playAnimation();
+                    }
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
