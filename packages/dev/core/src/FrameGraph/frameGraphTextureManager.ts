@@ -411,7 +411,7 @@ export class FrameGraphTextureManager {
             const textureIndex = entry.textureIndex || 0;
             const dimensions = options.sizeIsPercentage ? this.getAbsoluteDimensions(options.size, outputWidth, outputHeight) : getDimensionsFromTextureSize(options.size);
 
-            const blockInfo = GetTextureBlockInformation(options.options.types![textureIndex], options.options.formats![textureIndex]);
+            const blockInfo = GetTextureBlockInformation(options.options.types?.[textureIndex] ?? Constants.TEXTURETYPE_UNSIGNED_BYTE, options.options.formats![textureIndex]);
 
             const textureByteSize = Math.ceil(dimensions.width / blockInfo.width) * Math.ceil(dimensions.height / blockInfo.height) * blockInfo.length;
 
