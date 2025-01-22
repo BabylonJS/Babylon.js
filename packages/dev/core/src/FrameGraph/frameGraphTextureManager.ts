@@ -763,7 +763,6 @@ export class FrameGraphTextureManager {
                         lifespanArray.push(textureLifespan);
                         textureEntry.aliasHandle = sourceHandle;
                         cacheEntryFound = true;
-
                         break;
                     }
                 }
@@ -788,8 +787,17 @@ export class FrameGraphTextureManager {
             if (task.passes.length > 0) {
                 this._computeTextureLifespanForPasses(task, t, task.passes);
             }
+
             if (task.passesDisabled.length > 0) {
                 this._computeTextureLifespanForPasses(task, t, task.passesDisabled);
+            }
+
+            if (task.dependencies) {
+                if (this.showDebugLogsForTextureAllcationOptimization) {
+                    Logger.Log(`task#${t} (${task.name}), global dependencies`);
+                }
+
+                this._updateLifespan(t * 100 + 99, task.dependencies);
             }
         }
 
@@ -821,14 +829,6 @@ export class FrameGraphTextureManager {
             }
 
             this._updateLifespan(taskIndex * 100 + p, dependencies);
-        }
-
-        if (task.dependencies) {
-            if (this.showDebugLogsForTextureAllcationOptimization) {
-                Logger.Log(`task#${taskIndex} (${task.name}), global dependencies`);
-            }
-
-            this._updateLifespan(taskIndex * 100 + 99, task.dependencies);
         }
     }
 
