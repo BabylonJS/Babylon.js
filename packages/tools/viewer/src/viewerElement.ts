@@ -12,6 +12,7 @@ import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
+import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
@@ -1209,7 +1210,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     await this._viewerDetails.viewer.resetModel();
                 }
             } catch (error) {
-                Logger.Log(error);
+                // If loadModel was aborted (e.g. because a new model load was requested before this one finished), we can just ignore the error.
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
             }
         }
     }
@@ -1240,7 +1244,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 await Promise.all(promises);
             } catch (error) {
-                Logger.Log(error);
+                // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
             }
         }
     }
