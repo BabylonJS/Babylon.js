@@ -11,6 +11,7 @@ import type { Scene } from "../../scene";
  * if you wish to create your texture pixel by pixel.
  */
 export class RawTexture extends Texture {
+    private _waitingForData: boolean;
     /**
      * Instantiates a new RawTexture.
      * Raw texture can help creating a texture directly from an array of data.
@@ -61,6 +62,7 @@ export class RawTexture extends Texture {
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._waitingForData = !data;
     }
 
     /**
@@ -69,6 +71,7 @@ export class RawTexture extends Texture {
      */
     public update(data: ArrayBufferView): void {
         this._getEngine()!.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type, this._texture!._useSRGBBuffer);
+        this._waitingForData = false;
     }
 
     /**
@@ -98,6 +101,14 @@ export class RawTexture extends Texture {
         this._texture.incrementReferences();
 
         return rawTexture;
+    }
+
+    /**
+     * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
+     * @returns true if fully ready
+     */
+    public override isReady(): boolean {
+        return super.isReady() && !this._waitingForData;
     }
 
     /**
