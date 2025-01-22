@@ -1220,6 +1220,15 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < scene.lights.length; index++) {
+                if (!scene.lights[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         // Misc.
         PrepareDefinesForMisc(
             mesh,

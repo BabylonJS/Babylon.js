@@ -103,4 +103,12 @@ export abstract class AreaLight extends Light {
         defines["AREALIGHT" + lightIndex] = true;
         defines["AREALIGHTUSED"] = true;
     }
+
+    public override _isReady(): boolean {
+        if (this._scene._ltcTextures) {
+            return this._scene._ltcTextures.LTC1.isReady() && this._scene._ltcTextures.LTC2.isReady();
+        }
+
+        return false;
+    }
 }

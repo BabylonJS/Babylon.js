@@ -1253,6 +1253,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return false;
         }
 
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < scene.lights.length; index++) {
+                if (!scene.lights[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         defines._renderId = scene.getRenderId();
         drawWrapper._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         drawWrapper._wasPreviouslyUsingInstances = !!useInstances;
