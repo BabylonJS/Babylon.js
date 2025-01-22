@@ -81,7 +81,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(2, Vector3.Zero);
+    private readonly _tempVectors = BuildTuple(1, Vector3.Zero);
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -686,10 +686,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
-    private _hotSpots: Readonly<Record<string, HotSpot>> = {};
-
+    /**
+     * The calculated hot spots for the scene cameras.
+     */
     @state()
-    protected _camerasHotSpots: Record<string, HotSpot> = {};
+    public camerasHotSpots: Record<string, HotSpot> = {};
+
+    private _hotSpots: Readonly<Record<string, HotSpot>> = {};
 
     /**
      * A string value that encodes one or more hotspots.
@@ -709,7 +712,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     get hotSpots() {
-        return { ...this._hotSpots, ...this._camerasHotSpots };
+        return { ...this._hotSpots, ...this.camerasHotSpots };
     }
 
     private get _hasHotSpots(): boolean {
@@ -839,6 +842,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     lighting: changedProperties.has("environmentLighting"),
                     skybox: changedProperties.has("environmentSkybox"),
                 });
+            }
+        }
+
+        if (changedProperties.has("camerasAsHotSpots")) {
+            if (this.camerasAsHotSpots) {
+                this.viewerDetails?.scene.cameras.forEach((camera) => {
+                    this._addCameraHotSpot(camera);
+                });
+            } else {
+                this.camerasHotSpots = {};
             }
         }
     }
@@ -1069,6 +1082,24 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         };
     }
 
+    private _addCameraHotSpot(camera: Camera) {
+        if (camera !== this.viewerDetails?.camera) {
+            this._cameraToHotSpot(camera).then((hotSpot) => {
+                if (hotSpot) {
+                    this.camerasHotSpots = {
+                        ...this.camerasHotSpots,
+                        [`camera-${camera.name}`]: hotSpot,
+                    };
+                }
+            });
+        }
+    }
+
+    private _removeCameraHotSpot(name: string) {
+        delete this.camerasHotSpots[`camera-${name}`];
+        this.camerasHotSpots = { ...this.camerasHotSpots };
+    }
+
     private async _setupViewer() {
         await this._viewerLock.lockAsync(async () => {
             // The first time the element is connected, the canvas container may not be available yet.
@@ -1146,21 +1177,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 details.scene.onNewCameraAddedObservable.add((camera) => {
-                    if (camera !== details.camera && this.camerasAsHotSpots) {
-                        this._cameraToHotSpot(camera).then((hotSpot) => {
-                            if (hotSpot) {
-                                this._camerasHotSpots = {
-                                    ...this._camerasHotSpots,
-                                    [`camera-${camera.name}`]: hotSpot,
-                                };
-                            }
-                        });
+                    if (this.camerasAsHotSpots) {
+                        this._addCameraHotSpot(camera);
                     }
                 });
 
                 details.scene.onCameraRemovedObservable.add((camera) => {
-                    delete this._camerasHotSpots[`camera-${camera.name}`];
-                    this._camerasHotSpots = { ...this._camerasHotSpots };
+                    this._removeCameraHotSpot(camera.name);
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {
