@@ -18,10 +18,10 @@ export type ILTCTextures = {
 };
 
 /**
- * Linearly transformed cosine texture Fresnel Approximation.
+ * Loads LTC texture data from Babylon.js CDN.
  * @returns Promise with data for LTC1 and LTC2 textures for area lights.
  */
-export async function decodeLTCTextureDataAsync(): Promise<Tuple<Uint16Array, 2>> {
+export async function DecodeLTCTextureDataAsync(): Promise<Tuple<Uint16Array, 2>> {
     const ltc1 = new Uint16Array(64 * 64 * 4);
     const ltc2 = new Uint16Array(64 * 64 * 4);
     const file = await Tools.LoadFileAsync(Tools.GetAssetUrl("https://assets.babylonjs.com/core/areaLights/areaLightsLTC.bin"));

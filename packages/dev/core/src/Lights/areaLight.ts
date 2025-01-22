@@ -5,7 +5,7 @@ import { Constants } from "core/Engines/constants";
 import { Light } from "core/Lights/light";
 import type { Effect } from "core/Materials/effect";
 import type { ILTCTextures } from "core/Lights/LTC/ltcTextureTool";
-import { decodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
+import { DecodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
 import type { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 
@@ -18,7 +18,7 @@ declare module "../scene" {
     }
 }
 
-function createSceneLTCTextures(scene: Scene): void {
+function CreateSceneLTCTextures(scene: Scene): void {
     const useDelayedTextureLoading = scene.useDelayedTextureLoading;
     scene.useDelayedTextureLoading = false;
 
@@ -40,7 +40,7 @@ function createSceneLTCTextures(scene: Scene): void {
 
     scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
-    decodeLTCTextureDataAsync()
+    DecodeLTCTextureDataAsync()
         .then((textureData) => {
             if (scene._ltcTextures) {
                 const ltc1 = scene._ltcTextures?.LTC1 as RawTexture;
@@ -82,7 +82,7 @@ export abstract class AreaLight extends Light {
         this.position = position;
 
         if (!this._scene._ltcTextures) {
-            createSceneLTCTextures(this._scene);
+            CreateSceneLTCTextures(this._scene);
         }
     }
 
