@@ -1213,6 +1213,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             mesh.createNormals(true);
             Logger.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
@@ -1251,15 +1260,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
-        }
-
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
-            for (let index = 0; index < scene.lights.length; index++) {
-                if (!scene.lights[index]._isReady()) {
-                    return false;
-                }
-            }
         }
 
         defines._renderId = scene.getRenderId();
