@@ -126,6 +126,34 @@ export interface IGLTFToFlowGraphMapping {
     typeToTypeMapping?: { [originName: string]: IGLTFToFlowGraphMappingObject };
 
     /**
+     * The connections between two or more blocks.
+     * This is used to connect the blocks in the graph
+     */
+    interBlockConnectors?: {
+        /**
+         * The name of the input connection in the first block.
+         */
+        input: string;
+        /**
+         * The name of the output connection in the second block.
+         */
+        output: string;
+
+        /**
+         * The index of the block in the array of blocks that corresponds to the input.
+         */
+        inputBlockIndex: number;
+        /**
+         * The index of the block in the array of blocks that corresponds to the output.
+         */
+        outputBlockIndex: number;
+        /**
+         * If the connection is a variable connection or a flow connection.
+         */
+        isVariable?: boolean;
+    }[];
+
+    /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
      * This function can return more than one node, if extra nodes are needed for this block to function correctly.
      * Returning more than one block will usually happen when a json pointer was provided.
@@ -769,13 +797,33 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
             },
         },
-        extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
-            // connect the pointer to the getProperty block
-            connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("customGetFunction", "getFunction", serializedObjects[0], serializedObjects[1], true);
-            return serializedObjects;
-        },
+        interBlockConnectors: [
+            {
+                input: "object",
+                output: "object",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "propertyName",
+                output: "propertyName",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "customGetFunction",
+                output: "getFunction",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+        ],
+        // extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
+        //     // // connect the pointer to the getProperty block
+        //     // connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
+        //     // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+        //     // connectFlowGraphNodes("customGetFunction", "getFunction", serializedObjects[0], serializedObjects[1], true);
+        //     // return serializedObjects;
+        // },
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
@@ -794,13 +842,33 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 err: { name: "error" },
             },
         },
-        extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects) {
-            // connect the pointer to the setProperty block
-            connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("customSetFunction", "setFunction", serializedObjects[0], serializedObjects[1], true);
-            return serializedObjects;
-        },
+        interBlockConnectors: [
+            {
+                input: "object",
+                output: "object",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "propertyName",
+                output: "propertyName",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "customSetFunction",
+                output: "setFunction",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+        ],
+        // extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects) {
+        //     // connect the pointer to the setProperty block
+        //     connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
+        //     connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+        //     connectFlowGraphNodes("customSetFunction", "setFunction", serializedObjects[0], serializedObjects[1], true);
+        //     return serializedObjects;
+        // },
     },
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
@@ -827,14 +895,52 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 done: { name: "done", toBlock: FlowGraphBlockNames.PlayAnimation },
             },
         },
+        interBlockConnectors: [
+            {
+                input: "object",
+                output: "object",
+                inputBlockIndex: 2,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "propertyName",
+                output: "propertyName",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "customBuildAnimation",
+                output: "generateAnimationsFunction",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "animation",
+                output: "animation",
+                inputBlockIndex: 2,
+                outputBlockIndex: 0,
+            },
+            {
+                input: "easingFunction",
+                output: "easingFunction",
+                inputBlockIndex: 0,
+                outputBlockIndex: 3,
+            },
+            {
+                input: "value-0",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+        ],
         extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
             // connect the pointer to the getProperty block
-            connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
-            connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
-            connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
-            connectFlowGraphNodes("easingFunction", "easingFunction", serializedObjects[0], serializedObjects[3], true);
+            // connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
+            // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
+            // connectFlowGraphNodes("easingFunction", "easingFunction", serializedObjects[0], serializedObjects[3], true);
             // search for p1 and p2 and remove them, for now
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
