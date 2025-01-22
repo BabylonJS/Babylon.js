@@ -13,7 +13,7 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "./typeDefinitions";
 import type { Node } from "core/node";
-import { RichType } from "./flowGraphRichTypes";
+import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes";
 import type { FlowGraphConnection } from "./flowGraphConnection";
 
 /**
@@ -63,6 +63,14 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
 
     await options.scene.whenReadyAsync();
+    // if custom default values are defined, set them in the global context
+    if (serializedObject._defaultValues) {
+        for (const key in serializedObject._defaultValues) {
+            // key is the FlowGraphType, value is the default value
+            const value = serializedObject._defaultValues[key];
+            getRichTypeByFlowGraphType(key).defaultValue = value;
+        }
+    }
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
