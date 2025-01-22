@@ -26,8 +26,8 @@ function createSceneLTCTextures(scene: Scene): void {
     scene._blockEntityCollection = false;
 
     scene._ltcTextures = {
-        LTC1: RawTexture.CreateRGBATexture(null, 64, 64, scene.getEngine(), false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_HALF_FLOAT),
-        LTC2: RawTexture.CreateRGBATexture(null, 64, 64, scene.getEngine(), false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_HALF_FLOAT),
+        LTC1: RawTexture.CreateRGBATexture(null, 64, 64, scene.getEngine(), false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_HALF_FLOAT, 0, false, true),
+        LTC2: RawTexture.CreateRGBATexture(null, 64, 64, scene.getEngine(), false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_HALF_FLOAT, 0, false, true),
     };
 
     scene._blockEntityCollection = previousState;
