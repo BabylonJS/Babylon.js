@@ -960,15 +960,6 @@ export class StandardMaterial extends PushMaterial {
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
-            for (let index = 0; index < mesh.lightSources.length; index++) {
-                if (!mesh.lightSources[index]._isReady()) {
-                    return false;
-                }
-            }
-        }
-
         // Multiview
         PrepareDefinesForMultiview(scene, defines);
 
@@ -1226,6 +1217,15 @@ export class StandardMaterial extends PushMaterial {
                 }
             } else {
                 defines.FRESNEL = false;
+            }
+        }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
             }
         }
 
