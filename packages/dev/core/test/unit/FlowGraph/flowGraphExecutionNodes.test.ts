@@ -17,7 +17,7 @@ import {
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Mathcore/FlowGraph/CustomTypes/flowGraphInteger
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 

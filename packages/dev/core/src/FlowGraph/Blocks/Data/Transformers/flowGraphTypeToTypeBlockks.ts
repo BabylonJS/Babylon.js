@@ -3,7 +3,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
-import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 /**
  * A block that converts a boolean to a float.

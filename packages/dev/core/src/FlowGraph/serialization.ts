@@ -1,7 +1,7 @@
 import type { IAssetContainer } from "core/IAssetContainer";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
-import type { Scene } from "../scene";
+import type { Scene } from "../sce./CustomTypes/flowGraphInteger
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";

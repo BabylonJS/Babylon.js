@@ -5,7 +5,7 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { FlowGraphInteger } from "../../../flowGraphInteger";
+import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**

@@ -2,7 +2,7 @@ import type { IObjectInfo, IPathToObjectConverter } from "../ObjectModel/objectM
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphInteger } from "./flo./CustomTypes/flowGraphInteger
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 

@@ -6,7 +6,7 @@ import {
     RichTypeBoolean,
     RichTypeFlowGraphInteger,
     RichTypeMatrix,
-    RichTypeNumber,
+    RichTypeNumber,../../../CustomTypes/flowGraphInteger
     RichTypeVector2,
     RichTypeVector3,
     RichTypeVector4,

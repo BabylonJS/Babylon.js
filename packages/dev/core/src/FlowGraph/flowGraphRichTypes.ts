@@ -1,6 +1,6 @@
 import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { Constants } from "core/Engines/constants";
 
 export const enum FlowGraphTypes {

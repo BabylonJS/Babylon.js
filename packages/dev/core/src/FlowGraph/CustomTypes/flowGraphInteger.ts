@@ -1,4 +1,4 @@
-import { RegisterClass } from "../Misc/typeStore";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * @experimental
