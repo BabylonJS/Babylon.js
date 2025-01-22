@@ -1138,11 +1138,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._cameraOrbitCoercer?.(details.camera);
                     this._cameraTargetCoercer?.(details.camera);
 
-                    // If animation auto play was set, then start the default animation (if possible).
-                    if (this.animationAutoPlay) {
-                        details.viewer.playAnimation();
-                    }
-
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
 
