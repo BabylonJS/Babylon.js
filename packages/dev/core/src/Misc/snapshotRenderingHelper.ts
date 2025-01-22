@@ -44,6 +44,7 @@ export class SnapshotRenderingHelper {
     private _disableRenderingRefCount = 0;
     private _currentPerformancePriorityMode = ScenePerformancePriority.BackwardCompatible;
     private _pendingCurrentPerformancePriorityMode?: ScenePerformancePriority;
+    private _isEnabling = false;
 
     /**
      * Creates a new snapshot rendering helper
@@ -117,6 +118,13 @@ export class SnapshotRenderingHelper {
     }
 
     /**
+     * Gets a value indicating if the helper is in a steady state (not in the process of enabling snapshot rendering).
+     */
+    public get isReady() {
+        return !this._isEnabling;
+    }
+
+    /**
      * Enable snapshot rendering
      * Use this method instead of engine.snapshotRendering=true, to make sure everything is ready before enabling snapshot rendering.
      * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
@@ -130,6 +138,7 @@ export class SnapshotRenderingHelper {
             return;
         }
 
+        this._isEnabling = true;
         this._disableRenderingRefCount = 0;
 
         this._currentPerformancePriorityMode = this._pendingCurrentPerformancePriorityMode ?? this._scene.performancePriority;
@@ -138,13 +147,24 @@ export class SnapshotRenderingHelper {
 
         this._scene.executeWhenReady(() => {
             if (this._disableRenderingRefCount > 0) {
+                this._isEnabling = false;
                 return;
             }
 
             // Make sure a full frame is rendered before enabling snapshot rendering, so use "+2" instead of "+1"
-            this._executeAtFrame(this._engine.frameId + 2, () => {
+            const targetFrameId = this._engine.frameId + 2;
+            this._executeAtFrame(targetFrameId, () => {
                 this._engine.snapshotRendering = true;
             });
+
+            // Render one frame with snapshot rendering enabled to make sure everything is ready
+            this._executeAtFrame(
+                targetFrameId + 1,
+                () => {
+                    this._isEnabling = false;
+                },
+                "always"
+            );
         });
     }
 
@@ -174,7 +194,7 @@ export class SnapshotRenderingHelper {
                             }
                             this._pendingCurrentPerformancePriorityMode = undefined;
                         },
-                        true
+                        "whenDisabled"
                     );
                 });
             }
@@ -290,9 +310,9 @@ export class SnapshotRenderingHelper {
         }
     }
 
-    private _executeAtFrame(frameId: number, func: () => void, executeWhenModeIsDisabled = false) {
+    private _executeAtFrame(frameId: number, func: () => void, mode: "whenEnabled" | "whenDisabled" | "always" = "whenEnabled") {
         const obs = this._engine.onEndFrameObservable.add(() => {
-            if ((this._disableRenderingRefCount > 0 && !executeWhenModeIsDisabled) || (this._disableRenderingRefCount === 0 && executeWhenModeIsDisabled)) {
+            if (mode !== "always" && ((this._disableRenderingRefCount > 0 && mode === "whenEnabled") || (this._disableRenderingRefCount === 0 && mode === "whenDisabled"))) {
                 this._engine.onEndFrameObservable.remove(obs);
                 return;
             }

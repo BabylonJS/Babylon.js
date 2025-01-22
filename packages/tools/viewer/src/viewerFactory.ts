@@ -50,12 +50,6 @@ export async function createViewerForCanvas(
     const finalOptions = { ...defaultCanvasViewerOptions, ...options };
     const disposeActions: (() => void)[] = [];
 
-    // If the canvas is resized, note that the engine needs a resize, but don't resize it here as it will result in flickering.
-    let needsResize = false;
-    const resizeObserver = new ResizeObserver(() => (needsResize = true));
-    resizeObserver.observe(canvas);
-    disposeActions.push(() => resizeObserver.disconnect());
-
     // Create an engine instance.
     let engine: AbstractEngine;
     switch (finalOptions.engine ?? getDefaultEngine()) {
@@ -78,6 +72,15 @@ export async function createViewerForCanvas(
     // Override the onInitialized callback to add in some specific behavior.
     const onInitialized = finalOptions.onInitialized;
     finalOptions.onInitialized = (details) => {
+        // If the canvas is resized, note that the engine needs a resize, but don't resize it here as it will result in flickering.
+        let needsResize = false;
+        const resizeObserver = new ResizeObserver(() => {
+            needsResize = true;
+            details.markSceneMutated();
+        });
+        resizeObserver.observe(canvas);
+        disposeActions.push(() => resizeObserver.disconnect());
+
         // Resize if needed right before rendering the Viewer scene to avoid any flickering.
         const beforeRenderObserver = details.scene.onBeforeRenderObservable.add(() => {
             if (needsResize) {
