@@ -566,7 +566,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public environmentIntensity: Nullable<number> = null;
 
     /**
-     * A value in degrees that specifies the rotation of the environment.
+     * A value in radians that specifies the rotation of the environment.
      */
     @property({
         type: Number,
