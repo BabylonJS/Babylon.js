@@ -273,8 +273,8 @@ export function GetFloatData(
 }
 
 /**
- * Gets the given data array as a typed array. A new typed array is constructed if the data array cannot be returned directly.
- * @param constructor the constructor of the array to return
+ * Gets the given data array as a typed array that best fits its component type.
+ * If the data cannot be used directly, a copy is made to support the new typed array.
  * @param data the input data array
  * @param size the number of components
  * @param type the component type
@@ -285,7 +285,7 @@ export function GetFloatData(
  * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
  * @returns a typed array containing vertex data
  */
-export function GetTypedData(
+export function GetTypedArrayData(
     data: DataArray,
     size: number,
     type: number,
@@ -295,13 +295,53 @@ export function GetTypedData(
     totalVertices: number,
     forceCopy?: boolean
 ): VertexDataTypedArray {
+    const typeByteLength = GetTypeByteLength(type);
     const constructor = GetTypedArrayConstructor(type);
-    const tightlyPackedByteStride = size * GetTypeByteLength(type);
     const count = totalVertices * size;
 
-    if (data instanceof Array || byteStride !== tightlyPackedByteStride || forceCopy) {
+    // Handle number[]
+    if (Array.isArray(data)) {
+        const offset = byteOffset / typeByteLength;
+        const stride = byteStride / typeByteLength;
+        const lastIndex = offset + (totalVertices - 1) * stride + size;
+
+        if (lastIndex > data.length) {
+            throw new Error("Last accessed index is out of bounds.");
+        }
+
+        if (stride !== size) {
+            const copy = new constructor(count);
+            EnumerateFloatValues(data, offset, stride, size, type, count, normalized, (values, index) => {
+                for (let i = 0; i < size; i++) {
+                    copy[index + i] = values[i];
+                }
+            });
+            return copy;
+        }
+
+        return new constructor(data);
+    }
+
+    // Handle ArrayBuffer and ArrayBufferView
+    let buffer: ArrayBuffer;
+    let adjustedByteOffset = byteOffset;
+
+    if (data instanceof ArrayBuffer) {
+        buffer = data;
+    } else {
+        buffer = data.buffer;
+        adjustedByteOffset += data.byteOffset;
+    }
+
+    const lastByteOffset = adjustedByteOffset + (totalVertices - 1) * byteStride + size * typeByteLength;
+    if (lastByteOffset > buffer.byteLength) {
+        throw new Error("Last accessed byte is out of bounds.");
+    }
+
+    const tightlyPackedByteStride = size * typeByteLength;
+    if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
-        EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, normalized, (values, index) => {
             for (let i = 0; i < size; i++) {
                 copy[index + i] = values[i];
             }
@@ -309,22 +349,17 @@ export function GetTypedData(
         return copy;
     }
 
-    if (data instanceof ArrayBuffer) {
-        // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
-        return new (constructor as Float32ArrayConstructor)(data, byteOffset, count);
+    if (typeByteLength !== 1 && (adjustedByteOffset & (typeByteLength - 1)) !== 0) {
+        Logger.Warn("Array must be aligned to border of element size. Data will be copied.");
+        forceCopy = true;
     }
 
-    if (!(data instanceof constructor) || byteOffset !== 0 || data.length !== count) {
-        const bytes = GetTypeByteLength(type);
-        const offset = data.byteOffset + byteOffset;
-        if (bytes !== 1 && (offset & (bytes - 1)) !== 0) {
-            Logger.Warn("Array must be aligned to border of element size. Data will be copied.");
-            return  new (constructor as Float32ArrayConstructor)(data.buffer.slice(offset, offset + count * bytes));
-        }
-        return new (constructor as Float32ArrayConstructor)(data.buffer, offset, count);
+    if (forceCopy) {
+        return new constructor(buffer.slice(adjustedByteOffset, adjustedByteOffset + count * typeByteLength));
     }
 
-    return data;
+    // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
+    return new (constructor as Float32ArrayConstructor)(buffer, adjustedByteOffset, count);
 }
 
 /**
