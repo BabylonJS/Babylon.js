@@ -1240,8 +1240,10 @@ export class Viewer implements IDisposable {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtentsMin = Vector3.FromArray(worldBounds.extents.min);
-            const worldExtentsMax = Vector3.FromArray(worldBounds.extents.max);
+            const worldExtentsMin = this._tempVectors[0];
+            const worldExtentsMax = this._tempVectors[1];
+            worldExtentsMin.copyFromFloats(...worldBounds.extents.min);
+            worldExtentsMax.copyFromFloats(...worldBounds.extents.max);
             framingBehavior.zoomOnBoundingInfo(worldExtentsMin, worldExtentsMax);
 
             goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
