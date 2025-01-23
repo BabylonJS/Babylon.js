@@ -203,9 +203,9 @@ export class FrameGraph {
                     this._whenReadyAsyncCancel = null;
                     resolve();
                 },
-                (err, wasUnexpected) => {
+                (err, isTimeout) => {
                     this._whenReadyAsyncCancel = null;
-                    if (wasUnexpected) {
+                    if (!isTimeout) {
                         Logger.Error("FrameGraph: An unexpected error occurred while waiting for the frame graph to be ready.");
                         if (err) {
                             Logger.Error(err);

@@ -18,14 +18,14 @@ export class TimingTools {
     }
 }
 
-function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, wasUnexpected?: boolean) => void) {
+function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
     try {
         if (condition()) {
             onSuccess();
             return true;
         }
     } catch (e) {
-        onError?.(e, true);
+        onError?.(e);
         return true;
     }
     return false;
@@ -37,7 +37,7 @@ function _runWithCondition(condition: () => boolean, onSuccess: () => void, onEr
 export const _retryWithInterval = (
     condition: () => boolean,
     onSuccess: () => void,
-    onError?: (e?: any, wasUnexpected?: boolean) => void,
+    onError?: (e?: any, isTimeout?: boolean) => void,
     step = 16,
     maxTimeout = 30000,
     checkConditionOnCall: boolean = true,
@@ -58,7 +58,7 @@ export const _retryWithInterval = (
             maxTimeout -= step;
             if (maxTimeout < 0) {
                 clearInterval(int);
-                onError?.(new Error("Operation timed out after maximum retries. " + (additionalStringOnTimeout || "")));
+                onError?.(new Error("Operation timed out after maximum retries. " + (additionalStringOnTimeout || "")), true);
             }
         }
     }, step);
