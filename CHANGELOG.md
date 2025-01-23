@@ -1,5 +1,22 @@
 # Changelog
 
+## 7.45.0
+
+### Core
+
+- WebGPU: Fixed shader crashes using "discard" - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16099](https://github.com/BabylonJS/Babylon.js/pull/16099))
+- Add AbortError and use in Viewer - by [ryantrem](https://github.com/ryantrem) ([#16097](https://github.com/BabylonJS/Babylon.js/pull/16097))
+- New Rough Radiance Approximation - by [MiiBond](https://github.com/MiiBond) ([#16063](https://github.com/BabylonJS/Babylon.js/pull/16063))
+
+### Inspector
+
+- New Rough Radiance Approximation - by [MiiBond](https://github.com/MiiBond) ([#16063](https://github.com/BabylonJS/Babylon.js/pull/16063))
+
+### Viewer
+
+- Fix animation auto play - by [ryantrem](https://github.com/ryantrem) ([#16098](https://github.com/BabylonJS/Babylon.js/pull/16098))
+- Add AbortError and use in Viewer - by [ryantrem](https://github.com/ryantrem) ([#16097](https://github.com/BabylonJS/Babylon.js/pull/16097))
+
 ## 7.44.1
 
 ### Core
