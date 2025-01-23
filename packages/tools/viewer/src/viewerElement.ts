@@ -517,6 +517,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
+     * When true, the scene will be rendered even if no scene state has changed.
+     */
+    @property({ attribute: "render-when-idle", type: Boolean })
+    public renderWhenIdle = false;
+
+    /**
      * The model URL.
      */
     @property()
@@ -846,7 +852,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             this._materialSelect.value = "";
         }
 
-        if (changedProperties.get("engine")) {
+        if (changedProperties.get("engine") || changedProperties.get("renderWhenIdle") != null) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -1109,6 +1115,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     const detailsDeferred = new Deferred<ViewerDetails>();
                     const viewer = await this._createViewer(canvas, {
                         engine: this.engine,
+                        autoSuspendRendering: !this.renderWhenIdle,
                         onInitialized: (details) => {
                             detailsDeferred.resolve(details);
                         },
