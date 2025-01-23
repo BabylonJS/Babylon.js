@@ -74,8 +74,9 @@ var finalColor: vec4f = uniforms.glowColor;
 #endif
 
 #ifdef ALPHATEST
-    if (finalColor.a < ALPHATESTVALUE)
+    if (finalColor.a < ALPHATESTVALUE) {
         discard;
+    }
 #endif
 
 #ifdef EMISSIVE
