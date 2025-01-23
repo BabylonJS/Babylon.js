@@ -4,14 +4,13 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 type AudioNodeType = number;
 
 /** @internal */
-export class _AudioNodeType {
+export const _AudioNodeType = {
+    in: 1,
     /** @internal */
-    public static readonly In = 1;
+    out: 2,
     /** @internal */
-    public static readonly Out = 2;
-    /** @internal */
-    public static readonly InOut = _AudioNodeType.In | _AudioNodeType.Out;
-}
+    inOut: 3,
+};
 
 /**
  * Abstract class for an audio node.
@@ -52,11 +51,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType | _AudioNodeType.In) {
+        if (nodeType | _AudioNodeType.in) {
             this._downstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType | _AudioNodeType.Out) {
+        if (nodeType | _AudioNodeType.out) {
             this._upstreamNodes = new Set<AbstractAudioNode>();
         }
     }
