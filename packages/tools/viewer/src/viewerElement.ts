@@ -81,7 +81,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(1, Vector3.Zero);
+    private readonly _tempVectors = BuildTuple(3, Vector3.Zero);
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -1263,10 +1263,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      *     the distance between the camera and the main model's center along the forward ray.
      *
      * @param camera The reference camera used to computes alpha, beta, radius and target
-     * @param predicate Used to define predicate for selecting meshes and instances (if exist)
      * @returns A HotSpot, or null if no model found
      */
-    private async _cameraToHotSpot(camera: Camera, predicate?: MeshPredicate): Promise<Nullable<HotSpot>> {
+    private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
             const position = camera.target.clone().asArray();
             return { type: "world", position, normal: position, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
@@ -1278,39 +1277,41 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         if (this.viewerDetails && this.viewerDetails.model) {
             const scene = this.viewerDetails.scene;
-            const model = this.viewerDetails.model;
+            const model = this.viewerDetails.viewer.getCameraModel(camera);
 
-            const selectedAnimation = this.selectedAnimation ?? 0;
-            let worldBounds = model.getWorldBounds(selectedAnimation);
-            if (worldBounds) {
-                // Target
-                let radius: number = 0.0001; // Just to avoid division by zero
-                const targetPoint = Vector3.Zero();
-                const pickingInfo = scene.pickWithRay(ray, predicate);
-                if (pickingInfo && pickingInfo.hit) {
-                    targetPoint.copyFrom(pickingInfo.pickedPoint!);
-                } else {
-                    const direction = ray.direction.clone();
-                    targetPoint.copyFrom(camGlobalPos);
-                    radius = Vector3.Distance(camGlobalPos, Vector3.FromArray(worldBounds.center));
-                    direction.scaleAndAddToRef(radius, targetPoint);
-                }
+            // Target
+            let radius: number = 0.0001; // Just to avoid division by zero
+            const targetPoint = Vector3.Zero();
+            const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
+            const pickingInfo = scene.pickWithRay(ray, predicate);
+            if (pickingInfo && pickingInfo.hit) {
+                targetPoint.copyFrom(pickingInfo.pickedPoint!);
+            } else {
+                const selectedAnimation = this.selectedAnimation ?? 0;
+                const worldBounds = model?.getWorldBounds(selectedAnimation);
+                const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
+                const modelWorldCenter = this._tempVectors[0].copyFromFloats(...centerArray);
 
-                const computationVector = this._tempVectors[0];
-                camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-                // Radius
-                if (pickingInfo && pickingInfo.hit) {
-                    radius = computationVector.length();
-                }
-
-                // Alpha and Beta
-                const alpha = ComputeAlpha(computationVector);
-                const beta = ComputeBeta(computationVector.y, radius);
-
-                const hotSpotPosition = targetPoint.asArray();
-                return { type: "world", position: hotSpotPosition, normal: hotSpotPosition, cameraOrbit: [alpha, beta, radius] };
+                const direction = this._tempVectors[1].copyFrom(ray.direction);
+                targetPoint.copyFrom(camGlobalPos);
+                radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
+                direction.scaleAndAddToRef(radius, targetPoint);
             }
+
+            const computationVector = this._tempVectors[2];
+            camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+            // Radius
+            if (pickingInfo && pickingInfo.hit) {
+                radius = computationVector.length();
+            }
+
+            // Alpha and Beta
+            const alpha = ComputeAlpha(computationVector);
+            const beta = ComputeBeta(computationVector.y, radius);
+
+            const hotSpotPosition = targetPoint.asArray();
+            return { type: "world", position: hotSpotPosition, normal: hotSpotPosition, cameraOrbit: [alpha, beta, radius] };
         }
 
         return null;

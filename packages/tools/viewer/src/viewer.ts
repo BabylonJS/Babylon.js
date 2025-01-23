@@ -1332,6 +1332,15 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Returns the model associated with the specified camera.
+     * @param camera The camera to get the model for.
+     * @returns The model associated with the camera, or null if no model found.
+     */
+    public getCameraModel(camera: Camera): Nullable<Model> {
+        return this._modelInfo?.assetContainer === camera._parentContainer ? this._modelInfo : null;
+    }
+
+    /**
      * Check for disposed or aborted state (basically everything that can interrupt an async operation).
      * @param abortSignals A set of optional AbortSignals to also check.
      */
