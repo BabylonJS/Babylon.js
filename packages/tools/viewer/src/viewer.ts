@@ -391,7 +391,7 @@ export class Viewer implements IDisposable {
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _modelInfo: Nullable<Model> = null;
-    private _computedWorldBounds: ViewerBoundingInfo[] = [];
+    private _computedWorldBounds = new Map<AssetContainer, ViewerBoundingInfo[]>();
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -897,20 +897,22 @@ export class Viewer implements IDisposable {
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
                     assetContainer.dispose();
                     this._snapshotHelper.enableSnapshotRendering();
-                    this._computedWorldBounds = [];
+                    this._computedWorldBounds.delete(assetContainer);
                 },
                 getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
-                    if (!this._computedWorldBounds[animationIndex]) {
+                    const worldBounds = this._computedWorldBounds.get(assetContainer) ?? [];
+                    if (!worldBounds[animationIndex]) {
                         const computedBound = computeBoundingInfos(assetContainer, assetContainer.animationGroups[animationIndex]);
                         if (computedBound) {
-                            this._computedWorldBounds[animationIndex] = computedBound;
+                            worldBounds[animationIndex] = computedBound;
+                            this._computedWorldBounds.set(assetContainer, worldBounds);
                             return computedBound;
                         }
                     }
-                    return this._computedWorldBounds[animationIndex] ?? null;
+                    return worldBounds[animationIndex] ?? null;
                 },
                 resetWorldBounds: () => {
-                    this._computedWorldBounds = [];
+                    this._computedWorldBounds.delete(assetContainer);
                 },
             };
         } catch (e) {
