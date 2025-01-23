@@ -1,6 +1,9 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
+
+// Ask: Is this true for all vertex data in Babylon? Nothing can be Float64Array, BigInt64Array, or BigUint64Array?
+export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
@@ -112,6 +115,32 @@ export function GetTypeByteLength(type: number): number {
         case Constants.UNSIGNED_INT:
         case Constants.FLOAT:
             return 4;
+        default:
+            throw new Error(`Invalid type '${type}'`);
+    }
+}
+
+/**
+ * Gets the appropriate TypedArray constructor for the given component type.
+ * @param type the component type
+ * @returns the constructor object
+ */
+function GetTypedArrayConstructor(type: number) {
+    switch (type) {
+        case Constants.BYTE:
+            return Int8Array;
+        case Constants.UNSIGNED_BYTE:
+            return Uint8Array;
+        case Constants.SHORT:
+            return Int16Array;
+        case Constants.UNSIGNED_SHORT:
+            return Uint16Array;
+        case Constants.INT:
+            return Int32Array;
+        case Constants.UNSIGNED_INT:
+            return Uint32Array;
+        case Constants.FLOAT:
+            return Float32Array;
         default:
             throw new Error(`Invalid type '${type}'`);
     }
@@ -238,6 +267,61 @@ export function GetFloatData(
 
     if (forceCopy) {
         return data.slice();
+    }
+
+    return data;
+}
+
+/**
+ * Gets the given data array as a typed array. A new typed array is constructed if the data array cannot be returned directly.
+ * @param constructor the constructor of the array to return
+ * @param data the input data array
+ * @param size the number of components
+ * @param type the component type
+ * @param byteOffset the byte offset of the data
+ * @param byteStride the byte stride of the data
+ * @param normalized whether the data is normalized
+ * @param totalVertices number of vertices in the buffer to take into account
+ * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+ * @returns a typed array containing vertex data
+ */
+export function GetTypedData(
+    data: DataArray,
+    size: number,
+    type: number,
+    byteOffset: number,
+    byteStride: number,
+    normalized: boolean,
+    totalVertices: number,
+    forceCopy?: boolean
+): VertexDataTypedArray {
+    const constructor = GetTypedArrayConstructor(type);
+    const tightlyPackedByteStride = size * GetTypeByteLength(type);
+    const count = totalVertices * size;
+
+    if (data instanceof Array || byteStride !== tightlyPackedByteStride || forceCopy) {
+        const copy = new constructor(count);
+        EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+            for (let i = 0; i < size; i++) {
+                copy[index + i] = values[i];
+            }
+        });
+        return copy;
+    }
+
+    if (data instanceof ArrayBuffer) {
+        // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
+        return new (constructor as Float32ArrayConstructor)(data, byteOffset, count);
+    }
+
+    if (!(data instanceof constructor) || byteOffset !== 0 || data.length !== count) {
+        const bytes = GetTypeByteLength(type);
+        const offset = data.byteOffset + byteOffset;
+        if (bytes !== 1 && (offset & (bytes - 1)) !== 0) {
+            Logger.Warn("Array must be aligned to border of element size. Data will be copied.");
+            return  new (constructor as Float32ArrayConstructor)(data.buffer.slice(offset, offset + count * bytes));
+        }
+        return new (constructor as Float32ArrayConstructor)(data.buffer, offset, count);
     }
 
     return data;
