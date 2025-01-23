@@ -129,10 +129,12 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
 
 /**
  * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
+ * @param assetContainer The asset container representing the model
+ * @param animationGroup The animation group to consider when computing the bounding info
+ * @returns The computed bounding info for the model or null if no meshes are present in the asset container
  */
-function computeBoundingInfos(assetContainer: AssetContainer, animationGroup: Nullable<AnimationGroup> = null): Nullable<BoundingInfo> {
+function computeBoundingInfos(assetContainer: AssetContainer, animationGroup: Nullable<AnimationGroup> = null): Nullable<ViewerBoundingInfo> {
     if (assetContainer.meshes.length) {
-        console.log("computeBoundingInfos", animationGroup, assetContainer.meshes);
         const maxExtents = computeMaxExtents(assetContainer.meshes, animationGroup);
         const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
         const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
@@ -260,7 +262,7 @@ export class ViewerHotSpotResult {
     public visibility: number = NaN;
 }
 
-export type BoundingInfo = {
+export type ViewerBoundingInfo = {
     extents: Readonly<{
         readonly min: readonly [x: number, y: number, z: number];
         readonly max: readonly [x: number, y: number, z: number];
@@ -282,15 +284,23 @@ export type Model = IDisposable &
         materialVariantsController: Nullable<MaterialVariantsController>;
 
         /**
-         * The computed world bounds of the model.
-         * The minimum and maximum extents, the size and the center.
-         */
-        worldBounds: Nullable<BoundingInfo>[];
-
-        /**
          * Returns the world position and visibility of a hot spot.
          */
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
+
+        /**
+         * Compute and return the world bounds of the model.
+         * The minimum and maximum extents, the size and the center.
+         * @param animationIndex The index of the animation group to consider when computing the bounding info.
+         * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
+         */
+        getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+
+        /**
+         * Resets the computed world bounds of the model.
+         * Should be called after the model undergoes transformations.
+         */
+        resetWorldBounds(): void;
     }>;
 
 /**
@@ -381,6 +391,7 @@ export class Viewer implements IDisposable {
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _modelInfo: Nullable<Model> = null;
+    private _computedWorldBounds: ViewerBoundingInfo[] = [];
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -706,9 +717,6 @@ export class Viewer implements IDisposable {
                     }),
                 ];
 
-                if (this._modelInfo && !this._modelInfo.worldBounds[index]) {
-                    this._modelInfo.worldBounds[index] = computeBoundingInfos(this._modelInfo?.assetContainer, this._activeAnimation);
-                }
                 this._updateCamera(interpolateCamera);
             }
 
@@ -889,8 +897,21 @@ export class Viewer implements IDisposable {
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
                     assetContainer.dispose();
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._computedWorldBounds = [];
                 },
-                worldBounds: [computeBoundingInfos(assetContainer, assetContainer.animationGroups[0])],
+                getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
+                    if (!this._computedWorldBounds[animationIndex]) {
+                        const computedBound = computeBoundingInfos(assetContainer, assetContainer.animationGroups[animationIndex]);
+                        if (computedBound) {
+                            this._computedWorldBounds[animationIndex] = computedBound;
+                            return computedBound;
+                        }
+                    }
+                    return this._computedWorldBounds[animationIndex] ?? null;
+                },
+                resetWorldBounds: () => {
+                    this._computedWorldBounds = [];
+                },
             };
         } catch (e) {
             this.onModelError.notifyObservers(e);
@@ -1069,6 +1090,7 @@ export class Viewer implements IDisposable {
 
         this._renderLoopController?.dispose();
         this._scene.dispose();
+        this._modelInfo?.dispose();
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
@@ -1211,7 +1233,7 @@ export class Viewer implements IDisposable {
         let goalTarget = currentTarget;
 
         const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
-        const worldBounds = this._modelInfo?.worldBounds[selectedAnimation];
+        const worldBounds = this._modelInfo?.getWorldBounds(selectedAnimation);
         if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;

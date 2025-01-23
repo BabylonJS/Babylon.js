@@ -687,14 +687,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
     /**
-     * The calculated hot spots for the scene cameras.
-     */
-    @state()
-    public camerasHotSpots: Record<string, HotSpot> = {};
-
-    private _hotSpots: Readonly<Record<string, HotSpot>> = {};
-
-    /**
      * A string value that encodes one or more hotspots.
      */
     @property({
@@ -707,13 +699,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return JSON.parse(value);
         },
     })
-    set hotSpots(value: Record<string, HotSpot>) {
-        this._hotSpots = value;
-    }
-
-    get hotSpots() {
-        return { ...this._hotSpots, ...this.camerasHotSpots };
-    }
+    public hotSpots: Record<string, HotSpot> = {};
 
     private get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
@@ -851,7 +837,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._addCameraHotSpot(camera);
                 });
             } else {
-                this.camerasHotSpots = {};
+                this.viewerDetails?.scene.cameras.forEach((camera) => {
+                    this._removeCameraHotSpot(camera.name);
+                });
             }
         }
     }
@@ -1086,8 +1074,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (camera !== this.viewerDetails?.camera) {
             this._cameraToHotSpot(camera).then((hotSpot) => {
                 if (hotSpot) {
-                    this.camerasHotSpots = {
-                        ...this.camerasHotSpots,
+                    this.hotSpots = {
+                        ...this.hotSpots,
                         [`camera-${camera.name}`]: hotSpot,
                     };
                 }
@@ -1096,8 +1084,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     private _removeCameraHotSpot(name: string) {
-        delete this.camerasHotSpots[`camera-${name}`];
-        this.camerasHotSpots = { ...this.camerasHotSpots };
+        delete this.hotSpots[`camera-${name}`];
+        this.hotSpots = { ...this.hotSpots };
     }
 
     private async _setupViewer() {
@@ -1291,7 +1279,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             const model = this.viewerDetails.model;
 
             const selectedAnimation = this.selectedAnimation ?? 0;
-            let worldBounds = model.worldBounds[selectedAnimation] ?? model.worldBounds[0];
+            let worldBounds = model.getWorldBounds(selectedAnimation);
             if (worldBounds) {
                 // Target
                 let radius: number = 0.0001; // Just to avoid division by zero
@@ -1302,7 +1290,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 } else {
                     const direction = ray.direction.clone();
                     targetPoint.copyFrom(camGlobalPos);
-                    console.log("alors ?", model.worldBounds);
                     radius = Vector3.Distance(camGlobalPos, Vector3.FromArray(worldBounds.center));
                     direction.scaleAndAddToRef(radius, targetPoint);
                 }
