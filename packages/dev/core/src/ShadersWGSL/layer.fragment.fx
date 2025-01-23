@@ -25,8 +25,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef ALPHATEST
-	if (baseColor.a < 0.4)
+	if (baseColor.a < 0.4) {
 		discard;
+	}
 #endif
 
 	fragmentOutputs.color = baseColor * uniforms.color;
