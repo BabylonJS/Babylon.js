@@ -19,8 +19,4 @@ uniform Material
 	uniform vec2 projectedGroundInfos;
 };
 
-#ifndef AREALIGHT_ROUGHNESS
-    #define AREALIGHT_ROUGHNESS vReflectionInfos.y
-#endif
-
 #include<sceneUboDeclaration>

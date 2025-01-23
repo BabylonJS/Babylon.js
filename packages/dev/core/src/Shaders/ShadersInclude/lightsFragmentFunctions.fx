@@ -156,7 +156,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 	return textureColor;
 }
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
 uniform sampler2D areaLightsLTC1Sampler;

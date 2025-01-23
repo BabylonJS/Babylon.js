@@ -157,7 +157,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 	return textureColor;
 }
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) &&  defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
 var areaLightsLTC1SamplerSampler: sampler;

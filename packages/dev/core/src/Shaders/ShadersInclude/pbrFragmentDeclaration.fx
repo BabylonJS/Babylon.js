@@ -57,10 +57,6 @@ uniform mat4 view;
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
 
-    #ifndef AREALIGHT_ROUGHNESS
-        #define AREALIGHT_ROUGHNESS vReflectionInfos.y
-    #endif
-
     #ifdef REALTIME_FILTERING
         uniform vec2 vReflectionFilteringInfo;
     #endif

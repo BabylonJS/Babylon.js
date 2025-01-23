@@ -164,7 +164,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 #endif
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
     fn computeAreaDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
         return info.areaLightDiffuse * lightColor;
     }

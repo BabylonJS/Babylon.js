@@ -22,7 +22,7 @@ struct preLightingInfo
         float iridescenceIntensity;
     #endif
 
-    #ifdef AREALIGHTUSED
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         vec3 areaLightDiffuse;
 
         #ifdef SPECULARTERM
@@ -88,7 +88,7 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     return result;
 }
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
 preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness ) 

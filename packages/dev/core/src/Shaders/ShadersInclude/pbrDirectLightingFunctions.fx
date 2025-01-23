@@ -34,7 +34,7 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
     return mix(groundColor, lightColor, info.NdotL);
 }
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
     vec3 computeAreaDiffuseLighting(preLightingInfo info, vec3 lightColor) {
         return info.areaLightDiffuse * lightColor;
     }
@@ -93,7 +93,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
 
-    #ifdef AREALIGHTUSED
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         vec3 computeAreaSpecularLighting(preLightingInfo info, vec3 specularColor) {
             vec3 fresnel = ( specularColor * info.areaLightFresnel.x + ( vec3( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
 	        return specularColor * fresnel * info.areaLightSpecular;

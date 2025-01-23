@@ -22,7 +22,7 @@ struct preLightingInfo
         iridescenceIntensity: f32
     #endif
 
-    #ifdef AREALIGHTUSED
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
     areaLightDiffuse: vec3f,
         #ifdef SPECULARTERM
             areaLightSpecular: vec3f,
@@ -87,7 +87,7 @@ fn computeHemisphericPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
     return result;
 }
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
 fn computeAreaPreLightingInfo(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightCenter:vec3f, halfWidth:vec3f,  halfHeight:vec3f, roughness:f32) -> preLightingInfo {

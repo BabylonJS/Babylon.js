@@ -61,10 +61,6 @@ uniform float pointSize;
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
-
-    #ifndef AREALIGHT_ROUGHNESS
-        #define AREALIGHT_ROUGHNESS vReflectionInfos.y
-    #endif
 #endif
 
 // Clear Coat

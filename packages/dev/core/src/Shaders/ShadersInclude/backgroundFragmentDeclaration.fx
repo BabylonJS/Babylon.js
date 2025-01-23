@@ -15,10 +15,6 @@
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
-
-    #ifndef AREALIGHT_ROUGHNESS
-        #define AREALIGHT_ROUGHNESS vReflectionInfos.y
-    #endif
 #endif
 
 #if defined(REFLECTIONFRESNEL) || defined(OPACITYFRESNEL)

@@ -281,6 +281,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public LOGARITHMICDEPTH = false;
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
+    public AREALIGHTSUPPORTED = true;
 
     public FORCENORMALFORWARD = false;
 

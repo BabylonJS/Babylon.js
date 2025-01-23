@@ -83,7 +83,7 @@
     uniform sampler2D environmentBrdfSampler;
 #endif
 
-#ifdef AREALIGHTUSED
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
     uniform sampler2D areaLightsLTC1Sampler;
     uniform sampler2D areaLightsLTC2Sampler;
 #endif
