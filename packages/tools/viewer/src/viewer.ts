@@ -294,8 +294,6 @@ export type Model = IDisposable &
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
     }>;
 
-// TODO: Need to add properties for anything in the upper layers, such as clearColor, so we can mark the scene as mutated.
-
 /**
  * @experimental
  * Provides an experience for viewing a single 3D model.
