@@ -6,6 +6,7 @@ import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
 import type { TransformNode } from "core/Meshes/transformNode";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
 function isMeshClassName(className: string) {
     return (
@@ -29,6 +30,10 @@ function isVectorClassName(className: string) {
         className === FlowGraphTypes.Color3 ||
         className === FlowGraphTypes.Color4
     );
+}
+
+function isMatrixClassName(className: string) {
+    return className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D;
 }
 
 function isAnimationGroupClassName(className: string) {
@@ -68,7 +73,7 @@ function parseVector(className: string, value: Array<number>, flipHandedness = f
  */
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
     const className = value?.getClassName?.() ?? "";
-    if (isVectorClassName(className)) {
+    if (isVectorClassName(className) || isMatrixClassName(className)) {
         serializationObject[key] = {
             value: value.asArray(),
             className,
@@ -118,7 +123,11 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = ags.length === 1 ? ags[0] : ags.find((ag) => ag.uniqueId === intermediateValue.uniqueId);
     } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
-    } else if (className === FlowGraphInteger.ClassName) {
+    } else if (className === FlowGraphTypes.Matrix2D) {
+        finalValue = new FlowGraphMatrix2D(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Matrix3D) {
+        finalValue = new FlowGraphMatrix3D(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Integer) {
         finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
