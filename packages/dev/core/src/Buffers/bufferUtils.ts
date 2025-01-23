@@ -2,7 +2,6 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
 
-// Ask: Is this true for all vertex data in Babylon? Nothing can be Float64Array, BigInt64Array, or BigUint64Array?
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
