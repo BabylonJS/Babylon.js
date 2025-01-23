@@ -117,10 +117,6 @@ export class SnapshotRenderingHelper {
         });
     }
 
-    public get isReady() {
-        return !this._isEnabling;
-    }
-
     /**
      * Gets a value indicating if the helper is in a steady state (not in the process of enabling snapshot rendering).
      */
