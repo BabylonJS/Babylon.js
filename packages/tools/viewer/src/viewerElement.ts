@@ -851,10 +851,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             this._materialSelect.value = "";
         }
 
-        if (
-            (changedProperties.has("engine") && changedProperties.get("engine") != null) ||
-            (changedProperties.has("renderWhenIdle") && changedProperties.get("renderWhenIdle") != null)
-        ) {
+        if (changedProperties.get("engine") || changedProperties.get("renderWhenIdle") != null) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
