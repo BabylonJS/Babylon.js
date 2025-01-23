@@ -530,13 +530,13 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     public static readonly Version = 1;
 
     /** The base URL for the default hand model. */
-    public static DEFAULT_HAND_MODEL_BASE_URL = "https://assets.babylonjs.com/core/meshes/HandMeshes/";
+    public static DEFAULT_HAND_MODEL_BASE_URL = "https://assets.babylonjs.com/core/HandMeshes/";
     /** The filename to use for the default right hand model. */
     public static DEFAULT_HAND_MODEL_RIGHT_FILENAME = "r_hand_rhs.glb";
     /** The filename to use for the default left hand model. */
     public static DEFAULT_HAND_MODEL_LEFT_FILENAME = "l_hand_rhs.glb";
     /** The URL pointing to the default hand model NodeMaterial shader. */
-    public static DEFAULT_HAND_MODEL_SHADER_URL = "https://assets.babylonjs.com/core/meshes/HandMeshes/handsShader.json";
+    public static DEFAULT_HAND_MODEL_SHADER_URL = "https://assets.babylonjs.com/core/HandMeshes/handsShader.json";
 
     // We want to use lightweight models, diameter will initially be 1 but scaled to the values returned from WebXR.
     private static readonly _ICOSPHERE_PARAMS = { radius: 0.5, flat: false, subdivisions: 2 };
