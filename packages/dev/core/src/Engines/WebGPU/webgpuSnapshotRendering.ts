@@ -1,6 +1,8 @@
+import type { Nullable } from "core/types";
 import { Constants } from "../constants";
 import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUBundleList } from "./webgpuBundleList";
+import { Logger } from "core/Misc/logger";
 
 /** @internal */
 export class WebGPUSnapshotRendering {
@@ -22,6 +24,8 @@ export class WebGPUSnapshotRendering {
         this._bundleList = bundleList;
     }
 
+    public showDebugLogs = false;
+
     public get enabled(): boolean {
         return this._enabled;
     }
@@ -35,6 +39,8 @@ export class WebGPUSnapshotRendering {
     }
 
     public set enabled(activate: boolean) {
+        this._log("enabled", `activate=${activate}, mode=${this._mode}`);
+
         this._allBundleLists.length = 0;
         this._record = this._enabled = activate;
         this._play = false;
@@ -62,26 +68,32 @@ export class WebGPUSnapshotRendering {
             return false;
         }
 
-        let bundleList: WebGPUBundleList;
+        let bundleList: Nullable<WebGPUBundleList> = null;
 
         if (this._record) {
             bundleList = this._bundleList.clone();
             this._allBundleLists.push(bundleList);
             this._bundleList.reset();
+            this._log("endRenderPass", `bundleList recorded at position #${this._allBundleLists.length - 1}`);
         } else {
             // We are playing the snapshot
             if (this._playBundleListIndex >= this._allBundleLists.length) {
-                throw new Error(
-                    `Invalid playBundleListIndex! Your snapshot is no longer valid for the current frame, you should recreate a new one. playBundleListIndex=${this._playBundleListIndex}, allBundleLists.length=${this._allBundleLists.length}}`
+                this._log(
+                    "endRenderPass",
+                    `empty or out-of-sync bundleList (_allBundleLists.length=${this._allBundleLists.length}, playBundleListIndex=${this._playBundleListIndex})`
                 );
+            } else {
+                this._log("endRenderPass", `run bundleList #${this._playBundleListIndex}`);
+                bundleList = this._allBundleLists[this._playBundleListIndex++];
             }
-            bundleList = this._allBundleLists[this._playBundleListIndex++];
         }
 
-        bundleList.run(currentRenderPass);
+        if (bundleList) {
+            bundleList.run(currentRenderPass);
 
-        if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
-            this._engine._reportDrawCall(bundleList.numDrawCalls);
+            if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
+                this._engine._reportDrawCall(bundleList.numDrawCalls);
+            }
         }
 
         return true;
@@ -93,16 +105,24 @@ export class WebGPUSnapshotRendering {
             this._record = false;
             this._play = true;
             this._mode = this._modeSaved;
+            this._log("endFrame", "bundles recorded, switching to play mode");
         }
 
         this._playBundleListIndex = 0;
     }
 
     public reset(): void {
+        this._log("reset", "called");
         if (this._record) {
             this._mode = this._modeSaved;
         }
         this.enabled = false;
         this.enabled = true;
+    }
+
+    private _log(funcName: string, message: string) {
+        if (this.showDebugLogs) {
+            Logger.Log(`[Frame: ${this._engine.frameId}] WebGPUSnapshotRendering:${funcName} - ${message}`);
+        }
     }
 }

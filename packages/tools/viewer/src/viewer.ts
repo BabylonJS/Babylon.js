@@ -1291,15 +1291,15 @@ export class Viewer implements IDisposable {
                 // When we resume rendering, continue rendering until the scene reports it is ready.
                 const shouldRender = this._shouldRender || (renderedLastFrame && !this._scene.isReady(true));
                 if (shouldRender) {
-                    this._sceneMutated = false;
-                    this._scene.render();
-
                     if (!renderedLastFrame) {
                         if (renderedLastFrame !== null) {
                             Logger.Log("Viewer Resumed Rendering");
                         }
                         renderedLastFrame = true;
                     }
+
+                    this._sceneMutated = false;
+                    this._scene.render();
 
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
