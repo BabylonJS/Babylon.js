@@ -51,11 +51,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType | _AudioNodeType.in) {
+        if (nodeType & _AudioNodeType.in) {
             this._downstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType | _AudioNodeType.out) {
+        if (nodeType & _AudioNodeType.out) {
             this._upstreamNodes = new Set<AbstractAudioNode>();
         }
     }
