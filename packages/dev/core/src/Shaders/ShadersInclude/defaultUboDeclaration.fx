@@ -44,5 +44,9 @@ uniform Material
     #define ADDITIONAL_UBO_DECLARATION
 };
 
+#ifndef AREALIGHT_ROUGHNESS
+    #define AREALIGHT_ROUGHNESS vReflectionInfos.y
+#endif
+
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>

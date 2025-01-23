@@ -17,6 +17,10 @@ uniform vec2 vDiffuseInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
     uniform float fFovMultiplier;
+
+    #ifndef AREALIGHT_ROUGHNESS
+        #define AREALIGHT_ROUGHNESS vReflectionInfos.y
+    #endif
 #endif
 
 #ifdef POINTSIZE

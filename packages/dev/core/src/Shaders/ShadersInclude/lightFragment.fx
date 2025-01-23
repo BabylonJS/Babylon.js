@@ -161,7 +161,9 @@
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
             #elif defined(AREALIGHT{X})
-                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, vReflectionInfos.y);
+                #ifdef AREALIGHT_ROUGHNESS
+                    info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, AREALIGHT_ROUGHNESS);
+                #endif
             #endif
         #endif
 
