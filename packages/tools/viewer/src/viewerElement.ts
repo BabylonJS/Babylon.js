@@ -1139,11 +1139,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._cameraOrbitCoercer?.(details.camera);
                     this._cameraTargetCoercer?.(details.camera);
 
-                    // If animation auto play was set, then start the default animation (if possible).
-                    if (this.animationAutoPlay) {
-                        details.viewer.playAnimation();
-                    }
-
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
 
@@ -1205,7 +1200,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (this._viewerDetails) {
             try {
                 if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined, defaultAnimation: this.selectedAnimation ?? 0 });
+                    await this._viewerDetails.viewer.loadModel(this.source, {
+                        pluginExtension: this.extension ?? undefined,
+                        defaultAnimation: this.selectedAnimation ?? 0,
+                        animationAutoPlay: this.animationAutoPlay,
+                    });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
