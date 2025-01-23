@@ -115,6 +115,12 @@ export class ObjectRenderer {
     public activeCamera: Nullable<Camera>;
 
     /**
+     * Define the camera used to calculate the LOD of the objects.
+     * If not defined, activeCamera will be used. If not defined nor activeCamera, scene's active camera will be used.
+     */
+    public cameraForLOD: Nullable<Camera>;
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean;
@@ -156,28 +162,50 @@ export class ObjectRenderer {
     public readonly onFastPathRenderObservable = new Observable<number>();
 
     protected _scene: Scene;
-    protected _renderingManager: RenderingManager;
+    /** @internal */
+    public _renderingManager: RenderingManager;
     /** @internal */
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
-    protected _doNotChangeAspectRatio: boolean;
 
     /**
      * The options used by the object renderer
      */
     public options: Required<ObjectRendererOptions>;
 
+    private _name: string;
     /**
      * Friendly name of the object renderer
      */
-    public name: string;
+    public get name() {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        if (this._name === value) {
+            return;
+        }
+
+        this._name = value;
+
+        if (!this._scene) {
+            return;
+        }
+
+        const engine = this._scene.getEngine();
+
+        for (let i = 0; i < this._renderPassIds.length; ++i) {
+            const renderPassId = this._renderPassIds[i];
+            engine._renderPassNames[renderPassId] = `${this._name}#${i}`;
+        }
+    }
 
     /**
      * Current render pass id. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
      */
     public renderPassId: number;
-    private _renderPassIds: number[];
+    private readonly _renderPassIds: number[];
     /**
      * Gets the render pass ids used by the object renderer.
      */
@@ -253,7 +281,7 @@ export class ObjectRenderer {
         const engine = this._scene.getEngine();
 
         for (let i = 0; i < this.options.numPasses; ++i) {
-            this._renderPassIds[i] = engine.createRenderPassId(`ObjectRenderer - ${this.name}#${i}`);
+            this._renderPassIds[i] = engine.createRenderPassId(`${this.name}#${i}`);
         }
     }
 
@@ -484,7 +512,7 @@ export class ObjectRenderer {
                 currentRenderList = defaultRenderList;
             }
 
-            if (!this._doNotChangeAspectRatio) {
+            if (!this.options.doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -528,11 +556,13 @@ export class ObjectRenderer {
 
     private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, checkLayerMask: boolean): void {
         const scene = this._scene;
-        const camera = scene.activeCamera;
+        const camera = scene.activeCamera; // note that at this point, scene.activeCamera == this.activeCamera if defined, because initRender() has been called before
+        const cameraForLOD = this.cameraForLOD ?? camera;
 
         this._renderingManager.reset();
 
         const sceneRenderId = scene.getRenderId();
+        const currentFrameId = scene.getFrameId();
         for (let meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
             const mesh = currentRenderList[meshIndex];
 
@@ -547,15 +577,28 @@ export class ObjectRenderer {
                     continue;
                 }
 
-                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && camera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, camera) : mesh.getLOD(camera);
-                    mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
-                }
-                if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
-                    continue;
+                let meshToRender: Nullable<AbstractMesh> = null;
+
+                if (cameraForLOD) {
+                    const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);
+                    if (!meshToRenderAndFrameId || meshToRenderAndFrameId[1] !== currentFrameId) {
+                        meshToRender = scene.customLODSelector ? scene.customLODSelector(mesh, cameraForLOD) : mesh.getLOD(cameraForLOD);
+                        if (!meshToRenderAndFrameId) {
+                            mesh._internalAbstractMeshDataInfo._currentLOD.set(cameraForLOD, [meshToRender, currentFrameId]);
+                        } else {
+                            meshToRenderAndFrameId[0] = meshToRender;
+                            meshToRenderAndFrameId[1] = currentFrameId;
+                        }
+                    } else {
+                        meshToRender = meshToRenderAndFrameId[0];
+                    }
+                } else {
+                    meshToRender = mesh;
                 }
 
-                let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+                if (!meshToRender) {
+                    continue;
+                }
 
                 if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                     meshToRender.computeWorldMatrix(); // Compute world matrix if LOD is billboard
@@ -634,9 +677,11 @@ export class ObjectRenderer {
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+     * @param depth Automatically clears depth between groups if true and autoClear is true.
+     * @param stencil Automatically clears stencil between groups if true and autoClear is true.
      */
-    public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
-        this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+    public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth = true, stencil = true): void {
+        this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
         this._renderingManager._useSceneAutoClearSetup = false;
     }
 
@@ -658,6 +703,15 @@ export class ObjectRenderer {
      * Dispose the renderer and release its associated resources.
      */
     public dispose(): void {
+        const renderList = this.renderList ? this.renderList : this._scene.getActiveMeshes().data;
+        const renderListLength = this.renderList ? this.renderList.length : this._scene.getActiveMeshes().length;
+        for (let i = 0; i < renderListLength; i++) {
+            const mesh = renderList[i];
+            if (mesh.getMaterialForRenderPass(this.renderPassId) !== undefined) {
+                mesh.setMaterialForRenderPass(this.renderPassId, undefined);
+            }
+        }
+
         this.onBeforeRenderObservable.clear();
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderingManagerRenderObservable.clear();

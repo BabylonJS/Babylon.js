@@ -1,4 +1,4 @@
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { HasStencilAspect, InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine";
@@ -166,23 +166,9 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
     }
 
-    const hasStencil =
-        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
-
-    let type: GLenum = gl.UNSIGNED_INT;
-    if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
-        type = gl.UNSIGNED_SHORT;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
-        type = gl.UNSIGNED_INT_24_8;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
-        type = gl.FLOAT;
-    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
-        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
-    }
-
-    const format: GLenum = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    const hasStencil = HasStencilAspect(internalTexture.format);
+    const type = this._getWebGLTextureTypeFromDepthTextureFormat(internalTexture.format);
+    const format = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
     const internalFormat = this._getInternalFormatFromDepthTextureFormat(internalTexture.format, true, hasStencil);
 
     if (internalTexture.is2DArray) {
@@ -321,7 +307,7 @@ ThinEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
     internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+    internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
     internalTexture._comparisonFunction = comparisonFunction;
 
     const gl = this._gl;

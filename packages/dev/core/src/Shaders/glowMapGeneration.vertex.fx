@@ -53,6 +53,9 @@ void main(void)
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+#ifdef UV2
+    vec2 uv2Updated = uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -76,7 +79,7 @@ vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 		vUVDiffuse = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 	#endif
 	#ifdef DIFFUSEUV2
-		vUVDiffuse = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+		vUVDiffuse = vec2(diffuseMatrix * vec4(uv2Updated, 1.0, 0.0));
 	#endif
 #endif
 
@@ -85,7 +88,7 @@ vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 		vUVOpacity = vec2(opacityMatrix * vec4(uvUpdated, 1.0, 0.0));
 	#endif
 	#ifdef OPACITYUV2
-		vUVOpacity = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
+		vUVOpacity = vec2(opacityMatrix * vec4(uv2Updated, 1.0, 0.0));
 	#endif
 #endif
 
@@ -94,7 +97,7 @@ vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 		vUVEmissive = vec2(emissiveMatrix * vec4(uvUpdated, 1.0, 0.0));
 	#endif
 	#ifdef EMISSIVEUV2
-		vUVEmissive = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
+		vUVEmissive = vec2(emissiveMatrix * vec4(uv2Updated, 1.0, 0.0));
 	#endif
 #endif
 

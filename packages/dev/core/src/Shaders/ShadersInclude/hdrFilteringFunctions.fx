@@ -49,6 +49,19 @@
         return log2(x) / 2.;
     }
 
+    vec3 uv_to_normal(vec2 uv) {
+        vec3 N;
+
+        vec2 uvRange = uv;
+        float theta = uvRange.x * 2.0 * PI;
+        float phi = uvRange.y * PI;
+
+        N.x = cos(theta) * sin(phi);
+        N.z = sin(theta) * sin(phi);
+        N.y = cos(phi);
+        return N;
+    }
+
         const float NUM_SAMPLES_FLOAT = float(NUM_SAMPLES);
         const float NUM_SAMPLES_FLOAT_INVERSED = 1. / NUM_SAMPLES_FLOAT;
 
@@ -171,14 +184,21 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo)
+        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
+        #ifdef IBL_CDF_FILTERING
+        , sampler2D icdfSampler
+        #endif
+        )
         {
             vec3 n = normalize(inputN);
             vec3 result = vec3(0.0);
+
+            #ifndef IBL_CDF_FILTERING
             vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
             tangent = normalize(cross(tangent, n));
             vec3 bitangent = cross(n, tangent);
             mat3 tbn = mat3(tangent, bitangent, n);
+            #endif
 
             float maxLevel = filteringInfo.y;
             float dim0 = filteringInfo.x;
@@ -191,26 +211,41 @@
             #endif
             {
                 vec2 Xi = hammersley(i, NUM_SAMPLES);
-                vec3 Ls = hemisphereCosSample(Xi);
 
-                Ls = normalize(Ls);
-
-                vec3 Ns = vec3(0., 0., 1.);
-
-                float NoL = dot(Ns, Ls);
+                #ifdef IBL_CDF_FILTERING
+                    vec2 T;
+                    T.x = textureLod(icdfSampler, vec2(Xi.x, 0.0), 0.0).x;
+                    T.y = textureLod(icdfSampler, vec2(T.x, Xi.y), 0.0).y;
+                    vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
+                    float NoL = dot(n, Ls);
+                #else
+                    vec3 Ls = hemisphereCosSample(Xi);
+                    Ls = normalize(Ls);
+                    vec3 Ns = vec3(0., 0., 1.);
+                    float NoL = dot(Ns, Ls);
+                #endif
 
                 if (NoL > 0.) {
-                    float pdf_inversed = PI / NoL;
-
-                    float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
-                    float l = log4(omegaS) - log4(omegaP) + log4(K);
-                    float mipLevel = clamp(l, 0.0, maxLevel);
-
-                    vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
+                    #ifdef IBL_CDF_FILTERING
+                        float pdf = textureLod(icdfSampler, T, 0.0).z;
+                        vec3 c = textureCubeLodEXT(inputTexture, Ls, 0.0).rgb;
+                    #else
+                        float pdf_inversed = PI / NoL;
+                        float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
+                        float l = log4(omegaS) - log4(omegaP) + log4(K);
+                        float mipLevel = clamp(l, 0.0, maxLevel);
+                        vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
+                    #endif
                     #ifdef GAMMA_INPUT
                         c = toLinearSpace(c);
                     #endif
-                    result += c;
+
+                    #ifdef IBL_CDF_FILTERING
+                        vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(1.0) / vec3(pdf) * c;
+                        result += NoL * light;
+                    #else
+                        result += c;
+                    #endif
                 }
             }
 
@@ -267,7 +302,6 @@
                         float mipLevel = clamp(float(l), 0.0, maxLevel);
 
                         weight += NoL;
-
                         vec3 c = textureCubeLodEXT(inputTexture, tbn * L, mipLevel).rgb;
                         #ifdef GAMMA_INPUT
                             c = toLinearSpace(c);

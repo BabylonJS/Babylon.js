@@ -142,6 +142,8 @@ export interface IWebXRNearInteractionOptions {
     motionControllerTouchMaterialSnippetUrl?: string;
 }
 
+const _tmpVectors = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
+
 /**
  * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
  */
@@ -244,6 +246,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
      * This color will be applied to the selection ring when selection is triggered
      */
     public selectionMeshPickedColor: Color3 = new Color3(0.3, 0.3, 1.0);
+
+    /**
+     * If set to true, the selection mesh will always be hidden. Otherwise it will be shown only when needed
+     */
+    public alwaysHideSelectionMesh: boolean = false;
 
     /**
      * constructs a new background remover module
@@ -590,7 +597,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (controllerData.pick && controllerData.pick.pickedPoint && controllerData.pick.hit) {
                     controllerData.meshUnderPointer = controllerData.pick.pickedMesh;
                     controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
-                    controllerData.pickedPointVisualCue.isVisible = true;
+                    controllerData.pickedPointVisualCue.isVisible = !this.alwaysHideSelectionMesh;
 
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
                         this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, true);
@@ -703,7 +710,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.downTriggered = false;
                     controllerData.grabInteraction = false;
-                    controllerData.pickedPointVisualCue.isVisible = true;
+                    controllerData.pickedPointVisualCue.isVisible = !this.alwaysHideSelectionMesh;
                 }
             } else {
                 if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
@@ -764,7 +771,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 ) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
-                    controllerData.pickedPointVisualCue.isVisible = true;
+                    controllerData.pickedPointVisualCue.isVisible = !this.alwaysHideSelectionMesh;
                     controllerData.downTriggered = false;
                 }
             };
@@ -994,9 +1001,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return pi;
         }
 
-        const result = TmpVectors.Vector3[0];
-        const tmpVec = TmpVectors.Vector3[1];
-        const tmpRay = new Ray(Vector3.Zero(), Vector3.Zero(), 1);
+        const result = _tmpVectors[0];
+        const tmpVec = _tmpVectors[1];
+        _tmpVectors[2].setAll(0);
+        _tmpVectors[3].setAll(0);
+
+        const tmpRay = new Ray(_tmpVectors[2], _tmpVectors[3], 1);
 
         let distance = +Infinity;
         let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;
@@ -1015,8 +1025,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             tmp = Vector3.Distance(tmpVec, sphere.center);
 
             // Check for finger inside of mesh
-            tmpDistanceSurfaceToCenter = Vector3.Distance(tmpVec, mesh.getAbsolutePosition());
-            tmpDistanceSphereToCenter = Vector3.Distance(sphere.center, mesh.getAbsolutePosition());
+            tmpDistanceSurfaceToCenter = Vector3.DistanceSquared(tmpVec, mesh.getAbsolutePosition());
+            tmpDistanceSphereToCenter = Vector3.DistanceSquared(sphere.center, mesh.getAbsolutePosition());
             if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
                 tmp = 0;
                 tmpVec.copyFrom(sphere.center);

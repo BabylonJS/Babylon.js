@@ -115,7 +115,7 @@ export class GPUPicker {
             scene,
             false,
             undefined,
-            Constants.TEXTURETYPE_UNSIGNED_INT,
+            Constants.TEXTURETYPE_UNSIGNED_BYTE,
             false,
             Constants.TEXTURE_NEAREST_NEAREST
         );

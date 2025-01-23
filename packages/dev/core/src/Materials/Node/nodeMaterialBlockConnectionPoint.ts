@@ -140,6 +140,9 @@ export class NodeMaterialConnectionPoint {
         this._updateTypeDependentState(() => (this._defaultConnectionPointTypeBackingField = value));
     }
 
+    /** @internal */
+    public _isMainLinkSource = false;
+
     private _linkedConnectionSourceBackingField: Nullable<NodeMaterialConnectionPoint> = null;
     private _linkedConnectionSourceTypeChangedObserver: Nullable<Observer<NodeMaterialBlockConnectionPointTypes>>;
 
@@ -156,6 +159,7 @@ export class NodeMaterialConnectionPoint {
 
         this._linkedConnectionSourceTypeChangedObserver?.remove();
         this._updateTypeDependentState(() => (this._linkedConnectionSourceBackingField = value));
+        this._isMainLinkSource = false;
         if (this._linkedConnectionSourceBackingField) {
             this._linkedConnectionSourceTypeChangedObserver = this._linkedConnectionSourceBackingField.onTypeChangedObservable.add(() => {
                 this._notifyTypeChanged();
@@ -244,7 +248,7 @@ export class NodeMaterialConnectionPoint {
 
     /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
-        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+        if (this._linkedConnectionSource && !this._isMainLinkSource && this._linkedConnectionSource.isConnected) {
             return this.type;
         }
         return this._type;
@@ -263,11 +267,20 @@ export class NodeMaterialConnectionPoint {
                 return this._connectedPoint.type;
             }
 
-            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-                if (this._linkedConnectionSource.connectedPoint!._redirectedSource && this._linkedConnectionSource.connectedPoint!._redirectedSource.isConnected) {
-                    return this._linkedConnectionSource.connectedPoint!._redirectedSource.type;
+            if (this._linkedConnectionSource) {
+                if (this._linkedConnectionSource.isConnected) {
+                    if (this._linkedConnectionSource.connectedPoint!._redirectedSource && this._linkedConnectionSource.connectedPoint!._redirectedSource.isConnected) {
+                        return this._linkedConnectionSource.connectedPoint!._redirectedSource.type;
+                    }
+                    return this._linkedConnectionSource.type;
                 }
-                return this._linkedConnectionSource.type;
+                if (this._linkedConnectionSource._defaultConnectionPointType) {
+                    return this._linkedConnectionSource._defaultConnectionPointType;
+                }
+            }
+
+            if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
             }
         }
 

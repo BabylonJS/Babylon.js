@@ -1,7 +1,0 @@
-{
-    "extends": "../../../../tsconfig.json",
-
-    "compilerOptions": {},
-
-    "include": ["../../../tools/viewer-alpha/src/**/*"]
-}

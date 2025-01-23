@@ -201,10 +201,8 @@
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
         , vEnvironmentIrradiance: vec3f
     #endif
-    #ifdef USESPHERICALFROMREFLECTIONMAP
-        #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-            , reflectionMatrix: mat4x4f
-        #endif
+    #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+        , reflectionMatrix: mat4x4f
     #endif
     #ifdef USEIRRADIANCEMAP
         #ifdef REFLECTIONMAP_3D
@@ -230,6 +228,10 @@
     #endif
     #ifdef REALTIME_FILTERING
         , vReflectionFilteringInfo: vec2f
+        #ifdef IBL_CDF_FILTERING
+            , icdfSampler: texture_2d<f32>
+            , icdfSamplerSampler: sampler
+        #endif
     #endif
     ) -> reflectionOutParams
     {
@@ -285,36 +287,46 @@
         // _____________________________ Irradiance ________________________________
         var environmentIrradiance: vec3f =  vec3f(0., 0., 0.);
 
+        #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+            #ifdef ANISOTROPIC
+                var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
+            #else
+                var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
+            #endif
+
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                irradianceVector.z *= -1.0;
+            #endif
+
+            #ifdef INVERTCUBICMAP
+                irradianceVector.y *= -1.0;
+            #endif
+        #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
-                #ifdef ANISOTROPIC
-                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
-                #else
-                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
-                #endif
-
-                #ifdef REFLECTIONMAP_OPPOSITEZ
-                    irradianceVector.z *= -1.0;
-                #endif
-
-                #ifdef INVERTCUBICMAP
-                    irradianceVector.y *= -1.0;
-                #endif
-
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo);
+                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfSampler
+                        , icdfSamplerSampler
+                    #endif
+                    );
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
-                
+
                 #ifdef SS_TRANSLUCENCY
                     outParams.irradianceVector = irradianceVector;
                 #endif
             #endif
         #elif defined(USEIRRADIANCEMAP)
-            var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
+            #ifdef REFLECTIONMAP_3D
+                var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, irradianceVector);
+            #else
+                var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
+            #endif
             environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
                 environmentIrradiance = fromRGBD(environmentIrradiance4);
@@ -326,7 +338,11 @@
         #endif
 
         environmentIrradiance *= vReflectionColor.rgb;
-        outParams.environmentRadiance = environmentRadiance;
+        #ifdef MIX_IBL_RADIANCE_WITH_IRRADIANCE
+            outParams.environmentRadiance = vec4f(mix(environmentRadiance.rgb, environmentIrradiance, alphaG), environmentRadiance.a);
+        #else
+            outParams.environmentRadiance = environmentRadiance;
+        #endif
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;
 

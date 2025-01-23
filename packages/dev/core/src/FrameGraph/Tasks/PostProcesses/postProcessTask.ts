@@ -49,7 +49,11 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this.postProcess = postProcess;
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
 
-        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+        });
     }
 
     public override isReady() {
@@ -65,24 +69,22 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
             throw new Error(`FrameGraphPostProcessTask "${this.name}": sourceTexture is required`);
         }
 
-        const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+        const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
         sourceTextureCreationOptions.options.samples = 1;
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this.name, sourceTextureCreationOptions);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this.name, sourceTextureCreationOptions);
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.outputTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.outputTexture);
 
         this._outputWidth = outputTextureDescription.size.width;
         this._outputHeight = outputTextureDescription.size.height;
 
+        this._addInternalDependencies(this.sourceTexture);
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this.sourceTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             additionalExecute?.(context);
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", this.sourceTexture);

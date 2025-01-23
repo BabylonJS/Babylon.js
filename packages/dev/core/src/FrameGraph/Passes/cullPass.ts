@@ -6,7 +6,7 @@ import { FrameGraphPass } from "./pass";
  * Cull pass used to filter objects that are not visible.
  */
 export class FrameGraphCullPass extends FrameGraphPass<FrameGraphContext> {
-    protected _engine: AbstractEngine;
+    protected readonly _engine: AbstractEngine;
     protected _objectList: FrameGraphObjectList;
 
     /**

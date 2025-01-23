@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, TextureSize, FrameGraphContext, IMultiRenderTargetOptions } from "core/index";
+import type { Nullable, TextureSize, FrameGraphContext } from "core/index";
 
 /**
  * Represents a texture handle in the frame graph.
@@ -17,19 +17,45 @@ export const backbufferColorTextureHandle: FrameGraphTextureHandle = 0;
 export const backbufferDepthStencilTextureHandle: FrameGraphTextureHandle = 1;
 
 /**
- * Options used to create a texture in the frame graph.
+ * Options used to describe a texture to be created in the frame graph.
+ */
+export type FrameGraphTextureOptions = {
+    /** Specifies if mipmaps must be created for the textures (default: false) */
+    createMipMaps?: boolean;
+
+    /** Defines sample count (default: 1) */
+    samples?: number;
+
+    /** Defines the types of the textures */
+    types?: number[];
+
+    /** Defines the format of the textures (RED, RG, RGB, RGBA, ALPHA...) */
+    formats?: number[];
+
+    /** Defines if sRGB format should be used for each of texture */
+    useSRGBBuffers?: boolean[];
+
+    /** Defines the creation flags of the textures (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg) */
+    creationFlags?: number[];
+
+    /** Defines the names of the textures (used for debugging purpose) */
+    labels?: string[];
+};
+
+/**
+ * Options used to create a texture / list of textures in the frame graph.
  */
 export type FrameGraphTextureCreationOptions = {
-    /** Size of the texture. If sizeIsPercentage is true, these are percentages relative to the screen size */
+    /** Size of the textures. If sizeIsPercentage is true, these are percentages relative to the screen size (100 = 100%) */
     size: TextureSize;
 
-    /** Options used to create the (multi) render target texture */
-    options: IMultiRenderTargetOptions;
+    /** Options used to create the textures */
+    options: FrameGraphTextureOptions;
 
     /** If true, indicates that "size" is percentages relative to the screen size */
     sizeIsPercentage: boolean;
 
-    /** Indicates that the texture is a history texture */
+    /** Indicates that the texture is a history texture (default: false) */
     isHistoryTexture?: boolean;
 };
 
@@ -38,15 +64,11 @@ export type FrameGraphTextureCreationOptions = {
  * This is basically the same thing than FrameGraphTextureCreationOptions, but the size is never in percentage and always in pixels.
  */
 export type FrameGraphTextureDescription = {
-    /**
-     * Size of the texture.
-     */
+    /** Size of the texture */
     size: { width: number; height: number };
 
-    /**
-     * Options used when the (multi) render target texture had been created.
-     */
-    options: IMultiRenderTargetOptions;
+    /** Options used to create the texture */
+    options: FrameGraphTextureOptions;
 };
 
 /**
@@ -57,6 +79,11 @@ export interface IFrameGraphPass {
      * The name of the pass.
      */
     name: string;
+
+    /**
+     * Whether the pass is disabled.
+     */
+    disabled: boolean;
 
     /**
      * Sets the function to execute when the pass is executed

@@ -42,16 +42,14 @@
     }
 
     .nme-right-panel {
-        display: grid;
-        grid-template-rows: 1fr 40px auto 40px;
-        grid-template-columns: 100%;
         height: 100%;
-        overflow-y: auto;
+        overflow: hidden;
     }
 
     #propertyTab {
         grid-row: 1;
         grid-column: 1;
+        overflow-y: auto;
     }
 
     .button {
@@ -79,9 +77,12 @@
         }
     }
 
+    .nme-preview-part {
+        display: grid;
+        grid-template-rows: 40px 1fr 40px;
+    }
+
     #preview-mesh-bar {
-        grid-row: 2;
-        grid-column: 1;
         display: grid;
         grid-template-columns: auto 1fr 40px 40px 40px;
         align-items: center;
@@ -185,8 +186,7 @@
     }
 
     #preview-config-bar {
-        grid-row: 4;
-        grid-column: 1;
+        background-color: #555555;
         display: grid;
         grid-template-columns: 40px 40px 40px 1fr 40px 40px;
         color: white;
@@ -272,7 +272,7 @@
 
     #preview {
         border-top: 1px solid rgb(85, 85, 85);
-        grid-row: 3;
+        grid-row: 2;
         grid-column: 1;
         width: 100%;
         display: grid;
@@ -282,10 +282,11 @@
         padding: 0 !important;
         user-select: none;
         overflow: hidden;
+        height: 100%;
 
         #preview-canvas {
             width: 100%;
-            aspect-ratio: 1 / 1;
+            height: 100%;
             outline: 0 !important;
             padding: 0 !important;
             grid-row: 1;

@@ -16,6 +16,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
+import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -151,6 +152,12 @@ export class Effect implements IDisposable {
     public static LogShaderCodeOnCompilationError = true;
 
     /**
+     * Gets or sets a boolean indicating that effect ref counting is disabled
+     * If true, the effect will persist in memory until engine is disposed
+     */
+    public static PersistentMode: boolean = false;
+
+    /**
      * Use this with caution
      * See ClearCodeCache function comments
      */
@@ -194,6 +201,13 @@ export class Effect implements IDisposable {
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     private _isDisposed = false;
+
+    /**
+     * Gets a boolean indicating that the effect was already disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
 
     /** @internal */
     public _refCount = 1;
@@ -339,6 +353,7 @@ export class Effect implements IDisposable {
 
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
+            extraInitializationsAsync = options.extraInitializationsAsync;
 
             cachedPipeline = options.existingPipelineContext;
         } else {
@@ -376,6 +391,14 @@ export class Effect implements IDisposable {
                 (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
             }
         }
+
+        this._engine.onReleaseEffectsObservable.addOnce(() => {
+            if (this.isDisposed) {
+                return;
+            }
+
+            this.dispose(true);
+        });
     }
 
     /** @internal */
@@ -587,29 +610,26 @@ export class Effect implements IDisposable {
         });
 
         if (!this._pipelineContext || this._pipelineContext.isAsync) {
-            setTimeout(() => {
-                this._checkIsReady(null);
-            }, 16);
+            this._checkIsReady(null);
         }
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
-        try {
-            if (this._isReadyInternal()) {
-                return;
-            }
-        } catch (e) {
-            this._processCompilationErrors(e, previousPipelineContext);
-            return;
-        }
-
-        if (this._isDisposed) {
-            return;
-        }
-
-        setTimeout(() => {
-            this._checkIsReady(previousPipelineContext);
-        }, 16);
+        _retryWithInterval(
+            () => {
+                return this._isReadyInternal() || this._isDisposed;
+            },
+            () => {
+                // no-op - done in the _isReadyInternal call
+            },
+            (e) => {
+                this._processCompilationErrors(e, previousPipelineContext);
+            },
+            16,
+            30000,
+            true,
+            ` - Effect: ${typeof this.name === "string" ? this.name : this.key}`
+        );
     }
 
     /**
@@ -886,6 +906,7 @@ export class Effect implements IDisposable {
                 this.onError(this, this._compilationError);
             }
             this.onErrorObservable.notifyObservers(this);
+            this._engine.onEffectErrorObservable.notifyObservers({ effect: this, errors: this._compilationError });
         };
 
         // In case a previous compilation was successful, we need to restore the previous pipeline context
@@ -1473,12 +1494,20 @@ export class Effect implements IDisposable {
 
     /**
      * Release all associated resources.
+     * @param force specifies if the effect must be released no matter what
      **/
-    public dispose() {
-        this._refCount--;
+    public dispose(force = false) {
+        if (force) {
+            this._refCount = 0;
+        } else {
+            if (Effect.PersistentMode) {
+                return;
+            }
+            this._refCount--;
+        }
 
-        if (this._refCount > 0) {
-            // Others are still using the effect
+        if (this._refCount > 0 || this._isDisposed) {
+            // Others are still using the effect or the effect was already disposed
             return;
         }
 

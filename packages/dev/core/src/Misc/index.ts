@@ -33,6 +33,7 @@ export * from "./logger";
 export * from "./typeStore";
 export * from "./filesInputStore";
 export * from "./deepCopier";
+export * from "./deepMerger";
 export * from "./pivotTools";
 export * from "./precisionDate";
 export * from "./screenshotTools";
@@ -75,6 +76,7 @@ export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
 export * from "./asyncLock";
+export * from "./bitArray";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

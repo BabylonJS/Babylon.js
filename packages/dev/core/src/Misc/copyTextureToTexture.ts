@@ -106,7 +106,7 @@ export class CopyTextureToTexture {
      * @returns true if "copy" can be called without delay, else false
      */
     public isReady(): boolean {
-        return this._shadersLoaded && this._effectWrapper.effect.isReady();
+        return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
     /**

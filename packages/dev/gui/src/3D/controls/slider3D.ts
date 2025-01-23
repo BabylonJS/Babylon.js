@@ -12,6 +12,7 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
 import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";
 import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
+import { Tools } from "core/Misc/tools";
 
 const SLIDER_MIN: number = 0;
 const SLIDER_MAX: number = 100;
@@ -27,7 +28,7 @@ export class Slider3D extends Control3D {
     /**
      * Base Url for the models.
      */
-    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    public static MODEL_BASE_URL: string = "https://assets.babylonjs.com/core/MRTK/";
 
     /**
      * File name for the 8x4 model.
@@ -219,8 +220,8 @@ export class Slider3D extends Control3D {
         sliderBackplate.isPickable = false;
         sliderBackplate.visibility = 0;
         sliderBackplate.scaling = new Vector3(1, 0.5, 0.8);
-
-        SceneLoader.ImportMeshAsync(undefined, Slider3D.MODEL_BASE_URL, Slider3D.MODEL_FILENAME, scene).then((result) => {
+        const baseUrl = Tools.GetAssetUrl(Slider3D.MODEL_BASE_URL);
+        SceneLoader.ImportMeshAsync(undefined, baseUrl, Slider3D.MODEL_FILENAME, scene).then((result) => {
             // make all meshes not pickable. Required meshes' pickable state will be set later.
             result.meshes.forEach((m) => {
                 m.isPickable = false;

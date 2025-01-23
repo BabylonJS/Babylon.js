@@ -150,11 +150,13 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
             const boundingInfo = extractMinAndMax(positions!, 0, positions!.length / 3);
 
             // Building the lattice
+            const size = boundingInfo.maximum.subtract(boundingInfo.minimum);
             this._lattice = new Lattice({
                 resolutionX: this.resolutionX,
                 resolutionY: this.resolutionY,
                 resolutionZ: this.resolutionZ,
-                size: boundingInfo.maximum.subtract(boundingInfo.minimum),
+                size: size,
+                position: boundingInfo.minimum.add(size.scale(0.5)),
             });
 
             for (this._currentIndexX = 0; this._currentIndexX < this.resolutionX; this._currentIndexX++) {

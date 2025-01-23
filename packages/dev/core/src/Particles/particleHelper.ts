@@ -42,7 +42,8 @@ export class ParticleHelper {
         }
 
         system.emitter = emitter;
-        system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", system.getScene());
+        const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/textures/flare.png");
+        system.particleTexture = new Texture(textureUrl, system.getScene());
         system.createConeEmitter(0.1, Math.PI / 4);
 
         // Particle color

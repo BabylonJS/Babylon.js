@@ -1,15 +1,14 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
+import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 
 /**
  * Block that implements the bloom post process
  */
-export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphBloomTask;
 
     /**
@@ -32,15 +31,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
 
         this._additionalConstructionParameters = [hdr, bloomScale];
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
-
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = () => {
-            return this.destination.isConnected ? this.destination : this.source;
-        };
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
     }
@@ -77,16 +68,6 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
 
     public set hdr(value: boolean) {
         this._createTask(this._frameGraphTask.bloom.scale, value);
-    }
-
-    /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode)
-    public get sourceSamplingMode() {
-        return this._frameGraphTask.sourceSamplingMode;
-    }
-
-    public set sourceSamplingMode(value: number) {
-        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
@@ -127,51 +108,11 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
         return "NodeRenderGraphBloomPostProcessBlock";
     }
 
-    /**
-     * Gets the source input component
-     */
-    public get source(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
-     * Gets the destination input component
-     */
-    public get destination(): NodeRenderGraphConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
-    }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-
-        this._frameGraphTask.name = this.name;
-
-        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
-
-        const sourceConnectedPoint = this.source.connectedPoint;
-        if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
-        }
-
-        const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
-        }
-    }
-
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.threshold = ${this.threshold};`);
         codes.push(`${this._codeVariableName}.weight = ${this.weight};`);
         codes.push(`${this._codeVariableName}.kernel = ${this.kernel};`);
-        codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -180,7 +121,6 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
         serializationObject.threshold = this.threshold;
         serializationObject.weight = this.weight;
         serializationObject.kernel = this.kernel;
-        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         return serializationObject;
     }
 
@@ -189,7 +129,6 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
         this.threshold = serializationObject.threshold;
         this.weight = serializationObject.weight;
         this.kernel = serializationObject.kernel;
-        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
     }
 }
 

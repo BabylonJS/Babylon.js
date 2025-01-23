@@ -1,4 +1,5 @@
 import type { Scene } from "core/scene";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
@@ -19,7 +20,13 @@ import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Block
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Blocks/resourceContainerBlock";
+import { NodeRenderGraphShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock";
+import { NodeRenderGraphCascadedShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock";
+import { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
+import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/glowLayerBlock";
+import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
+import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -35,6 +42,10 @@ export class BlockTools {
                 return new NodeRenderGraphOutputBlock("Output", frameGraph, scene);
             case "ElbowBlock":
                 return new NodeRenderGraphElbowBlock("", frameGraph, scene);
+            case "ResourceContainerBlock":
+                return new NodeRenderGraphResourceContainerBlock("Resources", frameGraph, scene);
+            case "ExecuteBlock":
+                return new NodeRenderGraphExecuteBlock("Execute", frameGraph, scene);
             case "TextureBlock": {
                 return new NodeRenderGraphInputBlock("Texture", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
             }
@@ -58,6 +69,9 @@ export class BlockTools {
             case "ObjectListBlock": {
                 return new NodeRenderGraphInputBlock("Object list", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
             }
+            case "ShadowLightBlock": {
+                return new NodeRenderGraphInputBlock("Shadow light", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.ShadowLight);
+            }
             case "ClearBlock": {
                 return new NodeRenderGraphClearBlock("Clear", frameGraph, scene);
             }
@@ -75,6 +89,12 @@ export class BlockTools {
             }
             case "BlurBlock": {
                 return new NodeRenderGraphBlurPostProcessBlock("Blur", frameGraph, scene);
+            }
+            case "PassBlock": {
+                return new NodeRenderGraphPassPostProcessBlock("Pass", frameGraph, scene);
+            }
+            case "PassCubeBlock": {
+                return new NodeRenderGraphPassCubePostProcessBlock("Pass cube", frameGraph, scene);
             }
             case "GUIBlock": {
                 return new NodeRenderGraphGUIBlock("GUI", frameGraph, scene);
@@ -99,6 +119,18 @@ export class BlockTools {
             }
             case "ExtractHighlightsBlock": {
                 return new NodeRenderGraphExtractHighlightsPostProcessBlock("Extract Highlights", frameGraph, scene);
+            }
+            case "ShadowGeneratorBlock": {
+                return new NodeRenderGraphShadowGeneratorBlock("Shadow Generator", frameGraph, scene);
+            }
+            case "CascadedShadowGeneratorBlock": {
+                return new NodeRenderGraphCascadedShadowGeneratorBlock("Cascaded Shadow Generator", frameGraph, scene);
+            }
+            case "GlowLayerBlock": {
+                return new NodeRenderGraphGlowLayerBlock("Glow Layer", frameGraph, scene);
+            }
+            case "HighlightLayerBlock": {
+                return new NodeRenderGraphHighlightLayerBlock("Highlight Layer", frameGraph, scene);
             }
         }
 
@@ -156,11 +188,19 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 color = "#c451e5";
                 break;
+            case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
+                color = "#000000";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.AutoDetect: // Used by the elbow block
                 color = "#880000";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.Object:
+                color = "#6174FA";
                 break;
             default:
                 throw new Error("Unknown connection point type: " + type);
@@ -203,6 +243,12 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal;
             case "TextureLinearVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity;
+            case "ResourceContainer":
+                return NodeRenderGraphBlockConnectionPointTypes.ResourceContainer;
+            case "ShadowGenerator":
+                return NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator;
+            case "ShadowLight":
+                return NodeRenderGraphBlockConnectionPointTypes.ShadowLight;
         }
 
         return NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
@@ -242,6 +288,12 @@ export class BlockTools {
                 return "TextureWorldNormal";
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 return "TextureLinearVelocity";
+            case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
+                return "ResourceContainer";
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
+                return "ShadowGenerator";
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
+                return "ShadowLight";
         }
 
         return "";

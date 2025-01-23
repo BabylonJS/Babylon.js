@@ -9,6 +9,8 @@ import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import { ThinPassCubePostProcess, ThinPassPostProcess } from "./thinPassPostProcess";
+import { serialize } from "core/Misc/decorators";
 
 /**
  * PassPostProcess which produces an output the same as it's input
@@ -40,21 +42,24 @@ export class PassPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
-    }
+        const localOptions = {
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/pass.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/pass.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
+        super(name, ThinPassPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinPassPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
     }
 
     /**
@@ -85,8 +90,6 @@ RegisterClass("BABYLON.PassPostProcess", PassPostProcess);
  * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
  */
 export class PassCubePostProcess extends PostProcess {
-    private _face = 0;
-
     /**
      * Gets or sets the cube face to display.
      *  * 0 is +X
@@ -96,36 +99,13 @@ export class PassCubePostProcess extends PostProcess {
      *  * 4 is +Z
      *  * 5 is -Z
      */
+    @serialize()
     public get face(): number {
-        return this._face;
+        return this._effectWrapper.face;
     }
 
     public set face(value: number) {
-        if (value < 0 || value > 5) {
-            return;
-        }
-
-        this._face = value;
-        switch (this._face) {
-            case 0:
-                this.updateEffect("#define POSITIVEX");
-                break;
-            case 1:
-                this.updateEffect("#define NEGATIVEX");
-                break;
-            case 2:
-                this.updateEffect("#define POSITIVEY");
-                break;
-            case 3:
-                this.updateEffect("#define NEGATIVEY");
-                break;
-            case 4:
-                this.updateEffect("#define POSITIVEZ");
-                break;
-            case 5:
-                this.updateEffect("#define NEGATIVEZ");
-                break;
-        }
+        this._effectWrapper.face = value;
     }
 
     /**
@@ -135,6 +115,8 @@ export class PassCubePostProcess extends PostProcess {
     public override getClassName(): string {
         return "PassCubePostProcess";
     }
+
+    protected override _effectWrapper: ThinPassCubePostProcess;
 
     /**
      * Creates the PassCubePostProcess
@@ -154,21 +136,24 @@ export class PassCubePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
-    }
+        const localOptions = {
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/passCube.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/passCube.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
+        super(name, ThinPassPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinPassCubePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
     }
 
     /**
@@ -194,5 +179,5 @@ export class PassCubePostProcess extends PostProcess {
 }
 
 AbstractEngine._RescalePostProcessFactory = (engine: AbstractEngine) => {
-    return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+    return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_BYTE);
 };

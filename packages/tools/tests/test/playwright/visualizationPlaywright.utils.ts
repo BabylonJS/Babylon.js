@@ -160,7 +160,7 @@ export const evaluateInitEngineForVisualization = async ({
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
-    BABYLON.DracoCompression.Configuration.decoder = {
+    BABYLON.DracoDecoder.DefaultConfiguration = {
         wasmUrl: baseUrl + "/draco_wasm_wrapper_gltf.js",
         wasmBinaryUrl: baseUrl + "/draco_decoder_gltf.wasm",
         fallbackUrl: baseUrl + "/draco_decoder_gltf.js",

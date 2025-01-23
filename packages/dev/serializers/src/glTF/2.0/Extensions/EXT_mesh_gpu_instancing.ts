@@ -1,14 +1,14 @@
-import type { IBufferView, IAccessor, INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import type { INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 import { AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import type { _BinaryWriter } from "../glTFExporter";
-import { _Exporter } from "../glTFExporter";
+import type { BufferManager } from "../bufferManager";
+import { GLTFExporter } from "../glTFExporter";
 import type { Nullable } from "core/types";
 import type { Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { ConvertToRightHandedPosition, ConvertToRightHandedRotation } from "../glTFUtilities";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -26,11 +26,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    private _exporter: _Exporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
+    constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
@@ -47,19 +47,21 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param node the node exported
      * @param babylonNode the corresponding babylon node
      * @param nodeMap map from babylon node id to node index
-     * @param binaryWriter binary writer
+     * @param convertToRightHanded true if we need to convert data from left hand to right hand system.
+     * @param bufferManager buffer manager
      * @returns nullable promise, resolves with the node
      */
     public postExportNodeAsync(
         context: string,
         node: Nullable<INode>,
         babylonNode: Node,
-        nodeMap: { [key: number]: number },
-        binaryWriter: _BinaryWriter
+        nodeMap: Map<Node, number>,
+        convertToRightHanded: boolean,
+        bufferManager: BufferManager
     ): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
             if (node && babylonNode instanceof Mesh) {
-                if (babylonNode.hasThinInstances && binaryWriter) {
+                if (babylonNode.hasThinInstances && this._exporter) {
                     this._wasUsed = true;
 
                     const noTranslation = Vector3.Zero();
@@ -86,6 +88,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     for (const m of matrix) {
                         m.decompose(iws, iwr, iwt);
 
+                        if (convertToRightHanded) {
+                            ConvertToRightHandedPosition(iwt);
+                            ConvertToRightHandedRotation(iwr);
+                        }
+
                         // fill the temp buffer
                         translationBuffer.set(iwt.asArray(), i * 3);
                         rotationBuffer.set(iwr.normalize().asArray(), i * 4); // ensure the quaternion is normalized
@@ -105,28 +112,16 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
                     // do we need to write TRANSLATION ?
                     if (hasAnyInstanceWorldTranslation) {
-                        extension.attributes["TRANSLATION"] = this._buildAccessor(
-                            translationBuffer,
-                            AccessorType.VEC3,
-                            babylonNode.thinInstanceCount,
-                            binaryWriter,
-                            AccessorComponentType.FLOAT
-                        );
+                        extension.attributes["TRANSLATION"] = this._buildAccessor(translationBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, bufferManager);
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
-                        const componentType = AccessorComponentType.FLOAT; // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
-                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter, componentType);
+                        // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
+                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, bufferManager);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
-                        extension.attributes["SCALE"] = this._buildAccessor(
-                            scaleBuffer,
-                            AccessorType.VEC3,
-                            babylonNode.thinInstanceCount,
-                            binaryWriter,
-                            AccessorComponentType.FLOAT
-                        );
+                        extension.attributes["SCALE"] = this._buildAccessor(scaleBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, bufferManager);
                     }
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
@@ -138,48 +133,16 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, binaryWriter: _BinaryWriter, componentType: AccessorComponentType): number {
-        // write the buffer
-        const bufferOffset = binaryWriter.getByteOffset();
-        switch (componentType) {
-            case AccessorComponentType.FLOAT: {
-                for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.setFloat32(buffer[i]);
-                }
-                break;
-            }
-            case AccessorComponentType.BYTE: {
-                for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.setByte(buffer[i] * 127);
-                }
-                break;
-            }
-            case AccessorComponentType.SHORT: {
-                for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.setInt16(buffer[i] * 32767);
-                }
-
-                break;
-            }
-        }
+    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, bufferManager: BufferManager): number {
         // build the buffer view
-        const bv: IBufferView = { buffer: 0, byteOffset: bufferOffset, byteLength: buffer.length * VertexBuffer.GetTypeByteLength(componentType) };
-        const bufferViewIndex = this._exporter._bufferViews.length;
-        this._exporter._bufferViews.push(bv);
+        const bv = bufferManager.createBufferView(buffer);
 
         // finally build the accessor
-        const accessorIndex = this._exporter._accessors.length;
-        const accessor: IAccessor = {
-            bufferView: bufferViewIndex,
-            componentType: componentType,
-            count: count,
-            type: type,
-            normalized: componentType == AccessorComponentType.BYTE || componentType == AccessorComponentType.SHORT,
-        };
+        const accessor = bufferManager.createAccessor(bv, type, AccessorComponentType.FLOAT, count);
         this._exporter._accessors.push(accessor);
-        return accessorIndex;
+        return this._exporter._accessors.length - 1;
     }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-_Exporter.RegisterExtension(NAME, (exporter) => new EXT_mesh_gpu_instancing(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new EXT_mesh_gpu_instancing(exporter));

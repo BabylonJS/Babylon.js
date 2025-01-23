@@ -44,9 +44,63 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
-	lightingInfo result;
+float getAttenuation(float cosAngle, float exponent) {
+	return max(0., pow(cosAngle, exponent));
+}
 
+float getIESAttenuation(float cosAngle, sampler2D iesLightSampler) {
+	float angle = acos(cosAngle) / PI;
+	return texture2D(iesLightSampler, vec2(angle, 0.)).r;
+}
+
+lightingInfo basicSpotLighting(vec3 viewDirectionW, vec3 lightVectorW, vec3 vNormal, float attenuation, vec3 diffuseColor, vec3 specularColor, float glossiness) {
+	lightingInfo result;	
+
+	// Diffuse
+	float ndl = max(0., dot(vNormal, lightVectorW));
+#ifdef NDOTL
+	result.ndl = ndl;
+#endif
+	result.diffuse = ndl * diffuseColor * attenuation;
+#ifdef SPECULARTERM
+	// Specular
+	vec3 angleW = normalize(viewDirectionW + lightVectorW);
+	float specComp = max(0., dot(vNormal, angleW));
+	specComp = pow(specComp, max(1., glossiness));
+
+	result.specular = specComp * specularColor * attenuation;
+#endif
+	return result;
+}
+
+lightingInfo computeIESSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness, sampler2D iesLightSampler) {	
+	vec3 direction = lightData.xyz - vPositionW;
+	vec3 lightVectorW = normalize(direction);
+	float attenuation = max(0., 1.0 - length(direction) / range);
+
+	// diffuse
+	float dotProduct = dot(lightDirection.xyz, -lightVectorW);
+	float cosAngle = max(0., dotProduct);
+
+	if (cosAngle >= lightDirection.w)
+	{		
+		attenuation *= getIESAttenuation(dotProduct, iesLightSampler);
+		return basicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, diffuseColor, specularColor, glossiness);
+	}
+
+	lightingInfo result;
+	result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
+	result.specular = vec3(0.);
+#endif
+#ifdef NDOTL
+	result.ndl = 0.;
+#endif
+
+	return result;
+}
+
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	vec3 direction = lightData.xyz - vPositionW;
 	vec3 lightVectorW = normalize(direction);
 	float attenuation = max(0., 1.0 - length(direction) / range);
@@ -55,27 +109,12 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 	float cosAngle = max(0., dot(lightDirection.xyz, -lightVectorW));
 
 	if (cosAngle >= lightDirection.w)
-	{
-		cosAngle = max(0., pow(cosAngle, lightData.w));
-		attenuation *= cosAngle;
-
-		// Diffuse
-		float ndl = max(0., dot(vNormal, lightVectorW));
-#ifdef NDOTL
-		result.ndl = ndl;
-#endif
-		result.diffuse = ndl * diffuseColor * attenuation;
-#ifdef SPECULARTERM
-		// Specular
-		vec3 angleW = normalize(viewDirectionW + lightVectorW);
-		float specComp = max(0., dot(vNormal, angleW));
-		specComp = pow(specComp, max(1., glossiness));
-
-		result.specular = specComp * specularColor * attenuation;
-#endif
-		return result;
+	{		
+		attenuation *= getAttenuation(cosAngle, lightData.w);
+		return basicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, diffuseColor, specularColor, glossiness);
 	}
 
+	lightingInfo result;
 	result.diffuse = vec3(0.);
 #ifdef SPECULARTERM
 	result.specular = vec3(0.);

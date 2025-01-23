@@ -78,6 +78,7 @@ import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
+import { deepMerge } from "core/Misc/deepMerger";
 export { GLTFFileLoader };
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -99,28 +100,6 @@ interface ILoaderProperty extends IProperty {
 interface IWithMetadata {
     metadata: any;
     _internalMetadata: any;
-}
-
-// https://stackoverflow.com/a/48218209
-function mergeDeep(...objects: any[]): any {
-    const isObject = (obj: any) => obj && typeof obj === "object";
-
-    return objects.reduce((prev, obj) => {
-        Object.keys(obj).forEach((key) => {
-            const pVal = prev[key];
-            const oVal = obj[key];
-
-            if (Array.isArray(pVal) && Array.isArray(oVal)) {
-                prev[key] = pVal.concat(...oVal);
-            } else if (isObject(pVal) && isObject(oVal)) {
-                prev[key] = mergeDeep(pVal, oVal);
-            } else {
-                prev[key] = oVal;
-            }
-        });
-
-        return prev;
-    }, {});
 }
 
 /**
@@ -176,6 +155,38 @@ export interface IAnimationTargetInfo {
 
     /** @internal */
     properties: Array<AnimationPropertyInfo>;
+}
+
+/** @internal */
+export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nullable<BoundingInfo> {
+    if (accessor.min && accessor.max) {
+        const minArray = accessor.min as [number, number, number];
+        const maxArray = accessor.max as [number, number, number];
+        const minVector = TmpVectors.Vector3[0].copyFromFloats(minArray[0], minArray[1], minArray[2]);
+        const maxVector = TmpVectors.Vector3[1].copyFromFloats(maxArray[0], maxArray[1], maxArray[2]);
+        if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
+            let divider = 1;
+            switch (accessor.componentType) {
+                case AccessorComponentType.BYTE:
+                    divider = 127.0;
+                    break;
+                case AccessorComponentType.UNSIGNED_BYTE:
+                    divider = 255.0;
+                    break;
+                case AccessorComponentType.SHORT:
+                    divider = 32767.0;
+                    break;
+                case AccessorComponentType.UNSIGNED_SHORT:
+                    divider = 65535.0;
+                    break;
+            }
+            const oneOverDivider = 1 / divider;
+            minVector.scaleInPlace(oneOverDivider);
+            maxVector.scaleInPlace(oneOverDivider);
+        }
+        return new BoundingInfo(minVector, maxVector);
+    }
+    return null;
 }
 
 /**
@@ -447,6 +458,15 @@ export class GLTFLoader implements IGLTFLoader {
                 const resultPromise = Promise.all(promises).then(() => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
+                    }
+
+                    // Making sure we enable enough lights to have all lights together
+                    for (const material of this._babylonScene.materials) {
+                        const mat = material as any;
+
+                        if (mat.maxSimultaneousLights !== undefined) {
+                            mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights, this._babylonScene.lights.length);
+                        }
                     }
 
                     this._extensionsOnReady();
@@ -875,7 +895,7 @@ export class GLTFLoader implements IGLTFLoader {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
                         // Merge the metadata from the skin node to the skinned mesh in case a loader extension added metadata.
-                        babylonTransformNode.metadata = mergeDeep(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
+                        babylonTransformNode.metadata = deepMerge(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
@@ -1118,30 +1138,9 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                     if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
-                        if (accessor.min && accessor.max) {
-                            const min = TmpVectors.Vector3[0].copyFromFloats(...(accessor.min as [number, number, number]));
-                            const max = TmpVectors.Vector3[1].copyFromFloats(...(accessor.max as [number, number, number]));
-                            if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
-                                let divider = 1;
-                                switch (accessor.componentType) {
-                                    case AccessorComponentType.BYTE:
-                                        divider = 127.0;
-                                        break;
-                                    case AccessorComponentType.UNSIGNED_BYTE:
-                                        divider = 255.0;
-                                        break;
-                                    case AccessorComponentType.SHORT:
-                                        divider = 32767.0;
-                                        break;
-                                    case AccessorComponentType.UNSIGNED_SHORT:
-                                        divider = 65535.0;
-                                        break;
-                                }
-                                const oneOverDivider = 1 / divider;
-                                min.scaleInPlace(oneOverDivider);
-                                max.scaleInPlace(oneOverDivider);
-                            }
-                            babylonGeometry._boundingInfo = new BoundingInfo(min, max);
+                        const babylonBoundingInfo = LoadBoundingInfoFromPositionAccessor(accessor);
+                        if (babylonBoundingInfo) {
+                            babylonGeometry._boundingInfo = babylonBoundingInfo;
                             babylonGeometry.useBoundingInfoFromGeometry = true;
                         }
                     }
@@ -1280,6 +1279,24 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             });
             babylonMorphTarget.setTangents(tangents);
+        });
+
+        loadAttribute("TEXCOORD_0", VertexBuffer.UVKind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUVs(uvs);
+        });
+
+        loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind, (babylonVertexBuffer, data) => {
+            const uvs = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                uvs[index] = data[index] + value;
+            });
+
+            babylonMorphTarget.setUV2s(uvs);
         });
 
         return Promise.all(promises).then(() => {});
@@ -2177,6 +2194,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
+
         return babylonMaterial;
     }
 

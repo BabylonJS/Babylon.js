@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
         "baseUrl": "packages",
         "importHelpers": true,
         "moduleResolution": "node",
@@ -38,7 +37,7 @@
             "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/dist/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
             "accessibility/*": ["tools/accessibility/dist/*"],
-            "viewer/*": ["tools/viewer/dist/*"],
+            "viewer-legacy/*": ["tools/viewer-legacy/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
             "vsm": ["tools/vsm/dist/*"]
         }

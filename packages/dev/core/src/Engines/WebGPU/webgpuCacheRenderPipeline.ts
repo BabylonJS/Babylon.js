@@ -13,6 +13,7 @@ import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";
+import { Logger } from "core/Misc/logger";
 
 enum StatePosition {
     StencilReadMask = 0,
@@ -63,6 +64,8 @@ const stencilOpToIndex: { [name: number]: number } = {
 
 /** @internal */
 export abstract class WebGPUCacheRenderPipeline {
+    public static LogErrorIfNoVertexBuffer = false;
+
     public static NumCacheHitWithoutHash = 0;
     public static NumCacheHitWithHash = 0;
     public static NumCacheMiss = 0;
@@ -791,6 +794,11 @@ export abstract class WebGPUCacheRenderPipeline {
                 // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                 // So we must bind a dummy buffer when we are not given one for a specific attribute
                 vertexBuffer = this._emptyVertexBuffer;
+                if (WebGPUCacheRenderPipeline.LogErrorIfNoVertexBuffer) {
+                    Logger.Error(
+                        `No vertex buffer is provided for the "${attributes[index]}" attribute. A default empty vertex buffer will be used, but this may generate errors in some browsers.`
+                    );
+                }
             }
 
             const buffer = vertexBuffer.effectiveBuffer?.underlyingResource;
@@ -1017,6 +1025,8 @@ export abstract class WebGPUCacheRenderPipeline {
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */),
         };
 
+        const topologyIsTriangle = topology === WebGPUConstants.PrimitiveTopology.TriangleList || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip;
+
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
         if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
             stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
@@ -1063,8 +1073,8 @@ export abstract class WebGPUCacheRenderPipeline {
                           stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
                           stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                           depthBias: this._depthBias,
-                          depthBiasClamp: this._depthBiasClamp,
-                          depthBiasSlopeScale: this._depthBiasSlopeScale,
+                          depthBiasClamp: topologyIsTriangle ? this._depthBiasClamp : 0,
+                          depthBiasSlopeScale: topologyIsTriangle ? this._depthBiasSlopeScale : 0,
                       },
         });
     }

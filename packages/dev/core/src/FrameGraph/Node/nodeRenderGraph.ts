@@ -10,6 +10,7 @@ import type {
     INodeRenderGraphEditorOptions,
     Scene,
     WritableObject,
+    IShadowLight,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -24,6 +25,7 @@ import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
@@ -301,7 +303,16 @@ export class NodeRenderGraph {
 
     private _autoFillExternalInputs() {
         const allInputs = this.getInputBlocks();
+
+        const shadowLights: IShadowLight[] = [];
+        for (const light of this._scene.lights) {
+            if ((light as IShadowLight).setShadowProjectionMatrix !== undefined) {
+                shadowLights.push(light as IShadowLight);
+            }
+        }
+
         let cameraIndex = 0;
+        let lightIndex = 0;
         for (const input of allInputs) {
             if (!input.isExternal) {
                 continue;
@@ -320,6 +331,11 @@ export class NodeRenderGraph {
                 input.value = camera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
+            } else if (input.isShadowLight()) {
+                if (lightIndex < shadowLights.length) {
+                    input.value = shadowLights[lightIndex++];
+                    lightIndex = lightIndex % shadowLights.length;
+                }
             }
         }
     }
@@ -327,11 +343,12 @@ export class NodeRenderGraph {
     /**
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
-     * @param timeout Timeout in ms between retries (default is 16)
+     * @param timeStep Time step in ms between retries (default is 16)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeout = 16): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeout);
+    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
     }
 
     /**
@@ -581,17 +598,35 @@ export class NodeRenderGraph {
 
         this.editorData = null;
 
-        // Source
-        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer color", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        // Source textures
+        const colorTexture = new NodeRenderGraphInputBlock("Color Texture", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
+        colorTexture.creationOptions.options.samples = 4;
+
+        const depthTexture = new NodeRenderGraphInputBlock("Depth Texture", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        depthTexture.creationOptions.options.samples = 4;
 
         // Clear texture
         const clear = new NodeRenderGraphClearBlock("Clear", this._frameGraph, this._scene);
+        clear.clearDepth = true;
+        clear.clearStencil = true;
 
-        backBuffer.output.connectTo(clear.texture);
+        colorTexture.output.connectTo(clear.texture);
+        depthTexture.output.connectTo(clear.depth);
+
+        // Render objects
+        const camera = new NodeRenderGraphInputBlock("Camera", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
+        const objectList = new NodeRenderGraphInputBlock("Object List", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+
+        const mainRendering = new NodeRenderGraphObjectRendererBlock("Main Rendering", this._frameGraph, this._scene);
+
+        camera.output.connectTo(mainRendering.camera);
+        objectList.output.connectTo(mainRendering.objects);
+        clear.output.connectTo(mainRendering.destination);
+        clear.outputDepth.connectTo(mainRendering.depth);
 
         // Final output
         const output = new NodeRenderGraphOutputBlock("Output", this._frameGraph, this._scene);
-        clear.output.connectTo(output.texture);
+        mainRendering.output.connectTo(output.texture);
 
         this.outputBlock = output;
     }

@@ -169,6 +169,7 @@ export class NullEngine extends Engine {
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: 128,
             disableMorphTargetTexture: false,
+            textureNorm16: false,
         };
 
         this._features = {
@@ -753,13 +754,13 @@ export class NullEngine extends Engine {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -798,7 +799,7 @@ export class NullEngine extends Engine {
             generateMipMaps: true,
             generateDepthBuffer: true,
             generateStencilBuffer: false,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
             format: Constants.TEXTUREFORMAT_RGBA,
             ...options,
@@ -852,7 +853,7 @@ export class NullEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
@@ -866,7 +867,7 @@ export class NullEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags = 0,
         useSRGBBuffer = false
     ): InternalTexture {
@@ -897,7 +898,7 @@ export class NullEngine extends Engine {
      * @param format defines the format of the data
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
     public override updateRawTexture(
@@ -906,7 +907,7 @@ export class NullEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         useSRGBBuffer: boolean = false
     ): void {
         if (texture) {

@@ -26,11 +26,13 @@ import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock"
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Constants } from "core/Engines/constants";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
+import type { IShadowLight } from "core/Lights";
+import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -50,6 +52,8 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
     embedHostWidth?: string;
 }
 
+const logErrorTrace = true;
+
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
     private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: React.RefObject<HTMLDivElement>;
@@ -63,7 +67,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
 
-    private _externalTextures: RenderTargetWrapper[] = [];
+    private _externalTextures: InternalTexture[] = [];
 
     appendBlock(dataToAppend: NodeRenderGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -246,16 +250,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 continue;
             }
             if (input.isAnyTexture()) {
-                let texture: RenderTargetWrapper;
+                let texture: InternalTexture;
                 if (textureIndex < this._externalTextures.length) {
                     texture = this._externalTextures[textureIndex++];
                 } else {
-                    texture = this.props.globalState.scene.getEngine().createRenderTargetTexture(
+                    texture = this.props.globalState.scene.getEngine()._createInternalTexture(
                         { width: 1, height: 1 },
                         {
                             generateMipMaps: false,
-                            generateDepthBuffer: false,
-                            generateStencilBuffer: false,
                             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                             format: Constants.TEXTUREFORMAT_RED,
                             samples: 4,
@@ -270,6 +272,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: [], particleSystems: [] };
+            } else if (input.isShadowLight()) {
+                input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }
         }
     }
@@ -281,6 +285,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (!this.props.globalState.noAutoFillExternalInputs) {
             this._setExternalInputs();
+
+            // Set default node values
+            const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
+            const allBlocks = nodeRenderGraph.attachedBlocks;
+            for (const block of allBlocks) {
+                if (block.getClassName() === "NodeRenderGraphExecuteBlock") {
+                    (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
+                }
+            }
         }
 
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
@@ -288,6 +301,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         try {
             nodeRenderGraph.build();
         } catch (err) {
+            if (logErrorTrace) {
+                (console as any).log(err);
+            }
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }
@@ -582,6 +598,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (previewContainer) {
             previewContainer.style.height = "auto";
             previewContainer.style.gridRow = "1";
+            previewContainer.style.aspectRatio = "unset";
         }
         const previewConfigBar = document.getElementById("preview-config-bar");
         if (previewConfigBar) {
@@ -644,11 +661,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
                     {/* Property tab */}
-                    <div className="nrge-right-panel">
+                    <SplitContainer direction={SplitDirection.Vertical} className="nrge-right-panel">
                         <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
-                        {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
-                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
-                    </div>
+                        <Splitter size={8} minSize={200} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+                        <div className="ngre-preview-part">
+                            {!this.state.showPreviewPopUp ? (
+                                <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} />
+                            ) : null}
+                            {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
+                        </div>
+                    </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Render Graph Editor runs only on desktop</div>

@@ -56,6 +56,9 @@ export class NodeGeometryConnectionPoint {
     /** @internal */
     public _defaultConnectionPointType: Nullable<NodeGeometryBlockConnectionPointTypes> = null;
 
+    /** @internal */
+    public _isMainLinkSource = false;
+
     /** Gets the direction of the point */
     public get direction() {
         return this._direction;
@@ -124,8 +127,17 @@ export class NodeGeometryConnectionPoint {
                 return this._connectedPoint.type;
             }
 
-            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
-                return this._linkedConnectionSource.type;
+            if (this._linkedConnectionSource) {
+                if (this._linkedConnectionSource.isConnected) {
+                    return this._linkedConnectionSource.type;
+                }
+                if (this._linkedConnectionSource._defaultConnectionPointType) {
+                    return this._linkedConnectionSource._defaultConnectionPointType;
+                }
+            }
+
+            if (this._defaultConnectionPointType) {
+                return this._defaultConnectionPointType;
             }
         }
 
@@ -209,7 +221,7 @@ export class NodeGeometryConnectionPoint {
 
     /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
-        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+        if (this._linkedConnectionSource && !this._isMainLinkSource && this._linkedConnectionSource.isConnected) {
             return this.type;
         }
         return this._type;

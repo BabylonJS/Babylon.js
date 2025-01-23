@@ -471,7 +471,7 @@ export class Inspector {
         // we need to copy the styles from the document to the parent control's root.
         if (parentControl.getRootNode() !== window.document) {
             setTimeout(() => {
-                CopyStyles(window.document, parentControl.getRootNode() as any);
+                CopyStyles(window.document, parentControl.getRootNode() as unknown as DocumentOrShadowRoot);
             }, 0);
         }
 
@@ -580,6 +580,10 @@ export class Inspector {
             this._EmbedHost = null;
             this._GlobalState.onActionTabsClosedObservable.notifyObservers();
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
+        }
+
+        if (this._EmbedHostWindow && !this._EmbedHostWindow.closed) {
+            this._EmbedHostWindow.close();
         }
 
         Inspector._OpenedPane = 0;
