@@ -56,6 +56,7 @@ uniform mat4 view;
 // Reflection
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
+
     #ifdef REALTIME_FILTERING
         uniform vec2 vReflectionFilteringInfo;
     #endif
