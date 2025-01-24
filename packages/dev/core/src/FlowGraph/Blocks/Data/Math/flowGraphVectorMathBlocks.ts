@@ -1,14 +1,5 @@
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import {
-    RichTypeVector3,
-    FlowGraphTypes,
-    RichTypeNumber,
-    RichTypeAny,
-    RichTypeVector2,
-    RichTypeMatrix,
-    RichTypeVector4,
-    getRichTypeByFlowGraphType,
-} from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeVector3, FlowGraphTypes, RichTypeNumber, RichTypeAny, RichTypeVector2, RichTypeMatrix, getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";

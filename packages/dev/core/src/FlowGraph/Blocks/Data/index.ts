@@ -1,9 +1,8 @@
 export * from "./flowGraphConditionalDataBlock";
 export * from "./flowGraphGetVariableBlock";
-export * from "./flowGraphTransformCoordinatesSystemBlock
+export * from "./flowGraphTransformCoordinatesSystemBlock";
 export * from "./flowGraphGetPropertyBlock";
 export * from "./flowGraphSetPropertyBlock";
-export * from "./flowGraphCoordinateTransformBlock";
 export * from "./flowGraphConstantBlock";
 export * from "./flowGraphGetAssetBlock";
 // eslint-disable-next-line import/no-internal-modules

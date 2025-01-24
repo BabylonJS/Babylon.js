@@ -1,16 +1,6 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import {
-    FlowGraphTypes,
-    getRichTypeByFlowGraphType,
-    RichTypeAny,
-    RichTypeBoolean,
-    RichTypeFlowGraphInteger,
-    RichTypeMatrix,
-    RichTypeMatrix2D,
-    RichTypeMatrix3D,
-    RichTypeNumber,
-} from "../../../flowGraphRichTypes";
+import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
