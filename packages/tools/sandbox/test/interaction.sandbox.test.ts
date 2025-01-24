@@ -7,7 +7,9 @@ test.beforeAll(async () => {
     test.setTimeout(30000);
 });
 
-const url = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339");
+// if running in the CI we need to use the babylon snapshot when loading the tools
+const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
+const url = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339") + snapshot;
 
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
