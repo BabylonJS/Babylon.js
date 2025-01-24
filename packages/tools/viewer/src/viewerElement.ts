@@ -4,7 +4,7 @@ import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRota
 import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -1256,6 +1256,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * Returns the model associated with the specified camera.
+     * @param camera The camera to get the model for.
+     * @returns The model associated with the camera, or null if no model found.
+     */
+    protected _getCameraModel(camera: Camera): Nullable<Model> {
+        const viewerModel = this.viewerDetails?.model;
+        return viewerModel?.assetContainer === camera._parentContainer ? viewerModel : null;
+    }
+
+    /**
      * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
      * The target point is determined based on the camera's forward ray:
      *   - If an intersection with the main model is found, the first hit point is used as the target.
@@ -1277,7 +1287,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         if (this.viewerDetails && this.viewerDetails.model) {
             const scene = this.viewerDetails.scene;
-            const model = this.viewerDetails.viewer.getCameraModel(camera);
+            const model = this._getCameraModel(camera);
 
             // Target
             let radius: number = 0.0001; // Just to avoid division by zero
