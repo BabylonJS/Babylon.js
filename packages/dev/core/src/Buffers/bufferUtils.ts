@@ -302,12 +302,15 @@ export function GetTypedArrayData(
     if (Array.isArray(data)) {
         const offset = byteOffset / typeByteLength;
         const stride = byteStride / typeByteLength;
-        const lastIndex = offset + (totalVertices - 1) * stride + size;
 
+        const lastIndex = offset + (totalVertices - 1) * stride + size;
         if (lastIndex > data.length) {
             throw new Error("Last accessed index is out of bounds.");
         }
 
+        if (stride < size) {
+            throw new Error("Data stride cannot be smaller than the component size.");
+        }
         if (stride !== size) {
             const copy = new constructor(count);
             EnumerateFloatValues(data, offset, stride, size, type, count, normalized, (values, index) => {
@@ -338,6 +341,9 @@ export function GetTypedArrayData(
     }
 
     const tightlyPackedByteStride = size * typeByteLength;
+    if (byteStride < tightlyPackedByteStride) {
+        throw new Error("Byte stride cannot be smaller than the component's byte size.");
+    }
     if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
         EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, normalized, (values, index) => {
