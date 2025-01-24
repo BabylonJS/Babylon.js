@@ -267,6 +267,12 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
 
+    /**
+     * Specifies if the `ShadowGenerator` should be serialized, `true` to skip serialization.
+     * Note a `ShadowGenerator` will not be serialized if its light has `doNotSerialize=true`
+     */
+    public doNotSerialize = false;
+
     protected _bias = 0.00005;
     /**
      * Gets the bias: offset applied on the depth preventing acnea (in light direction).
