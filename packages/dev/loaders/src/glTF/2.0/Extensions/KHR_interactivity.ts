@@ -4,11 +4,11 @@ import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
-import { convertGLTFToSerializedFlowGraph } from "./KHR_interactivity/interactivityFunctions";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { objectModelMapping } from "./objectModelMapping";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
+import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 
 const NAME = "KHR_interactivity";
 
@@ -65,9 +65,13 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
 
-        const json = convertGLTFToSerializedFlowGraph(interactivityDefinition, this._loader.gltf);
         const coordinator = new FlowGraphCoordinator({ scene });
-        await ParseFlowGraphAsync(json, { coordinator, pathConverter: this._pathConverter });
+        const graphs = interactivityDefinition.graphs.map((graph) => {
+            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf);
+            return parser.serializeToFlowGraph();
+        });
+        // parse each graph async
+        await Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
 
         coordinator.start();
     }

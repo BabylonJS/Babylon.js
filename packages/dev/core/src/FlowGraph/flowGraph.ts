@@ -59,7 +59,7 @@ export interface IFlowGraphParseOptions {
     /**
      * A function that converts a path to an object accessor.
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    pathConverter?: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
  * @experimental

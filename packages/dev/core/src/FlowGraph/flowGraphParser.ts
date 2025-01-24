@@ -235,6 +235,9 @@ export function ParseFlowGraphBlockWithClassType(
         }
     }
     if (needsPathConverter(serializationObject.className)) {
+        if (!parseOptions.pathConverter) {
+            throw new Error("Path converter is required for this block");
+        }
         parsedConfig.pathConverter = parseOptions.pathConverter;
     }
     const obj = new classType(parsedConfig);
