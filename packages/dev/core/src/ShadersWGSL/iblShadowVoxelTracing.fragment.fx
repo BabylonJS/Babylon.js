@@ -426,9 +426,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   var heat: f32 = 0.0f;
 #endif
-  var shadowAccum: f32 = 0.0;
-  var specShadowAccum: f32 = 0.0;
-  var sampleWeight : f32 = 0;
+  // We set these to a small value to avoid division by zero when no
+  // samples hit the hemisphere.
+  var shadowAccum: f32 = 0.001;
+  var specShadowAccum: f32 = 0.001;
+  var sampleWeight : f32 = 0.001;
   for (var i: u32 = 0; i < nbDirs; i++) {
     var dirId: u32 = nbDirs * GlobalIndex + i;
     var L: vec4f;
@@ -444,11 +446,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       L.z *= -1.0;
 #endif
     }
-    var edge_tint_const = -0.001;
     var cosNL: f32 = dot(N, L.xyz);
-    var opacity: f32 = select(0.0, 1.0, cosNL < edge_tint_const);
+    var opacity: f32 = 0.0;
 
-    if (cosNL > edge_tint_const) {
+    if (cosNL > 0.0) {
       // voxel
       var VP2: vec4f = VP;
       VP2.y *= -1.0;
@@ -482,8 +483,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                        screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
-      shadowAccum += min(1.0 - opacity, cosNL);
-      sampleWeight += cosNL;
+      var rcos: f32 = 1.0 - cosNL;
+      shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
+      sampleWeight += 1.0;
       // spec shadow
       var VR : vec3f = abs((uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz);
       specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
