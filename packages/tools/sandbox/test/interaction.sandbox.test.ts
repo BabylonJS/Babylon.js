@@ -57,7 +57,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
 });
 
 test("loading a model using query parameters", async ({ page }) => {
-    await page.goto(url + snapshot ? "&" : "?" + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
+    await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "networkidle",
     });
     await page.setViewportSize({
@@ -72,7 +72,7 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
-    await page.goto(url + snapshot ? "&" : "?" + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
+    await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "networkidle",
     });
     await page.setViewportSize({
