@@ -1,6 +1,784 @@
 {
-    "fromTag": "7.43.0",
+    "fromTag": "7.44.0",
     "changelog": {
+        "7.44.0": [
+            {
+                "pr": "16071",
+                "title": "standardMaterial: remove _worldViewProjectionMatrix",
+                "description": "It's not found elsewhere in this repo, removing it to save some memory.\r\n\r\nForum link: <https://forum.babylonjs.com/t/standardmaterial-is-worldviewprojectionmatrix-still-in-use/55971>\r\n\r\nIf I understand correctly, changelog should be auto generated from this PR, right?",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16065",
+                "title": "Update to typescript 5.7.3",
+                "description": "There is no urgent reason to upgrade, however, check the glTFExporter issue that was not caught by typescript < 5.7 - this should have been reported earlier.\n\nThis PR fixed a few syntax issues 5.7 has, and upgrades typedoc to 0.27 to support ts 5.7\n\nThis doesn't have to be merged and is just a suggestion!",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "scripts/comment-analyzer.mjs",
+                    "scripts/typedoc-generator.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16068",
+                "title": "FIx wrong links for bbhelper",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16060",
+                "title": "WebXR depth sensing update",
+                "description": "This update brings the module to the latest state of the specs:\r\n\r\n1) support of texture-array (as done in the quest 3)\r\n2) A new material plugin will discard pixels that are behind real objects (based on the depth sensing texture). It works both on mobile and on the quest 3. Note that it must be registered BEFORE creating the materials, otherwise it will not work!\r\n3) Options to disable and enable all features\r\n4) Supporting ushort data format as well\r\n\r\nA simpe PG to test with: \r\n#f41v6n#1800\r\nTry it on android, and hide the sphere(s) and plane behind a real object.\r\n\r\nShould look like this, if you have a screen just like mine:\r\n\r\n![image](https://github.com/user-attachments/assets/284af56a-02a4-4065-b0ad-2e000a2fd5f9)\r\n\r\nCloses #15035",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16052",
+                "title": "Allow for creating a zero size plane",
+                "description": "I have a use case for creating a plane with zero width/height and then updating it live. The current method of checking whether a size/width/height is passed does not allow this. These changes check if the value is defined instead of is truthy.",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16067",
+                "title": "Fix scene dispose to restore LastCreatedScene correctly",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16062",
+                "title": "Allow for Viewer inheritance",
+                "description": "FYI @cournoll\r\n\r\nThis change makes it possible to create derivations of Viewer/ViewerElement as a new way of allowing customization of the Viewer. This does not change the *public* API of the Viewer.\r\n\r\n- Viewer class now stores the parts of the \"viewer details\" instead of an instance of ViewerDetails and makes them protected to expose them to subclasses.\r\n- Various other members of Viewer class are now protected as well.\r\n- Viewer class now has a protected function that helps track progress of any async operation, which is fed into the overall loading progress state.\r\n- Viewer class has a protected `_loadModel` function that was factored out of `_updateModel`. It loads a model, but does not unload the current model.\r\n- Viewer class now has an internal concept of a \"model,\" which encapsulates the asset container, the material variant controller, and some of the core functions like hotspot querying scoped to a specific model.\r\n- Viewer class has a protected `_model` property and corresponding `_setModel` function that can be used to specify an \"active\" model (Viewer level functionality like animations, hotspots, etc. target the \"active\" model).\r\n- `createViewerForCanvas` factory function now has an overload that augments the options to allow a custom Viewer derived class to be used.\r\n- Introduced an abstract `ViewerElement` class that is just the pre-existing `HTML3DElement`, but without the custom element registration. `HTML3DElement` is now a trivial subclass of `ViewerElement`.\r\n- `ViewerElement` is generic, and allows a subclass to specify the type of the `Viewer` class it uses and provide typesafe access to it.\r\n- `ViewerElement` has a protected `_createViewer` function that is used by `_setupViewer`, and allows subclasses to do additional async setup work.\r\n- `HTML3DAnnotationElement` now robustly handles the possibility of the parent `ViewerElement` not being registered (e.g. `customElements.define`) until after the `HTML3DAnnotationElement` is connected to the DOM (thanks @cournoll!).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16066",
+                "title": "Add support for correct mime type",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16055",
+                "title": "SH fix for spz",
+                "description": "For reference, using uint32 instead of swizzled uint8. This should have no implication on the shader.\r\n\r\n```\r\nfor (let i = 0; i < splatCount; i++) {\r\n    const c = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];\r\n    for (let j = 0; j < 15; ++j) {\r\n        c[j * 3] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 0];\r\n        c[j * 3 + 1] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 1];\r\n        c[j * 3 + 2] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 2];\r\n    }\r\n    sh[0][i * 4 + 0] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];\r\n    sh[0][i * 4 + 1] = (c[4] << 24) | (c[5] << 16) | (c[6] << 8) | c[7];\r\n    sh[0][i * 4 + 2] = (c[8] << 24) | (c[9] << 16) | (c[10] << 8) | c[11];\r\n    sh[0][i * 4 + 3] = (c[12] << 24) | (c[13] << 16) | (c[14] << 8) | c[15];\r\n\r\n    sh[1][i * 4 + 0] = (c[16] << 24) | (c[17] << 16) | (c[18] << 8) | c[19];\r\n    sh[1][i * 4 + 1] = (c[20] << 24) | (c[21] << 16) | (c[22] << 8) | c[23];\r\n    sh[1][i * 4 + 2] = (c[24] << 24) | (c[25] << 16) | (c[26] << 8) | c[27];\r\n    sh[1][i * 4 + 3] = (c[28] << 24) | (c[29] << 16) | (c[30] << 8) | c[31];\r\n\r\n    sh[2][i * 4 + 0] = (c[32] << 24) | (c[33] << 16) | (c[34] << 8) | c[35];\r\n    sh[2][i * 4 + 1] = (c[36] << 24) | (c[37] << 16) | (c[38] << 8) | c[39];\r\n    sh[2][i * 4 + 2] = (c[40] << 24) | (c[41] << 16) | (c[42] << 8) | c[43];\r\n    sh[2][i * 4 + 3] = c[44] << 24;\r\n}\r\n```\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16059",
+                "title": "LogLevels: Improve doc",
+                "description": "See https://forum.babylonjs.com/t/how-to-disable-the-logging-of-babylonjs-version-in-nullengine/55935/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/logger.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "debug tool"
+                ]
+            },
+            {
+                "pr": "16022",
+                "title": "Add CDF explicit render option.",
+                "description": "This adds the ability to explicitly render the CDF maps. Useful when the scene isn't triggering the render of the procedural textures.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16061",
+                "title": "Making sure the loader set the max lights according to the number of …",
+                "description": "…lights",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16058",
+                "title": "Morph: Fix morph not updated when updates are unfrozen",
+                "description": "See https://forum.babylonjs.com/t/morphtargetmanager-performence-issue/55661/10",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16010",
+                "title": "Use CDF for irradiance prefiltering",
+                "description": "Expanding on the realtime filtering of irradiance, here is the equivalent logic for prefiltering.\r\nIf the user specifies `generateHarmonics = false`, `prefilterOnLoad = true` and `scene.enableIblCdfGenerator()` has been called, then an irradianceTexture will be generated using CDF.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradiance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradianceCDF.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16057",
+                "title": "Fix recursive loop in onPointerOutAction",
+                "description": "https://forum.babylonjs.com/t/actionmanager-onpointerouttrigger-and-uncaught-rangeerror-maximum-call-stack-size-exceeded-error/55879/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16056",
+                "title": "GreasedLine basic GLTF export",
+                "description": "Added basic export of `GreasedLine` in `LineListDrawMode` with single color support.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16053",
+                "title": "GREASED_LINE_USE_OFFSETS - WebGPU fix for Safari/Firefox",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/16045\r\n\r\nWith `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#717\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#122\r\n\r\nWithout `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#29\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#23\r\n\r\nTested on MacOS Chrome and Safari, WebGL and WebGPU.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/ShadersWGSL/greasedLine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16054",
+                "title": "GS Compressed colors",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16050",
+                "title": "Gizmo Rotation plane + pivot fix",
+                "description": "Fix for:\r\n\r\n- https://forum.babylonjs.com/t/rotationgizmo-bug-after-setting-new-pivot-point/55489",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16041",
+                "title": "Check if TransformNode is parent in removeChild",
+                "description": "The function's description is misleading. \"Removes the passed mesh from the current mesh children list\" does not mean removing the parent from the passed mesh.\r\n\r\nThis change updates the function to remove the parent from the passed mesh only if it is the parent of the passed mesh. Otherwise, the parent of the passed mesh is left alone.",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16051",
+                "title": "FrameGraph: refactor pass / passCube post processes for frame graph usage",
+                "description": "I also factored some code for the node render graph post processes, to limit code duplication.\r\n\r\nThis is a prerequisite for converting the highlight layer into a frame graph task, as it uses internal pass-through post-processing.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/extractHighlightsPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/passTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinPassPostProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/outline.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/passCube.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16044",
+                "title": "Consider `ImageProcessingConfiguration` when cloning material",
+                "description": "As described in this [forum post](https://forum.babylonjs.com/t/pbr-materials-image-processing-configuration-not-cloned/55841).\r\nSuccessfully tested with [PG example](https://playground.babylonjs.com/#PO4NA5#1).",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/decorators.serialization.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16001",
+                "title": "Add support for Draco encoding",
+                "description": "Add support for compressing meshes with Draco encoding. Introduces:\r\n\r\n- DracoEncoder class, with same usage pattern as DracoDecoder\r\n- Encoding options per mesh, with several new types to support this\r\n- New worker function and EncodeMesh() function in dracoCompressionWorker\r\n- Type files, separated by DracoEncoder and DracoDecoder, to avoid cluttering dracoCompressionWorker (while still avoiding cyclical dependencies)\r\n\r\nI don't feel particularly content with dracoCompressionWorker-- both because encoding/decoding are present in the same file, and becauase I'm not sure that the worker functions must be separate. Please let me know of better ideas for this :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.types.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.types.ts",
+                    "packages/dev/core/src/Meshes/Compression/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/dracoRoundtrip.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "7.44.1": [
+            {
+                "pr": "16092",
+                "title": "DepthRenderer: fix effect cache",
+                "description": "This commit fixed the `defines` prop in `drawWrapper` so that the effect cache would work as expected.\r\n\r\nForum link: <https://forum.babylonjs.com/t/depthrenderer-effect-not-cached/56092>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16064",
+                "title": "Add KHR_draco_mesh_compression support to glTF Exporter",
+                "description": "This PR adds the ability to export to glTF using Draco encoding. Some notes:\r\n\r\n### KHR_draco_mesh_compression\r\n- Usage:\r\n```\r\nBABYLON.GLTF2Export.GLTFAsync(scene, \"fileName\", {  meshCompressionMethod: \"Draco\" });\r\n```\r\n- Using Draco compression will increase export time, especially if the scene to export contains many unique meshes.\r\n- A primitive's vertex data + indices are either fully Draco-compressed or not. As such:\r\n  -  No uncompressed \"fallback\" data is exported if a primitive is Draco-compressed. This can be improved in future iterations.\r\n  -  KHR_draco_mesh_compression will be a required extension if any primitive in the glTF is successfully Draco-compressed\r\n- The encoder options used in the glTF exporter are defined as follows:\r\n```\r\nconst DefaultEncoderOptions: IDracoEncoderOptions = {\r\n    decodeSpeed: 5,\r\n    encodeSpeed: 5,\r\n    method: \"MESH_EDGEBREAKER_ENCODING\", // Or, if primitive contains morph targets, \"MESH_SEQUENTIAL_ENCODING\"\r\n    quantizationBits: {\r\n        POSITION: 14,\r\n        NORMAL: 10,\r\n        COLOR: 8,\r\n        TEX_COORD: 12,\r\n        GENERIC: 12,\r\n    },\r\n};\r\n```\r\n\r\n### glTF Exporter\r\n- Creation of bufferViews and accessors are all done in the same way, through an intermediate class to help track relationships\r\n- Final binary buffer is no longer built on-the-go, but instead only once requested via generateBinaryAsync\r\n- Fixed glTF validation errors related to byte alignment, among other small buffer-related warnings\r\n\r\n",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.types.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/bufferManager.ts",
+                    "packages/dev/serializers/src/glTF/2.0/dataWriter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMorphTargetsUtilities.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKhrDracoMeshCompression.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16090",
+                "title": "Inspector when using older versions",
+                "description": "related to #16079\n\nOlder versions don't have the property, so this is a fallback to support opening the inspector when using an older version\n\ncc @deltakosh",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16091",
+                "title": "fix race condition with meshopt compression",
+                "description": "In certain (rare, one must say) cases, the calll to useWorkers(0) makes the meshopt not work correctly and not return the mesh even after the work is done.\n\nThis adds a kind of debounce to setting the workers number back to 0.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16069",
+                "title": "Viewer : add environment rotation, intensity and visibility",
+                "description": "This add the control over the environment intensity and rotation.\r\n- The intensity is in addition of the exposure you may want to change the IBL intensity and keep other light point exposed the same way.\r\n- The rotation is expressed in degress for the attribute `environment-rotation` to keep it understable for rookie users and in radians for the `environmentRotation` property in the Viewer class as it is a more \"advance\" use case. We may want in the future to add the support for multiple units, maybe in another PR or let me know if I should add it to this PR.",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16086",
+                "title": "FrameGraph: add support for highlight layer",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/glowLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/highlightLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphConnectionPointCustomObject.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/pass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/baseLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/glowLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/highlightLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Misc/executeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/index.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/Layers/thinGlowLayer.ts",
+                    "packages/dev/core/src/Layers/thinHighlightLayer.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-highlight-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-highlight-layer.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16089",
+                "title": "Allow overriding assets loading URLs in core",
+                "description": "Directly related to this:\n\nhttps://github.com/BabylonJS/Assets/pull/89\n\nThis allows a developer to avoid using our assets library and define their own URL for loading assets.\nAll assets referenced will be in the `/core` directory in the Assets repository.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Particles/particleHelper.ts",
+                    "packages/dev/core/src/Particles/particleSystemSet.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/gui/src/3D/controls/MRTK3/touchHolographicButton.ts",
+                    "packages/dev/gui/src/3D/controls/holographicBackplate.ts",
+                    "packages/dev/gui/src/3D/controls/holographicSlate.ts",
+                    "packages/dev/gui/src/3D/controls/nearMenu.ts",
+                    "packages/dev/gui/src/3D/controls/slider3D.ts",
+                    "packages/dev/gui/src/3D/controls/touchHolographicButton.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16072",
+                "title": "Update Recast.js 1.6.4",
+                "description": "Removed preallocated memory\r\nhttps://forum.babylonjs.com/t/navmesh-memory-usage/55611/9\r\n\r\nbuild using https://github.com/BabylonJS/Extensions/pull/318",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/recast.js"
+                ],
+                "tags": [
+                    "navigation"
+                ]
+            },
+            {
+                "pr": "16084",
+                "title": "reset ideal width and height on serialization",
+                "description": "When closning an element in an ADT (i.e. a GUI element), the ideal width andd ideal height of its host influence the data serialized.\nI consider this a bug on our end - serialized data should not be influenced by the object's parent.\n\nThis PR resets the ideal width and height of the ADT host when cloning an element.\n\nThere is an interesting \"breaking change\" here, but it is far fetched and probably not really used:\nWhen cloning from one ADT to another, it is possible that the element will not have different size, if both ADTs have a different idealWidth or idealHeight.\nHowever, as this can be considered a bug fix, the new behavior is the right one, so I don't see that as a problem nor as a breaking change.\n\nPG to test: #KKA6L4#20\n\nForum post that triggered it:\n\n\nhttps://forum.babylonjs.com/t/gui-control-clone-doesnt-respect-ideal-width/55494?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16083",
+                "title": "Use local resources when developing",
+                "description": "When using the local server or a snapshot/version on the playground the async-loaded resources are still downloaded from the cdn instead of the local directory.\n\nFor example, opening this:\n\nhttps://playground.babylonjs.com/?version=6.0.0#4RN0VF\n\nWill load the 6.0.0 CDN resources, but the basis loader will still be downloaded from the main CDN. Same thing goes to local development.\n\nThis PR changes that - when developing locally you will get the locally-hosted resources. Same thing for snapshots and versioned URLs.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/index.html",
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16082",
+                "title": "Factorize intersectionFunctions",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/intersectionFunctions.fx",
+                    "packages/dev/core/src/Shaders/background.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/intersectionFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/background.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16079",
+                "title": "Better inspector open/close management",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/hamburgerMenu.tsx",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16081",
+                "title": "Fix ScreenshotTools",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16080",
+                "title": "Enable effect to be persistent",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Particles/webgl2ParticleSystem.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16075",
+                "title": "Allow the users to control the max fps of the engine",
+                "description": "Users now can set `engine.maxFPS` to set an upper limit to the rendering speed\r\n\r\nYou can even set it to < 1 values (like 0.5 to render every 2 seconds).\r\n\r\nI also introduced a boolean to keep the engine pumping messages while not rendering (and I used it for the screenshot system)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16077",
+                "title": "Fix unwanted reset of values for splitters",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitter.tsx",
+                    "packages/tools/playground/test/interactions.playground.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16070",
+                "title": "Use same configuration between DracoCompression and DracoDecoder",
+                "description": "Rather than maintain a separate copy of a configuration for DracoCompression, reference DracoEncoder's instead.\r\nSee https://forum.babylonjs.com/t/babylon-draco-url-config-not-working/55741/9\r\n\r\nExample test: #2WHRHL#1",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/test/integration/draco.test.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16073",
+                "title": "Improve docs of addChild() and setParent()",
+                "description": "I struggled a lot with using `addChild()`. It seemed to mess up the position of the child mesh. I had no idea why, because the documentation only said:\r\n\r\n> Adds the passed mesh as a child to the current mesh\r\n\r\nIt also wasn't clear to me what's the relationship between just assigning to `.parent` or calling `setParent()`.\r\n\r\nAfter struggling with these problems for many weeks, I finally read the source and figured out that `addChild()` simply calls `setParent()`, the documentation of which does say what it does with child coordinates.\r\n\r\nI'd hope this little improvement to the docs will help others to better understand the relationship between these three ways of setting the parent.",
+                "author": {
+                    "name": "nene",
+                    "url": "https://github.com/nene"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16074",
+                "title": "Update Playwright",
+                "description": "Due to deprecation of the old headless mode in chrome we have to update the playwright dependency to support headless in newer versions of chrome.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.43.0": [
             {
                 "pr": "16049",
@@ -506,398 +1284,6 @@
                 },
                 "files": [
                     "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts"
-                ],
-                "tags": []
-            }
-        ],
-        "7.44.0": [
-            {
-                "pr": "16071",
-                "title": "standardMaterial: remove _worldViewProjectionMatrix",
-                "description": "It's not found elsewhere in this repo, removing it to save some memory.\r\n\r\nForum link: <https://forum.babylonjs.com/t/standardmaterial-is-worldviewprojectionmatrix-still-in-use/55971>\r\n\r\nIf I understand correctly, changelog should be auto generated from this PR, right?",
-                "author": {
-                    "name": "kzhsw",
-                    "url": "https://github.com/kzhsw"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/standardMaterial.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "16065",
-                "title": "Update to typescript 5.7.3",
-                "description": "There is no urgent reason to upgrade, however, check the glTFExporter issue that was not caught by typescript < 5.7 - this should have been reported earlier.\n\nThis PR fixed a few syntax issues 5.7 has, and upgrades typedoc to 0.27 to support ts 5.7\n\nThis doesn't have to be merged and is just a suggestion!",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "package-lock.json",
-                    "package.json",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
-                    "scripts/comment-analyzer.mjs",
-                    "scripts/typedoc-generator.mjs"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16068",
-                "title": "FIx wrong links for bbhelper",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16060",
-                "title": "WebXR depth sensing update",
-                "description": "This update brings the module to the latest state of the specs:\r\n\r\n1) support of texture-array (as done in the quest 3)\r\n2) A new material plugin will discard pixels that are behind real objects (based on the depth sensing texture). It works both on mobile and on the quest 3. Note that it must be registered BEFORE creating the materials, otherwise it will not work!\r\n3) Options to disable and enable all features\r\n4) Supporting ushort data format as well\r\n\r\nA simpe PG to test with: \r\n#f41v6n#1800\r\nTry it on android, and hide the sphere(s) and plane behind a real object.\r\n\r\nShould look like this, if you have a screen just like mine:\r\n\r\n![image](https://github.com/user-attachments/assets/284af56a-02a4-4065-b0ad-2e000a2fd5f9)\r\n\r\nCloses #15035",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16052",
-                "title": "Allow for creating a zero size plane",
-                "description": "I have a use case for creating a plane with zero width/height and then updating it live. The current method of checking whether a size/width/height is passed does not allow this. These changes check if the value is defined instead of is truthy.",
-                "author": {
-                    "name": "amirt-ms",
-                    "url": "https://github.com/amirt-ms"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts"
-                ],
-                "tags": [
-                    "breaking change"
-                ]
-            },
-            {
-                "pr": "16067",
-                "title": "Fix scene dispose to restore LastCreatedScene correctly",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/scene.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16062",
-                "title": "Allow for Viewer inheritance",
-                "description": "FYI @cournoll\r\n\r\nThis change makes it possible to create derivations of Viewer/ViewerElement as a new way of allowing customization of the Viewer. This does not change the *public* API of the Viewer.\r\n\r\n- Viewer class now stores the parts of the \"viewer details\" instead of an instance of ViewerDetails and makes them protected to expose them to subclasses.\r\n- Various other members of Viewer class are now protected as well.\r\n- Viewer class now has a protected function that helps track progress of any async operation, which is fed into the overall loading progress state.\r\n- Viewer class has a protected `_loadModel` function that was factored out of `_updateModel`. It loads a model, but does not unload the current model.\r\n- Viewer class now has an internal concept of a \"model,\" which encapsulates the asset container, the material variant controller, and some of the core functions like hotspot querying scoped to a specific model.\r\n- Viewer class has a protected `_model` property and corresponding `_setModel` function that can be used to specify an \"active\" model (Viewer level functionality like animations, hotspots, etc. target the \"active\" model).\r\n- `createViewerForCanvas` factory function now has an overload that augments the options to allow a custom Viewer derived class to be used.\r\n- Introduced an abstract `ViewerElement` class that is just the pre-existing `HTML3DElement`, but without the custom element registration. `HTML3DElement` is now a trivial subclass of `ViewerElement`.\r\n- `ViewerElement` is generic, and allows a subclass to specify the type of the `Viewer` class it uses and provide typesafe access to it.\r\n- `ViewerElement` has a protected `_createViewer` function that is used by `_setupViewer`, and allows subclasses to do additional async setup work.\r\n- `HTML3DAnnotationElement` now robustly handles the possibility of the parent `ViewerElement` not being registered (e.g. `customElements.define`) until after the `HTML3DAnnotationElement` is connected to the DOM (thanks @cournoll!).",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/tools/viewer/src/index.ts",
-                    "packages/tools/viewer/src/viewer.ts",
-                    "packages/tools/viewer/src/viewerAnnotationElement.ts",
-                    "packages/tools/viewer/src/viewerElement.ts",
-                    "packages/tools/viewer/src/viewerFactory.ts",
-                    "packages/tools/viewer/test/apps/web/index.html"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16066",
-                "title": "Add support for correct mime type",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16055",
-                "title": "SH fix for spz",
-                "description": "For reference, using uint32 instead of swizzled uint8. This should have no implication on the shader.\r\n\r\n```\r\nfor (let i = 0; i < splatCount; i++) {\r\n    const c = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];\r\n    for (let j = 0; j < 15; ++j) {\r\n        c[j * 3] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 0];\r\n        c[j * 3 + 1] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 1];\r\n        c[j * 3 + 2] = ubuf[shIndexRead + i * shComponentCount + j * 3 + 2];\r\n    }\r\n    sh[0][i * 4 + 0] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];\r\n    sh[0][i * 4 + 1] = (c[4] << 24) | (c[5] << 16) | (c[6] << 8) | c[7];\r\n    sh[0][i * 4 + 2] = (c[8] << 24) | (c[9] << 16) | (c[10] << 8) | c[11];\r\n    sh[0][i * 4 + 3] = (c[12] << 24) | (c[13] << 16) | (c[14] << 8) | c[15];\r\n\r\n    sh[1][i * 4 + 0] = (c[16] << 24) | (c[17] << 16) | (c[18] << 8) | c[19];\r\n    sh[1][i * 4 + 1] = (c[20] << 24) | (c[21] << 16) | (c[22] << 8) | c[23];\r\n    sh[1][i * 4 + 2] = (c[24] << 24) | (c[25] << 16) | (c[26] << 8) | c[27];\r\n    sh[1][i * 4 + 3] = (c[28] << 24) | (c[29] << 16) | (c[30] << 8) | c[31];\r\n\r\n    sh[2][i * 4 + 0] = (c[32] << 24) | (c[33] << 16) | (c[34] << 8) | c[35];\r\n    sh[2][i * 4 + 1] = (c[36] << 24) | (c[37] << 16) | (c[38] << 8) | c[39];\r\n    sh[2][i * 4 + 2] = (c[40] << 24) | (c[41] << 16) | (c[42] << 8) | c[43];\r\n    sh[2][i * 4 + 3] = c[44] << 24;\r\n}\r\n```\r\n",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
-                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
-                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16059",
-                "title": "LogLevels: Improve doc",
-                "description": "See https://forum.babylonjs.com/t/how-to-disable-the-logging-of-babylonjs-version-in-nullengine/55935/2",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/logger.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "debug tool"
-                ]
-            },
-            {
-                "pr": "16022",
-                "title": "Add CDF explicit render option.",
-                "description": "This adds the ability to explicitly render the CDF maps. Useful when the scene isn't triggering the render of the procedural textures.",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16061",
-                "title": "Making sure the loader set the max lights according to the number of …",
-                "description": "…lights",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16058",
-                "title": "Morph: Fix morph not updated when updates are unfrozen",
-                "description": "See https://forum.babylonjs.com/t/morphtargetmanager-performence-issue/55661/10",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Morph/morphTargetManager.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "16010",
-                "title": "Use CDF for irradiance prefiltering",
-                "description": "Expanding on the realtime filtering of irradiance, here is the equivalent logic for prefiltering.\r\nIf the user specifies `generateHarmonics = false`, `prefilterOnLoad = true` and `scene.enableIblCdfGenerator()` has been called, then an irradianceTexture will be generated using CDF.",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
-                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
-                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/index.ts",
-                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
-                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.fragment.fx",
-                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.vertex.fx",
-                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
-                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
-                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradiance.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/prefilteringIrradianceCDF.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16057",
-                "title": "Fix recursive loop in onPointerOutAction",
-                "description": "https://forum.babylonjs.com/t/actionmanager-onpointerouttrigger-and-uncaught-rangeerror-maximum-call-stack-size-exceeded-error/55879/4",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "16056",
-                "title": "GreasedLine basic GLTF export",
-                "description": "Added basic export of `GreasedLine` in `LineListDrawMode` with single color support.",
-                "author": {
-                    "name": "RolandCsibrei",
-                    "url": "https://github.com/RolandCsibrei"
-                },
-                "files": [
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16053",
-                "title": "GREASED_LINE_USE_OFFSETS - WebGPU fix for Safari/Firefox",
-                "description": "See https://github.com/BabylonJS/Babylon.js/pull/16045\r\n\r\nWith `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#717\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#H1LRZ3#122\r\n\r\nWithout `offsets`:\r\nSimple shader material: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#29\r\nMaterial plugin: https://playground.babylonjs.com/?snapshot=refs/pull/16053/merge#406E3H#23\r\n\r\nTested on MacOS Chrome and Safari, WebGL and WebGPU.",
-                "author": {
-                    "name": "RolandCsibrei",
-                    "url": "https://github.com/RolandCsibrei"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
-                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts",
-                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
-                    "packages/dev/core/src/ShadersWGSL/greasedLine.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/greasedLine.vertex.fx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16054",
-                "title": "GS Compressed colors",
-                "description": null,
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16050",
-                "title": "Gizmo Rotation plane + pivot fix",
-                "description": "Fix for:\r\n\r\n- https://forum.babylonjs.com/t/rotationgizmo-bug-after-setting-new-pivot-point/55489",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "16041",
-                "title": "Check if TransformNode is parent in removeChild",
-                "description": "The function's description is misleading. \"Removes the passed mesh from the current mesh children list\" does not mean removing the parent from the passed mesh.\r\n\r\nThis change updates the function to remove the parent from the passed mesh only if it is the parent of the passed mesh. Otherwise, the parent of the passed mesh is left alone.",
-                "author": {
-                    "name": "amirt-ms",
-                    "url": "https://github.com/amirt-ms"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/transformNode.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16051",
-                "title": "FrameGraph: refactor pass / passCube post processes for frame graph usage",
-                "description": "I also factored some code for the node render graph post processes, to limit code duplication.\r\n\r\nThis is a prerequisite for converting the highlight layer into a frame graph task, as it uses internal pass-through post-processing.",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/extractHighlightsPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock.ts",
-                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
-                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/passTask.ts",
-                    "packages/dev/core/src/FrameGraph/index.ts",
-                    "packages/dev/core/src/PostProcesses/index.ts",
-                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinPassPostProcess.ts",
-                    "packages/dev/core/src/ShadersWGSL/outline.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/passCube.fragment.fx",
-                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
-                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx"
-                ],
-                "tags": [
-                    "enhancement",
-                    "frame graph"
-                ]
-            },
-            {
-                "pr": "16044",
-                "title": "Consider `ImageProcessingConfiguration` when cloning material",
-                "description": "As described in this [forum post](https://forum.babylonjs.com/t/pbr-materials-image-processing-configuration-not-cloned/55841).\r\nSuccessfully tested with [PG example](https://playground.babylonjs.com/#PO4NA5#1).",
-                "author": {
-                    "name": "HoferMarkus",
-                    "url": "https://github.com/HoferMarkus"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/decorators.serialization.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16001",
-                "title": "Add support for Draco encoding",
-                "description": "Add support for compressing meshes with Draco encoding. Introduces:\r\n\r\n- DracoEncoder class, with same usage pattern as DracoDecoder\r\n- Encoding options per mesh, with several new types to support this\r\n- New worker function and EncodeMesh() function in dracoCompressionWorker\r\n- Type files, separated by DracoEncoder and DracoDecoder, to avoid cluttering dracoCompressionWorker (while still avoiding cyclical dependencies)\r\n\r\nI don't feel particularly content with dracoCompressionWorker-- both because encoding/decoding are present in the same file, and becauase I'm not sure that the worker functions must be separate. Please let me know of better ideas for this :)",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/core/src/Buffers/bufferUtils.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.types.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
-                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.types.ts",
-                    "packages/dev/core/src/Meshes/Compression/index.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/dracoRoundtrip.png",
-                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
             }

@@ -5,6 +5,11 @@ import type { Nullable } from "../../types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let MeshoptDecoder: any;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let NumberOfWorkers = 0;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let WorkerTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
+
 /**
  * Configuration for meshoptimizer compression
  */
@@ -103,9 +108,20 @@ export class MeshoptCompression implements IDisposable {
      */
     public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
         return this._decoderModulePromise!.then(async () => {
-            MeshoptDecoder.useWorkers(1);
+            if (NumberOfWorkers === 0) {
+                MeshoptDecoder.useWorkers(1);
+                NumberOfWorkers = 1;
+            }
             const result = await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
-            MeshoptDecoder.useWorkers(0);
+            // a simple debounce to avoid switching back and forth between workers and no workers while decoding
+            if (WorkerTimeout !== null) {
+                clearTimeout(WorkerTimeout);
+            }
+            WorkerTimeout = setTimeout(() => {
+                MeshoptDecoder.useWorkers(0);
+                NumberOfWorkers = 0;
+                WorkerTimeout = null;
+            }, 1000);
             return result;
         });
     }

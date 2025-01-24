@@ -73,7 +73,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
         if (!(data instanceof Float32Array)) {
             data = Float32Array.from(data!);
         }
-        attributes.push({ babylonAttribute: kind, dracoAttribute: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
+        attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
     }
 
     return attributes;
@@ -202,26 +202,14 @@ export class DracoEncoder extends DracoCodec {
     }
 
     /**
-     * Encodes a mesh or geometry into a Draco-encoded mesh data.
-     * @param input the mesh or geometry to encode
-     * @param options options for the encoding
-     * @returns a promise that resolves to the newly-encoded data
+     * @internal
      */
-    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
-        const verticesCount = input.getTotalVertices();
-        if (verticesCount == 0) {
-            throw new Error("Cannot compress geometry with Draco. There are no vertices.");
-        }
-
-        // Prepare parameters for encoding
+    public async _encodeAsync(
+        attributes: Array<IDracoAttributeData>,
+        indices: Nullable<Uint16Array | Uint32Array>,
+        options?: IDracoEncoderOptions
+    ): Promise<Nullable<IDracoEncodedMeshData>> {
         const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
-        if (input instanceof Mesh && input.morphTargetManager && mergedOptions.method === "MESH_EDGEBREAKER_ENCODING") {
-            Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
-            mergedOptions.method = "MESH_SEQUENTIAL_ENCODING";
-        }
-
-        let indices = PrepareIndicesForDraco(input);
-        const attributes = PrepareAttributesForDraco(input, mergedOptions.excludedAttributes);
 
         if (this._workerPoolPromise) {
             const workerPool = await this._workerPoolPromise;
@@ -268,5 +256,29 @@ export class DracoEncoder extends DracoCodec {
         }
 
         throw new Error("Draco encoder module is not available");
+    }
+
+    /**
+     * Encodes a mesh or geometry into a Draco-encoded mesh data.
+     * @param input the mesh or geometry to encode
+     * @param options options for the encoding
+     * @returns a promise that resolves to the newly-encoded data
+     */
+    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
+        const verticesCount = input.getTotalVertices();
+        if (verticesCount == 0) {
+            throw new Error("Cannot compress geometry with Draco. There are no vertices.");
+        }
+
+        // Prepare parameters for encoding
+        if (input instanceof Mesh && input.morphTargetManager && options?.method === "MESH_EDGEBREAKER_ENCODING") {
+            Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
+            options.method = "MESH_SEQUENTIAL_ENCODING";
+        }
+
+        const indices = PrepareIndicesForDraco(input);
+        const attributes = PrepareAttributesForDraco(input, options?.excludedAttributes);
+
+        return this._encodeAsync(attributes, indices, options);
     }
 }
