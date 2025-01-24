@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity_Declaration } from "babylonjs-gltf2interface";
+import type { IKHRInteractivity_Declaration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
+import { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/src/FlowGraph/typeDefinitions";
+import { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
+import { IGLTF } from "../../glTFLoaderInterfaces";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
@@ -132,14 +135,15 @@ export interface IGLTFToFlowGraphMapping {
      * @param serializedObjects the serialized object
      * @returns an array of serialized nodes that will be added to the graph.
      */
-    // extraProcessor?: (
-    //     gltfBlock: IKHRInteractivity_Node,
-    //     mapping: IGLTFToFlowGraphMapping,
-    //     arrays: IConvertedInteractivityObject,
-    //     serializedObjects: ISerializedFlowGraphBlock[],
-    //     context: ISerializedFlowGraphContext,
-    //     globalGLTF?: IGLTF
-    // ) => ISerializedFlowGraphBlock[];
+    extraProcessor?: (
+        gltfBlock: IKHRInteractivity_Node,
+        declaration: IKHRInteractivity_Declaration,
+        mapping: IGLTFToFlowGraphMapping,
+        parser: InteractivityGraphToFlowGraphParser,
+        serializedObjects: ISerializedFlowGraphBlock[],
+        context: ISerializedFlowGraphContext,
+        globalGLTF?: IGLTF
+    ) => ISerializedFlowGraphBlock[];
 }
 
 export function getMappingForFullOperationName(fullOperationName: string) {
@@ -257,20 +261,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
-        // extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
-        //     // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
-        //     // validate that we are running it on the right block.
-        //     if (gltfBlock.type !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
-        //         throw new Error("Receive event should have a single configuration object, the event itself");
-        //     }
-        //     const eventConfiguration = gltfBlock.configuration[0];
-        //     const event: InteractivityEvent = arrays.events[eventConfiguration.value];
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.config = serializedObject.config || {};
-        //     serializedObject.config.eventId = event.eventId;
-        //     serializedObject.config.eventData = event.eventData;
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
+            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // validate that we are running it on the right block.
+            if (declaration.op !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+                throw new Error("Receive event should have a single configuration object, the event itself");
+            }
+            const eventConfiguration = gltfBlock.configuration[0];
+            const event: InteractivityEvent = parser.arrays.events[eventConfiguration.value];
+            const serializedObject = serializedObjects[0];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.eventId = event.eventId;
+            serializedObject.config.eventData = event.eventData;
+            return serializedObjects;
+        },
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],

@@ -58,6 +58,16 @@ export class InteractivityGraphToFlowGraphParser {
         this._parseNodes();
     }
 
+    public get arrays() {
+        return {
+            types: this._types,
+            mappings: this._mappings,
+            staticVariables: this._staticVariables,
+            events: this._events,
+            nodes: this._nodes,
+        };
+    }
+
     private _parseTypes() {
         if (!this._interactivityGraph.types) {
             return;
