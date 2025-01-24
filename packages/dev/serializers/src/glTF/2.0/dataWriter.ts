@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-import type { TypedArray } from "core/types";
+import type { TypedArrayLike } from "core/types";
 
 const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffset: number, value: number) => void>([
     [Int8Array, (d, b, v) => d.setInt8(b, v)],
@@ -20,7 +20,7 @@ export class DataWriter {
     private _dataView: DataView;
     private _byteOffset: number;
 
-    public writeTypedArray(value: Exclude<TypedArray, BigInt64Array | BigUint64Array>): void {
+    public writeTypedArray(value: Exclude<TypedArrayLike, BigInt64Array | BigUint64Array>): void {
         this._checkGrowBuffer(value.byteLength);
         const setMethod = TypedArrayToWriteMethod.get(value.constructor)!;
         for (let i = 0; i < value.length; i++) {

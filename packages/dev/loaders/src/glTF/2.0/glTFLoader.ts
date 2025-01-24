@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable } from "core/types";
+import type { IndicesArray, Nullable, TypedArrayLike } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -79,17 +79,10 @@ import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import { deepMerge } from "core/Misc/deepMerger";
+import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
+import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
+
 export { GLTFFileLoader };
-
-interface TypedArrayLike extends ArrayBufferView {
-    readonly length: number;
-    [n: number]: number;
-}
-
-interface TypedArrayConstructor {
-    new (length: number): TypedArrayLike;
-    new (buffer: ArrayBufferLike, byteOffset: number, length?: number): TypedArrayLike;
-}
 
 interface ILoaderProperty extends IProperty {
     _activeLoaderExtensionFunctions: {
@@ -2010,7 +2003,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (accessor.sparse) {
-            const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, accessor.componentType);
+            const constructor = GetTypedArrayConstructor(accessor.componentType, `${context}/componentType`);
             accessor._data = this._loadAccessorAsync(context, accessor, constructor);
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
@@ -2629,25 +2622,6 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private static _GetTypedArrayConstructor(context: string, componentType: AccessorComponentType): TypedArrayConstructor {
-        switch (componentType) {
-            case AccessorComponentType.BYTE:
-                return Int8Array;
-            case AccessorComponentType.UNSIGNED_BYTE:
-                return Uint8Array;
-            case AccessorComponentType.SHORT:
-                return Int16Array;
-            case AccessorComponentType.UNSIGNED_SHORT:
-                return Uint16Array;
-            case AccessorComponentType.UNSIGNED_INT:
-                return Uint32Array;
-            case AccessorComponentType.FLOAT:
-                return Float32Array;
-            default:
-                throw new Error(`${context}: Invalid component type ${componentType}`);
-        }
-    }
-
     private static _GetTypedArray(
         context: string,
         componentType: AccessorComponentType,
@@ -2658,7 +2632,7 @@ export class GLTFLoader implements IGLTFLoader {
         const buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
 
-        const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
+        const constructor = GetTypedArrayConstructor(componentType, `${context}/componentType`);
 
         const componentTypeLength = VertexBuffer.GetTypeByteLength(componentType);
         if (byteOffset % componentTypeLength !== 0) {

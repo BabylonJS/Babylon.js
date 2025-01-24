@@ -1,6 +1,14 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArrayLike } from "../types";
+
+export interface TypedArrayConstructor<T extends TypedArrayLike = TypedArrayLike> {
+    new (length: number): T;
+    new (elements: Iterable<number>): T;
+    new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
+}
+
+type VertexDataTypedArray = Exclude<TypedArrayLike, Float64Array | BigInt64Array | BigUint64Array>;
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
@@ -114,6 +122,34 @@ export function GetTypeByteLength(type: number): number {
             return 4;
         default:
             throw new Error(`Invalid type '${type}'`);
+    }
+}
+
+/**
+ * Gets the appropriate TypedArray constructor for the given component type.
+ * @param componentType the component type
+ * @param context an optional context to provide additional information on error
+ * @returns the constructor object
+ */
+export function GetTypedArrayConstructor(componentType: number, context?: string): TypedArrayConstructor<VertexDataTypedArray> {
+    switch (componentType) {
+        case Constants.BYTE:
+            return Int8Array;
+        case Constants.UNSIGNED_BYTE:
+            return Uint8Array;
+        case Constants.SHORT:
+            return Int16Array;
+        case Constants.UNSIGNED_SHORT:
+            return Uint16Array;
+        case Constants.INT:
+            return Int32Array;
+        case Constants.UNSIGNED_INT:
+            return Uint32Array;
+        case Constants.FLOAT:
+            return Float32Array;
+        default:
+            context = context ? `${context}: ` : "";
+            throw new Error(`${context}Invalid component type '${componentType}'`);
     }
 }
 
