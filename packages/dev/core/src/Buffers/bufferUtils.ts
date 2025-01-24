@@ -6,6 +6,7 @@ export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     new (length: number): T;
     new (elements: Iterable<number>): T;
     new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
+    readonly BYTES_PER_ELEMENT: number;
 }
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
