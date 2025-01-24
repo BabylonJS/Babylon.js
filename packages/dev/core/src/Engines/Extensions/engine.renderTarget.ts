@@ -1,4 +1,4 @@
-import { HasStencilAspect, InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine";
@@ -6,6 +6,7 @@ import type { Nullable } from "../../types";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
+import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 import { Constants } from "../constants";
 

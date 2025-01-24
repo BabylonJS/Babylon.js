@@ -253,8 +253,6 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
 
         const depthLayerOutput = this._frameGraph.textureManager.createRenderTargetTexture(`${this.name} Depth`, textureDepthCreationOptions);
 
-        this._addInternalDependencies([colorLayerOutput, depthLayerOutput]);
-
         // Clears the textures
         this._clearLayerTextures.destinationTexture = colorLayerOutput;
         this._clearLayerTextures.depthTexture = depthLayerOutput;
@@ -307,8 +305,6 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             this._blurY[i].destinationTexture = blurYTextureHandle;
             blurPasses.push(this._blurY[i].record(true));
 
-            this._addInternalDependencies([blurXTextureHandle, blurYTextureHandle]);
-
             textureSize.width = textureSize.width >> 1;
             textureSize.height = textureSize.height >> 1;
         }
@@ -352,6 +348,10 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         this._clearAfterRenderingGroupObserver();
 
         const pass = this._frameGraph.addRenderPass(this.name);
+
+        for (let i = 0; i < this._blurY.length; i++) {
+            pass.addDependencies(this._blurY[i].outputTexture);
+        }
 
         pass.setRenderTarget(this.outputTexture);
         if (this._setRenderTargetDepth) {
