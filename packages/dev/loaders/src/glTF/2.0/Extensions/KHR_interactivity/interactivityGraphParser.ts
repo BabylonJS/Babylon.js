@@ -1,6 +1,5 @@
 import type { IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_OutputSocketReference, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import type { IGLTF } from "../../glTFLoaderInterfaces";
-import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { IGLTFToFlowGraphMapping } from "./declarationMapper";
 import { getMappingForDeclaration, getMappingForFullOperationName } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
@@ -9,6 +8,7 @@ import { RandomGUID } from "core/Misc/guid";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 export interface InteractivityEvent {
     eventId: string;
@@ -270,7 +270,7 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing node connections");
             }
             const flowsFromGLTF = gltfNode.flows || {};
-            const flowsKeys = Object.keys(flowsFromGLTF);
+            const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
             // connect the flows
             for (const flowKey of flowsKeys) {
                 const flow = flowsFromGLTF[flowKey];
@@ -382,7 +382,14 @@ export class InteractivityGraphToFlowGraphParser {
                 }
             }
 
-            // TODO run the extra processor here.
+            if (outputMapper.flowGraphMapping.extraProcessor) {
+                const declaration = this._interactivityGraph.declarations?.[gltfNode.declaration];
+                if (!declaration) {
+                    Logger.Error(["No declaration found for extra processor", gltfNode]);
+                    throw new Error("Error parsing node connections");
+                }
+                outputMapper.flowGraphMapping.extraProcessor(gltfNode, declaration, outputMapper.flowGraphMapping, this, flowGraphBlocks.blocks, context, this._gltf);
+            }
         }
     }
 

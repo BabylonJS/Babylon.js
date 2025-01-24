@@ -2,7 +2,7 @@
 import type { IKHRInteractivity_Declaration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
-import { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/src/FlowGraph/typeDefinitions";
+import { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
 import { IGLTF } from "../../glTFLoaderInterfaces";
 
@@ -268,7 +268,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration[0];
-            const event: InteractivityEvent = parser.arrays.events[eventConfiguration.value];
+            const eventId = eventConfiguration.value[0] as number;
+            if (typeof eventId !== "number") {
+                throw new Error("Event id should be a number");
+            }
+            const event: InteractivityEvent = parser.arrays.events[eventId];
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
             serializedObject.config.eventId = event.eventId;
@@ -283,20 +287,24 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
-        // extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
-        //     // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
-        //     // validate that we are running it on the right block.
-        //     if (gltfBlock.type !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
-        //         throw new Error("Receive event should have a single configuration object, the event itself");
-        //     }
-        //     const eventConfiguration = gltfBlock.configuration[0];
-        //     const event: InteractivityEvent = arrays.events[eventConfiguration.value];
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.config = serializedObject.config || {};
-        //     serializedObject.config.eventId = event.eventId;
-        //     serializedObject.config.eventData = event.eventData;
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
+            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // validate that we are running it on the right block.
+            if (declaration.op !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+                throw new Error("Receive event should have a single configuration object, the event itself");
+            }
+            const eventConfiguration = gltfBlock.configuration[0];
+            const eventId = eventConfiguration.value[0] as number;
+            if (typeof eventId !== "number") {
+                throw new Error("Event id should be a number");
+            }
+            const event: InteractivityEvent = parser.arrays.events[eventId];
+            const serializedObject = serializedObjects[0];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.eventId = event.eventId;
+            serializedObject.config.eventData = event.eventData;
+            return serializedObjects;
+        },
     },
     "math/e": getSimpleInputMapping(FlowGraphBlockNames.E),
     "math/pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
@@ -599,19 +607,19 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     // flows
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
-        // extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
-        //     // TODO - removing this prevents proper validation
-        //     // if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-        //     //     throw new Error("Sequence should have a single configuration object, the number of output flows");
-        //     // }
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.config = serializedObject.config || {};
-        //     serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length || 1;
-        //     serializedObject.signalOutputs.forEach((output, index) => {
-        //         output.name = "out_" + index;
-        //     });
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
+            // TODO - removing this prevents proper validation
+            // if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+            //     throw new Error("Sequence should have a single configuration object, the number of output flows");
+            // }
+            const serializedObject = serializedObjects[0];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length || 1;
+            serializedObject.signalOutputs.forEach((output, index) => {
+                output.name = "out_" + index;
+            });
+            return serializedObjects;
+        },
     },
     "flow/branch": {
         blocks: [FlowGraphBlockNames.Branch],
@@ -627,19 +635,19 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             cases: { name: "cases", gltfType: "array", inOptions: true },
         },
-        // extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
-        //     // convert all names of output flow to out_$1 apart from "default"
-        //     if (gltfBlock.type !== "flow/switch" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-        //         throw new Error("Switch should have a single configuration object, the cases array");
-        //     }
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.signalOutputs.forEach((output) => {
-        //         if (output.name !== "default") {
-        //             output.name = "out_" + output.name;
-        //         }
-        //     });
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
+            // convert all names of output flow to out_$1 apart from "default"
+            if (declaration.op !== "flow/switch" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+                throw new Error("Switch should have a single configuration object, the cases array");
+            }
+            const serializedObject = serializedObjects[0];
+            serializedObject.signalOutputs.forEach((output) => {
+                if (output.name !== "default") {
+                    output.name = "out_" + output.name;
+                }
+            });
+            return serializedObjects;
+        },
     },
     "flow/while": {
         blocks: [FlowGraphBlockNames.WhileLoop],
@@ -688,30 +696,30 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true },
             isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true },
         },
-        // extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
-        //     if (gltfBlock.type !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-        //         throw new Error("MultiGate should have a single configuration object, the number of output flows");
-        //     }
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.config = serializedObject.config || {};
-        //     serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
+            if (declaration.op !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+                throw new Error("MultiGate should have a single configuration object, the number of output flows");
+            }
+            const serializedObject = serializedObjects[0];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            return serializedObjects;
+        },
     },
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
             inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true },
         },
-        // extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
-        //     // process the input flows and add them to the inFlow array
-        //     // take all input flows and convert their names correctly to "in_$1"
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.signalInputs.forEach((input) => {
-        //         input.name = "in_" + input.name;
-        //     });
-        //     return serializedObjects;
-        // },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
+            // process the input flows and add them to the inFlow array
+            // take all input flows and convert their names correctly to "in_$1"
+            const serializedObject = serializedObjects[0];
+            serializedObject.signalInputs.forEach((input) => {
+                input.name = "in_" + input.name;
+            });
+            return serializedObjects;
+        },
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],
@@ -793,13 +801,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 outputBlockIndex: 1,
             },
         ],
-        // extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
-        //     // // connect the pointer to the getProperty block
-        //     // connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("customGetFunction", "getFunction", serializedObjects[0], serializedObjects[1], true);
-        //     // return serializedObjects;
-        // },
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
@@ -838,13 +839,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 outputBlockIndex: 1,
             },
         ],
-        // extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects) {
-        //     // connect the pointer to the setProperty block
-        //     connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
-        //     connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-        //     connectFlowGraphNodes("customSetFunction", "setFunction", serializedObjects[0], serializedObjects[1], true);
-        //     return serializedObjects;
-        // },
     },
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
@@ -909,37 +903,37 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 outputBlockIndex: 1,
             },
         ],
-        // extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
-        //     // connect the pointer to the getProperty block
-        //     // connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
-        //     // connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
-        //     // connectFlowGraphNodes("easingFunction", "easingFunction", serializedObjects[0], serializedObjects[3], true);
-        //     // search for p1 and p2 and remove them, for now
-        //     serializedObjects.forEach((serializedObject) => {
-        //         // check if it is the json pointer block
-        //         if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
-        //             serializedObject.config = serializedObject.config || {};
-        //             serializedObject.config.outputValue = true;
-        //         } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
-        //             // remove the p1 and p2
-        //             serializedObject.config = serializedObject.config || {};
-        //             // get the type of the pointer interpolation
-        //             _gltfBlock.values?.forEach((value) => {
-        //                 if (value.id === "value") {
-        //                     // get the type of the value
-        //                     const type = value.type;
-        //                     if (type !== undefined) {
-        //                         serializedObject.config.animationType = _arrays.types[type];
-        //                     }
-        //                 }
-        //             });
-        //         }
-        //     });
-        //     return serializedObjects;
-        // },
+        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            // connect the pointer to the getProperty block
+            // connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
+            // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
+            // connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
+            // connectFlowGraphNodes("easingFunction", "easingFunction", serializedObjects[0], serializedObjects[3], true);
+            // search for p1 and p2 and remove them, for now
+            serializedObjects.forEach((serializedObject) => {
+                // check if it is the json pointer block
+                if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
+                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config.outputValue = true;
+                } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
+                    // remove the p1 and p2
+                    serializedObject.config = serializedObject.config || {};
+                    Object.keys(gltfBlock.values || []).forEach((key) => {
+                        const value = gltfBlock.values?.[key];
+                        if (key === "value" && value) {
+                            // get the type of the value
+                            const type = value.type;
+                            if (type !== undefined) {
+                                serializedObject.config.animationType = parser.arrays.types[type];
+                            }
+                        }
+                    });
+                }
+            });
+            return serializedObjects;
+        },
     },
     "animation/start": {
         blocks: [FlowGraphBlockNames.PlayAnimation],
@@ -958,24 +952,29 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 err: { name: "error" },
             },
         },
-        // extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-        //     const animation = gltfBlock.values?.find((config) => config.id === "animation")?.value;
-        //     if (animation === undefined) {
-        //         throw new Error("animation not found in configuration");
-        //     }
-        //     const variableName = serializedObjects[0].dataInputs[0].uniqueId;
-        //     // connect the mesh to the asset input
-        //     // connectFlowGraphNodes("asset", "value", serializedObjects[0], serializedObjects[1], true);
+        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            // TODO - we should differentiate between static value and dynamic socket connected-values.
+            // This should probably be solved with a different approach. Another block probably.
+            // The input is an index. We should connect the index to the actual animationGroup on the flow-graph level.
 
-        //     // find the nodeIndex value
-        //     // serializedObjects[0].dataInputs = variableName;
-        //     context._connectionValues[variableName] = {
-        //         className: "AnimationGroup",
-        //         name: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.name,
-        //         uniqueId: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.uniqueId,
-        //     };
-        //     return serializedObjects;
-        // },
+            // const animation = gltfBlock.values?.animation;
+            // if (animation === undefined) {
+            //     throw new Error("animation not found in block");
+            // }
+            // const animationIndex = 0; // TODO - this is obviously not 0, but the index of the animation in the globalGLTF.animations
+            // const variableName = serializedObjects[0].dataInputs[0].uniqueId;
+            // // connect the mesh to the asset input
+            // // connectFlowGraphNodes("asset", "value", serializedObjects[0], serializedObjects[1], true);
+
+            // // find the nodeIndex value
+            // // serializedObjects[0].dataInputs = variableName;
+            // context._connectionValues[variableName] = {
+            //     className: "AnimationGroup",
+            //     name: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.name,
+            //     uniqueId: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.uniqueId,
+            // };
+            return serializedObjects;
+        },
     },
     "animation/stop": {
         blocks: [FlowGraphBlockNames.StopAnimation],

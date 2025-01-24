@@ -2,7 +2,7 @@ import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { addNewInteractivityFlowGraphMapping, connectFlowGraphNodes } from "./KHR_interactivity/interactivityUtils";
+import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 
 const NAME = "KHR_node_hoverability";
 
@@ -19,7 +19,7 @@ declare module "../../glTFFileLoader" {
 
 // interactivity
 export function updateHoverabilityInteractivity() {
-    addNewInteractivityFlowGraphMapping("event/onHoverIn", {
+    addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
         blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable],
         configuration: {
@@ -42,14 +42,21 @@ export function updateHoverabilityInteractivity() {
                 out: { name: "done" },
             },
         },
-        extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            const nodeIndex = gltfBlock.configuration?.find((config) => config.id === "nodeIndex")?.value;
-            if (nodeIndex === undefined) {
+        interBlockConnectors: [
+            {
+                input: "targetMesh",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+                isVariable: true,
+            },
+        ],
+        extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
                 throw new Error("nodeIndex not found in configuration");
             }
             const variableName = "targetMeshPointerOver_" + nodeIndex;
-            // connect the mesh to the asset input
-            connectFlowGraphNodes("targetMesh", "value", serializedObjects[0], serializedObjects[1], true);
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = {
@@ -61,7 +68,7 @@ export function updateHoverabilityInteractivity() {
         },
     });
 
-    addNewInteractivityFlowGraphMapping("event/onHoverOut", {
+    addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
         blocks: [FlowGraphBlockNames.PointerOutEvent, FlowGraphBlockNames.GetVariable],
         configuration: {
@@ -84,14 +91,21 @@ export function updateHoverabilityInteractivity() {
                 out: { name: "done" },
             },
         },
-        extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            const nodeIndex = gltfBlock.configuration?.find((config) => config.id === "nodeIndex")?.value;
-            if (nodeIndex === undefined) {
+        interBlockConnectors: [
+            {
+                input: "targetMesh",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+                isVariable: true,
+            },
+        ],
+        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
                 throw new Error("nodeIndex not found in configuration");
             }
             const variableName = "targetMeshPointerOut_" + nodeIndex;
-            // connect the mesh to the asset input
-            connectFlowGraphNodes("targetMesh", "value", serializedObjects[0], serializedObjects[1], true);
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = {
