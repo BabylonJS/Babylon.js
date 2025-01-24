@@ -8,8 +8,6 @@ export interface TypedArrayConstructor<T extends TypedArrayLike = TypedArrayLike
     new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
 }
 
-type VertexDataTypedArray = Exclude<TypedArrayLike, Float64Array | BigInt64Array | BigUint64Array>;
-
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
         case Constants.BYTE: {
@@ -131,7 +129,7 @@ export function GetTypeByteLength(type: number): number {
  * @param context an optional context to provide additional information on error
  * @returns the constructor object
  */
-export function GetTypedArrayConstructor(componentType: number, context?: string): TypedArrayConstructor<VertexDataTypedArray> {
+export function GetTypedArrayConstructor(componentType: number, context?: string): TypedArrayConstructor {
     switch (componentType) {
         case Constants.BYTE:
             return Int8Array;
