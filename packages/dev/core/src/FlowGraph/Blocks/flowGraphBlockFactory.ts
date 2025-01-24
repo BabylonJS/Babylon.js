@@ -194,7 +194,7 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
         case FlowGraphBlockNames.Constant:
             return async () => (await import("./Data/flowGraphConstantBlock")).FlowGraphConstantBlock;
         case FlowGraphBlockNames.TransformCoordinates:
-            return async () => (await import("./Data/flowGraphCoordinateTransformBlock")).FlowGraphTransformCoordinatesBlock;
+            return async () => (await import("./Data/flowGraphTransformCoordinatesSystemBlock")).FlowGraphTransformCoordinatesSystemBlock;
         case FlowGraphBlockNames.GetAsset:
             return async () => (await import("./Data/flowGraphGetAssetBlock")).FlowGraphGetAssetBlock;
         case FlowGraphBlockNames.GetProperty:
@@ -229,9 +229,9 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector4Block;
         case FlowGraphBlockNames.ExtractMatrix:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrixBlock;
-        case FlowGraphBlockNames.TransformVector3:
+        case FlowGraphBlockNames.TransformVector:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransformBlock;
-        case FlowGraphBlockNames.TransformVector4:
+        case FlowGraphBlockNames.TransformCoordinates:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransformVector4Block;
         case FlowGraphBlockNames.MatrixDecompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;

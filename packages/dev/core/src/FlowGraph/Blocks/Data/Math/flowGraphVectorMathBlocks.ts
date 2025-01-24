@@ -1,0 +1,188 @@
+import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import {
+    RichTypeVector3,
+    FlowGraphTypes,
+    RichTypeNumber,
+    RichTypeAny,
+    RichTypeVector2,
+    RichTypeMatrix,
+    RichTypeVector4,
+    getRichTypeByFlowGraphType,
+} from "core/FlowGraph/flowGraphRichTypes";
+import { RegisterClass } from "core/Misc";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
+import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
+import type { FlowGraphMatrix, FlowGraphVector } from "./flowGraphMathBlocks";
+import { _getClassNameOf } from "./flowGraphMathBlocks";
+import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
+import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
+
+/**
+ * @experimental
+ * Vector length block.
+ */
+export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraphVector, number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeNumber, (a) => this._polymorphicLength(a), FlowGraphBlockNames.Length, config);
+    }
+
+    private _polymorphicLength(a: FlowGraphVector) {
+        const aClassName = _getClassNameOf(a);
+        switch (aClassName) {
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
+                return (a as Vector3).length();
+            default:
+                throw new Error(`Cannot compute length of value ${a}`);
+        }
+    }
+}
+RegisterClass(FlowGraphBlockNames.Length, FlowGraphLengthBlock);
+
+/**
+ * @experimental
+ * Vector normalize block.
+ */
+export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGraphVector, FlowGraphVector> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, (a) => this._polymorphicNormalize(a), FlowGraphBlockNames.Normalize, config);
+    }
+
+    private _polymorphicNormalize(a: FlowGraphVector) {
+        const aClassName = _getClassNameOf(a);
+        switch (aClassName) {
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
+                return (a as Vector3).normalize();
+            default:
+                throw new Error(`Cannot normalize value ${a}`);
+        }
+    }
+}
+RegisterClass(FlowGraphBlockNames.Normalize, FlowGraphNormalizeBlock);
+
+/**
+ * @experimental
+ * Dot product block.
+ */
+export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVector, FlowGraphVector, number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeNumber, (a, b) => this._polymorphicDot(a, b), FlowGraphBlockNames.Dot, config);
+    }
+
+    private _polymorphicDot(a: FlowGraphVector, b: FlowGraphVector) {
+        const className = _getClassNameOf(a);
+        switch (className) {
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
+                return (a as Vector3).dot(b as Vector3);
+            default:
+                throw new Error(`Cannot get dot product of ${a} and ${b}`);
+        }
+    }
+}
+RegisterClass(FlowGraphBlockNames.Dot, FlowGraphDotBlock);
+
+/**
+ * @experimental
+ * Cross product block.
+ */
+export class FlowGraphCrossBlock extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (a, b) => Vector3.Cross(a, b), FlowGraphBlockNames.Cross, config);
+    }
+}
+RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
+
+/**
+ * @experimental
+ * 2D rotation block.
+ */
+export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphBlockNames.Rotate2D, config);
+    }
+}
+RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
+
+/**
+ * @experimental
+ * 3D rotation block.
+ */
+export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vector3, Vector3, number, Vector3> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(
+            RichTypeVector3,
+            RichTypeVector3,
+            RichTypeNumber,
+            RichTypeVector3,
+            (a, b, c) => Vector3.TransformCoordinates(a, Matrix.RotationAxis(b, c)),
+            FlowGraphBlockNames.Rotate3D,
+            config
+        );
+    }
+}
+RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
+
+function _transformVector3(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
+    const className = _getClassNameOf(a);
+    switch (className) {
+        case FlowGraphTypes.Vector2:
+            return (b as FlowGraphMatrix2D).transformVector(a as Vector2);
+        case FlowGraphTypes.Vector3:
+            return (b as FlowGraphMatrix3D).transformVector(a as Vector3);
+        case FlowGraphTypes.Vector4:
+            return Vector4.TransformCoordinates(a as Vector3, b as Matrix);
+        default:
+            throw new Error(`Cannot transform value ${a}`);
+    }
+}
+
+/**
+ * Configuration for the transform block.
+ */
+export interface IFlowGraphTransformBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The vector type
+     */
+    vectorType: FlowGraphTypes;
+}
+
+/**
+ * @experimental
+ * Transform a vector3 by a matrix.
+ */
+export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowGraphVector, FlowGraphMatrix, FlowGraphVector> {
+    constructor(config?: IFlowGraphTransformBlockConfiguration) {
+        const vectorType = config?.vectorType || FlowGraphTypes.Vector3;
+        const matrixType =
+            vectorType === FlowGraphTypes.Vector2 ? FlowGraphTypes.Matrix2D : vectorType === FlowGraphTypes.Vector3 ? FlowGraphTypes.Matrix3D : FlowGraphTypes.Matrix;
+        super(
+            getRichTypeByFlowGraphType(vectorType),
+            getRichTypeByFlowGraphType(matrixType),
+            getRichTypeByFlowGraphType(vectorType),
+            _transformVector3,
+            FlowGraphBlockNames.TransformVector,
+            config
+        );
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.TransformVector, FlowGraphTransformBlock);
+
+/**
+ * @experimental
+ * Transform a vector3 by a matrix.
+ */
+export class FlowGraphTransformCoordinatesBlock extends FlowGraphBinaryOperationBlock<Vector3, Matrix, Vector3> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeMatrix, RichTypeVector3, (a, b) => Vector3.TransformCoordinates(a, b), FlowGraphBlockNames.TransformCoordinates, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.TransformCoordinates, FlowGraphTransformCoordinatesBlock);

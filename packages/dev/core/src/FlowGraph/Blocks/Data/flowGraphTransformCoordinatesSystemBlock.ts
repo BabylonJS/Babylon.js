@@ -11,7 +11,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
  * @experimental
  * This blocks transforms a vector from one coordinate system to another.
  */
-export class FlowGraphTransformCoordinatesBlock extends FlowGraphBlock {
+export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {
     /**
      * Input connection: The source coordinate system.
      */
@@ -68,7 +68,7 @@ export class FlowGraphTransformCoordinatesBlock extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return FlowGraphBlockNames.TransformCoordinates;
+        return FlowGraphBlockNames.TransformCoordinatesSystem;
     }
 }
-RegisterClass(FlowGraphBlockNames.TransformCoordinates, FlowGraphTransformCoordinatesBlock);
+RegisterClass(FlowGraphBlockNames.TransformCoordinatesSystem, FlowGraphTransformCoordinatesSystemBlock);

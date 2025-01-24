@@ -198,17 +198,6 @@ export function addNewInteractivityFlowGraphMapping(key: string, extension: stri
     gltfExtensionsToFlowGraphMapping[extension][key] = mapping;
 }
 
-// /**
-//  * Get the mapping for a specific type of node.
-//  * @param operation the type of node, i.e. "variable/get"
-//  * @param extension the extension of the interactivity operation, i.e. "KHR_selectability"
-//  * @returns the mapping gltf to flow graph
-//  */
-// export function getMappingForOperation(operation: string, extension?: string): IGLTFToFlowGraphMapping | undefined {
-//     const mapping = extension ? gltfExtensionsToFlowGraphMapping[extension]?.[operation] : gltfToFlowGraphMapping[operation];
-//     return mapping;
-// }
-
 const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: IGLTFToFlowGraphMapping } } = {
     BABYLON_Logging: {
         "babylon/log": {
@@ -378,13 +367,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/rotate2d": getSimpleInputMapping(FlowGraphBlockNames.Rotate2D, ["a", "b"]),
     "math/rotate3d": getSimpleInputMapping(FlowGraphBlockNames.Rotate3D, ["a", "b", "c"]),
     "math/transform": {
-        // glTF transform is vector4 to matrix4x4
-        blocks: [FlowGraphBlockNames.TransformVector4],
+        // glTF transform is vectorN with matrixN
+        blocks: [FlowGraphBlockNames.TransformVector],
         configuration: {},
         inputs: {
             values: {
-                a: { name: "a", gltfType: "float4" },
-                b: { name: "b", gltfType: "float4x4" },
+                a: { name: "a", gltfType: "floatN" },
+                b: { name: "b", gltfType: "floatN" },
             },
         },
         outputs: {
