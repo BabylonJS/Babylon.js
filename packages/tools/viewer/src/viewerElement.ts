@@ -1277,15 +1277,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
-            const position = camera.target.clone().asArray();
-            return { type: "world", position, normal: position, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
+            const targetArray = camera.target.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
         await import("core/Culling/ray");
         const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
         const camGlobalPos = camera.globalPosition.clone();
 
-        if (this.viewerDetails && this.viewerDetails.model) {
+        if (this.viewerDetails?.scene) {
             const scene = this.viewerDetails.scene;
             const model = this._getCameraModel(camera);
 
@@ -1320,8 +1320,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             const alpha = ComputeAlpha(computationVector);
             const beta = ComputeBeta(computationVector.y, radius);
 
-            const hotSpotPosition = targetPoint.asArray();
-            return { type: "world", position: hotSpotPosition, normal: hotSpotPosition, cameraOrbit: [alpha, beta, radius] };
+            const targetArray = targetPoint.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
         }
 
         return null;
