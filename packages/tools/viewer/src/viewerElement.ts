@@ -81,7 +81,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(3, Vector3.Zero);
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -1291,7 +1291,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
             // Target
             let radius: number = 0.0001; // Just to avoid division by zero
-            const targetPoint = Vector3.Zero();
+            const targetPoint = this._tempVectors[0];
             const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
             const pickingInfo = scene.pickWithRay(ray, predicate);
             if (pickingInfo && pickingInfo.hit) {
@@ -1300,15 +1300,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 const selectedAnimation = this.selectedAnimation ?? 0;
                 const worldBounds = model?.getWorldBounds(selectedAnimation);
                 const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
-                const modelWorldCenter = this._tempVectors[0].copyFromFloats(...centerArray);
+                const modelWorldCenter = this._tempVectors[1].copyFromFloats(...centerArray);
 
-                const direction = this._tempVectors[1].copyFrom(ray.direction);
+                const direction = this._tempVectors[2].copyFrom(ray.direction);
                 targetPoint.copyFrom(camGlobalPos);
                 radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
                 direction.scaleAndAddToRef(radius, targetPoint);
             }
 
-            const computationVector = this._tempVectors[2];
+            const computationVector = this._tempVectors[3];
             camGlobalPos.subtractToRef(targetPoint, computationVector);
 
             // Radius
