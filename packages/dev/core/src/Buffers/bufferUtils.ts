@@ -272,7 +272,7 @@ export function GetFloatData(
 }
 
 /**
- * Gets the given data array as a typed array that best fits its component type.
+ * Gets the given data array as a typed array that matches the component type.
  * If the data cannot be used directly, a copy is made to support the new typed array.
  * @param data the input data array
  * @param size the number of components
