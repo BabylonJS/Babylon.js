@@ -72,6 +72,13 @@ export interface ICustomShaderOptions {
 export interface IShadowGenerator {
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     id: string;
+
+    /**
+     * Specifies if the `ShadowGenerator` should be serialized, `true` to skip serialization.
+     * Note a `ShadowGenerator` will not be serialized if its light has `doNotSerialize=true`
+     */
+    doNotSerialize?: boolean;
+
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
