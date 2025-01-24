@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable, TypedArrayLike } from "core/types";
+import type { IndicesArray, Nullable, TypedArray } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -1931,7 +1931,7 @@ export class GLTFLoader implements IGLTFLoader {
         if (accessor.sparse) {
             const sparse = accessor.sparse;
             accessor._data = accessor._data.then((data) => {
-                const typedArray = data as TypedArrayLike;
+                const typedArray = data as TypedArray;
                 const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
                 const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
                 return Promise.all([
@@ -1947,7 +1947,7 @@ export class GLTFLoader implements IGLTFLoader {
                     ) as IndicesArray;
 
                     const sparseLength = numComponents * sparse.count;
-                    let values: TypedArrayLike;
+                    let values: TypedArray;
 
                     if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
                         values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
@@ -2622,13 +2622,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private static _GetTypedArray(
-        context: string,
-        componentType: AccessorComponentType,
-        bufferView: ArrayBufferView,
-        byteOffset: number | undefined,
-        length: number
-    ): TypedArrayLike {
+    private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArray {
         const buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
 

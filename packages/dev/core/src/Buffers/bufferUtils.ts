@@ -1,8 +1,8 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArrayLike } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
 
-export interface TypedArrayConstructor<T extends TypedArrayLike = TypedArrayLike> {
+export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     new (length: number): T;
     new (elements: Iterable<number>): T;
     new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
