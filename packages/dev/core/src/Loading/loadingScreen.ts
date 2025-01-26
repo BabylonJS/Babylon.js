@@ -1,5 +1,6 @@
 import type { Nullable } from "../types";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { EngineStore } from "../Engines/engineStore";
 /**
  * Interface used to present a loading screen while loading a scene
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
@@ -28,7 +29,8 @@ export interface ILoadingScreen {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
-    private _loadingDiv: Nullable<HTMLDivElement>;
+    private _isLoading: boolean;
+    private _loadingDivToRenderingCanvasMap: Map<HTMLDivElement, HTMLCanvasElement> = new Map();
     private _loadingTextDiv: Nullable<HTMLDivElement>;
     private _style: Nullable<HTMLStyleElement>;
 
@@ -54,22 +56,23 @@ export class DefaultLoadingScreen implements ILoadingScreen {
      * Function called to display the loading screen
      */
     public displayLoadingUI(): void {
-        if (this._loadingDiv) {
-            // Do not add a loading screen if there is already one
+        if (this._isLoading) {
+            // Do not add a loading screen if it is already loading
             return;
         }
 
-        this._loadingDiv = document.createElement("div");
+        this._isLoading = true;
+        const loadingDiv = document.createElement("div");
 
-        this._loadingDiv.id = "babylonjsLoadingDiv";
-        this._loadingDiv.style.opacity = "0";
-        this._loadingDiv.style.transition = "opacity 1.5s ease";
-        this._loadingDiv.style.pointerEvents = "none";
-        this._loadingDiv.style.display = "grid";
-        this._loadingDiv.style.gridTemplateRows = "100%";
-        this._loadingDiv.style.gridTemplateColumns = "100%";
-        this._loadingDiv.style.justifyItems = "center";
-        this._loadingDiv.style.alignItems = "center";
+        loadingDiv.id = "babylonjsLoadingDiv";
+        loadingDiv.style.opacity = "0";
+        loadingDiv.style.transition = "opacity 1.5s ease";
+        loadingDiv.style.pointerEvents = "none";
+        loadingDiv.style.display = "grid";
+        loadingDiv.style.gridTemplateRows = "100%";
+        loadingDiv.style.gridTemplateColumns = "100%";
+        loadingDiv.style.justifyItems = "center";
+        loadingDiv.style.alignItems = "center";
 
         // Loading text
         this._loadingTextDiv = document.createElement("div");
@@ -86,7 +89,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingTextDiv.style.zIndex = "1";
         this._loadingTextDiv.innerHTML = "Loading";
 
-        this._loadingDiv.appendChild(this._loadingTextDiv);
+        loadingDiv.appendChild(this._loadingTextDiv);
 
         //set the predefined text
         this._loadingTextDiv.innerHTML = this._loadingText;
@@ -164,45 +167,73 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
         imageSpinnerContainer.appendChild(imgSpinner);
 
-        this._loadingDiv.appendChild(imgBack);
-        this._loadingDiv.appendChild(imageSpinnerContainer);
+        loadingDiv.appendChild(imgBack);
+        loadingDiv.appendChild(imageSpinnerContainer);
+        loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        loadingDiv.style.opacity = "1";
+
+        // get current enigne by rendering canvas
+        const engine = EngineStore.Instances.find((engine) => engine.getRenderingCanvas() === this._renderingCanvas);
+        // get all canvases associated to engine (multiple canvases) or the rendering canvas (single canvas)
+        const canvases = engine!.views?.map((view) => view.target) || [this._renderingCanvas];
+        canvases.forEach((canvas, index) => {
+            const clonedLoadingDiv = loadingDiv!.cloneNode(true) as HTMLDivElement;
+            clonedLoadingDiv.id += `-${index}`;
+            this._loadingDivToRenderingCanvasMap.set(clonedLoadingDiv, canvas);
+        });
 
         this._resizeLoadingUI();
 
         window.addEventListener("resize", this._resizeLoadingUI);
 
-        this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
-        document.body.appendChild(this._loadingDiv);
-
-        this._loadingDiv.style.opacity = "1";
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            document.body.appendChild(loadingDiv);
+        });
     }
 
     /**
      * Function called to hide the loading screen
      */
     public hideLoadingUI(): void {
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        const onTransitionEnd = () => {
-            if (this._loadingTextDiv) {
-                this._loadingTextDiv.remove();
-                this._loadingTextDiv = null;
+        let completedTransitions = 0;
+
+        const onTransitionEnd = (event: TransitionEvent) => {
+            const loadingDiv = event.target as HTMLDivElement;
+            // ensure that ending transition event is generated by one of the current loadingDivs
+            const isTransitionEndOnLoadingDiv = this._loadingDivToRenderingCanvasMap.has(loadingDiv);
+
+            if (isTransitionEndOnLoadingDiv) {
+                completedTransitions++;
+                loadingDiv.remove();
+
+                const allTransitionsCompleted = completedTransitions === this._loadingDivToRenderingCanvasMap.size;
+                if (allTransitionsCompleted) {
+                    if (this._loadingTextDiv) {
+                        this._loadingTextDiv.remove();
+                        this._loadingTextDiv = null;
+                    }
+                    if (this._style) {
+                        this._style.remove();
+                        this._style = null;
+                    }
+
+                    window.removeEventListener("transitionend", onTransitionEnd);
+                    window.removeEventListener("resize", this._resizeLoadingUI);
+                    this._loadingDivToRenderingCanvasMap.clear();
+                    this._isLoading = false;
+                }
             }
-            if (this._loadingDiv) {
-                this._loadingDiv.remove();
-                this._loadingDiv = null;
-            }
-            if (this._style) {
-                this._style.remove();
-                this._style = null;
-            }
-            window.removeEventListener("resize", this._resizeLoadingUI);
         };
 
-        this._loadingDiv.style.opacity = "0";
-        this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            loadingDiv.style.opacity = "0";
+        });
+
+        window.addEventListener("transitionend", onTransitionEnd);
     }
 
     /**
@@ -230,27 +261,31 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     public set loadingUIBackgroundColor(color: string) {
         this._loadingDivBackgroundColor = color;
 
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        });
     }
 
     // Resize
     private _resizeLoadingUI = () => {
-        const canvasRect = this._renderingCanvas.getBoundingClientRect();
-        const canvasPositioning = window.getComputedStyle(this._renderingCanvas).position;
-
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        this._loadingDiv.style.position = canvasPositioning === "fixed" ? "fixed" : "absolute";
-        this._loadingDiv.style.left = canvasRect.left + "px";
-        this._loadingDiv.style.top = canvasRect.top + "px";
-        this._loadingDiv.style.width = canvasRect.width + "px";
-        this._loadingDiv.style.height = canvasRect.height + "px";
+        this._loadingDivToRenderingCanvasMap.forEach((canvas, loadingDiv) => {
+            const canvasRect = canvas.getBoundingClientRect();
+            const canvasPositioning = window.getComputedStyle(canvas).position;
+
+            loadingDiv.style.position = canvasPositioning === "fixed" ? "fixed" : "absolute";
+            loadingDiv.style.left = canvasRect.left + "px";
+            loadingDiv.style.top = canvasRect.top + "px";
+            loadingDiv.style.width = canvasRect.width + "px";
+            loadingDiv.style.height = canvasRect.height + "px";
+        });
     };
 }
 
