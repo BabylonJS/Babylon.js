@@ -11,6 +11,9 @@ uniform sampler2D blueNoiseSampler;
 // Importance sampling
 uniform sampler2D icdfSampler;
 uniform sampler3D voxelGridSampler;
+#ifdef COLOR_SHADOWS
+uniform samplerCube iblSampler;
+#endif
 
 // shadow parameters: int nbDirs, int frameId, unused, float envRot
 uniform vec4 shadowParameters;
@@ -403,21 +406,29 @@ void main(void) {
   float shadowAccum = 0.001;
   float specShadowAccum = 0.001;
   float sampleWeight = 0.001;
+  #ifdef COLOR_SHADOWS
+    vec3 totalLight = vec3(0.0);
+    vec3 shadowedLight = vec3(0.0);
+  #endif
   for (uint i = 0u; i < nbDirs; i++) {
     uint dirId = nbDirs * GlobalIndex + i;
     vec4 L;
+    vec2 T;
     {
       vec2 r = plasticSequence(frameId * nbDirs + i);
       r = fract(r + vec2(2.0) * abs(noise.xy - vec2(0.5)));
-      vec2 T;
       T.x = textureLod(icdfSampler, vec2(r.x, 0.0), 0.0).x;
       T.y = textureLod(icdfSampler, vec2(T.x, r.y), 0.0).y;
-      T.x -= normalizedRotation;
-      L = vec4(uv_to_normal(T), 0);
+      L = vec4(uv_to_normal(vec2(T.x - normalizedRotation, T.y)), 0);
       #ifndef RIGHT_HANDED
         L.z *= -1.0;
       #endif
     }
+    #ifdef COLOR_SHADOWS
+      vec3 lightDir = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
+      vec3 ibl = textureLod(iblSampler, lightDir, 0.0).xyz;
+      float pdf = textureLod(icdfSampler, T, 0.0).z;
+    #endif
     float cosNL = dot(N, L.xyz);
     float opacity = 0.0;
 
@@ -428,8 +439,7 @@ void main(void) {
       // rte world-space normalization
       vec4 unormWP = invViewMtx * VP2;
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
-      vec2 vxNoise =
-          vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
+      vec2 vxNoise = vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
       VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
       opacity = max(opacity, shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise, voxel_march_diagnostic_info));
@@ -453,19 +463,34 @@ void main(void) {
                        screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
-      float rcos = (1.0 - cosNL);
-      shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
-      sampleWeight += 1.0;
-      // spec shadow
-      vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
-      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
+      
+      #ifdef COLOR_SHADOWS
+        // total IBL shadowed light from samples
+        vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(cosNL) / vec3(pdf) * ibl;
+        shadowedLight += light*opacity;
+        totalLight += light;
+      #else
+        float rcos = (1.0 - cosNL);
+        shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
+        sampleWeight += 1.0;
+        // spec shadow
+        vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
+        specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
+      #endif
     }
     noise.z = fract(noise.z + GOLD);
   }
-#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  gl_FragColor = vec4(shadowAccum / float(sampleWeight),
-                      specShadowAccum / float(sampleWeight), heat / float(sampleWeight), 1.0);
-#else
-  gl_FragColor = vec4(shadowAccum / float(sampleWeight), specShadowAccum / float(sampleWeight), 0.0, 1.0);
-#endif
+  #ifdef COLOR_SHADOWS
+      // total IBL colour from samples
+      vec3 shadow = (totalLight - shadowedLight) / totalLight;
+      float maxShadow = max(max(shadow.x, max(shadow.y, shadow.z)), 1.0);
+      glFragColor = vec4(shadow/maxShadow, 1.0);
+  #else
+    #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+      gl_FragColor = vec4(shadowAccum / float(sampleWeight),
+                          specShadowAccum / float(sampleWeight), heat / float(sampleWeight), 1.0);
+    #else
+      gl_FragColor = vec4(shadowAccum / float(sampleWeight), specShadowAccum / float(sampleWeight), 0.0, 1.0);
+    #endif
+  #endif
 }
