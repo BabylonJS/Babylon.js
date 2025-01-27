@@ -11,6 +11,6 @@ import type { AudioEngineV2 } from "./audioEngineV2";
  */
 export abstract class _MainAudioOut extends AbstractAudioNode {
     protected constructor(engine: AudioEngineV2) {
-        super(engine, _AudioNodeType.in);
+        super(engine, _AudioNodeType.In);
     }
 }

@@ -62,7 +62,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
-        super(name, engine, _AudioNodeType.out);
+        super(name, engine, _AudioNodeType.Out);
 
         Object.assign(this._options, options);
         this._options.autoplay ??= false;

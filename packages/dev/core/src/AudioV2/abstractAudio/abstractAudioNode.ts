@@ -5,11 +5,13 @@ type AudioNodeType = number;
 
 /** @internal */
 export const _AudioNodeType = {
-    in: 1,
+    /* eslint-disable @typescript-eslint/naming-convention */
+    In: 1,
     /** @internal */
-    out: 2,
+    Out: 2,
     /** @internal */
-    inOut: 3,
+    InOut: 3,
+    /* eslint-enable @typescript-eslint/naming-convention */
 };
 
 /**
@@ -51,11 +53,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType & _AudioNodeType.in) {
+        if (nodeType & _AudioNodeType.In) {
             this._downstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType & _AudioNodeType.out) {
+        if (nodeType & _AudioNodeType.Out) {
             this._upstreamNodes = new Set<AbstractAudioNode>();
         }
     }

@@ -18,7 +18,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public options = {} as ICommonSoundOptions;
 
     protected constructor(sound: AbstractSound, options: Partial<ICommonSoundOptions>) {
-        super(sound.engine, _AudioNodeType.out);
+        super(sound.engine, _AudioNodeType.Out);
 
         Object.assign(this.options, options);
 
