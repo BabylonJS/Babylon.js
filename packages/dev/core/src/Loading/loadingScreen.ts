@@ -30,7 +30,7 @@ export interface ILoadingScreen {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
-    private _engine: AbstractEngine;
+    private _engine: Nullable<AbstractEngine>;
     private _resizeObserver: Nullable<Observer<AbstractEngine>>;
     private _isLoading: boolean;
     /**
@@ -241,8 +241,9 @@ export class DefaultLoadingScreen implements ILoadingScreen {
                     }
 
                     window.removeEventListener("transitionend", onTransitionEnd);
-                    this._engine.onResizeObservable.remove(this._resizeObserver);
+                    this._engine!.onResizeObservable.remove(this._resizeObserver);
                     this._loadingDivToRenderingCanvasMap.clear();
+                    this._engine = null;
                     this._isLoading = false;
                 }
             }
