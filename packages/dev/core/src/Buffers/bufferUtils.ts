@@ -272,8 +272,8 @@ export function GetFloatData(
 }
 
 /**
- * Gets the given data array as a typed array that matches the component type.
- * If the data cannot be used directly, a copy is made to support the new typed array.
+ * Gets the given data array as a typed array that matches the component type. If the data cannot be used directly, a copy is made to support the new typed array.
+ * If the data is number[], byteOffset and byteStride must be a multiple of 4, as data will be treated like a list of floats.
  * @param data the input data array
  * @param size the number of components
  * @param type the component type
@@ -300,8 +300,12 @@ export function GetTypedArrayData(
 
     // Handle number[]
     if (Array.isArray(data)) {
-        const offset = byteOffset / typeByteLength;
-        const stride = byteStride / typeByteLength;
+        if ((byteOffset & 3) !== 0 || (byteStride & 3) !== 0) {
+            throw new Error("byteOffset and byteStride must be a multiple of 4 for number[] data.");
+        }
+
+        const offset = byteOffset / 4;
+        const stride = byteStride / 4;
 
         const lastIndex = offset + (totalVertices - 1) * stride + size;
         if (lastIndex > data.length) {
@@ -313,7 +317,7 @@ export function GetTypedArrayData(
         }
         if (stride !== size) {
             const copy = new constructor(count);
-            EnumerateFloatValues(data, offset, stride, size, type, count, normalized, (values, index) => {
+            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
                 for (let i = 0; i < size; i++) {
                     copy[index + i] = values[i];
                 }
