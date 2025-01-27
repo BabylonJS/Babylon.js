@@ -2003,7 +2003,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (accessor.sparse) {
-            const constructor = GetTypedArrayConstructor(accessor.componentType, `${context}/componentType`);
+            const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, accessor.componentType);
             accessor._data = this._loadAccessorAsync(context, accessor, constructor);
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
@@ -2622,11 +2622,19 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
+    private static _GetTypedArrayConstructor(context: string, componentType: AccessorComponentType): TypedArrayConstructor {
+        try {
+            return GetTypedArrayConstructor(componentType);
+        } catch (e) {
+            throw new Error(`${context}: Invalid component type ${componentType}`);
+        }
+    }
+
     private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArray {
         const buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
 
-        const constructor = GetTypedArrayConstructor(componentType, `${context}/componentType`);
+        const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
 
         const componentTypeLength = VertexBuffer.GetTypeByteLength(componentType);
         if (byteOffset % componentTypeLength !== 0) {

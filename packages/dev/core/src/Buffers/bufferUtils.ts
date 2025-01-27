@@ -127,10 +127,9 @@ export function GetTypeByteLength(type: number): number {
 /**
  * Gets the appropriate TypedArray constructor for the given component type.
  * @param componentType the component type
- * @param context an optional context to provide additional information on error
  * @returns the constructor object
  */
-export function GetTypedArrayConstructor(componentType: number, context?: string): TypedArrayConstructor {
+export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor {
     switch (componentType) {
         case Constants.BYTE:
             return Int8Array;
@@ -147,8 +146,7 @@ export function GetTypedArrayConstructor(componentType: number, context?: string
         case Constants.FLOAT:
             return Float32Array;
         default:
-            context = context ? `${context}: ` : "";
-            throw new Error(`${context}Invalid component type '${componentType}'`);
+            throw new Error(`Invalid component type '${componentType}'`);
     }
 }
 
