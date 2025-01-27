@@ -2,9 +2,9 @@
 import type { IKHRInteractivity_Declaration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
-import { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
-import { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
-import { IGLTF } from "../../glTFLoaderInterfaces";
+import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
+import type { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
+import type { IGLTF } from "../../glTFLoaderInterfaces";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
