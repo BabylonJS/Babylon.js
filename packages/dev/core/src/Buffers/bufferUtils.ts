@@ -188,7 +188,7 @@ export function EnumerateFloatValues(
             offset += stride;
         }
     } else {
-        const dataView = data instanceof ArrayBuffer ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
+        const dataView = !ArrayBuffer.isView(data) ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
         const componentByteLength = GetTypeByteLength(componentType);
         for (let index = 0; index < count; index += componentCount) {
             for (let componentIndex = 0, componentByteOffset = byteOffset; componentIndex < componentCount; componentIndex++, componentByteOffset += componentByteLength) {
