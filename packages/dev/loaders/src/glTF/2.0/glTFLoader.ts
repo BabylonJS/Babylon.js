@@ -2626,7 +2626,7 @@ export class GLTFLoader implements IGLTFLoader {
         try {
             return GetTypedArrayConstructor(componentType);
         } catch (e) {
-            throw new Error(`${context}: Invalid component type ${componentType}`);
+            throw new Error(`${context}: ${e.message}`);
         }
     }
 
