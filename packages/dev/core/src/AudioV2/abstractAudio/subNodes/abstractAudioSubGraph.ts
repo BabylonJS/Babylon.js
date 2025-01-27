@@ -130,7 +130,7 @@ export abstract class _AbstractAudioSubGraph {
         this._onSubNodesChanged();
     };
 
-    private _onSubNodeNameChanged = (event: { oldName: string; node: AbstractNamedAudioNode }) => {
+    private _onSubNodeNameChanged = (event: { newName: string; oldName: string; node: AbstractNamedAudioNode }) => {
         const set = this._subNodes.get(event.oldName);
 
         if (!set) {
@@ -139,6 +139,6 @@ export abstract class _AbstractAudioSubGraph {
 
         set.delete(event.node);
 
-        this._getSubNodeSet(event.node.name).add(event.node);
+        this._getSubNodeSet(event.newName).add(event.node);
     };
 }

@@ -159,7 +159,7 @@ export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
     /**
      * Observable for when the audio node is renamed.
      */
-    public readonly onNameChangedObservable = new Observable<{ oldName: string; node: AbstractNamedAudioNode }>();
+    public readonly onNameChangedObservable = new Observable<{ newName: string; oldName: string; node: AbstractNamedAudioNode }>();
 
     protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
@@ -176,16 +176,16 @@ export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
         return this._name;
     }
 
-    public set name(name: string) {
-        if (this._name === name) {
+    public set name(newName: string) {
+        if (this._name === newName) {
             return;
         }
 
         const oldName = this._name;
 
-        this._name = name;
+        this._name = newName;
 
-        this.onNameChangedObservable.notifyObservers({ oldName, node: this });
+        this.onNameChangedObservable.notifyObservers({ newName, oldName, node: this });
     }
 
     public override dispose(): void {
