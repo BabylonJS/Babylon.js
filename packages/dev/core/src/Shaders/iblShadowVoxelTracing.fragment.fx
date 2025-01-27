@@ -407,7 +407,7 @@ void main(void) {
   float specShadowAccum = 0.001;
   float sampleWeight = 0.001;
   #ifdef COLOR_SHADOWS
-    vec3 totalLight = vec3(0.0);
+    vec3 totalLight = vec3(0.001);
     vec3 shadowedLight = vec3(0.0);
   #endif
   for (uint i = 0u; i < nbDirs; i++) {

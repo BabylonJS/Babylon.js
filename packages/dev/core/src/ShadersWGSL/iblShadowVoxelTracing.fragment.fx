@@ -434,7 +434,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var specShadowAccum: f32 = 0.001;
   var sampleWeight : f32 = 0.001;
   #ifdef COLOR_SHADOWS
-  var totalLight: vec3f = vec3f(0.0);
+  var totalLight: vec3f = vec3f(0.001);
   var shadowedLight: vec3f = vec3f(0.0);
   #endif
   for (var i: u32 = 0; i < nbDirs; i++) {
