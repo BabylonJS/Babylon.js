@@ -106,12 +106,22 @@ describe("VertexBuffer", () => {
             expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices)).toThrow();
             expect(() => GetTypedArrayData(vb2.data, vb2.size, vb2.type, vb2.byteOffset, vb2.byteStride, vb2.normalized, vb2.totalVertices)).toThrow();
         });
-        it("should copy when data is an array", () => {
+        it("errors if number[] byteStride or byteOffset is not 4-byte aligned", () => {
+            const vb = {
+                data: [0, 1, 2],
+                size: 1,
+                type: Constants.UNSIGNED_BYTE,
+                normalized: false,
+                totalVertices: 2,
+            };
+            expect(() => GetTypedArrayData([1, 2, 3], vb.size, vb.type, 0, 2, vb.normalized, vb.totalVertices)).toThrow();
+            expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, 2, 4, vb.normalized, vb.totalVertices)).toThrow();
+        });
             const data = [0, 1, 2];
-            const typedData = GetTypedArrayData(data, 1, Constants.UNSIGNED_BYTE, 0, 1, false, 3);
+            const typedData = GetTypedArrayData(data, 1, Constants.FLOAT, 0, 4, false, 3);
             expect(typedData.length).toEqual(3);
             expect(data.every((value, index) => value === typedData[index])).toBeTruthy();
-            expect(typedData instanceof Uint8Array).toBeTruthy();
+            expect(typedData instanceof Float32Array).toBeTruthy();
         });
         it("should copy when data is interleaved", () => {
             const vb = {
@@ -206,6 +216,44 @@ describe("VertexBuffer", () => {
             expect(typedArray2[2]).toBeCloseTo(vb.array[2]);
             expect(typedArray2 instanceof Float32Array).toBeTruthy();
             expect(typedArray2.buffer === vbData.buffer).toBeTruthy();
+        });
+        it("converts elements of number[] to smaller data type", () => {
+            const vb = {
+                array: [1, 2, 3, 4],
+                size: 1,
+                type: Constants.UNSIGNED_BYTE,
+                byteOffset: 4,
+                byteStride: 4,
+                normalized: false,
+                totalVertices: 3,
+            };
+
+            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+
+            expect(typedArray.length).toEqual(3);
+            expect(typedArray[0]).toEqual(vb.array[1]);
+            expect(typedArray[1]).toEqual(vb.array[2]);
+            expect(typedArray[2]).toEqual(vb.array[3]);
+            expect(typedArray instanceof Uint8Array).toBeTruthy();
+        });
+        it("enumerates number[] as 4-byte-aligned data", () => {
+            const vb = {
+                array: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                size: 1,
+                type: Constants.FLOAT,
+                byteOffset: 0,
+                byteStride: 4 * 4,
+                normalized: false,
+                totalVertices: 3,
+            };
+
+            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+
+            expect(typedArray.length).toEqual(3);
+            expect(typedArray[0]).toEqual(vb.array[0]);
+            expect(typedArray[1]).toEqual(vb.array[4]);
+            expect(typedArray[2]).toEqual(vb.array[8]);
+            expect(typedArray instanceof Float32Array).toBeTruthy();
         });
     });
 });
