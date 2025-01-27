@@ -388,7 +388,15 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No declaration found for extra processor", gltfNode]);
                     throw new Error("Error parsing node connections");
                 }
-                outputMapper.flowGraphMapping.extraProcessor(gltfNode, declaration, outputMapper.flowGraphMapping, this, flowGraphBlocks.blocks, context, this._gltf);
+                flowGraphBlocks.blocks = outputMapper.flowGraphMapping.extraProcessor(
+                    gltfNode,
+                    declaration,
+                    outputMapper.flowGraphMapping,
+                    this,
+                    flowGraphBlocks.blocks,
+                    context,
+                    this._gltf
+                );
             }
         }
     }
