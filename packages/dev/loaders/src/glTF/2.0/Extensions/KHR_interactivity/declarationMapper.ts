@@ -360,6 +360,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
+    "math.random": {
+        blocks: [FlowGraphBlockNames.Random],
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     "math/sin": getSimpleInputMapping(FlowGraphBlockNames.Sin),
     "math/cos": getSimpleInputMapping(FlowGraphBlockNames.Cos),
     "math/tan": getSimpleInputMapping(FlowGraphBlockNames.Tan),
@@ -1079,7 +1087,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
    - Is Not a Number (`math/isnan`) FlowGraphBlockNames.IsNaN
    - Is Infinity (`math/isinf`) FlowGraphBlockNames.IsInfinity
    - Select (`math/select`) FlowGraphBlockNames.Conditional
-   - Random (`math/random`) TODO
+   - Random (`math/random`) FlowGraphBlockNames.Random
 5. **Angle and Trigonometry Nodes**
    - Degrees-To-Radians (`math/rad`) FlowGraphBlockNames.DegToRad
    - Radians-To-Degrees (`math/deg`) FlowGraphBlockNames.RadToDeg

@@ -196,6 +196,9 @@ RegisterClass(FlowGraphBlockNames.Divide, FlowGraphDivideBlock);
 /**
  * @experimental
  * Random number between min and max (defaults to 0 to 1)
+ *
+ * This node will cache the result for he same node reference. i.e., a Math.eq that references the SAME random node will always return true.
+ * TODO - write a test for that.
  */
 export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGraphMathOperationType> {
     /**
