@@ -67,41 +67,30 @@ export class WebGPUBufferManager {
         return dataBuffer;
     }
 
+    // This calls GPUBuffer.writeBuffer() with no alignment corrections
+    // dstByteOffset and byteLength must both be aligned to 4 bytes and bytes moved must be within src and dst arrays
     public setRawData(buffer: GPUBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset: number, byteLength: number): void {
+        srcByteOffset += src.byteOffset;
+
         this._device.queue.writeBuffer(buffer, dstByteOffset, src.buffer, srcByteOffset, byteLength);
     }
 
+    // This calls GPUBuffer.writeBuffer() with alignment corrections (dstByteOffset and byteLength will be aligned to 4 byte boundaries)
+    // If alignment is needed, src must be a full copy of dataBuffer, or at least should be large enough to cope with the additional bytes copied because of alignment!
     public setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {
         const buffer = dataBuffer.underlyingResource as GPUBuffer;
 
-        byteLength = byteLength || src.byteLength;
-        byteLength = Math.min(byteLength, dataBuffer.capacity - dstByteOffset);
+        byteLength = byteLength || src.byteLength - srcByteOffset;
 
-        // After Migration to Canary
-        let chunkStart = src.byteOffset + srcByteOffset;
-        let chunkEnd = chunkStart + byteLength;
+        // we might copy more than requested to make sure the write is aligned
+        const startPre = dstByteOffset & 3;
 
-        // 4 bytes alignments for upload
-        const alignedLength = (byteLength + 3) & ~3;
-        if (alignedLength !== byteLength) {
-            const tempView = new Uint8Array(src.buffer.slice(chunkStart, chunkEnd));
-            src = new Uint8Array(alignedLength);
-            (src as Uint8Array).set(tempView);
-            srcByteOffset = 0;
-            chunkStart = 0;
-            chunkEnd = alignedLength;
-            byteLength = alignedLength;
-        }
+        srcByteOffset -= startPre;
+        dstByteOffset -= startPre;
 
-        // Chunk
-        const maxChunk = 1024 * 1024 * 15;
-        let offset = 0;
-        while (chunkEnd - (chunkStart + offset) > maxChunk) {
-            this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
-            offset += maxChunk;
-        }
+        byteLength = (byteLength + startPre + 3) & ~3;
 
-        this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
+        this.setRawData(buffer, dstByteOffset, src, srcByteOffset, byteLength);
     }
 
     private _getHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
