@@ -87,6 +87,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.depthWrite = value;
     }
 
+    /** Indicates if shadows must be enabled or disabled */
+    @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get disableShadows() {
+        return this._frameGraphTask.disableShadows;
+    }
+
+    public set disableShadows(value: boolean) {
+        this._frameGraphTask.disableShadows = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -191,6 +201,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -198,6 +209,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const serializationObject = super.serialize();
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.disableShadows = this.disableShadows;
         return serializationObject;
     }
 
@@ -205,5 +217,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         super._deserialize(serializationObject);
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.disableShadows = serializationObject.disableShadows;
     }
 }
