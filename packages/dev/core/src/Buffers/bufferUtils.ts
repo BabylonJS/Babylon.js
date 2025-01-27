@@ -321,7 +321,7 @@ export function GetTypedArrayData(
             return copy;
         }
 
-        return new constructor(data);
+        return new constructor(data.slice(offset, offset + count));
     }
 
     // Handle ArrayBuffer and ArrayBufferView
