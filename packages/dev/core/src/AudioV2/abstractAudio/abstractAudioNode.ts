@@ -54,11 +54,11 @@ export abstract class AbstractAudioNode {
         this.engine = engine;
 
         if (nodeType & _AudioNodeType.In) {
-            this._downstreamNodes = new Set<AbstractAudioNode>();
+            this._upstreamNodes = new Set<AbstractAudioNode>();
         }
 
         if (nodeType & _AudioNodeType.Out) {
-            this._upstreamNodes = new Set<AbstractAudioNode>();
+            this._downstreamNodes = new Set<AbstractAudioNode>();
         }
     }
 
