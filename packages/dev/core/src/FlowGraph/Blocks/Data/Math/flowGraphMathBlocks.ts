@@ -389,16 +389,26 @@ export class FlowGraphCeilBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Ceil, FlowGraphCeilBlock);
 
 /**
+ * Configuration for the round block.
+ */
+export interface IFlowGraphRoundBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * If true, the rounding is away from zero, even when negative. i.e. -7.5 goes to -8, and not -7 as Math.round does (it rounds up).
+     * This is the default when using glTF
+     */
+    roundHalfAwayFromZero?: boolean;
+}
+/**
  * @experimental
  * Round block.
  */
 export class FlowGraphRoundBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(config?: IFlowGraphRoundBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, (a) => this._polymorphicRound(a), FlowGraphBlockNames.Round, config);
     }
 
     private _polymorphicRound(a: FlowGraphMathOperationType) {
-        return _componentWiseUnaryOperation(a, Math.round);
+        return _componentWiseUnaryOperation(a, (a) => (a < 0 && this.config?.roundHalfAwayFromZero ? -Math.round(-a) : Math.round(a)));
     }
 }
 

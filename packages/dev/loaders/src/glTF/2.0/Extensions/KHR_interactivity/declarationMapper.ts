@@ -304,6 +304,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/trunc": getSimpleInputMapping(FlowGraphBlockNames.Trunc),
     "math/floor": getSimpleInputMapping(FlowGraphBlockNames.Floor),
     "math/ceil": getSimpleInputMapping(FlowGraphBlockNames.Ceil),
+    "math/round": {
+        blocks: [FlowGraphBlockNames.Round],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "output" },
+            },
+        },
+        extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            serializedObjects[0].config.roundHalfAwayFromZero = true;
+            return serializedObjects;
+        },
+    },
     "math/fract": getSimpleInputMapping(FlowGraphBlockNames.Fract),
     "math/neg": getSimpleInputMapping(FlowGraphBlockNames.Negation),
     "math/add": getSimpleInputMapping(FlowGraphBlockNames.Add, ["a", "b"]),
@@ -1019,3 +1039,176 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
         configuration: {},
     };
 }
+
+/**
+ * 
+ * These are the nodes from the specs:
+
+### Math Nodes
+1. **Constants**
+   - E (`math/e`) FlowGraphBlockNames.E
+   - Pi (`math/pi`) FlowGraphBlockNames.PI
+   - Infinity (`math/inf`) FlowGraphBlockNames.Inf
+   - Not a Number (`math/nan`) FlowGraphBlockNames.NaN
+2. **Arithmetic Nodes**
+   - Absolute Value (`math/abs`) FlowGraphBlockNames.Abs
+   - Sign (`math/sign`) FlowGraphBlockNames.Sign
+   - Truncate (`math/trunc`) FlowGraphBlockNames.Trunc
+   - Floor (`math/floor`) FlowGraphBlockNames.Floor
+   - Ceil (`math/ceil`) FlowGraphBlockNames.Ceil
+   - Round (`math/round`)  FlowGraphBlockNames.Round
+   - Fraction (`math/fract`) FlowGraphBlockNames.Fract
+   - Negation (`math/neg`) FlowGraphBlockNames.Negation
+   - Addition (`math/add`) FlowGraphBlockNames.Add
+   - Subtraction (`math/sub`) FlowGraphBlockNames.Subtract
+   - Multiplication (`math/mul`) FlowGraphBlockNames.Multiply
+   - Division (`math/div`) FlowGraphBlockNames.Divide
+   - Remainder (`math/rem`) FlowGraphBlockNames.Modulo
+   - Minimum (`math/min`) FlowGraphBlockNames.Min
+   - Maximum (`math/max`) FlowGraphBlockNames.Max
+   - Clamp (`math/clamp`) FlowGraphBlockNames.Clamp
+   - Saturate (`math/saturate`) FlowGraphBlockNames.Saturate
+   - Interpolate (`math/mix`) FlowGraphBlockNames.MathInterpolation
+3. **Comparison Nodes**
+   - Equality (`math/eq`) FlowGraphBlockNames.Equality
+   - Less Than (`math/lt`) FlowGraphBlockNames.LessThan
+   - Less Than Or Equal To (`math/le`) FlowGraphBlockNames.LessThanOrEqual
+   - Greater Than (`math/gt`) FlowGraphBlockNames.GreaterThan
+   - Greater Than Or Equal To (`math/ge`) FlowGraphBlockNames.GreaterThanOrEqual
+4. **Special Nodes**
+   - Is Not a Number (`math/isnan`) FlowGraphBlockNames.IsNaN
+   - Is Infinity (`math/isinf`) FlowGraphBlockNames.IsInfinity
+   - Select (`math/select`) FlowGraphBlockNames.Conditional
+   - Random (`math/random`) TODO
+5. **Angle and Trigonometry Nodes**
+   - Degrees-To-Radians (`math/rad`) FlowGraphBlockNames.DegToRad
+   - Radians-To-Degrees (`math/deg`) FlowGraphBlockNames.RadToDeg
+   - Sine (`math/sin`)  FlowGraphBlockNames.Sin
+   - Cosine (`math/cos`) FlowGraphBlockNames.Cos
+   - Tangent (`math/tan`) FlowGraphBlockNames.Tan
+   - Arcsine (`math/asin`) FlowGraphBlockNames.Asin
+   - Arccosine (`math/acos`) FlowGraphBlockNames.Acos
+   - Arctangent (`math/atan`) FlowGraphBlockNames.Atan
+   - Arctangent 2 (`math/atan2`) FlowGraphBlockNames.Atan2
+6. **Hyperbolic Nodes**
+   - Hyperbolic Sine (`math/sinh`) FlowGraphBlockNames.Sinh
+   - Hyperbolic Cosine (`math/cosh`) FlowGraphBlockNames.Cosh
+   - Hyperbolic Tangent (`math/tanh`) FlowGraphBlockNames.Tanh
+   - Inverse Hyperbolic Sine (`math/asinh`) FlowGraphBlockNames.Asinh
+   - Inverse Hyperbolic Cosine (`math/acosh`) FlowGraphBlockNames.Acosh
+   - Inverse Hyperbolic Tangent (`math/atanh`) FlowGraphBlockNames.Atanh
+7. **Exponential Nodes**
+   - Exponent (`math/exp`) FlowGraphBlockNames.Exponential
+   - Natural Logarithm (`math/log`) FlowGraphBlockNames.Log
+   - Base-2 Logarithm (`math/log2`) FlowGraphBlockNames.Log2
+   - Base-10 Logarithm (`math/log10`) FlowGraphBlockNames.Log10
+   - Square Root (`math/sqrt`) FlowGraphBlockNames.SquareRoot
+   - Cube Root (`math/cbrt`) FlowGraphBlockNames.CubeRoot
+   - Power (`math/pow`) FlowGraphBlockNames.Power
+8. **Vector Nodes**
+   - Length (`math/length`) FlowGraphBlockNames.Length
+   - Normalize (`math/normalize`) FlowGraphBlockNames.Normalize
+   - Dot Product (`math/dot`) FlowGraphBlockNames.Dot
+   - Cross Product (`math/cross`) FlowGraphBlockNames.Cross
+   - Rotate 2D (`math/rotate2d`) FlowGraphBlockNames.Rotate2D
+   - Rotate 3D (`math/rotate3d`) FlowGraphBlockNames.Rotate3D
+   - Transform (`math/transform`) FlowGraphBlockNames.TransformVector
+9. **Matrix Nodes**
+   - Transpose (`math/transpose`) FlowGraphBlockNames.Transpose
+   - Determinant (`math/determinant`) FlowGraphBlockNames.Determinant
+   - Inverse (`math/inverse`) FlowGraphBlockNames.InvertMatrix
+   - Multiplication (`math/matmul`) FlowGraphBlockNames.MatrixMultiplication
+10. **Swizzle Nodes**
+    - Combine (`math/combine2`, `math/combine3`, `math/combine4`, `math/combine2x2`, `math/combine3x3`, `math/combine4x4`)
+        FlowGraphBlockNames.CombineVector2, FlowGraphBlockNames.CombineVector3, FlowGraphBlockNames.CombineVector4
+        TODO TODO FlowGraphBlockNames.CombineMatrix
+    - Extract (`math/extract2`, `math/extract3`, `math/extract4`, `math/extract2x2`, `math/extract3x3`, `math/extract4x4`)
+        FlowGraphBlockNames.ExtractVector2, FlowGraphBlockNames.ExtractVector3, FlowGraphBlockNames.ExtractVector4
+        TODO TODO FlowGraphBlockNames.ExtractMatrix
+11. **Integer Arithmetic Nodes**
+    - Absolute Value (`math/abs`) FlowGraphBlockNames.Abs
+    - Sign (`math/sign`) FlowGraphBlockNames.Sign
+    - Negation (`math/neg`) FlowGraphBlockNames.Negation
+    - Addition (`math/add`) FlowGraphBlockNames.Add
+    - Subtraction (`math/sub`) FlowGraphBlockNames.Subtract
+    - Multiplication (`math/mul`) FlowGraphBlockNames.Multiply
+    - Division (`math/div`) FlowGraphBlockNames.Divide
+    - Remainder (`math/rem`) FlowGraphBlockNames.Modulo
+    - Minimum (`math/min`) FlowGraphBlockNames.Min
+    - Maximum (`math/max`) FlowGraphBlockNames.Max
+    - Clamp (`math/clamp`) FlowGraphBlockNames.Clamp
+12. **Integer Comparison Nodes**
+    - Equality (`math/eq`) FlowGraphBlockNames.Equality
+    - Less Than (`math/lt`) FlowGraphBlockNames.LessThan
+    - Less Than Or Equal To (`math/le`) FlowGraphBlockNames.LessThanOrEqual
+    - Greater Than (`math/gt`) FlowGraphBlockNames.GreaterThan
+    - Greater Than Or Equal To (`math/ge`) FlowGraphBlockNames.GreaterThanOrEqual
+13. **Integer Bitwise Nodes**
+    - Bitwise NOT (`math/not`) FlowGraphBlockNames.BitwiseNot
+    - Bitwise AND (`math/and`) FlowGraphBlockNames.BitwiseAnd
+    - Bitwise OR (`math/or`) FlowGraphBlockNames.BitwiseOr
+    - Bitwise XOR (`math/xor`) FlowGraphBlockNames.BitwiseXor
+    - Right Shift (`math/asr`) FlowGraphBlockNames.BitwiseRightShift
+    - Left Shift (`math/lsl`) FlowGraphBlockNames.BitwiseLeftShift
+    - Count Leading Zeros (`math/clz`) FlowGraphBlockNames.LeadingZeros
+    - Count Trailing Zeros (`math/ctz`) FlowGraphBlockNames.TrailingZeros
+    - Count One Bits (`math/popcnt`) FlowGraphBlockNames.OneBitsCounter
+14. **Boolean Arithmetic Nodes**
+    - Equality (`math/eq`) FlowGraphBlockNames.Equality
+    - Boolean NOT (`math/not`) TODO
+    - Boolean AND (`math/and`) TODO
+    - Boolean OR (`math/or`) TODO
+    - Boolean XOR (`math/xor`) TODO
+
+### Type Conversion Nodes
+1. **Boolean Conversion Nodes**
+   - Boolean to Integer (`type/boolToInt`) FlowGraphBlockNames.BooleanToInt
+   - Boolean to Float (`type/boolToFloat`) FlowGraphBlockNames.BooleanToFloat
+2. **Integer Conversion Nodes**
+   - Integer to Boolean (`type/intToBool`) FlowGraphBlockNames.IntToBoolean
+   - Integer to Float (`type/intToFloat`) FlowGraphBlockNames.IntToFloat
+3. **Float Conversion Nodes**
+   - Float to Boolean (`type/floatToBool`) FlowGraphBlockNames.FloatToBoolean
+   - Float to Integer (`type/floatToInt`) FlowGraphBlockNames.FloatToInt
+
+### Control Flow Nodes
+1. **Sync Nodes**
+   - Sequence (`flow/sequence`) FlowGraphBlockNames.Sequence
+   - Branch (`flow/branch`) FlowGraphBlockNames.Branch
+   - Switch (`flow/switch`) FlowGraphBlockNames.Switch
+   - While Loop (`flow/while`) FlowGraphBlockNames.WhileLoop
+   - For Loop (`flow/for`) FlowGraphBlockNames.ForLoop
+   - Do N (`flow/doN`) FlowGraphBlockNames.DoN
+   - Multi Gate (`flow/multiGate`) FlowGraphBlockNames.MultiGate
+   - Wait All (`flow/waitAll`) FlowGraphBlockNames.WaitAll
+   - Throttle (`flow/throttle`) FlowGraphBlockNames.Throttle
+2. **Delay Nodes**
+   - Set Delay (`flow/setDelay`) FlowGraphBlockNames.SetDelay
+   - Cancel Delay (`flow/cancelDelay`) FlowGraphBlockNames.CancelDelay
+
+### State Manipulation Nodes
+1. **Custom Variable Access**
+   - Variable Get (`variable/get`) FlowGraphBlockNames.GetVariable
+   - Variable Set (`variable/set`) FlowGraphBlockNames.SetVariable
+   - Variable Interpolate (`variable/interpolate`) TODO
+2. **Object Model Access** // TODO fully test this!!!
+   - JSON Pointer Template Parsing (`pointer/get`) [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser]
+   - Effective JSON Pointer Generation (`pointer/set`) [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser]
+   - Pointer Get (`pointer/get`) [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser]
+   - Pointer Set (`pointer/set`) [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser]
+   - Pointer Interpolate (`pointer/interpolate`) [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing]
+
+### Animation Control Nodes
+1. **Animation Play** (`animation/start`) FlowGraphBlockNames.PlayAnimation
+2. **Animation Stop** (`animation/stop`) FlowGraphBlockNames.StopAnimation TODO!
+3. **Animation Stop At** (`animation/stopAt`) FlowGraphBlockNames.StopAnimation TODO!
+
+### Event Nodes
+1. **Lifecycle Event Nodes**
+   - On Start (`event/onStart`) FlowGraphBlockNames.SceneReadyEvent
+   - On Tick (`event/onTick`) FlowGraphBlockNames.SceneTickEvent
+2. **Custom Event Nodes**
+   - Receive (`event/receive`) FlowGraphBlockNames.ReceiveCustomEvent
+   - Send (`event/send`) FlowGraphBlockNames.SendCustomEvent
+
+ */
