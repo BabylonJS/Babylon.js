@@ -88,7 +88,16 @@ export class WebGPUBufferManager {
         srcByteOffset -= startPre;
         dstByteOffset -= startPre;
 
+        const originalByteLength = byteLength;
+
         byteLength = (byteLength + startPre + 3) & ~3;
+
+        if (originalByteLength !== byteLength) {
+            const tmpBuffer = new Uint8Array(byteLength);
+            tmpBuffer.set(new Uint8Array(src.buffer, src.byteOffset + srcByteOffset, originalByteLength));
+            src = tmpBuffer;
+            srcByteOffset = 0;
+        }
 
         this.setRawData(buffer, dstByteOffset, src, srcByteOffset, byteLength);
     }
