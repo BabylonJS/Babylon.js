@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { type Observer } from "../Misc";
+import type { Observer } from "../Misc/observable";
 /**
  * Interface used to present a loading screen while loading a scene
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
