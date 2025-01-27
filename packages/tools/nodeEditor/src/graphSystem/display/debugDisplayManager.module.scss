@@ -1,0 +1,13 @@
+.debugBlock {
+    border-radius: 40px !important;
+    width: 63px !important;
+    grid-template-rows: 0px 40px 0px !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.translatedConnections {
+    transform: translateY(4px);
+}
