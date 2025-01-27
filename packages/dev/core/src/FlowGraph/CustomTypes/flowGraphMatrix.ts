@@ -19,6 +19,7 @@ export interface IFlowGraphMatrix<VectorType> {
     determinant(): number;
     inverse(): IFlowGraphMatrix<VectorType>;
     getClassName(): string;
+    equals(other: IFlowGraphMatrix<VectorType>, epsilon?: number): boolean;
 }
 
 export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
@@ -149,6 +150,15 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const m = this._m;
         const invDet = 1 / det;
         return new FlowGraphMatrix2D([m[3] * invDet, -m[1] * invDet, -m[2] * invDet, m[0] * invDet]);
+    }
+
+    public equals(other: IFlowGraphMatrix<Vector2>, epsilon: number = 0): boolean {
+        const m = this._m;
+        const o = other.m;
+        if (epsilon === 0) {
+            return m[0] === o[0] && m[1] === o[1] && m[2] === o[2] && m[3] === o[3];
+        }
+        return Math.abs(m[0] - o[0]) < epsilon && Math.abs(m[1] - o[1]) < epsilon && Math.abs(m[2] - o[2]) < epsilon && Math.abs(m[3] - o[3]) < epsilon;
     }
 
     public getClassName(): string {
@@ -318,6 +328,26 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
             (m[1] * m[6] - m[0] * m[7]) * invDet,
             (m[0] * m[4] - m[1] * m[3]) * invDet,
         ]);
+    }
+
+    public equals(other: IFlowGraphMatrix<Vector3>, epsilon: number = 0): boolean {
+        const m = this._m;
+        const o = other.m;
+        // performance shortcut
+        if (epsilon === 0) {
+            return m[0] === o[0] && m[1] === o[1] && m[2] === o[2] && m[3] === o[3] && m[4] === o[4] && m[5] === o[5] && m[6] === o[6] && m[7] === o[7] && m[8] === o[8];
+        }
+        return (
+            Math.abs(m[0] - o[0]) < epsilon &&
+            Math.abs(m[1] - o[1]) < epsilon &&
+            Math.abs(m[2] - o[2]) < epsilon &&
+            Math.abs(m[3] - o[3]) < epsilon &&
+            Math.abs(m[4] - o[4]) < epsilon &&
+            Math.abs(m[5] - o[5]) < epsilon &&
+            Math.abs(m[6] - o[6]) < epsilon &&
+            Math.abs(m[7] - o[7]) < epsilon &&
+            Math.abs(m[8] - o[8]) < epsilon
+        );
     }
 
     public getClassName(): string {
