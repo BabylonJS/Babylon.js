@@ -79,10 +79,10 @@ describe("VertexBuffer", () => {
     });
 
     describe("GetTypedArrayData", () => {
-        it("should error if type is invalid", () => {
+        it("errors if type is invalid", () => {
             expect(() => GetTypedArrayData(new ArrayBuffer(1), 1, Constants.FLOAT + 1, 0, 1, false, 1)).toThrow();
         });
-        it("should error if requested data is out of range", () => {
+        it("errors if requested data is out of range", () => {
             // Missing byte at the end. Should never happen in practice, but just in case.
             const vb = {
                 data: new Uint8Array([0, 1, 2]),
@@ -117,13 +117,14 @@ describe("VertexBuffer", () => {
             expect(() => GetTypedArrayData([1, 2, 3], vb.size, vb.type, 0, 2, vb.normalized, vb.totalVertices)).toThrow();
             expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, 2, 4, vb.normalized, vb.totalVertices)).toThrow();
         });
+        it("copies when data is an array", () => {
             const data = [0, 1, 2];
             const typedData = GetTypedArrayData(data, 1, Constants.FLOAT, 0, 4, false, 3);
             expect(typedData.length).toEqual(3);
             expect(data.every((value, index) => value === typedData[index])).toBeTruthy();
             expect(typedData instanceof Float32Array).toBeTruthy();
         });
-        it("should copy when data is interleaved", () => {
+        it("copies when data is interleaved", () => {
             const vb = {
                 data: new Uint8Array([0, 1, 2]),
                 size: 1,
@@ -139,7 +140,7 @@ describe("VertexBuffer", () => {
             expect(vb.data[2] === typedArray[1]).toBeTruthy();
             expect(typedArray.buffer !== vb.data.buffer).toBeTruthy();
         });
-        it("should copy when adjusted offset is not aligned", () => {
+        it("copies when adjusted offset is not aligned", () => {
             // Final result should be last 4 bytes, treated as 2 unsigned shorts
             const vb = {
                 bytes: new Uint8Array([0, 1, 2, 3, 4]),
@@ -174,7 +175,7 @@ describe("VertexBuffer", () => {
             expect(typedArray instanceof Uint16Array).toBeTruthy();
             expect(typedArray2[0]).toEqual((vb.bytes[4] << 8) | vb.bytes[3]);
         });
-        it("should not copy if data is aligned and non-interleaved", () => {
+        it("does not copy if data is aligned and non-interleaved", () => {
             const vb = {
                 data: new Int16Array([-32768, 32767]),
                 size: 1,
@@ -189,7 +190,7 @@ describe("VertexBuffer", () => {
             expect(typedArray.every((value, index) => value === vb.data[index])).toBeTruthy();
             expect(typedArray.buffer === vb.data.buffer).toBeTruthy();
         });
-        it("should preserve float values (within 2 digits)", () => {
+        it("preserves float values (within 2 digits)", () => {
             const vb = {
                 array: [0.0, 1.234567, 123456.7], // Stored at higher precision than 32-bit float
                 size: 1,
