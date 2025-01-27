@@ -64,12 +64,14 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
         super(name, engine, _AudioNodeType.Out);
 
-        Object.assign(this._options, options);
-        this._options.autoplay ??= false;
-        this._options.loop ??= false;
-        this._options.maxInstances ??= Infinity;
-        this._options.startOffset ??= 0;
-        this._options.volume ??= _VolumeAudioDefaults.Volume;
+        this._options = {
+            autoplay: false,
+            loop: false,
+            maxInstances: Infinity,
+            startOffset: 0,
+            volume: _VolumeAudioDefaults.Volume,
+            ...options,
+        } as ICommonSoundOptions;
     }
 
     /**
