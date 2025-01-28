@@ -52,7 +52,6 @@ import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
-import { _RunImmediateQueue } from "core/Misc/timingTools";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -881,9 +880,6 @@ export abstract class AbstractEngine {
         this._frameId++;
 
         this.onEndFrameObservable.notifyObservers(this);
-
-        /** It is ok to call it even if several engines run */
-        _RunImmediateQueue();
     }
 
     /**

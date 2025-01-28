@@ -5,10 +5,21 @@ const ImmediateQueue: Array<() => void> = [];
  */
 export class TimingTools {
     /**
-     * Polyfill for setImmediate
+     * Execute a function after the current execution block
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
+        if (ImmediateQueue.length === 0) {
+            setTimeout(() => {
+                // Execute all immediate functions
+                const functionsToCall = ImmediateQueue.slice(0);
+                ImmediateQueue.length = 0;
+
+                for (const func of functionsToCall) {
+                    func();
+                }
+            }, 1);
+        }
         ImmediateQueue.push(action);
     }
 }
@@ -16,21 +27,7 @@ export class TimingTools {
 /**
  * @internal
  */
-export function _RunImmediateQueue() {
-    if (ImmediateQueue.length) {
-        // Execute all immediate functions
-        // Doing a copy even though it should be fine but I do not want to deal with race conditions
-        // in the future. So, let's be safe.
-        const functionsToCall = ImmediateQueue.slice(0);
-        ImmediateQueue.length = 0;
-
-        setTimeout(() => {
-            for (let i = 0; i < functionsToCall.length; i++) {
-                functionsToCall[i]();
-            }
-        }, 1);
-    }
-}
+export function _RunImmediateQueue() {}
 
 function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
     try {
