@@ -209,7 +209,7 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
 
     float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
     float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
-    float lambda1 = mid + radius, lambda2 = mid - radius;
+    float lambda1 = mid + radius + 0.001, lambda2 = mid - radius + 0.001;
 
     if (lambda2 < 0.0)
     {
