@@ -218,9 +218,6 @@ export abstract class AbstractEngine {
     protected _activeRequests: IFileRequest[] = [];
 
     /** @internal */
-    public _immediateQueue: Array<() => void> = [];
-
-    /** @internal */
     public _badOS = false;
     /** @internal */
     public _badDesktopOS = false;
