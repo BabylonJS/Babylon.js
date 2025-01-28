@@ -5,6 +5,8 @@ import { Logger } from "core/Misc/logger";
 import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import type { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
 import type { IGLTF } from "../../glTFLoaderInterfaces";
+import { Constants } from "core/Engines/constants";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
@@ -314,7 +316,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "output" },
+                value: { name: "value" },
             },
         },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
@@ -356,7 +358,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "output" },
+                value: { name: "value" }, // TODO - output or value?
             },
         },
     },
@@ -511,7 +513,84 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
     "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
     "math/matmul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
-    // TODO
+    "math/combine2x2": {
+        blocks: [FlowGraphBlockNames.CombineMatrix2D],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+                c: { name: "input_2", gltfType: "number" },
+                d: { name: "input_3", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    "math/extract2x2": {
+        blocks: [FlowGraphBlockNames.ExtractMatrix2D],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "float2x2" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+                "2": { name: "output_2" },
+                "3": { name: "output_3" },
+            },
+        },
+    },
+    "math/combine3x3": {
+        blocks: [FlowGraphBlockNames.CombineMatrix3D],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+                c: { name: "input_2", gltfType: "number" },
+                d: { name: "input_3", gltfType: "number" },
+                e: { name: "input_4", gltfType: "number" },
+                f: { name: "input_5", gltfType: "number" },
+                g: { name: "input_6", gltfType: "number" },
+                h: { name: "input_7", gltfType: "number" },
+                i: { name: "input_8", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    "math/extract3x3": {
+        blocks: [FlowGraphBlockNames.ExtractMatrix3D],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "float3x3" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+                "2": { name: "output_2" },
+                "3": { name: "output_3" },
+                "4": { name: "output_4" },
+                "5": { name: "output_5" },
+                "6": { name: "output_6" },
+                "7": { name: "output_7" },
+                "8": { name: "output_8" },
+            },
+        },
+    },
     "math/combine4x4": {
         blocks: [FlowGraphBlockNames.CombineMatrix],
         configuration: {},
@@ -602,11 +681,99 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    // skipping some int-nodes as they repeat the float ones.
-    "math/not": getSimpleInputMapping(FlowGraphBlockNames.BitwiseNot),
-    "math/and": getSimpleInputMapping(FlowGraphBlockNames.BitwiseAnd, ["a", "b"]),
-    "math/or": getSimpleInputMapping(FlowGraphBlockNames.BitwiseOr, ["a", "b"]),
-    "math/xor": getSimpleInputMapping(FlowGraphBlockNames.BitwiseXor, ["a", "b"]),
+    "math/not": {
+        blocks: [FlowGraphBlockNames.BitwiseNot],
+        inputs: {
+            values: {
+                a: { name: "input" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            // try to infer the type or fallback to Integer
+            const socketIn = serializedObjects[0].dataInputs[0];
+            serializedObjects[0].config.valueType = context._connectionValues[socketIn.uniqueId]?.type ?? FlowGraphTypes.Integer;
+            return serializedObjects;
+        },
+    },
+    "math/and": {
+        blocks: [FlowGraphBlockNames.BitwiseAnd],
+        inputs: {
+            values: {
+                a: { name: "a" },
+                b: { name: "b" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            // try to infer the type or fallback to Integer
+            const socketInA = serializedObjects[0].dataInputs[0];
+            const socketInB = serializedObjects[0].dataInputs[1];
+            serializedObjects[0].config.valueType =
+                context._connectionValues[socketInA.uniqueId]?.type ?? context._connectionValues[socketInB.uniqueId]?.type ?? FlowGraphTypes.Integer;
+            return serializedObjects;
+        },
+    },
+    "math/or": {
+        blocks: [FlowGraphBlockNames.BitwiseOr],
+        inputs: {
+            values: {
+                a: { name: "a" },
+                b: { name: "b" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            // try to infer the type or fallback to Integer
+            const socketInA = serializedObjects[0].dataInputs[0];
+            const socketInB = serializedObjects[0].dataInputs[1];
+            serializedObjects[0].config.valueType =
+                context._connectionValues[socketInA.uniqueId]?.type ?? context._connectionValues[socketInB.uniqueId]?.type ?? FlowGraphTypes.Integer;
+            return serializedObjects;
+        },
+    },
+    "math/xor": {
+        blocks: [FlowGraphBlockNames.BitwiseXor],
+        inputs: {
+            values: {
+                a: { name: "a" },
+                b: { name: "b" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            // try to infer the type or fallback to Integer
+            const socketInA = serializedObjects[0].dataInputs[0];
+            const socketInB = serializedObjects[0].dataInputs[1];
+            serializedObjects[0].config.valueType =
+                context._connectionValues[socketInA.uniqueId]?.type ?? context._connectionValues[socketInB.uniqueId]?.type ?? FlowGraphTypes.Integer;
+            return serializedObjects;
+        },
+    },
     "math/asr": getSimpleInputMapping(FlowGraphBlockNames.BitwiseRightShift, ["a", "b"]),
     "math/lsl": getSimpleInputMapping(FlowGraphBlockNames.BitwiseLeftShift, ["a", "b"]),
     "math/clz": getSimpleInputMapping(FlowGraphBlockNames.LeadingZeros),
@@ -788,6 +955,76 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
+    "variable/interpolate": {
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
+        configuration: {
+            variable: {
+                name: "variable",
+                gltfType: "number",
+                flowGraphType: "string",
+                inOptions: true,
+                isVariable: true,
+                dataTransformer(index, variables) {
+                    return variables?.[index].name;
+                },
+                toBlock: FlowGraphBlockNames.GetVariable,
+            },
+        },
+        inputs: {
+            values: {
+                value: { name: "value-1" },
+                duration: { name: "duration-1", gltfType: "number" },
+                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.Easing },
+                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.Easing },
+            },
+            flows: {
+                in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
+            },
+        },
+        outputs: {
+            flows: {
+                err: { name: "error", toBlock: FlowGraphBlockNames.PlayAnimation },
+                out: { name: "out", toBlock: FlowGraphBlockNames.PlayAnimation },
+                done: { name: "done", toBlock: FlowGraphBlockNames.PlayAnimation },
+            },
+        },
+        interBlockConnectors: [
+            {
+                input: "propertyName",
+                output: "propertyName",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "animation",
+                output: "animation",
+                inputBlockIndex: 2,
+                outputBlockIndex: 0,
+            },
+            {
+                input: "easingFunction",
+                output: "easingFunction",
+                inputBlockIndex: 0,
+                outputBlockIndex: 3,
+            },
+            {
+                input: "value-0",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+        ],
+        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            // is useSlerp is used, animationType should be set to be quaternion!
+            const serializedValueInterpolation = serializedObjects[0];
+            if (serializedValueInterpolation.config.useSlerp) {
+                serializedValueInterpolation.config.animationType = Constants.ANIMATIONTYPE_QUATERNION;
+                serializedValueInterpolation.config.useSlerp = undefined;
+            }
+
+            return serializedObjects;
+        },
+    },
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
         configuration: {
@@ -921,21 +1158,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
-            // connect the pointer to the getProperty block
-            // connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
-            // connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
-            // connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
-            // connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
-            // connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
-            // connectFlowGraphNodes("easingFunction", "easingFunction", serializedObjects[0], serializedObjects[3], true);
-            // search for p1 and p2 and remove them, for now
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config = serializedObject.config || {};
                     serializedObject.config.outputValue = true;
                 } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
-                    // remove the p1 and p2
                     serializedObject.config = serializedObject.config || {};
                     Object.keys(gltfBlock.values || []).forEach((key) => {
                         const value = gltfBlock.values?.[key];
@@ -1129,10 +1357,10 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
 10. **Swizzle Nodes**
     - Combine (`math/combine2`, `math/combine3`, `math/combine4`, `math/combine2x2`, `math/combine3x3`, `math/combine4x4`)
         FlowGraphBlockNames.CombineVector2, FlowGraphBlockNames.CombineVector3, FlowGraphBlockNames.CombineVector4
-        TODO TODO FlowGraphBlockNames.CombineMatrix
+        FlowGraphBlockNames.CombineMatrix2D, FlowGraphBlockNames.CombineMatrix3D, FlowGraphBlockNames.CombineMatrix
     - Extract (`math/extract2`, `math/extract3`, `math/extract4`, `math/extract2x2`, `math/extract3x3`, `math/extract4x4`)
         FlowGraphBlockNames.ExtractVector2, FlowGraphBlockNames.ExtractVector3, FlowGraphBlockNames.ExtractVector4
-        TODO TODO FlowGraphBlockNames.ExtractMatrix
+        FlowGraphBlockNames.ExtractMatrix2D, FlowGraphBlockNames.ExtractMatrix3D, FlowGraphBlockNames.ExtractMatrix
 11. **Integer Arithmetic Nodes**
     - Absolute Value (`math/abs`) FlowGraphBlockNames.Abs
     - Sign (`math/sign`) FlowGraphBlockNames.Sign
@@ -1163,10 +1391,10 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
     - Count One Bits (`math/popcnt`) FlowGraphBlockNames.OneBitsCounter
 14. **Boolean Arithmetic Nodes**
     - Equality (`math/eq`) FlowGraphBlockNames.Equality
-    - Boolean NOT (`math/not`) TODO
-    - Boolean AND (`math/and`) TODO
-    - Boolean OR (`math/or`) TODO
-    - Boolean XOR (`math/xor`) TODO
+    - Boolean NOT (`math/not`) FlowGraphBlockNames.BitwiseNot
+    - Boolean AND (`math/and`) FlowGraphBlockNames.BitwiseAnd
+    - Boolean OR (`math/or`) FlowGraphBlockNames.BitwiseOr
+    - Boolean XOR (`math/xor`) FlowGraphBlockNames.BitwiseXor
 
 ### Type Conversion Nodes
 1. **Boolean Conversion Nodes**
