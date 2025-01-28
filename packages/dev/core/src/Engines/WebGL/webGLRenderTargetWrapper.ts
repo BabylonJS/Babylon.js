@@ -6,7 +6,7 @@ import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
 import type { WebGLHardwareTexture } from "./webGLHardwareTexture";
-import { HasStencilAspect } from "../../Materials/Textures/internalTexture";
+import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 /** @internal */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {

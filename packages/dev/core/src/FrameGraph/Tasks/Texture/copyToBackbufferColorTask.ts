@@ -19,6 +19,8 @@ export class FrameGraphCopyToBackbufferColorTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
+        pass.addDependencies(this.sourceTexture);
+
         pass.setRenderTarget(backbufferColorTextureHandle);
         pass.setExecuteFunc((context) => {
             if (!context.isBackbuffer(this.sourceTexture)) {

@@ -7,7 +7,11 @@ test.beforeAll(async () => {
     test.setTimeout(30000);
 });
 
-const url = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339");
+// if running in the CI we need to use the babylon snapshot when loading the tools
+const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
+const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.SANDBOX_PORT || ":1339")) + snapshot;
+
+console.log("Running tests on: ", url);
 
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
@@ -53,7 +57,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
 });
 
 test("loading a model using query parameters", async ({ page }) => {
-    await page.goto(url + "?assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
+    await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "networkidle",
     });
     await page.setViewportSize({
@@ -68,7 +72,7 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
-    await page.goto(url + "?assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
+    await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "networkidle",
     });
     await page.setViewportSize({

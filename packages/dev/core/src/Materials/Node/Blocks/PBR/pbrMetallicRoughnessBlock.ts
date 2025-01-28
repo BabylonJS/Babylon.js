@@ -974,10 +974,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 ,vec4${state.fSuffix}(1.)
                 ,vec2${state.fSuffix}(1., 1.)
             #endif
+                ,1. /* Base Weight */
             #ifdef OPACITY
                 ,vec4${state.fSuffix}(${opacity})
                 ,vec2${state.fSuffix}(1., 1.)
-            #endif                
+            #endif
             );
 
             ${state._declareLocalVar("surfaceAlbedo", NodeMaterialBlockConnectionPointTypes.Vector3)} = albedoOpacityOut.surfaceAlbedo;

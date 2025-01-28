@@ -11,6 +11,11 @@ fn albedoOpacityBlock(
     ,albedoTexture: vec4f
     ,albedoInfos: vec2f
 #endif
+    , baseWeight: f32
+#ifdef BASEWEIGHT
+    , baseWeightTexture: vec4f
+    , vBaseWeightInfos: vec2f
+#endif
 #ifdef OPACITY
     ,opacityMap: vec4f
     ,vOpacityInfos: vec2f
@@ -63,6 +68,17 @@ fn albedoOpacityBlock(
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
 
+    // According to OpenPBR:
+    // - for metals, base_weight is a factor to the base_color (F0, thus surfaceAlbedo in
+    //   Babylons.js).
+    // - for dielectrics, base_weight is a factor to the diffuse BRDF (i.e. it should be
+    //   applied in computeDiffuseLighting), but with the diffuse model *currently* used
+    //   in Babylon.js, factoring it into the surfaceAlbedo is equivalent.
+    surfaceAlbedo *= baseWeight;
+    #ifdef BASEWEIGHT
+        surfaceAlbedo *= baseWeightTexture.r;
+    #endif
+
     // _____________________________ Alpha Information _______________________________
     #ifdef OPACITY
         #ifdef OPACITYRGB
@@ -79,7 +95,7 @@ fn albedoOpacityBlock(
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
-        #ifdef ALPHATEST 
+        #ifdef ALPHATEST
             #if DEBUGMODE != 88
                 if (alpha < ALPHATESTVALUE) {
                     discard;

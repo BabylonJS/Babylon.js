@@ -34,8 +34,8 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
             });
         });
 
-        this._addInternalDependencies(this.circleOfConfusionTexture);
-        this._addInternalDependencies(this.blurSteps);
+        pass.addDependencies(this.circleOfConfusionTexture);
+        pass.addDependencies(this.blurSteps);
 
         return pass;
     }

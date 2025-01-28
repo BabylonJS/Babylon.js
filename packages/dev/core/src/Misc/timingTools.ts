@@ -18,7 +18,7 @@ export class TimingTools {
     }
 }
 
-function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any) => void) {
+function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
     try {
         if (condition()) {
             onSuccess();
@@ -37,7 +37,7 @@ function _runWithCondition(condition: () => boolean, onSuccess: () => void, onEr
 export const _retryWithInterval = (
     condition: () => boolean,
     onSuccess: () => void,
-    onError?: (e?: any) => void,
+    onError?: (e?: any, isTimeout?: boolean) => void,
     step = 16,
     maxTimeout = 30000,
     checkConditionOnCall: boolean = true,
@@ -48,7 +48,7 @@ export const _retryWithInterval = (
         // that means that one of the two happened - either the condition is true or an exception was thrown when checking the condition
         if (_runWithCondition(condition, onSuccess, onError)) {
             // don't schedule the interval, no reason to check it again.
-            return;
+            return null;
         }
     }
     const int = setInterval(() => {
@@ -58,8 +58,9 @@ export const _retryWithInterval = (
             maxTimeout -= step;
             if (maxTimeout < 0) {
                 clearInterval(int);
-                onError?.(new Error("Operation timed out after maximum retries. " + (additionalStringOnTimeout || "")));
+                onError?.(new Error("Operation timed out after maximum retries. " + (additionalStringOnTimeout || "")), true);
             }
         }
     }, step);
+    return () => clearInterval(int);
 };

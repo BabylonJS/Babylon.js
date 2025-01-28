@@ -353,6 +353,8 @@ export class NodeRenderGraphBlock {
         this._buildBlock(state);
 
         if (this._frameGraphTask) {
+            this._frameGraphTask.dependencies = undefined;
+
             const dependenciesConnectedPoint = this.getInputByName("dependencies")?.connectedPoint;
             if (dependenciesConnectedPoint) {
                 if (dependenciesConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {

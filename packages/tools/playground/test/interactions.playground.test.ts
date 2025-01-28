@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-const url = process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.PLAYGROUND_PORT || ":1338");
+// if running in the CI we need to use the babylon snapshot when loading the tools
+const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
+const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.PLAYGROUND_PORT || ":1338")) + snapshot;
+
+console.log("Running tests on: ", url);
 
 test("Playground is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {

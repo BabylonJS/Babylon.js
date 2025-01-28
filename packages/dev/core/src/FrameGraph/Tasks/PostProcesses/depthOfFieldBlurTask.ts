@@ -30,7 +30,7 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);
         });
 
-        this._addInternalDependencies(this.circleOfConfusionTexture);
+        pass.addDependencies(this.circleOfConfusionTexture);
 
         return pass;
     }

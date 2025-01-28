@@ -1,6 +1,7 @@
 export * from "./pbrAnisotropicConfiguration";
 export * from "./pbrBaseMaterial";
 export * from "./pbrBaseSimpleMaterial";
+export * from "./pbrBRDFConfiguration";
 export * from "./pbrClearCoatConfiguration";
 export * from "./pbrIridescenceConfiguration";
 export * from "./pbrMaterial";

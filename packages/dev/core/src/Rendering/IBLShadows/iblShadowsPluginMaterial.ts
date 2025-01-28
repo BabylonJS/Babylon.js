@@ -15,6 +15,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  */
 class MaterialIBLShadowsRenderDefines extends MaterialDefines {
     public RENDER_WITH_IBL_SHADOWS = false;
+    public COLORED_IBL_SHADOWS = false;
 }
 
 /**
@@ -39,6 +40,17 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public shadowOpacity: number = 1.0;
 
     private _isEnabled = false;
+    private _isColored = false;
+    public get isColored(): boolean {
+        return this._isColored;
+    }
+    public set isColored(value: boolean) {
+        if (this._isColored === value) {
+            return;
+        }
+        this._isColored = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
     /**
      * Defines if the plugin is enabled in the material.
      */
@@ -68,6 +80,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
 
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
         defines.RENDER_WITH_IBL_SHADOWS = this._isEnabled;
+        defines.COLORED_IBL_SHADOWS = this.isColored;
     }
 
     public override getClassName() {
@@ -110,11 +123,19 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     var iblShadowsTextureSampler: sampler;
                     var iblShadowsTexture: texture_2d<f32>;
 
-                    fn computeIndirectShadow() -> vec2f {
-                        var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
-                        var shadowValue: vec2f = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).rg;
-                        return mix(shadowValue, vec2f(1.0), 1.0 - uniforms.shadowOpacity);
-                    }
+                    #ifdef COLORED_IBL_SHADOWS
+                        fn computeIndirectShadow() -> vec3f {
+                            var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
+                            var shadowValue: vec3f = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).rgb;
+                            return mix(shadowValue, vec3f(1.0), 1.0 - uniforms.shadowOpacity);
+                        }
+                    #else
+                        fn computeIndirectShadow() -> vec2f {
+                            var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
+                            var shadowValue: vec2f = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).rg;
+                            return mix(shadowValue, vec2f(1.0), 1.0 - uniforms.shadowOpacity);
+                        }
+                    #endif
                 #endif
             `,
             };
@@ -124,17 +145,28 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef REFLECTION
-                        var shadowValue: vec2f = computeIndirectShadow();
-                        finalIrradiance *= vec3f(shadowValue.x);
-                        finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                        #ifdef COLORED_IBL_SHADOWS
+                            var shadowValue: vec3f = computeIndirectShadow();
+                            finalIrradiance *= shadowValue;
+                            finalRadianceScaled *= mix(vec3f(1.0), shadowValue, roughness);
+                        #else
+                            var shadowValue: vec2f = computeIndirectShadow();
+                            finalIrradiance *= vec3f(shadowValue.x);
+                            finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                        #endif
                     #endif
                 #endif
             `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    var shadowValue: vec2f = computeIndirectShadow();
-                    color *= toGammaSpace(vec4f(shadowValue.x, shadowValue.x, shadowValue.x, 1.0f));
+                    #ifdef COLORED_IBL_SHADOWS
+                        var shadowValue: vec3f = computeIndirectShadow();
+                        color *= toGammaSpace(vec4f(shadowValue, 1.0f));
+                    #else
+                        var shadowValue: vec2f = computeIndirectShadow();
+                        color *= toGammaSpace(vec4f(shadowValue.x, shadowValue.x, shadowValue.x, 1.0f));
+                    #endif
                 #endif
             `;
             }
@@ -144,12 +176,19 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     uniform sampler2D iblShadowsTexture;
-
+                #ifdef COLORED_IBL_SHADOWS
+                    vec3 computeIndirectShadow() {
+                        vec2 uv = gl_FragCoord.xy / renderTargetSize;
+                        vec3 shadowValue = texture2D(iblShadowsTexture, uv).rgb;
+                        return mix(shadowValue.rgb, vec3(1.0), 1.0 - shadowOpacity);
+                    }
+                #else
                     vec2 computeIndirectShadow() {
                         vec2 uv = gl_FragCoord.xy / renderTargetSize;
                         vec2 shadowValue = texture2D(iblShadowsTexture, uv).rg;
                         return mix(shadowValue.rg, vec2(1.0), 1.0 - shadowOpacity);
                     }
+                #endif
                 #endif
             `,
             };
@@ -159,17 +198,28 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef REFLECTION
-                        vec2 shadowValue = computeIndirectShadow();
-                        finalIrradiance *= shadowValue.x;
-                        finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                        #ifdef COLORED_IBL_SHADOWS
+                            vec3 shadowValue = computeIndirectShadow();
+                            finalIrradiance.rgb *= shadowValue.rgb;
+                            finalRadianceScaled *= mix(vec3(1.0), shadowValue.rgb, roughness);
+                        #else
+                            vec2 shadowValue = computeIndirectShadow();
+                            finalIrradiance *= shadowValue.x;
+                            finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                        #endif
                     #endif
                 #endif
             `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    vec2 shadowValue = computeIndirectShadow();
-                    color.rgb *= toGammaSpace(shadowValue.x);
+                    #ifdef COLORED_IBL_SHADOWS
+                        vec3 shadowValue = computeIndirectShadow();
+                        color.rgb *= toGammaSpace(shadowValue.rgb);
+                    #else
+                        vec2 shadowValue = computeIndirectShadow();
+                        color.rgb *= toGammaSpace(shadowValue.x);
+                    #endif
                 #endif
             `;
             }

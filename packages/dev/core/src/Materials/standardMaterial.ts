@@ -226,6 +226,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
+    public AREALIGHTSUPPORTED = true;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -1220,6 +1221,15 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         // Misc.
         PrepareDefinesForMisc(
             mesh,
@@ -1424,6 +1434,8 @@ export class StandardMaterial extends PushMaterial {
                 "morphTargets",
                 "oitDepthSampler",
                 "oitFrontColorSampler",
+                "areaLightsLTC1Sampler",
+                "areaLightsLTC2Sampler",
             ];
 
             const uniformBuffers = ["Material", "Scene", "Mesh"];
@@ -1707,6 +1719,8 @@ export class StandardMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
+                    } else {
+                        ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {

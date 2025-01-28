@@ -863,7 +863,8 @@ export class GLTFExporter {
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
-                stateLH.getNodesSet()
+                stateLH.getNodesSet(),
+                this._options.shouldExportAnimation
             );
         }
     }

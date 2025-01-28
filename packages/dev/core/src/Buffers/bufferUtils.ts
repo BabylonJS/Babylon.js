@@ -4,6 +4,14 @@ import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "
 
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
 
+export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
+    new (length: number): T;
+    new (elements: Iterable<number>): T;
+    new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
+    readonly BYTES_PER_ELEMENT: number;
+}
+
+
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
         case Constants.BYTE: {
@@ -121,11 +129,11 @@ export function GetTypeByteLength(type: number): number {
 
 /**
  * Gets the appropriate TypedArray constructor for the given component type.
- * @param type the component type
+ * @param componentType the component type
  * @returns the constructor object
  */
-function GetTypedArrayConstructor(type: number) {
-    switch (type) {
+export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor {
+    switch (componentType) {
         case Constants.BYTE:
             return Int8Array;
         case Constants.UNSIGNED_BYTE:
@@ -141,7 +149,7 @@ function GetTypedArrayConstructor(type: number) {
         case Constants.FLOAT:
             return Float32Array;
         default:
-            throw new Error(`Invalid type '${type}'`);
+            throw new Error(`Invalid component type '${componentType}'`);
     }
 }
 

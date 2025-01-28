@@ -53,6 +53,14 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public override getClassName() {
+        return "NodeRenderGraphBasePostProcessBlock";
+    }
+
+    /**
      * Gets the source input component
      */
     public get source(): NodeRenderGraphConnectionPoint {

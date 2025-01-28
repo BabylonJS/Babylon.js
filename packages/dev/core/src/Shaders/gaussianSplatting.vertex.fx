@@ -8,6 +8,8 @@
 #include<fogVertexDeclaration>
 #include<logDepthDeclaration>
 
+#include<helperFunctions>
+
 // Attributes
 attribute float splatIndex;
 
@@ -48,7 +50,10 @@ void main () {
     vPosition = position;
 
 #if SH_DEGREE > 0
-    vec3 dir = normalize(worldPos.xyz - vEyePosition.xyz);
+    mat3 worldRot = mat3(world);
+    mat3 normWorldRot = inverseMat3(worldRot);
+
+    vec3 dir = normalize(normWorldRot * (worldPos.xyz - vEyePosition.xyz));
     dir.y *= -1.; // Up is inverted. This corresponds to change in _makeSplat method
     vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif
