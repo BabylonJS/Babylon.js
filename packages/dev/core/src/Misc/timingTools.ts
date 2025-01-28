@@ -1,4 +1,4 @@
-import { IsWindowObjectExist } from "./domManagement";
+const ImmediateQueue: Array<() => void> = [];
 
 /**
  * Class used to provide helper for timing
@@ -9,12 +9,26 @@ export class TimingTools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (IsWindowObjectExist() && window.setImmediate) {
-            // Note - deprecated and should not be used directly. Not supported in any browser.
-            window.setImmediate(action);
-        } else {
-            setTimeout(action, 1);
-        }
+        ImmediateQueue.push(action);
+    }
+}
+
+/**
+ * @internal
+ */
+export function _RunImmediateQueue() {
+    if (ImmediateQueue.length) {
+        // Execute all immediate functions
+        // Doing a copy even though it should be fine but I do not want to deal with race conditions
+        // in the future. So, let's be safe.
+        const functionsToCall = ImmediateQueue.slice(0);
+        ImmediateQueue.length = 0;
+
+        setTimeout(() => {
+            for (let i = 0; i < functionsToCall.length; i++) {
+                functionsToCall[i]();
+            }
+        }, 1);
     }
 }
 
