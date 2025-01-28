@@ -63,6 +63,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     viewerrender: Event;
     environmentchange: Event;
+    environmentconfigurationchange: Event;
     environmenterror: ErrorEvent;
     modelchange: CustomEvent<Nullable<string | File | ArrayBufferView>>;
     modelerror: ErrorEvent;
@@ -571,7 +572,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public environmentIntensity: Nullable<number> = null;
 
     /**
-     * A value in degrees that specifies the rotation of the environment.
+     * A value in radians that specifies the rotation of the environment.
      */
     @property({
         type: Number,
@@ -1129,6 +1130,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.viewer.onEnvironmentChanged.add(() => {
                     this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
+                });
+
+                details.viewer.onEnvironmentConfigurationChanged.add(() => {
+                    this._dispatchCustomEvent("environmentconfigurationchange", (type) => new Event(type));
                 });
 
                 details.viewer.onEnvironmentError.add((error) => {

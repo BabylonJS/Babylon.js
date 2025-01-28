@@ -90,6 +90,10 @@ void main(void) {
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
+#ifdef BASEWEIGHT
+    vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
+#endif
+
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 #endif
@@ -103,6 +107,11 @@ void main(void) {
     #ifdef ALBEDO
         , albedoTexture
         , vAlbedoInfos
+    #endif
+        , baseWeight
+    #ifdef BASEWEIGHT
+        , baseWeightTexture
+        , vBaseWeightInfos
     #endif
     #ifdef OPACITY
         , opacityMap
@@ -138,14 +147,14 @@ void main(void) {
     #ifdef AMBIENT
         ambientOcclusionColorMap,
         vAmbientInfos
-    #endif        
+    #endif
     );
 
     #include<pbrBlockLightmapInit>
 
 #ifdef UNLIT
     vec3 diffuseBase = vec3(1., 1., 1.);
-#else
+#else // !UNLIT
 
     // _____________________________ Reflectivity _______________________________
     vec3 baseColor = surfaceAlbedo;
@@ -257,7 +266,7 @@ void main(void) {
         #endif
             TBN,
             normalW,
-            viewDirectionW            
+            viewDirectionW
         );
     #endif
 
@@ -612,7 +621,7 @@ void main(void) {
 
     // _____________________________ Compute Final Lit Components ________________________
     #include<pbrBlockFinalLitComponents>
-#endif // UNLIT
+#endif // !UNLIT
 
     #include<pbrBlockFinalUnlitComponents>
 

@@ -1,4 +1,5 @@
 #include<samplerFragmentDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_SAMPLERNAME_,albedo)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight,_SAMPLERNAME_,baseWeight)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_SAMPLERNAME_,ambient)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
@@ -43,7 +44,7 @@
     #ifdef REFLECTIONMAP_3D
         var reflectionSamplerSampler: sampler;
         var reflectionSampler: texture_cube<f32>;
-        
+
         #ifdef LODBASEDMICROSFURACE
         #else
             var reflectionLowSamplerSampler: sampler;
@@ -89,11 +90,19 @@
     var environmentBrdfSampler: texture_2d<f32>;
 #endif
 
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+    var areaLightsLTC1SamplerSampler: sampler;
+    var areaLightsLTC1Sampler: texture_2d<f32>;
+    var areaLightsLTC2SamplerSampler: sampler;
+    var areaLightsLTC2Sampler: texture_2d<f32>;
+#endif
+
+
 // SUBSURFACE
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
         #ifdef SS_REFRACTIONMAP_3D
-            
+
             var refractionSamplerSampler: sampler;
             var refractionSampler: texture_cube<f32>;
 
@@ -105,7 +114,7 @@
                 var refractionHighSampler: texture_cube<f32>;
             #endif
         #else
-            
+
             var refractionSamplerSampler: sampler;
             var refractionSampler: texture_2d<f32>;
 

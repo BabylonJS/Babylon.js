@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "OpenPBR Base Weight",
+            "playgroundId": "#DT1XPP#4",
+            "referenceImage": "openpbr_base_weight.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
@@ -575,6 +580,16 @@
             "renderCount": 5,
             "playgroundId": "#P7N8YW#1",
             "referenceImage": "highlights.png"
+        },
+        {
+            "title": "Area Lights - Standard Material",
+            "playgroundId": "#T7FXR8#11",
+            "referenceImage": "areaLightsStandardMaterial.png"
+        },
+        {
+            "title": "Area Lights - PBR",
+            "playgroundId": "#T7FXR8#12",
+            "referenceImage": "areaLightsPBRMaterial.png"
         },
         {
             "title": "Lines",

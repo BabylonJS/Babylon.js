@@ -290,14 +290,16 @@ export class NodeRenderGraph {
             this._autoFillExternalInputs();
         }
 
-        this.outputBlock.build(state);
+        try {
+            this.outputBlock.build(state);
 
-        this._frameGraph.build();
+            this._frameGraph.build();
+        } finally {
+            this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
-        this._buildId = NodeRenderGraph._BuildIdGenerator++;
-
-        if (state.emitErrors(this.onBuildErrorObservable)) {
-            this.onBuildObservable.notifyObservers(this);
+            if (state.emitErrors(this.onBuildErrorObservable)) {
+                this.onBuildObservable.notifyObservers(this);
+            }
         }
     }
 

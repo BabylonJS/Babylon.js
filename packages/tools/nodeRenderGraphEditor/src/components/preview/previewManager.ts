@@ -26,7 +26,6 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/T
 import type { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { BoundingBox } from "core/Culling/boundingBox";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
-import { FrameGraph } from "core/FrameGraph/frameGraph";
 import type { Mesh } from "core/Meshes";
 
 const useWebGPU = false;
@@ -398,12 +397,10 @@ export class PreviewManager {
             await this._nodeRenderGraph.whenReadyAsync(16, 5000);
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
-            if (err !== FrameGraph.WhenReadyRejectionDisposed) {
-                if (logErrorTrace) {
-                    (console as any).log(err);
-                }
-                this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
+            if (logErrorTrace) {
+                (console as any).log(err);
             }
+            this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
         }
     }
 

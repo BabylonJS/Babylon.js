@@ -297,6 +297,7 @@ export class SpriteRenderer {
         );
 
         this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
+        this._drawWrapperBase.effect._refCount++;
         this._drawWrapperDepth.materialContext = this._drawWrapperBase.materialContext;
     }
 

@@ -10,20 +10,30 @@ import type {
     FrameGraphTextureOptions,
     FrameGraphTextureDescription,
     RenderTargetWrapper,
+    FrameGraphTask,
+    IFrameGraphPass,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import { Constants } from "../Engines/constants";
-import { InternalTextureSource, GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
+import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { FrameGraphRenderTarget } from "./frameGraphRenderTarget";
+import { FrameGraphRenderPass } from "./Passes/renderPass";
+import { Logger } from "../Misc/logger";
+import { GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 type HistoryTexture = {
     textures: Array<Nullable<InternalTexture>>;
     handles: Array<FrameGraphTextureHandle>;
     index: number; // current index in textures array
     references: Array<{ renderTargetWrapper: RenderTargetWrapper; textureIndex: number }>; // render target wrappers that reference this history texture
+};
+
+type TextureLifespan = {
+    firstTask: number;
+    lastTask: number;
 };
 
 type TextureEntry = {
@@ -34,6 +44,9 @@ type TextureEntry = {
     textureIndex?: number; // Index of the texture in the types, formats, etc array of FrameGraphTextureOptions (default: 0)
     debug?: Texture;
     refHandle?: FrameGraphTextureHandle; // Handle of the texture this one is referencing - used for dangling handles
+    textureDescriptionHash?: string; // a hash of the texture creation options
+    lifespan?: TextureLifespan;
+    aliasHandle?: FrameGraphTextureHandle; // Handle of the texture this one is aliasing - can be set after execution of texture allocation optimization
 };
 
 enum FrameGraphTextureNamespace {
@@ -57,6 +70,11 @@ export class FrameGraphTextureManager {
 
     /** @internal */
     public _isRecordingTask = false;
+
+    /**
+     * Gets or sets a boolean indicating if debug logs should be shown when applying texture allocation optimization (default: false)
+     */
+    public showDebugLogsForTextureAllcationOptimization = false;
 
     /**
      * Constructs a new instance of the texture manager
@@ -371,13 +389,63 @@ export class FrameGraphTextureManager {
         };
     }
 
+    /**
+     * Calculates the total byte size of all textures used by the frame graph texture manager (including external textures)
+     * @param optimizedSize True if the calculation should not factor in aliased textures
+     * @param outputWidth The output width of the frame graph. Will be used to calculate the size of percentage-based textures
+     * @param outputHeight The output height of the frame graph. Will be used to calculate the size of percentage-based textures
+     * @returns The total size of all textures
+     */
+    public computeTotalTextureSize(optimizedSize: boolean, outputWidth: number, outputHeight: number) {
+        let totalSize = 0;
+
+        this._textures.forEach((entry, handle) => {
+            if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle || entry.refHandle !== undefined) {
+                return;
+            }
+            if (optimizedSize && entry.aliasHandle !== undefined) {
+                return;
+            }
+
+            const options = entry.creationOptions;
+            const textureIndex = entry.textureIndex || 0;
+            const dimensions = options.sizeIsPercentage ? this.getAbsoluteDimensions(options.size, outputWidth, outputHeight) : getDimensionsFromTextureSize(options.size);
+
+            const blockInfo = FrameGraphTextureManager._GetTextureBlockInformation(
+                options.options.types?.[textureIndex] ?? Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                options.options.formats![textureIndex]
+            );
+
+            const textureByteSize = Math.ceil(dimensions.width / blockInfo.width) * Math.ceil(dimensions.height / blockInfo.height) * blockInfo.length;
+
+            let byteSize = textureByteSize;
+
+            if (options.options.createMipMaps) {
+                byteSize = Math.floor((byteSize * 4) / 3);
+            }
+
+            if ((options.options.samples || 1) > 1) {
+                // We need an additional texture in the case of MSAA
+                byteSize += textureByteSize;
+            }
+
+            totalSize += byteSize;
+        });
+
+        return totalSize;
+    }
+
     /** @internal */
     public _dispose(): void {
         this._releaseTextures();
     }
 
     /** @internal */
-    public _allocateTextures() {
+    public _allocateTextures(tasks?: FrameGraphTask[]): void {
+        if (tasks) {
+            this._optimizeTextureAllocation(tasks);
+        }
+
         this._textures.forEach((entry) => {
             if (!entry.texture) {
                 if (entry.refHandle !== undefined) {
@@ -394,38 +462,45 @@ export class FrameGraphTextureManager {
                         entry.refHandle = backbufferDepthStencilTextureHandle;
                     }
                 } else if (entry.namespace !== FrameGraphTextureNamespace.External) {
-                    const creationOptions = entry.creationOptions;
-                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
-                    const textureIndex = entry.textureIndex || 0;
+                    if (entry.aliasHandle !== undefined) {
+                        const aliasEntry = this._textures.get(entry.aliasHandle)!;
 
-                    const internalTextureCreationOptions: InternalTextureCreationOptions = {
-                        createMipMaps: creationOptions.options.createMipMaps,
-                        samples: creationOptions.options.samples,
-                        type: creationOptions.options.types?.[textureIndex],
-                        format: creationOptions.options.formats?.[textureIndex],
-                        useSRGBBuffer: creationOptions.options.useSRGBBuffers?.[textureIndex],
-                        creationFlags: creationOptions.options.creationFlags?.[textureIndex],
-                        label: creationOptions.options.labels?.[textureIndex] ?? `${entry.name}${textureIndex > 0 ? "#" + textureIndex : ""}`,
-                        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                        createMSAATexture: creationOptions.options.samples! > 1,
-                    };
+                        entry.texture = aliasEntry.texture!;
+                        entry.texture.incrementReferences();
+                    } else {
+                        const creationOptions = entry.creationOptions;
+                        const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+                        const textureIndex = entry.textureIndex || 0;
 
-                    const isDepthTexture = IsDepthTexture(internalTextureCreationOptions.format!);
-                    const hasStencil = HasStencilAspect(internalTextureCreationOptions.format!);
-                    const source =
-                        isDepthTexture && hasStencil
-                            ? InternalTextureSource.DepthStencil
-                            : isDepthTexture || hasStencil
-                              ? InternalTextureSource.Depth
-                              : InternalTextureSource.RenderTarget;
+                        const internalTextureCreationOptions: InternalTextureCreationOptions = {
+                            createMipMaps: creationOptions.options.createMipMaps,
+                            samples: creationOptions.options.samples,
+                            type: creationOptions.options.types?.[textureIndex],
+                            format: creationOptions.options.formats?.[textureIndex],
+                            useSRGBBuffer: creationOptions.options.useSRGBBuffers?.[textureIndex],
+                            creationFlags: creationOptions.options.creationFlags?.[textureIndex],
+                            label: creationOptions.options.labels?.[textureIndex] ?? `${entry.name}${textureIndex > 0 ? "#" + textureIndex : ""}`,
+                            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                            createMSAATexture: creationOptions.options.samples! > 1,
+                        };
 
-                    const internalTexture = this.engine._createInternalTexture(size, internalTextureCreationOptions, false, source);
+                        const isDepthTexture = IsDepthTexture(internalTextureCreationOptions.format!);
+                        const hasStencil = HasStencilAspect(internalTextureCreationOptions.format!);
+                        const source =
+                            isDepthTexture && hasStencil
+                                ? InternalTextureSource.DepthStencil
+                                : isDepthTexture || hasStencil
+                                  ? InternalTextureSource.Depth
+                                  : InternalTextureSource.RenderTarget;
 
-                    if (isDepthTexture) {
-                        internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
+                        const internalTexture = this.engine._createInternalTexture(size, internalTextureCreationOptions, false, source);
+
+                        if (isDepthTexture) {
+                            internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
+                        }
+
+                        entry.texture = internalTexture;
                     }
-
-                    entry.texture = internalTexture;
                 }
             }
 
@@ -445,6 +520,13 @@ export class FrameGraphTextureManager {
     /** @internal */
     public _releaseTextures(releaseAll = true): void {
         this._textures.forEach((entry, handle) => {
+            if (entry.lifespan) {
+                entry.lifespan.firstTask = Number.MAX_VALUE;
+                entry.lifespan.lastTask = 0;
+            }
+
+            entry.aliasHandle = undefined;
+
             if (releaseAll || entry.namespace !== FrameGraphTextureNamespace.External) {
                 entry.debug?.dispose();
                 entry.debug = undefined;
@@ -582,6 +664,11 @@ export class FrameGraphTextureManager {
             },
             namespace,
             textureIndex,
+            textureDescriptionHash: this._createTextureDescriptionHash(creationOptions),
+            lifespan: {
+                firstTask: Number.MAX_VALUE,
+                lastTask: 0,
+            },
         };
 
         this._textures.set(handle, textureEntry);
@@ -623,6 +710,164 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
+    private _createTextureDescriptionHash(options: FrameGraphTextureCreationOptions): string {
+        const hash: string[] = [];
+
+        hash.push(textureSizeIsObject(options.size) ? `${options.size.width}_${options.size.height}` : `${options.size}`);
+        hash.push(options.sizeIsPercentage ? "%" : "A");
+        hash.push(options.options.createMipMaps ? "M" : "N");
+        hash.push(options.options.samples ? `${options.options.samples}` : "S1");
+        hash.push(options.options.types ? options.options.types.join("_") : `${Constants.TEXTURETYPE_UNSIGNED_BYTE}`);
+        hash.push(options.options.formats ? options.options.formats.join("_") : `${Constants.TEXTUREFORMAT_RGBA}`);
+        hash.push(options.options.useSRGBBuffers ? options.options.useSRGBBuffers.join("_") : "false");
+        hash.push(options.options.creationFlags ? options.options.creationFlags.join("_") : "0");
+
+        return hash.join("_");
+    }
+
+    private _optimizeTextureAllocation(tasks: FrameGraphTask[]): void {
+        this._computeTextureLifespan(tasks);
+
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Optimization of texture allocation ==================`);
+        }
+
+        const cache: Map<string, Array<[FrameGraphTextureHandle, Array<TextureLifespan>]>> = new Map();
+
+        const iterator = this._textures.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const textureHandle = key.value;
+            const textureEntry = this._textures.get(textureHandle)!;
+            if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
+                continue;
+            }
+
+            const textureHash = textureEntry.textureDescriptionHash!;
+            const textureLifespan = textureEntry.lifespan!;
+
+            const cacheEntries = cache.get(textureHash);
+            if (cacheEntries) {
+                let cacheEntryFound = false;
+                for (const cacheEntry of cacheEntries) {
+                    const [sourceHandle, lifespanArray] = cacheEntry;
+
+                    let overlapped = false;
+                    for (const lifespan of lifespanArray) {
+                        if (lifespan.firstTask <= textureLifespan.lastTask && lifespan.lastTask >= textureLifespan.firstTask) {
+                            overlapped = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlapped) {
+                        // No overlap between texture lifespan and all lifespans in the array, this texture can reuse the same entry cache
+                        if (this.showDebugLogsForTextureAllcationOptimization) {
+                            Logger.Log(`Texture ${textureHandle} (${textureEntry.name}) reuses cache entry ${sourceHandle}`);
+                        }
+
+                        lifespanArray.push(textureLifespan);
+                        textureEntry.aliasHandle = sourceHandle;
+                        cacheEntryFound = true;
+                        break;
+                    }
+                }
+                if (!cacheEntryFound) {
+                    cacheEntries.push([textureHandle, [textureLifespan]]);
+                }
+            } else {
+                cache.set(textureHash, [[textureHandle, [textureLifespan]]]);
+            }
+        }
+    }
+
+    // Loop through all task/pass dependencies and compute the lifespan of each texture (that is, the first task/pass that uses it and the last task/pass that uses it)
+    private _computeTextureLifespan(tasks: FrameGraphTask[]): void {
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Dump of texture dependencies for all tasks/passes ==================`);
+        }
+
+        for (let t = 0; t < tasks.length; ++t) {
+            const task = tasks[t];
+
+            if (task.passes.length > 0) {
+                this._computeTextureLifespanForPasses(task, t, task.passes);
+            }
+
+            if (task.passesDisabled.length > 0) {
+                this._computeTextureLifespanForPasses(task, t, task.passesDisabled);
+            }
+
+            if (task.dependencies) {
+                if (this.showDebugLogsForTextureAllcationOptimization) {
+                    Logger.Log(`task#${t} (${task.name}), global dependencies`);
+                }
+
+                this._updateLifespan(t * 100 + 99, task.dependencies);
+            }
+        }
+
+        if (this.showDebugLogsForTextureAllcationOptimization) {
+            Logger.Log(`================== Texture lifespans ==================`);
+            const iterator = this._textures.keys();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const textureHandle = key.value;
+                const textureEntry = this._textures.get(textureHandle)!;
+                if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
+                    continue;
+                }
+                Logger.Log(`${textureHandle} (${textureEntry.name}): ${textureEntry.lifespan!.firstTask} - ${textureEntry.lifespan!.lastTask}`);
+            }
+        }
+    }
+
+    private _computeTextureLifespanForPasses(task: FrameGraphTask, taskIndex: number, passes: IFrameGraphPass[]): void {
+        for (let p = 0; p < passes.length; ++p) {
+            const dependencies = new Set<FrameGraphTextureHandle>();
+            const pass = passes[p];
+
+            if (!FrameGraphRenderPass.IsRenderPass(pass)) {
+                continue;
+            }
+
+            pass.collectDependencies(dependencies);
+
+            if (this.showDebugLogsForTextureAllcationOptimization) {
+                Logger.Log(`task#${taskIndex} (${task.name}), pass#${p} (${pass.name})`);
+            }
+
+            this._updateLifespan(taskIndex * 100 + p, dependencies);
+        }
+    }
+
+    private _updateLifespan(passOrderNum: number, dependencies: Set<FrameGraphTextureHandle>) {
+        const iterator = dependencies.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const textureHandle = key.value;
+            let textureEntry = this._textures.get(textureHandle);
+            if (!textureEntry) {
+                throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
+            }
+            let handle = textureHandle;
+            while (textureEntry.refHandle !== undefined) {
+                handle = textureEntry.refHandle;
+                textureEntry = this._textures.get(handle);
+                if (!textureEntry) {
+                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
+                }
+            }
+            if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {
+                continue;
+            }
+
+            if (this.showDebugLogsForTextureAllcationOptimization) {
+                Logger.Log(`    ${handle} (${textureEntry.name})`);
+            }
+
+            textureEntry.lifespan!.firstTask = Math.min(textureEntry.lifespan!.firstTask, passOrderNum);
+            textureEntry.lifespan!.lastTask = Math.max(textureEntry.lifespan!.lastTask, passOrderNum);
+        }
+    }
+
     /**
      * Clones a texture options
      * @param options The options to clone
@@ -649,5 +894,159 @@ export class FrameGraphTextureManager {
                   creationFlags: options.creationFlags ? [...options.creationFlags] : undefined,
                   labels: options.labels ? [...options.labels] : undefined,
               };
+    }
+
+    /**
+     * Gets the texture block information.
+     * @param type Type of the texture.
+     * @param format Format of the texture.
+     * @returns The texture block information. You can calculate the byte size of the texture by doing: Math.ceil(width / blockInfo.width) * Math.ceil(height / blockInfo.height) * blockInfo.length
+     */
+    private static _GetTextureBlockInformation(type: number, format: number): { width: number; height: number; length: number } {
+        switch (format) {
+            case Constants.TEXTUREFORMAT_DEPTH16:
+                return { width: 1, height: 1, length: 2 };
+            case Constants.TEXTUREFORMAT_DEPTH24:
+                return { width: 1, height: 1, length: 3 };
+            case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
+                return { width: 1, height: 1, length: 4 };
+            case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
+                return { width: 1, height: 1, length: 4 };
+            case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
+                return { width: 1, height: 1, length: 5 };
+            case Constants.TEXTUREFORMAT_STENCIL8:
+                return { width: 1, height: 1, length: 1 };
+
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                return { width: 4, height: 4, length: 8 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+                return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+                return { width: 4, height: 4, length: 8 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                return { width: 4, height: 4, length: 16 };
+        }
+
+        switch (type) {
+            case Constants.TEXTURETYPE_BYTE:
+            case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_R:
+                    case Constants.TEXTUREFORMAT_R_INTEGER:
+                    case Constants.TEXTUREFORMAT_ALPHA:
+                    case Constants.TEXTUREFORMAT_LUMINANCE:
+                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                        return { width: 1, height: 1, length: 1 };
+                    case Constants.TEXTUREFORMAT_RG:
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return { width: 1, height: 1, length: 2 };
+                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        return { width: 1, height: 1, length: 3 };
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    default:
+                        return { width: 1, height: 1, length: 4 };
+                }
+            case Constants.TEXTURETYPE_SHORT:
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return { width: 1, height: 1, length: 2 };
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        return { width: 1, height: 1, length: 6 };
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 8 };
+                    default:
+                        return { width: 1, height: 1, length: 8 };
+                }
+            case Constants.TEXTURETYPE_INT:
+            case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return { width: 1, height: 1, length: 8 };
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        return { width: 1, height: 1, length: 12 };
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 16 };
+                    default:
+                        return { width: 1, height: 1, length: 16 };
+                }
+            case Constants.TEXTURETYPE_FLOAT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return { width: 1, height: 1, length: 4 };
+                    case Constants.TEXTUREFORMAT_RG:
+                        return { width: 1, height: 1, length: 8 };
+                    case Constants.TEXTUREFORMAT_RGB:
+                        return { width: 1, height: 1, length: 12 };
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return { width: 1, height: 1, length: 16 };
+                    default:
+                        return { width: 1, height: 1, length: 16 };
+                }
+            case Constants.TEXTURETYPE_HALF_FLOAT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return { width: 1, height: 1, length: 2 };
+                    case Constants.TEXTUREFORMAT_RG:
+                        return { width: 1, height: 1, length: 4 };
+                    case Constants.TEXTUREFORMAT_RGB:
+                        return { width: 1, height: 1, length: 6 };
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return { width: 1, height: 1, length: 8 };
+                    default:
+                        return { width: 1, height: 1, length: 8 };
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                return { width: 1, height: 1, length: 2 };
+            case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    default:
+                        return { width: 1, height: 1, length: 4 };
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    default:
+                        return { width: 1, height: 1, length: 4 };
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                return { width: 1, height: 1, length: 2 };
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                return { width: 1, height: 1, length: 2 };
+            case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return { width: 1, height: 1, length: 4 };
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return { width: 1, height: 1, length: 4 };
+                    default:
+                        return { width: 1, height: 1, length: 4 };
+                }
+        }
+
+        return { width: 1, height: 1, length: 4 };
     }
 }

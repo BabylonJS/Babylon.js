@@ -88,7 +88,7 @@ export type EnvironmentParams = {
     blur: number;
 
     /**
-     * The rotation of the environment lighting in degrees.
+     * The rotation of the environment lighting in radians.
      */
     rotation: number;
 
