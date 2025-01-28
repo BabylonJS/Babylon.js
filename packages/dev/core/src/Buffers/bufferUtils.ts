@@ -132,7 +132,7 @@ export function GetTypeByteLength(type: number): number {
  * @param componentType the component type
  * @returns the constructor object
  */
-export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor {
+export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor<VertexDataTypedArray> {
     switch (componentType) {
         case Constants.BYTE:
             return Int8Array;
@@ -375,8 +375,7 @@ export function GetTypedArrayData(
         return new constructor(buffer.slice(adjustedByteOffset, adjustedByteOffset + count * typeByteLength));
     }
 
-    // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
-    return new (constructor as Float32ArrayConstructor)(buffer, adjustedByteOffset, count);
+    return new constructor(buffer, adjustedByteOffset, count);
 }
 
 /**
