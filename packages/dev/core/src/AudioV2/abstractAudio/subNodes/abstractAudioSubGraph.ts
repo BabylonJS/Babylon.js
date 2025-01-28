@@ -84,8 +84,8 @@ export abstract class _AbstractAudioSubGraph {
      */
     protected _onSubNodesChanged(): void {}
 
-    protected async _createSubNodePromisesResolved(): Promise<void> {
-        await Promise.all(this._createSubNodePromises.values());
+    protected _createSubNodePromisesResolved(): Promise<_AbstractAudioSubNode[]> {
+        return Promise.all(this._createSubNodePromises.values());
     }
 
     private _getSubNodeSet(name: string): Set<AbstractNamedAudioNode> {
