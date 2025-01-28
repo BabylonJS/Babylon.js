@@ -166,8 +166,6 @@ export abstract class StaticSound extends AbstractSound {
 
     protected abstract override _createInstance(): _StaticSoundInstance;
 
-    // Inherits doc from AbstractSound.
-    // eslint-disable-next-line babylonjs/available
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this._isPaused && this._instances.size > 0) {
             this.resume();
