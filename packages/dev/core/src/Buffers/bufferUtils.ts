@@ -11,7 +11,6 @@ export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     readonly BYTES_PER_ELEMENT: number;
 }
 
-
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
         case Constants.BYTE: {
