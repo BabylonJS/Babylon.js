@@ -1235,12 +1235,37 @@ export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperation
 RegisterClass(FlowGraphBlockNames.MatrixMultiplication, FlowGraphMatrixMultiplicationBlock);
 
 /**
+ * Configuration for bitwise operators
+ */
+export interface IFlowGraphBitwiseBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The type of the values that will be operated on
+     * Defaults to FlowGraphInteger, but can be a number or boolean as well.
+     */
+    valueType: FlowGraphTypes;
+}
+
+type FlowGraphBitwiseTypes = FlowGraphInteger | FlowGraphNumber | boolean;
+/**
  * @experimental
  * Bitwise NOT operation
  */
-export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(~a.value), FlowGraphBlockNames.BitwiseNot, config);
+export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
+    constructor(config?: IFlowGraphBitwiseBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            (a) => {
+                if (typeof a === "boolean") {
+                    return !a;
+                } else if (typeof a === "number") {
+                    return ~a;
+                }
+                return new FlowGraphInteger(~a.value);
+            },
+            FlowGraphBlockNames.BitwiseNot,
+            config
+        );
     }
 }
 RegisterClass(FlowGraphBlockNames.BitwiseNot, FlowGraphBitwiseNotBlock);
@@ -1249,13 +1274,23 @@ RegisterClass(FlowGraphBlockNames.BitwiseNot, FlowGraphBitwiseNotBlock);
  * @experimental
  * Bitwise AND operation
  */
-export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
+export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
+    constructor(config?: IFlowGraphBitwiseBlockConfiguration) {
         super(
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            (a, b) => new FlowGraphInteger(a.value & b.value),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            (a, b) => {
+                if (typeof a === "boolean" && typeof b === "boolean") {
+                    return a && b;
+                } else if (typeof a === "number" && typeof b === "number") {
+                    return a & b;
+                } else if (typeof a === "object" && typeof b === "object") {
+                    return new FlowGraphInteger(a.value & b.value);
+                } else {
+                    throw new Error(`Cannot perform bitwise AND on ${a} and ${b}`);
+                }
+            },
             FlowGraphBlockNames.BitwiseAnd,
             config
         );
@@ -1268,13 +1303,23 @@ RegisterClass(FlowGraphBlockNames.BitwiseAnd, FlowGraphBitwiseAndBlock);
  * @experimental
  * Bitwise OR operation
  */
-export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
+export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
+    constructor(config?: IFlowGraphBitwiseBlockConfiguration) {
         super(
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            (a, b) => new FlowGraphInteger(a.value | b.value),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            (a, b) => {
+                if (typeof a === "boolean" && typeof b === "boolean") {
+                    return a || b;
+                } else if (typeof a === "number" && typeof b === "number") {
+                    return a | b;
+                } else if (typeof a === "object" && typeof b === "object") {
+                    return new FlowGraphInteger(a.value | b.value);
+                } else {
+                    throw new Error(`Cannot perform bitwise OR on ${a} and ${b}`);
+                }
+            },
             FlowGraphBlockNames.BitwiseOr,
             config
         );
@@ -1286,13 +1331,23 @@ RegisterClass(FlowGraphBlockNames.BitwiseOr, FlowGraphBitwiseOrBlock);
  * @experimental
  * Bitwise XOR operation
  */
-export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            RichTypeFlowGraphInteger,
-            (a, b) => new FlowGraphInteger(a.value ^ b.value),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            getRichTypeByFlowGraphType(config?.valueType || FlowGraphTypes.Integer),
+            (a, b) => {
+                if (typeof a === "boolean" && typeof b === "boolean") {
+                    return a !== b;
+                } else if (typeof a === "number" && typeof b === "number") {
+                    return a ^ b;
+                } else if (typeof a === "object" && typeof b === "object") {
+                    return new FlowGraphInteger(a.value ^ b.value);
+                } else {
+                    throw new Error(`Cannot perform bitwise XOR on ${a} and ${b}`);
+                }
+            },
             FlowGraphBlockNames.BitwiseXor,
             config
         );
