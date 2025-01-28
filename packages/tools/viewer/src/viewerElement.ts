@@ -82,6 +82,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
+    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -1062,16 +1063,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         };
     }
 
-    private _addCameraHotSpot(camera: Camera) {
+    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
         if (camera !== this.viewerDetails?.camera) {
-            this._cameraToHotSpot(camera).then((hotSpot) => {
-                if (hotSpot) {
-                    this.hotSpots = {
-                        ...this.hotSpots,
-                        [`camera-${camera.name}`]: hotSpot,
-                    };
-                }
-            });
+            const hotSpot = await this._cameraToHotSpot(camera);
+            if (hotSpot && !signal?.aborted) {
+                this.hotSpots = {
+                    ...this.hotSpots,
+                    [`camera-${camera.name}`]: hotSpot,
+                };
+            }
         }
     }
 
@@ -1081,13 +1081,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     private _toggleCamerasAsHotSpots() {
-        this.viewerDetails?.scene.cameras.forEach((camera) => {
-            if (this.camerasAsHotSpots) {
-                this._addCameraHotSpot(camera);
-            } else {
-                this._removeCameraHotSpot(camera);
-            }
-        });
+        if (!this.camerasAsHotSpots) {
+            this._camerasAsHotSpotsAbortController?.abort();
+            this._camerasAsHotSpotsAbortController = null;
+            this.viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+        } else {
+            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
+            this.viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+        }
     }
 
     private async _setupViewer() {
@@ -1168,7 +1169,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.scene.onNewCameraAddedObservable.add((camera) => {
                     if (this.camerasAsHotSpots) {
-                        this._addCameraHotSpot(camera);
+                        this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
                     }
                 });
 

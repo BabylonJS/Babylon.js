@@ -391,7 +391,6 @@ export class Viewer implements IDisposable {
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _modelInfo: Nullable<Model> = null;
-    private _computedWorldBounds = new Map<AssetContainer, ViewerBoundingInfo[]>();
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -886,6 +885,8 @@ export class Viewer implements IDisposable {
             assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
+            const cachedWorldBounds: ViewerBoundingInfo[] = [];
+
             return {
                 assetContainer,
                 materialVariantsController,
@@ -897,22 +898,19 @@ export class Viewer implements IDisposable {
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
                     assetContainer.dispose();
                     this._snapshotHelper.enableSnapshotRendering();
-                    this._computedWorldBounds.delete(assetContainer);
                 },
                 getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
-                    const worldBounds = this._computedWorldBounds.get(assetContainer) ?? [];
-                    if (!worldBounds[animationIndex]) {
-                        const computedBound = computeBoundingInfos(assetContainer, assetContainer.animationGroups[animationIndex]);
-                        if (computedBound) {
-                            worldBounds[animationIndex] = computedBound;
-                            this._computedWorldBounds.set(assetContainer, worldBounds);
-                            return computedBound;
+                    let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
+                    if (!worldBounds) {
+                        worldBounds = computeBoundingInfos(assetContainer, assetContainer.animationGroups[animationIndex]);
+                        if (worldBounds) {
+                            cachedWorldBounds[animationIndex] = worldBounds;
                         }
                     }
-                    return worldBounds[animationIndex] ?? null;
+                    return worldBounds;
                 },
                 resetWorldBounds: () => {
-                    this._computedWorldBounds.delete(assetContainer);
+                    cachedWorldBounds.length = 0;
                 },
             };
         } catch (e) {
@@ -1091,8 +1089,8 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort("Thew viewer is being disposed.");
 
         this._renderLoopController?.dispose();
-        this._scene.dispose();
         this._modelInfo?.dispose();
+        this._scene.dispose();
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
