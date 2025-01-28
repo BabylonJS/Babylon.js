@@ -1,8 +1,9 @@
-import type { Nullable } from "core/types";
+import type { Nullable, TypedArray } from "core/types";
 import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
 import type { DecoderMessage } from "./dracoDecoder.types";
 import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, EncoderModule, MeshBuilder, Encoder, DracoInt8Array } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
+import type { TypedArrayConstructor } from "core/Buffers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -211,7 +212,7 @@ export function DecodeMesh(
             const byteStride = attribute.byte_stride();
             const byteOffset = attribute.byte_offset();
 
-            const dataTypeInfo = {
+            const dataTypeInfo: Record<number, { typedArrayConstructor: TypedArrayConstructor; heap: TypedArray }> = {
                 [decoderModule.DT_FLOAT32]: { typedArrayConstructor: Float32Array, heap: decoderModule.HEAPF32 },
                 [decoderModule.DT_INT8]: { typedArrayConstructor: Int8Array, heap: decoderModule.HEAP8 },
                 [decoderModule.DT_INT16]: { typedArrayConstructor: Int16Array, heap: decoderModule.HEAP16 },
@@ -232,8 +233,7 @@ export function DecodeMesh(
             const ptr = decoderModule._malloc(byteLength);
             try {
                 decoder.GetAttributeDataArrayForAllPoints(geometry, attribute, dataType, byteLength, ptr);
-                // this cast seems to be needed because of an issue with typescript, as all constructors do have the ptr and numValues arguments.
-                const data = new (info.typedArrayConstructor as Float32ArrayConstructor)(info.heap.buffer, ptr, numValues);
+                const data = new info.typedArrayConstructor(info.heap.buffer, ptr, numValues);
                 onAttributeData(kind, data.slice(), numComponents, byteOffset, byteStride, normalized);
             } finally {
                 decoderModule._free(ptr);
