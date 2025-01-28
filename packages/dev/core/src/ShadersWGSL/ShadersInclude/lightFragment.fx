@@ -161,11 +161,13 @@
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
             #elif define(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
+                    info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC1SamplerSampler, areaLightsLTC2Sampler, areaLightsLTC2SamplerSampler, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
                 #ifdef AREALIGHTNOROUGHTNESS
-                    info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC1SamplerSampler, areaLightsLTC2Sampler, areaLightsLTC2SamplerSampler, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, 1.0, light{X}.vLightData.a);
+                    0.5
                 #else
-                    info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC1SamplerSampler, areaLightsLTC2Sampler, areaLightsLTC2SamplerSampler, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, uniforms.vReflectionInfos.y, light{X}.vLightData.a);
+                    uniforms.vReflectionInfos.y
                 #endif
+                    );
             #endif
         #endif
 

@@ -162,7 +162,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 uniform sampler2D areaLightsLTC1Sampler;
 uniform sampler2D areaLightsLTC2Sampler;
 
-lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec3 lightPosition, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float roughness, float intensity) 
+lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec3 lightPosition, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float roughness) 
 {
 	lightingInfo result;
 	areaLightData data = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc2, viewDirectionW, vNormal, vPosition, lightPosition, halfWidth, halfHeight, roughness);
@@ -172,7 +172,7 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 	result.specular += specularColor * fresnel * data.Specular;
 #endif
 	
-	result.diffuse += diffuseColor * data.Diffuse * intensity;
+	result.diffuse += diffuseColor * data.Diffuse;
 	return result;
 }
 
