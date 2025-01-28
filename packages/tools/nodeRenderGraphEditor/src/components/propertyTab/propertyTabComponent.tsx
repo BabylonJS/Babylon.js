@@ -13,7 +13,7 @@ import { FramePropertyTabComponent } from "../../graphSystem/properties/framePro
 import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/frameNodePortPropertyComponent";
 import { NodePortPropertyTabComponent } from "../../graphSystem/properties/nodePortPropertyComponent";
 import type { Observer } from "core/Misc/observable";
-import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
+import { TextureMemoryUsagePropertyTabComponent } from "./textureMemoryUsagePropertyTabComponent";
 import { LogEntry } from "../log/logComponent";
 import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
@@ -347,11 +347,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         </LineContainerComponent>
                     )}
-                    <InputsPropertyTabComponent
-                        lockObject={this.props.lockObject}
-                        globalState={this.props.globalState}
-                        inputs={this.props.globalState.nodeRenderGraph.getInputBlocks()}
-                    ></InputsPropertyTabComponent>
+                    <TextureMemoryUsagePropertyTabComponent globalState={this.props.globalState}></TextureMemoryUsagePropertyTabComponent>
                 </div>
             </div>
         );

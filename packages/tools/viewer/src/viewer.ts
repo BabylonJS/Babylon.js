@@ -37,6 +37,7 @@ import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
+import { AbortError } from "core/Misc/error";
 import { Observable } from "core/Misc/observable";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
@@ -45,12 +46,19 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-export type LoadModelOptions = LoadAssetContainerOptions & {
+type UpdateModelOptions = {
     /**
      * The default animation index.
      */
     defaultAnimation?: number;
+
+    /**
+     * Whether to play the default animation immediately after loading.
+     */
+    animationAutoPlay?: boolean;
 };
+
+export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
 
 export type CameraAutoOrbit = {
     /**
@@ -67,6 +75,28 @@ export type CameraAutoOrbit = {
      * The delay in milliseconds before the camera starts orbiting around the model when idle.
      */
     delay: number;
+};
+
+export type EnvironmentParams = {
+    /**
+     * The intensity of the environment lighting.
+     */
+    intensity: number;
+
+    /**
+     * The blur applied to the environment lighting.
+     */
+    blur: number;
+
+    /**
+     * The rotation of the environment lighting in radians.
+     */
+    rotation: number;
+
+    /**
+     * If the environment should be visible.
+     */
+    visible: boolean;
 };
 
 export type PostProcessing = {
@@ -269,16 +299,15 @@ export class Viewer implements IDisposable {
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
+    /**
+     * Fired when the environment configuration has changed.
+     */
+    public readonly onEnvironmentConfigurationChanged = new Observable<void>();
 
     /**
      * Fired when an error occurs while loading the environment.
      */
     public readonly onEnvironmentError = new Observable<unknown>();
-
-    /**
-     * Fired when the skybox blur changes.
-     */
-    public readonly onSkyboxBlurChanged = new Observable<void>();
 
     /**
      * Fired when the post processing state changes.
@@ -344,6 +373,11 @@ export class Viewer implements IDisposable {
     private _modelInfo: Nullable<Model> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
+    private _skyboxVisible: boolean = true;
+    private _skyboxTexture: Nullable<CubeTexture> = null;
+    private _reflectionTexture: Nullable<CubeTexture> = null;
+    private _reflectionsIntensity: number = 1;
+    private _reflectionsRotation: number = 0;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
@@ -493,25 +527,95 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * A value between 0 and 1 that specifies how much to blur the skybox.
+     * Get the current environment configuration.
      */
-    public get skyboxBlur(): number {
-        return this._skyboxBlur;
+    public get environmentConfig(): Readonly<EnvironmentParams> {
+        return {
+            intensity: this._reflectionsIntensity,
+            blur: this._skyboxBlur,
+            rotation: this._reflectionsRotation,
+            visible: this._skyboxVisible,
+        };
     }
 
-    public set skyboxBlur(value: number) {
+    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
+        if (value.blur !== undefined) {
+            this._changeSkyboxBlur(value.blur);
+        }
+        if (value.intensity !== undefined) {
+            this._changeEnvironmentIntensity(value.intensity);
+        }
+        if (value.rotation !== undefined) {
+            this._changeEnvironmentRotation(value.rotation);
+        }
+        if (value.visible !== undefined) {
+            this._changeSkyboxVisible(value.visible);
+        }
+        this.onEnvironmentConfigurationChanged.notifyObservers();
+    }
+
+    private _changeSkyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
             if (this._skybox) {
                 const material = this._skybox.material;
                 if (material instanceof PBRMaterial) {
                     this._snapshotHelper.disableSnapshotRendering();
-                    material.microSurface = 1.0 - value;
+                    material.microSurface = 1.0 - this._skyboxBlur;
                     this._snapshotHelper.enableSnapshotRendering();
                 }
             }
-            this.onSkyboxBlurChanged.notifyObservers();
         }
+    }
+
+    /**
+     * Change the environment rotation.
+     * @param value the rotation in radians
+     */
+    private _changeEnvironmentRotation(value: number) {
+        if (value !== this._reflectionsRotation) {
+            this._reflectionsRotation = value;
+
+            this._snapshotHelper.disableSnapshotRendering();
+            if (this._skyboxTexture) {
+                this._skyboxTexture.rotationY = this._reflectionsRotation;
+            }
+            if (this._reflectionTexture) {
+                this._reflectionTexture.rotationY = this._reflectionsRotation;
+            }
+            this._snapshotHelper.enableSnapshotRendering();
+        }
+    }
+
+    private _changeEnvironmentIntensity(value: number) {
+        if (value !== this._reflectionsIntensity) {
+            this._reflectionsIntensity = value;
+
+            this._snapshotHelper.disableSnapshotRendering();
+            if (this._skyboxTexture) {
+                this._skyboxTexture.level = this._reflectionsIntensity;
+            }
+            if (this._reflectionTexture) {
+                this._reflectionTexture.level = this._reflectionsIntensity;
+            }
+            this._snapshotHelper.enableSnapshotRendering();
+        }
+    }
+
+    private _changeSkyboxVisible(value: boolean) {
+        if (value !== this._skyboxVisible) {
+            this._skyboxVisible = value;
+            if (this._skybox) {
+                this._snapshotHelper.disableSnapshotRendering();
+                this._skybox.setEnabled(this._skyboxVisible);
+                this._updateAutoClear();
+                this._snapshotHelper.enableSnapshotRendering();
+            }
+        }
+    }
+
+    private _updateAutoClear() {
+        this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
     }
 
     /**
@@ -603,15 +707,21 @@ export class Viewer implements IDisposable {
         return this._modelInfo;
     }
 
-    protected _setModel(...args: [model: null] | [model: Model, source?: string | File | ArrayBufferView]): void {
-        const [model, source] = args;
+    protected _setModel(
+        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
+    ): void {
+        const [model, options] = args;
         if (model !== this._modelInfo) {
             this._modelInfo = model;
-            this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
+            this._selectAnimation(options?.defaultAnimation ?? 0, false);
+            if (options?.animationAutoPlay) {
+                this.playAnimation();
+            }
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this.onModelChanged.notifyObservers(source ?? null);
+            this._updateCamera(options?.interpolateCamera);
+            this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
 
@@ -861,7 +971,7 @@ export class Viewer implements IDisposable {
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
+        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
         const abortController = (this._loadModelAbortController = new AbortController());
 
         await this._loadModelLock.lockAsync(async () => {
@@ -871,8 +981,7 @@ export class Viewer implements IDisposable {
             this.selectedAnimation = -1;
 
             if (source) {
-                this._setModel(await this._loadModel(source, options, abortController.signal), source);
-                this._selectAnimation(options?.defaultAnimation ?? 0, false);
+                this._setModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
             }
         });
     }
@@ -908,11 +1017,11 @@ export class Viewer implements IDisposable {
 
         const locks: AsyncLock[] = [];
         if (options.lighting) {
-            this._loadEnvironmentAbortController?.abort("New environment lighting is being loaded before previous environment lighting finished loading.");
+            this._loadEnvironmentAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
             locks.push(this._loadEnvironmentLock);
         }
         if (options.skybox) {
-            this._loadSkyboxAbortController?.abort("New environment skybox is being loaded before previous environment skybox finished loading.");
+            this._loadSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
             locks.push(this._loadSkyboxLock);
         }
 
@@ -925,13 +1034,14 @@ export class Viewer implements IDisposable {
 
             const dispose = () => {
                 if (options.lighting) {
-                    this._scene.environmentTexture?.dispose();
-                    this._scene.environmentTexture = null;
+                    this._reflectionTexture?.dispose();
+                    this._reflectionTexture = null;
                 }
                 if (options.skybox) {
                     this._skybox?.dispose(undefined, true);
+                    this._skyboxTexture = null;
                     this._skybox = null;
-                    this._scene.autoClear = true;
+                    this._updateAutoClear();
                 }
             };
 
@@ -943,14 +1053,19 @@ export class Viewer implements IDisposable {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
 
                     if (options.lighting) {
-                        this._scene.environmentTexture = cubeTexture;
+                        this._reflectionTexture = cubeTexture;
+                        this._scene.environmentTexture = this._reflectionTexture;
+                        cubeTexture.level = this.environmentConfig.intensity;
+                        cubeTexture.rotationY = this.environmentConfig.rotation;
                     }
-
                     if (options.skybox) {
-                        const reflectionTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._skybox = createSkybox(this._scene, this._camera, reflectionTexture, this.skyboxBlur);
+                        this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
+                        this._skyboxTexture.level = this.environmentConfig.intensity;
+                        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
+                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
+                        this._skybox.setEnabled(this._skyboxVisible);
                         this._snapshotHelper.fixMeshes([this._skybox]);
-                        this._scene.autoClear = false;
+                        this._updateAutoClear();
                     }
 
                     await new Promise<void>((resolve, reject) => {
@@ -1021,15 +1136,15 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentAbortController?.abort("Thew viewer is being disposed.");
-        this._loadModelAbortController?.abort("Thew viewer is being disposed.");
+        this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._scene.dispose();
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
-        this.onSkyboxBlurChanged.clear();
+        this.onEnvironmentConfigurationChanged.clear();
         this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
@@ -1220,7 +1335,7 @@ export class Viewer implements IDisposable {
             shouldHaveDefaultLight = false;
         } else {
             const hasModelProvidedLights = this._modelInfo.assetContainer.lights.length > 0;
-            const hasImageBasedLighting = !!this._scene.environmentTexture;
+            const hasImageBasedLighting = !!this._reflectionTexture;
             const hasMaterials = this._modelInfo.assetContainer.materials.length > 0;
             const hasNonPBRMaterials = this._modelInfo.assetContainer.materials.some((material) => !(material instanceof PBRMaterial));
 

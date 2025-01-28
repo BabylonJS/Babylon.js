@@ -6,8 +6,8 @@ import type {
 } from "core/index";
 import { ThinHighlightLayer } from "core/Layers/thinHighlightLayer";
 import { Constants } from "core/Engines/constants";
-import { HasStencilAspect } from "core/Materials/Textures/internalTexture";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
+import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 /**
  * Task which applies a highlight effect to a texture.

@@ -79,9 +79,9 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this._outputWidth = outputTextureDescription.size.width;
         this._outputHeight = outputTextureDescription.size.height;
 
-        this._addInternalDependencies(this.sourceTexture);
-
         const pass = this._frameGraph.addRenderPass(this.name);
+
+        pass.addDependencies(this.sourceTexture);
 
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
@@ -95,6 +95,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.addDependencies(this.sourceTexture);
 
             passDisabled.setRenderTarget(this.outputTexture);
             passDisabled.setExecuteFunc((context) => {

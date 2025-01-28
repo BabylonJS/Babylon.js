@@ -398,9 +398,11 @@ void main(void) {
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   float heat = 0.0f;
 #endif
-  float shadowAccum = 0.0;
-  float specShadowAccum = 0.0;
-  float sampleWeight = 0.0;
+  // We set these to a small value to avoid division by zero when no
+  // samples hit the hemisphere.
+  float shadowAccum = 0.001;
+  float specShadowAccum = 0.001;
+  float sampleWeight = 0.001;
   for (uint i = 0u; i < nbDirs; i++) {
     uint dirId = nbDirs * GlobalIndex + i;
     vec4 L;
@@ -416,11 +418,10 @@ void main(void) {
         L.z *= -1.0;
       #endif
     }
-    float edge_tint_const = -0.001;
     float cosNL = dot(N, L.xyz);
-    float opacity = cosNL < edge_tint_const ? 1.0 : 0.0;
+    float opacity = 0.0;
 
-    if (cosNL > edge_tint_const) {
+    if (cosNL > 0.0) {
       // voxel
       vec4 VP2 = VP;
       VP2.y *= -1.0;
@@ -431,9 +432,7 @@ void main(void) {
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
       VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
-      opacity = max(opacity,
-                    shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise,
-                                                  voxel_march_diagnostic_info));
+      opacity = max(opacity, shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise, voxel_march_diagnostic_info));
       heat += voxel_march_diagnostic_info.heat;
 #else
       opacity =
@@ -454,8 +453,9 @@ void main(void) {
                        screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
-      shadowAccum += min(1.0 - opacity, cosNL);
-      sampleWeight += cosNL;
+      float rcos = (1.0 - cosNL);
+      shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
+      sampleWeight += 1.0;
       // spec shadow
       vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
       specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);

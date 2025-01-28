@@ -141,6 +141,22 @@
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+            <div>
+                <span>Environment Intensity</span>
+                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" oninput="onEnvironmentIntensity()" />
+            </div>
+            <div>
+                <span>Rotate Environment</span>
+                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" oninput="onEnvironmentRotation()" />
+            </div>
+            <div>
+                <span>Environment Blur</span>
+                <input type="range" id="environmentBlurInput" min="0" max="1" step="0.01" oninput="onEnvironmentBlur()" />
+            </div>
+            <div>
+                <span>Environment Visibility</span>
+                <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -261,6 +277,27 @@
                 const bottomContent = document.getElementById("moreLowerPageContent");
                 bottomContent.style.display = isBottomContentVisible ? "none" : "block";
                 isBottomContentVisible = !isBottomContentVisible;
+            };
+
+            globalThis.onEnvironmentIntensity = () => {
+                const value = document.querySelector("#environmentIntensityInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.environmentConfig = { intensity: value };
+            };
+            globalThis.onEnvironmentRotation = () => {
+                const degreValue = document.querySelector("#environmentRotationInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.environmentConfig = { rotation: parseFloat(degreValue) };
+            };
+            globalThis.onEnvironmentBlur = () => {
+                const value = document.querySelector("#environmentBlurInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.environmentConfig = { blur: value };
+            };
+            globalThis.onEnvironmentVisibility = () => {
+                const checked = document.querySelector("#environmentVisibilityInput").checked;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.environmentConfig = { visible: checked };
             };
         </script>
     </body>

@@ -34,6 +34,12 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
     return mix(groundColor, lightColor, info.NdotL);
 }
 
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+    vec3 computeAreaDiffuseLighting(preLightingInfo info, vec3 lightColor) {
+        return info.areaLightDiffuse * lightColor;
+    }
+#endif
+
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     float diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
@@ -86,6 +92,14 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         vec3 specTerm = fresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
+
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        vec3 computeAreaSpecularLighting(preLightingInfo info, vec3 specularColor) {
+            vec3 fresnel = ( specularColor * info.areaLightFresnel.x + ( vec3( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
+	        return specularColor * fresnel * info.areaLightSpecular;
+        }
+    #endif
+
 #endif
 
 #ifdef ANISOTROPIC

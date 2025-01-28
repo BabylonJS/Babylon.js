@@ -12,6 +12,7 @@ import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
+import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
@@ -62,6 +63,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     viewerrender: Event;
     environmentchange: Event;
+    environmentconfigurationchange: Event;
     environmenterror: ErrorEvent;
     modelchange: CustomEvent<Nullable<string | File | ArrayBufferView>>;
     modelerror: ErrorEvent;
@@ -94,9 +96,27 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         ),
         this._createPropertyBinding(
             "skyboxBlur",
-            (details) => details.viewer.onSkyboxBlurChanged,
-            (details) => (details.viewer.skyboxBlur = this.skyboxBlur ?? details.viewer.skyboxBlur),
-            (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { blur: this.skyboxBlur ?? details.viewer.environmentConfig.blur }),
+            (details) => (this.skyboxBlur = details.viewer.environmentConfig.blur)
+        ),
+        this._createPropertyBinding(
+            "environmentIntensity",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { intensity: this.environmentIntensity ?? details.viewer.environmentConfig.intensity }),
+            (details) => (this.environmentIntensity = details.viewer.environmentConfig.intensity)
+        ),
+        this._createPropertyBinding(
+            "environmentRotation",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { rotation: this.environmentRotation ?? details.viewer.environmentConfig.rotation }),
+            (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
+        ),
+        this._createPropertyBinding(
+            "environmentVisible",
+            (details) => details.viewer.onEnvironmentConfigurationChanged,
+            (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
+            (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -538,6 +558,29 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property({ attribute: "environment-skybox" })
     public environmentSkybox: Nullable<string> = null;
+
+    /**
+     * A value between 0 and 2 that specifies the intensity of the environment lighting.
+     */
+    @property({ type: Number, attribute: "environment-intensity" })
+    public environmentIntensity: Nullable<number> = null;
+
+    /**
+     * A value in radians that specifies the rotation of the environment.
+     */
+    @property({
+        type: Number,
+        attribute: "environment-rotation",
+    })
+    public environmentRotation: Nullable<number> = null;
+
+    /**
+     * Wether or not the environment is visible.
+     */
+    @property({
+        attribute: "environment-visible",
+    })
+    public environmentVisible: Nullable<boolean> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1082,6 +1125,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
                 });
 
+                details.viewer.onEnvironmentConfigurationChanged.add(() => {
+                    this._dispatchCustomEvent("environmentconfigurationchange", (type) => new Event(type));
+                });
+
                 details.viewer.onEnvironmentError.add((error) => {
                     this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                 });
@@ -1096,11 +1143,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     // (since the underlying Babylon camera already has these properties).
                     this._cameraOrbitCoercer?.(details.camera);
                     this._cameraTargetCoercer?.(details.camera);
-
-                    // If animation auto play was set, then start the default animation (if possible).
-                    if (this.animationAutoPlay) {
-                        details.viewer.playAnimation();
-                    }
 
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
@@ -1163,12 +1205,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (this._viewerDetails) {
             try {
                 if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined, defaultAnimation: this.selectedAnimation ?? 0 });
+                    await this._viewerDetails.viewer.loadModel(this.source, {
+                        pluginExtension: this.extension ?? undefined,
+                        defaultAnimation: this.selectedAnimation ?? 0,
+                        animationAutoPlay: this.animationAutoPlay,
+                    });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
             } catch (error) {
-                Logger.Log(error);
+                // If loadModel was aborted (e.g. because a new model load was requested before this one finished), we can just ignore the error.
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
             }
         }
     }
@@ -1199,7 +1248,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 await Promise.all(promises);
             } catch (error) {
-                Logger.Log(error);
+                // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
             }
         }
     }

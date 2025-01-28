@@ -48,10 +48,11 @@ import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { InternalTexture, InternalTextureSource, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
+import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
 
 /**
  * Keeps track of all the buffer info used in engine.
