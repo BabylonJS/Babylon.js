@@ -24,11 +24,6 @@ export class TimingTools {
     }
 }
 
-/**
- * @internal
- */
-export function _RunImmediateQueue() {}
-
 function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
     try {
         if (condition()) {
