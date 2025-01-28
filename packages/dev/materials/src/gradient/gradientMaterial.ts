@@ -248,9 +248,6 @@ export class GradientMaterial extends PushMaterial {
                 this._materialContext
             );
         }
-        if (!subMesh.effect || !subMesh.effect.isReady()) {
-            return false;
-        }
 
         // Check if Area Lights have LTC texture.
         if (defines["AREALIGHTUSED"]) {
@@ -259,6 +256,10 @@ export class GradientMaterial extends PushMaterial {
                     return false;
                 }
             }
+        }
+
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
+            return false;
         }
 
         defines._renderId = scene.getRenderId();
