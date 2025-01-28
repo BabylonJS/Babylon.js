@@ -31,6 +31,7 @@ interface DelayedTextureUpdate {
 interface CreationOptions {
     useWebWorker: boolean;
 }
+
 // @internal
 const unpackUnorm = (value: number, bits: number) => {
     const t = (1 << bits) - 1;
@@ -393,6 +394,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
+     * @param options creation options
      */
     constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, options: CreationOptions = { useWebWorker: true }) {
         super(name, scene);
@@ -1240,8 +1242,10 @@ export class GaussianSplattingMesh extends Mesh {
         this._colorsTexture = null;
         this._shTextures = null;
 
-        this._worker?.terminate();
-        this._worker = null;
+        if (this._worker) {
+            this._worker.terminate();
+            this._worker = null;
+        }
 
         super.dispose(doNotRecurse, true);
     }
