@@ -59,6 +59,8 @@ class GradientMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public AREALIGHTSUPPORTED = true;
+    public AREALIGHTNOROUGHTNESS = true;
 
     constructor() {
         super();
@@ -215,7 +217,7 @@ export class GradientMaterial extends PushMaterial {
                 "scale",
             ];
             addClipPlaneUniforms(uniforms);
-            const samplers: string[] = [];
+            const samplers: string[] = ["areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
 
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
@@ -248,6 +250,15 @@ export class GradientMaterial extends PushMaterial {
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
+        }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
         }
 
         defines._renderId = scene.getRenderId();

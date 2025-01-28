@@ -100,6 +100,8 @@ class NormalMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public AREALIGHTSUPPORTED = true;
+    public AREALIGHTNOROUGHTNESS = true;
 
     constructor() {
         super();
@@ -255,7 +257,7 @@ export class NormalMaterial extends PushMaterial {
                 "diffuseMatrix",
                 "logarithmicDepthConstant",
             ];
-            const samplers = ["diffuseSampler"];
+            const samplers = ["diffuseSampler", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
@@ -289,6 +291,15 @@ export class NormalMaterial extends PushMaterial {
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
+        }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
         }
 
         defines._renderId = scene.getRenderId();
