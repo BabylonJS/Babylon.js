@@ -486,6 +486,19 @@ export class GaussianSplattingMesh extends Mesh {
 
     // Do sort, update instances immediately.
     protected _sortDepthMixImmediate() {
+        const cameraMatrix = this._scene.activeCamera!.getViewMatrix();
+        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+        cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+        this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+        Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+        TmpVectors.Vector3[2].normalize();
+
+        const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
+        if (Math.abs(dot - 1) <= 0.01) {
+            return;
+        }
+        this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
+
         // sort
         const indices = new Uint32Array(this._depthMix.buffer);
         const floatMix = new Float32Array(this._depthMix.buffer);
@@ -500,8 +513,6 @@ export class GaussianSplattingMesh extends Mesh {
             depthFactor = 1;
         }
 
-        const cameraMatrix = this._scene.activeCamera!.getViewMatrix();
-        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
         const positions = Float32Array.from(this._splatPositions!);
         const viewProj = this._modelViewMatrix.m;
 
@@ -1491,6 +1502,10 @@ export class GaussianSplattingMesh extends Mesh {
 
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        if (!this._worker) {
+            this._oldDirection.set(1000, 1000, 1000);
+        }
 
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
             // create textures with not filled-yet array, then update directly portions of it
