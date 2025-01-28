@@ -1,4 +1,4 @@
-const ImmediateQueue: Array<() => void> = [];
+let _immediateQueue: Array<() => void> = [];
 
 /**
  * Class used to provide helper for timing
@@ -9,18 +9,18 @@ export class TimingTools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (ImmediateQueue.length === 0) {
+        if (_immediateQueue.length === 0) {
             setTimeout(() => {
                 // Execute all immediate functions
-                const functionsToCall = ImmediateQueue.slice(0);
-                ImmediateQueue.length = 0;
+                const functionsToCall = _immediateQueue;
+                _immediateQueue = [];
 
                 for (const func of functionsToCall) {
                     func();
                 }
             }, 1);
         }
-        ImmediateQueue.push(action);
+        _immediateQueue.push(action);
     }
 }
 
