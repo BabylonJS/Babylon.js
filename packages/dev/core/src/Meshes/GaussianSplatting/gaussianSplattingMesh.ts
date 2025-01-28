@@ -28,6 +28,9 @@ interface DelayedTextureUpdate {
     sh?: Uint8Array[];
 }
 
+interface CreationOptions {
+    useWebWorker: boolean;
+}
 // @internal
 const unpackUnorm = (value: number, bits: number) => {
     const t = (1 << bits) - 1;
@@ -291,6 +294,9 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatsData: Nullable<ArrayBuffer> = null;
     private _sh: Nullable<Uint8Array[]> = null;
     private readonly _keepInRam: boolean = false;
+    private _options: CreationOptions = {
+        useWebWorker: true,
+    };
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
@@ -388,8 +394,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, options: CreationOptions = { useWebWorker: true }) {
         super(name, scene);
+        this._options = options;
 
         const vertexData = new VertexData();
 
@@ -474,6 +481,58 @@ export class GaussianSplattingMesh extends Mesh {
             }
         }
     }
+
+    // Do sort, update instances immediately.
+    protected _sortDepthMixImmediate() {
+        // sort
+        const indices = new Uint32Array(this._depthMix.buffer);
+        const floatMix = new Float32Array(this._depthMix.buffer);
+
+        // Sort
+        for (let j = 0; j < this._vertexCount; j++) {
+            indices[2 * j] = j;
+        }
+
+        let depthFactor = -1;
+        if (this._scene.useRightHandedSystem) {
+            depthFactor = 1;
+        }
+
+        const cameraMatrix = this._scene.activeCamera!.getViewMatrix();
+        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+        const positions = Float32Array.from(this._splatPositions!);
+        const viewProj = this._modelViewMatrix.m;
+
+        for (let j = 0; j < this._vertexCount; j++) {
+            floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
+        }
+
+        this._depthMix.sort();
+
+        const indexMix = new Uint32Array(this._depthMix.buffer);
+        if (this._splatIndex) {
+            for (let j = 0; j < this._vertexCount; j++) {
+                this._splatIndex[j] = indexMix[2 * j];
+            }
+        }
+        this._updateSplatIndexBuffer(this._vertexCount);
+        //this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+        if (this._delayedTextureUpdate) {
+            const textureSize = this._getTextureSize(this._vertexCount);
+            this._updateSubTextures(
+                this._delayedTextureUpdate.centers,
+                this._delayedTextureUpdate.covA,
+                this._delayedTextureUpdate.covB,
+                this._delayedTextureUpdate.colors,
+                0,
+                textureSize.y,
+                this._delayedTextureUpdate.sh
+            );
+            this._delayedTextureUpdate = null;
+        }
+        this.thinInstanceBufferUpdated("splatIndex");
+    }
+
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -482,7 +541,11 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the current mesh
      */
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
-        this._postToWorker();
+        if (this._worker) {
+            this._postToWorker();
+        } else {
+            this._sortDepthMixImmediate();
+        }
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
@@ -1358,7 +1421,9 @@ export class GaussianSplattingMesh extends Mesh {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
 
             this._postToWorker(true);
         } else {
@@ -1446,7 +1511,9 @@ export class GaussianSplattingMesh extends Mesh {
             // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
             this._sortIsDirty = true;
         } else {
             for (let i = 0; i < vertexCount; i++) {
@@ -1529,6 +1596,11 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
     private _instanciateWorker(): void {
+        if (!this._options.useWebWorker) {
+            this._depthMix = new BigInt64Array(this._vertexCount);
+            this._readyToDisplay = true;
+            return;
+        }
         if (!this._vertexCount) {
             return;
         }
