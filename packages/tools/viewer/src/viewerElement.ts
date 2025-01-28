@@ -80,7 +80,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+    protected _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -212,243 +212,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         .canvas {
             outline: none;
-        }
-
-        .children-slot {
-            position: absolute;
-            top: 0;
-            background: transparent;
-            pointer-events: none;
-        }
-
-        .bar {
-            position: absolute;
-            width: calc(100% - 24px);
-            min-width: 150px;
-            max-width: 1280px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--ui-background-color);
-        }
-
-        .bar-min {
-            width: unset;
-            min-width: unset;
-            max-width: unset;
-        }
-
-        .loading-progress-outer {
-            height: 4px;
-            border-radius: 4px;
-            border: 1px solid var(--ui-background-color);
-            outline: none;
-            top: 12px;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-
-        .loading-progress-outer-inactive {
-            opacity: 0;
-            /* Set the background color to the foreground color while in the inactive state so that the color seen is correct while fading out the opacity. */
-            background-color: var(--ui-foreground-color);
-        }
-
-        .loading-progress-inner {
-            width: 0;
-            height: 100%;
-            border-radius: inherit;
-            background-color: var(--ui-foreground-color);
-            transition: width 0.3s linear;
-        }
-
-        /* The right side of the inner progress bar starts aligned with the left side of the outer progress bar (container).
-           So, if the width is 30%, then the left side of the inner progress bar moves a total of 130% of the width of the container.
-           This is why the first keyframe is at 23% ((100/130)*30).
-         */
-        @keyframes indeterminate {
-            0% {
-                left: 0%;
-                width: 0%;
-            }
-            23% {
-                left: 0%;
-                width: 30%;
-            }
-            77% {
-                left: 70%;
-                width: 30%;
-            }
-            100% {
-                left: 100%;
-                width: 0%;
-            }
-        }
-
-        .loading-progress-inner-indeterminate {
-            position: absolute;
-            animation: indeterminate 1.5s infinite;
-            animation-timing-function: linear;
-        }
-
-        .tool-bar {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            border-radius: 12px;
-            border-color: var(--ui-foreground-color);
-            height: 48px;
-            bottom: 12px;
-            color: var(--ui-foreground-color);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .tool-bar * {
-            height: 100%;
-            min-width: 48px;
-        }
-
-        .tool-bar .divider {
-            min-width: 1px;
-            margin: 0px 6px;
-            height: 66%;
-            background-color: var(--ui-foreground-color);
-        }
-
-        .tool-bar select {
-            background: none;
-            min-width: 52px;
-            max-width: 128px;
-            border: 1px solid transparent;
-            border-radius: inherit;
-            color: inherit;
-            font-size: 14px;
-            padding: 0px 12px;
-            cursor: pointer;
-            outline: none;
-            appearance: none; /* Remove default styling */
-            -webkit-appearance: none; /* Remove default styling for Safari */
-        }
-
-        .tool-bar .select-container {
-            position: relative;
-            display: flex;
-            border-radius: inherit;
-            border-width: 0;
-            padding: 0;
-        }
-
-        .tool-bar .select-container select {
-            position: absolute;
-            min-width: 0;
-            width: 100%;
-        }
-
-        .tool-bar .select-container button {
-            position: absolute;
-            border-width: 0;
-        }
-
-        .tool-bar select:hover,
-        .tool-bar select:focus {
-            background-color: var(--ui-background-color-hover);
-        }
-
-        .tool-bar select option {
-            background-color: var(--ui-background-color);
-            color: var(--ui-foreground-color);
-        }
-
-        .tool-bar select:focus-visible {
-            border-color: inherit;
-        }
-
-        .tool-bar button {
-            background: none;
-            border: 1px solid transparent;
-            border-radius: inherit;
-            color: inherit;
-            padding: 0;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .tool-bar button:hover {
-            background-color: var(--ui-background-color-hover);
-        }
-
-        .tool-bar button:focus-visible {
-            border-color: inherit;
-        }
-
-        .tool-bar button svg {
-            width: 32px;
-            height: 32px;
-        }
-
-        .animation-timeline {
-            display: flex;
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            align-items: center;
-            border-radius: inherit;
-            border-color: inherit;
-        }
-
-        .animation-timeline-input {
-            -webkit-appearance: none;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-            outline: none;
-            border: 1px solid transparent;
-            border-radius: inherit;
-            padding: 0 12px;
-            background-color: transparent;
-        }
-
-        .animation-timeline-input:focus-visible {
-            border-color: inherit;
-        }
-
-        /*Chrome -webkit */
-
-        .animation-timeline-input::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid;
-            color: var(--ui-foreground-color);
-            border-radius: 50%;
-            background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
-            margin-top: -10px;
-        }
-
-        .animation-timeline-input::-webkit-slider-runnable-track {
-            height: 2px;
-            -webkit-appearance: none;
-            background-color: var(--ui-foreground-color);
-        }
-
-        /** FireFox -moz */
-
-        .animation-timeline-input::-moz-range-progress {
-            height: 2px;
-            background-color: var(--ui-foreground-color);
-        }
-
-        .animation-timeline-input::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--ui-foreground-color);
-            border-radius: 50%;
-            background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
-        }
-
-        .animation-timeline-input::-moz-range-track {
-            height: 2px;
-            background: var(--ui-foreground-color);
         }
     `;
 
@@ -741,7 +504,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     public hotSpots: Readonly<Record<string, HotSpot>> = {};
 
-    private get _hasHotSpots(): boolean {
+    protected get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
     }
 
@@ -758,7 +521,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return this._animations;
     }
 
-    private get _hasAnimations(): boolean {
+    protected get _hasAnimations(): boolean {
         return this._animations.length > 0;
     }
 
@@ -869,126 +632,21 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
-        const showProgressBar = this.loadingProgress !== false;
-        // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
-        const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
-        const isIndeterminate = this.loadingProgress === true;
-
-        const progressBar = html`
-            <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
-                <div
-                    class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
-                    style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
-                ></div>
-            </div>
-        `;
-
-        // Setup the list of toolbar controls.
-        let toolbarControls: TemplateResult[] = [];
-        if (this._viewerDetails?.model != null) {
-            // If the model has animations, add animation controls.
-            if (this._hasAnimations) {
-                toolbarControls.push(html`
-                    <div class="animation-timeline">
-                        <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                            ${!this.isAnimationPlaying
-                                ? html`
-                                      <svg viewBox="0 0 24 24">
-                                          <path d="${playFilledIcon}" fill="currentColor"></path>
-                                      </svg>
-                                  `
-                                : html`
-                                      <svg viewBox="0 0 24 24">
-                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                      </svg>
-                                  `}
-                        </button>
-                        <input
-                            aria-label="Animation Progress"
-                            class="animation-timeline-input"
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.0001"
-                            .value="${this.animationProgress}"
-                            @input="${this._onAnimationTimelineChanged}"
-                            @pointerdown="${this._onAnimationTimelinePointerDown}"
-                        />
-                    </div>
-                    <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
-                        ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option> `)}
-                    </select>
-                    ${this.animations.length > 1
-                        ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                              ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
-                          </select>`
-                        : ""}
-                `);
-            }
-
-            // If the model has material variants, add material variant controls.
-            if (this.materialVariants.length > 1) {
-                toolbarControls.push(html`
-                    <select aria-label="Select Material Variant" @change="${this._onMaterialVariantChanged}">
-                        ${this.materialVariants.map((name) => html`<option value="${name}" .selected="${this.selectedMaterialVariant === name}">${name}</option>`)}
-                    </select>
-                `);
-            }
-
-            // Always include a button to reset the camera pose.
-            toolbarControls.push(html`
-                <button aria-label="Reset Camera Pose" @click="${this.resetCamera}">
-                    <svg viewBox="0 0 24 24">
-                        <path d="${arrowResetFilledIcon}" fill="currentColor"></path>
-                    </svg>
-                </button>
-            `);
-
-            // If hotspots have been defined, add hotspot controls.
-            if (this._hasHotSpots) {
-                toolbarControls.push(html`
-                    <div class="select-container">
-                        <select id="materialSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
-                            <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
-                            ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
-                        </select>
-                        <!-- This button is not actually interactive, we want input to pass through to the select below. -->
-                        <button style="pointer-events: none">
-                            <svg viewBox="0 0 24 24">
-                                <path d="${targetFilledIcon}" fill="currentColor"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `);
-            }
-
-            // Add a vertical divider between each toolbar control.
-            const controlCount = toolbarControls.length;
-            const separator = html`<div class="divider"></div>`;
-            toolbarControls = toolbarControls.reduce((toolbarControls, toolbarControl, index) => {
-                if (index < controlCount - 1) {
-                    return [...toolbarControls, toolbarControl, separator];
-                } else {
-                    return [...toolbarControls, toolbarControl];
-                }
-            }, new Array<TemplateResult>());
-        }
-
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
-                <slot class="full-size children-slot"></slot>
-                <slot name="progress-bar"> ${progressBar}</slot>
-                ${toolbarControls.length === 0
-                    ? ""
-                    : html`
-                          <slot name="tool-bar">
-                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
-                          </slot>
-                      `}
+                ${this.extendRender()}
             </div>
         `;
+    }
+
+    /**
+     * Override this method to provide additional rendering for the component.
+     * @returns TemplateResult The rendered template result.
+     */
+    extendRender(): TemplateResult {
+        return html``;
     }
 
     // eslint-disable-next-line babylonjs/available
@@ -1005,17 +663,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this.dispatchEvent(event(type));
     }
 
-    private _onSelectedAnimationChanged(event: Event) {
+    protected _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
     }
 
-    private _onAnimationSpeedChanged(event: Event) {
+    protected _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.animationSpeed = Number(selectElement.value);
     }
 
-    private _onAnimationTimelineChanged(event: Event) {
+    protected _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
@@ -1025,7 +683,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onAnimationTimelinePointerDown(event: Event) {
+    protected _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
@@ -1033,12 +691,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onMaterialVariantChanged(event: Event) {
+    protected _onMaterialVariantChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedMaterialVariant = selectElement.value;
     }
 
-    private _onHotSpotsChanged(event: Event) {
+    protected _onHotSpotsChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         const hotSpotName = selectElement.value;
         // We don't actually want a selected value, this is just a one time trigger.
@@ -1262,10 +920,371 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends ViewerElement {
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override styles: CSSResultGroup = [
+        ViewerElement.styles,
+        css`
+            .children-slot {
+                position: absolute;
+                top: 0;
+                background: transparent;
+                pointer-events: none;
+            }
+
+            .bar {
+                position: absolute;
+                width: calc(100% - 24px);
+                min-width: 150px;
+                max-width: 1280px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: var(--ui-background-color);
+            }
+
+            .bar-min {
+                width: unset;
+                min-width: unset;
+                max-width: unset;
+            }
+
+            .loading-progress-outer {
+                height: 4px;
+                border-radius: 4px;
+                border: 1px solid var(--ui-background-color);
+                outline: none;
+                top: 12px;
+                pointer-events: none;
+                transition: opacity 0.5s ease;
+            }
+
+            .loading-progress-outer-inactive {
+                opacity: 0;
+                /* Set the background color to the foreground color while in the inactive state so that the color seen is correct while fading out the opacity. */
+                background-color: var(--ui-foreground-color);
+            }
+
+            .loading-progress-inner {
+                width: 0;
+                height: 100%;
+                border-radius: inherit;
+                background-color: var(--ui-foreground-color);
+                transition: width 0.3s linear;
+            }
+
+            /* The right side of the inner progress bar starts aligned with the left side of the outer progress bar (container).
+           So, if the width is 30%, then the left side of the inner progress bar moves a total of 130% of the width of the container.
+           This is why the first keyframe is at 23% ((100/130)*30).
+         */
+            @keyframes indeterminate {
+                0% {
+                    left: 0%;
+                    width: 0%;
+                }
+                23% {
+                    left: 0%;
+                    width: 30%;
+                }
+                77% {
+                    left: 70%;
+                    width: 30%;
+                }
+                100% {
+                    left: 100%;
+                    width: 0%;
+                }
+            }
+
+            .loading-progress-inner-indeterminate {
+                position: absolute;
+                animation: indeterminate 1.5s infinite;
+                animation-timing-function: linear;
+            }
+
+            .tool-bar {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                border-radius: 12px;
+                border-color: var(--ui-foreground-color);
+                height: 48px;
+                bottom: 12px;
+                color: var(--ui-foreground-color);
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .tool-bar * {
+                height: 100%;
+                min-width: 48px;
+            }
+
+            .tool-bar .divider {
+                min-width: 1px;
+                margin: 0px 6px;
+                height: 66%;
+                background-color: var(--ui-foreground-color);
+            }
+
+            .tool-bar select {
+                background: none;
+                min-width: 52px;
+                max-width: 128px;
+                border: 1px solid transparent;
+                border-radius: inherit;
+                color: inherit;
+                font-size: 14px;
+                padding: 0px 12px;
+                cursor: pointer;
+                outline: none;
+                appearance: none; /* Remove default styling */
+                -webkit-appearance: none; /* Remove default styling for Safari */
+            }
+
+            .tool-bar .select-container {
+                position: relative;
+                display: flex;
+                border-radius: inherit;
+                border-width: 0;
+                padding: 0;
+            }
+
+            .tool-bar .select-container select {
+                position: absolute;
+                min-width: 0;
+                width: 100%;
+            }
+
+            .tool-bar .select-container button {
+                position: absolute;
+                border-width: 0;
+            }
+
+            .tool-bar select:hover,
+            .tool-bar select:focus {
+                background-color: var(--ui-background-color-hover);
+            }
+
+            .tool-bar select option {
+                background-color: var(--ui-background-color);
+                color: var(--ui-foreground-color);
+            }
+
+            .tool-bar select:focus-visible {
+                border-color: inherit;
+            }
+
+            .tool-bar button {
+                background: none;
+                border: 1px solid transparent;
+                border-radius: inherit;
+                color: inherit;
+                padding: 0;
+                cursor: pointer;
+                outline: none;
+            }
+
+            .tool-bar button:hover {
+                background-color: var(--ui-background-color-hover);
+            }
+
+            .tool-bar button:focus-visible {
+                border-color: inherit;
+            }
+
+            .tool-bar button svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .animation-timeline {
+                display: flex;
+                flex: 1;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                align-items: center;
+                border-radius: inherit;
+                border-color: inherit;
+            }
+
+            .animation-timeline-input {
+                -webkit-appearance: none;
+                cursor: pointer;
+                width: 100%;
+                height: 100%;
+                outline: none;
+                border: 1px solid transparent;
+                border-radius: inherit;
+                padding: 0 12px;
+                background-color: transparent;
+            }
+
+            .animation-timeline-input:focus-visible {
+                border-color: inherit;
+            }
+
+            /*Chrome -webkit */
+
+            .animation-timeline-input::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 20px;
+                height: 20px;
+                border: 2px solid;
+                color: var(--ui-foreground-color);
+                border-radius: 50%;
+                background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
+                margin-top: -10px;
+            }
+
+            .animation-timeline-input::-webkit-slider-runnable-track {
+                height: 2px;
+                -webkit-appearance: none;
+                background-color: var(--ui-foreground-color);
+            }
+
+            /** FireFox -moz */
+
+            .animation-timeline-input::-moz-range-progress {
+                height: 2px;
+                background-color: var(--ui-foreground-color);
+            }
+
+            .animation-timeline-input::-moz-range-thumb {
+                width: 16px;
+                height: 16px;
+                border: 2px solid var(--ui-foreground-color);
+                border-radius: 50%;
+                background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
+            }
+
+            .animation-timeline-input::-moz-range-track {
+                height: 2px;
+                background: var(--ui-foreground-color);
+            }
+        `,
+    ];
+
     /**
      * Creates a new HTML3DElement.
      */
     public constructor() {
         super(Viewer);
+    }
+
+    override extendRender(): TemplateResult {
+        const showProgressBar = this.loadingProgress !== false;
+        // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
+        const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
+        const isIndeterminate = this.loadingProgress === true;
+
+        const progressBar = html`
+            <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
+                <div
+                    class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
+                    style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
+                ></div>
+            </div>
+        `;
+
+        // Setup the list of toolbar controls.
+        let toolbarControls: TemplateResult[] = [];
+        if (this._viewerDetails?.model != null) {
+            // If the model has animations, add animation controls.
+            if (this._hasAnimations) {
+                toolbarControls.push(html`
+                    <div class="animation-timeline">
+                        <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
+                            ${!this.isAnimationPlaying
+                                ? html`
+                                      <svg viewBox="0 0 24 24">
+                                          <path d="${playFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `
+                                : html`
+                                      <svg viewBox="0 0 24 24">
+                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                      </svg>
+                                  `}
+                        </button>
+                        <input
+                            aria-label="Animation Progress"
+                            class="animation-timeline-input"
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.0001"
+                            .value="${this.animationProgress.toString()}"
+                            @input="${this._onAnimationTimelineChanged}"
+                            @pointerdown="${this._onAnimationTimelinePointerDown}"
+                        />
+                    </div>
+                    <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
+                        ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option> `)}
+                    </select>
+                    ${this.animations.length > 1
+                        ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                              ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
+                          </select>`
+                        : ""}
+                `);
+            }
+
+            // If the model has material variants, add material variant controls.
+            if (this.materialVariants.length > 1) {
+                toolbarControls.push(html`
+                    <select aria-label="Select Material Variant" @change="${this._onMaterialVariantChanged}">
+                        ${this.materialVariants.map((name) => html`<option value="${name}" .selected="${this.selectedMaterialVariant === name}">${name}</option>`)}
+                    </select>
+                `);
+            }
+
+            // Always include a button to reset the camera pose.
+            toolbarControls.push(html`
+                <button aria-label="Reset Camera Pose" @click="${this.resetCamera}">
+                    <svg viewBox="0 0 24 24">
+                        <path d="${arrowResetFilledIcon}" fill="currentColor"></path>
+                    </svg>
+                </button>
+            `);
+
+            // If hotspots have been defined, add hotspot controls.
+            if (this._hasHotSpots) {
+                toolbarControls.push(html`
+                    <div class="select-container">
+                        <select id="materialSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                            <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
+                            ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
+                        </select>
+                        <!-- This button is not actually interactive, we want input to pass through to the select below. -->
+                        <button style="pointer-events: none">
+                            <svg viewBox="0 0 24 24">
+                                <path d="${targetFilledIcon}" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `);
+            }
+
+            // Add a vertical divider between each toolbar control.
+            const controlCount = toolbarControls.length;
+            const separator = html`<div class="divider"></div>`;
+            toolbarControls = toolbarControls.reduce((toolbarControls, toolbarControl, index) => {
+                if (index < controlCount - 1) {
+                    return [...toolbarControls, toolbarControl, separator];
+                } else {
+                    return [...toolbarControls, toolbarControl];
+                }
+            }, new Array<TemplateResult>());
+        }
+
+        return html` <slot class="full-size children-slot"></slot>
+            <slot name="progress-bar"> ${progressBar}</slot>
+            ${toolbarControls.length === 0
+                ? ""
+                : html`
+                      <slot name="tool-bar">
+                          <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
+                      </slot>
+                  `}`;
     }
 }
