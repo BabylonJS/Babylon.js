@@ -4,15 +4,13 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 type AudioNodeType = number;
 
 /** @internal */
-export const _AudioNodeType = {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    In: 1,
+export const enum _AudioNodeType {
+    In = 1,
     /** @internal */
-    Out: 2,
+    Out = 2,
     /** @internal */
-    InOut: 3,
-    /* eslint-enable @typescript-eslint/naming-convention */
-};
+    InOut = 3,
+}
 
 /**
  * Abstract class for an audio node.
