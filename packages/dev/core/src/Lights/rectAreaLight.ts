@@ -133,7 +133,11 @@ export class RectAreaLight extends AreaLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        // TO DO: Implement this to add support for NME.
+        if (this._computeTransformedInformation()) {
+            effect.setFloat3(lightDataUniformName, this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+        }
         return this;
     }
 }
