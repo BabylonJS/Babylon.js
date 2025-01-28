@@ -1,5 +1,7 @@
 import type { Nullable } from "../types";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { EngineStore } from "../Engines/engineStore";
+import type { Observer } from "../Misc/observable";
 /**
  * Interface used to present a loading screen while loading a scene
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
@@ -28,7 +30,14 @@ export interface ILoadingScreen {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
-    private _loadingDiv: Nullable<HTMLDivElement>;
+    private _engine: Nullable<AbstractEngine>;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>>;
+    private _isLoading: boolean;
+    /**
+     * Maps a loading `HTMLDivElement` to a tuple containing the associated `HTMLCanvasElement`
+     * and its `DOMRect` (or `null` if not yet available).
+     */
+    private _loadingDivToRenderingCanvasMap: Map<HTMLDivElement, [HTMLCanvasElement, DOMRect | null]> = new Map();
     private _loadingTextDiv: Nullable<HTMLDivElement>;
     private _style: Nullable<HTMLStyleElement>;
 
@@ -54,22 +63,26 @@ export class DefaultLoadingScreen implements ILoadingScreen {
      * Function called to display the loading screen
      */
     public displayLoadingUI(): void {
-        if (this._loadingDiv) {
-            // Do not add a loading screen if there is already one
+        if (this._isLoading) {
+            // Do not add a loading screen if it is already loading
             return;
         }
 
-        this._loadingDiv = document.createElement("div");
+        this._isLoading = true;
+        // get current engine by rendering canvas
+        this._engine = EngineStore.Instances.find((engine) => engine.getRenderingCanvas() === this._renderingCanvas) as AbstractEngine;
 
-        this._loadingDiv.id = "babylonjsLoadingDiv";
-        this._loadingDiv.style.opacity = "0";
-        this._loadingDiv.style.transition = "opacity 1.5s ease";
-        this._loadingDiv.style.pointerEvents = "none";
-        this._loadingDiv.style.display = "grid";
-        this._loadingDiv.style.gridTemplateRows = "100%";
-        this._loadingDiv.style.gridTemplateColumns = "100%";
-        this._loadingDiv.style.justifyItems = "center";
-        this._loadingDiv.style.alignItems = "center";
+        const loadingDiv = document.createElement("div");
+
+        loadingDiv.id = "babylonjsLoadingDiv";
+        loadingDiv.style.opacity = "0";
+        loadingDiv.style.transition = "opacity 1.5s ease";
+        loadingDiv.style.pointerEvents = "none";
+        loadingDiv.style.display = "grid";
+        loadingDiv.style.gridTemplateRows = "100%";
+        loadingDiv.style.gridTemplateColumns = "100%";
+        loadingDiv.style.justifyItems = "center";
+        loadingDiv.style.alignItems = "center";
 
         // Loading text
         this._loadingTextDiv = document.createElement("div");
@@ -86,7 +99,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingTextDiv.style.zIndex = "1";
         this._loadingTextDiv.innerHTML = "Loading";
 
-        this._loadingDiv.appendChild(this._loadingTextDiv);
+        loadingDiv.appendChild(this._loadingTextDiv);
 
         //set the predefined text
         this._loadingTextDiv.innerHTML = this._loadingText;
@@ -95,13 +108,13 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._style = document.createElement("style");
         this._style.type = "text/css";
         const keyFrames = `@-webkit-keyframes spin1 {\
-                    0% { -webkit-transform: rotate(0deg);}
-                    100% { -webkit-transform: rotate(360deg);}
-                }\
-                @keyframes spin1 {\
-                    0% { transform: rotate(0deg);}
-                    100% { transform: rotate(360deg);}
-                }`;
+                            0% { -webkit-transform: rotate(0deg);}
+                            100% { -webkit-transform: rotate(360deg);}
+                        }\
+                        @keyframes spin1 {\
+                            0% { transform: rotate(0deg);}
+                            100% { transform: rotate(360deg);}
+                        }`;
         this._style.innerHTML = keyFrames;
         document.getElementsByTagName("head")[0].appendChild(this._style);
 
@@ -164,45 +177,83 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
         imageSpinnerContainer.appendChild(imgSpinner);
 
-        this._loadingDiv.appendChild(imgBack);
-        this._loadingDiv.appendChild(imageSpinnerContainer);
+        loadingDiv.appendChild(imgBack);
+        loadingDiv.appendChild(imageSpinnerContainer);
+        loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        loadingDiv.style.opacity = "1";
+
+        const canvases: Array<HTMLCanvasElement> = [];
+        const views = this._engine.views;
+        if (views?.length) {
+            for (const view of views) {
+                if (view.enabled) {
+                    canvases.push(view.target);
+                }
+            }
+        } else {
+            canvases.push(this._renderingCanvas);
+        }
+        canvases.forEach((canvas, index) => {
+            const clonedLoadingDiv = loadingDiv!.cloneNode(true) as HTMLDivElement;
+            clonedLoadingDiv.id += `-${index}`;
+            this._loadingDivToRenderingCanvasMap.set(clonedLoadingDiv, [canvas, null]);
+        });
 
         this._resizeLoadingUI();
 
-        window.addEventListener("resize", this._resizeLoadingUI);
+        this._resizeObserver = this._engine.onResizeObservable.add(() => {
+            this._resizeLoadingUI();
+        });
 
-        this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
-        document.body.appendChild(this._loadingDiv);
-
-        this._loadingDiv.style.opacity = "1";
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            document.body.appendChild(loadingDiv);
+        });
     }
 
     /**
      * Function called to hide the loading screen
      */
     public hideLoadingUI(): void {
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        const onTransitionEnd = () => {
-            if (this._loadingTextDiv) {
-                this._loadingTextDiv.remove();
-                this._loadingTextDiv = null;
+        let completedTransitions = 0;
+
+        const onTransitionEnd = (event: TransitionEvent) => {
+            const loadingDiv = event.target as HTMLDivElement;
+            // ensure that ending transition event is generated by one of the current loadingDivs
+            const isTransitionEndOnLoadingDiv = this._loadingDivToRenderingCanvasMap.has(loadingDiv);
+
+            if (isTransitionEndOnLoadingDiv) {
+                completedTransitions++;
+                loadingDiv.remove();
+
+                const allTransitionsCompleted = completedTransitions === this._loadingDivToRenderingCanvasMap.size;
+                if (allTransitionsCompleted) {
+                    if (this._loadingTextDiv) {
+                        this._loadingTextDiv.remove();
+                        this._loadingTextDiv = null;
+                    }
+                    if (this._style) {
+                        this._style.remove();
+                        this._style = null;
+                    }
+
+                    window.removeEventListener("transitionend", onTransitionEnd);
+                    this._engine!.onResizeObservable.remove(this._resizeObserver);
+                    this._loadingDivToRenderingCanvasMap.clear();
+                    this._engine = null;
+                    this._isLoading = false;
+                }
             }
-            if (this._loadingDiv) {
-                this._loadingDiv.remove();
-                this._loadingDiv = null;
-            }
-            if (this._style) {
-                this._style.remove();
-                this._style = null;
-            }
-            window.removeEventListener("resize", this._resizeLoadingUI);
         };
 
-        this._loadingDiv.style.opacity = "0";
-        this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            loadingDiv.style.opacity = "0";
+        });
+
+        window.addEventListener("transitionend", onTransitionEnd);
     }
 
     /**
@@ -230,27 +281,61 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     public set loadingUIBackgroundColor(color: string) {
         this._loadingDivBackgroundColor = color;
 
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+            loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+        });
+    }
+
+    /**
+     * Checks if the layout of the canvas has changed by comparing the current layout
+     * rectangle with the previous one.
+     *
+     * This function compares of the two `DOMRect` objects to determine if any of the layout dimensions have changed.
+     * If the layout has changed or if there is no previous layout (i.e., `previousCanvasRect` is `null`),
+     * it returns `true`. Otherwise, it returns `false`.
+     *
+     * @param previousCanvasRect defines the previously recorded `DOMRect` of the canvas, or `null` if no previous state exists.
+     * @param currentCanvasRect defines the current `DOMRect` of the canvas to compare against the previous layout.
+     * @returns `true` if the layout has changed, otherwise `false`.
+     */
+    private _isCanvasLayoutChanged(previousCanvasRect: DOMRect | null, currentCanvasRect: DOMRect) {
+        return (
+            !previousCanvasRect ||
+            previousCanvasRect.left !== currentCanvasRect.left ||
+            previousCanvasRect.top !== currentCanvasRect.top ||
+            previousCanvasRect.right !== currentCanvasRect.right ||
+            previousCanvasRect.bottom !== currentCanvasRect.bottom ||
+            previousCanvasRect.width !== currentCanvasRect.width ||
+            previousCanvasRect.height !== currentCanvasRect.height ||
+            previousCanvasRect.x !== currentCanvasRect.x ||
+            previousCanvasRect.y !== currentCanvasRect.y
+        );
     }
 
     // Resize
     private _resizeLoadingUI = () => {
-        const canvasRect = this._renderingCanvas.getBoundingClientRect();
-        const canvasPositioning = window.getComputedStyle(this._renderingCanvas).position;
-
-        if (!this._loadingDiv) {
+        if (!this._isLoading) {
             return;
         }
 
-        this._loadingDiv.style.position = canvasPositioning === "fixed" ? "fixed" : "absolute";
-        this._loadingDiv.style.left = canvasRect.left + "px";
-        this._loadingDiv.style.top = canvasRect.top + "px";
-        this._loadingDiv.style.width = canvasRect.width + "px";
-        this._loadingDiv.style.height = canvasRect.height + "px";
+        this._loadingDivToRenderingCanvasMap.forEach(([canvas, previousCanvasRect], loadingDiv) => {
+            const currentCanvasRect = canvas.getBoundingClientRect();
+            if (this._isCanvasLayoutChanged(previousCanvasRect, currentCanvasRect)) {
+                const canvasPositioning = window.getComputedStyle(canvas).position;
+
+                loadingDiv.style.position = canvasPositioning === "fixed" ? "fixed" : "absolute";
+                loadingDiv.style.left = currentCanvasRect.left + "px";
+                loadingDiv.style.top = currentCanvasRect.top + "px";
+                loadingDiv.style.width = currentCanvasRect.width + "px";
+                loadingDiv.style.height = currentCanvasRect.height + "px";
+
+                this._loadingDivToRenderingCanvasMap.set(loadingDiv, [canvas, currentCanvasRect]);
+            }
+        });
     };
 }
 

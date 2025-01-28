@@ -47,7 +47,7 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-export type LoadModelOptions = LoadAssetContainerOptions & {
+type UpdateModelOptions = {
     /**
      * The default animation index.
      */
@@ -58,6 +58,8 @@ export type LoadModelOptions = LoadAssetContainerOptions & {
      */
     animationAutoPlay?: boolean;
 };
+
+export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
 
 export type CameraAutoOrbit = {
     /**
@@ -735,15 +737,21 @@ export class Viewer implements IDisposable {
         return this._modelInfo;
     }
 
-    protected _setModel(...args: [model: null] | [model: Model, source?: string | File | ArrayBufferView]): void {
-        const [model, source] = args;
+    protected _setModel(
+        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
+    ): void {
+        const [model, options] = args;
         if (model !== this._modelInfo) {
             this._modelInfo = model;
-            this._updateCamera(true);
             this._updateLight();
             this._applyAnimationSpeed();
+            this._selectAnimation(options?.defaultAnimation ?? 0, false);
+            if (options?.animationAutoPlay) {
+                this.playAnimation();
+            }
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this.onModelChanged.notifyObservers(source ?? null);
+            this._updateCamera(options?.interpolateCamera);
+            this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
 
@@ -1006,11 +1014,7 @@ export class Viewer implements IDisposable {
             this.selectedAnimation = -1;
 
             if (source) {
-                this._setModel(await this._loadModel(source, options, abortController.signal), source);
-                this._selectAnimation(options?.defaultAnimation ?? 0, false);
-                if (options?.animationAutoPlay) {
-                    this.playAnimation();
-                }
+                this._setModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
             }
         });
     }
