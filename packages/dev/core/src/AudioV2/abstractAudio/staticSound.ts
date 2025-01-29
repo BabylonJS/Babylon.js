@@ -167,7 +167,7 @@ export abstract class StaticSound extends AbstractSound {
     protected abstract override _createInstance(): _StaticSoundInstance;
 
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
-        if (this._isPaused && this._instances.size > 0) {
+        if (this._isPaused) {
             this.resume();
             return;
         }
