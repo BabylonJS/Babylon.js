@@ -32,9 +32,7 @@ export async function CreateSoundAsync(
     options: Partial<IStaticSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSound> {
-    const webAudioEngine = _GetWebAudioEngine(engine);
-
-    const sound = new _WebAudioStaticSound(name, webAudioEngine, options);
+    const sound = new _WebAudioStaticSound(name, _GetWebAudioEngine(engine), options);
     await sound.init(source, options);
 
     return sound;
@@ -52,9 +50,7 @@ export async function CreateSoundBufferAsync(
     options: Partial<IStaticSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
-    const webAudioEngine = _GetWebAudioEngine(engine);
-
-    const buffer = new _WebAudioStaticSoundBuffer(webAudioEngine);
+    const buffer = new _WebAudioStaticSoundBuffer(_GetWebAudioEngine(engine));
     await buffer.init(source, options);
     return buffer;
 }

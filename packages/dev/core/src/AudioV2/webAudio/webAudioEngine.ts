@@ -121,11 +121,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public get isWebAudio(): boolean {
-        return true;
-    }
-
-    /** @internal */
     public get mainOut(): _WebAudioMainOut {
         return this._mainOut;
     }

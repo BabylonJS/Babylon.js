@@ -31,9 +31,7 @@ export async function CreateStreamingSoundAsync(
     options: Partial<IStreamingSoundOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
-    const webAudioEngine = _GetWebAudioEngine(engine);
-
-    const sound = new _WebAudioStreamingSound(name, webAudioEngine, options);
+    const sound = new _WebAudioStreamingSound(name, _GetWebAudioEngine(engine), options);
     await sound.init(source, options);
 
     return sound;

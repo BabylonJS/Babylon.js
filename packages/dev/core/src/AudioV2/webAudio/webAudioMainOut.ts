@@ -2,14 +2,11 @@ import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import { _MainAudioOut } from "../abstractAudio/mainAudioOut";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode } from "./webAudioNode";
+import { _GetWebAudioEngine } from "./webAudioTools";
 
 /** @internal */
 export async function _CreateMainAudioOutAsync(engine: AudioEngineV2): Promise<_WebAudioMainOut> {
-    if (!engine.isWebAudio) {
-        throw new Error("Wrong engine type.");
-    }
-
-    const mainAudioOutput = new _WebAudioMainOut(engine);
+    const mainAudioOutput = new _WebAudioMainOut(_GetWebAudioEngine(engine));
     return mainAudioOutput;
 }
 

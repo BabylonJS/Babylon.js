@@ -74,11 +74,6 @@ export abstract class AudioEngineV2 {
     }
 
     /**
-     * `true` if the engine is a WebAudio engine; otherwise `false`.
-     */
-    public abstract readonly isWebAudio: boolean;
-
-    /**
      * The spatial audio listener properties for the audio engine.
      * - Each audio engine has exactly one listener.
      */

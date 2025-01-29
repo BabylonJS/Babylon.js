@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import { LastCreatedAudioEngine } from "../abstractAudio/audioEngineV2";
-import type { _WebAudioEngine } from "./webAudioEngine";
+import { _WebAudioEngine } from "./webAudioEngine";
 
 /**
  * @internal
@@ -17,9 +17,9 @@ export function _GetWebAudioEngine(engine: Nullable<AudioEngineV2>): _WebAudioEn
         throw new Error("No audio engine.");
     }
 
-    if (!engine.isWebAudio) {
-        throw new Error("Not a WebAudio engine.");
+    if (engine instanceof _WebAudioEngine) {
+        return engine;
     }
 
-    return engine as _WebAudioEngine;
+    throw new Error("Not a WebAudio engine.");
 }

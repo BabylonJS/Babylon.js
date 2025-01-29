@@ -16,9 +16,7 @@ import { _GetWebAudioEngine } from "./webAudioTools";
  * @returns A promise that resolves with the created main audio bus.
  */
 export async function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
-    const webAudioEngine = _GetWebAudioEngine(engine);
-
-    const bus = new _WebAudioMainBus(name, webAudioEngine);
+    const bus = new _WebAudioMainBus(name, _GetWebAudioEngine(engine));
     await bus.init(options);
 
     return bus;
