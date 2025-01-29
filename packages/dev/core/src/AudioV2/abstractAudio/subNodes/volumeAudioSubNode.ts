@@ -21,7 +21,7 @@ export interface IVolumeAudioOptions {
 /** @internal */
 export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(_AudioSubNode.Volume, engine);
+        super(_AudioSubNode.VOLUME, engine);
     }
 
     public abstract get volume(): number;

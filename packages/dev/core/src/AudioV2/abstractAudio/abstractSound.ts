@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
-import { AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
+import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
@@ -62,7 +62,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
-        super(name, engine, AudioNodeType.HasOutputs);
+        super(name, engine, _AudioNodeType.HAS_OUTPUTS);
 
         this._options = {
             autoplay: false,
@@ -176,13 +176,13 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The output volume of the sound.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.volume ?? _VolumeAudioDefaults.Volume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.Volume;
     }
 
     public set volume(value: number) {
         // Note that the volume subnode is created at initialization time and it always exists, so the callback that
         // sets the node's volume is always called synchronously.
-        this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume, (node) => {
+        this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME, (node) => {
             node.volume = value;
         });
     }

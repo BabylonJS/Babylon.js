@@ -13,7 +13,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         } else if (options.listenerRotation !== undefined) {
             this.rotation = options.listenerRotation.clone();
         } else {
-            this.rotationQuaternion = _SpatialAudioListenerDefaults.RotationQuaternion.clone();
+            this.rotationQuaternion = _SpatialAudioListenerDefaults.ROTATION_QUATERNION.clone();
         }
     }
 }

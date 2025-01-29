@@ -7,7 +7,9 @@ import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../abstractAud
 import type { IWebAudioInNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
 import { _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
 
-/** */
+/**
+ * Options for creating a WebAudioBaseSubGraph.
+ */
 export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
 
 /** @internal */
@@ -24,13 +26,13 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
     /** @internal */
     public async init(options: Partial<IWebAudioBaseSubGraphOptions>): Promise<void> {
-        this._createAndAddSubNode(_AudioSubNode.Volume);
+        this._createAndAddSubNode(_AudioSubNode.VOLUME);
 
         await this._createSubNodePromisesResolved();
 
-        this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.Volume)?.setOptions(options);
+        this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.setOptions(options);
 
-        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
+        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.VOLUME);
         if (!volumeNode) {
             return;
         }
@@ -64,7 +66,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
     protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
         switch (name) {
-            case _AudioSubNode.Volume:
+            case _AudioSubNode.VOLUME:
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;

@@ -15,11 +15,11 @@ export class _StereoAudio extends AbstractStereoAudio {
 
     /** @internal */
     public get pan(): number {
-        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.pan ?? _StereoAudioDefaults.Pan;
+        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO)?.pan ?? _StereoAudioDefaults.PAN;
     }
 
     public set pan(value: number) {
-        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo, (node) => {
+        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO, (node) => {
             node.pan = value;
         });
     }

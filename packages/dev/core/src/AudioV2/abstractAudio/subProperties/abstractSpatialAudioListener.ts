@@ -1,14 +1,10 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
-/** @internal */
-export class _SpatialAudioListenerDefaults {
-    /** @internal */
-    public static readonly Position = Vector3.Zero();
-    /** @internal */
-    public static readonly Rotation = Vector3.Zero();
-    /** @internal */
-    public static readonly RotationQuaternion = Quaternion.FromEulerVector(_SpatialAudioListenerDefaults.Rotation);
-}
+export const _SpatialAudioListenerDefaults = {
+    POSITION: Vector3.Zero(),
+    ROTATION: Vector3.Zero(),
+    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+};
 
 /**
  * Options for spatial audio.

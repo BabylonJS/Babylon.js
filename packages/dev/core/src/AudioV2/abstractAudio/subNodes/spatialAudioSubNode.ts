@@ -7,7 +7,7 @@ import { _AudioSubNode } from "./audioSubNode";
 /** @internal */
 export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(_AudioSubNode.Spatial, engine);
+        super(_AudioSubNode.SPATIAL, engine);
     }
 
     public abstract get coneInnerAngle(): number;
@@ -48,14 +48,14 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<ISpatialAudioOptions>): void {
-        this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefaults.ConeInnerAngle;
-        this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefaults.ConeOuterAngle;
-        this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefaults.ConeOuterVolume;
-        this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefaults.DistanceModel;
-        this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.MaxDistance;
-        this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.PanningModel;
-        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.ReferenceDistance;
-        this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.RolloffFactor;
+        this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefaults.CONE_INNER_ANGLE;
+        this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefaults.CONE_OUTER_ANGLE;
+        this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefaults.CONE_OUTER_VOLUME;
+        this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefaults.DISTANCE_MODEL;
+        this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.MAX_DISTANCE;
+        this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.PANNING_MODEL;
+        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.REFERENCE_DISTANCE;
+        this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.ROLLOFF_FACTOR;
 
         if (options.spatialPosition !== undefined) {
             this.position = options.spatialPosition.clone();
@@ -66,7 +66,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         } else if (options.spatialRotation !== undefined) {
             this.rotation = options.spatialRotation.clone();
         } else {
-            this.rotationQuaternion = _SpatialAudioDefaults.RotationQuaternion.clone();
+            this.rotationQuaternion = _SpatialAudioDefaults.ROTATION_QUATERNION.clone();
         }
     }
 }

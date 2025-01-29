@@ -29,19 +29,19 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            this._createAndAddSubNode(_AudioSubNode.Spatial);
+            this._createAndAddSubNode(_AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            this._createAndAddSubNode(_AudioSubNode.Stereo);
+            this._createAndAddSubNode(_AudioSubNode.STEREO);
         }
 
         await this._createSubNodePromisesResolved();
 
         if (hasSpatialOptions) {
-            this.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.Spatial)?.setOptions(options);
+            this.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.setOptions(options);
         }
         if (hasStereoOptions) {
-            this.getSubNode<_StereoAudioSubNode>(_AudioSubNode.Stereo)?.setOptions(options);
+            this.getSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO)?.setOptions(options);
         }
     }
 
@@ -58,9 +58,9 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         }
 
         switch (name) {
-            case _AudioSubNode.Spatial:
+            case _AudioSubNode.SPATIAL:
                 return _CreateSpatialAudioSubNodeAsync(this._owner.engine);
-            case _AudioSubNode.Stereo:
+            case _AudioSubNode.STEREO:
                 return _CreateStereoAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;
@@ -68,9 +68,9 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     }
 
     protected override _onSubNodesChanged(): void {
-        const spatialNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Spatial);
-        const stereoNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Stereo);
-        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.Volume);
+        const spatialNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.SPATIAL);
+        const stereoNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.STEREO);
+        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.VOLUME);
 
         if (spatialNode) {
             spatialNode.disconnectAll();

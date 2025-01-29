@@ -2,7 +2,9 @@ import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
-/** */
+/**
+ * Options for creating a main audio bus.
+ */
 export interface IMainAudioBusOptions extends IVolumeAudioOptions {}
 
 /**

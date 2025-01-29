@@ -1,6 +1,5 @@
-/** @internal */
-export const enum _AudioSubNode {
-    Stereo = "Stereo",
-    Spatial = "Spatial",
-    Volume = "Volume",
-}
+export const _AudioSubNode = {
+    STEREO: "Stereo",
+    SPATIAL: "Spatial",
+    VOLUME: "Volume",
+};

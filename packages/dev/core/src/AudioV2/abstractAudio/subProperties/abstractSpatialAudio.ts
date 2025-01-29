@@ -1,30 +1,18 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
-/** @internal */
-export class _SpatialAudioDefaults {
-    /** @internal */
-    public static readonly ConeInnerAngle = 2 * Math.PI;
-    /** @internal */
-    public static readonly ConeOuterAngle = 2 * Math.PI;
-    /** @internal */
-    public static readonly ConeOuterVolume = 0;
-    /** @internal */
-    public static readonly DistanceModel = "inverse";
-    /** @internal */
-    public static readonly MaxDistance = 10000;
-    /** @internal */
-    public static readonly PanningModel = "equalpower";
-    /** @internal */
-    public static readonly Position = Vector3.Zero();
-    /** @internal */
-    public static readonly ReferenceDistance = 1;
-    /** @internal */
-    public static readonly RolloffFactor = 1;
-    /** @internal */
-    public static readonly Rotation = Vector3.Zero();
-    /** @internal */
-    public static readonly RotationQuaternion = Quaternion.FromEulerVector(_SpatialAudioDefaults.Rotation);
-}
+export const _SpatialAudioDefaults = {
+    CONE_INNER_ANGLE: 6.28318530718,
+    CONE_OUTER_ANGLE: 6.28318530718,
+    CONE_OUTER_VOLUME: 0,
+    DISTANCE_MODEL: "inverse" as "linear" | "inverse" | "exponential",
+    MAX_DISTANCE: 10000,
+    PANNING_MODEL: "equalpower" as "equalpower" | "HRTF",
+    POSITION: Vector3.Zero(),
+    REFERENCE_DISTANCE: 1,
+    ROLLOFF_FACTOR: 1,
+    ROTATION: Vector3.Zero(),
+    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+};
 
 /**
  * Options for spatial audio.

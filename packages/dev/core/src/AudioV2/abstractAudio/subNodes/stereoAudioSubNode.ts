@@ -4,12 +4,10 @@ import { _AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
 import type { IStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
 import { _StereoAudioDefaults } from "../../abstractAudio/subProperties/abstractStereoAudio";
 
-/**
- *
- */
+/** @internal */
 export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
     protected constructor(engine: AudioEngineV2) {
-        super(_AudioSubNode.Stereo, engine);
+        super(_AudioSubNode.STEREO, engine);
     }
 
     abstract get pan(): number;
@@ -17,6 +15,6 @@ export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<IStereoAudioOptions>): void {
-        this.pan = options.stereoPan ?? _StereoAudioDefaults.Pan;
+        this.pan = options.stereoPan ?? _StereoAudioDefaults.PAN;
     }
 }

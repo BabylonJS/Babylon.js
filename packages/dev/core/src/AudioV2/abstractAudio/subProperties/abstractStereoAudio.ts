@@ -1,8 +1,6 @@
-/** @internal */
-export class _StereoAudioDefaults {
-    /** @internal */
-    public static readonly Pan = 0;
-}
+export const _StereoAudioDefaults = {
+    PAN: 0,
+};
 
 /** */
 export interface IStereoAudioOptions {
