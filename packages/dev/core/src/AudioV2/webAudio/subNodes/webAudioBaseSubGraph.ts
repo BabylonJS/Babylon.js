@@ -52,7 +52,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         }
     }
 
-    protected abstract get _downstreamNodes(): Nullable<Set<AbstractAudioNode>>;
+    protected abstract readonly _downstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
     /** @internal */
     public get inNode(): Nullable<AudioNode> {

@@ -24,20 +24,20 @@ export abstract class StaticSoundBuffer {
     /**
      * The sample rate of the sound buffer.
      */
-    public abstract get sampleRate(): number;
+    public abstract readonly sampleRate: number;
 
     /**
      * The length of the sound buffer, in sample frames.
      */
-    public abstract get length(): number;
+    public abstract readonly length: number;
 
     /**
      * The duration of the sound buffer, in seconds.
      */
-    public abstract get duration(): number;
+    public abstract readonly duration: number;
 
     /**
      * The number of channels in the sound buffer.
      */
-    public abstract get channelCount(): number;
+    public abstract readonly channelCount: number;
 }

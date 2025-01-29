@@ -24,8 +24,7 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
         super(_AudioSubNode.VOLUME, engine);
     }
 
-    public abstract get volume(): number;
-    public abstract set volume(value: number);
+    public abstract volume: number;
 
     /** @internal */
     public setOptions(options: Partial<IVolumeAudioOptions>): void {

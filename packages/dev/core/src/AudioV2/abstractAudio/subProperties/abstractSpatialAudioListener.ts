@@ -45,18 +45,15 @@ export abstract class AbstractSpatialAudioListener {
     /**
      * The listener position. Defaults to (0, 0, 0).
      */
-    public abstract get position(): Vector3;
-    public abstract set position(value: Vector3);
+    public abstract position: Vector3;
 
     /**
      * The listener rotation, as Euler angles. Defaults to (0, 0, 0).
      */
-    public abstract get rotation(): Vector3;
-    public abstract set rotation(value: Vector3);
+    public abstract rotation: Vector3;
 
     /**
      * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
      */
-    public abstract get rotationQuaternion(): Quaternion;
-    public abstract set rotationQuaternion(value: Quaternion);
+    public abstract rotationQuaternion: Quaternion;
 }

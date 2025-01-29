@@ -147,7 +147,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     /**
      * The spatial properties of the sound.
      */
-    public abstract get spatial(): AbstractSpatialAudio;
+    public abstract spatial: AbstractSpatialAudio;
 
     /**
      * The time within the sound buffer to start playing at, in seconds. Defaults to `0`.
@@ -170,7 +170,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     /**
      * The stereo properties of the sound.
      */
-    public abstract get stereo(): AbstractStereoAudio;
+    public abstract stereo: AbstractStereoAudio;
 
     /**
      * The output volume of the sound.

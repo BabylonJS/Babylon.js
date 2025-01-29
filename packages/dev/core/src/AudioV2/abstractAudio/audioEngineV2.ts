@@ -54,7 +54,7 @@ export abstract class AudioEngineV2 {
     /**
      * The elapsed time since the audio engine was started, in seconds.
      */
-    public abstract get currentTime(): number;
+    public abstract readonly currentTime: number;
 
     /**
      * The default main bus that will be used for audio buses and sounds if their `outBus` option is not set.
@@ -76,30 +76,29 @@ export abstract class AudioEngineV2 {
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
      */
-    public abstract get isWebAudio(): boolean;
+    public abstract readonly isWebAudio: boolean;
 
     /**
      * The spatial audio listener properties for the audio engine.
      * - Each audio engine has exactly one listener.
      */
-    public abstract get listener(): AbstractSpatialAudioListener;
+    public abstract readonly listener: AbstractSpatialAudioListener;
 
     /**
      * The main output node.
      * - This is the last node in the audio graph before the audio is sent to the speakers.
      */
-    public abstract get mainOut(): AbstractAudioNode;
+    public abstract readonly mainOut: AbstractAudioNode;
 
     /**
      * The current state of the audio engine.
      */
-    public abstract get state(): AudioEngineV2State;
+    public abstract readonly state: AudioEngineV2State;
 
     /**
      * The output volume of the audio engine.
      */
-    public abstract get volume(): number;
-    public abstract set volume(value: number);
+    public abstract volume: number;
 
     /**
      * Releases associated resources.

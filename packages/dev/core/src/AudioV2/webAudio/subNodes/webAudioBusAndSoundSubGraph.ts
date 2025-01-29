@@ -17,7 +17,7 @@ export interface IWebAudioBusAndSoundSubGraphOptions extends ISpatialAudioOption
 
 /** @internal */
 export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph {
-    protected abstract get _upstreamNodes(): Nullable<Set<AbstractAudioNode>>;
+    protected abstract readonly _upstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
     protected _inNode: Nullable<AudioNode> = null;
 

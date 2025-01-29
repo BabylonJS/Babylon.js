@@ -25,10 +25,9 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
         this._sound = sound;
     }
 
-    public abstract get currentTime(): number;
-    public abstract set currentTime(value: number);
+    public abstract currentTime: number;
 
-    public abstract get startTime(): number;
+    public abstract readonly startTime: number;
 
     /** The playback state of the sound instance */
     public get state(): SoundState {

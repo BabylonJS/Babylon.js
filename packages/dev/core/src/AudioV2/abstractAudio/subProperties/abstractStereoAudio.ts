@@ -39,6 +39,5 @@ export abstract class AbstractStereoAudio {
     /**
      * The stereo pan from -1 (left) to 1 (right). Defaults to 0.
      */
-    public abstract get pan(): number;
-    public abstract set pan(value: number);
+    public abstract pan: number;
 }

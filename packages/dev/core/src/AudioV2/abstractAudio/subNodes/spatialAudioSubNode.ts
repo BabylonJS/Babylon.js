@@ -10,41 +10,18 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         super(_AudioSubNode.SPATIAL, engine);
     }
 
-    public abstract get coneInnerAngle(): number;
-    public abstract set coneInnerAngle(value: number);
-
-    public abstract get coneOuterAngle(): number;
-    public abstract set coneOuterAngle(value: number);
-
-    public abstract get coneOuterVolume(): number;
-    public abstract set coneOuterVolume(value: number);
-
-    public abstract get distanceModel(): "linear" | "inverse" | "exponential";
-    public abstract set distanceModel(value: "linear" | "inverse" | "exponential");
-
-    public abstract get maxDistance(): number;
-    public abstract set maxDistance(value: number);
-
-    public abstract get panningModel(): "equalpower" | "HRTF";
-    public abstract set panningModel(value: "equalpower" | "HRTF");
-
-    public abstract get position(): Vector3;
-    public abstract set position(value: Vector3);
-
-    public abstract get referenceDistance(): number;
-    public abstract set referenceDistance(value: number);
-
-    public abstract get rolloffFactor(): number;
-    public abstract set rolloffFactor(value: number);
-
-    public abstract get rotation(): Vector3;
-    public abstract set rotation(value: Vector3);
-
-    public abstract get rotationQuaternion(): Quaternion;
-    public abstract set rotationQuaternion(value: Quaternion);
-
-    public abstract get inNode(): AudioNode;
-    public abstract get outNode(): AudioNode;
+    public abstract coneInnerAngle: number;
+    public abstract coneOuterAngle: number;
+    public abstract coneOuterVolume: number;
+    public abstract distanceModel: "linear" | "inverse" | "exponential";
+    public abstract maxDistance: number;
+    public abstract panningModel: "equalpower" | "HRTF";
+    public abstract position: Vector3;
+    public abstract referenceDistance: number;
+    public abstract rolloffFactor: number;
+    public abstract rotation: Vector3;
+    public abstract rotationQuaternion: Quaternion;
+    public abstract inNode: AudioNode;
 
     /** @internal */
     public setOptions(options: Partial<ISpatialAudioOptions>): void {

@@ -60,12 +60,12 @@ export abstract class AudioBus extends AbstractAudioBus {
     /**
      * The spatial audio properties of the audio bus.
      */
-    public abstract get spatial(): AbstractSpatialAudio;
+    public abstract readonly spatial: AbstractSpatialAudio;
 
     /**
      * The stereo audio properties of the audio bus.
      */
-    public abstract get stereo(): AbstractStereoAudio;
+    public abstract readonly stereo: AbstractStereoAudio;
 
     /**
      * Releases associated resources.
