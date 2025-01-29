@@ -43,7 +43,7 @@ import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import type { NodeRenderGraphClearBlock } from "core/FrameGraph";
+import type { NodeRenderGraphClearBlock, NodeRenderGraphCopyTextureBlock } from "core/FrameGraph";
 const dontSerializeTextureContent = true;
 
 /**
@@ -241,6 +241,13 @@ export class PreviewManager {
 
         this._refreshPreviewMesh();
         this._objectListBlock.value = { meshes: this._meshes, particleSystems: [] };
+
+        const copyTextureTask = this._nrg.getBlockByName<NodeRenderGraphCopyTextureBlock>("Copy texture")!.task;
+
+        this._nrg.frameGraph.onBuildObservable.add(() => {
+            const rtw = this._nrg.frameGraph.textureManager.getTextureFromHandle(copyTextureTask.outputTexture)!;
+            rtw.incrementReferences();
+        });
 
         this._nrg.build();
 
