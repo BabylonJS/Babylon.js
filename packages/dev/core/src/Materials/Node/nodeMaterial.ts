@@ -922,9 +922,20 @@ export class NodeMaterial extends PushMaterial {
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
 
         // Shared data
+        const needToPurgeList = this._fragmentOutputNodes.filter((n) => n._isFinalOutputAndActive).length > 1;
+        let fragmentOutputNodes = this._fragmentOutputNodes;
+
+        if (needToPurgeList) {
+            // Get all but the final output nodes
+            fragmentOutputNodes = this._fragmentOutputNodes.filter((n) => !n._isFinalOutputAndActive);
+
+            // Get the first with precedence on
+            fragmentOutputNodes.push(this._fragmentOutputNodes.filter((n) => n._isFinalOutputAndActive && n._hasPrecedence)[0]);
+        }
+
         this._sharedData = new NodeMaterialBuildStateSharedData();
         this._sharedData.nodeMaterial = this;
-        this._sharedData.fragmentOutputNodes = this._fragmentOutputNodes;
+        this._sharedData.fragmentOutputNodes = fragmentOutputNodes;
         this._vertexCompilationState.sharedData = this._sharedData;
         this._fragmentCompilationState.sharedData = this._sharedData;
         this._sharedData.buildId = this._buildId;
@@ -942,7 +953,7 @@ export class NodeMaterial extends PushMaterial {
             this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes, autoConfigure);
         }
 
-        for (const fragmentOutputNode of this._fragmentOutputNodes) {
+        for (const fragmentOutputNode of fragmentOutputNodes) {
             fragmentNodes.push(fragmentOutputNode);
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }

@@ -41,6 +41,9 @@ import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
+import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import type { NodeRenderGraphClearBlock, NodeRenderGraphCopyTextureBlock } from "core/FrameGraph";
 const dontSerializeTextureContent = true;
 
 /**
@@ -60,6 +63,9 @@ export class PreviewManager {
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
+    private _nrg: NodeRenderGraph;
+    private _objectListBlock: NodeRenderGraphInputBlock;
+    private _clearBlock: NodeRenderGraphClearBlock;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial | StandardMaterial;
@@ -147,7 +153,7 @@ export class PreviewManager {
         });
 
         this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(() => {
-            this._scene.clearColor = this._globalState.backgroundColor;
+            this._clearBlock.color = this._globalState.backgroundColor;
         });
 
         this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(() => {
@@ -173,7 +179,6 @@ export class PreviewManager {
             this._engine = new Engine(targetCanvas);
         }
         this._scene = new Scene(this._engine);
-        this._scene.clearColor = this._globalState.backgroundColor;
         this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
@@ -218,7 +223,38 @@ export class PreviewManager {
             };
             canvas.addEventListener("drop", onDrop, false);
         }
+
+        this._nrg = await NodeRenderGraph.ParseFromSnippetAsync("P1CTNO#10", this._scene, {
+            autoFillExternalInputs: false,
+            debugTextures: false,
+        });
+
+        this._clearBlock = this._nrg.getBlockByName<NodeRenderGraphClearBlock>("Clear")!;
+        this._clearBlock.color = this._globalState.backgroundColor;
+
+        const cameraBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Camera")!;
+        cameraBlock.value = this._camera;
+
+        this._scene.cameraToUseForPointers = this._camera;
+
+        this._objectListBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Object List")!;
+
         this._refreshPreviewMesh();
+        this._objectListBlock.value = { meshes: this._meshes, particleSystems: [] };
+
+        const copyTextureTask = this._nrg.getBlockByName<NodeRenderGraphCopyTextureBlock>("Copy texture")!.task;
+
+        this._nrg.frameGraph.onBuildObservable.add(() => {
+            const rtw = this._nrg.frameGraph.textureManager.getTextureFromHandle(copyTextureTask.outputTexture)!;
+            rtw.incrementReferences();
+        });
+
+        this._nrg.build();
+
+        await this._nrg.whenReadyAsync();
+
+        this._scene.frameGraph = this._nrg.frameGraph;
+
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -758,6 +794,7 @@ export class PreviewManager {
             mesh.dispose();
         }
 
+        this._nrg.dispose();
         this._scene.dispose();
         this._engine.dispose();
     }
