@@ -86,7 +86,7 @@ export abstract class StreamingSound extends AbstractSound {
      * @param options - The options to use when playing the sound.
      */
     public play(options: Partial<ICommonSoundPlayOptions> = {}): void {
-        if (this._isPaused) {
+        if (this.state === SoundState.Paused) {
             this.resume();
             return;
         }

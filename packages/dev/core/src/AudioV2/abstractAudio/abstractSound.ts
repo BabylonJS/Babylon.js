@@ -189,10 +189,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         });
     }
 
-    protected get _isPaused(): boolean {
-        return this._state === SoundState.Paused && this._instances.size > 0;
-    }
-
     /**
      * Releases associated resources.
      */
@@ -218,10 +214,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
-        if (!this._instances) {
-            return;
-        }
-
         for (const instance of Array.from(this._instances)) {
             instance.pause();
         }
@@ -234,10 +226,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      */
     public resume(): void {
         if (this._state !== SoundState.Paused) {
-            return;
-        }
-
-        if (!this._instances) {
             return;
         }
 
