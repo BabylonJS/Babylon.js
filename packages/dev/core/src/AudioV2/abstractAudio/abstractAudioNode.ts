@@ -1,14 +1,9 @@
 import { Observable } from "../../Misc/observable";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
-type AudioNodeType = number;
-
-/** @internal */
-export const enum _AudioNodeType {
+export const enum AudioNodeType {
     In = 1,
-    /** @internal */
     Out = 2,
-    /** @internal */
     InOut = 3,
 }
 
@@ -51,11 +46,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType & _AudioNodeType.In) {
+        if (nodeType & AudioNodeType.In) {
             this._upstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType & _AudioNodeType.Out) {
+        if (nodeType & AudioNodeType.Out) {
             this._downstreamNodes = new Set<AbstractAudioNode>();
         }
     }

@@ -1,11 +1,11 @@
-import { _AudioNodeType, AbstractNamedAudioNode } from "../abstractAudioNode";
+import { AudioNodeType, AbstractNamedAudioNode } from "../abstractAudioNode";
 import type { AudioEngineV2 } from "../audioEngineV2";
 
 /** @internal */
 export abstract class _AbstractAudioSubNode extends AbstractNamedAudioNode {
     /** @internal */
     protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, _AudioNodeType.InOut);
+        super(name, engine, AudioNodeType.InOut);
     }
 
     /** @internal */
