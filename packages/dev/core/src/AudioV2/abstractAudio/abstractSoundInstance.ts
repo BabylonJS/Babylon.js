@@ -38,6 +38,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public override dispose(): void {
         super.dispose();
         this.stop();
+        this.onEndedObservable.clear();
         this.onStateChangedObservable.clear();
     }
 
