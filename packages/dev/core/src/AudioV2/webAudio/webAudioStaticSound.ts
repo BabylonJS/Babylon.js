@@ -8,13 +8,11 @@ import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { SoundState } from "../soundState";
-import { _CleanUrl } from "../audioUtils";
+import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioUtils";
-
-const FileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
 type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
@@ -243,7 +241,7 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
             if (skipCodecCheck) {
                 await this._initFromUrl(url);
             } else {
-                const matches = url.match(FileExtensionRegex);
+                const matches = url.match(_FileExtensionRegex);
                 const format = matches?.at(1);
                 if (format && this.engine.formatIsValid(format)) {
                     try {
