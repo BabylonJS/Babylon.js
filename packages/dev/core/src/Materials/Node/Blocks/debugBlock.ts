@@ -19,7 +19,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
      * Gets or sets a boolean indicating that the block is active
      */
     public get isActive(): boolean {
-        return this._isActive;
+        return this._isActive && this.debug.isConnected;
     }
 
     public set isActive(value: boolean) {
@@ -44,7 +44,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
 
     /** @internal */
     public override get _isFinalOutputAndActive() {
-        return this._isActive;
+        return this.isActive;
     }
 
     /** @internal */
