@@ -1251,7 +1251,7 @@ export class Viewer implements IDisposable {
         return true;
     }
 
-    private get _shouldRender() {
+    protected get _shouldRender() {
         // We should render if:
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
@@ -1291,19 +1291,19 @@ export class Viewer implements IDisposable {
     private _beginRendering(): void {
         if (!this._renderLoopController) {
             let renderedLastFrame: Nullable<boolean> = null;
-            let framesRenderedAfterReady = 0;
+            let renderedReadyFrame = false;
             const render = () => {
-                // When we resume rendering, continue rendering until the scene reports it is ready,
-                // and then render 3 more frames to ensure the scene has actually been presented.
+                // First check if we have indicators that we should render.
                 let shouldRender = this._shouldRender;
-                if (!shouldRender && renderedLastFrame) {
-                    if (this._scene.isReady(true)) {
-                        framesRenderedAfterReady++;
-                    } else {
-                        framesRenderedAfterReady = 0;
-                    }
 
-                    shouldRender = framesRenderedAfterReady < 3;
+                // If we don't have indicators that we should render (e.g. nothing has changed since the last frame),
+                // we still need to ensure that we render at least one frame after any mutations. Scene.isReady does
+                // a bunch of the same work that happens when we actually render a frame, so we don't want to check
+                // this unless we know we are in a state where there were mutations and now we are waiting for a frame
+                // to render after the scene is ready.
+                if (!shouldRender && renderedLastFrame && !renderedReadyFrame) {
+                    renderedReadyFrame = this._scene.isReady(true);
+                    shouldRender = true;
                 }
 
                 if (shouldRender) {
@@ -1327,7 +1327,7 @@ export class Viewer implements IDisposable {
                     if (renderedLastFrame) {
                         Logger.Log("Viewer Suspended Rendering");
                         renderedLastFrame = false;
-                        framesRenderedAfterReady = 0;
+                        renderedReadyFrame = false;
                     }
                 }
             };
