@@ -102,6 +102,7 @@ struct areaLightData
 	vec4 Fresnel;
 };
 
+#define inline
 areaLightData computeAreaLightSpecularDiffuseFresnel(const in sampler2D ltc1, const in sampler2D ltc2, const in vec3 viewDir, const in vec3 normal, const in vec3 position, const in vec3 lightPos, const in vec3 halfWidth, const in vec3 halfHeight, const in float roughness) 
 {
 	areaLightData result;
