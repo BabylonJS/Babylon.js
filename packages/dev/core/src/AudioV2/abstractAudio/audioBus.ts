@@ -47,12 +47,14 @@ export abstract class AudioBus extends AbstractAudioBus {
         }
 
         if (this._outBus) {
+            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
             this._disconnect(this._outBus);
         }
 
         this._outBus = outBus;
 
         if (this._outBus) {
+            this._outBus.onDisposeObservable.add(this._onOutBusDisposed);
             this._connect(this._outBus);
         }
     }
@@ -74,4 +76,8 @@ export abstract class AudioBus extends AbstractAudioBus {
         super.dispose();
         this._outBus = null;
     }
+
+    private _onOutBusDisposed = () => {
+        this.outBus = this.engine.defaultMainBus;
+    };
 }

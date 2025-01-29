@@ -8,7 +8,7 @@ import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioUtils";
 
 /**
  * Creates a new audio bus.

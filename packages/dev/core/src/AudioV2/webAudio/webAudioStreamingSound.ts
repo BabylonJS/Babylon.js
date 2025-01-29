@@ -9,11 +9,11 @@ import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { SoundState } from "../soundState";
-import { _CleanUrl } from "../soundTools";
+import { _CleanUrl } from "../audioUtils";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioUtils";
 
 type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 

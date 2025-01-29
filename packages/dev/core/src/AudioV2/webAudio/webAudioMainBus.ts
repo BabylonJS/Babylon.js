@@ -6,7 +6,7 @@ import { MainAudioBus } from "../abstractAudio/mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subNodes/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioTools";
+import { _GetWebAudioEngine } from "./webAudioUtils";
 
 /**
  * Creates a new main audio bus.
