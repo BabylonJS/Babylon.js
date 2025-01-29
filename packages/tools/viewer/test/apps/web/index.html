@@ -141,6 +141,7 @@
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+            <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <div>
                 <span>Environment Intensity</span>
                 <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" oninput="onEnvironmentIntensity()" />
@@ -279,6 +280,10 @@
                 const bottomContent = document.getElementById("moreLowerPageContent");
                 bottomContent.style.display = isBottomContentVisible ? "none" : "block";
                 isBottomContentVisible = !isBottomContentVisible;
+            };
+
+            globalThis.onMarkSceneMutated = () => {
+                viewerElement.viewerDetails.markSceneMutated();
             };
 
             globalThis.onEnvironmentIntensity = () => {

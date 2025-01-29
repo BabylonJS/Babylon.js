@@ -402,7 +402,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
-    private readonly _autoSuspendRendering: boolean = true;
+    private readonly _autoSuspendRendering: boolean;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
