@@ -1291,9 +1291,21 @@ export class Viewer implements IDisposable {
     private _beginRendering(): void {
         if (!this._renderLoopController) {
             let renderedLastFrame: Nullable<boolean> = null;
+            let framesRenderedAfterReady = 0;
             const render = () => {
-                // When we resume rendering, continue rendering until the scene reports it is ready.
-                const shouldRender = this._shouldRender || (renderedLastFrame && !this._scene.isReady(true));
+                // When we resume rendering, continue rendering until the scene reports it is ready,
+                // and then render 3 more frames to ensure the scene has actually been presented.
+                let shouldRender = this._shouldRender;
+                if (!shouldRender && renderedLastFrame) {
+                    if (this._scene.isReady(true)) {
+                        framesRenderedAfterReady++;
+                    } else {
+                        framesRenderedAfterReady = 0;
+                    }
+
+                    shouldRender = framesRenderedAfterReady < 3;
+                }
+
                 if (shouldRender) {
                     if (!renderedLastFrame) {
                         if (renderedLastFrame !== null) {
@@ -1315,6 +1327,7 @@ export class Viewer implements IDisposable {
                     if (renderedLastFrame) {
                         Logger.Log("Viewer Suspended Rendering");
                         renderedLastFrame = false;
+                        framesRenderedAfterReady = 0;
                     }
                 }
             };
