@@ -163,7 +163,7 @@
             #elif define(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
                     info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC1SamplerSampler, areaLightsLTC2Sampler, areaLightsLTC2SamplerSampler, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
                 #ifdef AREALIGHTNOROUGHTNESS
-                    0.5
+                    1.0
                 #else
                     uniforms.vReflectionInfos.y
                 #endif

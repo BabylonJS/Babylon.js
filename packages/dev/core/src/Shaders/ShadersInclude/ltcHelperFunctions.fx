@@ -111,6 +111,7 @@ areaLightData computeAreaLightSpecularDiffuseFresnel(const in sampler2D ltc1, co
 	rectCoords[ 2 ] = lightPos - halfWidth + halfHeight;
 	rectCoords[ 3 ] = lightPos + halfWidth + halfHeight;
 
+#ifdef SPECULARTERM
 	vec2 uv = LTCUv( normal, viewDir, roughness );
 
 	vec4 t1 = texture2D( ltc1, uv );
@@ -125,7 +126,6 @@ areaLightData computeAreaLightSpecularDiffuseFresnel(const in sampler2D ltc1, co
 		vec3( t1.z, 0, t1.w )
 	);
 
-#ifdef SPECULARTERM
 	result.Specular = LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
 	result.Fresnel = t2;
 #endif
