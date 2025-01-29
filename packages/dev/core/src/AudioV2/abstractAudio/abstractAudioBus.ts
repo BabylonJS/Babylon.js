@@ -15,7 +15,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, AudioNodeType.InOut);
+        super(name, engine, AudioNodeType.HasInputsAndOutputs);
     }
 
     /**

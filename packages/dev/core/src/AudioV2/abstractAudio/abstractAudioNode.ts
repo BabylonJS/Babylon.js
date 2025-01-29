@@ -2,9 +2,9 @@ import { Observable } from "../../Misc/observable";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 export const enum AudioNodeType {
-    In = 1,
-    Out = 2,
-    InOut = 3,
+    HasInputs = 1,
+    HasOutputs = 2,
+    HasInputsAndOutputs = 3,
 }
 
 /**
@@ -16,9 +16,9 @@ export const enum AudioNodeType {
  * Nodes can be connected to other nodes to create an audio graph. The audio graph represents the flow of audio data.
  *
  * There are 3 types of audio nodes:
- * 1. Input: Receives audio data from an upstream node.
- * 2. Output: Sends audio data to a downstream node.
- * 3. Input/Output: Receives audio data from an upstream node and sends audio data to a downstream node.
+ * 1. Input: Receives audio data from upstream nodes.
+ * 2. Output: Sends audio data to downstream nodes.
+ * 3. Input/Output: Receives audio data from upstream nodes and sends audio data to downstream nodes.
  */
 export abstract class AbstractAudioNode {
     /**
@@ -46,11 +46,11 @@ export abstract class AbstractAudioNode {
     protected constructor(engine: AudioEngineV2, nodeType: AudioNodeType) {
         this.engine = engine;
 
-        if (nodeType & AudioNodeType.In) {
+        if (nodeType & AudioNodeType.HasInputs) {
             this._upstreamNodes = new Set<AbstractAudioNode>();
         }
 
-        if (nodeType & AudioNodeType.Out) {
+        if (nodeType & AudioNodeType.HasOutputs) {
             this._downstreamNodes = new Set<AbstractAudioNode>();
         }
     }
