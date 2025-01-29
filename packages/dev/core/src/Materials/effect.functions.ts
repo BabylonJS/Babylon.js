@@ -294,7 +294,6 @@ export const createAndPreparePipelineContext = (
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ): IPipelineContext => {
     try {
-        console.log("createAndPreparePipelineContext", options.disableParallelCompilation);
         const stateObject = options.context ? getStateObject(options.context) : null;
         if (stateObject) {
             // will not remove the reference to parallelShaderPrecompile, but will prevent it from being used in the next shader compilation

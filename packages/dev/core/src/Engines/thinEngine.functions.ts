@@ -360,7 +360,6 @@ export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineC
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
 
     if (!webGLPipelineContext.isParallelCompiled) {
-        console.log("Not parallel compiled");
         action(pipelineContext);
         return;
     }
@@ -368,7 +367,6 @@ export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineC
     const oldHandler = webGLPipelineContext.onCompiled;
 
     webGLPipelineContext.onCompiled = () => {
-        console.log("Parallel compiled");
         oldHandler?.();
         action(pipelineContext);
     };
