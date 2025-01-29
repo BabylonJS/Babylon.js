@@ -41,6 +41,8 @@ import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
+import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 const dontSerializeTextureContent = true;
 
 /**
@@ -60,6 +62,8 @@ export class PreviewManager {
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
+    private _nrg: NodeRenderGraph;
+    private _objectListBlock: NodeRenderGraphInputBlock;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial | StandardMaterial;
@@ -218,7 +222,28 @@ export class PreviewManager {
             };
             canvas.addEventListener("drop", onDrop, false);
         }
+
+        this._nrg = await NodeRenderGraph.ParseFromSnippetAsync("P1CTNO#8", this._scene, {
+            autoFillExternalInputs: false,
+            debugTextures: false,
+        });
+
+        const cameraBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Camera")!;
+        cameraBlock.value = this._camera;
+
+        this._objectListBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Object List")!;
+        this._objectListBlock.value = { meshes: this._meshes, particleSystems: [] };
+
         this._refreshPreviewMesh();
+
+        this._nrg.build();
+
+        await this._nrg.whenReadyAsync();
+
+        this._scene.customRenderFunction = () => {
+            this._nrg.frameGraph.execute();
+        };
+
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -758,6 +783,7 @@ export class PreviewManager {
             mesh.dispose();
         }
 
+        this._nrg.dispose();
         this._scene.dispose();
         this._engine.dispose();
     }

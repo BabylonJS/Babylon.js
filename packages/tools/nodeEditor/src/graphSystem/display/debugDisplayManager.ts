@@ -17,7 +17,7 @@ export class DebugDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(): string {
-        return "#05400d";
+        return "#543a5c";
     }
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
