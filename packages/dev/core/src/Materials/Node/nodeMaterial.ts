@@ -212,6 +212,10 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Camera is perspective */
     public CAMERA_PERSPECTIVE = false;
 
+    public AREALIGHTSUPPORTED = true;
+
+    public AREALIGHTNOROUGHTNESS = true;
+
     /**
      * Creates a new NodeMaterialDefines
      */
@@ -1757,6 +1761,15 @@ export class NodeMaterial extends PushMaterial {
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines, this._materialContext);
+                }
+            }
+        }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
                 }
             }
         }

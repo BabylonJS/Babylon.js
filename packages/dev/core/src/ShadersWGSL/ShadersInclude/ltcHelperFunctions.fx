@@ -109,7 +109,8 @@ fn computeAreaLightSpecularDiffuseFresnel(ltc1: texture_2d<f32>, ltc1Sampler:sam
 	var rectCoords1:vec3f = lightPos - halfWidth - halfHeight;
 	var rectCoords2:vec3f = lightPos - halfWidth + halfHeight;
 	var rectCoords3:vec3f = lightPos + halfWidth + halfHeight;
-
+	
+#ifdef SPECULARTERM
 	var uv:vec2f = LTCUv( normal, viewDir, roughness );
 
 	var t1:vec4f = textureSample( ltc1, ltc1Sampler, uv );
@@ -121,7 +122,6 @@ fn computeAreaLightSpecularDiffuseFresnel(ltc1: texture_2d<f32>, ltc1Sampler:sam
 		vec3f( t1.z, 0, t1.w )
 	);
 
-#ifdef SPECULARTERM
 	// LTC Fresnel Approximation by Stephen Hill
 	// http://blog.selfshadow.com/publications/s2016-advances/s2016_ltc_fresnel.pdf
 	result.Fresnel = t2;
