@@ -52,7 +52,7 @@ export class SnapshotRenderingHelper {
     /**
      * Indicates if debug logs should be displayed
      */
-    public showDebugLogs = true;
+    public showDebugLogs = false;
 
     /**
      * Creates a new snapshot rendering helper

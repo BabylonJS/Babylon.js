@@ -177,7 +177,7 @@
             let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
-
+                viewerDetails.viewer.showDebugLogs = true;
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {

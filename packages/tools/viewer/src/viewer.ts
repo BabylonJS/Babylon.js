@@ -309,6 +309,11 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * When enabled, the Viewer will emit additional diagnostic logs to the console.
+     */
+    public showDebugLogs = false;
+
+    /**
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
@@ -1309,7 +1314,7 @@ export class Viewer implements IDisposable {
                 if (shouldRender) {
                     if (!renderedLastFrame) {
                         if (renderedLastFrame !== null) {
-                            Logger.Log("Viewer Resumed Rendering");
+                            this._log("Viewer Resumed Rendering");
                         }
                         renderedLastFrame = true;
                     }
@@ -1325,7 +1330,7 @@ export class Viewer implements IDisposable {
                     this._camera.update();
 
                     if (renderedLastFrame) {
-                        Logger.Log("Viewer Suspended Rendering");
+                        this._log("Viewer Suspended Rendering");
                         renderedLastFrame = false;
                         renderedReadyFrame = false;
                     }
@@ -1343,7 +1348,7 @@ export class Viewer implements IDisposable {
                         this._renderLoopController = null;
 
                         if (renderedLastFrame) {
-                            Logger.Log("Viewer Suspended Rendering");
+                            this._log("Viewer Suspended Rendering");
                         }
                     }
                 },
@@ -1468,6 +1473,12 @@ export class Viewer implements IDisposable {
         }
 
         return null;
+    }
+
+    protected _log(message: string) {
+        if (this.showDebugLogs) {
+            Logger.Log(message);
+        }
     }
 
     /**
