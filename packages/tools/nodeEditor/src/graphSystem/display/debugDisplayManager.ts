@@ -7,6 +7,7 @@ import { TextureLineComponent } from "../../sharedComponents/textureLineComponen
 import type { GlobalState } from "node-editor/globalState";
 import type { Nullable } from "core/types";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { NodeMaterialDebugBlock } from "core/Materials";
 
 export class DebugDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -29,32 +30,35 @@ export class DebugDisplayManager implements IDisplayManager {
     }
 
     public onSelectionChanged?(data: INodeData, selectedData: Nullable<INodeData>, manager: StateManager) {
-        if (selectedData === data) {
+        const block = data.data as NodeMaterialDebugBlock;
+        if (selectedData === data && block.debug.isConnected) {
             const globalState = manager.data as GlobalState;
 
             globalState.onPreviewUpdatedObservable.addOnce((nodeMaterial) => {
-                globalState.onPreviewSceneAfterRenderObservable.addOnce(() => {
-                    if (globalState.previewTexture) {
-                        TextureLineComponent.UpdatePreview(
-                            this._previewCanvas,
-                            globalState.previewTexture,
-                            140,
-                            {
-                                face: 0,
-                                displayRed: true,
-                                displayAlpha: true,
-                                displayBlue: true,
-                                displayGreen: true,
-                            },
-                            () => {
-                                this._previewImage.src = this._previewCanvas.toDataURL("image/png");
-                                this._previewImage.classList.remove(commonStyles.empty);
-                            }
-                        );
-                    } else {
-                        this._previewImage.classList.add(commonStyles.empty);
-                    }
-                });
+                setTimeout(() => {
+                    globalState.onPreviewSceneAfterRenderObservable.addOnce(() => {
+                        if (globalState.previewTexture) {
+                            TextureLineComponent.UpdatePreview(
+                                this._previewCanvas,
+                                globalState.previewTexture,
+                                140,
+                                {
+                                    face: 0,
+                                    displayRed: true,
+                                    displayAlpha: true,
+                                    displayBlue: true,
+                                    displayGreen: true,
+                                },
+                                () => {
+                                    this._previewImage.src = this._previewCanvas.toDataURL("image/png");
+                                    this._previewImage.classList.remove(commonStyles.empty);
+                                }
+                            );
+                        } else {
+                            this._previewImage.classList.add(commonStyles.empty);
+                        }
+                    });
+                }, 250);
             });
         }
     }

@@ -494,6 +494,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
@@ -503,6 +504,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
@@ -515,6 +517,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.GaussianSplatting:
                 delete allBlocks["Animation"];
@@ -526,6 +529,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
         }
 
@@ -610,6 +614,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             // Register blocks
             const ledger = NodeLedger.RegisteredNodeNames;
+            ledger.length = 0;
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
