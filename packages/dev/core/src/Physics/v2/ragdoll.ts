@@ -5,7 +5,7 @@ import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
 import type { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "core/Maths/math.axis";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType, PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode } from "./IPhysicsEnginePlugin";
+import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType, PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode, IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
@@ -212,7 +212,7 @@ export class Ragdoll {
 
     private _initJoints(): void {
         this._rootTransformNode.computeWorldMatrix();
-        const plugin = this._scene.getPhysicsEngine()?.getPhysicsPlugin()!;
+        const plugin = this._scene.getPhysicsEngine()?.getPhysicsPlugin()! as IPhysicsEnginePluginV2;
         for (let i = 0; i < this._bones.length; i++) {
             // The root bone has no joints.
             if (i == this._rootBoneIndex) continue;
@@ -252,18 +252,20 @@ export class Ragdoll {
             this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, constraint);
             constraint.isEnabled = false;
 
-            if (this._boxConfigs[i].min && this._boxConfigs[i].max) {
+            const min = this._boxConfigs[i].min ?? -Math.PI;
+            const max = this._boxConfigs[i].max ?? -Math.PI;
+            if (min > -Math.PI && max > Math.PI) {
                 if (constraintType == PhysicsConstraintType.HINGE) {
                     plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, this._boxConfigs[i].min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, this._boxConfigs[i].max);
+                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, min);
+                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, max);
                 } else if (constraintType == PhysicsConstraintType.BALL_AND_SOCKET) {
                     plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, this._boxConfigs[i].min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, this._boxConfigs[i].max);
+                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, min);
+                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, max);
                     plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_Y, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, this._boxConfigs[i].min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, this._boxConfigs[i].max);
+                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, min);
+                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, max);
                 }
             }
             this._constraints.push(constraint);
