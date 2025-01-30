@@ -209,6 +209,13 @@ export class ArcRotateCamera extends TargetCamera {
     public upperRadiusLimit: Nullable<number> = null;
 
     /**
+     * Minimum allowed vertical target position of the camera.
+     * Use this setting in combination with `upperRadiusLimit` to set a global limit for the Cameras vertical position.
+     */
+    @serialize()
+    public lowerTargetYLimit: Nullable<number> = null;
+
+    /**
      * Defines the current inertia value used during panning of the camera along the X axis.
      */
     @serialize()
@@ -866,6 +873,7 @@ export class ArcRotateCamera extends TargetCamera {
         alpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
         beta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
         radius = Clamp(radius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
+        target.y = Clamp(target.y, this.lowerTargetYLimit ?? -Infinity, Infinity);
 
         this._goalAlpha = alpha;
         this._goalBeta = beta;
@@ -1128,6 +1136,9 @@ export class ArcRotateCamera extends TargetCamera {
         if (this.upperRadiusLimit !== null && this.radius > this.upperRadiusLimit) {
             this.radius = this.upperRadiusLimit;
             this.inertialRadiusOffset = 0;
+        }
+        if (this.lowerTargetYLimit !== null && this.target.y < this.lowerTargetYLimit) {
+            this.target.y = this.lowerTargetYLimit;
         }
     }
 
