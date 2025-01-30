@@ -19,6 +19,7 @@ import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { SerializationTools } from "./serializationTools";
+import type { Texture } from "core/Materials/Textures/texture";
 
 export class GlobalState {
     hostElement: HTMLElement;
@@ -63,6 +64,9 @@ export class GlobalState {
     pointerOverCanvas: boolean = false;
     filesInput: FilesInput;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
+    previewTexture: Nullable<Texture> = null;
+    onPreviewSceneAfterRenderObservable = new Observable<void>();
+    onPreviewUpdatedObservable = new Observable<NodeMaterial>();
 
     /** Gets the mode */
     public get mode(): NodeMaterialModes {
