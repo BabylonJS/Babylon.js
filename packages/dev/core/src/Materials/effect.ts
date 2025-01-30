@@ -818,7 +818,6 @@ export class Effect implements IDisposable {
                     transformFeedbackVaryings: this._transformFeedbackVaryings,
                     name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
                     createAsRaw: overrides,
-                    parallelShaderCompile: engine._caps.parallelShaderCompile,
                     disableParallelCompilation: this._disableParallelShaderCompilation,
                     shaderProcessingContext: this._processingContext,
                     onRenderingStateCompiled: (pipelineContext) => {
