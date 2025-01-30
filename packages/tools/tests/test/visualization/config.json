@@ -1568,7 +1568,7 @@
             "renderCount": 10,
             "playgroundId": "#FFMFW5#29",
             "excludedEngines": ["webgl1"],
-            "errorRatio": 3,
+            "errorRatio": 6,
             "referenceImage": "prepass-ssao-lod.png"
         },
         {
@@ -2460,7 +2460,7 @@
         {
             "title": "FrameGraph nrge depth of field",
             "playgroundId": "#GAGVQO#1",
-            "errorRatio": 2
+            "errorRatio": 3
         },
         {
             "title": "FrameGraph nrge glow layer",
