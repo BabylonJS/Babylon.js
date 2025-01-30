@@ -1,5 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable, Observable } from "core/index";
+import type { Camera, MeshPredicate, Nullable, Observable } from "core/index";
+import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
+import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -81,6 +83,8 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
+    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -745,7 +749,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return JSON.parse(value);
         },
     })
-    public hotSpots: Readonly<Record<string, HotSpot>> = {};
+    public hotSpots: Record<string, HotSpot> = {};
 
     private get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
@@ -812,11 +816,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: "material-variant" })
     public selectedMaterialVariant: Nullable<string> = null;
 
+    /**
+     * True if scene cameras should be used as hotspots.
+     */
+    @property({ attribute: "cameras-as-hotspots", reflect: true, type: Boolean })
+    public camerasAsHotSpots = false;
+
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
 
-    @query("#materialSelect")
-    private _materialSelect: HTMLSelectElement | undefined;
+    @query("#hotSpotSelect")
+    private _hotSpotSelect: HTMLSelectElement | undefined;
 
     /**
      * Toggles the play/pause animation state if there is a selected animation.
@@ -849,8 +859,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     protected override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
-        if (this._materialSelect) {
-            this._materialSelect.value = "";
+        if (this._hotSpotSelect) {
+            this._hotSpotSelect.value = "";
         }
 
         if (changedProperties.get("engine") || changedProperties.get("renderWhenIdle") != null) {
@@ -869,6 +879,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     skybox: changedProperties.has("environmentSkybox"),
                 });
             }
+        }
+
+        if (changedProperties.has("camerasAsHotSpots")) {
+            this._toggleCamerasAsHotSpots();
         }
     }
 
@@ -954,7 +968,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (this._hasHotSpots) {
                 toolbarControls.push(html`
                     <div class="select-container">
-                        <select id="materialSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                        <select id="hotSpotSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
                             <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
                             ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
                         </select>
@@ -1098,6 +1112,34 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         };
     }
 
+    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
+        if (camera !== this.viewerDetails?.camera) {
+            const hotSpot = await this._cameraToHotSpot(camera);
+            if (hotSpot && !signal?.aborted) {
+                this.hotSpots = {
+                    ...this.hotSpots,
+                    [`camera-${camera.name}`]: hotSpot,
+                };
+            }
+        }
+    }
+
+    private _removeCameraHotSpot(camera: Camera) {
+        delete this.hotSpots[`camera-${camera.name}`];
+        this.hotSpots = { ...this.hotSpots };
+    }
+
+    private _toggleCamerasAsHotSpots() {
+        if (!this.camerasAsHotSpots) {
+            this._camerasAsHotSpotsAbortController?.abort();
+            this._camerasAsHotSpotsAbortController = null;
+            this.viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+        } else {
+            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
+            this.viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+        }
+    }
+
     private async _setupViewer() {
         await this._viewerLock.lockAsync(async () => {
             // The first time the element is connected, the canvas container may not be available yet.
@@ -1172,6 +1214,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 details.viewer.onAnimationProgressChanged.add(() => {
                     this.animationProgress = details.viewer.animationProgress ?? 0;
                     this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                });
+
+                details.scene.onNewCameraAddedObservable.add((camera) => {
+                    if (this.camerasAsHotSpots) {
+                        this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
+                    }
+                });
+
+                details.scene.onCameraRemovedObservable.add((camera) => {
+                    this._removeCameraHotSpot(camera);
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {
@@ -1261,6 +1313,68 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 }
             }
         }
+    }
+
+    /**
+     * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
+     * The target point is determined based on the camera's forward ray:
+     *   - If an intersection with the main model is found, the first hit point is used as the target.
+     *   - If no intersection is detected, a fallback target is calculated by projecting
+     *     the distance between the camera and the main model's center along the forward ray.
+     *
+     * @param camera The reference camera used to computes alpha, beta, radius and target
+     * @returns A HotSpot, or null if no model found
+     */
+    private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
+        if (camera instanceof ArcRotateCamera) {
+            const targetArray = camera.target.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
+        }
+
+        await import("core/Culling/ray");
+        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+        const camGlobalPos = camera.globalPosition.clone();
+
+        if (this.viewerDetails?.scene) {
+            const scene = this.viewerDetails.scene;
+            const model = this.viewerDetails.model;
+
+            // Target
+            let radius: number = 0.0001; // Just to avoid division by zero
+            const targetPoint = this._tempVectors[0];
+            const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
+            const pickingInfo = scene.pickWithRay(ray, predicate);
+            if (pickingInfo && pickingInfo.hit) {
+                targetPoint.copyFrom(pickingInfo.pickedPoint!);
+            } else {
+                const selectedAnimation = this.selectedAnimation ?? 0;
+                const worldBounds = model?.getWorldBounds(selectedAnimation);
+                const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
+                const modelWorldCenter = this._tempVectors[1].copyFromFloats(...centerArray);
+
+                const direction = this._tempVectors[2].copyFrom(ray.direction);
+                targetPoint.copyFrom(camGlobalPos);
+                radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
+                direction.scaleAndAddToRef(radius, targetPoint);
+            }
+
+            const computationVector = this._tempVectors[3];
+            camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+            // Radius
+            if (pickingInfo && pickingInfo.hit) {
+                radius = computationVector.length();
+            }
+
+            // Alpha and Beta
+            const alpha = ComputeAlpha(computationVector);
+            const beta = ComputeBeta(computationVector.y, radius);
+
+            const targetArray = targetPoint.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+        }
+
+        return null;
     }
 }
 
