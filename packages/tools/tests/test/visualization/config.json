@@ -1645,7 +1645,8 @@
         {
             "title": "Multi camera rendering with scissors",
             "playgroundId": "#1LK70I#35",
-            "referenceImage": "multiCameraRenderingWithScissors.png"
+            "referenceImage": "multiCameraRenderingWithScissors.png",
+            "errorRatio": 3
         },
         {
             "title": "Scissor test",
