@@ -2464,6 +2464,11 @@
         {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#7"
+        },
+        {
+            "title": "Synchronous Effect",
+            "playgroundId": "#D9XXL3#1",
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }
