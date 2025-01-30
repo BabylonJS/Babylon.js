@@ -159,12 +159,6 @@ function checkCommentsOnChild(child, parent, namesToCheck = []) {
     return errors.flat().filter((e) => e.result !== TestResultType.PASS);
 }
 
-/**
- * Given a JSON data object, check for missing comments on public members.
- * @param {*} data the JSON data that is output from typedoc
- */
-module.exports = {
-    commentAnalyzer: function (data, namesToCheck = []) {
-        return checkCommentsOnChild(data, null, namesToCheck);
-    },
+export const commentAnalyzer = (data, namesToCheck = []) => {
+    return checkCommentsOnChild(data, null, namesToCheck);
 };

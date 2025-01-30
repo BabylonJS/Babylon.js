@@ -237,7 +237,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         const v: number[] = [1, 0, numOfPaths];
-        const doubleSided = options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ?? false;
+        const doubleSided = options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED;
 
         const closePath = options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath;
         if (numOfPaths > 2) {

@@ -33,17 +33,18 @@ void main(void) {
   vec2 velocityColor = texelFetch(motionSampler, gbufferPixelCoord, 0).xy;
   vec2 prevCoord = vUV + velocityColor;
   vec3 PrevLP = texture(prevPositionSampler, prevCoord).xyz;
-  vec3 PrevShadows = texture(oldAccumulationSampler, prevCoord).xyz;
-  vec2 newShadows = texelFetch(spatialBlurSampler, shadowPixelCoord, 0).xy;
+  vec4 PrevShadows = texture(oldAccumulationSampler, prevCoord);
+  vec3 newShadows = texelFetch(spatialBlurSampler, shadowPixelCoord, 0).xyz;
 
-  PrevShadows.z =
+  PrevShadows.a =
       !reset && all(lessThan(abs(prevCoord - vec2(0.5)), vec2(0.5))) &&
               distance(LP.xyz, PrevLP) < 5e-2 * sceneSize
-          ? max(PrevShadows.z / (1.0 + PrevShadows.z), 1.0 - remanence)
+          ? max(PrevShadows.a / (1.0 + PrevShadows.a), 1.0 - remanence)
           : 1.0;
-  PrevShadows = max(vec3(0.0), PrevShadows);
+  PrevShadows = max(vec4(0.0), PrevShadows);
 
   gl_FragColor =
-      vec4(mix(PrevShadows.x, newShadows.x, PrevShadows.z),
-           mix(PrevShadows.y, newShadows.y, PrevShadows.z), PrevShadows.z, 1.0);
+      vec4(mix(PrevShadows.x, newShadows.x, PrevShadows.a),
+           mix(PrevShadows.y, newShadows.y, PrevShadows.a), 
+           mix(PrevShadows.z, newShadows.z, PrevShadows.a), PrevShadows.a);
 }

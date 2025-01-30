@@ -530,6 +530,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["POINTLIGHT" + index] = false;
             defines["DIRLIGHT" + index] = false;
             defines["SPOTLIGHT" + index] = false;
+            defines["AREALIGHT" + index] = false;
             defines["SHADOW" + index] = false;
             defines["SHADOWCSM" + index] = false;
             defines["SHADOWCSMDEBUG" + index] = false;
@@ -607,6 +608,7 @@ export function PrepareDefinesForLight(
     defines["HEMILIGHT" + lightIndex] = false;
     defines["POINTLIGHT" + lightIndex] = false;
     defines["DIRLIGHT" + lightIndex] = false;
+    defines["AREALIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 
@@ -1053,6 +1055,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightDiffuse" + lightIndex,
         "vLightSpecular" + lightIndex,
         "vLightDirection" + lightIndex,
+        "vLightWidth" + lightIndex,
+        "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
         "lightMatrix" + lightIndex,
@@ -1090,7 +1094,7 @@ export function PrepareUniformsAndSamplersForLight(
  */
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
     let uniformsList: string[];
-    let uniformBuffersList: Nullable<string[]> = null;
+    let uniformBuffersList: string[] | undefined;
 
     if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
         const options = <IEffectCreationOptions>uniformsListOrOptions;

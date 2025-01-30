@@ -7,6 +7,8 @@ import type { Nullable, FrameGraphContext, IFrameGraphPass, FrameGraphTask } fro
 export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphPass {
     private _executeFunc: (context: T) => void;
 
+    public disabled = false;
+
     constructor(
         public name: string,
         protected readonly _parentTask: FrameGraphTask,
@@ -18,7 +20,9 @@ export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphP
     }
 
     public _execute() {
-        this._executeFunc(this._context);
+        if (!this.disabled) {
+            this._executeFunc(this._context);
+        }
     }
 
     public _isValid(): Nullable<string> {

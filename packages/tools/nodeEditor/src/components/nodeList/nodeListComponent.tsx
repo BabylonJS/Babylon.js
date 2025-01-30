@@ -195,6 +195,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StorageReadBlock: "Block used to read from a loop storage variable",
         StorageWriteBlock: "Block used to write to a loop storage variable",
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
+        DebugBlock: "Block used to render intermediate debug values",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -424,7 +425,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MatrixTransposeBlock",
                 "MatrixSplitterBlock",
             ],
-            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock"],
+            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",

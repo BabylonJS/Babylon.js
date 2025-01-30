@@ -10,6 +10,7 @@ import type {
     Nullable,
     Observer,
     FrameGraphShadowGeneratorTask,
+    FrameGraphRenderPass,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
@@ -142,7 +143,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
-    public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void) {
+    public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
@@ -206,6 +207,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
         }
+
+        return pass;
     }
 
     public override dispose(): void {

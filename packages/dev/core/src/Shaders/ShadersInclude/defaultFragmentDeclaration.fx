@@ -78,9 +78,8 @@ uniform vec4 emissiveRightColor;
 #endif
 
 // Reflection
-#ifdef REFLECTION
-uniform vec2 vReflectionInfos;
-
+#if defined(REFLECTION) || (defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED))
+    uniform vec2 vReflectionInfos;
     #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION) || defined(REFLECTIONMAP_EQUIRECTANGULAR) || defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_SKYBOX)
     uniform mat4 reflectionMatrix;
     #endif

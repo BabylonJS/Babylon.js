@@ -32,12 +32,12 @@ void main(void)
 
     float depth = -texelFetch(depthSampler, gbufferPixelCoord, 0).x;
 
-    vec3 X = vec3(0.0);
+    vec4 X = vec4(0.0);
     for(int y = 0; y < nbWeights; ++y) {
         for(int x = 0; x < nbWeights; ++x) {
           ivec2 gBufferCoords = gbufferPixelCoord + int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
           ivec2 shadowCoords = shadowPixelCoord + int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
-          vec2 T = texelFetch(voxelTracingSampler, shadowCoords, 0).xy;
+          vec4 T = texelFetch(voxelTracingSampler, shadowCoords, 0);
           float ddepth = -texelFetch(depthSampler, gBufferCoords, 0).x - depth;
           vec3 dN = texelFetch(worldNormalSampler, gBufferCoords, 0).xyz - N;
           float w = weights[x] * weights[y] *
@@ -45,9 +45,9 @@ void main(void)
                              (ddepth * ddepth) -
                          1e1 * dot(dN, dN));
 
-          X += vec3(w * T.x, w * T.y, w);
+          X += vec4(w * T.x, w * T.y, w * T.z, w);
         }
     }
 
-    gl_FragColor = vec4(X.x / X.z, X.y / X.z, 1.0, 1.0);
+    gl_FragColor = vec4(X.x / X.w, X.y / X.w, X.z / X.w, 1.0);
 }

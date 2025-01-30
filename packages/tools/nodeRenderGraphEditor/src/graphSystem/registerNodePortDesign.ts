@@ -54,6 +54,12 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
                 img.style.height = "100%";
                 break;
+            case NodeRenderGraphBlockConnectionPointTypes.Object:
+                img.src =
+                    "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
+                img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
+                img.style.height = "100%";
+                break;
         }
     };
 };

@@ -63,6 +63,8 @@ class CellMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public AREALIGHTSUPPORTED = true;
+    public AREALIGHTNOROUGHTNESS = true;
 
     constructor() {
         super();
@@ -221,7 +223,7 @@ export class CellMaterial extends PushMaterial {
                 "diffuseMatrix",
                 "logarithmicDepthConstant",
             ];
-            const samplers = ["diffuseSampler"];
+            const samplers = ["diffuseSampler", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
@@ -252,6 +254,16 @@ export class CellMaterial extends PushMaterial {
                 this._materialContext
             );
         }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
         }

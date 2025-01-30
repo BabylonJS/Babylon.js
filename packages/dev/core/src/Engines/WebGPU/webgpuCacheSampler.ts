@@ -200,7 +200,7 @@ export class WebGPUCacheSampler {
                 break;
         }
 
-        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0) && mipmapFilter !== WebGPUConstants.FilterMode.Nearest) {
+        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0)) {
             return {
                 magFilter: WebGPUConstants.FilterMode.Linear,
                 minFilter: WebGPUConstants.FilterMode.Linear,
@@ -243,7 +243,15 @@ export class WebGPUCacheSampler {
     }
 
     private static _GetSamplerDescriptor(sampler: TextureSampler, label?: string): GPUSamplerDescriptor {
-        const anisotropy = sampler.useMipMaps && sampler._cachedAnisotropicFilteringLevel ? sampler._cachedAnisotropicFilteringLevel : 1;
+        let anisotropy = sampler.useMipMaps && sampler._cachedAnisotropicFilteringLevel ? sampler._cachedAnisotropicFilteringLevel : 1;
+        // To be iso with the WebGL implementation
+        if (
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST &&
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR &&
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR
+        ) {
+            anisotropy = 1;
+        }
         const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
             label,

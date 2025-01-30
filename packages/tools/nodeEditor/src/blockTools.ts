@@ -109,10 +109,13 @@ import { LoopBlock } from "core/Materials/Node/Blocks/loopBlock";
 import { StorageReadBlock } from "core/Materials/Node/Blocks/storageReadBlock";
 import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock";
 import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBlock";
+import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "DebugBlock":
+                return new NodeMaterialDebugBlock("Debug");
             case "MatrixSplitterBlock":
                 return new MatrixSplitterBlock("Matrix Splitter");
             case "StorageWriteBlock":

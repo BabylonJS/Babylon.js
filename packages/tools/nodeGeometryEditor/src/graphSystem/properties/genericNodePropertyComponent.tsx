@@ -158,8 +158,8 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         const classes: string[] = [];
 
         let proto = Object.getPrototypeOf(block);
-        while (proto) {
-            classes.push(proto.constructor.name);
+        while (proto && proto.getClassName) {
+            classes.push(proto.getClassName());
             proto = Object.getPrototypeOf(proto);
         }
 

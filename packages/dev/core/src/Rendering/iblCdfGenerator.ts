@@ -91,7 +91,7 @@ export class IblCdfGenerator {
     /** Enable the debug view for this pass */
     public debugEnabled: boolean = false;
     private _debugPass: PostProcess;
-    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 1.0, 1.0);
 
     /**
      * Sets params that control the position and scaling of the debug display on the screen.
@@ -336,6 +336,37 @@ export class IblCdfGenerator {
             this._scaledLuminancePT &&
             this._scaledLuminancePT.isReady()
         );
+    }
+
+    /**
+     * Explicitly trigger generation of CDF maps when they are ready to render.
+     * @returns Promise that resolves when the CDF maps are rendered.
+     */
+    public renderWhenReady(): Promise<void> {
+        // Once the textures are generated, notify that they are ready to use.
+        this._icdfPT.onGeneratedObservable.addOnce(() => {
+            this.onGeneratedObservable.notifyObservers();
+        });
+        const promises: Array<Promise<void>> = [];
+        const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
+        renderTargets.forEach((target) => {
+            promises.push(
+                new Promise((resolve) => {
+                    if (target.isReady()) {
+                        resolve();
+                    } else {
+                        target.getEffect().executeWhenCompiled(() => {
+                            resolve();
+                        });
+                    }
+                })
+            );
+        });
+        return Promise.all(promises).then(() => {
+            renderTargets.forEach((target) => {
+                target.render();
+            });
+        });
     }
 
     /**

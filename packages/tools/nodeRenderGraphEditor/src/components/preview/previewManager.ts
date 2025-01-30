@@ -11,7 +11,6 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { TransformNode } from "core/Meshes/transformNode";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
-import "core/Rendering/depthRendererSceneComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { LogEntry } from "../log/logComponent";
@@ -24,8 +23,10 @@ import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import type { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { BoundingBox } from "core/Culling/boundingBox";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
+import type { Mesh } from "core/Meshes";
 
 const useWebGPU = false;
 const debugTextures = false;
@@ -243,6 +244,16 @@ export class PreviewManager {
         (window as any).nrgPreview = this._nodeRenderGraph;
     }
 
+    private _getMesh() {
+        for (let i = 0; i < this._scene.meshes.length; ++i) {
+            const mesh = this._scene.meshes[i];
+            if ((mesh as Mesh)._isMesh && mesh.getTotalVertices() > 0) {
+                return mesh as Mesh;
+            }
+        }
+        return null;
+    }
+
     private async _buildGraph() {
         if (!this._scene) {
             // The initialization is not done yet
@@ -322,8 +333,18 @@ export class PreviewManager {
         // Set default node values
         const allBlocks = this._nodeRenderGraph.attachedBlocks;
         for (const block of allBlocks) {
-            if (block.getClassName() === "NodeRenderGraphExecuteBlock") {
-                (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
+            switch (block.getClassName()) {
+                case "NodeRenderGraphExecuteBlock":
+                    (block as NodeRenderGraphExecuteBlock).task.func = (_context) => {};
+                    break;
+                case "NodeRenderGraphHighlightLayerBlock": {
+                    const layer = (block as NodeRenderGraphHighlightLayerBlock).task.layer;
+                    const mesh = this._getMesh();
+                    if (mesh) {
+                        layer.addMesh(mesh, new Color3(0, 1, 0), false);
+                    }
+                    break;
+                }
             }
         }
 
@@ -373,7 +394,7 @@ export class PreviewManager {
 
         try {
             this._nodeRenderGraph.build();
-            await this._nodeRenderGraph.whenReadyAsync();
+            await this._nodeRenderGraph.whenReadyAsync(16, 5000);
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             if (logErrorTrace) {

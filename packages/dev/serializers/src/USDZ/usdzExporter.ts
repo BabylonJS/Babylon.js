@@ -601,9 +601,9 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
  * @param options options to configure the export
  * @param meshPredicate predicate to filter the meshes to export
  * @returns a uint8 array containing the USDZ file
- * #H2G5XW#3 - Simple sphere
- * #H2G5XW#4 - Red sphere
- * #5N3RWK#4 - Boombox
+ * #H2G5XW#6 - Simple sphere
+ * #H2G5XW#7 - Red sphere
+ * #5N3RWK#5 - Boombox
  */
 export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>, meshPredicate?: (m: Mesh) => boolean): Promise<Uint8Array> {
     const localOptions = {

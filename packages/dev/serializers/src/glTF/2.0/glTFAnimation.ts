@@ -15,15 +15,8 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
-import type { DataWriter } from "./dataWriter";
-import {
-    CreateAccessor,
-    CreateBufferView,
-    GetAccessorElementCount,
-    ConvertToRightHandedPosition,
-    ConvertCameraRotationToGLTF,
-    ConvertToRightHandedRotation,
-} from "./glTFUtilities";
+import type { BufferManager } from "./bufferManager";
+import { GetAccessorElementCount, ConvertToRightHandedPosition, ConvertCameraRotationToGLTF, ConvertToRightHandedRotation } from "./glTFUtilities";
 
 /**
  * @internal
@@ -231,7 +224,7 @@ export class _GLTFAnimation {
      * @param idleGLTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -242,7 +235,7 @@ export class _GLTFAnimation {
         idleGLTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
         nodes: INode[],
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -271,7 +264,7 @@ export class _GLTFAnimation {
                             animationInfo.dataAccessorType,
                             animationInfo.animationChannelTargetPath,
                             nodeMap,
-                            binaryWriter,
+                            bufferManager,
                             bufferViews,
                             accessors,
                             animationInfo.useQuaternion,
@@ -295,7 +288,7 @@ export class _GLTFAnimation {
      * @param idleGLTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -306,7 +299,7 @@ export class _GLTFAnimation {
         idleGLTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
         nodes: INode[],
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -360,7 +353,7 @@ export class _GLTFAnimation {
                                 animationInfo.dataAccessorType,
                                 animationInfo.animationChannelTargetPath,
                                 nodeMap,
-                                binaryWriter,
+                                bufferManager,
                                 bufferViews,
                                 accessors,
                                 animationInfo.useQuaternion,
@@ -385,7 +378,7 @@ export class _GLTFAnimation {
      * @param glTFAnimations
      * @param nodeMap
      * @param nodes
-     * @param binaryWriter
+     * @param bufferManager
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
@@ -394,7 +387,7 @@ export class _GLTFAnimation {
         babylonScene: Scene,
         glTFAnimations: IAnimation[],
         nodeMap: Map<Node, number>,
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
@@ -437,7 +430,7 @@ export class _GLTFAnimation {
                                     animationInfo.dataAccessorType,
                                     animationInfo.animationChannelTargetPath,
                                     nodeMap,
-                                    binaryWriter,
+                                    bufferManager,
                                     bufferViews,
                                     accessors,
                                     animationInfo.useQuaternion,
@@ -534,7 +527,7 @@ export class _GLTFAnimation {
                             animationInfo.dataAccessorType,
                             animationInfo.animationChannelTargetPath,
                             nodeMap,
-                            binaryWriter,
+                            bufferManager,
                             bufferViews,
                             accessors,
                             animationInfo.useQuaternion,
@@ -559,7 +552,7 @@ export class _GLTFAnimation {
         dataAccessorType: AccessorType,
         animationChannelTargetPath: AnimationChannelTargetPath,
         nodeMap: Map<Node, number>,
-        binaryWriter: DataWriter,
+        bufferManager: BufferManager,
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         useQuaternion: boolean,
@@ -572,7 +565,6 @@ export class _GLTFAnimation {
         let accessor: IAccessor;
         let keyframeAccessorIndex: number;
         let dataAccessorIndex: number;
-        let outputLength: number;
         let animationSampler: IAnimationSampler;
         let animationChannel: IAnimationChannel;
 
@@ -598,51 +590,38 @@ export class _GLTFAnimation {
 
             const nodeIndex = nodeMap.get(babylonTransformNode);
 
-            // Creates buffer view and accessor for key frames.
-            let byteLength = animationData.inputs.length * 4;
-            const offset = binaryWriter.byteOffset;
-            bufferView = CreateBufferView(0, offset, byteLength);
-            bufferViews.push(bufferView);
-            animationData.inputs.forEach(function (input) {
-                binaryWriter.writeFloat32(input);
-            });
-
-            accessor = CreateAccessor(bufferViews.length - 1, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, null, {
+            // Create buffer view and accessor for key frames.
+            const inputData = new Float32Array(animationData.inputs);
+            bufferView = bufferManager.createBufferView(inputData);
+            accessor = bufferManager.createAccessor(bufferView, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, undefined, {
                 min: [animationData.inputsMin],
                 max: [animationData.inputsMax],
             });
-
             accessors.push(accessor);
             keyframeAccessorIndex = accessors.length - 1;
 
-            // create bufferview and accessor for keyed values.
-            outputLength = animationData.outputs.length;
-            byteLength = GetAccessorElementCount(dataAccessorType) * 4 * animationData.outputs.length;
-
-            // check for in and out tangents
-            bufferView = CreateBufferView(0, binaryWriter.byteOffset, byteLength);
-            bufferViews.push(bufferView);
-
+            // Perform conversions on keyed values while also building their buffer.
             const rotationQuaternion = new Quaternion();
             const eulerVec3 = new Vector3();
             const position = new Vector3();
             const isCamera = babylonTransformNode instanceof Camera;
 
-            animationData.outputs.forEach(function (output) {
+            const elementCount = GetAccessorElementCount(dataAccessorType);
+            const outputData = new Float32Array(animationData.outputs.length * elementCount);
+            animationData.outputs.forEach(function (output: number[], index: number) {
+                let outputToWrite: number[] = output;
                 if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);
                             ConvertToRightHandedPosition(position);
-                            binaryWriter.writeFloat32(position.x);
-                            binaryWriter.writeFloat32(position.y);
-                            binaryWriter.writeFloat32(position.z);
+                            position.toArray(outputToWrite);
                             break;
-
                         case AnimationChannelTargetPath.ROTATION:
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
+                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
@@ -655,17 +634,7 @@ export class _GLTFAnimation {
                                 }
                             }
 
-                            binaryWriter.writeFloat32(rotationQuaternion.x);
-                            binaryWriter.writeFloat32(rotationQuaternion.y);
-                            binaryWriter.writeFloat32(rotationQuaternion.z);
-                            binaryWriter.writeFloat32(rotationQuaternion.w);
-
-                            break;
-
-                        default:
-                            output.forEach(function (entry) {
-                                binaryWriter.writeFloat32(entry);
-                            });
+                            rotationQuaternion.toArray(outputToWrite);
                             break;
                     }
                 } else {
@@ -674,29 +643,25 @@ export class _GLTFAnimation {
                             if (output.length === 4) {
                                 Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
                             } else {
+                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
                                 Vector3.FromArrayToRef(output, 0, eulerVec3);
                                 Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
                             }
+
                             if (isCamera) {
                                 ConvertCameraRotationToGLTF(rotationQuaternion);
                             }
-                            binaryWriter.writeFloat32(rotationQuaternion.x);
-                            binaryWriter.writeFloat32(rotationQuaternion.y);
-                            binaryWriter.writeFloat32(rotationQuaternion.z);
-                            binaryWriter.writeFloat32(rotationQuaternion.w);
 
-                            break;
-
-                        default:
-                            output.forEach(function (entry) {
-                                binaryWriter.writeFloat32(entry);
-                            });
+                            rotationQuaternion.toArray(outputToWrite);
                             break;
                     }
                 }
+                outputData.set(outputToWrite, index * elementCount);
             });
 
-            accessor = CreateAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
+            // Create buffer view and accessor for keyed values.
+            bufferView = bufferManager.createBufferView(outputData);
+            accessor = bufferManager.createAccessor(bufferView, dataAccessorType, AccessorComponentType.FLOAT, animationData.outputs.length);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
 

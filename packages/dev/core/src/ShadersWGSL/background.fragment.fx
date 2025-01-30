@@ -105,49 +105,7 @@ varying vPositionW: vec3f;
 #endif
 
 #ifdef PROJECTED_GROUND
-    // From: https://www.shadertoy.com/view/4tsBD7
-    // keeping for reference the general formula for a disk
-    // fn diskIntersectWithBackFaceCulling(ro: vec3f, rd: vec3f, c: vec3f, n: vec3f, r: f32) -> f32 {
-    //     var d: f32 = dot(rd, n);
-    //     if(d > 0.0) { return 1e6; }
-    //     var o: vec3f = ro - c;
-    //     var t: f32 = -dot(n, o) / d;
-    //     var q: vec3f = o + rd * t;
-    //     return (dot(q, q) < r * r) ? t : 1e6;
-    // }
-    // optimized for a disk on the ground facing up
-    fn diskIntersectWithBackFaceCulling(ro: vec3f, rd: vec3f, c: vec3f, r: f32) -> f32 {
-        var d: f32 = rd.y;
-        if(d > 0.0) { return 1e6; }
-        var o: vec3f = ro - c;
-        var t: f32 = -o.y / d;
-        var q: vec3f = o + rd * t;
-        return select(1e6, t, (dot(q, q) < r * r));
-    }
-
-    // From: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-    // keeping for reference the general formula for a sphere
-    // fn sphereIntersect(ro: vec3f, rd: vec3f, ce: vec3f, ra: f32) -> f32 {
-    //     var oc: vec3f = ro - ce;
-    //     var b: f32 = dot(oc, rd);
-    //     var c: f32 = dot(oc, oc) - ra * ra;
-    //     var h: f32 = b * b - c;
-    //     if(h < 0.0) { return -1.0; }
-    //     h = sqrt(h);
-    //     return - b + h;
-    // }
-    // optimized for a sphere centered at the origin
-    fn sphereIntersect(ro: vec3f, rd: vec3f, ra: f32) -> f32 {
-        var b: f32 = dot(ro, rd);
-        var c: f32 = dot(ro, ro) - ra * ra;
-        var h: f32 = b * b - c;
-
-        if(h < 0.0) { return -1.0; }
-
-        h = sqrt(h);
-
-        return - b + h;
-    }
+    #include<intersectionFunctions>
 
     fn project(viewDirectionW: vec3f, eyePosition: vec3f) -> vec3f {
         var radius: f32 = uniforms.projectedGroundInfos.x;
@@ -157,14 +115,14 @@ varying vPositionW: vec3f;
         // to help with shadows
         // var p: vec3f = normalize(vPositionW);
         var camDir: vec3f = -viewDirectionW;
-        var skySphereDistance: f32 = sphereIntersect(eyePosition, camDir, radius);
+        var skySphereDistance: f32 = sphereIntersectFromOrigin(eyePosition, camDir, radius).x;
         var skySpherePositionW: vec3f = eyePosition + camDir * skySphereDistance;
 
         var p: vec3f = normalize(skySpherePositionW);
         var upEyePosition = vec3f(eyePosition.x, eyePosition.y - height, eyePosition.z);
 
         // Let s remove extra conditions in the following block
-        // var intersection: f32 = sphereIntersect(eyePosition, p, radius);
+        // var intersection: f32 = sphereIntersectFromOrigin(eyePosition, p, radius).x;
         // if(intersection > 0.0) {
         //     var h: vec3f =  vec3f(0.0, -height, 0.0);
         //     var intersection2: f32 = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
@@ -173,7 +131,7 @@ varying vPositionW: vec3f;
         //     p =  vec3f(0.0, 1.0, 0.0);
         // }
 
-        var sIntersection: f32 = sphereIntersect(upEyePosition, p, radius);
+        var sIntersection: f32 = sphereIntersectFromOrigin(upEyePosition, p, radius).x;
         var h: vec3f =  vec3f(0.0, -height, 0.0);
         var dIntersection: f32 = diskIntersectWithBackFaceCulling(upEyePosition, p, h, radius);
         p = (upEyePosition + min(sIntersection, dIntersection) * p);
