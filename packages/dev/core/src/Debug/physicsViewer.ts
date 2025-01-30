@@ -890,7 +890,7 @@ export class PhysicsViewer {
 
     private _createAngularConstraintMesh(minLimit: number, maxLimit: number, axisNumber: number, parent: TransformNode, scene: Scene): AbstractMesh {
         const arcAngle = (maxLimit - minLimit) / (Math.PI * 2);
-        const mesh = MeshBuilder.CreateCylinder("ConstraintCylinder", { height: 0.01, diameter: 3 * this._constraintAngularSize, arc: arcAngle }, scene);
+        const mesh = MeshBuilder.CreateCylinder("ConstraintCylinder", { height: 0.0001, diameter: 3 * this._constraintAngularSize, arc: arcAngle }, scene);
         mesh.material = this._getDebugAxisColoredMaterial(axisNumber, scene);
         mesh.parent = parent;
         const parentScaling = parent.absoluteScaling;
