@@ -24,7 +24,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     /**
      * Gets the texture data
      */
-    public get textureData() {
+    public get textureData(): Nullable<Float32Array> {
         return this._data;
     }
 

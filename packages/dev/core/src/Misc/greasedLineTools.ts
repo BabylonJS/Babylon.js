@@ -518,7 +518,7 @@ export class GreasedLineTools {
      * @param colors Arrray of Color3
      * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
      */
-    public static Color3toRGBAUint8(colors: Color3[]) {
+    public static Color3toRGBAUint8(colors: Color3[]): Uint8Array {
         const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
         for (let i = 0, j = 0; i < colors.length; i++) {
             colorTable[j++] = colors[i].r * 255;
