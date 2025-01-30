@@ -4,7 +4,7 @@ import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRota
 import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
