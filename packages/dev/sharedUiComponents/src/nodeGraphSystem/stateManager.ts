@@ -62,7 +62,6 @@ export class StateManager {
 
         setTimeout(() => {
             this.onRebuildRequiredObservable.notifyObservers();
-            this.onUpdateRequiredObservable.notifyObservers(null);
             this._isRebuildQueued = false;
         }, 1);
     }

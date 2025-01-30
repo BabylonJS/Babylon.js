@@ -91,7 +91,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
         } else if (debug.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color3 || debug.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
             state.compilationString += `${outputString}  = vec4${state.fSuffix}(${debug.associatedVariableName}, 1.0);\n`;
         } else {
-            state.compilationString += `${outputString}  = ${debug.associatedVariableName};\n`;
+            state.compilationString += `${outputString}  = vec4${state.fSuffix}(${debug.associatedVariableName}.rgb, 1.0);\n`;
         }
 
         return this;
