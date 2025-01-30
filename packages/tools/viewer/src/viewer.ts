@@ -38,6 +38,7 @@ import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
+import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
@@ -180,6 +181,11 @@ export type ViewerDetails = {
     suspendRendering(): IDisposable;
 
     /**
+     * Marks the scene as mutated, which will trigger a render on the next frame (unless rendering is suspended).
+     */
+    markSceneMutated(): void;
+
+    /**
      * Picks the object at the given screen coordinates.
      * @remarks This function ensures skeletal and morph target animations are up to date before picking, and typically should not be called at high frequency (e.g. every frame, on pointer move, etc.).
      * @param screenX The x coordinate in screen space.
@@ -195,6 +201,13 @@ export type ViewerOptions = Partial<
          * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
          */
         onInitialized: (details: Readonly<ViewerDetails>) => void;
+
+        /**
+         * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
+         * This can reduce resource CPU/GPU pressure when the scene is static.
+         * Enabled by default.
+         */
+        autoSuspendRendering: boolean;
     }>
 >;
 
@@ -296,6 +309,11 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * When enabled, the Viewer will emit additional diagnostic logs to the console.
+     */
+    public showDebugLogs = false;
+
+    /**
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
@@ -384,6 +402,8 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
+    private readonly _autoSuspendRendering: boolean;
+    private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
 
@@ -406,6 +426,7 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
+        this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
 
@@ -445,6 +466,13 @@ export class Viewer implements IDisposable {
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
+            camera.onViewMatrixChangedObservable.add(() => {
+                this._markSceneMutated();
+            });
+
+            scene.onClearColorChangedObservable.add(() => {
+                this._markSceneMutated();
+            });
 
             scene.onPointerObservable.add(async (pointerInfo) => {
                 const pickingInfo = await this._pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
@@ -491,6 +519,7 @@ export class Viewer implements IDisposable {
                 return viewer._modelInfo?.assetContainer ?? null;
             },
             suspendRendering: () => this._suspendRendering(),
+            markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
     }
@@ -563,6 +592,7 @@ export class Viewer implements IDisposable {
                     this._snapshotHelper.disableSnapshotRendering();
                     material.microSurface = 1.0 - this._skyboxBlur;
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 }
             }
         }
@@ -584,6 +614,7 @@ export class Viewer implements IDisposable {
                 this._reflectionTexture.rotationY = this._reflectionsRotation;
             }
             this._snapshotHelper.enableSnapshotRendering();
+            this._markSceneMutated();
         }
     }
 
@@ -599,6 +630,7 @@ export class Viewer implements IDisposable {
                 this._reflectionTexture.level = this._reflectionsIntensity;
             }
             this._snapshotHelper.enableSnapshotRendering();
+            this._markSceneMutated();
         }
     }
 
@@ -610,12 +642,14 @@ export class Viewer implements IDisposable {
                 this._skybox.setEnabled(this._skyboxVisible);
                 this._updateAutoClear();
                 this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         }
     }
 
     private _updateAutoClear() {
         this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
+        this._markSceneMutated();
     }
 
     /**
@@ -678,6 +712,7 @@ export class Viewer implements IDisposable {
         this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
 
         this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
     }
 
     /**
@@ -820,6 +855,7 @@ export class Viewer implements IDisposable {
             this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
             this.onAnimationProgressChanged.notifyObservers();
             this._autoRotationBehavior.resetLastInteractionTime();
+            this._markSceneMutated();
         }
     }
 
@@ -846,6 +882,7 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.disableSnapshotRendering();
             this._modelInfo.materialVariantsController.selectedVariant = value;
             this._snapshotHelper.enableSnapshotRendering();
+            this._markSceneMutated();
             this.onSelectedMaterialVariantChanged.notifyObservers();
         }
     }
@@ -965,6 +1002,7 @@ export class Viewer implements IDisposable {
         } finally {
             loadOperation.dispose();
             this._snapshotHelper.enableSnapshotRendering();
+            this._markSceneMutated();
         }
     }
 
@@ -1093,6 +1131,7 @@ export class Viewer implements IDisposable {
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         }, locks);
     }
@@ -1217,6 +1256,26 @@ export class Viewer implements IDisposable {
         return true;
     }
 
+    protected get _shouldRender() {
+        // We should render if:
+        // 1. Auto suspend rendering is disabled.
+        // 2. The scene has been mutated.
+        // 3. The snapshot helper is not yet in a ready state.
+        // 4. An animation is playing.
+        // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+        return (
+            !this._autoSuspendRendering ||
+            this._sceneMutated ||
+            !this._snapshotHelper.isReady ||
+            this.isAnimationPlaying ||
+            this._model?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted))
+        );
+    }
+
+    protected _markSceneMutated() {
+        this._sceneMutated = true;
+    }
+
     protected _suspendRendering(): IDisposable {
         this._renderLoopController?.dispose();
         this._suspendRenderCount++;
@@ -1236,16 +1295,45 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
+            let renderedLastFrame: Nullable<boolean> = null;
+            let renderedReadyFrame = false;
             const render = () => {
-                this._scene.render();
+                // First check if we have indicators that we should render.
+                let shouldRender = this._shouldRender;
 
-                // Update the camera panning sensitivity related properties based on the camera's distance from the target.
-                this._camera.panningSensibility = 5000 / this._camera.radius;
-                this._camera.speed = this._camera.radius * 0.2;
+                // If we don't have indicators that we should render (e.g. nothing has changed since the last frame),
+                // we still need to ensure that we render at least one frame after any mutations. Scene.isReady does
+                // a bunch of the same work that happens when we actually render a frame, so we don't want to check
+                // this unless we know we are in a state where there were mutations and now we are waiting for a frame
+                // to render after the scene is ready.
+                if (!shouldRender && renderedLastFrame && !renderedReadyFrame) {
+                    renderedReadyFrame = this._scene.isReady(true);
+                    shouldRender = true;
+                }
 
-                if (this.isAnimationPlaying) {
-                    this.onAnimationProgressChanged.notifyObservers();
-                    this._autoRotationBehavior.resetLastInteractionTime();
+                if (shouldRender) {
+                    if (!renderedLastFrame) {
+                        if (renderedLastFrame !== null) {
+                            this._log("Viewer Resumed Rendering");
+                        }
+                        renderedLastFrame = true;
+                    }
+
+                    this._sceneMutated = false;
+                    this._scene.render();
+
+                    if (this.isAnimationPlaying) {
+                        this.onAnimationProgressChanged.notifyObservers();
+                        this._autoRotationBehavior.resetLastInteractionTime();
+                    }
+                } else {
+                    this._camera.update();
+
+                    if (renderedLastFrame) {
+                        this._log("Viewer Suspended Rendering");
+                        renderedLastFrame = false;
+                        renderedReadyFrame = false;
+                    }
                 }
             };
 
@@ -1258,6 +1346,10 @@ export class Viewer implements IDisposable {
                         disposed = true;
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
+
+                        if (renderedLastFrame) {
+                            this._log("Viewer Suspended Rendering");
+                        }
                     }
                 },
             };
@@ -1381,6 +1473,12 @@ export class Viewer implements IDisposable {
         }
 
         return null;
+    }
+
+    protected _log(message: string) {
+        if (this.showDebugLogs) {
+            Logger.Log(message);
+        }
     }
 
     /**

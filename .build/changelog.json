@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.44.1",
+    "fromTag": "7.45.0",
     "changelog": {
         "7.45.0": [
             {
@@ -111,6 +111,470 @@
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
+            }
+        ],
+        "7.46.0": [
+            {
+                "pr": "16124",
+                "title": "NME debug block",
+                "description": "This is step 1.\r\n\r\nStep 2 will add support from reading colors from the texture on mouse over",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16123",
+                "title": "Added Area Light support for more materials and NME",
+                "description": "Continued the work to add Area light support to the following materials as well as NME: \r\n\r\n- cellMaterial\r\n- furMaterial\r\n- gradientMaterial\r\n- lavaMaterial\r\n- normalMaterial\r\n- simpleMaterial\r\n- terrainMaterial\r\n- triPlanarMaterial\r\n",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/rectAreaLight.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/ltcHelperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/ltcHelperFunctions.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/rectAreaLightPropertyGridComponent.tsx",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16122",
+                "title": "Add Epsilon for GS lambdas",
+                "description": "Avoid div0 for perflectly aligned splats",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16104",
+                "title": "Add method to get vertex data as component type",
+                "description": "To avoid converting vertex data to floats, as discussed more here https://github.com/BabylonJS/Babylon.js/pull/16064#discussion_r1920894673, this introduces a new method with a structure similar to `GetFloatData`, except the parameter `componentType` is used to determine an appropriate `TypedArray` to use, avoiding the copy that would occur with non-float `componentType` in `GetFloatData`. \r\n\r\nAlso gave it (maybe unnecessary) checks for range, and an extra alignment check for `ArrayBuffer` types (neither of these cases should ever happen).\r\nLengthy unit tests included.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/test/unit/Buffers/babylon.buffer.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16120",
+                "title": "Improved Immediate queue management",
+                "description": "Avoid overloading the task queue with millions of setTimeout when creating a lot of entities",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/timingTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16113",
+                "title": "Coloured IBL shadows",
+                "description": "This PR adds a toggle to the IBL Render Pipeline to enable coloured shadow rendering. It requires more texture samples during voxel tracing but produces more accurate results. Defaults to off.\r\n![1](https://github.com/user-attachments/assets/425b3f1f-6282-402a-bd24-f40cf778229c)\r\n![B W2](https://github.com/user-attachments/assets/68d9349a-04ce-4fcb-9842-e0567af72378)\r\n\r\nhttps://playground.babylonjs.com/#8R5SSE#497",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16109",
+                "title": "Move TypedArray utilities",
+                "description": "Move TypedArray utilities to common buffer utility file. Replace TypedArray with TypedArrayLike in core types.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16112",
+                "title": "Fix loading screen multiple canvases",
+                "description": "The following PR fixes the loading screen on multiple canvases.\r\n\r\nForum link: https://forum.babylonjs.com/t/loading-screen-misplaced-on-multiple-canvases/56234.",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/loadingScreen.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Hide-Loading-Screen.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Show-Loading-Screen.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16118",
+                "title": "Now the Model type is usable by class that extends Viewer",
+                "description": "**Before**\r\nIf you extend `Viewer` and call `_loadModel` you cannot use the type `Model` anywhere in the extended class. \r\n\r\n**Now**\r\nYou can use the type `Model`",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16116",
+                "title": "Viewer: fix camera-orbit and camera-target attributes",
+                "description": "With a recent refactoring, I accidentally broke `camera-orbit` and `camera-target`. This happened because the order of operations slightly changed, and so it became:\r\n1. Load the model\r\n2. Fire the observable\r\n3. Element sets the camera-orbit and camera-target\r\n4. Set the default animation, which implicitly resets the camera (therefore discarding the camera-orbit and camera-target)\r\n\r\nThis PR both fixes this problem, and introduces some new Playwright automated tests. The initial set of tests validate these recent regressions, but I will continue to flesh out the tests.\r\n\r\n@RaananW - what else is needed to have these tests run in the CI?",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/test/apps/web/test.html",
+                    "packages/tools/viewer/test/viewer.test.ts",
+                    "playwright.config.ts",
+                    "tsconfig.build.json",
+                    "tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16115",
+                "title": "Restore backwards-compatible logic paths in KHR_texture_transform",
+                "description": "For reference on what was previously there, see https://github.com/BabylonJS/Babylon.js/blame/83125ed754242d58f5637bde58fb2b5c26ac552a/packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts. \r\n\r\nNote that preExportTextureAsync does NOT prevent the export of \"noncompliant\" textures, just warns about them. The only thing preventing their export would have been in postExportTexture, `canUseExtension`. \r\n\r\nWhile it is probably more correct to prevent export when vAng or uAng are present, since we cannot match the visual output, let's prioritize backwards compatibility.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16114",
+                "title": "Node Editors: Fix wrong properties displayed in node editors",
+                "description": "`instance.constructor.name` doesn't work with minified packages, so I used `instance.constructor.getClassName()` instead, as all the classes involved implement a `getClassName` method.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme",
+                    "nge",
+                    "nrge"
+                ]
+            },
+            {
+                "pr": "16111",
+                "title": "Material: Export the PBRBRDFConfiguration class",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/index.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16108",
+                "title": "Add support for manualEmitCount for GPUParticles",
+                "description": "This PG will illustrate it: #1ASENS#388",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16085",
+                "title": "Add OpenPBR's base_weight material parameter",
+                "description": "This PR implements the `base_weight` parameter from the [OpenPBR specification](https://academysoftwarefoundation.github.io/OpenPBR/#model/basesubstrate).\r\nThis parameter simply scales linearly the `base_color` (named albedo in Babylon.js).\r\n\r\nTest scene:\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16085/merge#DT1XPP#4",
+                "author": {
+                    "name": "virtualzavie",
+                    "url": "https://github.com/virtualzavie"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/materialFlags.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-weight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16096",
+                "title": "FrameGraph: optimize texture allocation",
+                "description": "This PR adds texture allocation optimization by aliasing existing textures where possible, i.e. by reusing textures that are no longer used in the frame graph.\r\n\r\nNRGE displays some figures about the process:\r\n![image](https://github.com/user-attachments/assets/9586c946-d92d-4d1f-8a45-607640a21ff8)\r\n\r\nAdditional changes in the PR:\r\n* I moved the texture helper functions from `internalTexture.ts` to a new `textureHelper.functions.ts` file, as I needed to add a new helper (`GetTextureBlockInformation`).\r\n* I've updated the `_retryWithInterval` tool function to be able to cancel the timer (the function now returns a function you can call to cancel the timer) - discussed with @RaananW",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/baseLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/highlightLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToBackbufferColorTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureHelper.functions.ts",
+                    "packages/dev/core/src/Misc/timingTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/propertyTab/textureMemoryUsagePropertyTabComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/framePropertyComponent.tsx",
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts",
+                    "packages/tools/tests/test/playwright/interaction.tools.test.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16106",
+                "title": "Sprites: Fixed crash when deleting/creating two sprite managers in succession",
+                "description": "See https://forum.babylonjs.com/t/bug-sprite-not-appearing-after-multiple-clicks-when-recreating-spritemanager/56169",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "16105",
+                "title": "ShadowGenerator: add doNotSerialize",
+                "description": "This PR adds doNotSerialize to `ShadowGenerator` and `IShadowGenerator` (optional field for `IShadowGenerator` to avoid being breaking).\r\nAlso, in `ShadowGeneratorSceneComponent` serialization of a `ShadowGenerator` would be skipped if it has `doNotSerialize=true`, or its light has `doNotSerialize=true`.\r\nThis should fix <https://forum.babylonjs.com/t/shadowgenerators-serialized-without-light/56134>.",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGeneratorSceneComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16103",
+                "title": "Adjustments to IBL shadow blending",
+                "description": "I'm working on adjustments to the voxel tracing shader to better blend the IBL shadows. So far, I'm getting better results for lighting on surfaces facing away from light sources and, in general, more consistent shading when the number of samples change.\r\n\r\nOld - Left to Right: 1 sample, 2 samples and 5 samples\r\n![OldIBL](https://github.com/user-attachments/assets/94183adf-c8be-453f-9b04-62f10ca2999f)\r\n\r\nNew - Left to Right: 1 sample, 2 samples and 5 samples\r\n![NewIBL](https://github.com/user-attachments/assets/2bc10e98-a396-4763-8f9c-c74843607ad0)\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16078",
+                "title": "Initial implementation for Area Lights",
+                "description": "# Overview\r\n\r\nThis PR provides a first implementation for rectangular area lights. The implementation is based on reference repo https://github.com/selfshadow/ltc_code/ and uses the Linearly Transformed Cosines technique described by [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt`s paper in 2016](https://eheitzresearch.wordpress.com/415-2/) . This PR only supports single color rectangular area lights with texture support been introduced in a latter PR. This PR also does not support shadows for the RectAreaLight. \r\n\r\n# API\r\n\r\nBesides the usual diffuse and specular colors the area light is defined by a position, a width and a height. Setting a rotation is possible by assigning a transform node as a parent for the light. \r\n\r\n```js\r\nvar light = new BABYLON.RectAreaLight(\"areaLight\", position, width, height, scene);\r\n```\r\n\r\nBy default shaders will use LTC data stored in the Babylon.js CDN. However, users can assign their own ```IAreaLightLTCProvider``` to ```scene.areaLightLTCProvider``` and use their own LTC textures. \r\n",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/LTC/ltcTextureTool.ts",
+                    "packages/dev/core/src/Lights/areaLight.ts",
+                    "packages/dev/core/src/Lights/index.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Lights/lightConstants.ts",
+                    "packages/dev/core/src/Lights/rectAreaLight.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightVxFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightVxUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/ltcHelperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightVxFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightVxUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/ltcHelperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/rectAreaLightPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/areaLightsPBRMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/areaLightsStandardMaterial.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16101",
+                "title": "Add missing environment change event",
+                "description": "Writting down to documentation for the new environment properties, I realise that :\r\n- no event was triggerred by the `ViewerElement` when the environment configuration change\r\n- some comments still mentionning degrees for the enviornment rotation",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16102",
+                "title": "Add missing argument when exporting glTF animation",
+                "description": "See https://forum.babylonjs.com/t/the-function-call-is-missing-parameter-shouldexportanimation/55466",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "7.44.1": [
