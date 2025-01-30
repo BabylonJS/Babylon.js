@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.47.1
+
+### Core
+
+- Explicitly set return type to avoid generics - by [RaananW](https://github.com/RaananW) ([#16129](https://github.com/BabylonJS/Babylon.js/pull/16129))
+- WebGPU: Fix anisotropy - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16131](https://github.com/BabylonJS/Babylon.js/pull/16131))
+
 ## 7.47.0
 
 ### Core

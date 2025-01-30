@@ -1,6 +1,42 @@
 {
-    "fromTag": "7.46.0",
+    "fromTag": "7.47.0",
     "changelog": {
+        "7.47.1": [
+            {
+                "pr": "16129",
+                "title": "Explicitly set return type to avoid generics",
+                "description": "Addressing https://forum.babylonjs.com/t/issue-with-babylon-js-7-x-x-and-angular-18-2-4-type-errors/56287?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16131",
+                "title": "WebGPU: Fix anisotropy",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            }
+        ],
         "7.47.0": [
             {
                 "pr": "16130",
