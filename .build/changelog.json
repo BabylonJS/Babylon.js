@@ -1,116 +1,110 @@
 {
-    "fromTag": "7.45.0",
+    "fromTag": "7.46.0",
     "changelog": {
-        "7.45.0": [
+        "7.47.0": [
             {
-                "pr": "16094",
-                "title": "SH view space",
-                "description": "Fix viewdirection to make SH computation happen in GS local coordinates.\r\n\r\nTested with https://playground.babylonjs.com/#CID4NN#278\r\n\r\nset `ofs` to true to add a rotation and translation offset. Rendering should be the same with of without this offset.\r\n\r\nNOTE : I'll wait for partners feedback before merging it.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16100",
-                "title": "bug WebXRHandTracking.ts",
-                "description": "@RaananW new correct assets url",
-                "author": {
-                    "name": "dhamet70",
-                    "url": "https://github.com/dhamet70"
-                },
-                "files": [
-                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16099",
-                "title": "WebGPU: Fixed shader crashes using \"discard\"",
-                "description": "See https://forum.babylonjs.com/t/wgsl-when-using-webgpu/56133",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/layer.fragment.fx"
-                ],
-                "tags": [
-                    "bug",
-                    "WebGPU"
-                ]
-            },
-            {
-                "pr": "16098",
-                "title": "Fix animation auto play",
-                "description": "With some recent refactoring I broke `animation-auto-play`. Previously it was doing some juggling with responsibilities split across the `Viewer` and the `ViewerElement`. With this change, I moved all the responsibility to the `Viewer`, dependent on load options. This makes it much simpler to ensure the logic is correct. An alternative would be to make the `ViewerElement` entirely responsible, and have it sequentially load the model, then set the selectedAnimation, then play the animation. The only reason I don't want to do it this way is because changing the selectedAnimation animates the camera pose (based on computed bounds), and when the model is first being loaded, we don't want this animation. So it's either add load options for the Viewer, or expose the `selectAnimation` function so the `ViewerElement` can select an animation without animating the camera pose. But since other view framework layers would want the same behavior, I think it's better to do it in the `Viewer`.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/tools/viewer/src/viewer.ts",
-                    "packages/tools/viewer/src/viewerElement.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16097",
-                "title": "Add AbortError and use in Viewer",
-                "description": "There was some feedback from users that it was confusing to see abort/cancellation errors in the log, since it seemed to indicate something bad was happening when in reality it wasn't. It was simply that a new model or environment was being loaded before the previous one finished loading. This change introduces an `AbortError` (there isn't a standard as part of WebAPI), uses it in the `AbortController.abort` calls, and checks for it in the `ViewerElement` so we can ignore abort/cancellation errors (but still log \"real\" errors).\r\n\r\n@alexandremottet, @cournoll",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/error.ts",
-                    "packages/tools/viewer/src/viewer.ts",
-                    "packages/tools/viewer/src/viewerElement.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16095",
-                "title": "dependencies update and removing selenium",
+                "pr": "16130",
+                "title": "Quick fix to remove render graph",
                 "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16128",
+                "title": "Only export Model type",
+                "description": "`Model` is only a type, and has to be exported as a type only for the Viewer test app (there are otherwise errors).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16076",
+                "title": "Viewer: add a way to match POV of other cameras (from gltf file loaded for example)",
+                "description": "This change introduces a way to interpolate the viewer's default camera to other existing cameras in the scene. The primary goal of this feature is to enable matching the POV of cameras defined in a GLTF file, without switching the active camera to try to keep a \"simple\" experience for non-expert users.\r\n\r\n- `_cameraToHotSpot` function compute the `alpha`, `beta`, and `radius` angles, as well as the target point for a camera that is not an `ArcRotateCamera`.\r\n- For target selection, I used a straightforward approach, the target point is determined based on the camera's forward ray. If an intersection with the `meshes` from `AssetContainer` is found, the first hit point is used as the target. If no intersection is detected, a fallback target is calculated by projecting the distance between the camera and the `AssetContainer` world center along the forward ray.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16121",
+                "title": "Allow to skip parallel shader compilation if required",
+                "description": "This allows disabling parallel shader compilation for a single effect. Instead of forcing us to change the engine's capabilities using this code:\r\n\r\n`engine.getCaps().parallelShaderCompile = undefined;`\r\n\r\nit is possible to set the flag to false. This flag is set on when creating a pipeline context and doesn't make any changes to the engine's capabilities, which allow an effects to be compiled in parallel and synchronously.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "package-lock.json",
-                    "package.json",
-                    "packages/tools/testTools/src/index.ts",
-                    "packages/tools/testTools/src/seleniumTestUtils.ts"
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Synchronous-Effect.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
             },
             {
-                "pr": "16063",
-                "title": "New Rough Radiance Approximation",
-                "description": "The way prefiltered radiance is applied in rasterizers tends not to match the raytraced ground truth very well towards the rough end of the spectrum. I've found that mixing with the irradiance gives a much better result as you can see in the images below.\r\n\r\nHere's a playground: http://localhost:1338/#RNO672#1\r\n\r\nRaytraced:\r\n![Raytraced Roughness](https://github.com/user-attachments/assets/c932f5b4-039b-4498-95c8-e52985842104)\r\n\r\nBabylon:\r\n![Babylon Roughness](https://github.com/user-attachments/assets/79044341-1797-4f4d-8dc0-d820a9e6654c)",
+                "pr": "16127",
+                "title": "Fix loading screen when the scrollbar is present",
+                "description": "The following PR fixes the loading screen when the scrollbar is present and already scrolled.\r\n\r\nForum link: https://forum.babylonjs.com/t/loading-screen-misplaced-on-multiple-canvases/56234/4.",
                 "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrBRDFConfiguration.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
-                    "packages/tools/tests/test/visualization/ReferenceImages/IBL-radiance-roughness.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/dev/core/src/Loading/loadingScreen.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "15864",
+                "title": "Viewer auto suspend rendering when scene is idle",
+                "description": "This PR adds support for suspending rendering when the scene is idle (e.g. nothing is changing from frame to frame, and the same exact pixels would be rendered repeatedly). The idea is to reduce resource pressure and not destroy the battery on a mobile device.\r\n\r\nI have two problems remaining for this PR:\r\n1. ~Sometimes (it's hard to repro) I can get into a state where the camera position jumps back and forth between two very close positions (like the `y` value of the position has a difference of .000000000001). This makes `_isSynchronizedProjectionMatrix` return true every frame. I don't think this has anything to do with my PR, I think this is a pre-existing bug that we just don't notice. Since it is hard to repro, I haven't been able to figure out what causes it yet.~\r\n2. ~Very rarely I get an error related to WebGPU snapshot rendering mode where it thinks the gpu bundle is out of date, and then nothing renders (so rare, but catastrophic). I don't know why this happens, but I'm guessing some kind of timing issue.~\r\n\r\nEdit: After merging master, I'm no longer able to repro the first of the above issues. I can still repro the second issue, especially with complex models.\r\nEdit: After bringing in fixes from @Popov72, the first issue appears to be fixed.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuSnapshotRendering.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html",
+                    "packages/tools/viewer/tsconfig.build.json",
+                    "packages/tools/viewer/tsconfig.json",
+                    "packages/tools/viewer/tsconfig.viewer.json"
+                ],
+                "tags": [
+                    "stale"
+                ]
             }
         ],
         "7.46.0": [
@@ -575,6 +569,118 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "7.45.0": [
+            {
+                "pr": "16094",
+                "title": "SH view space",
+                "description": "Fix viewdirection to make SH computation happen in GS local coordinates.\r\n\r\nTested with https://playground.babylonjs.com/#CID4NN#278\r\n\r\nset `ofs` to true to add a rotation and translation offset. Rendering should be the same with of without this offset.\r\n\r\nNOTE : I'll wait for partners feedback before merging it.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16100",
+                "title": "bug WebXRHandTracking.ts",
+                "description": "@RaananW new correct assets url",
+                "author": {
+                    "name": "dhamet70",
+                    "url": "https://github.com/dhamet70"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16099",
+                "title": "WebGPU: Fixed shader crashes using \"discard\"",
+                "description": "See https://forum.babylonjs.com/t/wgsl-when-using-webgpu/56133",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/layer.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16098",
+                "title": "Fix animation auto play",
+                "description": "With some recent refactoring I broke `animation-auto-play`. Previously it was doing some juggling with responsibilities split across the `Viewer` and the `ViewerElement`. With this change, I moved all the responsibility to the `Viewer`, dependent on load options. This makes it much simpler to ensure the logic is correct. An alternative would be to make the `ViewerElement` entirely responsible, and have it sequentially load the model, then set the selectedAnimation, then play the animation. The only reason I don't want to do it this way is because changing the selectedAnimation animates the camera pose (based on computed bounds), and when the model is first being loaded, we don't want this animation. So it's either add load options for the Viewer, or expose the `selectAnimation` function so the `ViewerElement` can select an animation without animating the camera pose. But since other view framework layers would want the same behavior, I think it's better to do it in the `Viewer`.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16097",
+                "title": "Add AbortError and use in Viewer",
+                "description": "There was some feedback from users that it was confusing to see abort/cancellation errors in the log, since it seemed to indicate something bad was happening when in reality it wasn't. It was simply that a new model or environment was being loaded before the previous one finished loading. This change introduces an `AbortError` (there isn't a standard as part of WebAPI), uses it in the `AbortController.abort` calls, and checks for it in the `ViewerElement` so we can ignore abort/cancellation errors (but still log \"real\" errors).\r\n\r\n@alexandremottet, @cournoll",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/error.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16095",
+                "title": "dependencies update and removing selenium",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/tools/testTools/src/index.ts",
+                    "packages/tools/testTools/src/seleniumTestUtils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16063",
+                "title": "New Rough Radiance Approximation",
+                "description": "The way prefiltered radiance is applied in rasterizers tends not to match the raytraced ground truth very well towards the rough end of the spectrum. I've found that mixing with the irradiance gives a much better result as you can see in the images below.\r\n\r\nHere's a playground: http://localhost:1338/#RNO672#1\r\n\r\nRaytraced:\r\n![Raytraced Roughness](https://github.com/user-attachments/assets/c932f5b4-039b-4498-95c8-e52985842104)\r\n\r\nBabylon:\r\n![Babylon Roughness](https://github.com/user-attachments/assets/79044341-1797-4f4d-8dc0-d820a9e6654c)",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBRDFConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/IBL-radiance-roughness.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
             }
         ],
         "7.44.1": [

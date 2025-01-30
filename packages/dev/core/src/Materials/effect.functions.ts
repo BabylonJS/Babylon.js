@@ -62,6 +62,11 @@ export interface IPipelineGenerationOptions {
      * If true, generating a new pipeline will return when the pipeline is ready to be used
      */
     waitForIsReady?: boolean;
+
+    /**
+     * If true, the pipeline will be created synchronously, even if parallel shader compilation is available
+     */
+    disableParallelCompilation?: boolean;
 }
 
 /**
@@ -81,6 +86,7 @@ export interface ICreateAndPreparePipelineContextOptions {
     fragment: string;
     defines: Nullable<string>;
     transformFeedbackVaryings: Nullable<string[]>;
+    disableParallelCompilation?: boolean;
 }
 
 /**
@@ -288,10 +294,14 @@ export const createAndPreparePipelineContext = (
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ): IPipelineContext => {
     try {
+        const stateObject = options.context ? getStateObject(options.context) : null;
+        if (stateObject) {
+            // will not remove the reference to parallelShaderPrecompile, but will prevent it from being used in the next shader compilation
+            stateObject.disableParallelShaderCompile = options.disableParallelCompilation;
+        }
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
         pipelineContext._name = options.name;
-        if (options.name && options.context) {
-            const stateObject = getStateObject(options.context);
+        if (options.name && stateObject) {
             stateObject.cachedPipelines[options.name] = pipelineContext;
         }
 
