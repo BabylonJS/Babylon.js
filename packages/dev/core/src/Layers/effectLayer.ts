@@ -102,7 +102,7 @@ export abstract class EffectLayer {
     protected set _effectIntensity(value) {
         this._thinEffectLayer._effectIntensity = value;
     }
-    private readonly _thinEffectLayer: ThinEffectLayer;
+    protected readonly _thinEffectLayer: ThinEffectLayer;
     private readonly _internalThinEffectLayer: boolean;
 
     /**

@@ -1156,7 +1156,7 @@ interface XRLightProbe extends EventTarget {
  */
 
 type XRDepthUsage = "cpu-optimized" | "gpu-optimized";
-type XRDepthDataFormat = "luminance-alpha" | "float32";
+type XRDepthDataFormat = "luminance-alpha" | "float32" | "unsigned-short";
 
 type XRDepthStateInit = {
     readonly usagePreference: XRDepthUsage[];
@@ -1192,6 +1192,9 @@ interface XRFrame {
 
 interface XRWebGLDepthInformation extends XRDepthInformation {
     readonly texture: WebGLTexture;
+
+    readonly textureType: XRTextureType;
+    readonly imageIndex?: number | undefined;
 }
 
 interface XRWebGLBinding {

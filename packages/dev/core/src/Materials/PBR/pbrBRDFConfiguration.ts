@@ -13,6 +13,7 @@ export class MaterialBRDFDefines extends MaterialDefines {
     MS_BRDF_ENERGY_CONSERVATION = false;
     SPHERICAL_HARMONICS = false;
     SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
+    MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
 }
 
 /**
@@ -44,6 +45,13 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
      */
     public static DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION = true;
+
+    /**
+     * Default value for whether IBL irradiance is used to augment rough radiance.
+     * If activated, irradiance is blended into the radiance contribution when the material is rough.
+     * This better approximates raytracing results for rough surfaces.
+     */
+    public static DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
 
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
@@ -89,6 +97,16 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
 
+    private _mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
+    /**
+     * Defines if IBL irradiance is used to augment rough radiance.
+     * If activated, irradiance is blended into the radiance contribution when the material is rough.
+     * This better approximates raytracing results for rough surfaces.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
+
     /** @internal */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
 
@@ -117,6 +135,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
         defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
+        defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance;
     }
 
     public override getClassName(): string {

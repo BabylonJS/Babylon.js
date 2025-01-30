@@ -25,6 +25,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _babylonToolkitWasLoaded = false;
     private _tmpErrorEvent?: ErrorEvent;
+    private _inspectorFallback: boolean = false;
 
     public constructor(props: IRenderingComponentProps) {
         super(props);
@@ -50,19 +51,30 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.download(this._engine);
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add((state) => {
+        this.props.globalState.onInspectorRequiredObservable.add(() => {
             if (!this._scene) {
                 return;
             }
 
-            if (state) {
+            // support for older versions
+            // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
+            if (this._scene.debugLayer.openedPanes === undefined) {
+                this._inspectorFallback = true;
+            }
+
+            // fallback?
+            if (this._inspectorFallback) {
+                const debugLayer: any = this._scene.debugLayer;
+                debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
+            }
+
+            if (this._scene.debugLayer.openedPanes === 0) {
                 this._scene.debugLayer.show({
                     embedMode: true,
                 });
             } else {
                 this._scene.debugLayer.hide();
             }
-            this.props.globalState.inspectorIsOpened = state;
         });
 
         this.props.globalState.onFullcreenRequiredObservable.add(() => {
@@ -359,7 +371,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (this._engine.scenes[0] && displayInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers(true);
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
 
             if (checkCamera && this._engine.scenes[0].activeCamera == null) {
@@ -370,7 +382,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             } else if (globalObject.scene.then) {
                 globalObject.scene.then(() => {
                     if (this._engine!.scenes[0] && displayInspector) {
-                        this.props.globalState.onInspectorRequiredObservable.notifyObservers(true);
+                        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
                     }
                 });
             } else {

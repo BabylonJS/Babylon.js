@@ -785,6 +785,7 @@ export class TransformNode extends Node {
     /**
      * Defines the passed node as the parent of the current node.
      * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+     * If you don't want to preserve the current rotation / position, assign the parent through parent accessor.
      * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
      * In that case the node will not remain in the same space as it is, as the pivot will be applied.
      * To avoid this, you can set updatePivot to true and the pivot will be updated to identity
@@ -845,7 +846,9 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Adds the passed mesh as a child to the current mesh
+     * Adds the passed mesh as a child to the current mesh.
+     * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+     * This method is equivalent to calling setParent().
      * @param mesh defines the child mesh
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns the current mesh
@@ -862,6 +865,7 @@ export class TransformNode extends Node {
      * @returns the current mesh
      */
     public removeChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
+        if (mesh.parent !== this) return this;
         mesh.setParent(null, preserveScalingSign);
         return this;
     }

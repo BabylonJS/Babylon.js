@@ -48,10 +48,11 @@ import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { InternalTexture, InternalTextureSource, IsDepthTexture, HasStencilAspect } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
+import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -4041,13 +4042,8 @@ export class ThinEngine extends AbstractEngine {
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
     public releaseEffects() {
-        const keys = Object.keys(this._compiledEffects);
-        for (const name of keys) {
-            const effect = this._compiledEffects[name];
-            effect.dispose(true);
-        }
-
         this._compiledEffects = {};
+        this.onReleaseEffectsObservable.notifyObservers(this);
     }
 
     /**

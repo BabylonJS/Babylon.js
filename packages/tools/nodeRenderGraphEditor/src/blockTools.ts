@@ -25,6 +25,8 @@ import { NodeRenderGraphShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks
 import { NodeRenderGraphCascadedShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock";
 import { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/glowLayerBlock";
+import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
+import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -88,6 +90,12 @@ export class BlockTools {
             case "BlurBlock": {
                 return new NodeRenderGraphBlurPostProcessBlock("Blur", frameGraph, scene);
             }
+            case "PassBlock": {
+                return new NodeRenderGraphPassPostProcessBlock("Pass", frameGraph, scene);
+            }
+            case "PassCubeBlock": {
+                return new NodeRenderGraphPassCubePostProcessBlock("Pass cube", frameGraph, scene);
+            }
             case "GUIBlock": {
                 return new NodeRenderGraphGUIBlock("GUI", frameGraph, scene);
             }
@@ -120,6 +128,9 @@ export class BlockTools {
             }
             case "GlowLayerBlock": {
                 return new NodeRenderGraphGlowLayerBlock("Glow Layer", frameGraph, scene);
+            }
+            case "HighlightLayerBlock": {
+                return new NodeRenderGraphHighlightLayerBlock("Highlight Layer", frameGraph, scene);
             }
         }
 
@@ -187,6 +198,9 @@ export class BlockTools {
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.AutoDetect: // Used by the elbow block
                 color = "#880000";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.Object:
+                color = "#6174FA";
                 break;
             default:
                 throw new Error("Unknown connection point type: " + type);

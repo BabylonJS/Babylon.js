@@ -49,8 +49,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
         const scene = babylonTexture.getScene();
         if (!scene) {
-            Tools.Warn(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}! Not exporting with ${NAME}.`);
-            return;
+            Tools.Warn(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
         }
 
         /*
@@ -59,7 +58,11 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
          */
         if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
             Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
-            return;
+            // Usually, we'd always early return here if the texture uses an unsupported combination of transform properties,
+            // but we're making an exception here to maintain backwards compatibility.
+            if (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0) {
+                return;
+            }
         }
 
         const textureTransform: IKHRTextureTransform = {};

@@ -155,3 +155,27 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 	vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
 	return textureColor;
 }
+
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+#include<ltcHelperFunctions>
+
+uniform sampler2D areaLightsLTC1Sampler;
+uniform sampler2D areaLightsLTC2Sampler;
+
+#define inline
+lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec3 lightPosition, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float roughness) 
+{
+	lightingInfo result;
+	areaLightData data = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc2, viewDirectionW, vNormal, vPosition, lightPosition, halfWidth, halfHeight, roughness);
+
+#ifdef SPECULARTERM
+	vec3 fresnel = ( specularColor * data.Fresnel.x + ( vec3( 1.0 ) - specularColor ) * data.Fresnel.y );
+	result.specular += specularColor * fresnel * data.Specular;
+#endif
+	
+	result.diffuse += diffuseColor * data.Diffuse;
+	return result;
+}
+
+// End Area Light
+#endif

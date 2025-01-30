@@ -10,7 +10,6 @@ import { Observable } from "core/Misc/observable";
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
-    protected readonly _internalDependencies: FrameGraphTextureHandle[] = [];
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
@@ -44,9 +43,23 @@ export abstract class FrameGraphTask {
     }
 
     /**
+     * Gets the render passes of the task.
+     */
+    public get passes() {
+        return this._passes;
+    }
+
+    /**
+     * Gets the disabled render passes of the task.
+     */
+    public get passesDisabled() {
+        return this._passesDisabled;
+    }
+
+    /**
      * The (texture) dependencies of the task (optional).
      */
-    public dependencies?: FrameGraphTextureHandle[];
+    public dependencies?: Set<FrameGraphTextureHandle>;
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
@@ -89,7 +102,6 @@ export abstract class FrameGraphTask {
     public _reset() {
         this._passes.length = 0;
         this._passesDisabled.length = 0;
-        this._internalDependencies.length = 0;
     }
 
     /** @internal */

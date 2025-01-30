@@ -889,16 +889,59 @@ export abstract class AbstractEngine {
     public abstract get performanceMonitor(): PerformanceMonitor;
 
     /** @internal */
-    public _boundRenderFunction: any = () => this._renderLoop();
+    public _boundRenderFunction: any = (timestamp: number) => this._renderLoop(timestamp);
 
-    /** @internal */
-    public _renderLoop(): void {
-        // Reset the frame handler before rendering a frame to determine if a new frame has been queued.
+    protected _maxFPS: number | undefined;
+    protected _minFrameTime: number;
+    protected _lastFrameTime: number = 0;
+
+    /**
+     * Skip frame rendering but keep the frame heartbeat (begin/end frame).
+     * This is useful if you need all the plumbing but not the rendering work.
+     * (for instance when capturing a screenshot where you do not want to mix rendering to the screen and to the screenshot)
+     */
+    public skipFrameRender = false;
+
+    /** Gets or sets max frame per second allowed. Will return undefined if not capped */
+    public get maxFPS(): number | undefined {
+        return this._maxFPS;
+    }
+
+    public set maxFPS(value: number | undefined) {
+        this._maxFPS = value;
+
+        if (value === undefined) {
+            return;
+        }
+
+        if (value <= 0) {
+            this._minFrameTime = Number.MAX_VALUE;
+            return;
+        }
+
+        this._minFrameTime = 1000 / (value + 1); // We need to provide a bit of leeway to ensure we don't go under because of vbl sync
+    }
+
+    protected _isOverFrameTime(timestamp?: number): boolean {
+        if (!timestamp) {
+            return false;
+        }
+
+        const elapsedTime = timestamp - this._lastFrameTime;
+        if (this._maxFPS === undefined || elapsedTime >= this._minFrameTime) {
+            this._lastFrameTime = timestamp;
+            return false;
+        }
+
+        return true;
+    }
+
+    protected _processFrame(timestamp?: number) {
         this._frameHandler = 0;
 
-        if (!this._contextWasLost) {
+        if (!this._contextWasLost && !this._isOverFrameTime(timestamp)) {
             let shouldRender = true;
-            if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
+            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -907,7 +950,7 @@ export abstract class AbstractEngine {
                 this.beginFrame();
 
                 // Child canvases
-                if (!this._renderViews()) {
+                if (!this.skipFrameRender && !this._renderViews()) {
                     // Main frame
                     this._renderFrame();
                 }
@@ -916,6 +959,11 @@ export abstract class AbstractEngine {
                 this.endFrame();
             }
         }
+    }
+
+    /** @internal */
+    public _renderLoop(timestamp: number | undefined): void {
+        this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
         // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
@@ -1813,14 +1861,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.42.0";
+        return "babylonjs@7.45.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.42.0";
+        return "7.45.0";
     }
 
     /**
@@ -2553,6 +2601,11 @@ export abstract class AbstractEngine {
      * An event triggered when the engine is disposed.
      */
     public readonly onDisposeObservable = new Observable<AbstractEngine>();
+
+    /**
+     * An event triggered when a global cleanup of all effects is required
+     */
+    public readonly onReleaseEffectsObservable = new Observable<AbstractEngine>();
 
     /**
      * Dispose and release all associated resources

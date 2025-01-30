@@ -80,7 +80,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers(!this.props.globalState.inspectorIsOpened);
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
     }
 
     onExamples() {

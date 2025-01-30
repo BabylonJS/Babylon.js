@@ -1,10 +1,11 @@
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { HasStencilAspect, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
 import type { AbstractEngine } from "./abstractEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -67,11 +68,11 @@ export class RenderTargetWrapper {
 
         this._depthStencilTexture = texture;
 
-        this._generateDepthBuffer = this._generateStencilBuffer = false;
+        this._generateDepthBuffer = this._generateStencilBuffer = this._depthStencilTextureWithStencil = false;
 
         if (texture) {
             this._generateDepthBuffer = true;
-            this._generateStencilBuffer = HasStencilAspect(texture.format);
+            this._generateStencilBuffer = this._depthStencilTextureWithStencil = HasStencilAspect(texture.format);
         }
     }
 

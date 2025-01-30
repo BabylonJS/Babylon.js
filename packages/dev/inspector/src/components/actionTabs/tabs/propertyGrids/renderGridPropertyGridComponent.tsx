@@ -11,6 +11,7 @@ import { GridMaterial } from "materials/grid/gridMaterial";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import type { GlobalState } from "../../../globalState";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
+import { Tools } from "core/Misc/tools";
 
 interface IRenderGridPropertyGridComponentProps {
     globalState: GlobalState;
@@ -63,7 +64,8 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
             groundMaterial.lineColor = new Color3(1.0, 1.0, 1.0);
             groundMaterial.opacity = 0.8;
             groundMaterial.zOffset = 1.0;
-            groundMaterial.opacityTexture = new Texture("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
+            const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/environments/backgroundGround.png");
+            groundMaterial.opacityTexture = new Texture(textureUrl, scene);
 
             this._gridMesh.material = groundMaterial;
 
