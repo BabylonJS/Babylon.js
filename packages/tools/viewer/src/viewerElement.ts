@@ -897,9 +897,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         `;
     }
 
-    /** @internal */
     /**
-     * Renders the progress bar
+     * Renders the progress bar.
      * @returns The template result for the progress bar.
      */
     protected _renderProgressBar(): TemplateResult {
@@ -918,9 +917,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         `;
     }
 
-    /** @internal */
     /**
-     * Renders the toolbar
+     * Renders the toolbar.
      * @returns The template result for the toolbar.
      */
     protected _renderToolbar(): TemplateResult {
@@ -1021,7 +1019,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    /** @internal */
     /**
      * Renders UI elements that overlay the viewer.
      * Override this method to provide additional rendering for the component.
