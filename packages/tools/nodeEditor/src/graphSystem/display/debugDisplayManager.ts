@@ -43,13 +43,18 @@ export class DebugDisplayManager implements IDisplayManager {
                 this._onPreviewSceneAfterRenderObserver = globalState.onPreviewSceneAfterRenderObservable.add(async () => {
                     if (globalState.previewTexture) {
                         const size = globalState.previewTexture.getSize();
-                        const data = await globalState.previewTexture.readPixels()!;
+                        const data = (await globalState.previewTexture.readPixels()!) as Float32Array;
                         this._previewCanvas.width = size.width;
                         this._previewCanvas.height = size.height;
                         const ctx = this._previewCanvas.getContext("2d");
                         const imgData = ctx!.getImageData(0, 0, size.width, size.height);
 
-                        imgData.data.set(new Uint8ClampedArray(data.buffer));
+                        for (let i = 0; i < data.length; i += 4) {
+                            imgData.data[i] = data[i] * 255;
+                            imgData.data[i + 1] = data[i + 1] * 255;
+                            imgData.data[i + 2] = data[i + 2] * 255;
+                            imgData.data[i + 3] = data[i + 3] * 255;
+                        }
 
                         // Draw the image data on the canvas
                         ctx!.putImageData(imgData, 0, 0);

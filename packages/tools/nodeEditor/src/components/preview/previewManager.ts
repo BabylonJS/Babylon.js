@@ -220,7 +220,8 @@ export class PreviewManager {
         }
         this._refreshPreviewMesh();
 
-        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false, false);
+        // Adding a rtt to read from
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false, false, Constants.TEXTURETYPE_FLOAT);
         this._globalState.previewTexture.renderList = null;
         this._scene.customRenderTargets.push(this._globalState.previewTexture);
 

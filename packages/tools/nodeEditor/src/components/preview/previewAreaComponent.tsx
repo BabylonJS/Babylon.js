@@ -73,6 +73,36 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    async processPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+        const consoleElement = document.getElementById("preview-color-picker")!;
+
+        if (!e.ctrlKey || !this.props.globalState.previewTexture) {
+            consoleElement.classList.add("hidden");
+            return;
+        }
+
+        const data = (await this.props.globalState.previewTexture.readPixels()!) as Float32Array;
+        const size = this.props.globalState.previewTexture.getSize();
+        const canvasSize = (e.target as HTMLCanvasElement).getBoundingClientRect();
+
+        const x = Math.floor(((e.clientX - canvasSize.left) / canvasSize.width) * size.width);
+        const y = Math.floor(((e.clientY - canvasSize.top) / canvasSize.height) * size.height);
+
+        const pixelLocation = (y * size.width + x) * 4;
+        consoleElement.innerText = `R:${data[pixelLocation].toFixed(2)}, G:${data[pixelLocation + 1].toFixed(2)}, B:${data[pixelLocation + 2].toFixed(2)}, A:${data[pixelLocation + 3].toFixed(2)}`;
+        consoleElement.classList.remove("hidden");
+
+        console.log(x, y);
+
+        e.preventDefault();
+    }
+
+    onKeyUp(e: React.KeyboardEvent<HTMLCanvasElement>) {
+        const consoleElement = document.getElementById("preview-color-picker")!;
+        consoleElement.classList.add("hidden");
+        e.preventDefault();
+    }
+
     override render() {
         const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
@@ -85,8 +115,15 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         return (
             <>
                 <div id="preview">
-                    <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
+                    <canvas
+                        onPointerOver={this._onPointerOverCanvas}
+                        onPointerOut={this._onPointerOutCanvas}
+                        id="preview-canvas"
+                        onKeyUp={(evt) => this.onKeyUp(evt)}
+                        onPointerMove={(evt) => this.processPointerMove(evt)}
+                    />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
+                    <div id="preview-color-picker" className="hidden" />
                 </div>
                 {this.props.globalState.mode === NodeMaterialModes.Particle && (
                     <div id="preview-config-bar" className="extended">
