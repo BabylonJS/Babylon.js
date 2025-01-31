@@ -44,17 +44,17 @@ export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOpt
     return engine;
 }
 
-const FormatMimeTypeMap = new Map<string, string>([
-    ["aac", "audio/aac"],
-    ["ac3", "audio/ac3"],
-    ["flac", "audio/flac"],
-    ["m4a", "audio/mp4"],
-    ["mp3", 'audio/mpeg; codecs="mp3"'],
-    ["mp4", "audio/mp4"],
-    ["ogg", 'audio/ogg; codecs="vorbis"'],
-    ["wav", "audio/wav"],
-    ["webm", 'audio/webm; codecs="vorbis"'],
-]);
+const FormatMimeTypes: { [key: string]: string } = {
+    aac: "audio/aac",
+    ac3: "audio/ac3",
+    flac: "audio/flac",
+    m4a: "audio/mp4",
+    mp3: 'audio/mpeg; codecs="mp3"',
+    mp4: "audio/mp4",
+    ogg: 'audio/ogg; codecs="vorbis"',
+    wav: "audio/wav",
+    webm: 'audio/webm; codecs="vorbis"',
+};
 
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
@@ -182,7 +182,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             return false;
         }
 
-        const mimeType = FormatMimeTypeMap.get(format);
+        const mimeType = FormatMimeTypes[format];
         if (mimeType === undefined) {
             return false;
         }
