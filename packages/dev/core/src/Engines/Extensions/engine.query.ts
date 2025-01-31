@@ -9,7 +9,7 @@ import type { OcclusionQuery } from "../AbstractEngine/abstractEngine.query";
 import "../AbstractEngine/abstractEngine.timeQuery";
 import "../AbstractEngine/abstractEngine.query";
 
-declare module "../../Engines/ThinEngine" {
+declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
          * Starts a time query (used to measure time spent by the GPU on a specific frame)
