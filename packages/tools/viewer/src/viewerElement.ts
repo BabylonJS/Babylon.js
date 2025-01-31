@@ -80,7 +80,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    protected _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
+    private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
         super();
@@ -872,7 +872,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
-                ${this.renderOverlay()}
+                ${this._renderOverlay()}
             </div>
         `;
     }
@@ -882,8 +882,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * Renders the progress bar
      * @returns The template result for the progress bar.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected renderProgressBar(): TemplateResult {
+    protected _renderProgressBar(): TemplateResult {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
@@ -904,8 +903,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * Renders the toolbar
      * @returns The template result for the toolbar.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected renderToolbar(): TemplateResult {
+    protected _renderToolbar(): TemplateResult {
         let toolbarControls: TemplateResult[] = [];
         if (this._viewerDetails?.model != null) {
             // If the model has animations, add animation controls.
@@ -932,7 +930,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                             min="0"
                             max="1"
                             step="0.0001"
-                            .value="${this.animationProgress.toString()}"
+                            .value="${this.animationProgress}"
                             @input="${this._onAnimationTimelineChanged}"
                             @pointerdown="${this._onAnimationTimelinePointerDown}"
                         />
@@ -997,10 +995,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
 
         if (toolbarControls.length > 0) {
-            return html`
-                <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">
-                    ${toolbarControls}
-                </div>`;
+            return html` <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>`;
         } else {
             return html``;
         }
@@ -1012,13 +1007,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * Override this method to provide additional rendering for the component.
      * @returns TemplateResult The rendered template result.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected renderOverlay(): TemplateResult {
+    protected _renderOverlay(): TemplateResult {
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <slot class="full-size children-slot"></slot>
-            <slot name="progress-bar"> ${this.renderProgressBar()}</slot>
-            <slot name="tool-bar">${this.renderToolbar()}</slot>
+            <slot name="progress-bar">${this._renderProgressBar()}</slot>
+            <slot name="tool-bar">${this._renderToolbar()}</slot>
         `;
     }
 
