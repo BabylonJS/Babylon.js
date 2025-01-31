@@ -5,8 +5,6 @@ import type { Nullable } from "../../types";
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
         /** @internal */
-        _captureGPUFrameTime: boolean;
-        /** @internal */
         _gpuFrameTime: Nullable<PerfCounter>;
         /**
          * Get the performance counter associated with the frame time computation

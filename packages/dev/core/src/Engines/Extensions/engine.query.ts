@@ -12,6 +12,11 @@ import "../AbstractEngine/abstractEngine.query";
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
+         * @internal
+         */
+        _captureGPUFrameTime: boolean;
+
+        /**
          * Starts a time query (used to measure time spent by the GPU on a specific frame)
          * Please note that only one query can be issued at a time
          * @returns a time token used to track the time span
