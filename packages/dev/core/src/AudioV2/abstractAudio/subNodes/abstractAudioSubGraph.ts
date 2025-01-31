@@ -22,7 +22,7 @@ export abstract class _AbstractAudioSubGraph {
     private _subNodes = new Map<string, Set<AbstractNamedAudioNode>>();
 
     /**
-     * Executes the given callback with the named sub node, creating the sub node if needed.
+     * Executes the given callback with the named sub node, creating it if needed.
      *
      * Note that `callback` is executed synchronously if the sub node already exists, otherwise the sub node is created
      * asynchronously before `callback` is executed.

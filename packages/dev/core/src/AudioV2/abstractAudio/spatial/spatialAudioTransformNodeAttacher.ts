@@ -7,6 +7,11 @@ import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 const TempQuaternion = Quaternion.Identity();
 
 /** @internal */
+export async function _CreateSpatialAudioTransformNodeAttacherAsync(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode): Promise<_AbstractSpatialAudioAttacher> {
+    return new _SpatialAudioTransformNodeAttacher(transformNode, spatialAudioNode);
+}
+
+/** @internal */
 export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAttacher {
     protected _transformNode: Nullable<TransformNode> = null;
 
@@ -41,6 +46,10 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
 
         this._transformNode.getWorldMatrix().decompose(undefined, TempQuaternion, undefined);
         return TempQuaternion;
+    }
+
+    public getClassName(): string {
+        return "_SpatialAudioTransformNodeAttacher";
     }
 
     private _attachTransformNode(): void {

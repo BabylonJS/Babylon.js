@@ -41,6 +41,9 @@ export abstract class _AbstractSpatialAudioAttacher {
         this._scene = null;
     }
 
+    /** @internal */
+    public abstract getClassName(): string;
+
     private _attachScene(): void {
         if (this._scene) {
             this._scene.onBeforeRenderObservable.add(this._onBeforeSceneRender);

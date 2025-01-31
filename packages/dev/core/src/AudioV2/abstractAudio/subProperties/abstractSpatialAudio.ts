@@ -183,7 +183,7 @@ export abstract class AbstractSpatialAudio {
      * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
      * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */
-    public abstract spatialMinUpdateTime: number;
+    public abstract minUpdateTime: number;
 
     /**
      * The spatial panning model. Defaults to "equalpower".
