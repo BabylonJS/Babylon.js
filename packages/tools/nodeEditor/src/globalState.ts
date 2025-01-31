@@ -20,7 +20,7 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { SerializationTools } from "./serializationTools";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { NodeMaterialDebugBlock } from "core/Materials";
+import type { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 
 export class GlobalState {
     hostElement: HTMLElement;
