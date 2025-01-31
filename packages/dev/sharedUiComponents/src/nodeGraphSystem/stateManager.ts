@@ -53,6 +53,7 @@ export class StateManager {
     createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
 
     private _isRebuildQueued: boolean;
+
     queueRebuildCommand() {
         if (this._isRebuildQueued) {
             return;

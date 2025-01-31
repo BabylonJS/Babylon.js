@@ -58,6 +58,15 @@ export class DebugDisplayManager implements IDisplayManager {
                     } else {
                         this._previewImage.classList.add(commonStyles.empty);
                     }
+
+                    // Let's do a round robin to refresh the debug blocks
+                    if (globalState.debugBlocksToRefresh.length > 0) {
+                        const nextBlock = globalState.debugBlocksToRefresh.pop();
+                        const nodeData = globalState.onGetNodeFromBlock(nextBlock!);
+                        if (nodeData) {
+                            globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: nodeData });
+                        }
+                    }
                 });
             });
         } else {

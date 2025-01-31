@@ -20,6 +20,7 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { SerializationTools } from "./serializationTools";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { NodeMaterialDebugBlock } from "core/Materials";
 
 export class GlobalState {
     hostElement: HTMLElement;
@@ -67,6 +68,7 @@ export class GlobalState {
     previewTexture: Nullable<RenderTargetTexture> = null;
     onPreviewSceneAfterRenderObservable = new Observable<void>();
     onPreviewUpdatedObservable = new Observable<NodeMaterial>();
+    debugBlocksToRefresh: NodeMaterialDebugBlock[] = [];
 
     /** Gets the mode */
     public get mode(): NodeMaterialModes {
