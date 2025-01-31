@@ -1,0 +1,22 @@
+.debugBlock {
+    border-radius: 4px !important;
+    width: 140px !important;
+    grid-template-rows: 0px 28px 130px !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.translatedConnections {
+    transform: translateY(-2px);
+}
+
+.texture-area {
+    grid-row: 3;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    pointer-events: none;
+}

@@ -1,20 +1,26 @@
-import { IsWindowObjectExist } from "./domManagement";
+let _immediateQueue: Array<() => void> = [];
 
 /**
  * Class used to provide helper for timing
  */
 export class TimingTools {
     /**
-     * Polyfill for setImmediate
+     * Execute a function after the current execution block
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (IsWindowObjectExist() && window.setImmediate) {
-            // Note - deprecated and should not be used directly. Not supported in any browser.
-            window.setImmediate(action);
-        } else {
-            setTimeout(action, 1);
+        if (_immediateQueue.length === 0) {
+            setTimeout(() => {
+                // Execute all immediate functions
+                const functionsToCall = _immediateQueue;
+                _immediateQueue = [];
+
+                for (const func of functionsToCall) {
+                    func();
+                }
+            }, 1);
         }
+        _immediateQueue.push(action);
     }
 }
 

@@ -28,6 +28,35 @@ Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
 });
 
 /**
+ * Computes the alpha angle based on the source position and the target position.
+ * @param offset The directional offset between the source position and the target position
+ * @returns The alpha angle in radians
+ */
+export function ComputeAlpha(offset: Vector3): number {
+    // Default alpha to π/2 to handle the edge case where x and z are both zero (when looking along up axis)
+    let alpha = Math.PI / 2;
+    if (!(offset.x === 0 && offset.z === 0)) {
+        alpha = Math.acos(offset.x / Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.z, 2)));
+    }
+
+    if (offset.z < 0) {
+        alpha = 2 * Math.PI - alpha;
+    }
+
+    return alpha;
+}
+
+/**
+ * Computes the beta angle based on the source position and the target position.
+ * @param verticalOffset The y value of the directional offset between the source position and the target position
+ * @param radius The distance between the source position and the target position
+ * @returns The beta angle in radians
+ */
+export function ComputeBeta(verticalOffset: number, radius: number): number {
+    return Math.acos(verticalOffset / radius);
+}
+
+/**
  * This represents an orbital type of camera.
  *
  * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
@@ -1148,25 +1177,15 @@ export class ArcRotateCamera extends TargetCamera {
             this.radius = 0.0001; // Just to avoid division by zero
         }
 
-        // Alpha
+        // Alpha and Beta
         const previousAlpha = this.alpha;
-        if (this._computationVector.x === 0 && this._computationVector.z === 0) {
-            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
-        } else {
-            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
-        }
-
-        if (this._computationVector.z < 0) {
-            this.alpha = 2 * Math.PI - this.alpha;
-        }
+        this.alpha = ComputeAlpha(this._computationVector);
+        this.beta = ComputeBeta(this._computationVector.y, this.radius);
 
         // Calculate the number of revolutions between the new and old alpha values.
         const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI));
         // Adjust alpha so that its numerical representation is the closest one to the old value.
         this.alpha += alphaCorrectionTurns * 2.0 * Math.PI;
-
-        // Beta
-        this.beta = Math.acos(this._computationVector.y / this.radius);
 
         this._checkLimits();
     }

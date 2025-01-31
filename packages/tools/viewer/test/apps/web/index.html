@@ -141,6 +141,7 @@
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+            <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <div>
                 <span>Environment Intensity</span>
                 <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" oninput="onEnvironmentIntensity()" />
@@ -177,7 +178,7 @@
             let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
-
+                viewerDetails.viewer.showDebugLogs = true;
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
@@ -201,6 +202,8 @@
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // viewerElement.source = "https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/flightHelmet.glb"
                 //viewerElement.environment = "";
+                //viewerElement.skyboxBlur = 0;
+                //viewerElement.contrast = 4;
                 // error case
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb";
                 await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -277,6 +280,10 @@
                 const bottomContent = document.getElementById("moreLowerPageContent");
                 bottomContent.style.display = isBottomContentVisible ? "none" : "block";
                 isBottomContentVisible = !isBottomContentVisible;
+            };
+
+            globalThis.onMarkSceneMutated = () => {
+                viewerElement.viewerDetails.markSceneMutated();
             };
 
             globalThis.onEnvironmentIntensity = () => {

@@ -138,6 +138,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _dummyTexture3d: RawTexture3D;
     private _shadowOpacity: number = 0.8;
     private _enabled: boolean = true;
+    private _coloredShadows: boolean = false;
     private _materialsWithRenderPlugin: Material[] = [];
 
     /**
@@ -172,6 +173,21 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     public set shadowOpacity(value: number) {
         this._shadowOpacity = value;
+        this._setPluginParameters();
+    }
+
+    /**
+     * Render the shadows in color rather than black and white.
+     * This is slightly more expensive than black and white shadows but can be much
+     * more accurate when the strongest lights in the IBL are non-white.
+     */
+    public get coloredShadows(): boolean {
+        return this._coloredShadows;
+    }
+
+    public set coloredShadows(value: boolean) {
+        this._coloredShadows = value;
+        this._voxelTracingPass.coloredShadows = value;
         this._setPluginParameters();
     }
 
@@ -1038,6 +1054,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
 
         plugin.isEnabled = this._enabled;
+        plugin.isColored = this._coloredShadows;
 
         this._materialsWithRenderPlugin.push(material);
     }
@@ -1052,6 +1069,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                 plugin.iblShadowsTexture = this._getAccumulatedTexture().getInternalTexture()!;
                 plugin.shadowOpacity = this.shadowOpacity;
+                plugin.isColored = this._coloredShadows;
             }
         });
     }

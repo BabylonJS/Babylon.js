@@ -195,6 +195,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StorageReadBlock: "Block used to read from a loop storage variable",
         StorageWriteBlock: "Block used to write to a loop storage variable",
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
+        DebugBlock: "Block used to render intermediate debug values",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -424,7 +425,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MatrixTransposeBlock",
                 "MatrixSplitterBlock",
             ],
-            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock"],
+            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",
@@ -493,6 +494,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
@@ -502,6 +504,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
@@ -514,6 +517,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
             case NodeMaterialModes.GaussianSplatting:
                 delete allBlocks["Animation"];
@@ -525,6 +529,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                allBlocks.Misc.splice(allBlocks.Misc.indexOf("DebugBlock"), 1);
                 break;
         }
 
@@ -609,6 +614,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             // Register blocks
             const ledger = NodeLedger.RegisteredNodeNames;
+            ledger.length = 0;
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
