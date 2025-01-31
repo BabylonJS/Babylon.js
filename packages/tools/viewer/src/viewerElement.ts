@@ -996,8 +996,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             }, new Array<TemplateResult>());
         }
 
-        if (toolbarControls.length > 0) return html`<div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>`;
-        else return html``;
+        if (toolbarControls.length > 0) {
+            return html`
+                <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">
+                    ${toolbarControls}
+                </div>`;
+        } else {
+            return html``;
+        }
     }
 
     /** @internal */
