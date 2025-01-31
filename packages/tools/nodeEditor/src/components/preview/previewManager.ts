@@ -41,6 +41,7 @@ import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 const dontSerializeTextureContent = true;
 
 /**
@@ -218,18 +219,10 @@ export class PreviewManager {
             canvas.addEventListener("drop", onDrop, false);
         }
         this._refreshPreviewMesh();
-        // this._nrg.frameGraph.onBuildObservable.add(() => {
-        //     const rtw = this._nrg.frameGraph.textureManager.getTextureFromHandle(copyTextureTask.outputTexture)!;
-        //     rtw.incrementReferences();
 
-        //     if (this._globalState.previewTexture) {
-        //         this._globalState.previewTexture.dispose();
-        //     }
-
-        //     this._globalState.previewTexture = new Texture("", this._scene, {
-        //         internalTexture: rtw,
-        //     });
-        // });
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false, false);
+        this._globalState.previewTexture.renderList = null;
+        this._scene.customRenderTargets.push(this._globalState.previewTexture);
 
         this._scene.onAfterRenderObservable.add(() => {
             this._globalState.onPreviewSceneAfterRenderObservable.notifyObservers();
@@ -641,7 +634,6 @@ export class PreviewManager {
     private _updatePreview() {
         try {
             const serializationObject = this._serializeMaterial();
-
             const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
             const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", this._nodeMaterial.shaderLanguage);
@@ -678,7 +670,6 @@ export class PreviewManager {
                         this._material.dispose();
                     }
                     this._material = tempMaterial;
-                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
                 case NodeMaterialModes.ProceduralTexture: {
@@ -693,7 +684,6 @@ export class PreviewManager {
                     if (this._layer) {
                         this._layer.texture = this._proceduralTexture;
                     }
-                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
 
@@ -716,7 +706,6 @@ export class PreviewManager {
                         this._material.dispose();
                     }
                     this._material = tempMaterial;
-                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
 
@@ -748,6 +737,7 @@ export class PreviewManager {
                             });
                     } else {
                         this._material = tempMaterial;
+                        this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     }
                     break;
                 }
