@@ -1761,6 +1761,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
+        const engine = this._engine as Engine;
+        const depthWriteState = engine.getDepthWrite();
+        engine.setDepthWrite(false);
+
         this._platform.preUpdateParticleBuffer();
 
         this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
@@ -1805,6 +1809,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const tmpBuffer = this._sourceBuffer;
         this._sourceBuffer = this._targetBuffer;
         this._targetBuffer = tmpBuffer;
+
+        engine.setDepthWrite(depthWriteState);
     }
 
     /**
