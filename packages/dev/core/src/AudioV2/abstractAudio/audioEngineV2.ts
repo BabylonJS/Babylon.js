@@ -135,8 +135,8 @@ export abstract class AudioEngineV2 {
 
     /**
      * Unlocks the audio engine if it is locked.
-     * - Note that the returned promise resolves immediately if the audio engine is already unlocked.
-     * @returns A promise that resolves when the audio engine is unlocked.
+     * - Note that the returned promise may already be resolved if the audio engine is already unlocked.
+     * @returns A promise that is resolved when the audio engine is unlocked.
      */
     public unlock(): Promise<void> {
         return this.resume();
