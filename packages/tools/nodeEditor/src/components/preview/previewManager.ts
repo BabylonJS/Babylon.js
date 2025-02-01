@@ -220,9 +220,13 @@ export class PreviewManager {
         }
         this._refreshPreviewMesh();
 
-        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false, false);
+        // Adding a rtt to read from
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false);
+        this._globalState.pickingTexture = new RenderTargetTexture("rtt2", 256, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
         this._globalState.previewTexture.renderList = null;
+        this._globalState.pickingTexture.renderList = null;
         this._scene.customRenderTargets.push(this._globalState.previewTexture);
+        this._scene.customRenderTargets.push(this._globalState.pickingTexture);
 
         this._scene.onAfterRenderObservable.add(() => {
             this._globalState.onPreviewSceneAfterRenderObservable.notifyObservers();
@@ -762,6 +766,11 @@ export class PreviewManager {
         if (this._globalState.previewTexture) {
             this._globalState.previewTexture.dispose();
             this._globalState.previewTexture = null;
+        }
+
+        if (this._globalState.pickingTexture) {
+            this._globalState.pickingTexture.dispose();
+            this._globalState.pickingTexture = null;
         }
 
         if (this._material) {
