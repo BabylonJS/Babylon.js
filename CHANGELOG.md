@@ -1,5 +1,18 @@
 # Changelog
 
+## 7.47.2
+
+### Core
+
+- Fix feedback loop rendering that was writing to the depth buffer - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16134](https://github.com/BabylonJS/Babylon.js/pull/16134))
+
+### Node Editor
+
+
+### Viewer
+
+- Viewer : Extendable render - by [ffaure](https://github.com/ffaure) ([#16119](https://github.com/BabylonJS/Babylon.js/pull/16119))
+
 ## 7.47.1
 
 ### Core

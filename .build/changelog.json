@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.47.0",
+    "fromTag": "7.47.1",
     "changelog": {
         "7.47.1": [
             {
@@ -34,6 +34,94 @@
                 "tags": [
                     "bug",
                     "WebGPU"
+                ]
+            }
+        ],
+        "7.47.2": [
+            {
+                "pr": "16135",
+                "title": "move timer stats to thinEngine",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.query.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.timeQuery.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16119",
+                "title": "Viewer : Extendable render",
+                "description": "This PR removes features specific to the Babylon Viewer, such as the progress bar and toolbar, making them more easily customizable. Instead of being tightly coupled to the core implementation, these elements can now be modified by extending `ViewerElement` and overriding the `extendRender` method.\r\n\r\nBy following this approach, we avoid the need to fully rewrite the render method, which is responsible for rendering the viewer and managing child elements via the designated slot.\r\n\r\nChanges\r\n - Removed hardcoded progress bar and toolbar from the Babylon Viewer.\r\n - Introduced an extension-based approach via `extendRender` in `ViewerElement`.\r\n",
+                "author": {
+                    "name": "ffaure",
+                    "url": "https://github.com/ffaure"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16134",
+                "title": "Fix feedback loop rendering that was writing to the depth buffer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16133",
+                "title": "New \"Refresh all\" button",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/debugNodePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16132",
+                "title": "Nme debug 3",
+                "description": "Added live thumbnail updates\r\n\r\nColor picking is next step",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/debugBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.module.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
