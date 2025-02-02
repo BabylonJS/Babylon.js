@@ -284,6 +284,26 @@
         overflow: hidden;
         height: 100%;
 
+        #preview-color-picker {
+            width: 100%;
+            height: 100%;
+            grid-row: 1;
+            grid-column: 1;
+            color: white;
+            font-size: 12px;
+            align-content: end;
+            justify-content: center;
+            z-index: 10;
+            display: grid;
+            transition: opacity 250ms;
+            pointer-events: none;
+
+            &.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
         #preview-canvas {
             width: 100%;
             height: 100%;

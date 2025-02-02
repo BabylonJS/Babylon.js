@@ -29,15 +29,26 @@ export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
  * @param options The options to use when creating the Viewer and binding it to the specified canvas.
  * @returns A Viewer instance that is bound to the specified canvas.
  */
-export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
+export function createViewerForCanvas<DerivedViewer extends Viewer>(
+    canvas: HTMLCanvasElement,
+    options: CanvasViewerOptions & {
+        /**
+         * The Viewer subclass to use when creating the Viewer instance.
+         */
+        viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => DerivedViewer;
+    }
+): Promise<DerivedViewer>;
+export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer>;
+
+/**
+ * @internal
+ */
+export async function createViewerForCanvas(
+    canvas: HTMLCanvasElement,
+    options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
+): Promise<Viewer> {
     const finalOptions = { ...defaultCanvasViewerOptions, ...options };
     const disposeActions: (() => void)[] = [];
-
-    // If the canvas is resized, note that the engine needs a resize, but don't resize it here as it will result in flickering.
-    let needsResize = false;
-    const resizeObserver = new ResizeObserver(() => (needsResize = true));
-    resizeObserver.observe(canvas);
-    disposeActions.push(() => resizeObserver.disconnect());
 
     // Create an engine instance.
     let engine: AbstractEngine;
@@ -61,6 +72,15 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
     // Override the onInitialized callback to add in some specific behavior.
     const onInitialized = finalOptions.onInitialized;
     finalOptions.onInitialized = (details) => {
+        // If the canvas is resized, note that the engine needs a resize, but don't resize it here as it will result in flickering.
+        let needsResize = false;
+        const resizeObserver = new ResizeObserver(() => {
+            needsResize = true;
+            details.markSceneMutated();
+        });
+        resizeObserver.observe(canvas);
+        disposeActions.push(() => resizeObserver.disconnect());
+
         // Resize if needed right before rendering the Viewer scene to avoid any flickering.
         const beforeRenderObserver = details.scene.onBeforeRenderObservable.add(() => {
             if (needsResize) {
@@ -90,7 +110,8 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
     };
 
     // Instantiate the Viewer with the engine and options.
-    const viewer = new Viewer(engine, finalOptions);
+    const viewerClass = options?.viewerClass ?? Viewer;
+    const viewer = new viewerClass(engine, finalOptions);
     disposeActions.push(viewer.dispose.bind(viewer));
 
     disposeActions.push(() => engine.dispose());

@@ -1,8 +1,9 @@
-import type { Nullable } from "core/types";
+import type { Nullable, TypedArray } from "core/types";
 import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
 import type { DecoderMessage } from "./dracoDecoder.types";
 import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, EncoderModule, MeshBuilder, Encoder, DracoInt8Array } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
+import type { TypedArrayConstructor } from "core/Buffers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -34,7 +35,7 @@ export function EncodeMesh(
     const attributeIDs: Record<string, number> = {}; // Babylon kind -> Draco unique id
 
     // Double-check that at least a position attribute is provided
-    const positionAttribute = attributes.find((a) => a.babylonAttribute === "position");
+    const positionAttribute = attributes.find((a) => a.dracoName === "POSITION");
     if (!positionAttribute) {
         throw new Error("Position attribute is required for Draco encoding");
     }
@@ -61,9 +62,9 @@ export function EncodeMesh(
         // Add the attributes
         for (const attribute of attributes) {
             const verticesCount = attribute.data.length / attribute.size;
-            attributeIDs[attribute.babylonAttribute] = meshBuilder.AddFloatAttribute(mesh, encoderModule[attribute.dracoAttribute], verticesCount, attribute.size, attribute.data);
-            if (options.quantizationBits && options.quantizationBits[attribute.dracoAttribute]) {
-                encoder.SetAttributeQuantization(encoderModule[attribute.dracoAttribute], options.quantizationBits[attribute.dracoAttribute]);
+            attributeIDs[attribute.kind] = meshBuilder.AddFloatAttribute(mesh, encoderModule[attribute.dracoName], verticesCount, attribute.size, attribute.data);
+            if (options.quantizationBits && options.quantizationBits[attribute.dracoName]) {
+                encoder.SetAttributeQuantization(encoderModule[attribute.dracoName], options.quantizationBits[attribute.dracoName]);
             }
         }
 
@@ -211,7 +212,7 @@ export function DecodeMesh(
             const byteStride = attribute.byte_stride();
             const byteOffset = attribute.byte_offset();
 
-            const dataTypeInfo = {
+            const dataTypeInfo: Record<number, { typedArrayConstructor: TypedArrayConstructor; heap: TypedArray }> = {
                 [decoderModule.DT_FLOAT32]: { typedArrayConstructor: Float32Array, heap: decoderModule.HEAPF32 },
                 [decoderModule.DT_INT8]: { typedArrayConstructor: Int8Array, heap: decoderModule.HEAP8 },
                 [decoderModule.DT_INT16]: { typedArrayConstructor: Int16Array, heap: decoderModule.HEAP16 },

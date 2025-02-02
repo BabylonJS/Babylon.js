@@ -467,7 +467,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            const ssaoCombineSize = horizontal ? this._ssaoCombinePostProcess.width : this._ssaoCombinePostProcess.height;
+            const ratio = this._ratio.blurRatio || this._ratio;
+            const ssaoCombineSize = horizontal ? this._originalColorPostProcess.width * ratio : this._originalColorPostProcess.height * ratio;
             const originalColorSize = horizontal ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
 
             effect.setFloat("outSize", ssaoCombineSize > 0 ? ssaoCombineSize : originalColorSize);

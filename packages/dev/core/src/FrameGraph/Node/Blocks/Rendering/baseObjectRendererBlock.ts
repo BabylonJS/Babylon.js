@@ -11,9 +11,10 @@ import type {
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 
 /**
  * @internal
@@ -46,6 +47,17 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
+        this.registerOutput(
+            "objectRenderer",
+            NodeRenderGraphBlockConnectionPointTypes.Object,
+            new NodeRenderGraphConnectionPointCustomObject(
+                "objectRenderer",
+                this,
+                NodeRenderGraphConnectionPointDirection.Output,
+                NodeRenderGraphBaseObjectRendererBlock,
+                "NodeRenderGraphBaseObjectRendererBlock"
+            )
+        );
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
@@ -73,6 +85,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
 
     public set depthWrite(value: boolean) {
         this._frameGraphTask.depthWrite = value;
+    }
+
+    /** Indicates if shadows must be enabled or disabled */
+    @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get disableShadows() {
+        return this._frameGraphTask.disableShadows;
+    }
+
+    public set disableShadows(value: boolean) {
+        this._frameGraphTask.disableShadows = value;
     }
 
     /**
@@ -139,12 +161,19 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         return this._outputs[1];
     }
 
+    /**
+     * Gets the objectRenderer component
+     */
+    public get objectRenderer(): NodeRenderGraphConnectionPoint {
+        return this._outputs[2];
+    }
+
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
-
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture; // the value of the outputDepth connection point is the "outputDepth" texture of the task
+        this.objectRenderer.value = this._frameGraphTask; // the value of the objectRenderer connection point is the task itself
 
         this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
@@ -172,6 +201,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -179,6 +209,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const serializationObject = super.serialize();
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.disableShadows = this.disableShadows;
         return serializationObject;
     }
 
@@ -186,5 +217,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         super._deserialize(serializationObject);
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.disableShadows = serializationObject.disableShadows;
     }
 }

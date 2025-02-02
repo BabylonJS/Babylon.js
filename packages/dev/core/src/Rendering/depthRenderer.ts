@@ -544,7 +544,8 @@ export class DepthRenderer {
                         shaderLanguage: this._shaderLanguage,
                     },
                     engine
-                )
+                ),
+                join
             );
         }
 

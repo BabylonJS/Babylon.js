@@ -572,12 +572,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
-    public get worldMatrixInstancedBuffer() {
+    public get worldMatrixInstancedBuffer(): Float32Array {
         return this._instanceDataStorage.instancesData;
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
-    public get previousWorldMatrixInstancedBuffer() {
+    public get previousWorldMatrixInstancedBuffer(): Float32Array {
         return this._instanceDataStorage.instancesPreviousData;
     }
 

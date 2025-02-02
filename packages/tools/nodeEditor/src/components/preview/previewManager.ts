@@ -41,6 +41,7 @@ import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 const dontSerializeTextureContent = true;
 
 /**
@@ -173,7 +174,6 @@ export class PreviewManager {
             this._engine = new Engine(targetCanvas);
         }
         this._scene = new Scene(this._engine);
-        this._scene.clearColor = this._globalState.backgroundColor;
         this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
@@ -219,6 +219,19 @@ export class PreviewManager {
             canvas.addEventListener("drop", onDrop, false);
         }
         this._refreshPreviewMesh();
+
+        // Adding a rtt to read from
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false);
+        this._globalState.pickingTexture = new RenderTargetTexture("rtt2", 256, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
+        this._globalState.previewTexture.renderList = null;
+        this._globalState.pickingTexture.renderList = null;
+        this._scene.customRenderTargets.push(this._globalState.previewTexture);
+        this._scene.customRenderTargets.push(this._globalState.pickingTexture);
+
+        this._scene.onAfterRenderObservable.add(() => {
+            this._globalState.onPreviewSceneAfterRenderObservable.notifyObservers();
+        });
+
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -625,7 +638,6 @@ export class PreviewManager {
     private _updatePreview() {
         try {
             const serializationObject = this._serializeMaterial();
-
             const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
             const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", this._nodeMaterial.shaderLanguage);
@@ -676,7 +688,6 @@ export class PreviewManager {
                     if (this._layer) {
                         this._layer.texture = this._proceduralTexture;
                     }
-
                     break;
                 }
 
@@ -721,13 +732,16 @@ export class PreviewManager {
 
                                 this._material = tempMaterial;
                                 this._globalState.onIsLoadingChanged.notifyObservers(false);
+                                this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                             })
                             .catch((reason) => {
                                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
                                 this._globalState.onIsLoadingChanged.notifyObservers(false);
+                                this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                             });
                     } else {
                         this._material = tempMaterial;
+                        this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     }
                     break;
                 }
@@ -748,6 +762,16 @@ export class PreviewManager {
         this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         this._globalState.onBackgroundHDRUpdated.remove(this._onBackgroundHDRUpdatedObserver);
+
+        if (this._globalState.previewTexture) {
+            this._globalState.previewTexture.dispose();
+            this._globalState.previewTexture = null;
+        }
+
+        if (this._globalState.pickingTexture) {
+            this._globalState.pickingTexture.dispose();
+            this._globalState.pickingTexture = null;
+        }
 
         if (this._material) {
             this._material.dispose(false, true);

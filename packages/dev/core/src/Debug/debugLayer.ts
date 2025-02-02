@@ -387,6 +387,17 @@ export class DebugLayer {
     }
 
     /**
+     * Get the number of opened panes in the inspector
+     */
+    public get openedPanes() {
+        if (this.BJSINSPECTOR) {
+            return this.BJSINSPECTOR.Inspector._OpenedPane;
+        }
+
+        return 0;
+    }
+
+    /**
      * Update the scene in the inspector
      */
     public setAsActiveScene() {

@@ -82,6 +82,26 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
                                 propertyName="outerGlow"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                label="Blur Horizontal Size"
+                                target={layer}
+                                propertyName="blurHorizontalSize"
+                                minimum={0}
+                                maximum={4}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                label="Blur Vertical Size"
+                                target={layer}
+                                propertyName="blurVerticalSize"
+                                minimum={0}
+                                maximum={4}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
                     )}
                 </LineContainerComponent>
