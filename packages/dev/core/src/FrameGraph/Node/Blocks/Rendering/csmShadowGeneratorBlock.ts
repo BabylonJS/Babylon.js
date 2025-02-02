@@ -1,10 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, NodeRenderGraphBuildState, Camera } from "core/index";
+import type { Scene, FrameGraph } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCascadedShadowGeneratorTask } from "../../../Tasks/Rendering/csmShadowGeneratorTask";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 
 /**
  * Block that generates shadows through a shadow generator
@@ -27,9 +26,6 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
      */
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
-
-        this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this._addDependenciesInput();
 
         this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
     }
@@ -126,19 +122,6 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
      */
     public override getClassName() {
         return "NodeRenderGraphCascadedShadowGeneratorBlock";
-    }
-
-    /**
-     * Gets the camera input component
-     */
-    public get camera(): NodeRenderGraphConnectionPoint {
-        return this._inputs[2];
-    }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-
-        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
     }
 
     protected override _dumpPropertiesCode() {

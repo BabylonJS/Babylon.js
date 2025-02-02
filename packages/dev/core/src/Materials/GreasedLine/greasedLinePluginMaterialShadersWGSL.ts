@@ -13,10 +13,13 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
         const obj: any = {
             CUSTOM_VERTEX_DEFINITIONS: `
                 attribute grl_widths: f32;
-                attribute grl_offsets: vec3f;
                 attribute grl_colorPointers: f32;
                 varying grlCounters: f32;
                 varying grlColorPointer: f32;
+
+                #ifdef GREASED_LINE_USE_OFFSETS
+                    attribute grl_offsets: vec3f;   
+                #endif
 
                 #ifdef GREASED_LINE_CAMERA_FACING
                     attribute grl_previousAndSide : vec4f;
@@ -35,11 +38,16 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
 
                 `,
             CUSTOM_VERTEX_UPDATE_POSITION: `
-                #ifdef GREASED_LINE_CAMERA_FACING
+                #ifdef GREASED_LINE_USE_OFFSETS
                     var grlPositionOffset: vec3f = input.grl_offsets;
+                #else
+                    var grlPositionOffset = vec3f(0.);
+                #endif
+
+                #ifdef GREASED_LINE_CAMERA_FACING
                     positionUpdated += grlPositionOffset;
                 #else
-                    positionUpdated = (positionUpdated + input.grl_offsets) + (input.grl_slopes * input.grl_widths);
+                    positionUpdated = (positionUpdated + grlPositionOffset) + (input.grl_slopes * input.grl_widths);
                 #endif
                 `,
             CUSTOM_VERTEX_MAIN_END: `
@@ -95,7 +103,7 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                         grlNormal.x *= grlFinalPosition.w;
                         grlNormal.y *= grlFinalPosition.w;
 
-                        let pr: f32 = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
+                        let pr = vec4f(uniforms.grl_aspect_resolution_lineWidth.yz, 0.0, 1.0) * uniforms.grl_projection;
                         grlNormal.x /= pr.x;
                         grlNormal.y /= pr.y;
                     #endif
@@ -116,13 +124,19 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
     if (shaderType === "fragment") {
         return {
             CUSTOM_FRAGMENT_DEFINITIONS: `
+                    #ifdef PBR
+                         #define grlFinalColor finalColor
+                    #else
+                         #define grlFinalColor color
+                    #endif
+
                     varying grlCounters: f32;
                     varying grlColorPointer: 32;
 
                     var grl_colors: texture_2d<f32>;
                     var grl_colorsSampler: sampler;
                 `,
-            CUSTOM_FRAGMENT_MAIN_END: `
+            CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
                     let grlColorMode: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.x;
                     let grlVisibility: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.y;
                     let grlColorsWidth: f32 = uniforms.grl_colorMode_visibility_colorsWidth_useColors.z;
@@ -133,27 +147,27 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlDashOffset: f32 = uniforms.grl_dashOptions.z;
                     let grlDashRatio: f32 = uniforms.grl_dashOptions.w;
 
-                    fragmentOutputs.color.a *= step(fragmentInputs.grlCounters, grlVisibility);
-                    if (fragmentOutputs.color.a == 0.0) {
+                    grlFinalColor.a *= step(fragmentInputs.grlCounters, grlVisibility);
+                    if (grlFinalColor.a == 0.0) {
                         discard;
                     }
 
                     if (grlUseDash == 1.0) {
                         let dashPosition = (fragmentInputs.grlCounters + grlDashOffset) % grlDashArray;
-                        fragmentOutputs.color.a *= ceil(dashPosition - (grlDashArray * grlDashRatio));
+                        grlFinalColor.a *= ceil(dashPosition - (grlDashArray * grlDashRatio));
 
-                        if (fragmentOutputs.color.a == 0.0) {
+                        if (grlFinalColor.a == 0.0) {
                             discard;
                         }
                     }
 
                     #ifdef GREASED_LINE_HAS_COLOR
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                            fragmentOutputs.color = vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            grlFinalColor = vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            fragmentOutputs.color += vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            grlFinalColor += vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            fragmentOutputs.color *= vec4f(uniforms.grl_singleColor, fragmentOutputs.color.a);
+                            grlFinalColor *= vec4f(uniforms.grl_singleColor, grlFinalColor.a);
                         }
                     #else
                         if (grlUseColors == 1.) {
@@ -164,11 +178,11 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                                 let grlColor: vec4f = textureSample(grl_colors, grl_colorsSampler, lookup);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                                fragmentOutputs.color = grlColor;
+                                grlFinalColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                                fragmentOutputs.color += grlColor;
+                                grlFinalColor += grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                                fragmentOutputs.color *= grlColor;
+                                grlFinalColor *= grlColor;
                             }
                         }
                     #endif

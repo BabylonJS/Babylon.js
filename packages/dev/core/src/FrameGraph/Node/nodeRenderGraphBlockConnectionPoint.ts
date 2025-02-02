@@ -73,6 +73,9 @@ export class NodeRenderGraphConnectionPoint {
      */
     public value: NodeRenderGraphBlockConnectionPointValueType | undefined;
 
+    /** Indicates that this connection point needs dual validation before being connected to another point */
+    public needDualDirectionValidation: boolean = false;
+
     /**
      * Gets or sets the additional types supported by this connection point
      */
@@ -215,6 +218,15 @@ export class NodeRenderGraphConnectionPoint {
             return this.type;
         }
         return this._type;
+    }
+
+    /**
+     * Creates a block suitable to be used as an input for this input point.
+     * If null is returned, a block based on the point type will be created.
+     * @returns The returned string parameter is the name of the output point of NodeRenderGraphBlock (first parameter of the returned array) that can be connected to the input
+     */
+    public createCustomInputBlock(): Nullable<[NodeRenderGraphBlock, string]> {
+        return null;
     }
 
     /**

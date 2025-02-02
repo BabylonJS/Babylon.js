@@ -1605,7 +1605,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns An object containing the positions and indices of the body's geometry.
      *
      */
-    public getBodyGeometry(body: PhysicsBody) {
+    public getBodyGeometry(body: PhysicsBody): {
+        positions: Float32Array | number[];
+        indices: Uint32Array | number[];
+    } {
         const dataInfo = body._pluginDataInstances?.length > 0 ? body._pluginDataInstances[0] : body._pluginData;
         const shape = this._hknp.HP_Body_GetShape(dataInfo.hpBodyId)[1];
         const geometryRes = this._hknp.HP_Shape_CreateDebugDisplayGeometry(shape);

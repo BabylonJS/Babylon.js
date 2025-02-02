@@ -41,7 +41,8 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this.sourceTexture);
+        pass.addDependencies(this.sourceTexture);
+
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             context.copyTexture(this.sourceTexture);

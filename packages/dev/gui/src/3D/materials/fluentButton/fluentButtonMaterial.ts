@@ -23,6 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
+import { Tools } from "core/Misc/tools";
 
 /** @internal */
 class FluentButtonMaterialDefines extends MaterialDefines {
@@ -45,7 +46,7 @@ export class FluentButtonMaterial extends PushMaterial {
     /**
      * URL pointing to the texture used to define the coloring for the fluent blob effect.
      */
-    public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-button-blob.png";
+    public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/core/MRTK/mrtk-fluent-button-blob.png";
 
     /**
      * Gets or sets the width of the glowing edge, relative to the scale of the button.
@@ -276,8 +277,8 @@ export class FluentButtonMaterial extends PushMaterial {
         this.alphaMode = Constants.ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
-
-        this._blobTexture = new Texture(FluentButtonMaterial.BLOB_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        const blobTextureUrl = Tools.GetAssetUrl(FluentButtonMaterial.BLOB_TEXTURE_URL);
+        this._blobTexture = new Texture(blobTextureUrl, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public override needAlphaBlending(): boolean {

@@ -14,6 +14,10 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldMergePostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldMergePostProcess(name, frameGraph.engine));
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.blurSteps[this.blurSteps.length - 1], Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -26,17 +30,12 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);
             this.blurSteps.forEach((handle, index) => {
-                if (index === this.blurSteps.length - 1) {
-                    context.setTextureSamplingMode(handle, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-                }
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "blurStep" + (this.blurSteps.length - index - 1), handle);
             });
         });
 
-        pass.useTexture(this.circleOfConfusionTexture);
-        for (const handle of this.blurSteps) {
-            pass.useTexture(handle);
-        }
+        pass.addDependencies(this.circleOfConfusionTexture);
+        pass.addDependencies(this.blurSteps);
 
         return pass;
     }

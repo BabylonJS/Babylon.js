@@ -1,7 +1,6 @@
 import type { VertexBuffer, Buffer } from "../Buffers/buffer";
 import type { ThinEngine } from "../Engines/thinEngine";
-import type { IEffectCreationOptions } from "../Materials/effect";
-import { Effect } from "../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../Materials/effect";
 import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
@@ -146,7 +145,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         }
 
         this._updateEffectOptions.defines = defines;
-        this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
+        this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
 
         return new UniformBufferEffectCommonAccessor(this._updateEffect);
     }

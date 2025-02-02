@@ -50,6 +50,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+        });
     }
 
     public override isReady() {
@@ -77,10 +81,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(this.sourceTexture);
+        pass.addDependencies(this.sourceTexture);
+
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             additionalExecute?.(context);
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", this.sourceTexture);
@@ -91,6 +95,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.addDependencies(this.sourceTexture);
 
             passDisabled.setRenderTarget(this.outputTexture);
             passDisabled.setExecuteFunc((context) => {

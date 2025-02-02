@@ -11,6 +11,7 @@ import type { Scene } from "../../scene";
  * if you wish to create your texture pixel by pixel.
  */
 export class RawTexture extends Texture {
+    private _waitingForData: boolean;
     /**
      * Instantiates a new RawTexture.
      * Raw texture can help creating a texture directly from an array of data.
@@ -27,6 +28,7 @@ export class RawTexture extends Texture {
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param waitDataToBeReady If set to true Rawtexture will wait data to be set in order to be flaged as ready.
      */
     constructor(
         data: Nullable<ArrayBufferView>,
@@ -42,7 +44,8 @@ export class RawTexture extends Texture {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags?: number,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        waitDataToBeReady?: boolean
     ) {
         super(null, sceneOrEngine, !generateMipMaps, invertY, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, creationFlags);
 
@@ -61,6 +64,7 @@ export class RawTexture extends Texture {
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._waitingForData = !!waitDataToBeReady && !data;
     }
 
     /**
@@ -69,6 +73,7 @@ export class RawTexture extends Texture {
      */
     public update(data: ArrayBufferView): void {
         this._getEngine()!.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type, this._texture!._useSRGBBuffer);
+        this._waitingForData = false;
     }
 
     /**
@@ -98,6 +103,10 @@ export class RawTexture extends Texture {
         this._texture.incrementReferences();
 
         return rawTexture;
+    }
+
+    public override isReady(): boolean {
+        return super.isReady() && !this._waitingForData;
     }
 
     /**
@@ -210,6 +219,7 @@ export class RawTexture extends Texture {
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param waitDataToBeReady if set to true this will force texture to wait for data to be set before it is considered ready.
      * @returns the RGBA texture
      */
     public static CreateRGBATexture(
@@ -222,9 +232,23 @@ export class RawTexture extends Texture {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags: number = 0,
-        useSRGBBuffer: boolean = false
+        useSRGBBuffer: boolean = false,
+        waitDataToBeReady: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(
+            data,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA,
+            sceneOrEngine,
+            generateMipMaps,
+            invertY,
+            samplingMode,
+            type,
+            creationFlags,
+            useSRGBBuffer,
+            waitDataToBeReady
+        );
     }
 
     /**

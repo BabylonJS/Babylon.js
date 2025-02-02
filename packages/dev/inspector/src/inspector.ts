@@ -582,6 +582,10 @@ export class Inspector {
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
 
+        if (this._EmbedHostWindow && !this._EmbedHostWindow.closed) {
+            this._EmbedHostWindow.close();
+        }
+
         Inspector._OpenedPane = 0;
         this._Cleanup();
 

@@ -4264,7 +4264,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
+            let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
+            if (currentLOD) {
+                currentLOD[1] = -1;
+            } else {
+                currentLOD = [mesh, -1];
+                mesh._internalAbstractMeshDataInfo._currentLOD.set(this.activeCamera, currentLOD);
+            }
             if (mesh.isBlocked) {
                 continue;
             }
@@ -4284,8 +4290,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
-            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
+            currentLOD[0] = meshToRender;
+            currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -5212,10 +5218,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         if (EngineStore._LastCreatedScene === this) {
-            if (this._engine.scenes.length > 0) {
-                EngineStore._LastCreatedScene = this._engine.scenes[this._engine.scenes.length - 1];
-            } else {
-                EngineStore._LastCreatedScene = null;
+            EngineStore._LastCreatedScene = null;
+            let engineIndex = EngineStore.Instances.length - 1;
+            while (engineIndex >= 0) {
+                const engine = EngineStore.Instances[engineIndex];
+                if (engine.scenes.length > 0) {
+                    EngineStore._LastCreatedScene = engine.scenes[this._engine.scenes.length - 1];
+                    break;
+                }
+                engineIndex--;
             }
         }
 
@@ -5564,7 +5575,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param filter a predicate to filter for tags
      * @returns
      */
-    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
+    private _getByTags<T>(list: T[], tagsQuery: string, filter?: (item: T) => boolean): T[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;

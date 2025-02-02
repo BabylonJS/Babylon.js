@@ -95,6 +95,7 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.doNotChangeAspectRatio = ${this.doNotChangeAspectRatio};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.factor = ${this.factor};`);
         codes.push(`${this._codeVariableName}.disableOnCameraMove = ${this.disableOnCameraMove};`);
@@ -104,6 +105,7 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     public override serialize(): any {
         const serializationObject = super.serialize();
+        serializationObject.doNotChangeAspectRatio = this.doNotChangeAspectRatio;
         serializationObject.samples = this.samples;
         serializationObject.factor = this.factor;
         serializationObject.disableOnCameraMove = this.disableOnCameraMove;
@@ -113,6 +115,7 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
+        this.doNotChangeAspectRatio = serializationObject.doNotChangeAspectRatio;
         this.samples = serializationObject.samples;
         this.factor = serializationObject.factor;
         this.disableOnCameraMove = serializationObject.disableOnCameraMove;

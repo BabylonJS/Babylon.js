@@ -218,12 +218,20 @@ export class GraphNode {
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection: node } = options || {};
             if (node === this) {
+                if (this.content.canBeActivated) {
+                    this.content.setIsActive?.(true);
+                    this._stateManager.queueRebuildCommand();
+                }
                 this._visual.classList.add(localStyles["selected"]);
                 if (this._displayManager && this._displayManager.onSelectionChanged) {
                     this._displayManager.onSelectionChanged(this.content, node.content, this._stateManager);
                 }
             } else {
                 if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
+                    if (this.content.canBeActivated && this.content.isActive) {
+                        this.content.setIsActive?.(false);
+                        this._stateManager.queueRebuildCommand();
+                    }
                     this._visual.classList.remove(localStyles["selected"]);
                     if (this._displayManager && this._displayManager.onSelectionChanged) {
                         this._displayManager.onSelectionChanged(this.content, node && (node as GraphNode).content ? (node as GraphNode).content : null, this._stateManager);
@@ -712,8 +720,8 @@ export class GraphNode {
             const classes: string[] = [];
 
             let proto = Object.getPrototypeOf(source);
-            while (proto) {
-                classes.push(proto.constructor.name);
+            while (proto && proto.getClassName) {
+                classes.push(proto.getClassName());
                 proto = Object.getPrototypeOf(proto);
             }
 

@@ -21,6 +21,14 @@ struct preLightingInfo
     #ifdef IRIDESCENCE
         iridescenceIntensity: f32
     #endif
+
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+    areaLightDiffuse: vec3f,
+        #ifdef SPECULARTERM
+            areaLightSpecular: vec3f,
+            areaLightFresnel: vec4f
+        #endif
+    #endif
 };
 
 fn computePointAndSpotPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f, posW: vec3f) -> preLightingInfo {
@@ -78,3 +86,20 @@ fn computeHemisphericPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
 
     return result;
 }
+
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+#include<ltcHelperFunctions>
+
+fn computeAreaPreLightingInfo(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightCenter:vec3f, halfWidth:vec3f,  halfHeight:vec3f, roughness:f32) -> preLightingInfo {
+    var result: preLightingInfo;
+	var data: areaLightData = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc1Sampler, ltc2, ltc2Sampler, viewDirectionW, vNormal, vPosition, lightCenter, halfWidth, halfHeight, roughness);
+
+#ifdef SPECULARTERM
+    result.areaLightFresnel = data.Fresnel;
+    result.areaLightSpecular = data.Specular;
+#endif
+	result.areaLightDiffuse += data.Diffuse;
+    return result;
+}
+
+#endif

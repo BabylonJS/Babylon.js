@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Color4, Scene, FrameGraphTextureHandle, Camera, FrameGraphObjectList, IShadowLight, FrameGraphShadowGeneratorTask } from "core/index";
+import type { Color4, Scene, FrameGraphTextureHandle, Camera, FrameGraphObjectList, IShadowLight, FrameGraphShadowGeneratorTask, FrameGraphObjectRendererTask } from "core/index";
 
 /**
  * Interface used to configure the node render graph editor
@@ -91,6 +91,8 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     BasedOnInput = 0x20000000,
     /** Undefined */
     Undefined = 0x40000000,
+    /** Custom object */
+    Object = 0x80000000,
     /** Bitmask of all types */
     All = 0xffffffff,
 }
@@ -120,4 +122,10 @@ export const enum NodeRenderGraphConnectionPointDirection {
 /**
  * Defines the type of a connection point value
  */
-export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureHandle | Camera | FrameGraphObjectList | IShadowLight | FrameGraphShadowGeneratorTask;
+export type NodeRenderGraphBlockConnectionPointValueType =
+    | FrameGraphTextureHandle
+    | Camera
+    | FrameGraphObjectList
+    | IShadowLight
+    | FrameGraphShadowGeneratorTask
+    | FrameGraphObjectRendererTask;

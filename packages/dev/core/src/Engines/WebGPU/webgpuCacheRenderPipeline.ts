@@ -13,6 +13,7 @@ import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";
+import { Logger } from "core/Misc/logger";
 
 enum StatePosition {
     StencilReadMask = 0,
@@ -63,6 +64,8 @@ const stencilOpToIndex: { [name: number]: number } = {
 
 /** @internal */
 export abstract class WebGPUCacheRenderPipeline {
+    public static LogErrorIfNoVertexBuffer = false;
+
     public static NumCacheHitWithoutHash = 0;
     public static NumCacheHitWithHash = 0;
     public static NumCacheMiss = 0;
@@ -791,6 +794,11 @@ export abstract class WebGPUCacheRenderPipeline {
                 // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                 // So we must bind a dummy buffer when we are not given one for a specific attribute
                 vertexBuffer = this._emptyVertexBuffer;
+                if (WebGPUCacheRenderPipeline.LogErrorIfNoVertexBuffer) {
+                    Logger.Error(
+                        `No vertex buffer is provided for the "${attributes[index]}" attribute. A default empty vertex buffer will be used, but this may generate errors in some browsers.`
+                    );
+                }
             }
 
             const buffer = vertexBuffer.effectiveBuffer?.underlyingResource;

@@ -18,10 +18,17 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
 const _TempFogColor = Color3.Black();
-const _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
+const _TmpMorphInfluencers = {
+    NUM_MORPH_INFLUENCERS: 0,
+    NORMAL: false,
+    TANGENT: false,
+    UV: false,
+    UV2: false,
+};
 
 /**
  * Binds the logarithmic depth information from the scene to the effect for the given defines.
@@ -60,6 +67,65 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
 }
 
 /**
+ * Prepares the list of attributes and defines required for morph targets.
+ * @param morphTargetManager The manager for the morph targets
+ * @param defines The current list of defines
+ * @param attribs The current list of attributes
+ * @param mesh The mesh to prepare the defines and attributes for
+ * @param usePositionMorph Whether the position morph target is used
+ * @param useNormalMorph Whether the normal morph target is used
+ * @param useTangentMorph Whether the tangent morph target is used
+ * @param useUVMorph Whether the UV morph target is used
+ * @param useUV2Morph Whether the UV2 morph target is used
+ * @returns The maxSimultaneousMorphTargets for the effect
+ */
+export function PrepareDefinesAndAttributesForMorphTargets(
+    morphTargetManager: MorphTargetManager,
+    defines: string[],
+    attribs: string[],
+    mesh: AbstractMesh,
+    usePositionMorph: boolean,
+    useNormalMorph: boolean,
+    useTangentMorph: boolean,
+    useUVMorph: boolean,
+    useUV2Morph: boolean
+): number {
+    const numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+    if (numMorphInfluencers <= 0) {
+        return 0;
+    }
+
+    defines.push("#define MORPHTARGETS");
+
+    if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+    if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+    if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+    if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+    if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+
+    if (morphTargetManager.supportsPositions && usePositionMorph) defines.push("#define MORPHTARGETS_POSITION");
+    if (morphTargetManager.supportsNormals && useNormalMorph) defines.push("#define MORPHTARGETS_NORMAL");
+    if (morphTargetManager.supportsTangents && useTangentMorph) defines.push("#define MORPHTARGETS_TANGENT");
+    if (morphTargetManager.supportsUVs && useUVMorph) defines.push("#define MORPHTARGETS_UV");
+    if (morphTargetManager.supportsUV2s && useUV2Morph) defines.push("#define MORPHTARGETS_UV2");
+
+    defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+    if (morphTargetManager.isUsingTextureForTargets) {
+        defines.push("#define MORPHTARGETS_TEXTURE");
+    }
+
+    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = numMorphInfluencers;
+    _TmpMorphInfluencers.NORMAL = useNormalMorph;
+    _TmpMorphInfluencers.TANGENT = useTangentMorph;
+    _TmpMorphInfluencers.UV = useUVMorph;
+    _TmpMorphInfluencers.UV2 = useUV2Morph;
+
+    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, usePositionMorph);
+    return numMorphInfluencers;
+}
+
+/**
  * Prepares the list of attributes required for morph targets according to the effect defines.
  * @param attribs The current list of supported attribs
  * @param mesh The mesh to prepare the morph targets attributes for
@@ -67,7 +133,11 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
  */
 export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
     _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
-    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers);
+    _TmpMorphInfluencers.NORMAL = false;
+    _TmpMorphInfluencers.TANGENT = false;
+    _TmpMorphInfluencers.UV = false;
+    _TmpMorphInfluencers.UV2 = false;
+    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, true);
 }
 
 /**
@@ -75,8 +145,9 @@ export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], m
  * @param attribs The current list of supported attribs
  * @param mesh The mesh to prepare the morph targets attributes for
  * @param defines The current Defines of the effect
+ * @param usePositionMorph Whether the position morph target is used
  */
-export function PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
+export function PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any, usePositionMorph = true): void {
     const influencers = defines["NUM_MORPH_INFLUENCERS"];
 
     if (influencers > 0 && EngineStore.LastCreatedEngine) {
@@ -85,7 +156,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         if (manager?.isUsingTextureForTargets) {
             return;
         }
-        const position = manager && manager.supportsPositions;
+        const position = manager && manager.supportsPositions && usePositionMorph;
         const normal = manager && manager.supportsNormals && defines["NORMAL"];
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
@@ -459,6 +530,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["POINTLIGHT" + index] = false;
             defines["DIRLIGHT" + index] = false;
             defines["SPOTLIGHT" + index] = false;
+            defines["AREALIGHT" + index] = false;
             defines["SHADOW" + index] = false;
             defines["SHADOWCSM" + index] = false;
             defines["SHADOWCSMDEBUG" + index] = false;
@@ -536,6 +608,7 @@ export function PrepareDefinesForLight(
     defines["HEMILIGHT" + lightIndex] = false;
     defines["POINTLIGHT" + lightIndex] = false;
     defines["DIRLIGHT" + lightIndex] = false;
+    defines["AREALIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 
@@ -691,6 +764,13 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
         defines["MORPHTARGETS_POSITION"] = manager.supportsPositions;
+
+        defines["MORPHTARGETTEXTURE_HASUVS"] = manager.hasUVs;
+        defines["MORPHTARGETTEXTURE_HASUV2S"] = manager.hasUV2s;
+        defines["MORPHTARGETTEXTURE_HASTANGENTS"] = manager.hasTangents;
+        defines["MORPHTARGETTEXTURE_HASNORMALS"] = manager.hasNormals;
+        defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = manager.hasPositions;
+
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
         defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
 
@@ -701,6 +781,13 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = false;
         defines["MORPHTARGETS_NORMAL"] = false;
         defines["MORPHTARGETS_POSITION"] = false;
+
+        defines["MORPHTARGETTEXTURE_HASUVS"] = false;
+        defines["MORPHTARGETTEXTURE_HASUV2S"] = false;
+        defines["MORPHTARGETTEXTURE_HASTANGENTS"] = false;
+        defines["MORPHTARGETTEXTURE_HASNORMALS"] = false;
+        defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = false;
+
         defines["MORPHTARGETS"] = false;
         defines["NUM_MORPH_INFLUENCERS"] = 0;
     }
@@ -968,6 +1055,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightDiffuse" + lightIndex,
         "vLightSpecular" + lightIndex,
         "vLightDirection" + lightIndex,
+        "vLightWidth" + lightIndex,
+        "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
         "lightMatrix" + lightIndex,
@@ -1005,7 +1094,7 @@ export function PrepareUniformsAndSamplersForLight(
  */
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
     let uniformsList: string[];
-    let uniformBuffersList: Nullable<string[]> = null;
+    let uniformBuffersList: string[] | undefined;
 
     if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
         const options = <IEffectCreationOptions>uniformsListOrOptions;

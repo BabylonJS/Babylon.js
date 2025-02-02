@@ -6,6 +6,8 @@ import type {
     Scene,
     FrameGraphTask,
     FrameGraph,
+    NodeRenderGraphResourceContainerBlock,
+    FrameGraphTextureHandle,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { GetClass } from "../../Misc/typeStore";
@@ -351,6 +353,24 @@ export class NodeRenderGraphBlock {
         this._buildBlock(state);
 
         if (this._frameGraphTask) {
+            this._frameGraphTask.dependencies = undefined;
+
+            const dependenciesConnectedPoint = this.getInputByName("dependencies")?.connectedPoint;
+            if (dependenciesConnectedPoint) {
+                if (dependenciesConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                    const container = dependenciesConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                    for (let i = 0; i < container.inputs.length; i++) {
+                        const input = container.inputs[i];
+                        if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
+                            this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || new Set();
+                            this._frameGraphTask.dependencies.add(input.connectedPoint.value as FrameGraphTextureHandle);
+                        }
+                    }
+                } else if (NodeRenderGraphConnectionPoint.IsTextureHandle(dependenciesConnectedPoint.value)) {
+                    this._frameGraphTask.dependencies = this._frameGraphTask.dependencies || new Set();
+                    this._frameGraphTask.dependencies.add(dependenciesConnectedPoint.value as FrameGraphTextureHandle);
+                }
+            }
             this._frameGraph.addTask(this._frameGraphTask);
         }
 

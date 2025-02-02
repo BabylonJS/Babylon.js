@@ -2,11 +2,16 @@ uniform mat4 view;
 uniform mat4 viewProjection;
 #ifdef MULTIVIEW
 	mat4 viewProjectionR;
-#endif 
+#endif
 
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;
 uniform vec2 vAlbedoInfos;
+#endif
+
+#ifdef BASEWEIGHT
+uniform mat4 baseWeightMatrix;
+uniform vec2 vBaseWeightInfos;
 #endif
 
 #ifdef AMBIENT
@@ -29,7 +34,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#ifdef REFLECTIVITY 
+#ifdef REFLECTIVITY
 uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif

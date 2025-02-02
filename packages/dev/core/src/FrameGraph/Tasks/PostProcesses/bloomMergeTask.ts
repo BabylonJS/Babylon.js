@@ -24,7 +24,7 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", this.blurTexture);
         });
 
-        pass.useTexture(this.blurTexture);
+        pass.addDependencies(this.blurTexture);
 
         return pass;
     }

@@ -82,3 +82,14 @@ export class RuntimeError extends BaseError {
         BaseError._setPrototypeOf(this, RuntimeError.prototype);
     }
 }
+
+/**
+ * Used for flow control when an operation is aborted, such as with AbortController.
+ */
+export class AbortError extends BaseError {
+    public constructor(message = "Operation aborted") {
+        super(message);
+        this.name = "AbortError";
+        BaseError._setPrototypeOf(this, AbortError.prototype);
+    }
+}

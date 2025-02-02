@@ -1884,6 +1884,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
         const globalDefines = this._getGlobalDefines()!;
 
+        const isOptions = (attributesNamesOrOptions as IEffectCreationOptions).attributes !== undefined;
+
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
 
         if (globalDefines) {
@@ -1902,7 +1904,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
-            uniformsNamesOrEngine,
+            isOptions ? this : uniformsNamesOrEngine,
             samplers,
             this,
             defines,
@@ -2202,6 +2204,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         this._compiledEffects = {};
+
+        this.onReleaseEffectsObservable.notifyObservers(this);
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {

@@ -1,5 +1,0 @@
-src
-config.json
-tsconfig*.*
-.npmignore
-webpack*.*

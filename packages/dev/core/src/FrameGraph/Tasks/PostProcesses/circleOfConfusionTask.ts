@@ -34,6 +34,10 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinCircleOfConfusionPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinCircleOfConfusionPostProcess(name, frameGraph.engine));
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.depthTexture, this.depthSamplingMode);
+        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -41,18 +45,12 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
             throw new Error(`FrameGraphCircleOfConfusionTask "${this.name}": sourceTexture, depthTexture and camera are required`);
         }
 
-        const pass = super.record(
-            skipCreationOfDisabledPasses,
-            (context) => {
-                context.setTextureSamplingMode(this.depthTexture, this.depthSamplingMode);
-            },
-            (context) => {
-                this.postProcess.camera = this.camera;
-                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
-            }
-        );
+        const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
+            this.postProcess.camera = this.camera;
+            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
+        });
 
-        pass.useTexture(this.depthTexture);
+        pass.addDependencies(this.depthTexture);
 
         return pass;
     }

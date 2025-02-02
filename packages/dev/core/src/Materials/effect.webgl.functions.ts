@@ -84,6 +84,7 @@ export async function generatePipelineContext(
                                 defines: defines.length ? defines.join("\n") : null,
                                 shaderProcessingContext: options.extendedProcessingOptions?.processingContext || null,
                                 transformFeedbackVaryings: null,
+                                disableParallelCompilation: options.disableParallelCompilation,
                                 ...options.extendedCreatePipelineOptions,
                             },
                             createPipelineContextInjection,

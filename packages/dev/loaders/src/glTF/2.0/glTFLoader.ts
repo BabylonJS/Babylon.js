@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable } from "core/types";
+import type { IndicesArray, Nullable, TypedArray } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -79,17 +79,10 @@ import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import { deepMerge } from "core/Misc/deepMerger";
+import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
+import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
+
 export { GLTFFileLoader };
-
-interface TypedArrayLike extends ArrayBufferView {
-    readonly length: number;
-    [n: number]: number;
-}
-
-interface TypedArrayConstructor {
-    new (length: number): TypedArrayLike;
-    new (buffer: ArrayBufferLike, byteOffset: number, length?: number): TypedArrayLike;
-}
 
 interface ILoaderProperty extends IProperty {
     _activeLoaderExtensionFunctions: {
@@ -458,6 +451,15 @@ export class GLTFLoader implements IGLTFLoader {
                 const resultPromise = Promise.all(promises).then(() => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
+                    }
+
+                    // Making sure we enable enough lights to have all lights together
+                    for (const material of this._babylonScene.materials) {
+                        const mat = material as any;
+
+                        if (mat.maxSimultaneousLights !== undefined) {
+                            mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights, this._babylonScene.lights.length);
+                        }
                     }
 
                     this._extensionsOnReady();
@@ -1929,7 +1931,7 @@ export class GLTFLoader implements IGLTFLoader {
         if (accessor.sparse) {
             const sparse = accessor.sparse;
             accessor._data = accessor._data.then((data) => {
-                const typedArray = data as TypedArrayLike;
+                const typedArray = data as TypedArray;
                 const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
                 const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
                 return Promise.all([
@@ -1945,7 +1947,7 @@ export class GLTFLoader implements IGLTFLoader {
                     ) as IndicesArray;
 
                     const sparseLength = numComponents * sparse.count;
-                    let values: TypedArrayLike;
+                    let values: TypedArray;
 
                     if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
                         values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
@@ -2185,6 +2187,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
+
         return babylonMaterial;
     }
 
@@ -2620,31 +2623,14 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private static _GetTypedArrayConstructor(context: string, componentType: AccessorComponentType): TypedArrayConstructor {
-        switch (componentType) {
-            case AccessorComponentType.BYTE:
-                return Int8Array;
-            case AccessorComponentType.UNSIGNED_BYTE:
-                return Uint8Array;
-            case AccessorComponentType.SHORT:
-                return Int16Array;
-            case AccessorComponentType.UNSIGNED_SHORT:
-                return Uint16Array;
-            case AccessorComponentType.UNSIGNED_INT:
-                return Uint32Array;
-            case AccessorComponentType.FLOAT:
-                return Float32Array;
-            default:
-                throw new Error(`${context}: Invalid component type ${componentType}`);
+        try {
+            return GetTypedArrayConstructor(componentType);
+        } catch (e) {
+            throw new Error(`${context}: ${e.message}`);
         }
     }
 
-    private static _GetTypedArray(
-        context: string,
-        componentType: AccessorComponentType,
-        bufferView: ArrayBufferView,
-        byteOffset: number | undefined,
-        length: number
-    ): TypedArrayLike {
+    private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArray {
         const buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
 

@@ -11,6 +11,10 @@ var icdfSamplerSampler: sampler;
 var icdfSampler: texture_2d<f32>;
 var voxelGridSamplerSampler: sampler;
 var voxelGridSampler: texture_3d<f32>;
+#ifdef COLOR_SHADOWS
+var iblSamplerSampler: sampler;
+var iblSampler: texture_cube<f32>;
+#endif
 
 // shadow parameters: var nbDirs: i32, var frameId: i32, unused, var envRot: f32
 uniform shadowParameters: vec4f;
@@ -418,45 +422,51 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   VP /= VP.w;
 
   N = normalize(N);
-  var noise
-      : vec3f =
-            textureLoad(blueNoiseSampler, currentPixel & vec2i(0xFF), 0).xyz;
+  var noise : vec3f = textureLoad(blueNoiseSampler, currentPixel & vec2i(0xFF), 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   var heat: f32 = 0.0f;
 #endif
-  var shadowAccum: f32 = 0.0;
-  var specShadowAccum: f32 = 0.0;
-  var sampleWeight : f32 = 0;
+  // We set these to a small value to avoid division by zero when no
+  // samples hit the hemisphere.
+  var shadowAccum: f32 = 0.001;
+  var specShadowAccum: f32 = 0.001;
+  var sampleWeight : f32 = 0.001;
+  #ifdef COLOR_SHADOWS
+  var totalLight: vec3f = vec3f(0.001);
+  var shadowedLight: vec3f = vec3f(0.0);
+  #endif
   for (var i: u32 = 0; i < nbDirs; i++) {
     var dirId: u32 = nbDirs * GlobalIndex + i;
     var L: vec4f;
+    var T: vec2f;
     {
       var r: vec2f = plasticSequence(frameId * nbDirs + i);
       r = fract(r +  vec2f(2.0) * abs(noise.xy -  vec2f(0.5)));
-      var T: vec2f;
       T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2f(r.x, 0.0), 0.0).x;
       T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2f(T.x, r.y), 0.0).y;
-      T.x -= normalizedRotation;
-      L =  vec4f(uv_to_normal(T), 0);
+      L =  vec4f(uv_to_normal(vec2f(T.x - normalizedRotation, T.y)), 0);
 #ifndef RIGHT_HANDED
       L.z *= -1.0;
 #endif
     }
-    var edge_tint_const = -0.001;
+    #ifdef COLOR_SHADOWS
+      var lightDir: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
+      var ibl: vec3f = textureSampleLevel(iblSampler, iblSamplerSampler, lightDir, 0.0).xyz;
+      var pdf: f32 = textureSampleLevel(icdfSampler, icdfSamplerSampler, T, 0.0).z;
+    #endif
     var cosNL: f32 = dot(N, L.xyz);
-    var opacity: f32 = select(0.0, 1.0, cosNL < edge_tint_const);
+    var opacity: f32 = 0.0;
 
-    if (cosNL > edge_tint_const) {
+    if (cosNL > 0.0) {
       // voxel
       var VP2: vec4f = VP;
       VP2.y *= -1.0;
       // rte world-space normalization
       var unormWP : vec4f = uniforms.invViewMtx * VP2;
       var WP: vec3f = (uniforms.wsNormalizationMtx * unormWP).xyz;
-      var vxNoise: vec2f =
-           vec2f(uint2float(hash(dirId * 2)), uint2float(hash(dirId * 2 + 1)));
+      var vxNoise: vec2f = vec2f(uint2float(hash(dirId * 2)), uint2float(hash(dirId * 2 + 1)));
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
       VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
       opacity = max(opacity,
@@ -482,18 +492,33 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                        screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
-      shadowAccum += min(1.0 - opacity, cosNL);
-      sampleWeight += cosNL;
-      // spec shadow
-      var VR : vec3f = abs((uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz);
-      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
+      #ifdef COLOR_SHADOWS
+        // total IBL shadowed light from samples
+        var light: vec3f = select(vec3f(0.0), vec3f(cosNL) / vec3f(pdf) * ibl, pdf > 1e-6);
+        shadowedLight += light*opacity;
+        totalLight += light;
+      #else
+        var rcos: f32 = 1.0 - cosNL;
+        shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
+        sampleWeight += 1.0;
+        // spec shadow
+        var VR : vec3f = abs((uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz);
+        specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
+      #endif
     }
     noise.z = fract(noise.z + GOLD);
   }
-#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  fragmentOutputs.color =
-      vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, heat / sampleWeight, 1.0);
-#else
-  fragmentOutputs.color = vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, 0.0, 1.0);
+  #ifdef COLOR_SHADOWS
+    // total IBL colour from samples
+    var shadow: vec3f = (totalLight - shadowedLight) / totalLight;
+    var maxShadow: f32 = max(max(shadow.x, max(shadow.y, shadow.z)), 1.0);
+    fragmentOutputs.color = vec4f(shadow/maxShadow, 1.0);
+  #else
+    #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+      fragmentOutputs.color =
+          vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, heat / sampleWeight, 1.0);
+    #else
+      fragmentOutputs.color = vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, 0.0, 1.0);
+    #endif
 #endif
 }

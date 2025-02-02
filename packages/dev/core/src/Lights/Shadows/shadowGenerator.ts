@@ -31,7 +31,7 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
-    PrepareAttributesForMorphTargetsInfluencers,
+    PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -72,6 +72,13 @@ export interface ICustomShaderOptions {
 export interface IShadowGenerator {
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     id: string;
+
+    /**
+     * Specifies if the `ShadowGenerator` should be serialized, `true` to skip serialization.
+     * Note a `ShadowGenerator` will not be serialized if its light has `doNotSerialize=true`
+     */
+    doNotSerialize?: boolean;
+
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
@@ -266,6 +273,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
      */
     public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
+
+    /**
+     * Specifies if the `ShadowGenerator` should be serialized, `true` to skip serialization.
+     * Note a `ShadowGenerator` will not be serialized if its light has `doNotSerialize=true`
+     */
+    public doNotSerialize = false;
 
     protected _bias = 0.00005;
     /**
@@ -991,11 +1004,40 @@ export class ShadowGenerator implements IShadowGenerator {
             depthOnlySubMeshes: SmartArray<SubMesh>
         ) => this._renderForShadowMap(opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes);
 
-        // Force the mesh is ready function to true as we are double checking it
+        // When preWarm is false, forces the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
-        this._shadowMap.customIsReadyFunction = () => {
-            return true;
+        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean | undefined): boolean => {
+            if (!preWarm || !mesh.subMeshes) {
+                return true;
+            }
+
+            let isReady = true;
+            for (const subMesh of mesh.subMeshes) {
+                const renderingMesh = subMesh.getRenderingMesh();
+                const scene = this._scene;
+                const engine = scene.getEngine();
+                const material = subMesh.getMaterial();
+
+                if (!material || subMesh.verticesCount === 0 || (this.customAllowRendering && !this.customAllowRendering(subMesh))) {
+                    continue;
+                }
+
+                const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+                if (batch.mustReturn) {
+                    continue;
+                }
+
+                const hardwareInstancedRendering =
+                    engine.getCaps().instancedArrays &&
+                    ((batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined) || renderingMesh.hasThinInstances);
+
+                const isTransparent = material.needAlphaBlendingForMesh(renderingMesh);
+
+                isReady = this.isReady(subMesh, hardwareInstancedRendering, isTransparent) && isReady;
+            }
+
+            return isReady;
         };
 
         const engine = this._scene.getEngine();
@@ -1329,7 +1371,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 // Morph targets
                 BindMorphTargetParameters(renderingMesh, effect);
-
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
@@ -1552,10 +1593,15 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const mesh = subMesh.getMesh();
 
+            let useNormal = false;
+            let uv1 = false;
+            let uv2 = false;
+
             // Normal bias.
             if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 attribs.push(VertexBuffer.NormalKind);
                 defines.push("#define NORMAL");
+                useNormal = true;
                 if (mesh.nonUniformScaling) {
                     defines.push("#define NONUNIFORMSCALING");
                 }
@@ -1584,11 +1630,13 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
+                        uv1 = true;
                     }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                         if (this._opacityTexture.coordinatesIndex === 1) {
                             attribs.push(VertexBuffer.UV2Kind);
                             defines.push("#define UV2");
+                            uv2 = true;
                         }
                     }
                 }
@@ -1619,20 +1667,19 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Morph targets
-            const manager = (<Mesh>mesh).morphTargetManager;
-            let morphInfluencers = 0;
-            if (manager) {
-                morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-                if (morphInfluencers > 0) {
-                    defines.push("#define MORPHTARGETS");
-                    defines.push("#define MORPHTARGETS_POSITION");
-                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                    if (manager.isUsingTextureForTargets) {
-                        defines.push("#define MORPHTARGETS_TEXTURE");
-                    }
-                    PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
-                }
-            }
+            const numMorphInfluencers = mesh.morphTargetManager
+                ? PrepareDefinesAndAttributesForMorphTargets(
+                      mesh.morphTargetManager,
+                      defines,
+                      attribs,
+                      mesh,
+                      true, // usePositionMorph
+                      useNormal, // useNormalMorph
+                      false, // useTangentMorph
+                      uv1, // useUVMorph
+                      uv2 // useUV2Morph
+                  )
+                : 0;
 
             // ClipPlanes
             prepareStringDefinesForClipPlanes(material, this._scene, defines);
@@ -1737,7 +1784,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         fallbacks: fallbacks,
                         onCompiled: null,
                         onError: null,
-                        indexParameters: { maxSimultaneousMorphTargets: morphInfluencers },
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
                     },
                     engine

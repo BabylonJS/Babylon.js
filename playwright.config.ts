@@ -68,7 +68,7 @@ export default defineConfig({
         {
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
-            use: getUseDefinition("WebGPU"),
+            use: getUseDefinition("WebGPU", "Chrome", false, true),
         },
         {
             name: "interaction",
@@ -95,12 +95,17 @@ export default defineConfig({
             testMatch: "**/*.tools.test.ts",
             use: getUseDefinition("Graph Tools"),
         },
+        {
+            name: "viewer",
+            testMatch: "packages/tools/viewer/test/viewer.test.ts",
+            use: getUseDefinition("Viewer"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
 });
 
-function getUseDefinition(title: string, browser = browserType, noBrowserStack = false) {
+function getUseDefinition(title: string, browser = browserType, noBrowserStack = false, forceChromeInsteadOfChromium = forceChrome) {
     const args = browser === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browser === "Firefox" ? ["-wait-for-browser"] : [];
     args.push(...customFlags);
     if (noBrowserStack) {
@@ -112,7 +117,7 @@ function getUseDefinition(title: string, browser = browserType, noBrowserStack =
             },
         };
     }
-    return forceChrome
+    return forceChromeInsteadOfChromium && browserType !== "BrowserStack"
         ? {
               // use real chrome (not chromium) for webgpu tests
               channel: "chrome",

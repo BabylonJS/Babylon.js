@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "OpenPBR Base Weight",
+            "playgroundId": "#DT1XPP#4",
+            "referenceImage": "openpbr_base_weight.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
@@ -577,6 +582,16 @@
             "referenceImage": "highlights.png"
         },
         {
+            "title": "Area Lights - Standard Material",
+            "playgroundId": "#T7FXR8#11",
+            "referenceImage": "areaLightsStandardMaterial.png"
+        },
+        {
+            "title": "Area Lights - PBR",
+            "playgroundId": "#T7FXR8#12",
+            "referenceImage": "areaLightsPBRMaterial.png"
+        },
+        {
             "title": "Lines",
             "scriptToRun": "/Demos/Lines/lines.js",
             "functionToCall": "CreateLinesTestScene",
@@ -681,6 +696,11 @@
             "title": "Draco Decoder",
             "playgroundId": "#22MFU2#82",
             "referenceImage": "draco.png"
+        },
+        {
+            "title": "Draco Decoder/Encoder roundtrip",
+            "playgroundId": "#JNW207#4",
+            "referenceImage": "dracoRoundtrip.png"
         },
         {
             "title": "GLTF Normals",
@@ -933,6 +953,11 @@
             "playgroundId": "#T087A8#29",
             "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GLTF Serializer KHR draco mesh compression",
+            "playgroundId": "#F8BF8N#3",
+            "referenceImage": "glTFSerializerKhrDracoMeshCompression.png"
         },
         {
             "title": "GLTF Serializer KHR materials clearcoat",
@@ -1211,7 +1236,8 @@
         {
             "title": "GlowLayer",
             "playgroundId": "#LRFB2D#262",
-            "referenceImage": "GlowLayer.png"
+            "referenceImage": "GlowLayer.png",
+            "errorRatio": 2.5
         },
         {
             "title": "Local cubemaps",
@@ -1303,6 +1329,20 @@
             "playgroundId": "#FEEK7G#1087",
             "renderCount": 5,
             "referenceImage": "realtimeFilteringIrradianceCDF.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Prefiltering Irradiance on load",
+            "playgroundId": "#FEEK7G#1111",
+            "renderCount": 5,
+            "referenceImage": "prefilteringIrradiance.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Prefiltering Irradiance on load with CDF",
+            "playgroundId": "#FEEK7G#1110",
+            "renderCount": 5,
+            "referenceImage": "prefilteringIrradianceCDF.png",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2101,11 +2141,6 @@
             "playgroundId": "#NRR7F4#0"
         },
         {
-            "title": "neon-pipe-with-glow-layer",
-            "renderCount": 5,
-            "playgroundId": "#X229PI#0"
-        },
-        {
             "title": "pillars-sphere-and-torus-with-PCSS-shadows",
             "playgroundId": "#WL4Q8J#0",
             "excludedEngines": ["webgl1"]
@@ -2379,6 +2414,71 @@
             "title": "UV2 Morphing",
             "playgroundId": "#N5DLM7#1",
             "referenceImage": "UV2-Morphing.png"
+        },
+        {
+            "title": "FrameGraph nrge shadows",
+            "playgroundId": "#JWKDME#13"
+        },
+        {
+            "title": "FrameGraph nrge csm shadows",
+            "playgroundId": "#JWKDME#12"
+        },
+        {
+            "title": "FrameGraph nrge custom rendering",
+            "playgroundId": "#1QCA2M"
+        },
+        {
+            "title": "FrameGraph nrge depth of field",
+            "playgroundId": "#GAGVQO#1"
+        },
+        {
+            "title": "FrameGraph nrge glow layer",
+            "playgroundId": "#IG8NRC#11"
+        },
+        {
+            "title": "FrameGraph nrge highlight layer",
+            "playgroundId": "#QZYNMK"
+        },
+        {
+            "title": "FrameGraph nrg gui bloom",
+            "playgroundId": "#3LB017"
+        },
+        {
+            "title": "FrameGraph glow layer",
+            "playgroundId": "#9YU4C5#1",
+            "referenceImage": "FrameGraph-nrg-glow-layer.png",
+            "errorRatio": 0.1
+        },
+        {
+            "title": "FrameGraph highlight layer",
+            "playgroundId": "#PV8OLY"
+        },
+        {
+            "title": "FrameGraph custom rendering",
+            "playgroundId": "#RM56RY#3"
+        },
+        {
+            "title": "FrameGraph gui bloom",
+            "playgroundId": "#RM56RY#2"
+        },
+        {
+            "title": "IBL radiance roughness",
+            "playgroundId": "#RNO672#7"
+        },
+        {
+            "title": "Synchronous Effect",
+            "playgroundId": "#D9XXL3#1",
+            "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
+            "title": "Show Loading Screen",
+            "playgroundId": "#EQP888#7",
+            "referenceImage": "Show-Loading-Screen.png"
+        },
+        {
+            "title": "Hide Loading Screen",
+            "playgroundId": "#EQP888#8",
+            "referenceImage": "Hide-Loading-Screen.png"
         }
     ]
 }
