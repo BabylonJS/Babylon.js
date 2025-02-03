@@ -21,10 +21,12 @@ interface IPreviewAreaComponentProps {
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
     private _onIsLoadingChangedObserver: Nullable<Observer<boolean>>;
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
+    private _consoleRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
         this.state = { isLoading: true };
+        this._consoleRef = React.createRef();
 
         this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({ isLoading: state }));
 
@@ -73,6 +75,34 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    async processPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+        if (!e.ctrlKey || !this.props.globalState.pickingTexture) {
+            this._consoleRef.current?.classList.add("hidden");
+            return;
+        }
+
+        const data = (await this.props.globalState.pickingTexture.readPixels()!) as Float32Array;
+        const size = this.props.globalState.pickingTexture.getSize();
+        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+
+        const x = (((e.clientX - rect.left) / rect.width) * size.width) | 0;
+        const y = (size.height - 1 - ((e.clientY - rect.top) / rect.height) * size.height) | 0;
+
+        if ((x > 0 && y > 0 && x < size.width && y < size.height, rect.top)) {
+            const pixelLocation = (y * size.width + x) * 4;
+
+            this._consoleRef.current!.innerText = `R:${data[pixelLocation].toFixed(2)}, G:${data[pixelLocation + 1].toFixed(2)}, B:${data[pixelLocation + 2].toFixed(2)}, A:${data[pixelLocation + 3].toFixed(2)}`;
+            this._consoleRef.current!.classList.remove("hidden");
+        }
+
+        e.preventDefault();
+    }
+
+    onKeyUp(e: React.KeyboardEvent<HTMLCanvasElement>) {
+        this._consoleRef.current?.classList.add("hidden");
+        e.preventDefault();
+    }
+
     override render() {
         const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
@@ -85,8 +115,15 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         return (
             <>
                 <div id="preview">
-                    <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
+                    <canvas
+                        onPointerOver={this._onPointerOverCanvas}
+                        onPointerOut={this._onPointerOutCanvas}
+                        id="preview-canvas"
+                        onKeyUp={(evt) => this.onKeyUp(evt)}
+                        onPointerMove={(evt) => this.processPointerMove(evt)}
+                    />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
+                    <div id="preview-color-picker" className="hidden" ref={this._consoleRef} />
                 </div>
                 {this.props.globalState.mode === NodeMaterialModes.Particle && (
                     <div id="preview-config-bar" className="extended">

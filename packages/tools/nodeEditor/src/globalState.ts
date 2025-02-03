@@ -66,6 +66,7 @@ export class GlobalState {
     filesInput: FilesInput;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
     previewTexture: Nullable<RenderTargetTexture> = null;
+    pickingTexture: Nullable<RenderTargetTexture> = null;
     onPreviewSceneAfterRenderObservable = new Observable<void>();
     onPreviewUpdatedObservable = new Observable<NodeMaterial>();
     debugBlocksToRefresh: NodeMaterialDebugBlock[] = [];
