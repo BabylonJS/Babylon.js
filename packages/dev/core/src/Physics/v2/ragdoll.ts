@@ -252,23 +252,6 @@ export class Ragdoll {
 
             this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, constraint);
             constraint.isEnabled = false;
-
-            const min = this._boxConfigs[i].min ?? -Math.PI;
-            const max = this._boxConfigs[i].max ?? -Math.PI;
-            if (min > -Math.PI && max > Math.PI) {
-                if (constraintType == PhysicsConstraintType.HINGE) {
-                    plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, max);
-                } else if (constraintType == PhysicsConstraintType.BALL_AND_SOCKET) {
-                    plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, max);
-                    plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_Y, PhysicsConstraintAxisLimitMode.LIMITED);
-                    plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, min);
-                    plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_Y, max);
-                }
-            }
             this._constraints.push(constraint);
         }
     }
