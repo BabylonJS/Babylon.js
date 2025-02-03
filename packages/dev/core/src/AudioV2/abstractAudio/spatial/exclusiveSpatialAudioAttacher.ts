@@ -1,16 +1,16 @@
+import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
-import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
 import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "./abstractSpatialAudioAttacher";
 import { _SpatialAudioAttacher } from "./spatialAudioAttacher";
 import { _CreateSpatialAudioMeshAttacherAsync } from "./spatialAudioMeshAttacher";
 
 /**
- * Attaches an audio listener or source to a specific entity, ensuring that only one entity has the audio listener or
- * source attached at a time.
+ * Provides a common interface for attaching an audio listener or source to a specific entity, ensuring that only one
+ * entity has the audio listener or source attached at a time.
  */
 export class _ExclusiveSpatialAudioAttacher {
-    private _attachedEntity: Nullable<AbstractMesh | Scene | TransformNode> = null;
+    private _attachedEntity: Nullable<AbstractMesh | Camera | TransformNode> = null;
     private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
     private _createAttacherPromise: Nullable<Promise<_AbstractSpatialAudioAttacher>> = null;
     private _spatialAudioNode: ISpatialAudioNode;
@@ -21,6 +21,22 @@ export class _ExclusiveSpatialAudioAttacher {
      */
     public constructor(spatialAudioNode: ISpatialAudioNode) {
         this._spatialAudioNode = spatialAudioNode;
+    }
+
+    /**
+     * The scene that the audio listener or source is attached to, or null if the audio listener or source is not
+     * attached to a scene.
+     */
+    public get attachedCamera(): Nullable<Camera> {
+        return this._attacher?.getClassName() === _SpatialAudioAttacher.CAMERA ? (this._attachedEntity as Camera) : null;
+    }
+
+    public set attachedCamera(value: Nullable<Camera>) {
+        if (this.attachedCamera === value) {
+            return;
+        }
+
+        this._resetAttachedEntity(value, _SpatialAudioAttacher.CAMERA);
     }
 
     /**
@@ -37,22 +53,6 @@ export class _ExclusiveSpatialAudioAttacher {
         }
 
         this._resetAttachedEntity(value, _SpatialAudioAttacher.MESH);
-    }
-
-    /**
-     * The scene that the audio listener or source is attached to, or null if the audio listener or source is not
-     * attached to a scene.
-     */
-    public get attachedScene(): Nullable<Scene> {
-        return this._attacher?.getClassName() === _SpatialAudioAttacher.SCENE ? (this._attachedEntity as Scene) : null;
-    }
-
-    public set attachedScene(value: Nullable<Scene>) {
-        if (this.attachedScene === value) {
-            return;
-        }
-
-        this._resetAttachedEntity(value, _SpatialAudioAttacher.SCENE);
     }
 
     /**
@@ -86,17 +86,17 @@ export class _ExclusiveSpatialAudioAttacher {
 
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
         switch (attacherClassName) {
+            case _SpatialAudioAttacher.CAMERA:
+                return null;
             case _SpatialAudioAttacher.MESH:
                 return this.attachedMesh ? _CreateSpatialAudioMeshAttacherAsync(this.attachedMesh, this._spatialAudioNode) : null;
-            case _SpatialAudioAttacher.SCENE:
-                return null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
                 return null;
         }
         return null;
     }
 
-    private _resetAttachedEntity(entity: Nullable<AbstractMesh | Scene | TransformNode>, attacherClassName: string) {
+    private _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string) {
         this._clearAttacher();
 
         this._attachedEntity = entity;

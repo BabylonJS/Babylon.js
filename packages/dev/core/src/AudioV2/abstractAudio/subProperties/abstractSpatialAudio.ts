@@ -9,6 +9,7 @@ export const _SpatialAudioDefaults = {
     CONE_OUTER_VOLUME: 0,
     DISTANCE_MODEL: "inverse" as "linear" | "inverse" | "exponential",
     MAX_DISTANCE: 10000,
+    MIN_UPDATE_TIME: 0,
     PANNING_MODEL: "equalpower" as "equalpower" | "HRTF",
     POSITION: Vector3.Zero(),
     REFERENCE_DISTANCE: 1,
@@ -183,7 +184,7 @@ export abstract class AbstractSpatialAudio {
      * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
      * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */
-    public abstract minUpdateTime: number;
+    public minUpdateTime: number = 0;
 
     /**
      * The spatial panning model. Defaults to "equalpower".

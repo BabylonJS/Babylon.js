@@ -25,7 +25,15 @@ export abstract class _AbstractSpatialAudioAttacher {
     public spatialAudioNode: ISpatialAudioNode;
 
     /** @internal */
-    public set scene(scene: Nullable<Scene>) {
+    public dispose(): void {
+        this._detachScene();
+        this._scene = null;
+    }
+
+    /** @internal */
+    public abstract getClassName(): string;
+
+    protected _setScene(scene: Nullable<Scene>) {
         if (this._scene === scene) {
             return;
         }
@@ -34,15 +42,6 @@ export abstract class _AbstractSpatialAudioAttacher {
         this._scene = scene;
         this._attachScene();
     }
-
-    /** @internal */
-    public dispose(): void {
-        this._detachScene();
-        this._scene = null;
-    }
-
-    /** @internal */
-    public abstract getClassName(): string;
 
     private _attachScene(): void {
         if (this._scene) {
@@ -65,6 +64,7 @@ export abstract class _AbstractSpatialAudioAttacher {
         if (this._lastUpdateTime && now - this._lastUpdateTime < this.spatialAudioNode.minUpdateTime) {
             return;
         }
+        this._lastUpdateTime = now;
 
         this.spatialAudioNode.position = this._attachedPosition;
         this.spatialAudioNode.rotationQuaternion = this._attachedRotationQuaternion;

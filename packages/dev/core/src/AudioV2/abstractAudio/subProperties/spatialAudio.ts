@@ -1,7 +1,6 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
-import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
@@ -9,36 +8,35 @@ import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAu
 
 /** @internal */
 export class _SpatialAudio extends AbstractSpatialAudio {
-    private _attacher: _ExclusiveSpatialAudioAttacher;
     private _subGraph: _AbstractAudioSubGraph;
-
-    /** @internal */
-    public minUpdateTime = 0;
 
     /** @internal */
     public constructor(subGraph: _AbstractAudioSubGraph) {
         super();
 
-        this._attacher = new _ExclusiveSpatialAudioAttacher(this);
         this._subGraph = subGraph;
     }
 
     /** @internal */
     public get attachedMesh(): Nullable<AbstractMesh> {
-        return this._attacher.attachedMesh;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.attachedMesh ?? null;
     }
 
     public set attachedMesh(value: Nullable<AbstractMesh>) {
-        this._attacher.attachedMesh = value;
+        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL, (node) => {
+            node.attachedMesh = value;
+        });
     }
 
     /** @internal */
     public get attachedTransformNode(): Nullable<TransformNode> {
-        return this._attacher.attachedTransformNode;
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.attachedTransformNode ?? null;
     }
 
     public set attachedTransformNode(value: Nullable<TransformNode>) {
-        this._attacher.attachedTransformNode = value;
+        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL, (node) => {
+            node.attachedTransformNode = value;
+        });
     }
 
     /** @internal */

@@ -1,5 +1,5 @@
 export const _SpatialAudioAttacher = {
+    CAMERA: "Camera",
     MESH: "Mesh",
-    SCENE: "Scene",
     TRANSFORM_NODE: "TransformNode",
 };

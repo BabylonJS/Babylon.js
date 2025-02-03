@@ -53,10 +53,10 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     }
 
     private _attachTransformNode(): void {
-        this.scene = this._transformNode?.getScene() ?? null;
+        this._setScene(this._transformNode?.getScene() ?? null);
     }
 
     private _detachTransformNode(): void {
-        this.scene = null;
+        this._setScene(null);
     }
 }

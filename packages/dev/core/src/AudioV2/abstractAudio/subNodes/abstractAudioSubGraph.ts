@@ -10,7 +10,7 @@ import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
  * audio processing tasks common to multiple audio node classes.
  *
  * A key feature of audio sub graphs is their audio sub nodes are created asynchronously on demand so the minimum set
- * of sub nodes are used at all times to save memory and CPU resources. The tradeoff is there a small delay when first
+ * of sub nodes are used at all times to save memory and CPU resources. The tradeoff is a small delay when first
  * setting a property backed by a sub node. This delay is avoided by using the appropriate options to initialize the
  * sub node on creation, e.g. `spatialEnabled` and `stereoEnabled`, or by setting any creation option backed by the
  * sub node, e.g. `spatialPosition` and `stereoPan`.

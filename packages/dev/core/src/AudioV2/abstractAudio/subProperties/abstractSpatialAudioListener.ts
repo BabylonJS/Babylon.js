@@ -1,7 +1,7 @@
+import type { Camera } from "../../../Cameras";
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
 
 export const _SpatialAudioListenerDefaults = {
@@ -15,13 +15,13 @@ export const _SpatialAudioListenerDefaults = {
  */
 export interface ISpatialAudioListenerOptions {
     /**
+     * The camera the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    listenerAttachedCamera: Camera;
+    /**
      * The mesh the listener will use to update its position and rotation. Defaults to `null`.
      */
     listenerAttachedMesh: AbstractMesh;
-    /**
-     * The scene the listener will use to update its position and rotation, using the scene's active camera. Defaults to `null`.
-     */
-    listenerAttachedScene: Scene;
     /**
      * The transform node the listener will use to update its position and rotation. Defaults to `null`.
      */
@@ -56,8 +56,8 @@ export interface ISpatialAudioListenerOptions {
 export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioListenerOptions>): boolean {
     return (
         options.listenerEnabled ||
+        options.listenerAttachedCamera !== undefined ||
         options.listenerAttachedMesh !== undefined ||
-        options.listenerAttachedScene !== undefined ||
         options.listenerAttachedTransformNode !== undefined ||
         options.listenerMinUpdateTime !== undefined ||
         options.listenerPosition !== undefined ||
@@ -73,14 +73,14 @@ export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioLi
  */
 export abstract class AbstractSpatialAudioListener {
     /**
+     * The camera the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedCamera: Nullable<Camera>;
+
+    /**
      * The mesh the listener will use to update its position and rotation. Defaults to `null`.
      */
     public abstract attachedMesh: Nullable<AbstractMesh>;
-
-    /**
-     * The scene the listener will use to update its position and rotation, using the scene's active camera. Defaults to `null`.
-     */
-    public abstract attachedScene: Nullable<Scene>;
 
     /**
      * The transform node the listener will use to update its position and rotation. Defaults to `null`.
@@ -91,7 +91,7 @@ export abstract class AbstractSpatialAudioListener {
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
      * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */
-    public abstract minUpdateTime: number;
+    public minUpdateTime: number = 0;
 
     /**
      * The listener position. Defaults to (0, 0, 0).
