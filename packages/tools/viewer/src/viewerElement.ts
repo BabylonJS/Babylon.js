@@ -751,7 +751,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     public hotSpots: Record<string, HotSpot> = {};
 
-    private get _hasHotSpots(): boolean {
+    protected get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
     }
 
@@ -768,7 +768,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return this._animations;
     }
 
-    private get _hasAnimations(): boolean {
+    protected get _hasAnimations(): boolean {
         return this._animations.length > 0;
     }
 
@@ -889,12 +889,25 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
+        return html`
+            <div class="full-size">
+                <div id="canvasContainer" class="full-size"></div>
+                ${this._renderOverlay()}
+            </div>
+        `;
+    }
+
+    /**
+     * Renders the progress bar.
+     * @returns The template result for the progress bar.
+     */
+    protected _renderProgressBar(): TemplateResult {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
         const isIndeterminate = this.loadingProgress === true;
 
-        const progressBar = html`
+        return html`
             <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
                 <div
                     class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
@@ -902,8 +915,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 ></div>
             </div>
         `;
+    }
 
-        // Setup the list of toolbar controls.
+    /**
+     * Renders the toolbar.
+     * @returns The template result for the toolbar.
+     */
+    protected _renderToolbar(): TemplateResult {
         let toolbarControls: TemplateResult[] = [];
         if (this._viewerDetails?.model != null) {
             // If the model has animations, add animation controls.
@@ -994,20 +1012,24 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             }, new Array<TemplateResult>());
         }
 
+        if (toolbarControls.length > 0) {
+            return html` <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>`;
+        } else {
+            return html``;
+        }
+    }
+
+    /**
+     * Renders UI elements that overlay the viewer.
+     * Override this method to provide additional rendering for the component.
+     * @returns TemplateResult The rendered template result.
+     */
+    protected _renderOverlay(): TemplateResult {
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
-            <div class="full-size">
-                <div id="canvasContainer" class="full-size"></div>
-                <slot class="full-size children-slot"></slot>
-                <slot name="progress-bar"> ${progressBar}</slot>
-                ${toolbarControls.length === 0
-                    ? ""
-                    : html`
-                          <slot name="tool-bar">
-                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
-                          </slot>
-                      `}
-            </div>
+            <slot class="full-size children-slot"></slot>
+            <slot name="progress-bar">${this._renderProgressBar()}</slot>
+            <slot name="tool-bar">${this._renderToolbar()}</slot>
         `;
     }
 
@@ -1025,17 +1047,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this.dispatchEvent(event(type));
     }
 
-    private _onSelectedAnimationChanged(event: Event) {
+    protected _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
     }
 
-    private _onAnimationSpeedChanged(event: Event) {
+    protected _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.animationSpeed = Number(selectElement.value);
     }
 
-    private _onAnimationTimelineChanged(event: Event) {
+    protected _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
@@ -1045,7 +1067,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onAnimationTimelinePointerDown(event: Event) {
+    protected _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
@@ -1053,12 +1075,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onMaterialVariantChanged(event: Event) {
+    protected _onMaterialVariantChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedMaterialVariant = selectElement.value;
     }
 
-    private _onHotSpotsChanged(event: Event) {
+    protected _onHotSpotsChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         const hotSpotName = selectElement.value;
         // We don't actually want a selected value, this is just a one time trigger.
