@@ -4,7 +4,6 @@ import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialO
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
 import type { Nullable } from "core/types";
-import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
@@ -22,6 +21,7 @@ import { DumpTools } from "core/Misc/dumpTools";
 import type { Material } from "core/Materials/material";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { MaterialConversionHelper } from "core/Helpers/materialConversionHelper";
 
 const epsilon = 1e-6;
 const dielectricSpecular = new Color3(0.04, 0.04, 0.04);
@@ -89,45 +89,11 @@ export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecul
  * @internal
  */
 export function _ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness {
-    // Defines a cubic bezier curve where x is specular power and y is roughness
-    const P0 = new Vector2(0, 1);
-    const P1 = new Vector2(0, 0.1);
-    const P2 = new Vector2(0, 0.1);
-    const P3 = new Vector2(1300, 0.1);
-
-    /**
-     * Given the control points, solve for x based on a given t for a cubic bezier curve
-     * @param t a value between 0 and 1
-     * @param p0 first control point
-     * @param p1 second control point
-     * @param p2 third control point
-     * @param p3 fourth control point
-     * @returns number result of cubic bezier curve at the specified t
-     */
-    function cubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
-        return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
-    }
-
-    /**
-     * Evaluates a specified specular power value to determine the appropriate roughness value,
-     * based on a pre-defined cubic bezier curve with specular on the abscissa axis (x-axis)
-     * and roughness on the ordinant axis (y-axis)
-     * @param specularPower specular power of standard material
-     * @returns Number representing the roughness value
-     */
-    function solveForRoughness(specularPower: number): number {
-        // Given P0.x = 0, P1.x = 0, P2.x = 0
-        //   x = t * t * t * P3.x
-        //   t = (x / P3.x)^(1/3)
-        const t = Math.pow(specularPower / P3.x, 0.333333);
-        return cubicBezierCurve(t, P0.y, P1.y, P2.y, P3.y);
-    }
-
     const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace(babylonStandardMaterial.getScene().getEngine().useExactSrgbConversions).scale(0.5);
     const opacity = babylonStandardMaterial.alpha;
     const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, maxSpecularPower);
 
-    const roughness = solveForRoughness(specularPower);
+    const roughness = MaterialConversionHelper.SpecularPowerToRoughness(specularPower);
 
     const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {
         baseColorFactor: [diffuse.r, diffuse.g, diffuse.b, opacity],
