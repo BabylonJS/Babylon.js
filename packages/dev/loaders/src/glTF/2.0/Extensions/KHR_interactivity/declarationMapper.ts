@@ -125,6 +125,17 @@ export interface IGLTFToFlowGraphMapping {
     }[];
 
     /**
+     * This optional function will allow to validate the node, according to the glTF specs.
+     * For example, if a node has a configuration object, it must be present and correct.
+     * This is a basic node-based validation.
+     * This functions is expected to return false and log the error if the node is not valid.
+     * @param gltfBlock the glTF node to validate
+     * @param globalGLTF the global glTF object
+     * @returns true if validated, false if not.
+     */
+    validation?: (gltfBlock: IKHRInteractivity_Node, globalGLTF?: IGLTF) => boolean;
+
+    /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
      * This function can return more than one node, if extra nodes are needed for this block to function correctly.
      * Returning more than one block will usually happen when a json pointer was provided.
@@ -818,6 +829,24 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
             cases: { name: "cases", gltfType: "array", inOptions: true },
+        },
+        validation(gltfBlock) {
+            if (gltfBlock.configuration) {
+                const cases = gltfBlock.configuration.cases;
+                if (!Array.isArray(cases)) {
+                    Logger.Error("Switch should have a single configuration object, the cases array");
+                    return false;
+                }
+                return cases.every((caseValue) => {
+                    // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
+                    if (typeof caseValue !== "number" || !/^\d+$/.test(caseValue.toString())) {
+                        Logger.Error("Switch cases should be numbers");
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            return true;
         },
         extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
             // convert all names of output flow to out_$1 apart from "default"

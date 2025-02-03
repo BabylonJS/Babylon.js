@@ -60,12 +60,35 @@ export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphI
 
 RegisterClass(FlowGraphBlockNames.IntToFloat, FlowGraphIntToFloat);
 
+export interface IFlowGraphFloatToIntConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The rounding mode to use.
+     * Defaults to "round". glTF interactivity uses "floor".
+     */
+    roundingMode?: "floor" | "ceil" | "round";
+}
 /**
  * A block that converts a float to an integer.
  */
 export class FlowGraphFloatToInt extends FlowGraphUnaryOperationBlock<number, FlowGraphInteger> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeFlowGraphInteger, (a) => FlowGraphInteger.FromValue(a), FlowGraphBlockNames.FloatToInt, config);
+    constructor(config?: IFlowGraphFloatToIntConfiguration) {
+        super(
+            RichTypeNumber,
+            RichTypeFlowGraphInteger,
+            (a) => {
+                const roundingMode = config?.roundingMode || "round";
+                switch (roundingMode) {
+                    case "floor":
+                        return FlowGraphInteger.FromValue(Math.floor(a));
+                    case "ceil":
+                        return FlowGraphInteger.FromValue(Math.ceil(a));
+                    case "round":
+                        return FlowGraphInteger.FromValue(Math.round(a));
+                }
+            },
+            FlowGraphBlockNames.FloatToInt,
+            config
+        );
     }
 }
 

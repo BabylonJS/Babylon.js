@@ -150,13 +150,13 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
         case FlowGraphBlockNames.Rotate3D:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphRotate3DBlock;
         case FlowGraphBlockNames.Transpose:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransposeBlock;
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphTransposeBlock;
         case FlowGraphBlockNames.Determinant:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphDeterminantBlock;
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphDeterminantBlock;
         case FlowGraphBlockNames.InvertMatrix:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphInvertMatrixBlock;
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphInvertMatrixBlock;
         case FlowGraphBlockNames.MatrixMultiplication:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMatrixMultiplicationBlock;
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixMultiplicationBlock;
         case FlowGraphBlockNames.Branch:
             return async () => (await import("./Execution/ControlFlow/flowGraphBranchBlock")).FlowGraphBranchBlock;
         case FlowGraphBlockNames.SetDelay:

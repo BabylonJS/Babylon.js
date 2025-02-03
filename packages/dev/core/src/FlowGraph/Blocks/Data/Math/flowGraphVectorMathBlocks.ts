@@ -34,21 +34,40 @@ export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraph
 RegisterClass(FlowGraphBlockNames.Length, FlowGraphLengthBlock);
 
 /**
+ * Configuration for normalized vector
+ */
+export interface IFlowGraphNormalizeBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * If true, the block will return NaN if the input vector has a length of 0.
+     * This is the expected behavior for glTF interactivity graphs.
+     */
+    nanOnZeroLength?: boolean;
+}
+
+/**
  * @experimental
  * Vector normalize block.
  */
 export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGraphVector, FlowGraphVector> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(config?: IFlowGraphNormalizeBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, (a) => this._polymorphicNormalize(a), FlowGraphBlockNames.Normalize, config);
     }
 
     private _polymorphicNormalize(a: FlowGraphVector) {
         const aClassName = _getClassNameOf(a);
+        let normalized: FlowGraphVector;
         switch (aClassName) {
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
-                return (a as Vector3).normalize();
+                normalized = a.normalizeToNew();
+                if (this.config?.nanOnZeroLength) {
+                    const length = a.length();
+                    if (length === 0) {
+                        normalized.setAll(NaN);
+                    }
+                }
+                return normalized;
             default:
                 throw new Error(`Cannot normalize value ${a}`);
         }
@@ -71,6 +90,7 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVe
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
+                // casting is needed because dot requires both to be the same type
                 return (a as Vector3).dot(b as Vector3);
             default:
                 throw new Error(`Cannot get dot product of ${a} and ${b}`);
@@ -120,7 +140,7 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
 }
 RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
 
-function _transformVector3(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
+function _transformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
     const className = _getClassNameOf(a);
     switch (className) {
         case FlowGraphTypes.Vector2:
@@ -128,6 +148,7 @@ function _transformVector3(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVec
         case FlowGraphTypes.Vector3:
             return (b as FlowGraphMatrix3D).transformVector(a as Vector3);
         case FlowGraphTypes.Vector4:
+            // TODO - probably not the right implementation
             return Vector4.TransformCoordinates(a as Vector3, b as Matrix);
         default:
             throw new Error(`Cannot transform value ${a}`);
@@ -157,7 +178,7 @@ export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowG
             getRichTypeByFlowGraphType(vectorType),
             getRichTypeByFlowGraphType(matrixType),
             getRichTypeByFlowGraphType(vectorType),
-            _transformVector3,
+            _transformVector,
             FlowGraphBlockNames.TransformVector,
             config
         );

@@ -2,10 +2,80 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeMatrix, RichTypeQuaternion, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeMatrix, RichTypeNumber, RichTypeQuaternion, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
+import type { FlowGraphMatrix } from "./flowGraphMathBlocks";
+import type { FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
+import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
+
+export interface IFlowGraphMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
+    matrixType: FlowGraphTypes;
+}
+/**
+ * @experimental
+ * Transposes a matrix.
+ */
+export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            (a) => (a.transpose ? a.transpose() : Matrix.Transpose(a as Matrix)),
+            FlowGraphBlockNames.Transpose,
+            config
+        );
+    }
+}
+RegisterClass(FlowGraphBlockNames.Transpose, FlowGraphTransposeBlock);
+
+/**
+ * @experimental
+ * Gets the determinant of a matrix.
+ */
+export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, number> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix), RichTypeNumber, (a) => a.determinant(), FlowGraphBlockNames.Determinant, config);
+    }
+}
+RegisterClass(FlowGraphBlockNames.Determinant, FlowGraphDeterminantBlock);
+
+/**
+ * @experimental
+ * Inverts a matrix.
+ */
+export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            (a) => ((a as FlowGraphMatrix2D).inverse ? (a as FlowGraphMatrix2D).inverse() : Matrix.Invert(a as Matrix)),
+            FlowGraphBlockNames.InvertMatrix,
+            config
+        );
+    }
+}
+RegisterClass(FlowGraphBlockNames.InvertMatrix, FlowGraphInvertMatrixBlock);
+
+/**
+ * @experimental
+ * Multiplies two matrices.
+ */
+export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix, FlowGraphMatrix> {
+    constructor(config?: IFlowGraphMatrixBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
+            (a, b) => b.multiply(a as any),
+            FlowGraphBlockNames.MatrixMultiplication,
+            config
+        );
+    }
+}
+RegisterClass(FlowGraphBlockNames.MatrixMultiplication, FlowGraphMatrixMultiplicationBlock);
 
 /**
  * Matrix decompose block

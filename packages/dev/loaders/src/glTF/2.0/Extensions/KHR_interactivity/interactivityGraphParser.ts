@@ -269,6 +269,11 @@ export class InteractivityGraphToFlowGraphParser {
                 Logger.Error(["No mapping found for node", gltfNode]);
                 throw new Error("Error parsing node connections");
             }
+            if (outputMapper.flowGraphMapping.validation) {
+                if (!outputMapper.flowGraphMapping.validation(gltfNode, this._gltf)) {
+                    throw new Error(`Error validating interactivity node ${i}`);
+                }
+            }
             const flowsFromGLTF = gltfNode.flows || {};
             const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
             // connect the flows

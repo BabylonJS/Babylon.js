@@ -45,7 +45,7 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         this.selection = this.registerDataInput("selection", RichTypeAny);
 
         // iterate the set not using for of
-        this.config.cases.forEach((caseValue) => {
+        (this.config.cases || []).forEach((caseValue) => {
             this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
         });
     }
