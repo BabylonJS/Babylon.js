@@ -21,7 +21,7 @@ import { DumpTools } from "core/Misc/dumpTools";
 import type { Material } from "core/Materials/material";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import { MaterialConversionHelper } from "core/Helpers/materialConversionHelper";
+import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 
 const epsilon = 1e-6;
 const dielectricSpecular = new Color3(0.04, 0.04, 0.04);
@@ -93,7 +93,7 @@ export function _ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: Stan
     const opacity = babylonStandardMaterial.alpha;
     const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, maxSpecularPower);
 
-    const roughness = MaterialConversionHelper.SpecularPowerToRoughness(specularPower);
+    const roughness = SpecularPowerToRoughness(specularPower);
 
     const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {
         baseColorFactor: [diffuse.r, diffuse.g, diffuse.b, opacity],
