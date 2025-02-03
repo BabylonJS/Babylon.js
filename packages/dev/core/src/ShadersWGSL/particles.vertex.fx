@@ -78,7 +78,7 @@ fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 	var rotMatrix: mat3x3f =   mat3x3f(row0, row1, row2);
 
 	var alignedCorner: vec3f = rotMatrix * rotatedCorner;
-	return input.position + alignedCorner;
+	return vertexInputs.position + alignedCorner;
 }
 #endif
 
