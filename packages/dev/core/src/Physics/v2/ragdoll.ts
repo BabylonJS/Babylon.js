@@ -5,8 +5,7 @@ import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
 import type { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "core/Maths/math.axis";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType, PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode } from "./IPhysicsEnginePlugin";
+import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
@@ -213,7 +212,6 @@ export class Ragdoll {
 
     private _initJoints(): void {
         this._rootTransformNode.computeWorldMatrix();
-        const plugin = this._scene.getPhysicsEngine()?.getPhysicsPlugin()! as IPhysicsEnginePluginV2;
         for (let i = 0; i < this._bones.length; i++) {
             // The root bone has no joints.
             if (i == this._rootBoneIndex) continue;
