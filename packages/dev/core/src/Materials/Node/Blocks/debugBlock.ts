@@ -6,6 +6,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { Scene } from "core/scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to render intermediate debug values
@@ -14,6 +15,10 @@ import type { Scene } from "core/scene";
  */
 export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     private _isActive = false;
+
+    /** Gets or sets a boolean indicating if we want to render alpha when using a rgba input*/
+    @editableInPropertyPage("Render Alpha", PropertyTypeForEdition.Boolean, undefined)
+    public renderAlpha = false;
 
     /**
      * Gets or sets a boolean indicating that the block is active
@@ -90,6 +95,8 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
             state.compilationString += `${outputString}  = vec4${state.fSuffix}(${debug.associatedVariableName}, 0., 1.0);\n`;
         } else if (debug.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color3 || debug.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
             state.compilationString += `${outputString}  = vec4${state.fSuffix}(${debug.associatedVariableName}, 1.0);\n`;
+        } else if (this.renderAlpha) {
+            state.compilationString += `${outputString}  =${debug.associatedVariableName};\n`;
         } else {
             state.compilationString += `${outputString}  = vec4${state.fSuffix}(${debug.associatedVariableName}.rgb, 1.0);\n`;
         }
@@ -100,6 +107,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.isActive = this._isActive;
+        serializationObject.renderAlpha = this.renderAlpha;
         return serializationObject;
     }
 
@@ -107,6 +115,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.isActive = serializationObject.isActive;
+        this.renderAlpha = serializationObject.renderAlpha;
     }
 }
 
