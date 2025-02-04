@@ -3,6 +3,7 @@ import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
 import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "./abstractSpatialAudioAttacher";
 import { _SpatialAudioAttacher } from "./spatialAudioAttacher";
+import { _CreateSpatialAudioCameraAttacherAsync } from "./spatialAudioCameraAttacher";
 import { _CreateSpatialAudioMeshAttacherAsync } from "./spatialAudioMeshAttacher";
 
 /**
@@ -87,7 +88,7 @@ export class _ExclusiveSpatialAudioAttacher {
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
         switch (attacherClassName) {
             case _SpatialAudioAttacher.CAMERA:
-                return null;
+                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode) : null;
             case _SpatialAudioAttacher.MESH:
                 return this.attachedMesh ? _CreateSpatialAudioMeshAttacherAsync(this.attachedMesh, this._spatialAudioNode) : null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
