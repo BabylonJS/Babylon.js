@@ -19,8 +19,8 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     public constructor(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode) {
         super();
 
-        this.transformNode = transformNode;
         this.spatialAudioNode = spatialAudioNode;
+        this.transformNode = transformNode;
     }
 
     /** @internal */

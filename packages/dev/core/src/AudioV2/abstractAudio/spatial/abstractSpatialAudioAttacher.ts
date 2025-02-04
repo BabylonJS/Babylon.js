@@ -44,18 +44,20 @@ export abstract class _AbstractSpatialAudioAttacher {
     }
 
     private _attachScene(): void {
+        this._update();
+
         if (this._scene) {
-            this._scene.onBeforeRenderObservable.add(this._onBeforeSceneRender);
+            this._scene.onBeforeRenderObservable.add(this._update);
         }
     }
 
     private _detachScene(): void {
         if (this._scene) {
-            this._scene.onBeforeRenderObservable.removeCallback(this._onBeforeSceneRender);
+            this._scene.onBeforeRenderObservable.removeCallback(this._update);
         }
     }
 
-    private _onBeforeSceneRender = (): void => {
+    private _update = (): void => {
         if (!this.spatialAudioNode) {
             return;
         }
