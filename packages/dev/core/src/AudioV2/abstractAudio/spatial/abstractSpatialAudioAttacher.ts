@@ -22,6 +22,8 @@ export abstract class _AbstractSpatialAudioAttacher {
     protected abstract _attachedPosition: Vector3;
     protected abstract _attachedRotationQuaternion: Quaternion;
 
+    protected _isDirty = true;
+
     /** @internal */
     public attachmentType: SpatialAudioAttachmentType;
 
@@ -52,22 +54,12 @@ export abstract class _AbstractSpatialAudioAttacher {
         this._attachScene();
     }
 
-    private _attachScene(): void {
-        this._update();
-
-        if (this._scene) {
-            this._scene.onAfterRenderObservable.add(this._update);
-        }
-    }
-
-    private _detachScene(): void {
-        if (this._scene) {
-            this._scene.onAfterRenderObservable.removeCallback(this._update);
-        }
-    }
-
-    private _update = (): void => {
+    protected _update(): void {
         if (!this.spatialAudioNode) {
+            return;
+        }
+
+        if (!this._isDirty) {
             return;
         }
 
@@ -84,5 +76,23 @@ export abstract class _AbstractSpatialAudioAttacher {
         if (this.attachmentType & SpatialAudioAttachmentType.ROTATION) {
             this.spatialAudioNode.rotationQuaternion = this._attachedRotationQuaternion;
         }
+    }
+
+    private _attachScene(): void {
+        this._update();
+
+        if (this._scene) {
+            this._scene.onAfterRenderObservable.add(this._onAfterRender);
+        }
+    }
+
+    private _detachScene(): void {
+        if (this._scene) {
+            this._scene.onAfterRenderObservable.removeCallback(this._onAfterRender);
+        }
+    }
+
+    private _onAfterRender = (): void => {
+        this._update();
     };
 }

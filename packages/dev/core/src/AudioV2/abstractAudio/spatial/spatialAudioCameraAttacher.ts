@@ -33,9 +33,14 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
             return;
         }
 
+        this._clearCamera();
+
         this._setScene(null);
         this._camera = camera;
         this._setScene(this._camera?.getScene() ?? null);
+
+        this._isDirty = true;
+        this._camera?.onViewMatrixChangedObservable.add(this._onCameraViewMatrixChanged);
     }
 
     protected get _attachedPosition(): Vector3 {
@@ -53,7 +58,28 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     }
 
     /** @internal */
+    public override dispose(): void {
+        super.dispose();
+        this._clearCamera();
+    }
+
+    /** @internal */
     public getClassName(): string {
         return "_SpatialAudioCameraAttacher";
     }
+
+    protected override _update() {
+        super._update();
+
+        this._isDirty = false;
+    }
+
+    private _clearCamera() {
+        this._camera?.onViewMatrixChangedObservable.removeCallback(this._onCameraViewMatrixChanged);
+        this._camera = null;
+    }
+
+    private _onCameraViewMatrixChanged = () => {
+        this._isDirty = true;
+    };
 }
