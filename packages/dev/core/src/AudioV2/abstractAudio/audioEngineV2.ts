@@ -119,7 +119,7 @@ export abstract class AudioEngineV2 {
      * @param format The format to check as an audio file extension like "mp3" or "wav".
      * @returns `true` if the format is valid; otherwise `false`.
      */
-    public abstract formatIsValid(format: string): boolean;
+    public abstract isFormatValid(format: string): boolean;
 
     /**
      * Pauses the audio engine if it is running.

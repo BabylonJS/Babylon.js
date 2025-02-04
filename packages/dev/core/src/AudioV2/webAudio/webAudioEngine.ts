@@ -173,7 +173,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public formatIsValid(format: string): boolean {
+    public isFormatValid(format: string): boolean {
         if (this._validFormats.has(format)) {
             return true;
         }

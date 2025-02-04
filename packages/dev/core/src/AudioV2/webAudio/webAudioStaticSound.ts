@@ -243,7 +243,7 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
             } else {
                 const matches = url.match(_FileExtensionRegex);
                 const format = matches?.at(1);
-                if (format && this.engine.formatIsValid(format)) {
+                if (format && this.engine.isFormatValid(format)) {
                     try {
                         await this._initFromUrl(url);
                     } catch (e) {
