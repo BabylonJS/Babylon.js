@@ -1092,11 +1092,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-     */
-    protected _forceAlphaTest = false;
-
-    /**
      * The transparency mode of the material.
      */
     protected _transparencyMode: Nullable<number> = null;
@@ -1126,8 +1121,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
 
         this._transparencyMode = value;
-
-        this._forceAlphaTest = value === Material.MATERIAL_ALPHATESTANDBLEND;
 
         this._markAllSubMeshesAsTexturesAndMiscDirty();
     }
@@ -1195,10 +1188,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public needAlphaTesting(): boolean {
         if (this._hasTransparencyMode) {
             return this._transparencyModeIsTest;
-        }
-
-        if (this._forceAlphaTest) {
-            return true;
         }
 
         return false;

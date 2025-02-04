@@ -903,10 +903,6 @@ export class StandardMaterial extends PushMaterial {
             return this._transparencyModeIsTest;
         }
 
-        if (this._forceAlphaTest) {
-            return true;
-        }
-
         return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
@@ -1245,7 +1241,7 @@ export class StandardMaterial extends PushMaterial {
             this._useLogarithmicDepth,
             this.pointsCloud,
             this.fogEnabled,
-            this.needAlphaTestingForMesh(mesh) || this.needAlphaTesting(),
+            this.needAlphaTestingForMesh(mesh),
             defines,
             this._applyDecalMapAfterDetailMap
         );
