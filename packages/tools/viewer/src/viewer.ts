@@ -986,36 +986,6 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    /**
-     * Adds a 3D model from the specified URL to the scene.
-     * @remarks
-     * Will be stored in the viewer's list of loaded models.
-     * @param source A url or File or ArrayBufferView that points to the model to load.
-     * @param options The options to use when loading the model.
-     * @param abortSignal An optional signal that can be used to abort the loading process.
-     * @returns The loaded model.
-     */
-    protected async _addModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<Model> {
-        const model = await this._loadModel(source, options, abortSignal);
-        this._loadedModelsBacking.push(model);
-        return model;
-    }
-
-    /**
-     * Removes a 3D model from the scene.
-     * @param model The model to remove.
-     */
-    protected async _removeModel(model: Model): Promise<void> {
-        const index = this._loadedModelsBacking.indexOf(model);
-        if (index !== -1) {
-            this._loadedModelsBacking.splice(index, 1);
-            if (model === this._activeModel) {
-                this._setActiveModel(null);
-            }
-            model.dispose();
-        }
-    }
-
     protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
         this._throwIfDisposedOrAborted(abortSignal);
 
@@ -1069,16 +1039,25 @@ export class Viewer implements IDisposable {
 
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
 
-            return {
+            const model = {
                 assetContainer,
                 materialVariantsController,
-                getHotSpotToRef: (query, result) => {
+                getHotSpotToRef: (query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult) => {
                     return this._getHotSpotToRef(assetContainer, query, result);
                 },
                 dispose: () => {
                     this._snapshotHelper.disableSnapshotRendering();
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
                     assetContainer.dispose();
+
+                    const index = this._loadedModelsBacking.indexOf(model);
+                    if (index !== -1) {
+                        this._loadedModelsBacking.splice(index, 1);
+                        if (model === this._activeModel) {
+                            this._setActiveModel(null);
+                        }
+                    }
+
                     this._snapshotHelper.enableSnapshotRendering();
                 },
                 getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
@@ -1095,6 +1074,10 @@ export class Viewer implements IDisposable {
                     cachedWorldBounds.length = 0;
                 },
             };
+
+            this._loadedModelsBacking.push(model);
+
+            return model;
         } catch (e) {
             this.onModelError.notifyObservers(e);
             throw e;
@@ -1118,9 +1101,7 @@ export class Viewer implements IDisposable {
             this.selectedAnimation = -1;
 
             if (source) {
-                const model = await this._loadModel(source, options, abortController.signal);
-                this._setActiveModel(model, Object.assign({ source, interpolateCamera: false }, options));
-                this._loadedModelsBacking.push(this._activeModel!);
+                this._setActiveModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
             }
         });
     }
