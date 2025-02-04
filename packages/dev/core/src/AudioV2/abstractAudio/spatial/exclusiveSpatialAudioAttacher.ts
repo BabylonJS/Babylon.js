@@ -96,6 +96,20 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     /**
+     * Returns `true` if the audio listener or source is attached to an entity's position; otherwise returns `false`.
+     */
+    public get isAttachedToPosition(): boolean {
+        return this._attacher !== null && (this._attacher.attachmentType & SpatialAudioAttachmentType.POSITION) === SpatialAudioAttachmentType.POSITION;
+    }
+
+    /**
+     * Returns `true` if the audio listener or source is attached to an entity's rotation; otherwise returns `false`.
+     */
+    public get isAttachedToRotation(): boolean {
+        return this._attacher !== null && (this._attacher.attachmentType & SpatialAudioAttachmentType.ROTATION) === SpatialAudioAttachmentType.ROTATION;
+    }
+
+    /**
      * A promise that resolves when the attacher is ready.
      */
     public get isReadyPromise(): Promise<void> {

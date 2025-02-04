@@ -63,12 +63,14 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract inNode: AudioNode;
 
     /** @internal */
-    public setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
+    public async setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
         if (options.spatialAttachedMesh !== undefined) {
             this.attachedMesh = options.spatialAttachedMesh;
         } else if (options.spatialAttachedTransformNode !== undefined) {
             this.attachedTransformNode = options.spatialAttachedTransformNode;
         }
+
+        await this._attacher.isReadyPromise;
 
         if (options.spatialAttachmentType !== undefined) {
             this.attachmentType = options.spatialAttachmentType;
@@ -84,18 +86,18 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.REFERENCE_DISTANCE;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.ROLLOFF_FACTOR;
 
-        if (options.spatialPosition !== undefined) {
+        if (!this._attacher.isAttachedToPosition && options.spatialPosition !== undefined) {
             this.position = options.spatialPosition.clone();
         }
 
-        if (options.spatialRotationQuaternion !== undefined) {
-            this.rotationQuaternion = options.spatialRotationQuaternion.clone();
-        } else if (options.spatialRotation !== undefined) {
-            this.rotation = options.spatialRotation.clone();
-        } else {
-            this.rotationQuaternion = _SpatialAudioDefaults.ROTATION_QUATERNION.clone();
+        if (!this._attacher.isAttachedToRotation) {
+            if (options.spatialRotationQuaternion !== undefined) {
+                this.rotationQuaternion = options.spatialRotationQuaternion.clone();
+            } else if (options.spatialRotation !== undefined) {
+                this.rotation = options.spatialRotation.clone();
+            } else {
+                this.rotationQuaternion = _SpatialAudioDefaults.ROTATION_QUATERNION.clone();
+            }
         }
-
-        return this._attacher.isReadyPromise;
     }
 }
