@@ -1001,6 +1001,21 @@ export class Viewer implements IDisposable {
         return model;
     }
 
+    /**
+     * Removes a 3D model from the scene.
+     * @param model The model to remove.
+     */
+    protected async _removeModel(model: Model): Promise<void> {
+        const index = this._loadedModelsBacking.indexOf(model);
+        if (index !== -1) {
+            this._loadedModelsBacking.splice(index, 1);
+            if (model === this._activeModel) {
+                this._setActiveModel(null);
+            }
+            model.dispose();
+        }
+    }
+
     protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
         this._throwIfDisposedOrAborted(abortSignal);
 
@@ -1103,7 +1118,9 @@ export class Viewer implements IDisposable {
             this.selectedAnimation = -1;
 
             if (source) {
-                this._setActiveModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
+                const model = await this._loadModel(source, options, abortController.signal);
+                this._setActiveModel(model, Object.assign({ source, interpolateCamera: false }, options));
+                this._loadedModelsBacking.push(this._activeModel!);
             }
         });
     }
