@@ -1,0 +1,501 @@
+import type { Nullable } from "../../types";
+import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "../abstractAudio/staticSound";
+import { StaticSound } from "../abstractAudio/staticSound";
+import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
+import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
+import { SoundState } from "../soundState";
+import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
+import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
+import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { _GetWebAudioEngine } from "./webAudioUtils";
+
+type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
+
+/**
+ * Creates a new static sound.
+ * @param name - The name of the sound.
+ * @param source - The source of the sound.
+ * @param options - The options for the static sound.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created static sound.
+ */
+export async function CreateSoundAsync(
+    name: string,
+    source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
+    options: Partial<IStaticSoundOptions> = {},
+    engine: Nullable<AudioEngineV2> = null
+): Promise<StaticSound> {
+    const sound = new _WebAudioStaticSound(name, _GetWebAudioEngine(engine), options);
+    await sound.init(source, options);
+
+    return sound;
+}
+
+/**
+ * Creates a new static sound buffer.
+ * @param source - The source of the sound buffer.
+ * @param options - The options for the static sound buffer.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created static sound buffer.
+ */
+export async function CreateSoundBufferAsync(
+    source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
+    options: Partial<IStaticSoundOptions> = {},
+    engine: Nullable<AudioEngineV2> = null
+): Promise<StaticSoundBuffer> {
+    const buffer = new _WebAudioStaticSoundBuffer(_GetWebAudioEngine(engine));
+    await buffer.init(source, options);
+    return buffer;
+}
+
+/** @internal */
+class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
+    private _buffer: _WebAudioStaticSoundBuffer;
+    private _spatial: Nullable<_SpatialAudio> = null;
+    private _stereo: Nullable<_StereoAudio> = null;
+
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
+
+    /** @internal */
+    public audioContext: AudioContext | OfflineAudioContext;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions> = {}) {
+        super(name, engine, options);
+
+        this._subGraph = new _WebAudioStaticSound._SubGraph(this);
+    }
+
+    /** @internal */
+    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
+        this.audioContext = this.engine.audioContext;
+
+        if (source instanceof _WebAudioStaticSoundBuffer) {
+            this._buffer = source as _WebAudioStaticSoundBuffer;
+        } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
+            this._buffer = (await CreateSoundBufferAsync(source, options, this.engine)) as _WebAudioStaticSoundBuffer;
+        }
+
+        if (options.outBus) {
+            this.outBus = options.outBus;
+        } else {
+            await this.engine.isReadyPromise;
+            this.outBus = this.engine.defaultMainBus;
+        }
+
+        await this._subGraph.init(options);
+
+        if (options.autoplay) {
+            this.play();
+        }
+
+        this.engine.addNode(this);
+    }
+
+    /** @internal */
+    public get buffer(): _WebAudioStaticSoundBuffer {
+        return this._buffer;
+    }
+
+    /** @internal */
+    public get inNode() {
+        return this._subGraph.inNode;
+    }
+
+    /** @internal */
+    public get outNode() {
+        return this._subGraph.outNode;
+    }
+
+    /** @internal */
+    public override get spatial(): _SpatialAudio {
+        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override get stereo(): _StereoAudio {
+        return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._spatial = null;
+        this._stereo = null;
+
+        this._subGraph.dispose();
+
+        this.engine.removeNode(this);
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStaticSound";
+    }
+
+    protected override _connect(node: IWebAudioInNode): void {
+        super._connect(node);
+
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+    }
+
+    protected _createInstance(): _WebAudioStaticSoundInstance {
+        return new _WebAudioStaticSoundInstance(this, this._options);
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): void {
+        super._disconnect(node);
+
+        if (node.inNode) {
+            try {
+                this.outNode?.disconnect(node.inNode);
+            } catch (e) {
+                // Ignore error that occurs when node is not connected.
+                if (!(e instanceof DOMException && e.name === "InvalidAccessError")) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
+        protected override _owner: _WebAudioStaticSound;
+
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
+        }
+
+        protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._upstreamNodes ?? null;
+        }
+    };
+}
+
+/** @internal */
+class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
+    /** @internal */
+    public audioBuffer: AudioBuffer;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public constructor(engine: _WebAudioEngine) {
+        super(engine);
+    }
+
+    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
+        if (source instanceof AudioBuffer) {
+            this.audioBuffer = source;
+        } else if (typeof source === "string") {
+            await this._initFromUrl(source);
+        } else if (Array.isArray(source)) {
+            await this._initFromUrls(source, options.skipCodecCheck ?? false);
+        } else if (source instanceof ArrayBuffer) {
+            await this._initFromArrayBuffer(source);
+        }
+    }
+
+    /** @internal */
+    public get channelCount(): number {
+        return this.audioBuffer.numberOfChannels;
+    }
+
+    /** @internal */
+    public get duration(): number {
+        return this.audioBuffer.duration;
+    }
+
+    /** @internal */
+    public get length(): number {
+        return this.audioBuffer.length;
+    }
+
+    /** @internal */
+    public get sampleRate(): number {
+        return this.audioBuffer.sampleRate;
+    }
+
+    private async _initFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<void> {
+        this.audioBuffer = await this.engine.audioContext.decodeAudioData(arrayBuffer);
+    }
+
+    private async _initFromUrl(url: string): Promise<void> {
+        url = _CleanUrl(url);
+        await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
+    }
+
+    private async _initFromUrls(urls: string[], skipCodecCheck: boolean): Promise<void> {
+        for (const url of urls) {
+            if (skipCodecCheck) {
+                await this._initFromUrl(url);
+            } else {
+                const matches = url.match(_FileExtensionRegex);
+                const format = matches?.at(1);
+                if (format && this.engine.isFormatValid(format)) {
+                    try {
+                        await this._initFromUrl(url);
+                    } catch (e) {
+                        if (format && 0 < format.length) {
+                            this.engine.flagInvalidFormat(format);
+                        }
+                    }
+                }
+            }
+
+            if (this.audioBuffer) {
+                break;
+            }
+        }
+    }
+}
+
+/** @internal */
+class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
+    private _enginePlayTime: number = 0;
+    private _enginePauseTime: number = 0;
+    private _sourceNode: Nullable<AudioBufferSourceNode> = null;
+    private _volumeNode: GainNode;
+
+    protected override _sound: _WebAudioStaticSound;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    public constructor(sound: _WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
+        super(sound, options);
+
+        this._volumeNode = new GainNode(sound.audioContext);
+        this._initSourceNode();
+    }
+
+    /** @internal */
+    public get currentTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
+        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
+    }
+
+    public set currentTime(value: number) {
+        const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
+
+        if (restart) {
+            this.stop();
+            this._deinitSourceNode();
+        }
+
+        this.options.startOffset = value;
+
+        if (restart) {
+            this.play();
+        }
+    }
+
+    public get outNode(): Nullable<AudioNode> {
+        return this._volumeNode;
+    }
+
+    /** @internal */
+    public get startTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        return this._enginePlayTime;
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._sourceNode = null;
+
+        this.stop();
+
+        this._deinitSourceNode();
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStaticSoundInstance";
+    }
+
+    /** @internal */
+    public play(options: Partial<IStaticSoundPlayOptions> = this.options): void {
+        if (this._state === SoundState.Started) {
+            return;
+        }
+
+        if (options.duration !== undefined) {
+            this.options.duration = options.duration;
+        }
+        if (options.loop !== undefined) {
+            this.options.loop = options.loop;
+        }
+        if (options.loopStart !== undefined) {
+            this.options.loopStart = options.loopStart;
+        }
+        if (options.loopEnd !== undefined) {
+            this.options.loopEnd = options.loopEnd;
+        }
+        if (options.pitch !== undefined) {
+            this.options.pitch = options.pitch;
+        }
+        if (options.playbackRate !== undefined) {
+            this.options.playbackRate = options.playbackRate;
+        }
+        if (options.startOffset !== undefined) {
+            this.options.startOffset = options.startOffset;
+        }
+        if (options.volume !== undefined) {
+            this.options.volume = options.volume;
+        }
+
+        let startOffset = this.options.startOffset;
+
+        if (this._state === SoundState.Paused) {
+            startOffset += this.currentTime;
+            startOffset %= this._sound.buffer.duration;
+        }
+
+        this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
+
+        this._volumeNode.gain.value = this.options.volume;
+
+        this._initSourceNode();
+
+        if (this.engine.state === "running") {
+            this._setState(SoundState.Started);
+            this._sourceNode?.start(this._enginePlayTime, startOffset, this.options.duration > 0 ? this.options.duration : undefined);
+        } else if (this.options.loop) {
+            this._setState(SoundState.Starting);
+            this.engine.stateChangedObservable.add(this._onEngineStateChanged);
+        }
+    }
+
+    /** @internal */
+    public pause(): void {
+        if (this._state === SoundState.Paused) {
+            return;
+        }
+
+        this._setState(SoundState.Paused);
+        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
+
+        this._sourceNode?.stop();
+        this._deinitSourceNode();
+    }
+
+    /** @internal */
+    public resume(): void {
+        if (this._state === SoundState.Paused) {
+            this.play();
+        }
+    }
+
+    /** @internal */
+    public stop(options: Partial<IStaticSoundStopOptions> = {}): void {
+        if (this._state === SoundState.Stopped) {
+            return;
+        }
+
+        this._setState(SoundState.Stopped);
+
+        const engineStopTime = this.engine.currentTime + (options.waitTime ?? 0);
+        this._sourceNode?.stop(engineStopTime);
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    }
+
+    protected override _connect(node: AbstractAudioNode): void {
+        super._connect(node);
+
+        if (node instanceof _WebAudioStaticSound && node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+    }
+
+    protected override _disconnect(node: AbstractAudioNode): void {
+        super._disconnect(node);
+
+        if (node instanceof _WebAudioStaticSound && node.inNode) {
+            this.outNode?.disconnect(node.inNode);
+        }
+    }
+
+    protected _onEnded = () => {
+        this._enginePlayTime = 0;
+
+        this.onEndedObservable.notifyObservers(this);
+        this._deinitSourceNode();
+    };
+
+    private _deinitSourceNode(): void {
+        if (!this._sourceNode) {
+            return;
+        }
+
+        this._disconnect(this._sound);
+
+        this._sourceNode.disconnect(this._volumeNode);
+        this._sourceNode.removeEventListener("ended", this._onEnded);
+
+        this._sourceNode = null;
+    }
+
+    private _initSourceNode(): void {
+        if (this._sourceNode) {
+            const node = this._sourceNode;
+
+            node.detune.value = this.options.pitch;
+            node.loop = this.options.loop;
+            node.loopEnd = this.options.loopEnd;
+            node.loopStart = this.options.loopStart;
+            node.playbackRate.value = this.options.playbackRate;
+
+            return;
+        }
+
+        this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
+            buffer: this._sound.buffer.audioBuffer,
+            detune: this.options.pitch,
+            loop: this.options.loop,
+            loopEnd: this.options.loopEnd,
+            loopStart: this.options.loopStart,
+            playbackRate: this.options.playbackRate,
+        });
+
+        this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
+        this._sourceNode.connect(this._volumeNode);
+
+        this._connect(this._sound);
+    }
+
+    private _onEngineStateChanged = () => {
+        if (this.engine.state !== "running") {
+            return;
+        }
+
+        if (this.options.loop && this.state === SoundState.Starting) {
+            this.play();
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    };
+}

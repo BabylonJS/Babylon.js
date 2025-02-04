@@ -1,0 +1,448 @@
+import { Tools } from "../../Misc/tools";
+import type { Nullable } from "../../types";
+import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { ICommonSoundPlayOptions } from "../abstractAudio/abstractSound";
+import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import type { IStreamingSoundOptions } from "../abstractAudio/streamingSound";
+import { StreamingSound } from "../abstractAudio/streamingSound";
+import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
+import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
+import { SoundState } from "../soundState";
+import { _CleanUrl } from "../audioUtils";
+import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
+import type { _WebAudioEngine } from "./webAudioEngine";
+import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { _GetWebAudioEngine } from "./webAudioUtils";
+
+type StreamingSoundSourceType = HTMLMediaElement | string | string[];
+
+/**
+ * Creates a new streaming sound.
+ * @param name - The name of the sound.
+ * @param source - The source of the sound.
+ * @param options - The options for the streaming sound.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created streaming sound.
+ */
+export async function CreateStreamingSoundAsync(
+    name: string,
+    source: HTMLMediaElement | string | string[],
+    options: Partial<IStreamingSoundOptions> = {},
+    engine: Nullable<AudioEngineV2> = null
+): Promise<StreamingSound> {
+    const sound = new _WebAudioStreamingSound(name, _GetWebAudioEngine(engine), options);
+    await sound.init(source, options);
+
+    return sound;
+}
+
+/** @internal */
+class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
+    private _spatial: Nullable<_SpatialAudio> = null;
+    private _stereo: Nullable<_StereoAudio> = null;
+
+    protected _subGraph: _WebAudioBusAndSoundSubGraph;
+
+    /** @internal */
+    public audioContext: AudioContext;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public source: StreamingSoundSourceType;
+
+    /** @internal */
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions> = {}) {
+        super(name, engine, options);
+
+        this._subGraph = new _WebAudioStreamingSound._SubGraph(this);
+    }
+
+    /** @internal */
+    public async init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
+        const audioContext = this.engine.audioContext;
+
+        if (!(audioContext instanceof AudioContext)) {
+            throw new Error("Unsupported audio context type.");
+        }
+
+        this.audioContext = audioContext;
+        this.source = source;
+
+        if (options.outBus) {
+            this.outBus = options.outBus;
+        } else {
+            await this.engine.isReadyPromise;
+            this.outBus = this.engine.defaultMainBus;
+        }
+
+        await this._subGraph.init(options);
+
+        if (this.preloadCount) {
+            await this.preloadInstances(this.preloadCount);
+        }
+
+        if (options.autoplay) {
+            this.play(options);
+        }
+
+        this.engine.addNode(this);
+    }
+
+    /** @internal */
+    public get inNode() {
+        return this._subGraph.inNode;
+    }
+
+    /** @internal */
+    public get outNode() {
+        return this._subGraph.outNode;
+    }
+
+    /** @internal */
+    public override get spatial(): _SpatialAudio {
+        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override get stereo(): _StereoAudio {
+        return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._spatial = null;
+        this._stereo = null;
+
+        this._subGraph.dispose();
+
+        this.engine.removeNode(this);
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStreamingSound";
+    }
+
+    protected override _connect(node: IWebAudioInNode): void {
+        super._connect(node);
+
+        if (this._subGraph.inNode) {
+            this.outNode?.connect(this._subGraph.inNode);
+        }
+    }
+
+    protected _createInstance(): _WebAudioStreamingSoundInstance {
+        return new _WebAudioStreamingSoundInstance(this, this._options);
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): void {
+        super._disconnect(node);
+
+        if (this._subGraph.inNode) {
+            this.outNode?.disconnect(this._subGraph.inNode);
+        }
+    }
+
+    private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
+        protected override _owner: _WebAudioStreamingSound;
+
+        protected get _downstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._downstreamNodes ?? null;
+        }
+
+        protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
+            return this._owner._upstreamNodes ?? null;
+        }
+    };
+}
+
+/** @internal */
+class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
+    private _currentTimeChangedWhilePaused = false;
+    private _enginePlayTime: number = Infinity;
+    private _enginePauseTime: number = 0;
+    private _isReady: boolean = false;
+    private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
+        this._resolveIsReadyPromise = resolve;
+    });
+    private _mediaElement: HTMLMediaElement;
+    private _sourceNode: Nullable<MediaElementAudioSourceNode>;
+    private _volumeNode: GainNode;
+
+    protected override _sound: _WebAudioStreamingSound;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    public constructor(sound: _WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
+        super(sound, options);
+
+        this._volumeNode = new GainNode(sound.audioContext);
+
+        if (typeof sound.source === "string") {
+            this._initFromUrl(sound.source);
+        } else if (Array.isArray(sound.source)) {
+            this._initFromUrls(sound.source);
+        } else if (sound.source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(sound.source);
+        }
+    }
+
+    /** @internal */
+    public get currentTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
+        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
+    }
+
+    public set currentTime(value: number) {
+        const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
+
+        if (restart) {
+            this._mediaElement.pause();
+            this._setState(SoundState.Stopped);
+        }
+
+        this.options.startOffset = value;
+
+        if (restart) {
+            this.play();
+        } else if (this._state === SoundState.Paused) {
+            this._currentTimeChangedWhilePaused = true;
+        }
+    }
+
+    public get outNode(): Nullable<AudioNode> {
+        return this._volumeNode;
+    }
+
+    /** @internal */
+    public get startTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        return this._enginePlayTime;
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this.stop();
+
+        this._sourceNode?.disconnect(this._volumeNode);
+        this._sourceNode = null;
+
+        this._mediaElement.removeEventListener("ended", this._onEnded);
+        this._mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
+        for (const source of Array.from(this._mediaElement.children)) {
+            this._mediaElement.removeChild(source);
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        this.engine.userGestureObservable.removeCallback(this._onUserGesture);
+    }
+
+    /** @internal */
+    public play(options: Partial<ICommonSoundPlayOptions> = this.options): void {
+        if (this._state === SoundState.Started) {
+            return;
+        }
+
+        if (options.loop !== undefined) {
+            this.options.loop = options.loop;
+        }
+        this._mediaElement.loop = this.options.loop;
+
+        let startOffset = options.startOffset;
+
+        if (this._currentTimeChangedWhilePaused) {
+            startOffset = this.options.startOffset;
+            this._currentTimeChangedWhilePaused = false;
+        } else if (this._state === SoundState.Paused) {
+            startOffset = this.currentTime + this.options.startOffset;
+        }
+
+        if (startOffset && startOffset > 0) {
+            this._mediaElement.currentTime = startOffset;
+        }
+
+        this._volumeNode.gain.value = options.volume ?? this.options.volume;
+
+        this._play();
+    }
+
+    /** @internal */
+    public pause(): void {
+        if (this._state !== SoundState.Starting && this._state !== SoundState.Started) {
+            return;
+        }
+
+        this._setState(SoundState.Paused);
+        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
+
+        this._mediaElement.pause();
+    }
+
+    /** @internal */
+    public resume(): void {
+        if (this._state === SoundState.Paused) {
+            this.play();
+        } else if (this._currentTimeChangedWhilePaused) {
+            this.play(this.options);
+        }
+    }
+
+    /** @internal */
+    public override stop(): void {
+        if (this._state === SoundState.Stopped) {
+            return;
+        }
+
+        this._stop();
+    }
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStreamingSoundInstance";
+    }
+
+    protected override _connect(node: AbstractAudioNode): void {
+        super._connect(node);
+
+        if (node instanceof _WebAudioStreamingSound && node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+    }
+
+    protected override _disconnect(node: AbstractAudioNode): void {
+        super._disconnect(node);
+
+        if (node instanceof _WebAudioStreamingSound && node.inNode) {
+            this.outNode?.disconnect(node.inNode);
+        }
+    }
+
+    private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
+        Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
+
+        mediaElement.controls = false;
+        mediaElement.loop = this.options.loop;
+        mediaElement.preload = "auto";
+
+        mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
+        mediaElement.addEventListener("ended", this._onEnded, { once: true });
+
+        mediaElement.load();
+
+        this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this._sourceNode.connect(this._volumeNode);
+
+        this._connect(this._sound);
+
+        this._mediaElement = mediaElement;
+    }
+
+    private _initFromUrl(url: string): void {
+        const audio = new Audio(_CleanUrl(url));
+        this._initFromMediaElement(audio);
+    }
+
+    private _initFromUrls(urls: string[]): void {
+        const audio = new Audio();
+
+        for (const url of urls) {
+            const source = document.createElement("source");
+            source.src = _CleanUrl(url);
+            audio.appendChild(source);
+        }
+
+        this._initFromMediaElement(audio);
+    }
+
+    private _onCanPlayThrough: () => void = () => {
+        this._isReady = true;
+        this._resolveIsReadyPromise(this._mediaElement);
+        this.onReadyObservable.notifyObservers(this);
+    };
+
+    private _onEnded: () => void = () => {
+        this.onEndedObservable.notifyObservers(this);
+        this.dispose();
+    };
+
+    private _onEngineStateChanged = () => {
+        if (this.engine.state !== "running") {
+            return;
+        }
+
+        if (this.options.loop && this.state === SoundState.Starting) {
+            this.play();
+        }
+
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    };
+
+    private _onUserGesture = () => {
+        this.play();
+    };
+
+    private _play(): void {
+        this._setState(SoundState.Starting);
+
+        if (!this._isReady) {
+            this._playAsync();
+            return;
+        }
+
+        if (this._state !== SoundState.Starting) {
+            return;
+        }
+
+        if (this.engine.state === "running") {
+            const result = this._mediaElement.play();
+
+            this._enginePlayTime = this.engine.currentTime;
+            this._setState(SoundState.Started);
+
+            // It's possible that the play() method fails on Safari, even if the audio engine's state is "running".
+            // This occurs when the audio context is paused by the system and resumed automatically by the audio engine
+            // without a user interaction (e.g. when the Vision Pro exits and reenters immersive mode).
+            result.catch(() => {
+                this._setState(SoundState.FailedToStart);
+
+                if (this.options.loop) {
+                    this.engine.userGestureObservable.addOnce(this._onUserGesture);
+                }
+            });
+        } else if (this.options.loop) {
+            this.engine.stateChangedObservable.add(this._onEngineStateChanged);
+        } else {
+            this.stop();
+            this._setState(SoundState.FailedToStart);
+        }
+    }
+
+    private async _playAsync(): Promise<void> {
+        await this._isReadyPromise;
+        this._play();
+    }
+
+    private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
+
+    private _stop(): void {
+        this._mediaElement.pause();
+        this._setState(SoundState.Stopped);
+        this._onEnded();
+        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+    }
+}
