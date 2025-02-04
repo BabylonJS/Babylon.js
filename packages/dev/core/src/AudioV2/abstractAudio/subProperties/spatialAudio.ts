@@ -1,6 +1,7 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
+import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
@@ -36,6 +37,17 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     public set attachedTransformNode(value: Nullable<TransformNode>) {
         this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL, (node) => {
             node.attachedTransformNode = value;
+        });
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.attachmentType ?? _SpatialAudioDefaults.ATTACHMENT_TYPE;
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL, (node) => {
+            node.attachmentType = value;
         });
     }
 

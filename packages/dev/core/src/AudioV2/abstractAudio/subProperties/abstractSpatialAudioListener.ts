@@ -3,8 +3,10 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
+import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 
 export const _SpatialAudioListenerDefaults = {
+    ATTACHMENT_TYPE: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
     POSITION: Vector3.Zero(),
     ROTATION: Vector3.Zero(),
     ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
@@ -26,6 +28,10 @@ export interface ISpatialAudioListenerOptions {
      * The transform node the listener will use to update its position and rotation. Defaults to `null`.
      */
     listenerAttachedTransformNode: TransformNode;
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    listenerAttachmentType: SpatialAudioAttachmentType;
     /**
      * Set to `true` to enable the listener. Defaults to `false`.
      */
@@ -59,6 +65,7 @@ export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioLi
         options.listenerAttachedCamera !== undefined ||
         options.listenerAttachedMesh !== undefined ||
         options.listenerAttachedTransformNode !== undefined ||
+        options.listenerAttachmentType !== undefined ||
         options.listenerMinUpdateTime !== undefined ||
         options.listenerPosition !== undefined ||
         options.listenerRotation !== undefined ||
@@ -86,6 +93,11 @@ export abstract class AbstractSpatialAudioListener {
      * The transform node the listener will use to update its position and rotation. Defaults to `null`.
      */
     public abstract attachedTransformNode: Nullable<TransformNode>;
+
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    public abstract attachmentType: SpatialAudioAttachmentType;
 
     /**
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.

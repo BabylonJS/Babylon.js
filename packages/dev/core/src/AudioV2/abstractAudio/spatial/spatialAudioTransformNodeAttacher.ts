@@ -3,12 +3,17 @@ import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import type { ISpatialAudioNode } from "./abstractSpatialAudioAttacher";
 import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "./spatialAudioAttacher";
 
 const TempQuaternion = Quaternion.Identity();
 
 /** @internal */
-export async function _CreateSpatialAudioTransformNodeAttacherAsync(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioTransformNodeAttacher(transformNode, spatialAudioNode);
+export async function _CreateSpatialAudioTransformNodeAttacherAsync(
+    transformNode: TransformNode,
+    spatialAudioNode: ISpatialAudioNode,
+    attachmentType: SpatialAudioAttachmentType
+): Promise<_AbstractSpatialAudioAttacher> {
+    return new _SpatialAudioTransformNodeAttacher(transformNode, spatialAudioNode, attachmentType);
 }
 
 /** @internal */
@@ -16,10 +21,9 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     protected _transformNode: Nullable<TransformNode> = null;
 
     /** @internal */
-    public constructor(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode) {
-        super();
+    public constructor(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
+        super(spatialAudioNode, attachmentType);
 
-        this.spatialAudioNode = spatialAudioNode;
         this.transformNode = transformNode;
     }
 

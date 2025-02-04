@@ -3,12 +3,17 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import type { ISpatialAudioNode } from "./abstractSpatialAudioAttacher";
 import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "./spatialAudioAttacher";
 
 const TempQuaternion = Quaternion.Identity();
 
 /** @internal */
-export async function _CreateSpatialAudioCameraAttacherAsync(camera: Camera, spatialAudioNode: ISpatialAudioNode): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioCameraAttacher(camera, spatialAudioNode);
+export async function _CreateSpatialAudioCameraAttacherAsync(
+    camera: Camera,
+    spatialAudioNode: ISpatialAudioNode,
+    attachmentType: SpatialAudioAttachmentType
+): Promise<_AbstractSpatialAudioAttacher> {
+    return new _SpatialAudioCameraAttacher(camera, spatialAudioNode, attachmentType);
 }
 
 /** @internal */
@@ -16,11 +21,10 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     protected _camera: Nullable<Camera> = null;
 
     /** @internal */
-    public constructor(camera: Camera, spatialAudioNode: ISpatialAudioNode) {
-        super();
+    public constructor(camera: Camera, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
+        super(spatialAudioNode, attachmentType);
 
         this.camera = camera;
-        this.spatialAudioNode = spatialAudioNode;
     }
 
     /** @internal */

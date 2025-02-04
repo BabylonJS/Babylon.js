@@ -4,6 +4,7 @@ import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import { _SpatialAudioDefaults, type ISpatialAudioOptions } from "../subProperties/abstractSpatialAudio";
 import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { _AudioSubNode } from "./audioSubNode";
@@ -39,6 +40,15 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this._attacher.attachedTransformNode = value;
     }
 
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attacher.attachmentType;
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        this._attacher.attachmentType = value;
+    }
+
     public abstract coneInnerAngle: number;
     public abstract coneOuterAngle: number;
     public abstract coneOuterVolume: number;
@@ -54,8 +64,16 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
-        this.attachedMesh = options.spatialAttachedMesh ?? null;
-        this.attachedTransformNode = options.spatialAttachedTransformNode ?? null;
+        if (options.spatialAttachedMesh !== undefined) {
+            this.attachedMesh = options.spatialAttachedMesh;
+        } else if (options.spatialAttachedTransformNode !== undefined) {
+            this.attachedTransformNode = options.spatialAttachedTransformNode;
+        }
+
+        if (options.spatialAttachmentType !== undefined) {
+            this.attachmentType = options.spatialAttachmentType;
+        }
+
         this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefaults.CONE_INNER_ANGLE;
         this.coneOuterAngle = options.spatialConeOuterAngle ?? _SpatialAudioDefaults.CONE_OUTER_ANGLE;
         this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefaults.CONE_OUTER_VOLUME;

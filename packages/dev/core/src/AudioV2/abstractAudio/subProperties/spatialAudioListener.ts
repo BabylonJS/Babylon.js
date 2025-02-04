@@ -2,6 +2,7 @@ import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
 import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener, type ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
 
 /** @internal */
@@ -44,6 +45,15 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attacher.attachmentType;
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        this._attacher.attachmentType = value;
+    }
+
+    /** @internal */
     public dispose(): void {
         this._attacher.dispose();
     }
@@ -56,6 +66,10 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
             this.attachedMesh = options.listenerAttachedMesh;
         } else if (options.listenerAttachedTransformNode !== undefined) {
             this.attachedTransformNode = options.listenerAttachedTransformNode;
+        }
+
+        if (options.listenerAttachmentType !== undefined) {
+            this.attachmentType = options.listenerAttachmentType;
         }
 
         if (options.listenerMinUpdateTime !== undefined) {

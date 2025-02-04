@@ -2,7 +2,7 @@ import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
 import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "./abstractSpatialAudioAttacher";
-import { _SpatialAudioAttacher } from "./spatialAudioAttacher";
+import { _SpatialAudioAttacher, SpatialAudioAttachmentType } from "./spatialAudioAttacher";
 import { _CreateSpatialAudioCameraAttacherAsync } from "./spatialAudioCameraAttacher";
 import { _CreateSpatialAudioMeshAttacherAsync } from "./spatialAudioMeshAttacher";
 import { _CreateSpatialAudioTransformNodeAttacherAsync } from "./spatialAudioTransformNodeAttacher";
@@ -14,15 +14,17 @@ import { _CreateSpatialAudioTransformNodeAttacherAsync } from "./spatialAudioTra
 export class _ExclusiveSpatialAudioAttacher {
     private _attachedEntity: Nullable<AbstractMesh | Camera | TransformNode> = null;
     private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
-    private _createAttacherPromise: Nullable<Promise<_AbstractSpatialAudioAttacher>> = null;
+    private _attachmentType: SpatialAudioAttachmentType;
     private _isReadyPromise: Nullable<Promise<void>> = null;
     private _spatialAudioNode: ISpatialAudioNode;
 
     /**
      * Creates a new ExclusiveSpatialAudioAttacher.
      * @param spatialAudioNode - The spatial audio node to attach to
+     * @param attachmentType - The type of attachment to use; position, rotation or both. Defaults to both
      */
-    public constructor(spatialAudioNode: ISpatialAudioNode) {
+    public constructor(spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.POSITION_AND_ROTATION) {
+        this._attachmentType = attachmentType;
         this._spatialAudioNode = spatialAudioNode;
     }
 
@@ -75,6 +77,25 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     /**
+     * The type of attachment to use; position, rotation, or both.
+     */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attachmentType;
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        if (this._attachmentType === value) {
+            return;
+        }
+
+        this._attachmentType = value;
+
+        if (this._attacher) {
+            this._attacher.attachmentType = value;
+        }
+    }
+
+    /**
      * A promise that resolves when the attacher is ready.
      */
     public get isReadyPromise(): Promise<void> {
@@ -91,17 +112,18 @@ export class _ExclusiveSpatialAudioAttacher {
     private _clearAttacher() {
         this._attacher?.dispose();
         this._attacher = null;
-        this._createAttacherPromise = null;
     }
 
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
         switch (attacherClassName) {
             case _SpatialAudioAttacher.CAMERA:
-                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode) : null;
+                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode, this._attachmentType) : null;
             case _SpatialAudioAttacher.MESH:
-                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this._attachedEntity as AbstractMesh, this._spatialAudioNode) : null;
+                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this._attachedEntity as AbstractMesh, this._spatialAudioNode, this._attachmentType) : null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
-                return this._attachedEntity ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode) : null;
+                return this._attachedEntity
+                    ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode, this._attachmentType)
+                    : null;
         }
         return null;
     }

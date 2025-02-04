@@ -2,6 +2,7 @@ import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { PrecisionDate } from "../../../Misc/precisionDate";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
+import { SpatialAudioAttachmentType } from "./spatialAudioAttacher";
 
 /** @internal */
 export interface ISpatialAudioNode {
@@ -22,7 +23,15 @@ export abstract class _AbstractSpatialAudioAttacher {
     protected abstract _attachedRotationQuaternion: Quaternion;
 
     /** @internal */
+    public attachmentType: SpatialAudioAttachmentType;
+
+    /** @internal */
     public spatialAudioNode: ISpatialAudioNode;
+
+    protected constructor(spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
+        this.attachmentType = attachmentType;
+        this.spatialAudioNode = spatialAudioNode;
+    }
 
     /** @internal */
     public dispose(): void {
@@ -68,7 +77,12 @@ export abstract class _AbstractSpatialAudioAttacher {
         }
         this._lastUpdateTime = now;
 
-        this.spatialAudioNode.position = this._attachedPosition;
-        this.spatialAudioNode.rotationQuaternion = this._attachedRotationQuaternion;
+        if (this.attachmentType & SpatialAudioAttachmentType.POSITION) {
+            this.spatialAudioNode.position = this._attachedPosition;
+        }
+
+        if (this.attachmentType & SpatialAudioAttachmentType.ROTATION) {
+            this.spatialAudioNode.rotationQuaternion = this._attachedRotationQuaternion;
+        }
     };
 }

@@ -2,8 +2,10 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
+import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 
 export const _SpatialAudioDefaults = {
+    ATTACHMENT_TYPE: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
     CONE_INNER_ANGLE: 6.28318530718,
     CONE_OUTER_ANGLE: 6.28318530718,
     CONE_OUTER_VOLUME: 0,
@@ -30,6 +32,10 @@ export interface ISpatialAudioOptions {
      * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
      */
     spatialAttachedTransformNode: TransformNode;
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    spatialAttachmentType: SpatialAudioAttachmentType;
     /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
      * - When the listener is inside the cone inner angle, the volume is at its maximum.
@@ -116,6 +122,7 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialEnabled ||
         options.spatialAttachedMesh !== undefined ||
         options.spatialAttachedTransformNode !== undefined ||
+        options.spatialAttachmentType !== undefined ||
         options.spatialConeInnerAngle !== undefined ||
         options.spatialConeOuterAngle !== undefined ||
         options.spatialConeOuterVolume !== undefined ||
@@ -146,6 +153,11 @@ export abstract class AbstractSpatialAudio {
      * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
      */
     public abstract attachedTransformNode: Nullable<TransformNode>;
+
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    public abstract attachmentType: SpatialAudioAttachmentType;
 
     /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
