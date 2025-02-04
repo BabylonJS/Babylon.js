@@ -2,6 +2,7 @@
 export * from "./andOrNotEvaluator";
 export * from "./assetsManager";
 export * from "./basis";
+export * from "./basisuEncoder";
 export * from "./dds";
 export * from "./decorators";
 export * from "./deferred";
