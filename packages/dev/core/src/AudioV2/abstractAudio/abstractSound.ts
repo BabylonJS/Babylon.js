@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
-import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
+import { AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
@@ -62,7 +62,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
-        super(name, engine, _AudioNodeType.HAS_OUTPUTS);
+        super(name, engine, AudioNodeType.HAS_OUTPUTS);
 
         this._options = {
             autoplay: false,

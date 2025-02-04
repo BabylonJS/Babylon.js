@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { SoundState } from "../soundState";
-import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
+import { AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSound, ICommonSoundOptions, ICommonSoundPlayOptions } from "./abstractSound";
 
 /** @internal */
@@ -18,7 +18,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public options = {} as ICommonSoundOptions;
 
     protected constructor(sound: AbstractSound, options: Partial<ICommonSoundOptions>) {
-        super(sound.engine, _AudioNodeType.HAS_OUTPUTS);
+        super(sound.engine, AudioNodeType.HAS_OUTPUTS);
 
         Object.assign(this.options, options);
 
