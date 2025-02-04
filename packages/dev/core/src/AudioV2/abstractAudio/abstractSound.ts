@@ -216,6 +216,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
+        if (this._state !== SoundState.Started && this._state !== SoundState.Starting) {
+            return;
+        }
+
         for (const instance of Array.from(this._instances)) {
             instance.pause();
         }
