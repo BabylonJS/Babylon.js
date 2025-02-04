@@ -54,6 +54,28 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /** @internal */
+    public get isAttached(): boolean {
+        return this._attacher.isAttached;
+    }
+
+    /** @internal */
+    public get isAttachedToPosition(): boolean {
+        return this._attacher.isAttachedToPosition;
+    }
+
+    /** @internal */
+    public get isAttachedToRotation(): boolean {
+        return this._attacher.isAttachedToRotation;
+    }
+
+    /**
+     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     */
+    public detach(): void {
+        this._attacher.detach();
+    }
+
+    /** @internal */
     public dispose(): void {
         this._attacher.dispose();
     }

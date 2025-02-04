@@ -96,6 +96,13 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     /**
+     * Returns `true` if the audio listener or source is attached to an entity; otherwise returns `false`.
+     */
+    public get isAttached(): boolean {
+        return this._attacher !== null;
+    }
+
+    /**
      * Returns `true` if the audio listener or source is attached to an entity's position; otherwise returns `false`.
      */
     public get isAttachedToPosition(): boolean {
@@ -117,15 +124,18 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     /**
+     * Detaches the attached entity.
+     */
+    public detach() {
+        this._attacher?.dispose();
+        this._attacher = null;
+    }
+
+    /**
      * Releases associated resources.
      */
     public dispose() {
-        this._clearAttacher();
-    }
-
-    private _clearAttacher() {
-        this._attacher?.dispose();
-        this._attacher = null;
+        this.detach();
     }
 
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
@@ -143,7 +153,7 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     private async _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): Promise<void> {
-        this._clearAttacher();
+        this.detach();
 
         this._attachedEntity = entity;
         this._attacher = await this._createAttacher(attacherClassName);

@@ -186,6 +186,11 @@ export abstract class AbstractSpatialAudio {
     public abstract distanceModel: "linear" | "inverse" | "exponential";
 
     /**
+     * Whether the audio source is attached to a mesh or transform node.
+     */
+    public abstract isAttached: boolean;
+
+    /**
      * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link distanceModel} is set to `"linear"`.
      * @see {@link distanceModel}

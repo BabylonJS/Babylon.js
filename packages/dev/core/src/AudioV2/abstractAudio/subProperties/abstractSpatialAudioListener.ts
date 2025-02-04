@@ -100,6 +100,11 @@ export abstract class AbstractSpatialAudioListener {
     public abstract attachmentType: SpatialAudioAttachmentType;
 
     /**
+     * Whether the listener is attached to a camera, mesh or transform node.
+     */
+    public abstract isAttached: boolean;
+
+    /**
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
      * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */

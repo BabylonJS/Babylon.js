@@ -96,6 +96,11 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get isAttached(): boolean {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.isAttached ?? false;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.maxDistance ?? _SpatialAudioDefaults.MAX_DISTANCE;
     }
@@ -174,5 +179,12 @@ export class _SpatialAudio extends AbstractSpatialAudio {
         this._subGraph.callOnSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL, (node) => {
             node.rotationQuaternion = value;
         });
+    }
+
+    /**
+     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     */
+    public detach(): void {
+        this._subGraph.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.detach();
     }
 }

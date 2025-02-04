@@ -49,6 +49,11 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this._attacher.attachmentType = value;
     }
 
+    /** @internal */
+    public get isAttached(): boolean {
+        return this._attacher.isAttached;
+    }
+
     public abstract coneInnerAngle: number;
     public abstract coneOuterAngle: number;
     public abstract coneOuterVolume: number;
@@ -61,6 +66,11 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract rotation: Vector3;
     public abstract rotationQuaternion: Quaternion;
     public abstract inNode: AudioNode;
+
+    /** @internal */
+    public detach(): void {
+        this._attacher.detach();
+    }
 
     /** @internal */
     public async setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
