@@ -213,11 +213,9 @@ export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
 }
 
 export function RotateNode180Y(node: INode) {
-    if (node.rotation) {
-        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-        rotation180Y.multiplyToRef(rotation, rotation);
-        node.rotation = rotation.asArray();
-    }
+    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    rotation180Y.multiplyToRef(rotation, rotation);
+    node.rotation = rotation.asArray();
 }
 
 /**
