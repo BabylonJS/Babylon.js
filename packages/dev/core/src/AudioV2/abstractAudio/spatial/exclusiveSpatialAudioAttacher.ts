@@ -91,7 +91,7 @@ export class _ExclusiveSpatialAudioAttacher {
             case _SpatialAudioAttacher.CAMERA:
                 return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode) : null;
             case _SpatialAudioAttacher.MESH:
-                return this.attachedMesh ? _CreateSpatialAudioMeshAttacherAsync(this.attachedMesh, this._spatialAudioNode) : null;
+                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this._attachedEntity as AbstractMesh, this._spatialAudioNode) : null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
                 return this._attachedEntity ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode) : null;
         }
