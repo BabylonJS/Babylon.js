@@ -22,7 +22,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
      * The output volume of the bus.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.Volume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.VOLUME;
     }
 
     public set volume(value: number) {

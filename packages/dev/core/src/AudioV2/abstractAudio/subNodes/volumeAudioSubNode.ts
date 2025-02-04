@@ -3,10 +3,9 @@ import { _AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 import { _AudioSubNode } from "../subNodes/audioSubNode";
 
 /** @internal */
-export class _VolumeAudioDefaults {
-    /** @internal */
-    public static readonly Volume = 1;
-}
+export const _VolumeAudioDefaults = {
+    VOLUME: 1,
+};
 
 /**
  * Volume options.
@@ -28,6 +27,6 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public setOptions(options: Partial<IVolumeAudioOptions>): void {
-        this.volume = options.volume ?? _VolumeAudioDefaults.Volume;
+        this.volume = options.volume ?? _VolumeAudioDefaults.VOLUME;
     }
 }

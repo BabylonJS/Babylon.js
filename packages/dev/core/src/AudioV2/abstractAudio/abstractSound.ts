@@ -69,7 +69,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             loop: false,
             maxInstances: Infinity,
             startOffset: 0,
-            volume: _VolumeAudioDefaults.Volume,
+            volume: _VolumeAudioDefaults.VOLUME,
             ...options,
         } as ICommonSoundOptions;
     }
@@ -178,7 +178,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The output volume of the sound.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.Volume;
+        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.VOLUME;
     }
 
     public set volume(value: number) {
