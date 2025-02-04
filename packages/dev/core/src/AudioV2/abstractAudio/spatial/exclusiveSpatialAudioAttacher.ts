@@ -5,6 +5,7 @@ import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "./abstrac
 import { _SpatialAudioAttacher } from "./spatialAudioAttacher";
 import { _CreateSpatialAudioCameraAttacherAsync } from "./spatialAudioCameraAttacher";
 import { _CreateSpatialAudioMeshAttacherAsync } from "./spatialAudioMeshAttacher";
+import { _CreateSpatialAudioTransformNodeAttacherAsync } from "./spatialAudioTransformNodeAttacher";
 
 /**
  * Provides a common interface for attaching an audio listener or source to a specific entity, ensuring that only one
@@ -92,7 +93,7 @@ export class _ExclusiveSpatialAudioAttacher {
             case _SpatialAudioAttacher.MESH:
                 return this.attachedMesh ? _CreateSpatialAudioMeshAttacherAsync(this.attachedMesh, this._spatialAudioNode) : null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
-                return null;
+                return this._attachedEntity ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode) : null;
         }
         return null;
     }
