@@ -1040,6 +1040,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns whether or not this material should be rendered in alpha blend mode.
      */
     public override needAlphaBlending(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -1051,6 +1055,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns whether or not this material should be rendered in alpha test mode.
      */
     public override needAlphaTesting(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
+        }
+
         if (this._forceAlphaTest) {
             return true;
         }
@@ -1951,7 +1959,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._useLogarithmicDepth,
                 this.pointsCloud,
                 this.fogEnabled,
-                this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
+                this.needAlphaTestingForMesh(mesh) || this.needAlphaTesting(),
                 defines,
                 this._applyDecalMapAfterDetailMap
             );

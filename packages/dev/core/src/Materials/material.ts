@@ -1132,6 +1132,18 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._markAllSubMeshesAsTexturesAndMiscDirty();
     }
 
+    protected get _hasTransparencyMode(): boolean {
+        return this._transparencyMode != null;
+    }
+
+    protected get _transparencyModeIsBlend(): boolean {
+        return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
+    }
+
+    protected get _transparencyModeIsTest(): boolean {
+        return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
+    }
+
     /**
      * Returns true if alpha blending should be disabled.
      */
@@ -1144,6 +1156,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -1157,6 +1173,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (mesh.visibility < 1.0) {
             return true;
         }
@@ -1173,6 +1193,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
+        }
+
         if (this._forceAlphaTest) {
             return true;
         }
@@ -1185,7 +1209,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param mesh defines the mesh to check
      * @returns a boolean specifying if alpha testing should be turned on for the mesh
      */
-    protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+    public needAlphaTestingForMesh(mesh: AbstractMesh): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
+        }
+
         return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting();
     }
 
