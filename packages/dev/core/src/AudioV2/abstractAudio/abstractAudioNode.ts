@@ -25,13 +25,13 @@ export abstract class AbstractAudioNode {
      * The connected downstream audio nodes.
      * - Undefined for input nodes.
      */
-    protected readonly _downstreamNodes?: Set<AbstractAudioNode> | undefined;
+    protected readonly _downstreamNodes?: Set<AbstractAudioNode>;
 
     /**
      * The connected upstream audio nodes.
      * - Undefined for output nodes.
      */
-    protected readonly _upstreamNodes?: Set<AbstractAudioNode> | undefined;
+    protected readonly _upstreamNodes?: Set<AbstractAudioNode>;
 
     /**
      * The audio engine this node belongs to.
