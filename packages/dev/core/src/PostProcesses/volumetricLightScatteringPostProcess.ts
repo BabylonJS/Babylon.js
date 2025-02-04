@@ -215,7 +215,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Alpha test
         if (material) {
-            const needAlphaTesting = material.needAlphaTesting();
+            const needAlphaTesting = material.needAlphaTestingForMesh(mesh);
             if (needAlphaTesting) {
                 defines.push("#define ALPHATEST");
             }
@@ -466,7 +466,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     // Alpha test
-                    if (material.needAlphaTesting()) {
+                    if (material.needAlphaTestingForMesh(effectiveMesh)) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {

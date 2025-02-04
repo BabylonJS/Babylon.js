@@ -547,7 +547,7 @@ export class ThinEffectLayer {
 
         // Diffuse
         if (material) {
-            const needAlphaTest = material.needAlphaTesting();
+            const needAlphaTest = material.needAlphaTestingForMesh(mesh);
 
             const diffuseTexture = material.getAlphaTestTexture();
             const needAlphaBlendFromDiffuse =
@@ -941,7 +941,7 @@ export class ThinEffectLayer {
             }
 
             if (!renderingMaterial) {
-                const needAlphaTest = material.needAlphaTesting();
+                const needAlphaTest = material.needAlphaTestingForMesh(effectiveMesh);
 
                 const diffuseTexture = material.getAlphaTestTexture();
                 const needAlphaBlendFromDiffuse =

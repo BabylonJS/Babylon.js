@@ -284,7 +284,7 @@ export class DepthRenderer {
 
                 if (!renderingMaterial) {
                     // Alpha test
-                    if (material.needAlphaTesting()) {
+                    if (material.needAlphaTestingForMesh(effectiveMesh)) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {
@@ -407,7 +407,7 @@ export class DepthRenderer {
         let uv2 = false;
 
         // Alpha test
-        if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
+        if (material.needAlphaTestingForMesh(mesh) && material.getAlphaTestTexture()) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
