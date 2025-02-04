@@ -116,7 +116,9 @@ export abstract class AbstractAudioNode {
             return;
         }
 
-        this._downstreamNodes.delete(node);
+        if (!this._downstreamNodes.delete(node)) {
+            return;
+        }
 
         node._onDisconnect(this);
     }
