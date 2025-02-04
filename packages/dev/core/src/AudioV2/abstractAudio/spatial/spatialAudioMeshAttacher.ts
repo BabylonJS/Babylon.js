@@ -11,7 +11,7 @@ export async function _CreateSpatialAudioMeshAttacherAsync(mesh: AbstractMesh, s
 
 /** @internal */
 class _SpatialAudioMeshAttacher extends _SpatialAudioTransformNodeAttacher {
-    protected override _transformNode: Nullable<AbstractMesh> = null;
+    protected override _transformNode: Nullable<AbstractMesh>;
 
     /** @internal */
     public constructor(mesh: AbstractMesh, spatialAudioNode: ISpatialAudioNode) {

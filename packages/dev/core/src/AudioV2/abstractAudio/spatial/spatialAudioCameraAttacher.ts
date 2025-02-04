@@ -29,13 +29,13 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
             return;
         }
 
-        this._detachCamera();
+        this._setScene(null);
         this._camera = camera;
-        this._attachCamera();
+        this._setScene(this._camera?.getScene() ?? null);
     }
 
     protected get _attachedPosition(): Vector3 {
-        return this._camera?.position ?? Vector3.ZeroReadOnly;
+        return this._camera?.globalPosition ?? Vector3.ZeroReadOnly;
     }
 
     protected get _attachedRotationQuaternion(): Quaternion {
@@ -51,13 +51,5 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     /** @internal */
     public getClassName(): string {
         return "_SpatialAudioCameraAttacher";
-    }
-
-    private _attachCamera(): void {
-        this._setScene(this._camera?.getScene() ?? null);
-    }
-
-    private _detachCamera(): void {
-        this._setScene(null);
     }
 }

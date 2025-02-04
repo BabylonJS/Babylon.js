@@ -53,7 +53,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract inNode: AudioNode;
 
     /** @internal */
-    public setOptions(options: Partial<ISpatialAudioOptions>): void {
+    public setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
         this.attachedMesh = options.spatialAttachedMesh ?? null;
         this.attachedTransformNode = options.spatialAttachedTransformNode ?? null;
         this.coneInnerAngle = options.spatialConeInnerAngle ?? _SpatialAudioDefaults.CONE_INNER_ANGLE;
@@ -77,5 +77,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         } else {
             this.rotationQuaternion = _SpatialAudioDefaults.ROTATION_QUATERNION.clone();
         }
+
+        return this._attacher.isReadyPromise;
     }
 }

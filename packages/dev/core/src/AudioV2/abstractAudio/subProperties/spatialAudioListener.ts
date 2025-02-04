@@ -49,7 +49,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /** @internal */
-    public setOptions(options: Partial<ISpatialAudioListenerOptions>): void {
+    public setOptions(options: Partial<ISpatialAudioListenerOptions>): Promise<void> {
         if (options.listenerAttachedCamera !== undefined) {
             this.attachedCamera = options.listenerAttachedCamera;
         } else if (options.listenerAttachedMesh !== undefined) {
@@ -73,5 +73,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         } else {
             this.rotationQuaternion = _SpatialAudioListenerDefaults.ROTATION_QUATERNION.clone();
         }
+
+        return this._attacher.isReadyPromise;
     }
 }

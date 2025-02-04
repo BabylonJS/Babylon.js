@@ -38,7 +38,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         await this._createSubNodePromisesResolved();
 
         if (hasSpatialOptions) {
-            this.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.setOptions(options);
+            await this.getSubNode<_SpatialAudioSubNode>(_AudioSubNode.SPATIAL)?.setOptions(options);
         }
         if (hasStereoOptions) {
             this.getSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO)?.setOptions(options);

@@ -29,13 +29,13 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
             return;
         }
 
-        this._detachTransformNode();
+        this._setScene(null);
         this._transformNode = transformNode;
-        this._attachTransformNode();
+        this._setScene(this._transformNode?.getScene() ?? null);
     }
 
     protected get _attachedPosition(): Vector3 {
-        return this._transformNode?.position ?? Vector3.ZeroReadOnly;
+        return this._transformNode?.absolutePosition ?? Vector3.ZeroReadOnly;
     }
 
     protected get _attachedRotationQuaternion(): Quaternion {
@@ -51,13 +51,5 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     /** @internal */
     public getClassName(): string {
         return "_SpatialAudioTransformNodeAttacher";
-    }
-
-    private _attachTransformNode(): void {
-        this._setScene(this._transformNode?.getScene() ?? null);
-    }
-
-    private _detachTransformNode(): void {
-        this._setScene(null);
     }
 }

@@ -15,6 +15,7 @@ export class _ExclusiveSpatialAudioAttacher {
     private _attachedEntity: Nullable<AbstractMesh | Camera | TransformNode> = null;
     private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
     private _createAttacherPromise: Nullable<Promise<_AbstractSpatialAudioAttacher>> = null;
+    private _isReadyPromise: Nullable<Promise<void>> = null;
     private _spatialAudioNode: ISpatialAudioNode;
 
     /**
@@ -38,7 +39,7 @@ export class _ExclusiveSpatialAudioAttacher {
             return;
         }
 
-        this._resetAttachedEntity(value, _SpatialAudioAttacher.CAMERA);
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttacher.CAMERA);
     }
 
     /**
@@ -54,7 +55,7 @@ export class _ExclusiveSpatialAudioAttacher {
             return;
         }
 
-        this._resetAttachedEntity(value, _SpatialAudioAttacher.MESH);
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttacher.MESH);
     }
 
     /**
@@ -70,7 +71,14 @@ export class _ExclusiveSpatialAudioAttacher {
             return;
         }
 
-        this._resetAttachedEntity(value, _SpatialAudioAttacher.TRANSFORM_NODE);
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttacher.TRANSFORM_NODE);
+    }
+
+    /**
+     * A promise that resolves when the attacher is ready.
+     */
+    public get isReadyPromise(): Promise<void> {
+        return this._isReadyPromise ?? Promise.resolve();
     }
 
     /**
@@ -98,17 +106,12 @@ export class _ExclusiveSpatialAudioAttacher {
         return null;
     }
 
-    private _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string) {
+    private async _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): Promise<void> {
         this._clearAttacher();
 
         this._attachedEntity = entity;
+        this._attacher = await this._createAttacher(attacherClassName);
 
-        this._createAttacherPromise = this._createAttacher(attacherClassName);
-
-        if (this._createAttacherPromise) {
-            this._createAttacherPromise.then((attacher) => {
-                this._attacher = attacher;
-            });
-        }
+        return;
     }
 }
