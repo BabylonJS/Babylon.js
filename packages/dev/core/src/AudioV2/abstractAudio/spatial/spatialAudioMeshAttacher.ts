@@ -22,6 +22,7 @@ class _SpatialAudioMeshAttacher extends _SpatialAudioTransformNodeAttacher {
         return this._transformNode?.getBoundingInfo().boundingSphere.centerWorld ?? Vector3.ZeroReadOnly;
     }
 
+    /** @internal */
     public override getClassName(): string {
         return "_SpatialAudioMeshAttacher";
     }

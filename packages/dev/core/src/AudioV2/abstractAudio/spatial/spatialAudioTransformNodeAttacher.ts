@@ -48,6 +48,7 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
         return TempQuaternion;
     }
 
+    /** @internal */
     public getClassName(): string {
         return "_SpatialAudioTransformNodeAttacher";
     }
