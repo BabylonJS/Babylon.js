@@ -68,7 +68,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
             return indexesUsed.indexOf(false);
         } else {
             const unusedIndexes = indexesUsed.map((used, index) => (used ? -1 : index)).filter((index) => index !== -1);
-            return unusedIndexes[Math.floor(Math.random() * unusedIndexes.length)];
+            return unusedIndexes.length ? unusedIndexes[Math.floor(Math.random() * unusedIndexes.length)] : -1;
         }
     }
 
@@ -108,13 +108,12 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         }
         const indexesUsed = context._getExecutionVariable(this, "indexesUsed", [] as boolean[]);
         const nextIndex = this._getNextIndex(indexesUsed);
-        if (nextIndex === -1) {
-            return;
+        if (nextIndex > -1) {
+            this.lastIndex.setValue(nextIndex, context);
+            this.outFlows[nextIndex]._activateSignal(context);
+            indexesUsed[nextIndex] = true;
+            context._setExecutionVariable(this, "indexesUsed", indexesUsed);
         }
-        this.lastIndex.setValue(nextIndex, context);
-        this.outFlows[nextIndex]._activateSignal(context);
-        indexesUsed[nextIndex] = true;
-        context._setExecutionVariable(this, "indexesUsed", indexesUsed);
     }
 
     /**
