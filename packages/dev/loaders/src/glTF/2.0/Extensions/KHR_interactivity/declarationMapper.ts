@@ -26,7 +26,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
-    dataTransformer?: ((data: I, array?: any[], container?: { [originName: string]: IGLTFToFlowGraphMappingObject }) => O) | null;
+    dataTransformer?: (data: I, parser: InteractivityGraphToFlowGraphParser) => O;
     /**
      * If the property is in the options passed to the constructor of the block.
      */
@@ -50,6 +50,11 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
      * Defaults to the first block in the mapping.
      */
     toBlock?: FlowGraphBlockNames;
+
+    /**
+     * Used in configuration values. If defined, this will be the default value, if no value is provided/
+     */
+    defaultValue?: O;
 }
 
 export interface IGLTFToFlowGraphMapping {
@@ -129,6 +134,8 @@ export interface IGLTFToFlowGraphMapping {
      * For example, if a node has a configuration object, it must be present and correct.
      * This is a basic node-based validation.
      * This functions is expected to return false and log the error if the node is not valid.
+     * Note that this function can also modify the node, if needed.
+     *
      * @param gltfBlock the glTF node to validate
      * @param globalGLTF the global glTF object
      * @returns true if validated, false if not.
@@ -809,7 +816,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // }
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
-            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length || 1;
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -828,23 +835,22 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/switch": {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
-            cases: { name: "cases", gltfType: "array", inOptions: true },
+            cases: { name: "cases", inOptions: true, defaultValue: [] },
         },
         validation(gltfBlock) {
-            if (gltfBlock.configuration) {
-                const cases = gltfBlock.configuration.cases;
-                if (!Array.isArray(cases)) {
-                    Logger.Error("Switch should have a single configuration object, the cases array");
-                    return false;
-                }
-                return cases.every((caseValue) => {
+            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
+                const cases = gltfBlock.configuration.cases.value;
+                const onlyIntegers = cases.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
-                    if (typeof caseValue !== "number" || !/^\d+$/.test(caseValue.toString())) {
-                        Logger.Error("Switch cases should be numbers");
-                        return false;
-                    }
-                    return true;
+                    return typeof caseValue === "number" && /^\d+$/.test(caseValue.toString());
                 });
+                if (!onlyIntegers) {
+                    gltfBlock.configuration.cases.value = [] as number[];
+                    return true;
+                }
+                // check for duplicates
+                const uniqueCases = new Set(cases);
+                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
             }
             return true;
         },
@@ -873,7 +879,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/for": {
         blocks: [FlowGraphBlockNames.ForLoop],
         configuration: {
-            initialIndex: { name: "initialIndex", gltfType: "number", inOptions: true },
+            initialIndex: { name: "initialIndex", gltfType: "number", inOptions: true, defaultValue: 0 },
         },
         inputs: {
             values: {
@@ -886,6 +892,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             values: {
                 index: { name: "index" },
+            },
+            flows: {
+                loopBody: { name: "executionFlow" },
             },
         },
     },
@@ -906,8 +915,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/multiGate": {
         blocks: [FlowGraphBlockNames.MultiGate],
         configuration: {
-            isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true },
-            isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true },
+            isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true, defaultValue: false },
+            isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true, defaultValue: false },
         },
         extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
             if (declaration.op !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
@@ -922,7 +931,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
-            inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true },
+            inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true, defaultValue: 0 },
+        },
+        validation(gltfBlock) {
+            // check that the configuration value is an integer
+            if (typeof gltfBlock.configuration?.inputFlows?.value[0] !== "number") {
+                gltfBlock.configuration = gltfBlock.configuration || {
+                    inputFlows: { value: [0] },
+                };
+                gltfBlock.configuration.inputFlows.value = [0];
+            }
+            // go over all output flows, check that they are all integers as strings
+            return Object.keys(gltfBlock.flows || {}).every((flow) => {
+                return typeof flow === "string" && /^\d+$/.test(flow);
+            });
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             // process the input flows and add them to the inFlow array
@@ -956,6 +978,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],
+        validation(gltfBlock) {
+            if (!gltfBlock.configuration?.variable?.value) {
+                Logger.Error("Variable get block should have a variable configuration");
+                return false;
+            }
+            return true;
+        },
         configuration: {
             variable: {
                 name: "variable",
@@ -963,8 +992,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
-                dataTransformer(index, variables) {
-                    return variables?.[index].name;
+                dataTransformer(index, parser) {
+                    return parser.getVariableName(index);
                 },
             },
         },
@@ -978,25 +1007,38 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
-                dataTransformer(index, variables) {
-                    return variables?.[index].name;
+                dataTransformer(index, parser) {
+                    return parser.getVariableName(index);
                 },
             },
         },
     },
     "variable/interpolate": {
-        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.Context, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
         configuration: {
             variable: {
-                name: "variable",
+                name: "propertyName",
                 gltfType: "number",
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
-                dataTransformer(index, variables) {
-                    return variables?.[index].name;
+                dataTransformer(index, parser) {
+                    return parser.getVariableName(index);
                 },
-                toBlock: FlowGraphBlockNames.GetVariable,
+            },
+            useSlerp: {
+                name: "animationType",
+                gltfType: "boolean",
+                inOptions: true,
+                defaultValue: false,
+                dataTransformer: (value) => {
+                    if (value === true) {
+                        return FlowGraphTypes.Quaternion;
+                    } else {
+                        // TODO - should we return undefined or the default value?
+                        return undefined;
+                    }
+                },
             },
         },
         inputs: {
@@ -1019,9 +1061,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         interBlockConnectors: [
             {
-                input: "propertyName",
-                output: "propertyName",
-                inputBlockIndex: 0,
+                input: "object",
+                output: "userVariables",
+                inputBlockIndex: 2,
                 outputBlockIndex: 1,
             },
             {
@@ -1043,7 +1085,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 outputBlockIndex: 1,
             },
         ],
-        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
             // is useSlerp is used, animationType should be set to be quaternion!
             const serializedValueInterpolation = serializedObjects[0];
             if (serializedValueInterpolation.config.useSlerp) {

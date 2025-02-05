@@ -107,7 +107,7 @@ export class InteractivityGraphToFlowGraphParser {
         }
     }
 
-    private _parseVariable(variable: IKHRInteractivity_Variable) {
+    private _parseVariable(variable: IKHRInteractivity_Variable, dataTransform?: (value: any, parser: InteractivityGraphToFlowGraphParser) => any) {
         const type = this._types[variable.type];
         if (!type) {
             Logger.Error(["No type found for variable", variable]);
@@ -133,19 +133,19 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
                 case FlowGraphTypes.Vector4:
                 case FlowGraphTypes.Matrix2D:
-                    value.push(NaN, NaN, NaN, NaN);
+                    value.fill(NaN, 0, 4);
                     break;
                 case FlowGraphTypes.Matrix:
-                    value.push(NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN);
+                    value.fill(NaN, 0, 16);
                     break;
                 case FlowGraphTypes.Matrix3D:
-                    value.push(NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN);
+                    value.fill(NaN, 0, 9);
                     break;
                 default:
                     break;
             }
         }
-        return { type, value };
+        return { type, value: dataTransform ? dataTransform(value, this) : value };
     }
 
     private _parseEvents() {
@@ -202,6 +202,11 @@ export class InteractivityGraphToFlowGraphParser {
                 Logger.Error(["No mapping found for node", node]);
                 throw new Error("Error parsing nodes");
             }
+            if (mapping.flowGraphMapping.validation) {
+                if (!mapping.flowGraphMapping.validation(node, this._gltf)) {
+                    throw new Error(`Error validating interactivity node ${node}`);
+                }
+            }
             const blocks: ISerializedFlowGraphBlock[] = [];
             // create block(s) for this node using the mapping
             for (const blockType of mapping.flowGraphMapping.blocks) {
@@ -247,7 +252,18 @@ export class InteractivityGraphToFlowGraphParser {
                 const configMapping = nodeMapping.configuration?.[key];
                 const belongsToBlock = configMapping && configMapping.toBlock ? configMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
-                    configuration[key] = value;
+                    if ((!value || !value.value) && typeof configMapping?.defaultValue !== "undefined") {
+                        configuration[key] = configMapping.defaultValue;
+                    } else if (value.value.length > 1) {
+                        // supporting int[] and int/boolean/string
+                        configuration[key] = value.value.length === 1 ? value.value[0] : value.value;
+                    } else {
+                        Logger.Warn(["Invalid value for node configuration", value]);
+                    }
+                    // make sure we transform the data if needed
+                    if (configMapping && configMapping.dataTransformer) {
+                        configuration[key] = configMapping.dataTransformer(configuration[key], this);
+                    }
                 }
             });
         }
@@ -268,11 +284,6 @@ export class InteractivityGraphToFlowGraphParser {
             if (!outputMapper) {
                 Logger.Error(["No mapping found for node", gltfNode]);
                 throw new Error("Error parsing node connections");
-            }
-            if (outputMapper.flowGraphMapping.validation) {
-                if (!outputMapper.flowGraphMapping.validation(gltfNode, this._gltf)) {
-                    throw new Error(`Error validating interactivity node ${i}`);
-                }
             }
             const flowsFromGLTF = gltfNode.flows || {};
             const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
@@ -333,7 +344,7 @@ export class InteractivityGraphToFlowGraphParser {
                 const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping!.toBlock)) || flowGraphBlocks.blocks[0];
                 block.dataInputs.push(socketIn);
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
-                    const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable);
+                    const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
                 } else if ((value as IKHRInteractivity_OutputSocketReference).node) {
                     const nodeOutId = (value as IKHRInteractivity_OutputSocketReference).node;
@@ -432,6 +443,10 @@ export class InteractivityGraphToFlowGraphParser {
         outputConnection.connectedPointIds.push(inputConnection.uniqueId);
     }
 
+    public getVariableName(index: number) {
+        return "staticVariable_" + index;
+    }
+
     public serializeToFlowGraph(): ISerializedFlowGraph {
         const context: ISerializedFlowGraphContext = {
             uniqueId: RandomGUID(),
@@ -441,7 +456,7 @@ export class InteractivityGraphToFlowGraphParser {
         this._parseNodeConnections(context);
         for (let i = 0; i < this._staticVariables.length; i++) {
             const variable = this._staticVariables[i];
-            context._userVariables["staticVariable_" + i] = variable;
+            context._userVariables[this.getVariableName(i)] = variable;
         }
 
         const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]);
