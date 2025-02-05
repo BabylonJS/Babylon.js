@@ -1147,6 +1147,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Specifies whether or not this material should be rendered in alpha blend mode.
      * @returns a boolean specifying if alpha blending is needed
+     * @deprecated Please use needAlphaBlendingForMesh instead
      */
     public needAlphaBlending(): boolean {
         if (this._hasTransparencyMode) {
@@ -1184,6 +1185,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Specifies whether or not this material should be rendered in alpha test mode.
      * @returns a boolean specifying if an alpha test is needed.
+     * @deprecated Please use needAlphaTestingForMesh instead
      */
     public needAlphaTesting(): boolean {
         if (this._hasTransparencyMode) {
