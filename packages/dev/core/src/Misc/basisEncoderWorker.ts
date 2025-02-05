@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BasisuEncoderOptions } from "./basisuEncoder";
+import type { BasisEncoderOptions } from "./basisEncoder";
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
@@ -10,15 +10,13 @@ declare let BASIS: any;
  * API reference: https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp.
  * @internal
  */
-export function EncodeToBasisu(basisModule: any, imgData: Uint8Array, params: BasisuEncoderOptions): Uint8Array {
+export function EncodeImageData(basisModule: any, imgData: Uint8Array, params: BasisEncoderOptions): Uint8Array {
     let basisEncoder = null;
 
     try {
         basisModule.initializeBasis();
         basisEncoder = new basisModule.BasisEncoder();
         basisEncoder.setSliceSourceImage(0, imgData, params.width, params.height, basisModule.ldr_image_type.cRGBA32.value);
-
-        basisEncoder.setDebug(true);
 
         // Set sRGB options, which should almost always match each other.
         basisEncoder.setPerceptual(params.useSRGBBuffer);
@@ -73,10 +71,10 @@ export function workerFunction(): void {
             }
             case "encode": {
                 if (!encoderModulePromise) {
-                    throw new Error("Basisu encoder module is not available");
+                    throw new Error("Basis encoder module is not available");
                 }
                 encoderModulePromise!.then((module) => {
-                    const encodedFile = EncodeToBasisu(module, message.imageData, message.params);
+                    const encodedFile = EncodeImageData(module, message.imageData, message.params);
                     postMessage({ id: "encodeDone", encodedImageData: encodedFile }, [encodedFile.buffer]);
                 });
                 break;

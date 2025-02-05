@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import { Tools } from "./tools";
-import { initializeWebWorker, EncodeToBasisu, workerFunction } from "./basisuEncoderWorker";
+import { initializeWebWorker, EncodeImageData, workerFunction } from "./basisEncoderWorker";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import type { WorkerPool } from "./workerPool";
 import { _GetDefaultNumWorkers } from "core/Meshes/Compression/dracoCodec";
@@ -17,7 +17,7 @@ declare let BASIS: any;
  * Parameters for the Basis Universal encoder.
  * @internal
  */
-export type BasisuEncoderOptions = {
+export type BasisEncoderOptions = {
     /**
      * Width of the source image
      */
@@ -32,7 +32,7 @@ export type BasisuEncoderOptions = {
     useSRGBBuffer: boolean;
 };
 
-interface IBasisuEncoderConfiguration {
+interface IBasisEncoderConfiguration {
     /**
      * The url to the WebAssembly module.
      */
@@ -56,10 +56,10 @@ function IsWasmAvailable(): boolean {
 }
 
 async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
-    const url = Tools.GetBabylonScriptURL(BasisuEncoderConfiguration.WasmURL);
-    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisuEncoderConfiguration.WasmBinaryURL, true));
+    const url = Tools.GetBabylonScriptURL(BasisEncoderConfiguration.WasmURL);
+    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.WasmBinaryURL, true));
 
-    const workerContent = `${EncodeToBasisu}(${workerFunction})()`;
+    const workerContent = `${EncodeImageData}(${workerFunction})()`;
     const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
 
     return new AutoReleaseWorkerPool(1, () => {
@@ -71,26 +71,26 @@ async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
 async function CreateModuleAsync(): Promise<any> {
     // If module was already loaded in this context
     if (typeof BASIS === "undefined") {
-        await Tools.LoadBabylonScriptAsync(BasisuEncoderConfiguration.WasmURL);
+        await Tools.LoadBabylonScriptAsync(BasisEncoderConfiguration.WasmURL);
     }
-    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisuEncoderConfiguration.WasmBinaryURL, true));
+    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.WasmBinaryURL, true));
     return BASIS({ wasmBinary });
 }
 
 let _module: Nullable<any> = null;
 let _workerPool: Nullable<WorkerPool> = null;
 
-async function EncodeData(slicedSourceImage: Uint8Array, options: BasisuEncoderOptions): Promise<Uint8Array> {
+async function EncodeData(slicedSourceImage: Uint8Array, options: BasisEncoderOptions): Promise<Uint8Array> {
     if (!IsWasmAvailable()) {
         throw new Error("Basis transcoder requires an environment with URL and WebAssembly support.");
     }
 
     // Use main thread if no workers are available
-    if (BasisuEncoderConfiguration.numWorkers === 0 || typeof Worker === "undefined") {
+    if (BasisEncoderConfiguration.numWorkers === 0 || typeof Worker === "undefined") {
         if (!_module) {
             _module = await CreateModuleAsync();
         }
-        return EncodeToBasisu(_module, slicedSourceImage, options);
+        return EncodeImageData(_module, slicedSourceImage, options);
     }
 
     if (!_workerPool) {
@@ -123,9 +123,9 @@ async function EncodeData(slicedSourceImage: Uint8Array, options: BasisuEncoderO
     });
 }
 
-function GetDefaultBasisuEncoderOptions(babylonTexture: BaseTexture): BasisuEncoderOptions {
-    // To expose more options, use default values from EncodeToBasisu in basisuEncoderWorker.ts.
-    const defaultOptions: BasisuEncoderOptions = {
+function GetDefaultBasisEncoderOptions(babylonTexture: BaseTexture): BasisEncoderOptions {
+    // To expose more options, use hardcoded parameters found in basisEncoderWorker.ts as defaults.
+    const defaultOptions: BasisEncoderOptions = {
         width: babylonTexture.getSize().width,
         height: babylonTexture.getSize().height,
         useSRGBBuffer: babylonTexture._texture?._useSRGBBuffer ?? babylonTexture.gammaSpace,
@@ -139,7 +139,7 @@ function GetDefaultBasisuEncoderOptions(babylonTexture: BaseTexture): BasisuEnco
  * - wasmUrl: `"https://cdn.babylonjs.com/basis_encoder.js"`
  * - wasmBinaryUrl: `"https://cdn.babylonjs.com/basis_encoder.wasm"`
  */
-export const BasisuEncoderConfiguration: IBasisuEncoderConfiguration = {
+export const BasisEncoderConfiguration: IBasisEncoderConfiguration = {
     WasmURL: `${Tools._DefaultCdnUrl}/basis_encoder.js`,
     WasmBinaryURL: `${Tools._DefaultCdnUrl}/basis_encoder.wasm`,
     numWorkers: _GetDefaultNumWorkers(),
@@ -157,15 +157,15 @@ export const BasisuEncoderConfiguration: IBasisuEncoderConfiguration = {
  * @returns a promise resulting in the basis-encoded image data
  * @experimental
  */
-export async function EncodeBasisu(babylonTexture: BaseTexture): Promise<Uint8Array> {
+export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture): Promise<Uint8Array> {
     if (babylonTexture.isCube) {
-        throw new Error(`Cube textures are not currently supported for BasisU encoding.`);
+        throw new Error(`Cube textures are not currently supported for Basis encoding.`);
     }
     if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
         Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
     }
 
     const pixels = await GetTextureDataAsync(babylonTexture, babylonTexture.getSize().width, babylonTexture.getSize().height);
-    const options = GetDefaultBasisuEncoderOptions(babylonTexture);
+    const options = GetDefaultBasisEncoderOptions(babylonTexture);
     return EncodeData(pixels, options);
 }
