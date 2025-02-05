@@ -13,7 +13,7 @@ import { Tools } from "../Misc/tools";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
+import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
@@ -2127,7 +2127,7 @@ export class NativeEngine extends Engine {
                 }
 
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
-                const imageData = CreateImageDataArrayBufferViews(data, info);
+                const imageData = CreateRadianceImageDataArrayBufferViews(data, info);
 
                 texture.format = Constants.TEXTUREFORMAT_RGBA;
                 texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
