@@ -15,7 +15,7 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
     /**
      * If true, the loop body will be executed at least once.
      */
-    isDo?: boolean;
+    doWhile?: boolean;
 }
 
 /**
@@ -61,7 +61,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         let conditionValue = this.condition.getValue(context);
-        if (this.config?.isDo && !conditionValue) {
+        if (this.config?.doWhile && !conditionValue) {
             this.executionFlow._activateSignal(context);
         }
         let i = 0;
@@ -75,6 +75,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
             conditionValue = this.condition.getValue(context);
         }
         // out is not triggered
+        // TODO - should completed be the out signal?
         this.completed._activateSignal(context);
     }
 
