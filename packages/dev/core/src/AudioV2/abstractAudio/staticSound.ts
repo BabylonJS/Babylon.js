@@ -166,6 +166,11 @@ export abstract class StaticSound extends AbstractSound {
 
     protected abstract override _createInstance(): _StaticSoundInstance;
 
+    /**
+     * Plays the sound.
+     * - Triggers `onEndedObservable` if played for the full duration and the `loop` option is not set.
+     * @param options The options to use when playing the sound. Options set here override the sound's options.
+     */
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
             this.resume();
