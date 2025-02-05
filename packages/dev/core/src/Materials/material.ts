@@ -1092,11 +1092,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-     */
-    protected _forceAlphaTest = false;
-
-    /**
      * The transparency mode of the material.
      */
     protected _transparencyMode: Nullable<number> = null;
@@ -1127,9 +1122,19 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         this._transparencyMode = value;
 
-        this._forceAlphaTest = value === Material.MATERIAL_ALPHATESTANDBLEND;
-
         this._markAllSubMeshesAsTexturesAndMiscDirty();
+    }
+
+    protected get _hasTransparencyMode(): boolean {
+        return this._transparencyMode != null;
+    }
+
+    protected get _transparencyModeIsBlend(): boolean {
+        return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
+    }
+
+    protected get _transparencyModeIsTest(): boolean {
+        return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
     }
 
     /**
@@ -1142,8 +1147,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Specifies whether or not this material should be rendered in alpha blend mode.
      * @returns a boolean specifying if alpha blending is needed
+     * @deprecated Please use needAlphaBlendingForMesh instead
      */
     public needAlphaBlending(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -1157,6 +1167,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (mesh.visibility < 1.0) {
             return true;
         }
@@ -1171,10 +1185,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Specifies whether or not this material should be rendered in alpha test mode.
      * @returns a boolean specifying if an alpha test is needed.
+     * @deprecated Please use needAlphaTestingForMesh instead
      */
     public needAlphaTesting(): boolean {
-        if (this._forceAlphaTest) {
-            return true;
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
         }
 
         return false;
@@ -1185,7 +1200,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param mesh defines the mesh to check
      * @returns a boolean specifying if alpha testing should be turned on for the mesh
      */
-    protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+    public needAlphaTestingForMesh(mesh: AbstractMesh): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
+        }
+
         return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting();
     }
 

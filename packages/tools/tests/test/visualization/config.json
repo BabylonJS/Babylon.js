@@ -52,7 +52,7 @@
         },
         {
             "title": "NME Loop Block",
-            "playgroundId": "#D8AK3Z#109",
+            "playgroundId": "#D8AK3Z#115",
             "referenceImage": "nme-loop.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1302,7 +1302,7 @@
         },
         {
             "title": "Visibility",
-            "playgroundId": "#PXC9CF#2",
+            "playgroundId": "#PXC9CF#6",
             "referenceImage": "visibility.png"
         },
         {
@@ -1606,7 +1606,7 @@
         {
             "title": "Prepass SSAO + visibility",
             "renderCount": 30,
-            "playgroundId": "#PXC9CF#4",
+            "playgroundId": "#PXC9CF#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-visibility.png"
         },

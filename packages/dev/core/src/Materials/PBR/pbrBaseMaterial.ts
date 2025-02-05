@@ -750,12 +750,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public _alphaCutOff = 0.4;
 
     /**
-     * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-     * @internal
-     */
-    public override _forceAlphaTest = false;
-
-    /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
      * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
      * @internal
@@ -1040,6 +1034,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns whether or not this material should be rendered in alpha blend mode.
      */
     public override needAlphaBlending(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
+        }
+
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -1051,8 +1049,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns whether or not this material should be rendered in alpha test mode.
      */
     public override needAlphaTesting(): boolean {
-        if (this._forceAlphaTest) {
-            return true;
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
         }
 
         if (this.subSurface?.disableAlphaBlending) {
@@ -1951,7 +1949,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._useLogarithmicDepth,
                 this.pointsCloud,
                 this.fogEnabled,
-                this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
+                this.needAlphaTestingForMesh(mesh),
                 defines,
                 this._applyDecalMapAfterDetailMap
             );
