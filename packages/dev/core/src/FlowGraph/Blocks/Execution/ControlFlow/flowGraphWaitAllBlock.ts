@@ -13,6 +13,7 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The number of input flows. There will always be at least one input flow.
+     * glTF interactivity has a max of 64 input flows.
      */
     inputFlows: number;
 }
@@ -52,7 +53,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
 
         this.reset = this._registerSignalInput("reset");
         this.completed = this._registerSignalOutput("completed");
-        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputFlows);
+        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputFlows || 0);
         // The first inFlow is the default input signal all execution blocks have
         for (let i = 1; i < this.config.inputFlows; i++) {
             this.inFlows.push(this._registerSignalInput(`in_${i}`));
