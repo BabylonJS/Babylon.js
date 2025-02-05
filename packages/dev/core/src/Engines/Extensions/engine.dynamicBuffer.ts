@@ -60,7 +60,7 @@ ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, ver
         }
     } else {
         if (data instanceof Array) {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data).subarray(0, byteLength));
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data).subarray(0, byteLength / 4));
         } else {
             if (data instanceof ArrayBuffer) {
                 data = new Uint8Array(data, 0, byteLength);
