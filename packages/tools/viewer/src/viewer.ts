@@ -438,6 +438,7 @@ export class Viewer implements IDisposable {
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: Model[] = [];
+    private _loadedModelsContainer: AssetContainer = new AssetContainer();
     private _activeModelBacking: Nullable<Model> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
@@ -815,10 +816,10 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The list of animation names for the currently loaded model.
+     * The list of animation names.
      */
     public get animations(): readonly string[] {
-        return this._activeModelBacking?.assetContainer.animationGroups.map((group) => group.name) ?? [];
+        return this._loadedModelsContainer.animationGroups.map((group) => group.name) ?? [];
     }
 
     /**
@@ -1053,6 +1054,7 @@ export class Viewer implements IDisposable {
                     const index = this._loadedModelsBacking.indexOf(model);
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
+                        this._computeLoadedModelsContainer();
                         if (model === this._activeModel) {
                             this._setActiveModel(null);
                         }
@@ -1076,6 +1078,7 @@ export class Viewer implements IDisposable {
             };
 
             this._loadedModelsBacking.push(model);
+            this._computeLoadedModelsContainer();
 
             return model;
         } catch (e) {
@@ -1086,6 +1089,17 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.enableSnapshotRendering();
             this._markSceneMutated();
         }
+    }
+
+    /**
+     * Reduce all the models meshes, animations, ... into a single container.
+     */
+    private _computeLoadedModelsContainer() {
+        this._loadedModelsContainer = this._loadedModelsBacking.reduce((container, model) => {
+            container.meshes.push(...model.assetContainer.meshes);
+            container.animationGroups.push(...model.assetContainer.animationGroups);
+            return container;
+        }, new AssetContainer());
     }
 
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
@@ -1440,7 +1454,21 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _reframeCamera(interpolate = false): void {
+    private _reframeCamera(interpolateCamera?: boolean): void;
+    private _reframeCamera(interpolateCamera: boolean, models: Model[] = this._loadedModelsBacking): void {
+        if (!models) {
+            const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
+            const worldBounds = this._activeModel?.getWorldBounds(selectedAnimation);
+            this._reframeCameraFromBounds(worldBounds, interpolateCamera);
+            return;
+        }
+
+        const worldBounds = computeBoundingInfos(this._loadedModelsContainer);
+        this._reframeCameraFromBounds(worldBounds, interpolateCamera);
+    }
+
+    private _reframeCameraFromBounds(worldBounds?: Nullable<ViewerBoundingInfo>, interpolate: boolean = false): void {
+        // private _reframeCamera(models: Model[] = this._loadedModelsBacking, interpolate = false): void {
         this._camera.useFramingBehavior = true;
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
@@ -1458,8 +1486,6 @@ export class Viewer implements IDisposable {
         let goalRadius = 1;
         let goalTarget = currentTarget;
 
-        const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
-        const worldBounds = this._activeModel?.getWorldBounds(selectedAnimation);
         if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
@@ -1532,10 +1558,10 @@ export class Viewer implements IDisposable {
 
     protected async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
         await import("core/Culling/ray");
-        if (this._activeModel) {
-            const model = this._activeModel?.assetContainer;
+        if (this._loadedModels.length > 0) {
+            const container = this._loadedModelsContainer;
             // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            model.meshes.forEach((mesh) => {
+            container.meshes.forEach((mesh) => {
                 let cache = this._meshDataCache.get(mesh);
                 if (!cache) {
                     cache = {};
@@ -1544,7 +1570,7 @@ export class Viewer implements IDisposable {
                 mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
             });
 
-            const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => model.meshes.includes(mesh));
+            const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => container.meshes.includes(mesh));
             if (pickingInfo.hit) {
                 return pickingInfo;
             }
