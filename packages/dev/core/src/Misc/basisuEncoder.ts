@@ -106,8 +106,8 @@ async function EncodeData(slicedSourceImage: Uint8Array, options: BasisuEncoderO
                 onComplete();
             };
 
-            const onMessage = (msg: any) => {
-                if (msg.data.action === "encodeDone") {
+            const onMessage = (msg: MessageEvent) => {
+                if (msg.data.id === "encodeDone") {
                     worker.removeEventListener("message", onMessage);
                     worker.removeEventListener("error", onError);
                     resolve(msg.data.encodedImageData);
@@ -118,7 +118,7 @@ async function EncodeData(slicedSourceImage: Uint8Array, options: BasisuEncoderO
             worker.addEventListener("message", onMessage);
             worker.addEventListener("error", onError);
 
-            worker.postMessage({ action: "encode", imageData: slicedSourceImage, params: options }, [slicedSourceImage.buffer]);
+            worker.postMessage({ id: "encode", imageData: slicedSourceImage, params: options }, [slicedSourceImage.buffer]);
         });
     });
 }
