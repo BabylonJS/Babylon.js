@@ -155,7 +155,7 @@ export abstract class StreamingSound extends AbstractSound {
         }
     }
 
-    private _removePreloadedInstance: (instance: _StreamingSoundInstance) => void = (instance) => {
+    private _removePreloadedInstance(instance: _StreamingSoundInstance): void {
         let index = this._preloadedInstances.indexOf(instance);
         if (index !== -1) {
             this._preloadedInstances.splice(index, 1);
@@ -165,7 +165,5 @@ export abstract class StreamingSound extends AbstractSound {
         if (index !== -1) {
             this._preloadedInstancesPromises.splice(index, 1);
         }
-
-        instance.onReadyObservable.removeCallback(this._removePreloadedInstance);
-    };
+    }
 }
