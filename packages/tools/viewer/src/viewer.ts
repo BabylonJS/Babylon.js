@@ -1456,8 +1456,8 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _reframeCamera(interpolateCamera?: boolean): void;
-    private _reframeCamera(interpolateCamera: boolean, models?: Model[]): void {
+    protected _reframeCamera(interpolateCamera?: boolean): void;
+    protected _reframeCamera(interpolateCamera: boolean, models?: Model[]): void {
         if (!models) {
             const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
             const worldBounds = this._activeModel?.getWorldBounds(selectedAnimation);
