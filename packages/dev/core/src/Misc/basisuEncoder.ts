@@ -128,7 +128,7 @@ function GetDefaultBasisuEncoderOptions(babylonTexture: BaseTexture): BasisuEnco
     const defaultOptions: BasisuEncoderOptions = {
         width: babylonTexture.getSize().width,
         height: babylonTexture.getSize().height,
-        useSRGBBuffer: babylonTexture._texture?._useSRGBBuffer ?? false,
+        useSRGBBuffer: babylonTexture._texture?._useSRGBBuffer ?? babylonTexture.gammaSpace,
     };
     return defaultOptions;
 }
