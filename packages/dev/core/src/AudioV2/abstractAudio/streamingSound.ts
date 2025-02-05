@@ -109,15 +109,9 @@ export abstract class StreamingSound extends AbstractSound {
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
 
-        if (options.startOffset === undefined) {
-            options.startOffset = this._options.startOffset;
-        }
-        if (options.loop === undefined) {
-            options.loop = this._options.loop;
-        }
-        if (options.volume === undefined) {
-            options.volume = 1;
-        }
+        options.startOffset ??= this._options.startOffset;
+        options.loop ??= this._options.loop;
+        options.volume ??= 1;
 
         this._beforePlay(instance);
         instance.play(options);
