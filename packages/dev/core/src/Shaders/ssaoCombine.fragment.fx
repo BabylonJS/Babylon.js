@@ -11,8 +11,9 @@ void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-	vec4 ssaoColor = texture2D(textureSampler, viewport.xy + vUV * viewport.zw);
-	vec4 sceneColor = texture2D(originalColor, vUV);
+	vec2 uv = viewport.xy + vUV * viewport.zw;
+	vec4 ssaoColor = texture2D(textureSampler, uv);
+	vec4 sceneColor = texture2D(originalColor, uv);
 
 	gl_FragColor = sceneColor * ssaoColor;
 
