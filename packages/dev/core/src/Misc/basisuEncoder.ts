@@ -7,6 +7,8 @@ import type { WorkerPool } from "./workerPool";
 import { _GetDefaultNumWorkers } from "core/Meshes/Compression/dracoCodec";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Constants } from "core/Engines/constants";
+import { Logger } from "./logger";
+import { GetTextureDataAsync } from "./textureTools";
 
 // Q: No typings are available for the Basis Universal API. Should we define them, or leave it alone for now?
 declare let BASIS: any;
@@ -159,15 +161,11 @@ export async function EncodeBasisu(babylonTexture: BaseTexture): Promise<Uint8Ar
     if (babylonTexture.isCube) {
         throw new Error(`Cube textures are not currently supported for BasisU encoding.`);
     }
-    if (babylonTexture.textureType === Constants.TEXTURETYPE_FLOAT || babylonTexture.textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
-        throw new Error(`Float texture types are not currently supported for BasisU encoding.`);
+    if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
+        Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
     }
 
-    const pixels = await (babylonTexture.readPixels() as Nullable<Promise<Uint8Array>>); // textureType check rules out anything but Uint8Array
-    if (!pixels) {
-        throw new Error("Failed to read pixels. Texture or engine was unavailable.");
-    }
-
+    const pixels = await GetTextureDataAsync(babylonTexture, babylonTexture.getSize().width, babylonTexture.getSize().height);
     const options = GetDefaultBasisuEncoderOptions(babylonTexture);
     return EncodeData(pixels, options);
 }
