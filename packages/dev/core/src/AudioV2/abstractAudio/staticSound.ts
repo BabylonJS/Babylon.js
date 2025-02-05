@@ -194,9 +194,6 @@ export abstract class StaticSound extends AbstractSound {
             if (options.startOffset === undefined) {
                 options.startOffset = this.startOffset;
             }
-            if (options.volume === undefined) {
-                options.volume = 1;
-            }
             if (options.waitTime === undefined) {
                 options.waitTime = 0;
             }
