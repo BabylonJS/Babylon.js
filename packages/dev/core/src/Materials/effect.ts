@@ -807,7 +807,7 @@ export class Effect implements IDisposable {
                     existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
                     vertex,
                     fragment,
-                    context: engine.shaderPlatformName === "WEBGL2" || engine.shaderPlatformName === "WebGL1" ? (engine as any)._gl : undefined,
+                    context: engine.shaderPlatformName === "WEBGL2" || engine.shaderPlatformName === "WEBGL1" ? (engine as any)._gl : undefined,
                     rebuildRebind: (
                         vertexSourceCode: string,
                         fragmentSourceCode: string,
