@@ -1471,7 +1471,6 @@ export class Viewer implements IDisposable {
     }
 
     private _reframeCameraFromBounds(worldBounds?: Nullable<ViewerBoundingInfo>, interpolate: boolean = false): void {
-        // private _reframeCamera(models: Model[] = this._loadedModelsBacking, interpolate = false): void {
         this._camera.useFramingBehavior = true;
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
