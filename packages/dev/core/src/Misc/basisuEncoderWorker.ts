@@ -28,7 +28,7 @@ export function EncodeToBasisu(basisModule: any, imgData: Uint8Array, params: Ba
         // Set other hardcoded options. Expose these as needed in the future.
         // Q: We should eventually expose these, especially the quality level, but is that in the scope of this PR?
         basisEncoder.setTexType(basisModule.basis_texture_type.cBASISTexType2D.value); // Only 2D textures are supported
-        basisEncoder.setFormatMode(params.useSRGBBuffer ? 0 : 1); // Deduce whether UASTC LDR 4x4 (0) or ETC1S (1)
+        basisEncoder.setFormatMode(params.useSRGBBuffer ? 1 : 0); // Deduce whether UASTC LDR 4x4 (0) or ETC1S (1)
         basisEncoder.setMipGen(true); // Generate mipmaps
         basisEncoder.setQualityLevel(127); // Controls the file size vs. quality tradeoff for ETC1S. Range is [1, 255]
         basisEncoder.setCreateKTX2File(true); // Create KTX2 file
