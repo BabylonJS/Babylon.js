@@ -29,7 +29,6 @@ export interface IStreamingSoundOptions extends ICommonSoundOptions {
  */
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();
-    private _preloadedInstancesPromises = new Array<Promise<void>>();
 
     protected override _options: IStreamingSoundOptions;
 
@@ -78,7 +77,7 @@ export abstract class StreamingSound extends AbstractSound {
             this.preloadInstance();
         }
 
-        await Promise.all(this._preloadedInstancesPromises);
+        await Promise.all(this._preloadedInstances.map((instance) => instance.preloadedPromise));
     }
 
     /**
@@ -146,21 +145,12 @@ export abstract class StreamingSound extends AbstractSound {
         if (!this._preloadedInstances.includes(instance)) {
             this._preloadedInstances.push(instance);
         }
-
-        if (!this._preloadedInstancesPromises.includes(instance.preloadedPromise)) {
-            this._preloadedInstancesPromises.push(instance.preloadedPromise);
-        }
     }
 
     private _removePreloadedInstance(instance: _StreamingSoundInstance): void {
-        let index = this._preloadedInstances.indexOf(instance);
+        const index = this._preloadedInstances.indexOf(instance);
         if (index !== -1) {
             this._preloadedInstances.splice(index, 1);
-        }
-
-        index = this._preloadedInstancesPromises.indexOf(instance.preloadedPromise);
-        if (index !== -1) {
-            this._preloadedInstancesPromises.splice(index, 1);
         }
     }
 }
