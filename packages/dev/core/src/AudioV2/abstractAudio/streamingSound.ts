@@ -141,10 +141,6 @@ export abstract class StreamingSound extends AbstractSound {
 
     protected abstract override _createInstance(): _StreamingSoundInstance;
 
-    protected get _instancesPreloadedPromise() {
-        return Promise.all(this._preloadedInstancesPromises);
-    }
-
     private _addPreloadedInstance(instance: _StreamingSoundInstance): void {
         if (!this._preloadedInstances.includes(instance)) {
             this._preloadedInstances.push(instance);
