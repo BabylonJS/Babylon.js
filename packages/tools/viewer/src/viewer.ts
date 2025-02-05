@@ -2,7 +2,6 @@ import type {
     AbstractEngine,
     AbstractMesh,
     AnimationGroup,
-    AssetContainer,
     AutoRotationBehavior,
     Camera,
     FramingBehavior,
@@ -43,6 +42,7 @@ import { Observable } from "core/Misc/observable";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { AssetContainer } from "core/assetContainer";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -1054,7 +1054,7 @@ export class Viewer implements IDisposable {
                     const index = this._loadedModelsBacking.indexOf(model);
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
-                        this._computeLoadedModelsContainer();
+                        this._loadedModelsContainer = this._reduceModels(this._loadedModelsBacking);
                         if (model === this._activeModel) {
                             this._setActiveModel(null);
                         }
@@ -1078,7 +1078,7 @@ export class Viewer implements IDisposable {
             };
 
             this._loadedModelsBacking.push(model);
-            this._computeLoadedModelsContainer();
+            this._loadedModelsContainer = this._reduceModels(this._loadedModelsBacking);
 
             return model;
         } catch (e) {
@@ -1092,10 +1092,12 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Reduce all the models meshes, animations, ... into a single container.
+     * Reduce all the given models meshes, animations, ... into a single container.
+     * @param models The models to reduce.
+     * @returns The reduced asset container.
      */
-    private _computeLoadedModelsContainer() {
-        this._loadedModelsContainer = this._loadedModelsBacking.reduce((container, model) => {
+    private _reduceModels(models: Model[]): AssetContainer {
+        return models.reduce((container, model) => {
             container.meshes.push(...model.assetContainer.meshes);
             container.animationGroups.push(...model.assetContainer.animationGroups);
             return container;
@@ -1455,7 +1457,7 @@ export class Viewer implements IDisposable {
     }
 
     private _reframeCamera(interpolateCamera?: boolean): void;
-    private _reframeCamera(interpolateCamera: boolean, models: Model[] = this._loadedModelsBacking): void {
+    private _reframeCamera(interpolateCamera: boolean, models?: Model[]): void {
         if (!models) {
             const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
             const worldBounds = this._activeModel?.getWorldBounds(selectedAnimation);
@@ -1463,7 +1465,8 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        const worldBounds = computeBoundingInfos(this._loadedModelsContainer);
+        const container = models.length === this._loadedModelsBacking.length ? this._loadedModelsContainer : this._reduceModels(models);
+        const worldBounds = computeBoundingInfos(container);
         this._reframeCameraFromBounds(worldBounds, interpolateCamera);
     }
 
