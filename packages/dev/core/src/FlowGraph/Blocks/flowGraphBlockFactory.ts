@@ -255,6 +255,8 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Event/flowGraphPointerOverEventBlock")).FlowGraphPointerOverEventBlock;
         case FlowGraphBlockNames.PointerOutEvent:
             return async () => (await import("./Event/flowGraphPointerOutEventBlock")).FlowGraphPointerOutEventBlock;
+        case FlowGraphBlockNames.Context:
+            return async () => (await import("./Data/flowGraphContextBlock")).FlowGraphContextBlock;
         default:
             throw new Error(`Unknown block name ${name}`);
     }
