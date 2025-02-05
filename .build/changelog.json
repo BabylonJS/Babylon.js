@@ -1,40 +1,231 @@
 {
-    "fromTag": "7.47.1",
+    "fromTag": "7.47.2",
     "changelog": {
-        "7.47.1": [
+        "7.47.3": [
             {
-                "pr": "16129",
-                "title": "Explicitly set return type to avoid generics",
-                "description": "Addressing https://forum.babylonjs.com/t/issue-with-babylon-js-7-x-x-and-angular-18-2-4-type-errors/56287?u=raananw",
+                "pr": "16148",
+                "title": "Pass the context also in WebGL1",
+                "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/engine.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
-                    "packages/dev/core/src/Meshes/mesh.ts",
-                    "packages/dev/core/src/Misc/greasedLineTools.ts",
-                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                    "packages/dev/core/src/Materials/effect.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "16131",
-                "title": "WebGPU: Fix anisotropy",
+                "pr": "16147",
+                "title": "Fix misuse of offset in updatedynamicbuffer",
                 "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicBuffer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16144",
+                "title": "Rendering Engine: Fix alpha support",
+                "description": "I took Gary's WIP PR (#15573) as a base, but decided to go another way: keep all the existing code and simply honor the `transparencyMode` value when it's set.\r\n\r\nThis is because the existing code is quite complicated and has a lot of interconnections. I felt that trying to simplify it was too complicated and error-prone, so I made changes to simply use the `transparencyMode` parameter when set and keep the existing code-path otherwise.\r\n\r\nAt some point, we could deprecate the existing code and keep only the code related to `transparencyMode`. In addition, I think it's easier to document the breaking change:\r\n* if you give a non-null value to `transparencyMode`, it will always be honored, whatever values you give to other properties (like mesh visibility, material alpha, etc)\r\n* If `transparencyMode` is null, no change is made to the existing behavior, which is fully compatible with the past.\r\n\r\nOther changes (from Gary's PR):\r\n* `_shouldTurnAlphaTestOn` has been renamed to `needAlphaTestingForMesh`. This is not a breaking change, since `_shouldTurnAlphaTestOn` was **protected**, and more in line with the existing `needAlphaBlendingForMesh` method.\r\n* All occurrences of `needAlphaTesting` have been replaced by `needAlphaTestingForMesh`: the behavior might change because of this, but it's not a breaking change but a bug fix.\r\n\r\nRegarding failed visualization tests (3):\r\n* \"NME loop block\". It didn't fail because of the changes but because of timing issues (a node material was loaded in parallel to the test - I now wait for the material to load before returning from the `createScene` function).\r\n* \"Visibility\" and \"Prepass SSAO + visibility\" are in fact the same test. They are expected to fail, as they set `transparencyMode=OPAQUE` and define certain properties that allow blending in the current code path, whereas with the PR, the material is no longer transparent. To correct the tests, I set `transparencyMode=ALPHABLEND` and `useAlphaFromAlbedoTexture=false`. Indeed, when `useAlphaFromAlbedoTexture=true` (as was the case in the test), the alpha of the albedo texture is taken into account when `transparencyMode=ALPHABLEND` (as expected), but not in the actual code path when `transparencyMode=OPAQUE`. So the images were different if I didn't set `useAlphaFromAlbedoTexture` to `false`.\r\n\r\ncc @sebavan and @bghgary ",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts"
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Rendering/renderingGroup.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
-                    "bug",
-                    "WebGPU"
+                    "rendering engine",
+                    "breaking change"
                 ]
+            },
+            {
+                "pr": "16146",
+                "title": "Fixed issue when using SSAO2 with viewports",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ssaoCombine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ssaoCombine.fragment.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16143",
+                "title": "Add multiple models support",
+                "description": "Add support for multiple model on the same scene by :\r\n- adding a private `_loadedModelBacking` to reference all the model loaded on the scene,\r\n- renaming `_modelInfo` to `_activeModelBacking` to represent to current active/selected model\r\n- adding as protected a `_addModel` and a `_removeModel` ",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16141",
+                "title": "Fix flipped camera on export",
+                "description": "See the OP from here: https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986/21\r\nRemove check for undefined node rotation; we should set it regardless.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16140",
+                "title": "Add Basis Universal WASM to public",
+                "description": "Taken from [basis_universal](https://github.com/BinomialLLC/basis_universal/tree/master/webgl/encoder) official repo",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/basis_encoder.js",
+                    "packages/tools/babylonServer/public/basis_encoder.wasm"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16139",
+                "title": "Fix missing conversion",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/particles.vertex.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16137",
+                "title": "Expose specularPower to roughness conversion",
+                "description": "When using RectAreaLight with StandardMaterial, the value used to calculate specular will come from \"roughness\". However, all other lights calculate specular based on \"specularPower\". If a user has a scene with multiple lights sources (RectAreaLight + PointLight for example), and uses StandardMaterial for its meshes, it needs to set the roughness to the bast value possible so that the specular behaves similarly for all lights. \r\n\r\nWe already perform a specularPower to roughness conversion when exporting StandardMaterial to GLTF. This PR makes that logic available so users can also consume it using the new \"MaterialConversionHelper\" class.",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Helpers/index.ts",
+                    "packages/dev/core/src/Helpers/materialConversionHelper.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16138",
+                "title": "Add debug Node to GS, procedural, particles and PP",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleRampGradientBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/debugBlock.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/debugNodePropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16125",
+                "title": "Support (vertical) camera target limitation",
+                "description": "from [forum entry](https://forum.babylonjs.com/t/support-vertical-camera-target-limitation/56230)\r\n\r\n**Inspector**\r\nNot too happy with the default behaviour of the inspector, as `null` is shown as `0`.\r\nThe user would now expect that there is a limit on y=0, whereas there is none.\r\nAlso you have to switch to a different value and back to 0, to make the y limit on 0 work.\r\n\r\n![image](https://github.com/user-attachments/assets/5bf0ea3a-4c2f-48fb-91a1-1690678165ec)\r\n\r\nI didn't investigated further on that, since it's a common inspector behaviour, the alpha limits are affected as well.\r\nMaybe just show `null` as empty value in the numfield? 🤔 \r\n",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15960",
+                "title": "Physics Constraints debug viewer",
+                "description": "Test / Documentation PG \r\n\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15960/merge#RMF5CJ#38\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15960/merge#7DMWP8#693\r\n\r\nDoc https://github.com/BabylonJS/Documentation/pull/1270\r\nfixes #13712 \r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature",
+                    "debug tool"
+                ]
+            },
+            {
+                "pr": "16136",
+                "title": "Nme debug 5",
+                "description": "This introduces color picking over the preview window\r\n\r\ncc @PatrickRyanMS  / @PirateJC : You have to maintain CTRL while hovering to get the picker (we will need to document it as this is not obvious)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/debugDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": []
             }
         ],
         "7.47.2": [
@@ -122,6 +313,42 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "7.47.1": [
+            {
+                "pr": "16129",
+                "title": "Explicitly set return type to avoid generics",
+                "description": "Addressing https://forum.babylonjs.com/t/issue-with-babylon-js-7-x-x-and-angular-18-2-4-type-errors/56287?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16131",
+                "title": "WebGPU: Fix anisotropy",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
                 ]
             }
         ],

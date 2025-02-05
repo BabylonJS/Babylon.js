@@ -1,5 +1,38 @@
 # Changelog
 
+## 7.47.3
+
+### Core
+
+- Pass the context also in WebGL1 - by [RaananW](https://github.com/RaananW) ([#16148](https://github.com/BabylonJS/Babylon.js/pull/16148))
+- Fix misuse of offset in updatedynamicbuffer - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16147](https://github.com/BabylonJS/Babylon.js/pull/16147))
+- Rendering Engine: Fix alpha support - [_Breaking Change_] by [Popov72](https://github.com/Popov72) ([#16144](https://github.com/BabylonJS/Babylon.js/pull/16144))
+- Fixed issue when using SSAO2 with viewports - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16146](https://github.com/BabylonJS/Babylon.js/pull/16146))
+- Fix missing conversion - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16139](https://github.com/BabylonJS/Babylon.js/pull/16139))
+- Expose specularPower to roughness conversion - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#16137](https://github.com/BabylonJS/Babylon.js/pull/16137))
+- Support (vertical) camera target limitation - by [HoferMarkus](https://github.com/HoferMarkus) ([#16125](https://github.com/BabylonJS/Babylon.js/pull/16125))
+- Physics Constraints debug viewer - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15960](https://github.com/BabylonJS/Babylon.js/pull/15960))
+
+### Inspector
+
+- Support (vertical) camera target limitation - by [HoferMarkus](https://github.com/HoferMarkus) ([#16125](https://github.com/BabylonJS/Babylon.js/pull/16125))
+
+### Materials
+
+- Rendering Engine: Fix alpha support - [_Breaking Change_] by [Popov72](https://github.com/Popov72) ([#16144](https://github.com/BabylonJS/Babylon.js/pull/16144))
+
+### Node Editor
+
+- Nme debug 5 - by [deltakosh](https://github.com/deltakosh) ([#16136](https://github.com/BabylonJS/Babylon.js/pull/16136))
+
+### Serializers
+
+- Expose specularPower to roughness conversion - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#16137](https://github.com/BabylonJS/Babylon.js/pull/16137))
+
+### Viewer
+
+- Add multiple models support - by [alexandremottet](https://github.com/alexandremottet) ([#16143](https://github.com/BabylonJS/Babylon.js/pull/16143))
+
 ## 7.47.2
 
 ### Core
