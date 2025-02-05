@@ -70,7 +70,7 @@ async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
 
 async function CreateModuleAsync(): Promise<any> {
     // If module was already loaded in this context
-    if (typeof BASIS !== "undefined") {
+    if (typeof BASIS === "undefined") {
         await Tools.LoadBabylonScriptAsync(BasisuEncoderConfiguration.WasmURL);
     }
     const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisuEncoderConfiguration.WasmBinaryURL, true));
