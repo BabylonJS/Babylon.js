@@ -953,7 +953,7 @@ function importMeshAsyncCore(
                 pluginExtension,
                 name,
                 pluginOptions
-            ).catch((error) => reject(error));
+            ).catch(reject);
         } catch (error) {
             reject(error);
         }
@@ -1163,7 +1163,7 @@ function appendSceneAsyncCore(
                 pluginExtension,
                 name,
                 pluginOptions
-            ).catch((error) => reject(error));
+            ).catch(reject);
         } catch (error) {
             reject(error);
         }
@@ -1309,7 +1309,7 @@ function internalLoadAssetContainerAsync(
                 pluginExtension,
                 name,
                 pluginOptions
-            ).catch((error) => reject(error));
+            ).catch(reject);
         } catch (error) {
             reject(error);
         }
@@ -1437,7 +1437,7 @@ function importAnimationsAsyncCore(
                 pluginExtension,
                 name,
                 pluginOptions
-            ).catch((error) => reject(error));
+            ).catch(reject);
         } catch (error) {
             reject(error);
         }
