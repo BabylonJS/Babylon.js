@@ -928,35 +928,39 @@ function importMeshAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<ISceneLoaderAsyncResult> {
     return new Promise((resolve, reject) => {
-        importMeshAsync(
-            meshNames,
-            rootUrl,
-            sceneFilename,
-            scene,
-            (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
-                resolve({
-                    meshes: meshes,
-                    particleSystems: particleSystems,
-                    skeletons: skeletons,
-                    animationGroups: animationGroups,
-                    transformNodes: transformNodes,
-                    geometries: geometries,
-                    lights: lights,
-                    spriteManagers: spriteManagers,
-                });
-            },
-            onProgress,
-            (scene, message, exception) => {
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
+        try {
+            importMeshAsync(
+                meshNames,
+                rootUrl,
+                sceneFilename,
+                scene,
+                (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
+                    resolve({
+                        meshes: meshes,
+                        particleSystems: particleSystems,
+                        skeletons: skeletons,
+                        animationGroups: animationGroups,
+                        transformNodes: transformNodes,
+                        geometries: geometries,
+                        lights: lights,
+                        spriteManagers: spriteManagers,
+                    });
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                },
+                pluginExtension,
+                name,
+                pluginOptions
+            ).catch((error) => reject(error));
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
-function loadScene(
+async function loadScene(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
@@ -966,13 +970,13 @@ function loadScene(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): void {
+): Promise<void> {
     if (!engine) {
         Tools.Error("No engine available");
         return;
     }
 
-    appendAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
+    await appendAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1144,21 +1148,25 @@ function appendSceneAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        appendAsync(
-            rootUrl,
-            sceneFilename,
-            scene,
-            (scene) => {
-                resolve(scene);
-            },
-            onProgress,
-            (scene, message, exception) => {
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
+        try {
+            appendAsync(
+                rootUrl,
+                sceneFilename,
+                scene,
+                (scene) => {
+                    resolve(scene);
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                },
+                pluginExtension,
+                name,
+                pluginOptions
+            ).catch((error) => reject(error));
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
@@ -1286,25 +1294,29 @@ function internalLoadAssetContainerAsync(
     pluginOptions?: PluginOptions
 ): Promise<AssetContainer> {
     return new Promise((resolve, reject) => {
-        loadAssetContainerCoreAsync(
-            rootUrl,
-            sceneFilename,
-            scene,
-            (assets) => {
-                resolve(assets);
-            },
-            onProgress,
-            (scene, message, exception) => {
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
+        try {
+            loadAssetContainerCoreAsync(
+                rootUrl,
+                sceneFilename,
+                scene,
+                (assets) => {
+                    resolve(assets);
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                },
+                pluginExtension,
+                name,
+                pluginOptions
+            ).catch((error) => reject(error));
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
-function importAnimations(
+async function importAnimations(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1317,7 +1329,7 @@ function importAnimations(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): void {
+): Promise<void> {
     if (!scene) {
         Logger.Error("No scene available to load animations to");
         return;
@@ -1379,7 +1391,7 @@ function importAnimations(
         }
     };
 
-    loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
+    await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1407,24 +1419,28 @@ function importAnimationsAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        importAnimations(
-            rootUrl,
-            sceneFilename,
-            scene,
-            overwriteAnimations,
-            animationGroupLoadingMode,
-            targetConverter,
-            (scene) => {
-                resolve(scene);
-            },
-            onProgress,
-            (scene, message, exception) => {
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
+        try {
+            importAnimations(
+                rootUrl,
+                sceneFilename,
+                scene,
+                overwriteAnimations,
+                animationGroupLoadingMode,
+                targetConverter,
+                (scene) => {
+                    resolve(scene);
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                },
+                pluginExtension,
+                name,
+                pluginOptions
+            ).catch((error) => reject(error));
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
@@ -1567,7 +1583,9 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
-        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+            onError?.(EngineStore.LastCreatedScene!, error?.message, error)
+        );
     }
 
     /**
@@ -1615,7 +1633,9 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+        loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+            onError?.(EngineStore.LastCreatedScene!, error?.message, error)
+        );
     }
 
     /**
@@ -1661,7 +1681,9 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        appendAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        appendAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+            onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
+        );
     }
 
     /**
@@ -1707,7 +1729,9 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+            onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
+        );
     }
 
     /**
@@ -1759,7 +1783,19 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
-        importAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onSuccess, onProgress, onError, pluginExtension, name);
+        importAnimations(
+            rootUrl,
+            sceneFilename,
+            scene,
+            overwriteAnimations,
+            animationGroupLoadingMode,
+            targetConverter,
+            onSuccess,
+            onProgress,
+            onError,
+            pluginExtension,
+            name
+        ).catch((error) => onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error));
     }
 
     /**
