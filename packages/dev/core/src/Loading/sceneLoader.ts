@@ -960,7 +960,8 @@ function importMeshAsyncCore(
     });
 }
 
-async function loadScene(
+// This is the core implementation of load scene
+async function loadSceneImplAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
@@ -976,7 +977,7 @@ async function loadScene(
         return;
     }
 
-    await appendAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
+    await appendSceneImplAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -989,10 +990,11 @@ async function loadScene(
  */
 export function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadSceneAsyncCore(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
+    return loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function loadSceneAsyncCore(
+// This function is shared between the new module level loadSceneAsync and the legacy SceneLoader.LoadAsync
+function loadSceneSharedAsync(
     rootUrl: string,
     sceneFilename?: SceneSource,
     engine?: Nullable<AbstractEngine>,
@@ -1002,7 +1004,7 @@ function loadSceneAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        loadScene(
+        loadSceneImplAsync(
             rootUrl,
             sceneFilename,
             engine,
@@ -1020,7 +1022,8 @@ function loadSceneAsyncCore(
     });
 }
 
-async function appendAsync(
+// This is the core implementation of append scene
+async function appendSceneImplAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1135,10 +1138,11 @@ async function appendAsync(
  */
 export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    await appendSceneSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function appendSceneAsyncCore(
+// This function is shared between the new module level appendSceneAsync and the legacy SceneLoader.AppendAsync
+function appendSceneSharedAsync(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1149,7 +1153,7 @@ function appendSceneAsyncCore(
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
         try {
-            appendAsync(
+            appendSceneImplAsync(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1170,7 +1174,8 @@ function appendSceneAsyncCore(
     });
 }
 
-async function loadAssetContainerCoreAsync(
+// This is the core implementation of load asset container
+async function loadAssetContainerImplAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1281,10 +1286,11 @@ async function loadAssetContainerCoreAsync(
  */
 export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return internalLoadAssetContainerAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function internalLoadAssetContainerAsync(
+// This function is shared between the new module level loadAssetContainerAsync and the legacy SceneLoader.LoadAssetContainerAsync
+function loadAssetContainerSharedAsync(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1295,7 +1301,7 @@ function internalLoadAssetContainerAsync(
 ): Promise<AssetContainer> {
     return new Promise((resolve, reject) => {
         try {
-            loadAssetContainerCoreAsync(
+            loadAssetContainerImplAsync(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1316,7 +1322,8 @@ function internalLoadAssetContainerAsync(
     });
 }
 
-async function importAnimations(
+// This is the core implementation of import animations
+async function importAnimationsImplAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1391,7 +1398,7 @@ async function importAnimations(
         }
     };
 
-    await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
+    await loadAssetContainerImplAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1403,10 +1410,11 @@ async function importAnimations(
  */
 export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await importAnimationsAsyncCore(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
+    await importAnimationsSharedAsync(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function importAnimationsAsyncCore(
+// This function is shared between the new module level importAnimationsAsync and the legacy SceneLoader.ImportAnimationsAsync
+function importAnimationsSharedAsync(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1420,7 +1428,7 @@ function importAnimationsAsyncCore(
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
         try {
-            importAnimations(
+            importAnimationsImplAsync(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1633,7 +1641,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+        loadSceneImplAsync(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.(EngineStore.LastCreatedScene!, error?.message, error)
         );
     }
@@ -1656,7 +1664,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return loadSceneAsyncCore(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
+        return loadSceneSharedAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1681,7 +1689,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        appendAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+        appendSceneImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
         );
     }
@@ -1704,7 +1712,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return appendSceneAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return appendSceneSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1729,7 +1737,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+        loadAssetContainerImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
         );
     }
@@ -1752,7 +1760,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<AssetContainer> {
-        return internalLoadAssetContainerAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return loadAssetContainerSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1783,7 +1791,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
-        importAnimations(
+        importAnimationsImplAsync(
             rootUrl,
             sceneFilename,
             scene,
@@ -1828,6 +1836,6 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return importAnimationsAsyncCore(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+        return importAnimationsSharedAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
     }
 }
