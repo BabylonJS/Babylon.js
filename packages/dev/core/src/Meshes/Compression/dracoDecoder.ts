@@ -1,5 +1,5 @@
 import { DracoDecoderModule } from "draco3dgltf";
-import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
+import { DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
 import { Tools } from "../../Misc/tools";
 import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
@@ -9,6 +9,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
 import type { AttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
+import { _IsWasmConfigurationAvailable } from "core/Misc/workerUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -58,7 +59,8 @@ export class DracoDecoder extends DracoCodec {
      * Returns true if the decoder's `DefaultConfiguration` is available.
      */
     public static get DefaultAvailable(): boolean {
-        return _IsConfigurationAvailable(DracoDecoder.DefaultConfiguration);
+        const config = DracoDecoder.DefaultConfiguration;
+        return !!config.fallbackUrl || _IsWasmConfigurationAvailable(config.wasmUrl, config.wasmBinaryUrl, config.wasmBinary, config.jsModule);
     }
 
     protected static _Default: Nullable<DracoDecoder> = null;

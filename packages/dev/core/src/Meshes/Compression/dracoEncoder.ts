@@ -1,4 +1,4 @@
-import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
+import { DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
 import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions, DracoAttributeName } from "./dracoEncoder.types";
 import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
 import { Tools } from "../../Misc/tools";
@@ -10,6 +10,7 @@ import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import type { EncoderModule } from "draco3d";
 import { AreIndices32Bits } from "core/Buffers/bufferUtils";
+import { _IsWasmConfigurationAvailable } from "core/Misc/workerUtils";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
@@ -153,7 +154,8 @@ export class DracoEncoder extends DracoCodec {
      * Returns true if the encoder's `DefaultConfiguration` is available.
      */
     public static get DefaultAvailable(): boolean {
-        return _IsConfigurationAvailable(DracoEncoder.DefaultConfiguration);
+        const config = DracoEncoder.DefaultConfiguration;
+        return !!config.fallbackUrl || _IsWasmConfigurationAvailable(config.wasmUrl, config.wasmBinaryUrl, config.wasmBinary, config.jsModule);
     }
 
     protected static _Default: Nullable<DracoEncoder> = null;

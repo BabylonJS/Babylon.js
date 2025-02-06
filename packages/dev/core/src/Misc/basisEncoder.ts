@@ -4,13 +4,16 @@ import { initializeWebWorker, EncodeImageData, workerFunction } from "./basisEnc
 import type { BasisEncoderParameters } from "./basisEncoderWorker";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import type { WorkerPool } from "./workerPool";
-import { _GetDefaultNumWorkers } from "core/Meshes/Compression/dracoCodec";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Constants } from "core/Engines/constants";
 import { Logger } from "./logger";
 import { GetTextureDataAsync } from "./textureTools";
+import { _GetDefaultNumWorkers, _IsWasmConfigurationAvailable } from "./workerUtils";
 
 declare let BASIS: any; // FUTURE TODO: Create TS declaration file for the Basis Universal API
+
+let _module: Nullable<any> = null;
+let _workerPool: Nullable<WorkerPool> = null;
 
 /**
  * Supported Basis Universal formats for encoding.
@@ -22,57 +25,69 @@ type IBasisEncoderConfiguration = {
     /**
      * The url to the WebAssembly module.
      */
-    wasmURL: string;
+    wasmUrl: string;
     /**
      * The url to the WebAssembly module.
      */
-    wasmBinaryURL: string;
+    wasmBinaryUrl: string;
     /**
      * The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
      */
     numWorkers: number;
 };
 
-function IsWasmAvailable(): boolean {
-    // All modern browsers and Node.js should support WebAssembly and URL.createObjectURL, but check just in case
-    // See https://developer.mozilla.org/en-US/docs/Web/API/URL and https://developer.mozilla.org/en-US/docs/WebAssembly
-    const url = typeof URL !== "undefined" && typeof URL.createObjectURL !== "undefined";
-    const wasm = typeof WebAssembly !== "undefined";
-    return url && wasm;
-}
+/**
+ * Default configuration for the Basis Universal encoder. Defaults to the following:
+ * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
+ * - wasmUrl: `"https://cdn.babylonjs.com/basis_encoder.js"`
+ * - wasmBinaryUrl: `"https://cdn.babylonjs.com/basis_encoder.wasm"`
+ */
+export const BasisEncoderConfiguration: IBasisEncoderConfiguration = {
+    wasmUrl: `${Tools._DefaultCdnUrl}/basis_encoder.js`,
+    wasmBinaryUrl: `${Tools._DefaultCdnUrl}/basis_encoder.wasm`,
+    numWorkers: _GetDefaultNumWorkers(),
+};
 
-async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
-    const url = Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmURL);
-    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmBinaryURL, true));
-
-    const workerContent = `${EncodeImageData}(${workerFunction})()`;
-    const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
-
-    return new AutoReleaseWorkerPool(1, () => {
-        const worker = new Worker(workerBlobUrl);
-        return initializeWebWorker(worker, wasmBinary, url);
-    });
-}
-
-async function CreateModuleAsync(): Promise<any> {
-    // If module was already loaded in this context
-    if (typeof BASIS === "undefined") {
-        await Tools.LoadBabylonScriptAsync(BasisEncoderConfiguration.wasmURL);
+/**
+ * Encodes non-HDR, non-cube texture data to a KTX v2 image with Basis Universal supercompression.
+ * @param babylonTexture the Babylon texture to encode
+ * @param options additional options for encoding
+ * - `basisFormat` - the desired encoding format. Defaults to UASTC4x4. It is recommended
+ * to use ETC1S for color data (e.g., albedo, specular) and UASTC4x4 for non-color data (e.g. bump).
+ * For more details, see https://github.com/KhronosGroup/3D-Formats-Guidelines/blob/main/KTXArtistGuide.md.
+ * @returns a promise resolving with the basis-encoded image data
+ * @experimental This API is subject to change in the future.
+ */
+export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture, options?: Pick<BasisEncoderParameters, "basisFormat">): Promise<Uint8Array> {
+    if (babylonTexture.isCube) {
+        throw new Error(`Cube textures are not currently supported for Basis encoding.`);
     }
-    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmBinaryURL, true));
-    return BASIS({ wasmBinary });
-}
+    if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
+        Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
+    }
 
-let _module: Nullable<any> = null;
-let _workerPool: Nullable<WorkerPool> = null;
+    const size = babylonTexture.getSize();
+    const pixels = await GetTextureDataAsync(babylonTexture, size.width, size.height);
+
+    const finalOptions: BasisEncoderParameters = {
+        width: size.width,
+        height: size.height,
+        basisFormat: options?.basisFormat ?? "UASTC4x4",
+        isSRGB: babylonTexture._texture?._useSRGBBuffer || babylonTexture.gammaSpace,
+    };
+
+    return EncodeData(pixels, finalOptions);
+}
 
 async function EncodeData(slicedSourceImage: Uint8Array, parameters: BasisEncoderParameters): Promise<Uint8Array> {
-    if (!IsWasmAvailable()) {
-        throw new Error("Basis transcoder requires an environment with URL and WebAssembly support.");
+    const config = BasisEncoderConfiguration;
+    if (!_IsWasmConfigurationAvailable(config.wasmUrl, config.wasmBinaryUrl)) {
+        throw new Error("Cannot use Basis Encoder configuration. Check configuration and verify environment WebAssembly support.");
     }
 
     // Use main thread if no workers are available
-    if (BasisEncoderConfiguration.numWorkers === 0 || typeof Worker === "undefined") {
+    const workerSupported = typeof Worker === "function" && typeof URL === "function" && typeof URL.createObjectURL === "function";
+    if (!workerSupported || BasisEncoderConfiguration.numWorkers === 0) {
         if (!_module) {
             _module = await CreateModuleAsync();
         }
@@ -109,45 +124,24 @@ async function EncodeData(slicedSourceImage: Uint8Array, parameters: BasisEncode
     });
 }
 
-/**
- * Default configuration for the Basis Universal encoder. Defaults to the following:
- * - numWorkers: 50% of the available logical processors, capped to 4. If no logical processors are available, defaults to 1.
- * - wasmUrl: `"https://cdn.babylonjs.com/basis_encoder.js"`
- * - wasmBinaryUrl: `"https://cdn.babylonjs.com/basis_encoder.wasm"`
- */
-export const BasisEncoderConfiguration: IBasisEncoderConfiguration = {
-    wasmURL: `${Tools._DefaultCdnUrl}/basis_encoder.js`,
-    wasmBinaryURL: `${Tools._DefaultCdnUrl}/basis_encoder.wasm`,
-    numWorkers: _GetDefaultNumWorkers(),
-};
+async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
+    const url = Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmUrl);
+    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmBinaryUrl, true));
 
-/**
- * Encodes non-HDR, non-cube texture data to a KTX v2 image with Basis Universal supercompression.
- * @param babylonTexture the Babylon texture to encode
- * @param options additional options for encoding
- * - `basisFormat` - the desired encoding format. Defaults to UASTC4x4. It is recommended
- * to use ETC1S for color data (e.g., albedo, specular) and UASTC4x4 for non-color data (e.g. bump).
- * For more details, see https://github.com/KhronosGroup/3D-Formats-Guidelines/blob/main/KTXArtistGuide.md.
- * @returns a promise resolving with the basis-encoded image data
- * @experimental This API is subject to change in the future.
- */
-export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture, options?: Pick<BasisEncoderParameters, "basisFormat">): Promise<Uint8Array> {
-    if (babylonTexture.isCube) {
-        throw new Error(`Cube textures are not currently supported for Basis encoding.`);
+    const workerContent = `${EncodeImageData}(${workerFunction})()`;
+    const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
+
+    return new AutoReleaseWorkerPool(1, () => {
+        const worker = new Worker(workerBlobUrl);
+        return initializeWebWorker(worker, wasmBinary, url);
+    });
+}
+
+async function CreateModuleAsync(): Promise<any> {
+    // If module was already loaded in this context
+    if (typeof BASIS === "undefined") {
+        await Tools.LoadBabylonScriptAsync(BasisEncoderConfiguration.wasmUrl);
     }
-    if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
-        Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
-    }
-
-    const size = babylonTexture.getSize();
-    const pixels = await GetTextureDataAsync(babylonTexture, size.width, size.height);
-
-    const finalOptions: BasisEncoderParameters = {
-        width: size.width,
-        height: size.height,
-        basisFormat: options?.basisFormat ?? "UASTC4x4",
-        isSRGB: babylonTexture._texture?._useSRGBBuffer || babylonTexture.gammaSpace,
-    };
-
-    return EncodeData(pixels, finalOptions);
+    const wasmBinary = await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisEncoderConfiguration.wasmBinaryUrl, true));
+    return BASIS({ wasmBinary });
 }
