@@ -1,3 +1,4 @@
+import type { VertexDataTypedArray } from "core/Buffers";
 import type { Nullable } from "core/types";
 
 /**
@@ -56,7 +57,7 @@ export interface IDracoAttributeData {
     /**
      * The buffer view of the attribute.
      */
-    data: Float32Array;
+    data: VertexDataTypedArray;
 }
 
 /**
