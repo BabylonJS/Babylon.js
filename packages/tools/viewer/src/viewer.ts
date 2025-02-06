@@ -3,6 +3,7 @@ import type {
     AbstractMesh,
     AnimationGroup,
     AutoRotationBehavior,
+    AssetContainer,
     Camera,
     FramingBehavior,
     HotSpotQuery,
@@ -42,7 +43,6 @@ import { Observable } from "core/Misc/observable";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { AssetContainer } from "core/assetContainer";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -158,8 +158,30 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
+function computeModelsMaxExtents(models: Model[]): Array<{ minimum: Vector3; maximum: Vector3 }> {
+    return models.flatMap((model) => {
+        return computeMaxExtents(model.assetContainer.meshes, model.assetContainer.animationGroups[model.selectedAnimation]);
+    });
+}
+
+function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3; maximum: Vector3 }>) {
+    const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
+    const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
+    const size = max.subtract(min);
+    const center = min.add(size.scale(0.5));
+
+    return {
+        extents: {
+            min: min.asArray(),
+            max: max.asArray(),
+        },
+        size: size.asArray(),
+        center: center.asArray(),
+    };
+}
+
 /**
- * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
+ * Return the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
  * @param meshes The meshes to consider when computing the bounding info
  * @param animationGroup The animation group to consider when computing the bounding info
  * @returns The computed bounding info for the model or null if no meshes are present in the asset container
@@ -167,21 +189,19 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
 function computeBoundingInfos(meshes: AbstractMesh[], animationGroup: Nullable<AnimationGroup> = null): Nullable<ViewerBoundingInfo> {
     if (meshes.length) {
         const maxExtents = computeMaxExtents(meshes, animationGroup);
-        const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
-        const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
-        const size = max.subtract(min);
-        const center = min.add(size.scale(0.5));
-
-        return {
-            extents: {
-                min: min.asArray(),
-                max: max.asArray(),
-            },
-            size: size.asArray(),
-            center: center.asArray(),
-        };
+        return reduceMeshesExtendsToBoundingInfo(maxExtents);
     }
     return null;
+}
+
+/**
+ * Compute the bounding info for the models by computing their maximum extents, size, and center considering animation, skeleton, and morph targets.
+ * @param models The models to consider when computing the bounding info
+ * @returns The computed bounding info for the models or null
+ */
+function computeModelsBoundingInfos(models: Model[]): Nullable<ViewerBoundingInfo> {
+    const maxExtents = computeModelsMaxExtents(models);
+    return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
 
 export type ViewerDetails = {
@@ -327,6 +347,16 @@ export type Model = IDisposable &
         materialVariantsController: Nullable<MaterialVariantsController>;
 
         /**
+         * The current animation.
+         */
+        get selectedAnimation(): number;
+
+        /**
+         * Selects an animation by index.
+         */
+        selectAnimation(index: number): void;
+
+        /**
          * Returns the world position and visibility of a hot spot.
          */
         getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
@@ -468,7 +498,6 @@ export class Viewer implements IDisposable {
 
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
-    private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
 
@@ -825,7 +854,7 @@ export class Viewer implements IDisposable {
      * The currently selected animation index.
      */
     public get selectedAnimation(): number {
-        return this._selectedAnimation;
+        return this._activeModel?.selectedAnimation ?? -1;
     }
 
     public set selectedAnimation(value: number) {
@@ -834,25 +863,13 @@ export class Viewer implements IDisposable {
 
     protected _selectAnimation(index: number, interpolateCamera = true) {
         index = Math.round(Clamp(index, -1, this.animations.length - 1));
-        if (index !== this._selectedAnimation) {
-            const startAnimation = this.isAnimationPlaying;
-            if (this._activeAnimation) {
-                this._activeAnimationObservers.forEach((observer) => observer.remove());
-                this._activeAnimationObservers = [];
-                this._activeAnimation.pause();
-                this._activeAnimation.goToFrame(0);
-            }
+        if (this._activeModel && index !== this._activeModel.selectedAnimation) {
+            this._activeAnimationObservers.forEach((observer) => observer.remove());
+            this._activeAnimationObservers = [];
 
-            this._selectedAnimation = index;
+            this._activeModel.selectAnimation(index);
 
             if (this._activeAnimation) {
-                this._activeAnimation.goToFrame(0);
-                this._activeAnimation.play(true);
-
-                if (!startAnimation) {
-                    this.pauseAnimation();
-                }
-
                 this._activeAnimationObservers = [
                     this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
                         this.onIsAnimationPlayingChanged.notifyObservers();
@@ -914,7 +931,7 @@ export class Viewer implements IDisposable {
     }
 
     private get _activeAnimation(): Nullable<AnimationGroup> {
-        return this._activeModel?.assetContainer.animationGroups[this._selectedAnimation] ?? null;
+        return this._activeModel?.assetContainer.animationGroups[this._activeModel?.selectedAnimation] ?? null;
     }
 
     /**
@@ -1037,6 +1054,7 @@ export class Viewer implements IDisposable {
             assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
+            let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
 
             const model = {
@@ -1073,6 +1091,27 @@ export class Viewer implements IDisposable {
                 resetWorldBounds: () => {
                     cachedWorldBounds.length = 0;
                 },
+                get selectedAnimation() {
+                    return selectedAnimation;
+                },
+                selectAnimation: (index: number) => {
+                    const startAnimation = this.isAnimationPlaying;
+                    if (this._activeAnimation) {
+                        this._activeAnimation.pause();
+                        this._activeAnimation.goToFrame(0);
+                    }
+
+                    selectedAnimation = index;
+
+                    if (this._activeAnimation) {
+                        this._activeAnimation.goToFrame(0);
+                        this._activeAnimation.play(true);
+
+                        if (!startAnimation) {
+                            this.pauseAnimation();
+                        }
+                    }
+                },
             };
 
             this._loadedModelsBacking.push(model);
@@ -1086,19 +1125,6 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.enableSnapshotRendering();
             this._markSceneMutated();
         }
-    }
-
-    /**
-     * Reduce all the given models meshes, animations, ... into a single container.
-     * @param models The models to reduce.
-     * @returns The reduced asset container.
-     */
-    private _reduceModels(models: Model[]): AssetContainer {
-        return models.reduce((container, model) => {
-            container.meshes.push(...model.assetContainer.meshes);
-            container.animationGroups.push(...model.assetContainer.animationGroups);
-            return container;
-        }, new AssetContainer());
     }
 
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
@@ -1453,20 +1479,8 @@ export class Viewer implements IDisposable {
         }
     }
 
-    protected _reframeCamera(interpolateCamera?: boolean): void;
-    protected _reframeCamera(interpolateCamera: boolean, models?: Model[]): void {
-        if (!models) {
-            const selectedAnimation = this._selectedAnimation === -1 ? 0 : this._selectedAnimation;
-            const worldBounds = this._activeModel?.getWorldBounds(selectedAnimation);
-            this._reframeCameraFromBounds(worldBounds, interpolateCamera);
-            return;
-        }
-
-        // const container = models.length === this._loadedModelsBacking.length ? this._loadedModelsContainer : this._reduceModels(models);
-        // this._loadedModels.map((model) => model.meshes).flat().foreach((mesh) => {
-        const meshes = this._loadedModelsBacking.flatMap((model) => model.assetContainer.meshes);
-
-        const worldBounds = computeBoundingInfos(meshes);
+    protected _reframeCamera(interpolateCamera: boolean = false, models: Model[] = this._loadedModelsBacking): void {
+        const worldBounds = computeModelsBoundingInfos(models);
         this._reframeCameraFromBounds(worldBounds, interpolateCamera);
     }
 
