@@ -131,7 +131,7 @@ async function CreateWorkerPoolAsync(): Promise<WorkerPool> {
     const workerContent = `${EncodeImageData}(${workerFunction})()`;
     const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
 
-    return new AutoReleaseWorkerPool(1, () => {
+    return new AutoReleaseWorkerPool(BasisEncoderConfiguration.numWorkers, () => {
         const worker = new Worker(workerBlobUrl);
         return initializeWebWorker(worker, wasmBinary, url);
     });
