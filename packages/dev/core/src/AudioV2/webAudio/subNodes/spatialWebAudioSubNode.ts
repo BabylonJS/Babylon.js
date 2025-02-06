@@ -22,11 +22,11 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 }
 
 /** @internal */
-class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _position = Vector3.Zero();
-    private _rotation: Vector3 = _SpatialAudioDefaults.ROTATION.clone();
+    private _rotation: Vector3 = _SpatialAudioDefaults.rotation.clone();
     private _rotationDirty = false;
-    private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.ROTATION_QUATERNION.clone();
+    private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
     /** @internal */
     public readonly node: PannerNode;

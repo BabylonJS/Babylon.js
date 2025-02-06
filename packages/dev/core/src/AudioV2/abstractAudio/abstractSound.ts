@@ -1,14 +1,13 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
-import { AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
+import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
-import { _AudioSubNode } from "./subNodes/audioSubNode";
-import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
-import { _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
+import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode, _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
 import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 
@@ -69,7 +68,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             loop: false,
             maxInstances: Infinity,
             startOffset: 0,
-            volume: _VolumeAudioDefaults.VOLUME,
+            volume: _VolumeAudioDefaults.volume,
             ...options,
         } as ICommonSoundOptions;
     }
@@ -178,12 +177,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The output volume of the sound.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.VOLUME;
+        return _GetVolumeAudioProperty(this._subGraph, "volume");
     }
 
     public set volume(value: number) {
-        // The volume subnode is created at initialization time and it should always exist.
-        const node = this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME);
+        // The volume subnode is created on initialization and should always exist.
+        const node = _GetVolumeAudioSubNode(this._subGraph);
         if (!node) {
             throw new Error("No volume subnode");
         }
@@ -216,10 +215,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
-        if (this._state !== SoundState.Started && this._state !== SoundState.Starting) {
-            return;
-        }
-
         for (const instance of Array.from(this._instances)) {
             instance.pause();
         }
@@ -270,11 +265,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected _stopExcessInstances(): void {
         if (this.maxInstances < Infinity) {
-            const startedInstances = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started);
-            const numberOfInstancesToStop = startedInstances.length - this.maxInstances;
+            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
+            const it = this._instances.values();
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {
-                startedInstances[i].stop();
+                const instance = it.next().value;
+                instance.stop();
             }
         }
     }

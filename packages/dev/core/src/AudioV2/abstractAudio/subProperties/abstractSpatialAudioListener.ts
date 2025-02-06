@@ -1,9 +1,9 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
 export const _SpatialAudioListenerDefaults = {
-    POSITION: Vector3.Zero(),
-    ROTATION: Vector3.Zero(),
-    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+    position: Vector3.Zero(),
+    rotation: Vector3.Zero(),
+    rotationQuaternion: Quaternion.FromEulerVector(Vector3.Zero()),
 };
 
 /**

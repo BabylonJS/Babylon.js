@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const enum _AudioSubNode {
+/** @internal */
+export const enum AudioSubNode {
     STEREO = "Stereo",
     SPATIAL = "Spatial",
     VOLUME = "Volume",

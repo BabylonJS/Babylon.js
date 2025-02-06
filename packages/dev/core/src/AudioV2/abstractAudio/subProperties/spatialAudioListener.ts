@@ -1,4 +1,5 @@
-import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener, type ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
+import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
+import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
 
 /** @internal */
 export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener {
@@ -13,7 +14,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         } else if (options.listenerRotation !== undefined) {
             this.rotation = options.listenerRotation.clone();
         } else {
-            this.rotationQuaternion = _SpatialAudioListenerDefaults.ROTATION_QUATERNION.clone();
+            this.rotationQuaternion = _SpatialAudioListenerDefaults.rotationQuaternion.clone();
         }
     }
 }

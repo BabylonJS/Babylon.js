@@ -8,7 +8,7 @@ export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): P
 }
 
 /** @internal */
-class _StereoWebAudioSubNode extends _StereoAudioSubNode {
+export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
     /** @internal */
     public readonly node: StereoPannerNode;
 

@@ -1,17 +1,17 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
 export const _SpatialAudioDefaults = {
-    CONE_INNER_ANGLE: 6.28318530718,
-    CONE_OUTER_ANGLE: 6.28318530718,
-    CONE_OUTER_VOLUME: 0,
-    DISTANCE_MODEL: "inverse" as "linear" | "inverse" | "exponential",
-    MAX_DISTANCE: 10000,
-    PANNING_MODEL: "equalpower" as "equalpower" | "HRTF",
-    POSITION: Vector3.Zero(),
-    REFERENCE_DISTANCE: 1,
-    ROLLOFF_FACTOR: 1,
-    ROTATION: Vector3.Zero(),
-    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+    coneInnerAngle: 6.28318530718,
+    coneOuterAngle: 6.28318530718,
+    coneOuterVolume: 0,
+    distanceModel: "inverse" as DistanceModelType,
+    maxDistance: 10000,
+    panningModel: "equalpower" as PanningModelType,
+    position: Vector3.Zero(),
+    referenceDistance: 1,
+    rolloffFactor: 1,
+    rotation: Vector3.Zero(),
+    rotationQuaternion: Quaternion.FromEulerVector(Vector3.Zero()),
 };
 
 /**

@@ -8,7 +8,7 @@ export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): P
 }
 
 /** @internal */
-class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
+export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
     /** @internal */
     public readonly node: GainNode;
 
