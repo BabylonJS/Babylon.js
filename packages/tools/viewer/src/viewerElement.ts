@@ -77,6 +77,25 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
     selectedmaterialvariantchange: Event;
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
+export interface ViewerElement {
+    addEventListener<K extends keyof ViewerElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+
+    removeEventListener<K extends keyof ViewerElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
+        options?: boolean | EventListenerOptions
+    ): void;
+
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
 /**
  * Base class for the viewer custom element.
  */
@@ -1031,26 +1050,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             <slot name="progress-bar">${this._renderProgressBar()}</slot>
             <slot name="tool-bar">${this._renderToolbar()}</slot>
         `;
-    }
-
-    // eslint-disable-next-line babylonjs/available
-    override addEventListener<K extends keyof ViewerElementEventMap>(
-        type: K,
-        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions
-    ): void;
-    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
-        super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
-    }
-
-    // eslint-disable-next-line babylonjs/available
-    override removeEventListener<K extends keyof ViewerElementEventMap>(
-        type: K,
-        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions
-    ): void;
-    override removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
-        super.removeEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
     protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
