@@ -44,7 +44,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
         this._outNode = (volumeNode as _VolumeWebAudioSubNode).node;
 
-        // Connect the wrapped downstream WebAudio nodes to the new wrapped WebAudio node.
+        // Connect the new wrapped WebAudio node to the wrapped downstream WebAudio nodes.
         // The wrapper nodes are unaware of this change.
         if (this._outNode && this._downstreamNodes) {
             const it = this._downstreamNodes.values();
