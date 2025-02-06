@@ -1,39 +1,64 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import type { BasisEncoderOptions } from "./basisEncoder";
+import type { BasisFormat } from "./basisEncoder";
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
 declare let BASIS: any;
 
+// For now, keep here until ready to expand and expose this to the public API.
+/**
+ * Parameters for the Basis Universal encoder.
+ * @internal
+ */
+export type BasisEncoderParameters = {
+    /**
+     * Width of the source image
+     */
+    width: number;
+    /**
+     * Height of the source image
+     */
+    height: number;
+    /**
+     * The desired Basis Universal encoding format.
+     */
+    basisFormat: BasisFormat;
+    /**
+     * If true, the input is assumed to be in sRGB space
+     */
+    isSRGB: boolean;
+};
+
 /**
  * API reference: https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp.
  * @internal
  */
-export function EncodeImageData(basisModule: any, imgData: Uint8Array, params: BasisEncoderOptions): Uint8Array {
+export function EncodeImageData(basisModule: any, imgData: Uint8Array, params: BasisEncoderParameters): Uint8Array {
     let basisEncoder = null;
 
     try {
         basisModule.initializeBasis();
         basisEncoder = new basisModule.BasisEncoder();
         basisEncoder.setSliceSourceImage(0, imgData, params.width, params.height, basisModule.ldr_image_type.cRGBA32.value);
+        basisEncoder.setFormatMode(basisModule.basis_tex_format[`c${params.basisFormat}`].value);
 
-        // Set sRGB options, which should almost always match each other.
-        basisEncoder.setPerceptual(params.useSRGBBuffer);
-        basisEncoder.setMipSRGB(params.useSRGBBuffer);
-        basisEncoder.setKTX2SRGBTransferFunc(params.useSRGBBuffer);
+        // Set sRGB parameters, which should almost always match each other.
+        basisEncoder.setPerceptual(params.isSRGB);
+        basisEncoder.setMipSRGB(params.isSRGB);
+        basisEncoder.setKTX2SRGBTransferFunc(params.isSRGB);
 
-        // Set other hardcoded options. Expose these as needed in the future.
-        // Q: We should eventually expose these, especially the quality level, but is that in the scope of this PR?
-        basisEncoder.setTexType(basisModule.basis_texture_type.cBASISTexType2D.value); // Only 2D textures are supported
-        basisEncoder.setFormatMode(params.useSRGBBuffer ? 1 : 0); // Deduce whether UASTC LDR 4x4 (0) or ETC1S (1)
-        basisEncoder.setMipGen(true); // Generate mipmaps
-        basisEncoder.setQualityLevel(127); // Controls the file size vs. quality tradeoff for ETC1S. Range is [1, 255]
-        basisEncoder.setCreateKTX2File(true); // Create KTX2 file
-        basisEncoder.setKTX2UASTCSupercompression(true); // Use Zstd supercompression. Only for UASTC KTX2 files
+        // Set hardcoded parameters. Expose these as needed in the future via BasisEncoderParameters.
+        basisEncoder.setTexType(basisModule.basis_texture_type.cBASISTexType2D.value); // Use 2D textures
+        basisEncoder.setMipGen(true); // Generate mipmaps just in case
+        basisEncoder.setCreateKTX2File(true); // Use KTX2 container format
+        if (params.basisFormat === "ETC1S") {
+            basisEncoder.setQualityLevel(127); // Controls the file size vs. quality tradeoff for ETC1S. Range is [1, 255]
+        } else if (params.basisFormat === "UASTC4x4") {
+            basisEncoder.setKTX2UASTCSupercompression(true); // Use Zstd supercompression. Only applicable to UASTC KTX2 files
+        }
 
-        // Magic number. See https://github.com/BinomialLLC/basis_universal/blob/2d4fe933b2e46ebb2874f9160d076a238699fd86/webgl/encode_test/index.html#L420
-        // "Create a destination buffer to hold the compressed file data. If this buffer isn't large enough compression will fail."
+        // The official demo uses a magic number for the size of the allocation. See:
+        // https://github.com/BinomialLLC/basis_universal/blob/2d4fe933b2e46ebb2874f9160d076a238699fd86/webgl/encode_test/index.html#L420
         const basisFileData = new Uint8Array(1024 * 1024 * 10);
 
         const encodedLength = basisEncoder.encode(basisFileData);
