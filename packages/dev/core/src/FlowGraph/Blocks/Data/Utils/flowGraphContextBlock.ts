@@ -2,7 +2,7 @@ import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGrap
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**

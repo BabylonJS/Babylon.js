@@ -138,4 +138,6 @@ export const enum FlowGraphBlockNames {
     FloatToInt = "FlowGraphFloatToInt",
     Easing = "FlowGraphEasingBlock",
     Context = "FlowGraphContextBlock",
+    ArrayIndex = "FlowGraphArrayIndexBlock",
+    CodeExecution = "FlowGraphCodeExecutionBlock",
 }
