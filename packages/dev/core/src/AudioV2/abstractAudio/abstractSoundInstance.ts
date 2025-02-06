@@ -15,14 +15,13 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
     /** @internal */
-    public options = {} as ICommonSoundOptions;
+    public options: Partial<ICommonSoundOptions>;
 
     protected constructor(sound: AbstractSound, options: Partial<ICommonSoundOptions>) {
         super(sound.engine, AudioNodeType.HAS_OUTPUTS);
 
-        Object.assign(this.options, options);
-
         this._sound = sound;
+        this.options = options;
     }
 
     public abstract currentTime: number;

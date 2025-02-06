@@ -30,14 +30,14 @@ export interface IStreamingSoundOptions extends ICommonSoundOptions {
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();
 
-    protected override _options: IStreamingSoundOptions;
+    protected override _options: Partial<IStreamingSoundOptions>;
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
 
         this._options = {
             preloadCount: 1,
-            ...(this._options as ICommonSoundOptions),
+            ...this._options,
         };
     }
 
@@ -45,7 +45,7 @@ export abstract class StreamingSound extends AbstractSound {
      * The number of instances to preload.
      */
     public get preloadCount(): number {
-        return this._options.preloadCount;
+        return this._options.preloadCount ?? 1;
     }
 
     /**
@@ -95,7 +95,7 @@ export abstract class StreamingSound extends AbstractSound {
 
         if (this.preloadCompletedCount > 0) {
             instance = this._preloadedInstances[0];
-            instance.options.startOffset = this._options.startOffset;
+            instance.options.startOffset = this.startOffset;
             this._removePreloadedInstance(instance);
         } else {
             instance = this._createInstance();

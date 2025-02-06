@@ -54,7 +54,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     private _state: SoundState = SoundState.Stopped;
 
     protected _instances: ReadonlySet<_AbstractSoundInstance> = this._privateInstances;
-    protected _options = {} as ICommonSoundOptions;
+    protected _options: Partial<ICommonSoundOptions>;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
@@ -72,14 +72,14 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             startOffset: 0,
             volume: _VolumeAudioDefaults.volume,
             ...options,
-        } as ICommonSoundOptions;
+        };
     }
 
     /**
      * Whether the sound should start playing immediately. Defaults to `false`.
      */
     public get autoplay(): boolean {
-        return this._options.autoplay;
+        return this._options.autoplay ?? false;
     }
 
     /**
@@ -103,7 +103,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Whether the sound should loop. Defaults to `false`.
      */
     public get loop(): boolean {
-        return this._options.loop;
+        return this._options.loop ?? false;
     }
 
     public set loop(value: boolean) {
@@ -114,7 +114,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
      */
     public get maxInstances(): number {
-        return this._options.maxInstances;
+        return this._options.maxInstances ?? Infinity;
     }
 
     public set maxInstances(value: number) {
@@ -156,7 +156,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The time within the sound buffer to start playing at, in seconds. Defaults to `0`.
      */
     public get startOffset(): number {
-        return this._options.startOffset;
+        return this._options.startOffset ?? 0;
     }
 
     public set startOffset(value: number) {
