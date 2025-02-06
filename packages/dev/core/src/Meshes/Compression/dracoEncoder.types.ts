@@ -1,4 +1,4 @@
-import type { VertexDataTypedArray } from "core/Buffers";
+import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
 import type { Nullable } from "core/types";
 
 /**
