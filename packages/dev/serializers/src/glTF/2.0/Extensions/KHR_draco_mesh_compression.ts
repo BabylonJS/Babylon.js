@@ -84,7 +84,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             const accessor = accessors[primitive.indices];
             const bufferView = bufferManager.getBufferView(accessor);
             // Per exportIndices, indices must be either Uint16Array or Uint32Array
-            indices = bufferManager.getData(bufferView) as Uint32Array | Uint16Array;
+            indices = bufferManager.getData(bufferView).slice() as Uint32Array | Uint16Array;
 
             primitiveBufferViews.push(bufferView);
             primitiveAccessors.push(accessor);
@@ -97,7 +97,6 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             const bufferView = bufferManager.getBufferView(accessor);
 
             const size = GetAccessorElementCount(accessor.type);
-            // TODO: Add flag in DracoEncoder API to prevent copying data (a second time) to transferable buffer
             const data = GetTypedArrayData(
                 bufferManager.getData(bufferView),
                 size,
@@ -105,7 +104,8 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 accessor.byteOffset || 0,
                 bufferView.byteStride || GetTypeByteLength(accessor.componentType) * size,
                 accessor.normalized || false,
-                accessor.count
+                accessor.count,
+                true
             );
 
             attributes.push({ kind: name, dracoName: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: data });

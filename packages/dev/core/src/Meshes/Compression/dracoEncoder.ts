@@ -41,7 +41,7 @@ function GetDracoAttributeName(kind: string): DracoAttributeName {
  * @internal
  */
 function PrepareIndicesForDraco(input: Mesh | Geometry): Nullable<Uint32Array | Uint16Array> {
-    let indices = input.getIndices();
+    let indices = input.getIndices(undefined, true);
 
     // Convert number[] and Int32Array types, if needed
     if (indices && !(indices instanceof Uint32Array) && !(indices instanceof Uint16Array)) {
@@ -78,7 +78,8 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
             vertexBuffer.byteOffset,
             vertexBuffer.byteStride,
             vertexBuffer.normalized,
-            input.getTotalVertices()
+            input.getTotalVertices(),
+            true
         );
         attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: size, data: data });
     }
@@ -241,14 +242,12 @@ export class DracoEncoder extends DracoCodec {
                     worker.addEventListener("error", onError);
                     worker.addEventListener("message", onMessage);
 
-                    // Manually create copies of our attribute data and add them to the transfer list to ensure we only copy the ArrayBuffer data we need.
+                    // Build the transfer list. No need to copy, as the data was copied in previous steps.
                     const transferList = [];
                     attributes.forEach((attribute) => {
-                        attribute.data = attribute.data.slice();
                         transferList.push(attribute.data.buffer);
                     });
                     if (indices) {
-                        indices = indices.slice();
                         transferList.push(indices.buffer);
                     }
 
