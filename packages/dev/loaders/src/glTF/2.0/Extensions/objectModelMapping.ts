@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import type { TransformNode } from "core/Meshes/transformNode";
-import type { ICamera, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
+import type { ICamera, IGLTF, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
@@ -13,8 +13,9 @@ import type { Nullable } from "core/types";
 import type { SpotLight } from "core/Lights/spotLight";
 import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
@@ -1021,7 +1022,7 @@ function generateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
     };
 }
 
-export const objectModelMapping: IGLTFObjectModelTree = {
+const objectModelMapping: IGLTFObjectModelTree = {
     cameras: camerasTree,
     nodes: nodesTree,
     materials: materialsTree,
@@ -1029,3 +1030,85 @@ export const objectModelMapping: IGLTFObjectModelTree = {
     animations: {},
     meshes: {},
 };
+
+/**
+ * get a path-to-object converter for the given glTF tree
+ * @param gltf the glTF tree to use
+ * @returns a path-to-object converter for the given glTF tree
+ */
+export function getPathToObjectConverter(gltf: IGLTF) {
+    return new GLTFPathToObjectConverter(gltf, objectModelMapping);
+}
+
+/**
+ * This function will return the object accessor for the given key in the object model
+ * If the key is not found, it will return undefined
+ * @param key the key to get the mapping for, for example /materials/\{\}/emissiveFactor
+ * @returns an object accessor for the given key, or undefined if the key is not found
+ */
+export function getMappingForKey(key: string): IObjectAccessor | undefined {
+    // replace every `{}` in key with __array__ to match the object model
+    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
+    let current = objectModelMapping as any;
+    for (const part of keyParts) {
+        // make sure part is not empty
+        if (!part) {
+            continue;
+        }
+        current = current[part];
+    }
+    // validate that current is an object accessor
+    if (current && current.type && current.get && current.set) {
+        return current;
+    }
+    return undefined;
+}
+
+/**
+ * Set interpolation for a specific key in the object model
+ * @param key the key to set, for example /materials/\{\}/emissiveFactor
+ * @param interpolation the interpolation elements array
+ */
+export function setInterpolationForKey(key: string, interpolation?: IInterpolationPropertyInfo[]): void {
+    // replace every `{}` in key with __array__ to match the object model
+    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
+    let current = objectModelMapping as any;
+    for (const part of keyParts) {
+        // make sure part is not empty
+        if (!part) {
+            continue;
+        }
+        current = current[part];
+    }
+    // validate that the current object is an object accessor
+    if (current && current.type && current.get && current.set) {
+        (current as IObjectAccessor).interpolation = interpolation;
+    }
+}
+
+/**
+ * This will ad a new object accessor in the object model at the given key.
+ * Note that this will NOT change the typescript types. To do that you will need to change the interface itself (extending it in the module that uses it)
+ * @param key the key to add the object accessor at. For example /cameras/\{\}/perspective/aspectRatio
+ * @param accessor the object accessor to add
+ */
+export function addObjectAccessorToKey(key: string, accessor: IObjectAccessor): void {
+    // replace every `{}` in key with __array__ to match the object model
+    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
+    let current = objectModelMapping as any;
+    for (const part of keyParts) {
+        // make sure part is not empty
+        if (!part) {
+            continue;
+        }
+        if (!current[part]) {
+            current[part] = {};
+            // if the part is __array__ then add the __target__ property
+            if (part === "__array__") {
+                current[part].__target__ = true;
+            }
+        }
+        current = current[part];
+    }
+    current = accessor;
+}

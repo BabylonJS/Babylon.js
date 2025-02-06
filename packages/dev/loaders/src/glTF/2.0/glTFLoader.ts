@@ -78,7 +78,7 @@ import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
-import { objectModelMapping } from "./Extensions/objectModelMapping";
+import { getMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
@@ -1679,24 +1679,28 @@ export class GLTFLoader implements IGLTFLoader {
         let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
-                properties = objectModelMapping.nodes.__array__.translation.interpolation!;
+                properties = getMappingForKey("/nodes/{}/translation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.ROTATION: {
-                properties = objectModelMapping.nodes.__array__.rotation.interpolation!;
+                properties = getMappingForKey("/nodes/{}/rotation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.SCALE: {
-                properties = objectModelMapping.nodes.__array__.scale.interpolation!;
+                properties = getMappingForKey("/nodes/{}/scale")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.WEIGHTS: {
-                properties = objectModelMapping.nodes.__array__.weights.interpolation!;
+                properties = getMappingForKey("/nodes/{}/weights")?.interpolation!;
                 break;
             }
             default: {
                 throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
             }
+        }
+        // stay safe
+        if (!properties) {
+            throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
         }
 
         const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {

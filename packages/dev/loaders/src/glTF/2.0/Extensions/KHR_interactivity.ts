@@ -5,8 +5,8 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import { objectModelMapping } from "./objectModelMapping";
+import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import { getPathToObjectConverter } from "./objectModelMapping";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 
@@ -44,7 +44,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = new GLTFPathToObjectConverter(this._loader.gltf, objectModelMapping);
+        this._pathConverter = getPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
         _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
     }
