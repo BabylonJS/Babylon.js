@@ -76,10 +76,10 @@ export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture, opt
         isSRGB: babylonTexture._texture?._useSRGBBuffer || babylonTexture.gammaSpace,
     };
 
-    return EncodeData(pixels, finalOptions);
+    return EncodeDataAsync(pixels, finalOptions);
 }
 
-async function EncodeData(slicedSourceImage: Uint8Array, parameters: BasisEncoderParameters): Promise<Uint8Array> {
+async function EncodeDataAsync(slicedSourceImage: Uint8Array, parameters: BasisEncoderParameters): Promise<Uint8Array> {
     const config = BasisEncoderConfiguration;
     if (!_IsWasmConfigurationAvailable(config.wasmUrl, config.wasmBinaryUrl)) {
         throw new Error("Cannot use Basis Encoder configuration. Check configuration and verify environment WebAssembly support.");
