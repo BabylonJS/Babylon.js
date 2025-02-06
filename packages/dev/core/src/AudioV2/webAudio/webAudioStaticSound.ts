@@ -142,16 +142,16 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
         return "WebAudioStaticSound";
     }
 
+    protected _createInstance(): _WebAudioStaticSoundInstance {
+        return new _WebAudioStaticSoundInstance(this, this._options);
+    }
+
     protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
         if (node.inNode) {
             this.outNode?.connect(node.inNode);
         }
-    }
-
-    protected _createInstance(): _WebAudioStaticSoundInstance {
-        return new _WebAudioStaticSoundInstance(this, this._options);
     }
 
     protected override _disconnect(node: IWebAudioInNode): void {

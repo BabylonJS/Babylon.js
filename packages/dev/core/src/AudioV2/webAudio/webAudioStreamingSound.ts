@@ -128,16 +128,16 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
         return "WebAudioStreamingSound";
     }
 
+    protected _createInstance(): _WebAudioStreamingSoundInstance {
+        return new _WebAudioStreamingSoundInstance(this, this._options);
+    }
+
     protected override _connect(node: IWebAudioInNode): void {
         super._connect(node);
 
         if (this._subGraph.inNode) {
             this.outNode?.connect(this._subGraph.inNode);
         }
-    }
-
-    protected _createInstance(): _WebAudioStreamingSoundInstance {
-        return new _WebAudioStreamingSoundInstance(this, this._options);
     }
 
     protected override _disconnect(node: IWebAudioInNode): void {
