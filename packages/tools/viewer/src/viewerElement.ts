@@ -1043,6 +1043,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
+    // eslint-disable-next-line babylonjs/available
+    override removeEventListener<K extends keyof ViewerElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+    override removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+        super.removeEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
+    }
+
     protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
