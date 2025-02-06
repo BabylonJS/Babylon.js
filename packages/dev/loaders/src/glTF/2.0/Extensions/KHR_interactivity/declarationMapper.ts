@@ -148,8 +148,6 @@ export interface IGLTFToFlowGraphMapping {
      * This function can return more than one node, if extra nodes are needed for this block to function correctly.
      * Returning more than one block will usually happen when a json pointer was provided.
      *
-     * TODO - semantically this doesn't belong here, as it is not a mapping, but a processor.
-     *
      * @param gltfBlock the glTF node
      * @param mapping the mapping object
      * @param arrays the arrays of the interactivity object
@@ -377,7 +375,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" }, // TODO - output or value?
+                value: { name: "output" },
             },
         },
     },
@@ -811,10 +809,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
-            // TODO - removing this prevents proper validation
-            // if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-            //     throw new Error("Sequence should have a single configuration object, the number of output flows");
-            // }
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
             serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length;
@@ -886,8 +880,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 startIndex: { name: "startIndex", gltfType: "number" },
                 endIndex: { name: "endIndex", gltfType: "number" },
-                // TODO no step available
-                // step: { name: "step", gltfType: "number" },
             },
         },
         outputs: {
@@ -1533,7 +1525,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
 1. **Custom Variable Access**
    - Variable Get (`variable/get`) FlowGraphBlockNames.GetVariable
    - Variable Set (`variable/set`) FlowGraphBlockNames.SetVariable
-   - Variable Interpolate (`variable/interpolate`) TODO
+   - Variable Interpolate (`variable/interpolate`)
 2. **Object Model Access** // TODO fully test this!!!
    - JSON Pointer Template Parsing (`pointer/get`) [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser]
    - Effective JSON Pointer Generation (`pointer/set`) [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser]
@@ -1543,8 +1535,8 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
 
 ### Animation Control Nodes
 1. **Animation Play** (`animation/start`) FlowGraphBlockNames.PlayAnimation
-2. **Animation Stop** (`animation/stop`) FlowGraphBlockNames.StopAnimation TODO!
-3. **Animation Stop At** (`animation/stopAt`) FlowGraphBlockNames.StopAnimation TODO!
+2. **Animation Stop** (`animation/stop`) FlowGraphBlockNames.StopAnimation 
+3. **Animation Stop At** (`animation/stopAt`) FlowGraphBlockNames.StopAnimation 
 
 ### Event Nodes
 1. **Lifecycle Event Nodes**
