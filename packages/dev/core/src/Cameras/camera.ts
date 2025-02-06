@@ -277,7 +277,7 @@ export class Camera extends Node {
     public minZ = 1;
 
     /**
-     * Define the maximum distance the camera can see to.
+     * Define the maximum distance the camera can see to.  (default is 10000)
      * This is important to note that the depth buffer are not infinite and the further it end
      * the more your scene might encounter depth fighting issue.
      */
