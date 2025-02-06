@@ -160,13 +160,13 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
 
 /**
  * Updates the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
- * @param assetContainer The asset container representing the model
+ * @param meshes The meshes to consider when computing the bounding info
  * @param animationGroup The animation group to consider when computing the bounding info
  * @returns The computed bounding info for the model or null if no meshes are present in the asset container
  */
-function computeBoundingInfos(assetContainer: AssetContainer, animationGroup: Nullable<AnimationGroup> = null): Nullable<ViewerBoundingInfo> {
-    if (assetContainer.meshes.length) {
-        const maxExtents = computeMaxExtents(assetContainer.meshes, animationGroup);
+function computeBoundingInfos(meshes: AbstractMesh[], animationGroup: Nullable<AnimationGroup> = null): Nullable<ViewerBoundingInfo> {
+    if (meshes.length) {
+        const maxExtents = computeMaxExtents(meshes, animationGroup);
         const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
         const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
         const size = max.subtract(min);
@@ -438,7 +438,6 @@ export class Viewer implements IDisposable {
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: Model[] = [];
-    private _loadedModelsContainer: AssetContainer = new AssetContainer();
     private _activeModelBacking: Nullable<Model> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
@@ -819,7 +818,7 @@ export class Viewer implements IDisposable {
      * The list of animation names.
      */
     public get animations(): readonly string[] {
-        return this._loadedModelsContainer.animationGroups.map((group) => group.name) ?? [];
+        return this._activeModel?.assetContainer.animationGroups.map((group) => group.name) ?? [];
     }
 
     /**
@@ -1054,7 +1053,6 @@ export class Viewer implements IDisposable {
                     const index = this._loadedModelsBacking.indexOf(model);
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
-                        this._loadedModelsContainer = this._reduceModels(this._loadedModelsBacking);
                         if (model === this._activeModel) {
                             this._setActiveModel(null);
                         }
@@ -1065,7 +1063,7 @@ export class Viewer implements IDisposable {
                 getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
-                        worldBounds = computeBoundingInfos(assetContainer, assetContainer.animationGroups[animationIndex]);
+                        worldBounds = computeBoundingInfos(assetContainer.meshes, assetContainer.animationGroups[animationIndex]);
                         if (worldBounds) {
                             cachedWorldBounds[animationIndex] = worldBounds;
                         }
@@ -1078,7 +1076,6 @@ export class Viewer implements IDisposable {
             };
 
             this._loadedModelsBacking.push(model);
-            this._loadedModelsContainer = this._reduceModels(this._loadedModelsBacking);
 
             return model;
         } catch (e) {
@@ -1465,8 +1462,11 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        const container = models.length === this._loadedModelsBacking.length ? this._loadedModelsContainer : this._reduceModels(models);
-        const worldBounds = computeBoundingInfos(container);
+        // const container = models.length === this._loadedModelsBacking.length ? this._loadedModelsContainer : this._reduceModels(models);
+        // this._loadedModels.map((model) => model.meshes).flat().foreach((mesh) => {
+        const meshes = this._loadedModelsBacking.flatMap((model) => model.assetContainer.meshes);
+
+        const worldBounds = computeBoundingInfos(meshes);
         this._reframeCameraFromBounds(worldBounds, interpolateCamera);
     }
 
@@ -1561,9 +1561,9 @@ export class Viewer implements IDisposable {
     protected async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
         await import("core/Culling/ray");
         if (this._loadedModels.length > 0) {
-            const container = this._loadedModelsContainer;
+            const meshes = this._loadedModelsBacking.flatMap((model) => model.assetContainer.meshes);
             // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            container.meshes.forEach((mesh) => {
+            meshes.forEach((mesh) => {
                 let cache = this._meshDataCache.get(mesh);
                 if (!cache) {
                     cache = {};
@@ -1572,7 +1572,7 @@ export class Viewer implements IDisposable {
                 mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
             });
 
-            const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => container.meshes.includes(mesh));
+            const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => meshes.includes(mesh));
             if (pickingInfo.hit) {
                 return pickingInfo;
             }
