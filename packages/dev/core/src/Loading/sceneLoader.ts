@@ -1539,7 +1539,7 @@ function importAnimationsSharedAsync(
 }
 
 /**
- * @deprecated Please use the module level functions such as LoadAssetContainerAsync as they are more efficient for bundler tree shaking and allow plugin options to be passed through.
+ * @deprecated The module level functions (such as LoadAssetContainerAsync) are more efficient for bundler tree shaking and allow plugin options to be passed through. Future improvements to scene loading will primarily be in the module level functions. The SceneLoader class will remain available, but it will be beneficial to prefer the module level functions.
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
