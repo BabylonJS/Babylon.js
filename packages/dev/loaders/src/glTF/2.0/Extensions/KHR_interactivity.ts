@@ -9,6 +9,7 @@ import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { getPathToObjectConverter } from "./objectModelMapping";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
+import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
 const NAME = "KHR_interactivity";
 
@@ -76,6 +77,11 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         coordinator.start();
     }
 }
+
+// Register flow graph blocks. Do it here so they are available when the extension is enabled.
+addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
+    return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+});
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new KHR_interactivity(loader));

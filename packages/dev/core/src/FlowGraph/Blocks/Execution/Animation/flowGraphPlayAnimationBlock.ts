@@ -47,12 +47,12 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly currentAnimationGroup: FlowGraphDataConnection<AnimationGroup>;
 
     /**
-     * Will be initialized if no animation group was provided in the configuration.
+     * Input: Will be initialized if no animation group was provided in the configuration.
      */
     public readonly animationGroup: FlowGraphDataConnection<AnimationGroup>;
 
     /**
-     * If provided this animation will be used. Priority will be given to the animation group input.
+     * Input: If provided this animation will be used. Priority will be given to the animation group input.
      */
     public readonly animation: FlowGraphDataConnection<Animation | Animation[]>;
 

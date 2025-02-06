@@ -60,9 +60,10 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
 export interface IGLTFToFlowGraphMapping {
     /**
      * The type of the FlowGraph block(s).
-     * Typically will be a single element in an array
+     * Typically will be a single element in an array.
+     * When adding blocks defined in this module use the KHR_interactivity prefix.
      */
-    blocks: FlowGraphBlockNames[];
+    blocks: (FlowGraphBlockNames | string)[];
     /**
      * The inputs of the glTF node mapped to the FlowGraph block.
      */
@@ -1252,11 +1253,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
     },
     "animation/start": {
-        blocks: [FlowGraphBlockNames.PlayAnimation],
+        blocks: [FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         inputs: {
             values: {
-                // TODO - fix the animation reference
-                animation: { name: "animationGroup", gltfType: "number", flowGraphType: "animation" /*isIndex: "animations"*/ },
+                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
                 startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time * 60 },
@@ -1268,60 +1268,96 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 err: { name: "error" },
             },
         },
-        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            // TODO - we should differentiate between static value and dynamic socket connected-values.
-            // This should probably be solved with a different approach. Another block probably.
-            // The input is an index. We should connect the index to the actual animationGroup on the flow-graph level.
-
-            // const animation = gltfBlock.values?.animation;
-            // if (animation === undefined) {
-            //     throw new Error("animation not found in block");
-            // }
-            // const animationIndex = 0; // TODO - this is obviously not 0, but the index of the animation in the globalGLTF.animations
-            // const variableName = serializedObjects[0].dataInputs[0].uniqueId;
-            // // connect the mesh to the asset input
-            // // connectFlowGraphNodes("asset", "value", serializedObjects[0], serializedObjects[1], true);
-
-            // // find the nodeIndex value
-            // // serializedObjects[0].dataInputs = variableName;
-            // context._connectionValues[variableName] = {
-            //     className: "AnimationGroup",
-            //     name: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.name,
-            //     uniqueId: globalGLTF?.animations?.[animation]._babylonAnimationGroup?.uniqueId,
-            // };
+        interBlockConnectors: [
+            {
+                input: "animationGroup",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "array",
+                output: "animationGroups",
+                inputBlockIndex: 1,
+                outputBlockIndex: 2,
+            },
+        ],
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            // add the glTF to the configuration of the last serialized object
+            const serializedObject = serializedObjects[serializedObjects.length - 1];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.glTF = globalGLTF;
             return serializedObjects;
         },
     },
     "animation/stop": {
-        blocks: [FlowGraphBlockNames.StopAnimation],
+        blocks: [FlowGraphBlockNames.StopAnimation, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*, isIndex: "animations"*/ },
+                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
             },
         },
         outputs: {
             flows: {
                 err: { name: "error" },
             },
+        },
+        interBlockConnectors: [
+            {
+                input: "animationGroup",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "array",
+                output: "animationGroups",
+                inputBlockIndex: 1,
+                outputBlockIndex: 2,
+            },
+        ],
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            // add the glTF to the configuration of the last serialized object
+            const serializedObject = serializedObjects[serializedObjects.length - 1];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.glTF = globalGLTF;
+            return serializedObjects;
         },
     },
     "animation/stopAt": {
-        blocks: [FlowGraphBlockNames.StopAnimation],
+        blocks: [FlowGraphBlockNames.StopAnimation, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*, isIndex: "animations"*/ },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time / 60 },
-            },
-            flows: {
-                // in: { name: "in" },
+                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
+                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time * 60 },
             },
         },
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
+        },
+        interBlockConnectors: [
+            {
+                input: "animationGroup",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+            },
+            {
+                input: "array",
+                output: "animationGroups",
+                inputBlockIndex: 1,
+                outputBlockIndex: 2,
+            },
+        ],
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            // add the glTF to the configuration of the last serialized object
+            const serializedObject = serializedObjects[serializedObjects.length - 1];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.glTF = globalGLTF;
+            return serializedObjects;
         },
     },
 };

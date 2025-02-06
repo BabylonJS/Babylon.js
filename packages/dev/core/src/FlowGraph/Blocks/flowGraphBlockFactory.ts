@@ -1,8 +1,29 @@
 import type { FlowGraphBlock } from "../flowGraphBlock";
 import { FlowGraphBlockNames } from "./flowGraphBlockNames";
 
-export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof FlowGraphBlock> {
-    switch (name) {
+/**
+ * Any external module that wishes to add a new block to the flow graph can add to this object using the helper function.
+ */
+const customBlocks: Record<string, () => Promise<typeof FlowGraphBlock>> = {};
+
+/**
+ * If you want to add a new block to the block factory, you should use this function.
+ * Please be sure to choose a unique name and define the responsible module.
+ * @param module the name of the module that is responsible for the block
+ * @param blockName the name of the block. This should be unique.
+ * @param factory an async factory function to generate the block
+ */
+export function addToBlockFactory(module: string, blockName: string, factory: () => Promise<typeof FlowGraphBlock>): void {
+    customBlocks[`${module}/${blockName}`] = factory;
+}
+
+/**
+ * a function to get a factory function for a block.
+ * @param blockName the block name to initialize. If the block comes from an external module, the name should be in the format "module/blockName"
+ * @returns an async factory function that will return the block class when called.
+ */
+export function blockFactory(blockName: FlowGraphBlockNames | string): () => Promise<typeof FlowGraphBlock> {
+    switch (blockName) {
         case FlowGraphBlockNames.PlayAnimation:
             return async () => (await import("./Execution/Animation/flowGraphPlayAnimationBlock")).FlowGraphPlayAnimationBlock;
         case FlowGraphBlockNames.StopAnimation:
@@ -260,6 +281,10 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
         case FlowGraphBlockNames.ArrayIndex:
             return async () => (await import("./Data/Utils/flowGraphArrayIndexBlock")).FlowGraphArrayIndexBlock;
         default:
-            throw new Error(`Unknown block name ${name}`);
+            // check if the block is a custom block
+            if (customBlocks[blockName]) {
+                return customBlocks[blockName];
+            }
+            throw new Error(`Unknown block name ${blockName}`);
     }
 }
