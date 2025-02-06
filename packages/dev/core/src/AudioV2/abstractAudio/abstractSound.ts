@@ -48,10 +48,12 @@ export interface ICommonSoundOptions extends ICommonSoundPlayOptions, ISpatialAu
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
+    private _privateInstances = new Set<_AbstractSoundInstance>();
+    private _newestInstance: Nullable<_AbstractSoundInstance> = null;
     private _outBus: Nullable<PrimaryAudioBus> = null;
     private _state: SoundState = SoundState.Stopped;
 
-    protected _instances = new Set<_AbstractSoundInstance>();
+    protected _instances: ReadonlySet<_AbstractSoundInstance> = this._privateInstances;
     protected _options = {} as ICommonSoundOptions;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
@@ -198,9 +200,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this.stop();
 
+        this._newestInstance = null;
         this._outBus = null;
 
-        this._instances.clear();
+        this._privateInstances.clear();
         this.onEndedObservable.clear();
     }
 
@@ -215,8 +218,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
-        for (const instance of Array.from(this._instances)) {
-            instance.pause();
+        const it = this._instances.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            next.value.pause();
         }
 
         this._state = SoundState.Paused;
@@ -230,8 +234,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return;
         }
 
-        for (const instance of Array.from(this._instances)) {
-            instance.resume();
+        const it = this._instances.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            next.value.resume();
         }
 
         this._state = SoundState.Started;
@@ -250,7 +255,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
 
         instance.onEndedObservable.addOnce(this._onInstanceEnded);
-        this._instances.add(instance);
+        this._privateInstances.add(instance);
+        this._newestInstance = instance;
     }
 
     protected _afterPlay(instance: _AbstractSoundInstance): void {
@@ -280,18 +286,22 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return null;
         }
 
-        let instance: Nullable<_AbstractSoundInstance> = null;
-
-        const it = this._instances.values();
-        for (let next = it.next(); !next.done; next = it.next()) {
-            instance = next.value;
+        if (!this._newestInstance) {
+            const it = this._instances.values();
+            for (let next = it.next(); !next.done; next = it.next()) {
+                this._newestInstance = next.value;
+            }
         }
 
-        return instance;
+        return this._newestInstance;
     }
 
     private _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
-        this._instances.delete(instance);
+        if (this._newestInstance === instance) {
+            this._newestInstance = null;
+        }
+
+        this._privateInstances.delete(instance);
 
         if (this._instances.size === 0) {
             this._state = SoundState.Stopped;
