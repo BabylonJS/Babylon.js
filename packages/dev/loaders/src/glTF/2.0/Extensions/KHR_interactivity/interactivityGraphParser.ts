@@ -239,7 +239,7 @@ export class InteractivityGraphToFlowGraphParser {
         };
     }
 
-    private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames) {
+    private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
         const configuration = block.config;
         if (node.configuration) {
             Object.keys(node.configuration).forEach((key) => {
