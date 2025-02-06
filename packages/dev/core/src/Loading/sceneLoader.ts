@@ -1651,7 +1651,7 @@ export class SceneLoader {
      * @param plugin defines the plugin to add
      */
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
-        registerSceneLoaderPlugin(plugin);
+        RegisterSceneLoaderPlugin(plugin);
     }
 
     /**
