@@ -9,7 +9,7 @@ import type { Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import type { EncoderModule } from "draco3d";
-import { AreIndices32Bits } from "core/Buffers/bufferUtils";
+import { AreIndices32Bits, GetTypedArrayData } from "core/Buffers/bufferUtils";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
@@ -68,12 +68,19 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
             continue;
         }
 
-        // Convert number[] to typed array, if needed
-        let data = input.getVerticesData(kind)!;
-        if (!(data instanceof Float32Array)) {
-            data = Float32Array.from(data!);
-        }
-        attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: input.getVertexBuffer(kind)!.getSize(), data: data });
+        // Convert number[] to typed array, if needed.
+        const vertexBuffer = input.getVertexBuffer(kind)!;
+        const size = vertexBuffer.getSize();
+        const data = GetTypedArrayData(
+            vertexBuffer.getData()!,
+            size,
+            vertexBuffer.type,
+            vertexBuffer.byteOffset,
+            vertexBuffer.byteStride,
+            vertexBuffer.normalized,
+            input.getTotalVertices()
+        );
+        attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: size, data: data });
     }
 
     return attributes;
