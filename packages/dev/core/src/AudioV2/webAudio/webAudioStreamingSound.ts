@@ -132,20 +132,33 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
         return new _WebAudioStreamingSoundInstance(this, this._options);
     }
 
-    protected override _connect(node: IWebAudioInNode): void {
-        super._connect(node);
+    protected override _connect(node: IWebAudioInNode): boolean {
+        const connected = super._connect(node);
 
-        if (this._subGraph.inNode) {
-            this.outNode?.connect(this._subGraph.inNode);
+        if (!connected) {
+            return false;
         }
+
+        // If the wrapped node is not available now, it will be connected later by the subgraph.
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+
+        return true;
     }
 
-    protected override _disconnect(node: IWebAudioInNode): void {
-        super._disconnect(node);
+    protected override _disconnect(node: IWebAudioInNode): boolean {
+        const disconnected = super._disconnect(node);
 
-        if (this._subGraph.inNode) {
-            this.outNode?.disconnect(this._subGraph.inNode);
+        if (!disconnected) {
+            return false;
         }
+
+        if (node.inNode) {
+            this.outNode?.disconnect(node.inNode);
+        }
+
+        return true;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
@@ -316,20 +329,33 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         return "WebAudioStreamingSoundInstance";
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
-        super._connect(node);
+    protected override _connect(node: AbstractAudioNode): boolean {
+        const connected = super._connect(node);
 
+        if (!connected) {
+            return false;
+        }
+
+        // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
         if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.connect(node.inNode);
         }
+
+        return true;
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        super._disconnect(node);
+    protected override _disconnect(node: AbstractAudioNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
 
         if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.disconnect(node.inNode);
         }
+
+        return true;
     }
 
     private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
@@ -347,7 +373,9 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
         this._sourceNode.connect(this._volumeNode);
 
-        this._connect(this._sound);
+        if (!this._connect(this._sound)) {
+            throw new Error("Connect failed");
+        }
 
         this._mediaElement = mediaElement;
     }

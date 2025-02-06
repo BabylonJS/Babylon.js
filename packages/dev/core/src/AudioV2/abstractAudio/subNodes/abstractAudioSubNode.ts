@@ -10,24 +10,30 @@ export abstract class _AbstractAudioSubNode extends AbstractNamedAudioNode {
 
     /** @internal */
     public connect(node: _AbstractAudioSubNode): void {
-        this._connect(node);
+        if (!this._connect(node)) {
+            throw new Error("Connect failed");
+        }
     }
 
     /** @internal */
     public disconnect(node: _AbstractAudioSubNode): void {
-        this._disconnect(node);
+        if (!this._disconnect(node)) {
+            throw new Error("Disconnect failed");
+        }
     }
 
     /** @internal */
     public disconnectAll(): void {
         if (!this._downstreamNodes) {
-            return;
+            throw new Error("Disconnect failed");
         }
 
         const it = this._downstreamNodes.values();
 
         for (let next = it.next(); !next.done; next = it.next()) {
-            this._disconnect(next.value);
+            if (!this._disconnect(next.value)) {
+                throw new Error("Disconnect failed");
+            }
         }
     }
 }
