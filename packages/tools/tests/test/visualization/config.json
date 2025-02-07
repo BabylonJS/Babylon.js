@@ -1149,17 +1149,17 @@
         },
         {
             "title": "PBR shader code coverage 1",
-            "playgroundId": "#QI7TL3#55",
+            "playgroundId": "#QI7TL3#59",
             "referenceImage": "pbr-codecoverage1.png"
         },
         {
             "title": "PBR shader code coverage 2",
-            "playgroundId": "#QI7TL3#57",
+            "playgroundId": "#QI7TL3#60",
             "referenceImage": "pbr-codecoverage2.png"
         },
         {
             "title": "PBR shader code coverage 3",
-            "playgroundId": "#QI7TL3#56",
+            "playgroundId": "#QI7TL3#61",
             "referenceImage": "pbr-codecoverage3.png"
         },
         {
