@@ -275,7 +275,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             if (declaration.op !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
-            const eventConfiguration = gltfBlock.configuration[0];
+            const eventConfiguration = gltfBlock.configuration["event"];
             const eventId = eventConfiguration.value[0] as number;
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
@@ -301,7 +301,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             if (declaration.op !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
-            const eventConfiguration = gltfBlock.configuration[0];
+            const eventConfiguration = gltfBlock.configuration["event"];
             const eventId = eventConfiguration.value[0] as number;
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
@@ -1058,24 +1058,28 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "userVariables",
                 inputBlockIndex: 2,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "animation",
                 output: "animation",
                 inputBlockIndex: 2,
                 outputBlockIndex: 0,
+                isVariable: true,
             },
             {
                 input: "easingFunction",
                 output: "easingFunction",
                 inputBlockIndex: 0,
                 outputBlockIndex: 3,
+                isVariable: true,
             },
             {
                 input: "value-0",
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
@@ -1105,18 +1109,21 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "object",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "propertyName",
                 output: "propertyName",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "customGetFunction",
                 output: "getFunction",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
         ],
     },
@@ -1143,18 +1150,21 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "object",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "propertyName",
                 output: "propertyName",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "customSetFunction",
                 output: "setFunction",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
         ],
     },
@@ -1189,36 +1199,42 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "object",
                 inputBlockIndex: 2,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "propertyName",
                 output: "propertyName",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "customBuildAnimation",
                 output: "generateAnimationsFunction",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "animation",
                 output: "animation",
                 inputBlockIndex: 2,
                 outputBlockIndex: 0,
+                isVariable: true,
             },
             {
                 input: "easingFunction",
                 output: "easingFunction",
                 inputBlockIndex: 0,
                 outputBlockIndex: 3,
+                isVariable: true,
             },
             {
                 input: "value-0",
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
@@ -1266,12 +1282,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "array",
                 output: "animationGroups",
                 inputBlockIndex: 1,
                 outputBlockIndex: 2,
+                isVariable: true,
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
@@ -1300,12 +1318,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "array",
                 output: "animationGroups",
                 inputBlockIndex: 1,
                 outputBlockIndex: 2,
+                isVariable: true,
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
@@ -1336,12 +1356,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,
+                isVariable: true,
             },
             {
                 input: "array",
                 output: "animationGroups",
                 inputBlockIndex: 1,
                 outputBlockIndex: 2,
+                isVariable: true,
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {

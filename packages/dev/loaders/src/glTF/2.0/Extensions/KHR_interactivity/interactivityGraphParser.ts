@@ -252,17 +252,19 @@ export class InteractivityGraphToFlowGraphParser {
                 const configMapping = nodeMapping.configuration?.[key];
                 const belongsToBlock = configMapping && configMapping.toBlock ? configMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
-                    if ((!value || !value.value) && typeof configMapping?.defaultValue !== "undefined") {
-                        configuration[key] = configMapping.defaultValue;
-                    } else if (value.value.length > 1) {
+                    // get the right name for the configuration key
+                    const configKey = configMapping?.name || key;
+                    if ((!value || typeof value.value === "undefined") && typeof configMapping?.defaultValue !== "undefined") {
+                        configuration[configKey] = configMapping.defaultValue;
+                    } else if (value.value.length >= 1) {
                         // supporting int[] and int/boolean/string
-                        configuration[key] = value.value.length === 1 ? value.value[0] : value.value;
+                        configuration[configKey] = value.value.length === 1 ? value.value[0] : value.value;
                     } else {
                         Logger.Warn(["Invalid value for node configuration", value]);
                     }
                     // make sure we transform the data if needed
                     if (configMapping && configMapping.dataTransformer) {
-                        configuration[key] = configMapping.dataTransformer(configuration[key], this);
+                        configuration[configKey] = configMapping.dataTransformer(configuration[configKey], this);
                     }
                 }
             });

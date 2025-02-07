@@ -28,7 +28,6 @@ describe("Babylon Interactivity", () => {
     it("should load a basic graph", async () => {
         const i2fg = new InteractivityGraphToFlowGraphParser(loggerExample, mockGltf);
         const json = i2fg.serializeToFlowGraph();
-        console.log(json);
         const coordinator = new FlowGraphCoordinator({ scene });
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
