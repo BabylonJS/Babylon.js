@@ -2,8 +2,14 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
 
+/**
+ * Union of TypedArrays that can be used for vertex data.
+ */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
 
+/**
+ * Interface for a constructor of a TypedArray.
+ */
 export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     new (length: number): T;
     new (elements: Iterable<number>): T;
