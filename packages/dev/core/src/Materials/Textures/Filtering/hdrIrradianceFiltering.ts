@@ -216,6 +216,7 @@ export class HDRIrradianceFiltering {
                     resolve(null);
                 });
             });
+            this._cdfGenerator.renderWhenReady();
         }
 
         return cdfGeneratedPromise.then(() => {
