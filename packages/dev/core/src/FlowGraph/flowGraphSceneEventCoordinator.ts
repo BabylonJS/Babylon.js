@@ -53,13 +53,13 @@ export class FlowGraphSceneEventCoordinator {
     }
 
     private _initialize() {
-        if (this._scene.isReady(true)) {
+        // if (this._scene.isReady(true)) {
+        //     this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+        // } else {
+        this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
-        } else {
-            this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
-                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
-            });
-        }
+        });
+        // }
 
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneDispose });
@@ -81,7 +81,7 @@ export class FlowGraphSceneEventCoordinator {
         }, PointerEventTypes.POINTERPICK); // should it be pointerdown?
 
         this._meshUnderPointerObserver = this._scene.onMeshUnderPointerUpdatedObservable.add((data) => {
-            // check if th data hs changed. Check the state of the last change and see if it is a mesh or null.
+            // check if the data has changed. Check the state of the last change and see if it is a mesh or null.
             // if it is a mesh and the previous state was null, trigger over event. If it is null and the previous state was a mesh, trigger out event.
             // if it is a mesh and the previous state was a mesh, trigger out from the old mesh and over the new mesh
             // if it is null and the previous state was null, do nothing.

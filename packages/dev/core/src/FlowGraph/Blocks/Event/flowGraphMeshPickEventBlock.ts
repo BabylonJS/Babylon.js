@@ -80,6 +80,13 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         this.pointerType = this.registerDataInput("pointerType", RichTypeAny, PointerEventTypes.POINTERPICK);
     }
 
+    /**
+     * Get the target mesh this event block reacts to.
+     */
+    public get targetMesh(): AbstractMesh {
+        return this.config?.targetMesh!;
+    }
+
     public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
         return this.asset.getValue(context) as AbstractMesh;
     }

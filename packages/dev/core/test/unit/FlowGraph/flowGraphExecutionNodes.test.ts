@@ -16,8 +16,8 @@ import {
     FlowGraphSetDelayBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
-import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
-import { Vector3 } from "core/Mathcore/FlowGraph/CustomTypes/flowGraphInteger
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 

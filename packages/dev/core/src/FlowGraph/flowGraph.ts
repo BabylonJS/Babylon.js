@@ -13,6 +13,9 @@ import type { IAssetContainer } from "core/IAssetContainer";
 import { FlowGraphEventType } from "./flowGraphEventType";
 import type { IFlowGraphEventTrigger } from "./flowGraphSceneEventCoordinator";
 import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
+import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
+import { _isADescendantOf } from "./utils";
 
 export const enum FlowGraphState {
     /**
@@ -135,12 +138,6 @@ export class FlowGraph {
                 }
             }
         });
-
-        this.onStateChangedObservable.add((state) => {
-            if (state === FlowGraphState.Started) {
-                this._startPendingEvents();
-            }
-        });
     }
 
     /**
@@ -199,10 +196,19 @@ export class FlowGraph {
         if (this.state === FlowGraphState.Started) {
             return;
         }
-        this.state = FlowGraphState.Started;
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
+        this.onStateChangedObservable.add((state) => {
+            if (state === FlowGraphState.Started) {
+                this._startPendingEvents();
+                // the only event we need to check is the scene ready event. If the scene is already ready when the graph starts, we should start the pending tasks.
+                if (this._scene.isReady(true)) {
+                    this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+                }
+            }
+        });
+        this.state = FlowGraphState.Started;
     }
 
     private _startPendingEvents() {
@@ -218,6 +224,23 @@ export class FlowGraph {
 
     private _getContextualOrder(type: FlowGraphEventType): FlowGraphEventBlock[] {
         return this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
+
+        if (type === FlowGraphEventType.MeshPick) {
+            for (const block1 of this._eventBlocks[type]) {
+                // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
+                const mesh1 = (block1 as FlowGraphMeshPickEventBlock).targetMesh;
+                let i = 0;
+                for (; i < this._eventBlocks[type].length; i++) {
+                    const block2 = this._eventBlocks[type][i];
+                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock).targetMesh;
+                    if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+                        break;
+                    }
+                }
+                this._eventBlocks[type].splice(i, 0, block1);
+            }
+        }
+        return this._eventBlocks[type];
     }
 
     /**

@@ -45,7 +45,6 @@ describe("Flow Graph Data Nodes", () => {
         flowGraphContext2.setVariable("testVariable", 43);
 
         flowGraph.start();
-        scene.onReadyObservable.notifyObservers(scene);
 
         expect(Logger.Log).toHaveBeenCalledWith(42);
         expect(Logger.Log).toHaveBeenCalledWith(43);
