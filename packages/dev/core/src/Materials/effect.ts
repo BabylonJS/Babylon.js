@@ -603,6 +603,16 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Wait until compilation before fulfilling.
+     * @returns a promise to wait for completion.
+     */
+    public whenCompiledAsync(): Promise<Effect> {
+        return new Promise((resolve) => {
+            this.executeWhenCompiled(resolve);
+        });
+    }
+
+    /**
      * Adds a callback to the onCompiled observable and call the callback immediately if already ready.
      * @param func The callback to be used.
      */

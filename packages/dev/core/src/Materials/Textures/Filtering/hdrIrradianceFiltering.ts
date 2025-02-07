@@ -7,7 +7,6 @@ import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
 import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
-import { Logger } from "../../../Misc/logger";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { IblCdfGenerator } from "../../../Rendering/iblCdfGenerator";
@@ -199,44 +198,29 @@ export class HDRIrradianceFiltering {
      * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
      * @param texture Texture to filter
-     * @param onFinished Callback when filtering is done
      * @returns Promise called when prefiltering is done
      */
-    public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<BaseTexture> {
+    public async prefilter(texture: BaseTexture): Promise<BaseTexture> {
         if (!this._engine._features.allowTexturePrefiltering) {
-            Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
-            return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
+            throw new Error("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }
-        let cdfGeneratedPromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
+
         if (this.useCdf) {
             this._cdfGenerator = new IblCdfGenerator(this._engine);
             this._cdfGenerator.iblSource = texture;
-            cdfGeneratedPromise = new Promise((resolve) => {
-                this._cdfGenerator.onGeneratedObservable.addOnce(() => {
-                    resolve(null);
-                });
-            });
 
-            this._cdfGenerator.renderWhenReady().catch((e) => {
-                return Promise.reject("Irradiance Prefiltering: CDF Generator failed. " + e);
-            });
+            await this._cdfGenerator.renderWhenReady();
         }
 
-        return cdfGeneratedPromise.then(() => {
-            return new Promise((resolve) => {
-                this._effectRenderer = new EffectRenderer(this._engine);
-                this._effectWrapper = this._createEffect(texture);
-                this._effectWrapper.effect.executeWhenCompiled(() => {
-                    const irradianceTexture = this._prefilterInternal(texture);
-                    this._effectRenderer.dispose();
-                    this._effectWrapper.dispose();
-                    this._cdfGenerator?.dispose();
-                    resolve(irradianceTexture);
-                    if (onFinished) {
-                        onFinished();
-                    }
-                });
-            });
-        });
+        this._effectRenderer = new EffectRenderer(this._engine);
+        this._effectWrapper = this._createEffect(texture);
+        await this._effectWrapper.effect.whenCompiledAsync();
+
+        const irradianceTexture = this._prefilterInternal(texture);
+        this._effectRenderer.dispose();
+        this._effectWrapper.dispose();
+        this._cdfGenerator?.dispose();
+
+        return irradianceTexture;
     }
 }
