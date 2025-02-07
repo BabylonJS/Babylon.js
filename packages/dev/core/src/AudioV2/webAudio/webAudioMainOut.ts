@@ -16,10 +16,10 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     private _gainNode: GainNode;
 
     /** @internal */
-    public constructor(engine: AudioEngineV2) {
+    public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        const audioContext = (this.engine as _WebAudioEngine).audioContext;
+        const audioContext = engine.audioContext;
 
         this._gainNode = new GainNode(audioContext);
         this._destinationNode = audioContext.destination;
