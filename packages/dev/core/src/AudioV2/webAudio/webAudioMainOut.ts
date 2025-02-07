@@ -43,6 +43,14 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     }
 
     /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._gainNode.disconnect();
+        this._destinationNode.disconnect();
+    }
+
+    /** @internal */
     public getClassName(): string {
         return "_WebAudioMainOutput";
     }
