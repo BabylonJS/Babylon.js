@@ -98,11 +98,14 @@ export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture, opt
     if (babylonTexture.isCube) {
         throw new Error(`Cube textures are not currently supported for Basis encoding.`);
     }
+    const size = babylonTexture.getSize();
+    if ((size.width & 3) !== 0 || (size.height & 3) !== 0) {
+        throw new Error(`Texture dimensions must be a multiple of 4 for Basis encoding.`);
+    }
     if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
         Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
     }
 
-    const size = babylonTexture.getSize();
     const pixels = await GetTextureDataAsync(babylonTexture, size.width, size.height);
 
     const finalOptions: BasisEncoderParameters = {
