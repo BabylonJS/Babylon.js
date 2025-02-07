@@ -1,5 +1,6 @@
 export * from "./flowGraphConditionalDataBlock";
 export * from "./flowGraphGetVariableBlock";
+export * from "./flowGraphSetVariableBlock";
 export * from "./flowGraphTransformCoordinatesSystemBlock";
 export * from "./flowGraphGetPropertyBlock";
 export * from "./flowGraphSetPropertyBlock";
