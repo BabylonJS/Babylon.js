@@ -38,7 +38,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
         volumeNode.setOptions(options);
 
-        if (volumeNode.getClassName() !== "VolumeWebAudioSubNode") {
+        if (volumeNode.getClassName() !== "_VolumeWebAudioSubNode") {
             throw new Error("Not a WebAudio subnode.");
         }
 

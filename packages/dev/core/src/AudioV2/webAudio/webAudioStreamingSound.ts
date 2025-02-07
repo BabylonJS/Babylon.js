@@ -131,7 +131,7 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStreamingSound";
+        return "_WebAudioStreamingSound";
     }
 
     protected _createInstance(): _WebAudioStreamingSoundInstance {
@@ -337,7 +337,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStreamingSoundInstance";
+        return "_WebAudioStreamingSoundInstance";
     }
 
     protected override _connect(node: AbstractAudioNode): boolean {

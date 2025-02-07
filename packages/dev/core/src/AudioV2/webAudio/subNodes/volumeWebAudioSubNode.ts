@@ -70,6 +70,6 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
 
     /** @internal */
     public getClassName(): string {
-        return "VolumeWebAudioSubNode";
+        return "_VolumeWebAudioSubNode";
     }
 }

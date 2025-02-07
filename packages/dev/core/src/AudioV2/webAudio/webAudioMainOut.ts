@@ -52,6 +52,6 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
 
     /** @internal */
     public getClassName(): string {
-        return "_WebAudioMainOutput";
+        return "_WebAudioMainOut";
     }
 }

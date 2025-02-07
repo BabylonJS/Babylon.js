@@ -41,7 +41,7 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
 
     /** @internal */
     public getClassName(): string {
-        return "StereoWebAudioSubNode";
+        return "_StereoWebAudioSubNode";
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {

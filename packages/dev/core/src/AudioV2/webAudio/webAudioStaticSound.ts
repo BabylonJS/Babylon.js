@@ -139,7 +139,7 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStaticSound";
+        return "_WebAudioStaticSound";
     }
 
     protected _createInstance(): _WebAudioStaticSoundInstance {
@@ -339,7 +339,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStaticSoundInstance";
+        return "_WebAudioStaticSoundInstance";
     }
 
     /** @internal */

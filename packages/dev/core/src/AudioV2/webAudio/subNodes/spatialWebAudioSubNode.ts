@@ -200,6 +200,6 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public getClassName(): string {
-        return "SpatialWebAudioSubNode";
+        return "_SpatialWebAudioSubNode";
     }
 }

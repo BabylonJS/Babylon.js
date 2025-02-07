@@ -77,13 +77,13 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         const stereoNode = _GetStereoAudioSubNode(this);
         const volumeNode = _GetVolumeAudioSubNode(this);
 
-        if (spatialNode && spatialNode.getClassName() !== "SpatialWebAudioSubNode") {
+        if (spatialNode && spatialNode.getClassName() !== "_SpatialWebAudioSubNode") {
             throw new Error("Not a WebAudio subnode.");
         }
-        if (stereoNode && stereoNode.getClassName() !== "StereoWebAudioSubNode") {
+        if (stereoNode && stereoNode.getClassName() !== "_StereoWebAudioSubNode") {
             throw new Error("Not a WebAudio subnode.");
         }
-        if (volumeNode && volumeNode.getClassName() !== "VolumeWebAudioSubNode") {
+        if (volumeNode && volumeNode.getClassName() !== "_VolumeWebAudioSubNode") {
             throw new Error("Not a WebAudio subnode.");
         }
 
