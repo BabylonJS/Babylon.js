@@ -2094,7 +2094,7 @@
         },
         {
             "title": "Command encoder order in WebGPU 1",
-            "playgroundId": "#064AUB#121",
+            "playgroundId": "#064AUB#125",
             "referenceImage": "CommandEncodedWebGPU1.png",
             "excludedEngines": ["webgl1"]
         },
