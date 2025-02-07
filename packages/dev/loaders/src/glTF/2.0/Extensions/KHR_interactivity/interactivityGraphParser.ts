@@ -193,7 +193,7 @@ export class InteractivityGraphToFlowGraphParser {
         }
         for (const node of this._interactivityGraph.nodes) {
             // some validation
-            if (!node.declaration) {
+            if (typeof node.declaration !== "number") {
                 Logger.Error(["No declaration found for node", node]);
                 throw new Error("Error parsing nodes");
             }

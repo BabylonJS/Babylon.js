@@ -107,7 +107,7 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
 export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
-    const className = intermediateValue?.className;
+    const className = intermediateValue?.type ?? intermediateValue?.className;
     if (isMeshClassName(className)) {
         let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
         if (nodes.length === 0) {

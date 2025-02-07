@@ -1,39 +1,38 @@
-export const loggerExample = {
+import { IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
+
+export const loggerExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "math/add" }],
     nodes: [
         {
-            type: "event/onStart",
-            flows: [
-                {
-                    id: "out",
+            declaration: 0,
+            flows: {
+                out: {
                     node: 2,
                     socket: "in",
                 },
-            ],
+            },
         },
         {
-            type: "math/add",
-            values: [
-                {
-                    id: "a",
+            declaration: 2,
+            values: {
+                a: {
                     value: [1, 2, 3, 4],
                     type: 0,
                 },
-                {
-                    id: "b",
+                b: {
                     value: [1, 2, 3, 4],
                     type: 0,
                 },
-            ],
+            },
         },
         {
-            type: "babylon/log",
-            values: [
-                {
-                    id: "message",
+            declaration: 1,
+            values: {
+                message: {
                     node: 1,
                     socket: "value",
                 },
-            ],
+            },
         },
     ],
     types: [{ signature: "float4" }],
