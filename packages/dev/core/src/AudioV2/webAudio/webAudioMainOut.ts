@@ -16,6 +16,18 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     private _gainNode: GainNode;
 
     /** @internal */
+    public constructor(engine: AudioEngineV2) {
+        super(engine);
+
+        const audioContext = (this.engine as _WebAudioEngine).audioContext;
+
+        this._gainNode = new GainNode(audioContext);
+        this._destinationNode = audioContext.destination;
+
+        this._gainNode.connect(this._destinationNode);
+    }
+
+    /** @internal */
     public get inNode(): AudioNode {
         return this._gainNode;
     }
@@ -28,18 +40,6 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     /** @internal */
     public set volume(value: number) {
         this._gainNode.gain.value = value;
-    }
-
-    /** @internal */
-    public constructor(engine: AudioEngineV2) {
-        super(engine);
-
-        const audioContext = (this.engine as _WebAudioEngine).audioContext;
-
-        this._gainNode = new GainNode(audioContext);
-        this._destinationNode = audioContext.destination;
-
-        this._gainNode.connect(this._destinationNode);
     }
 
     /** @internal */
