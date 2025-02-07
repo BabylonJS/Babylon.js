@@ -1,14 +1,13 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
-import { _AudioNodeType, AbstractNamedAudioNode } from "./abstractAudioNode";
+import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
-import { _AudioSubNode } from "./subNodes/audioSubNode";
-import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
-import { _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
+import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 
@@ -49,11 +48,13 @@ export interface ICommonSoundOptions extends ICommonSoundPlayOptions, ISpatialAu
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
+    private _privateInstances = new Set<_AbstractSoundInstance>();
+    private _newestInstance: Nullable<_AbstractSoundInstance> = null;
     private _outBus: Nullable<PrimaryAudioBus> = null;
     private _state: SoundState = SoundState.Stopped;
 
-    protected _instances = new Set<_AbstractSoundInstance>();
-    protected _options = {} as ICommonSoundOptions;
+    protected _instances: ReadonlySet<_AbstractSoundInstance> = this._privateInstances;
+    protected _options: Partial<ICommonSoundOptions>;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
@@ -62,23 +63,16 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
-        super(name, engine, _AudioNodeType.HAS_OUTPUTS);
+        super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
 
-        this._options = {
-            autoplay: false,
-            loop: false,
-            maxInstances: Infinity,
-            startOffset: 0,
-            volume: _VolumeAudioDefaults.Volume,
-            ...options,
-        } as ICommonSoundOptions;
+        this._options = options;
     }
 
     /**
      * Whether the sound should start playing immediately. Defaults to `false`.
      */
     public get autoplay(): boolean {
-        return this._options.autoplay;
+        return this._options.autoplay ?? false;
     }
 
     /**
@@ -102,7 +96,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Whether the sound should loop. Defaults to `false`.
      */
     public get loop(): boolean {
-        return this._options.loop;
+        return this._options.loop ?? false;
     }
 
     public set loop(value: boolean) {
@@ -113,7 +107,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
      */
     public get maxInstances(): number {
-        return this._options.maxInstances;
+        return this._options.maxInstances ?? Infinity;
     }
 
     public set maxInstances(value: number) {
@@ -135,14 +129,18 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         if (this._outBus) {
             this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
-            this._disconnect(this._outBus);
+            if (!this._disconnect(this._outBus)) {
+                throw new Error("Disconnect failed");
+            }
         }
 
         this._outBus = outBus;
 
         if (this._outBus) {
             this._outBus.onDisposeObservable.add(this._onOutBusDisposed);
-            this._connect(this._outBus);
+            if (!this._connect(this._outBus)) {
+                throw new Error("Connect failed");
+            }
         }
     }
 
@@ -155,7 +153,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The time within the sound buffer to start playing at, in seconds. Defaults to `0`.
      */
     public get startOffset(): number {
-        return this._options.startOffset;
+        return this._options.startOffset ?? 0;
     }
 
     public set startOffset(value: number) {
@@ -178,15 +176,17 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The output volume of the sound.
      */
     public get volume(): number {
-        return this._subGraph.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.volume ?? _VolumeAudioDefaults.Volume;
+        return _GetVolumeAudioProperty(this._subGraph, "volume");
     }
 
     public set volume(value: number) {
-        // Note that the volume subnode is created at initialization time and it always exists, so the callback that
-        // sets the node's volume is always called synchronously.
-        this._subGraph.callOnSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME, (node) => {
-            node.volume = value;
-        });
+        // The volume subnode is created on initialization and should always exist.
+        const node = _GetVolumeAudioSubNode(this._subGraph);
+        if (!node) {
+            throw new Error("No volume subnode");
+        }
+
+        node.volume = value;
     }
 
     /**
@@ -197,9 +197,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this.stop();
 
+        this._newestInstance = null;
         this._outBus = null;
 
-        this._instances.clear();
+        this._privateInstances.clear();
         this.onEndedObservable.clear();
     }
 
@@ -214,8 +215,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
-        for (const instance of Array.from(this._instances)) {
-            instance.pause();
+        const it = this._instances.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            next.value.pause();
         }
 
         this._state = SoundState.Paused;
@@ -229,8 +231,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return;
         }
 
-        for (const instance of Array.from(this._instances)) {
-            instance.resume();
+        const it = this._instances.values();
+        for (let next = it.next(); !next.done; next = it.next()) {
+            next.value.resume();
         }
 
         this._state = SoundState.Started;
@@ -249,7 +252,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
 
         instance.onEndedObservable.addOnce(this._onInstanceEnded);
-        this._instances.add(instance);
+        this._privateInstances.add(instance);
+        this._newestInstance = instance;
     }
 
     protected _afterPlay(instance: _AbstractSoundInstance): void {
@@ -279,18 +283,22 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return null;
         }
 
-        let instance: Nullable<_AbstractSoundInstance> = null;
-
-        const it = this._instances.values();
-        for (let next = it.next(); !next.done; next = it.next()) {
-            instance = next.value;
+        if (!this._newestInstance) {
+            const it = this._instances.values();
+            for (let next = it.next(); !next.done; next = it.next()) {
+                this._newestInstance = next.value;
+            }
         }
 
-        return instance;
+        return this._newestInstance;
     }
 
     private _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
-        this._instances.delete(instance);
+        if (this._newestInstance === instance) {
+            this._newestInstance = null;
+        }
+
+        this._privateInstances.delete(instance);
 
         if (this._instances.size === 0) {
             this._state = SoundState.Stopped;
@@ -299,6 +307,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     };
 
     private _onOutBusDisposed = () => {
-        this.outBus = this.engine.defaultMainBus;
+        this.outBus = null;
     };
 }

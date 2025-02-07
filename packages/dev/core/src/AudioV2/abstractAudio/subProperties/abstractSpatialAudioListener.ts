@@ -6,10 +6,9 @@ import type { Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 
 export const _SpatialAudioListenerDefaults = {
-    ATTACHMENT_TYPE: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
-    POSITION: Vector3.Zero(),
-    ROTATION: Vector3.Zero(),
-    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+    position: Vector3.Zero(),
+    rotation: Vector3.Zero(),
+    rotationQuaternion: Quaternion.FromEulerVector(Vector3.Zero()),
 };
 
 /**

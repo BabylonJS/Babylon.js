@@ -1,7 +1,6 @@
-import { AbstractStereoAudio, _StereoAudioDefaults } from "../../abstractAudio/subProperties/abstractStereoAudio";
+import { AbstractStereoAudio } from "../../abstractAudio/subProperties/abstractStereoAudio";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
-import { _AudioSubNode } from "../subNodes/audioSubNode";
-import type { _StereoAudioSubNode } from "../subNodes/stereoAudioSubNode";
+import { _GetStereoAudioProperty, _SetStereoAudioProperty } from "../subNodes/stereoAudioSubNode";
 
 /** @internal */
 export class _StereoAudio extends AbstractStereoAudio {
@@ -15,12 +14,10 @@ export class _StereoAudio extends AbstractStereoAudio {
 
     /** @internal */
     public get pan(): number {
-        return this._subGraph.getSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO)?.pan ?? _StereoAudioDefaults.PAN;
+        return _GetStereoAudioProperty(this._subGraph, "pan");
     }
 
     public set pan(value: number) {
-        this._subGraph.callOnSubNode<_StereoAudioSubNode>(_AudioSubNode.STEREO, (node) => {
-            node.pan = value;
-        });
+        _SetStereoAudioProperty(this._subGraph, "pan", value);
     }
 }

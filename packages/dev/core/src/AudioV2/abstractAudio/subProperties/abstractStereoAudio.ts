@@ -1,5 +1,5 @@
 export const _StereoAudioDefaults = {
-    PAN: 0,
+    pan: 0,
 };
 
 /** */

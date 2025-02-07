@@ -1,4 +1,4 @@
-import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
+import { AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 /**
@@ -11,6 +11,6 @@ import type { AudioEngineV2 } from "./audioEngineV2";
  */
 export abstract class _MainAudioOut extends AbstractAudioNode {
     protected constructor(engine: AudioEngineV2) {
-        super(engine, _AudioNodeType.HAS_INPUTS);
+        super(engine, AudioNodeType.HAS_INPUTS);
     }
 }

@@ -5,19 +5,17 @@ import type { Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 
 export const _SpatialAudioDefaults = {
-    ATTACHMENT_TYPE: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
-    CONE_INNER_ANGLE: 6.28318530718,
-    CONE_OUTER_ANGLE: 6.28318530718,
-    CONE_OUTER_VOLUME: 0,
-    DISTANCE_MODEL: "inverse" as "linear" | "inverse" | "exponential",
-    MAX_DISTANCE: 10000,
-    MIN_UPDATE_TIME: 0,
-    PANNING_MODEL: "equalpower" as "equalpower" | "HRTF",
-    POSITION: Vector3.Zero(),
-    REFERENCE_DISTANCE: 1,
-    ROLLOFF_FACTOR: 1,
-    ROTATION: Vector3.Zero(),
-    ROTATION_QUATERNION: Quaternion.FromEulerVector(Vector3.Zero()),
+    coneInnerAngle: 6.28318530718,
+    coneOuterAngle: 6.28318530718,
+    coneOuterVolume: 0,
+    distanceModel: "inverse" as DistanceModelType,
+    maxDistance: 10000,
+    panningModel: "equalpower" as PanningModelType,
+    position: Vector3.Zero(),
+    referenceDistance: 1,
+    rolloffFactor: 1,
+    rotation: Vector3.Zero(),
+    rotationQuaternion: Quaternion.FromEulerVector(Vector3.Zero()),
 };
 
 /**

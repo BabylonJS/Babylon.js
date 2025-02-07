@@ -2,9 +2,11 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
 import { _AbstractAudioSubGraph } from "../../abstractAudio/subNodes/abstractAudioSubGraph";
 import type { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
-import { _AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
-import type { _VolumeAudioSubNode, IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import type { IWebAudioInNode, IWebAudioSubNode, IWebAudioSuperNode } from "../webAudioNode";
+import { AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
+import type { IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import { _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import type { IWebAudioInNode, IWebAudioSuperNode } from "../webAudioNode";
+import type { _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
 
 /**
@@ -26,27 +28,30 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
     /** @internal */
     public async init(options: Partial<IWebAudioBaseSubGraphOptions>): Promise<void> {
-        this._createAndAddSubNode(_AudioSubNode.VOLUME);
-
+        this._createAndAddSubNode(AudioSubNode.VOLUME);
         await this._createSubNodePromisesResolved();
 
-        this.getSubNode<_VolumeAudioSubNode>(_AudioSubNode.VOLUME)?.setOptions(options);
-
-        const volumeNode = this.getSubNode<IWebAudioSubNode>(_AudioSubNode.VOLUME);
+        const volumeNode = _GetVolumeAudioSubNode(this);
         if (!volumeNode) {
-            return;
+            throw new Error("No volume subnode.");
         }
 
-        this._outNode = volumeNode.node;
+        volumeNode.setOptions(options);
 
-        // Connect the wrapped downstream WebAudio nodes to the new wrapped WebAudio node.
+        if (volumeNode.getClassName() !== "_VolumeWebAudioSubNode") {
+            throw new Error("Not a WebAudio subnode.");
+        }
+
+        this._outNode = (volumeNode as _VolumeWebAudioSubNode).node;
+
+        // Connect the new wrapped WebAudio node to the wrapped downstream WebAudio nodes.
         // The wrapper nodes are unaware of this change.
-        if (volumeNode.node && this._downstreamNodes) {
+        if (this._outNode && this._downstreamNodes) {
             const it = this._downstreamNodes.values();
             for (let next = it.next(); !next.done; next = it.next()) {
                 const inNode = (next.value as IWebAudioInNode).inNode;
                 if (inNode) {
-                    volumeNode.node.connect(inNode);
+                    this._outNode.connect(inNode);
                 }
             }
         }
@@ -66,7 +71,7 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
     protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
         switch (name) {
-            case _AudioSubNode.VOLUME:
+            case AudioSubNode.VOLUME:
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
                 return null;

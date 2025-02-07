@@ -1,7 +1,7 @@
 /**
  * The state of a sound.
  */
-export enum SoundState {
+export const enum SoundState {
     /**
      * The sound is waiting for its instances to stop.
      */

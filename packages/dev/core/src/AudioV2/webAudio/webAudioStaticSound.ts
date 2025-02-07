@@ -139,34 +139,40 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStaticSound";
-    }
-
-    protected override _connect(node: IWebAudioInNode): void {
-        super._connect(node);
-
-        if (node.inNode) {
-            this.outNode?.connect(node.inNode);
-        }
+        return "_WebAudioStaticSound";
     }
 
     protected _createInstance(): _WebAudioStaticSoundInstance {
         return new _WebAudioStaticSoundInstance(this, this._options);
     }
 
-    protected override _disconnect(node: IWebAudioInNode): void {
-        super._disconnect(node);
+    protected override _connect(node: IWebAudioInNode): boolean {
+        const connected = super._connect(node);
+
+        if (!connected) {
+            return false;
+        }
+
+        // If the wrapped node is not available now, it will be connected later by the subgraph.
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+
+        return true;
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
 
         if (node.inNode) {
-            try {
-                this.outNode?.disconnect(node.inNode);
-            } catch (e) {
-                // Ignore error that occurs when node is not connected.
-                if (!(e instanceof DOMException && e.name === "InvalidAccessError")) {
-                    throw e;
-                }
-            }
+            this.outNode?.disconnect(node.inNode);
         }
+
+        return true;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
@@ -243,7 +249,7 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
             } else {
                 const matches = url.match(_FileExtensionRegex);
                 const format = matches?.at(1);
-                if (format && this.engine.formatIsValid(format)) {
+                if (format && this.engine.isFormatValid(format)) {
                     try {
                         await this._initFromUrl(url);
                     } catch (e) {
@@ -333,7 +339,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStaticSoundInstance";
+        return "_WebAudioStaticSoundInstance";
     }
 
     /** @internal */
@@ -363,9 +369,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         if (options.startOffset !== undefined) {
             this.options.startOffset = options.startOffset;
         }
-        if (options.volume !== undefined) {
-            this.options.volume = options.volume;
-        }
+        this.options.volume = options.volume ?? 1;
 
         let startOffset = this.options.startOffset;
 
@@ -423,20 +427,33 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
-        super._connect(node);
+    protected override _connect(node: AbstractAudioNode): boolean {
+        const connected = super._connect(node);
 
+        if (!connected) {
+            return false;
+        }
+
+        // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
         if (node instanceof _WebAudioStaticSound && node.inNode) {
             this.outNode?.connect(node.inNode);
         }
+
+        return true;
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        super._disconnect(node);
+    protected override _disconnect(node: AbstractAudioNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
 
         if (node instanceof _WebAudioStaticSound && node.inNode) {
             this.outNode?.disconnect(node.inNode);
         }
+
+        return true;
     }
 
     protected _onEnded = () => {
@@ -451,7 +468,9 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        this._disconnect(this._sound);
+        if (!this._disconnect(this._sound)) {
+            throw new Error("Disconnect failed");
+        }
 
         this._sourceNode.disconnect(this._volumeNode);
         this._sourceNode.removeEventListener("ended", this._onEnded);
@@ -484,7 +503,9 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
         this._sourceNode.connect(this._volumeNode);
 
-        this._connect(this._sound);
+        if (!this._connect(this._sound)) {
+            throw new Error("Connect failed");
+        }
     }
 
     private _onEngineStateChanged = () => {

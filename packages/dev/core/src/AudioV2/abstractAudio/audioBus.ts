@@ -48,14 +48,20 @@ export abstract class AudioBus extends AbstractAudioBus {
 
         if (this._outBus) {
             this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
-            this._disconnect(this._outBus);
+
+            if (!this._disconnect(this._outBus)) {
+                throw new Error("Disconnect failed");
+            }
         }
 
         this._outBus = outBus;
 
         if (this._outBus) {
             this._outBus.onDisposeObservable.add(this._onOutBusDisposed);
-            this._connect(this._outBus);
+
+            if (!this._connect(this._outBus)) {
+                throw new Error("Connect failed");
+            }
         }
     }
 

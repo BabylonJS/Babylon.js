@@ -1,3 +1,4 @@
+import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
@@ -8,8 +9,8 @@ import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { SoundState } from "../soundState";
 import { _CleanUrl } from "../audioUtils";
+import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
@@ -32,7 +33,12 @@ export async function CreateStreamingSoundAsync(
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
     const sound = new _WebAudioStreamingSound(name, _GetWebAudioEngine(engine), options);
-    await sound.init(source, options);
+
+    try {
+        await sound.init(source, options);
+    } catch (e) {
+        Logger.Error(`Failed to create streaming sound ${name}`);
+    }
 
     return sound;
 }
@@ -125,27 +131,40 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStreamingSound";
-    }
-
-    protected override _connect(node: IWebAudioInNode): void {
-        super._connect(node);
-
-        if (this._subGraph.inNode) {
-            this.outNode?.connect(this._subGraph.inNode);
-        }
+        return "_WebAudioStreamingSound";
     }
 
     protected _createInstance(): _WebAudioStreamingSoundInstance {
         return new _WebAudioStreamingSoundInstance(this, this._options);
     }
 
-    protected override _disconnect(node: IWebAudioInNode): void {
-        super._disconnect(node);
+    protected override _connect(node: IWebAudioInNode): boolean {
+        const connected = super._connect(node);
 
-        if (this._subGraph.inNode) {
-            this.outNode?.disconnect(this._subGraph.inNode);
+        if (!connected) {
+            return false;
         }
+
+        // If the wrapped node is not available now, it will be connected later by the subgraph.
+        if (node.inNode) {
+            this.outNode?.connect(node.inNode);
+        }
+
+        return true;
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
+
+        if (node.inNode) {
+            this.outNode?.disconnect(node.inNode);
+        }
+
+        return true;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
@@ -167,8 +186,9 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
     private _isReady: boolean = false;
-    private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
+    private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve, reject) => {
         this._resolveIsReadyPromise = resolve;
+        this._rejectIsReadyPromise = reject;
     });
     private _mediaElement: HTMLMediaElement;
     private _sourceNode: Nullable<MediaElementAudioSourceNode>;
@@ -242,8 +262,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._sourceNode?.disconnect(this._volumeNode);
         this._sourceNode = null;
 
+        this._mediaElement.removeEventListener("error", this._onError);
         this._mediaElement.removeEventListener("ended", this._onEnded);
         this._mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
+
         for (const source of Array.from(this._mediaElement.children)) {
             this._mediaElement.removeChild(source);
         }
@@ -276,7 +298,9 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._mediaElement.currentTime = startOffset;
         }
 
-        this._volumeNode.gain.value = options.volume ?? this.options.volume;
+        this.options.volume = options.volume ?? 1;
+
+        this._volumeNode.gain.value = this.options.volume;
 
         this._play();
     }
@@ -313,23 +337,36 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     /** @internal */
     public getClassName(): string {
-        return "WebAudioStreamingSoundInstance";
+        return "_WebAudioStreamingSoundInstance";
     }
 
-    protected override _connect(node: AbstractAudioNode): void {
-        super._connect(node);
+    protected override _connect(node: AbstractAudioNode): boolean {
+        const connected = super._connect(node);
 
+        if (!connected) {
+            return false;
+        }
+
+        // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
         if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.connect(node.inNode);
         }
+
+        return true;
     }
 
-    protected override _disconnect(node: AbstractAudioNode): void {
-        super._disconnect(node);
+    protected override _disconnect(node: AbstractAudioNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
 
         if (node instanceof _WebAudioStreamingSound && node.inNode) {
             this.outNode?.disconnect(node.inNode);
         }
+
+        return true;
     }
 
     private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
@@ -341,13 +378,16 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         mediaElement.addEventListener("ended", this._onEnded, { once: true });
+        mediaElement.addEventListener("error", this._onError, { once: true });
 
         mediaElement.load();
 
         this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
         this._sourceNode.connect(this._volumeNode);
 
-        this._connect(this._sound);
+        if (!this._connect(this._sound)) {
+            throw new Error("Connect failed");
+        }
 
         this._mediaElement = mediaElement;
     }
@@ -380,6 +420,13 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this.dispose();
     };
 
+    private _onError: (reason: any) => void = (reason: any) => {
+        this._setState(SoundState.FailedToStart);
+        this.onErrorObservable.notifyObservers(reason);
+        this._rejectIsReadyPromise(reason);
+        this.dispose();
+    };
+
     private _onEngineStateChanged = () => {
         if (this.engine.state !== "running") {
             return;
@@ -400,7 +447,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._setState(SoundState.Starting);
 
         if (!this._isReady) {
-            this._playAsync();
+            this._playWhenReady();
             return;
         }
 
@@ -432,11 +479,18 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
     }
 
-    private async _playAsync(): Promise<void> {
-        await this._isReadyPromise;
-        this._play();
+    private _playWhenReady(): void {
+        this._isReadyPromise
+            .then(() => {
+                this._play();
+            })
+            .catch(() => {
+                Logger.Error("Streaming sound instance failed to play");
+                this._setState(SoundState.FailedToStart);
+            });
     }
 
+    private _rejectIsReadyPromise: (reason?: any) => void;
     private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
 
     private _stop(): void {

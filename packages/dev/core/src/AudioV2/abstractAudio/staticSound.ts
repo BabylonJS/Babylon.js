@@ -81,7 +81,7 @@ export interface IStaticSoundOptions extends ICommonSoundOptions, ICommonStaticS
  */
 export abstract class StaticSound extends AbstractSound {
     protected override _instances: Set<_StaticSoundInstance>;
-    protected override _options: IStaticSoundOptions;
+    protected override _options: Partial<IStaticSoundOptions>;
 
     /**
      * The sound buffer that the sound uses.
@@ -92,16 +92,6 @@ export abstract class StaticSound extends AbstractSound {
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
-
-        this._options = {
-            duration: 0,
-            loopStart: 0,
-            loopEnd: 0,
-            pitch: 0,
-            playbackRate: 1,
-            skipCodecCheck: false,
-            ...(this._options as ICommonSoundOptions),
-        };
     }
 
     /**
@@ -109,7 +99,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the sound plays for its full duration.
      */
     public get duration(): number {
-        return this._options.duration;
+        return this._options.duration ?? 0;
     }
 
     public set duration(value: number) {
@@ -121,7 +111,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
      */
     public get loopStart(): number {
-        return this._options.loopStart;
+        return this._options.loopStart ?? 0;
     }
 
     public set loopStart(value: number) {
@@ -133,7 +123,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the loop plays for the sound's full duration.
      */
     public get loopEnd(): number {
-        return this._options.loopEnd;
+        return this._options.loopEnd ?? 0;
     }
 
     public set loopEnd(value: number) {
@@ -145,7 +135,7 @@ export abstract class StaticSound extends AbstractSound {
      * - Gets combined with {@link playbackRate} to determine the final pitch.
      */
     public get pitch(): number {
-        return this._options.pitch;
+        return this._options.pitch ?? 0;
     }
 
     public set pitch(value: number) {
@@ -157,7 +147,7 @@ export abstract class StaticSound extends AbstractSound {
      * - Gets combined with {@link pitch} to determine the final playback rate.
      */
     public get playbackRate(): number {
-        return this._options.playbackRate;
+        return this._options.playbackRate ?? 1;
     }
 
     public set playbackRate(value: number) {

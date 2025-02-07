@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { SoundState } from "../soundState";
-import { _AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
+import { AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSound, ICommonSoundOptions, ICommonSoundPlayOptions } from "./abstractSound";
 
 /** @internal */
@@ -11,18 +11,20 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's playback ends */
     public readonly onEndedObservable = new Observable<_AbstractSoundInstance>();
 
+    /** Observable triggered if the sound instance encounters an error and can not be played */
+    public readonly onErrorObservable = new Observable<any>();
+
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
     /** @internal */
-    public options = {} as ICommonSoundOptions;
+    public options: Partial<ICommonSoundOptions>;
 
     protected constructor(sound: AbstractSound, options: Partial<ICommonSoundOptions>) {
-        super(sound.engine, _AudioNodeType.HAS_OUTPUTS);
-
-        Object.assign(this.options, options);
+        super(sound.engine, AudioNodeType.HAS_OUTPUTS);
 
         this._sound = sound;
+        this.options = options;
     }
 
     public abstract currentTime: number;
