@@ -129,13 +129,17 @@ export class FlowGraph {
         this._coordinator = params.coordinator;
 
         this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
-            for (const block of this._eventBlocks[event.type]) {
+            const order = this._getContextualOrder(event.type);
+            for (const block of order) {
                 // iterate contexts
                 for (const context of this._executionContexts) {
                     if (!block._executeEvent(context, event.payload)) {
                         break;
                     }
                 }
+            }
+            if (event.type === FlowGraphEventType.SceneReady) {
+                this._sceneEventCoordinator.clearSceneReadyObserver();
             }
         });
     }
@@ -214,8 +218,8 @@ export class FlowGraph {
     private _startPendingEvents() {
         for (const context of this._executionContexts) {
             for (const type in this._eventBlocks) {
-                const contextualOrder = this._getContextualOrder(type as FlowGraphEventType);
-                for (const block of contextualOrder) {
+                const order = this._getContextualOrder(type as FlowGraphEventType);
+                for (const block of order) {
                     block._startPendingTasks(context);
                 }
             }
@@ -223,24 +227,26 @@ export class FlowGraph {
     }
 
     private _getContextualOrder(type: FlowGraphEventType): FlowGraphEventBlock[] {
-        return this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
+        const order = this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
 
         if (type === FlowGraphEventType.MeshPick) {
-            for (const block1 of this._eventBlocks[type]) {
+            const meshPickOrder = [] as FlowGraphEventBlock[];
+            for (const block1 of order) {
                 // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
                 const mesh1 = (block1 as FlowGraphMeshPickEventBlock).targetMesh;
                 let i = 0;
-                for (; i < this._eventBlocks[type].length; i++) {
-                    const block2 = this._eventBlocks[type][i];
+                for (; i < order.length; i++) {
+                    const block2 = order[i];
                     const mesh2 = (block2 as FlowGraphMeshPickEventBlock).targetMesh;
                     if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
                         break;
                     }
                 }
-                this._eventBlocks[type].splice(i, 0, block1);
+                meshPickOrder.splice(i, 0, block1);
             }
+            return meshPickOrder;
         }
-        return this._eventBlocks[type];
+        return order;
     }
 
     /**

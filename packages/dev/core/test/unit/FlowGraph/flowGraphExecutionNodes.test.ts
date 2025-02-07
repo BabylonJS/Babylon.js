@@ -182,9 +182,11 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
+        const timeToWait = 1000;
+
         const timer = new FlowGraphSetDelayBlock();
         sceneReady.done.connectTo(timer.in);
-        timer.duration.setValue(0, flowGraphContext);
+        timer.duration.setValue(timeToWait / 1000, flowGraphContext);
 
         const consoleLogBlock = new FlowGraphConsoleLogBlock();
         consoleLogBlock.message.setValue("custom", flowGraphContext);
@@ -195,7 +197,8 @@ describe("Flow Graph Execution Nodes", () => {
         timer.done.connectTo(consoleLog2Block.in);
 
         flowGraph.start();
-        // this will run the onReadyObservable and the onBeforeRenderObservable
+        // wait for the timer to finish
+        await new Promise((resolve) => setTimeout(resolve, timeToWait + 30));
         scene.render();
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");

@@ -100,6 +100,13 @@ export class FlowGraphSceneEventCoordinator {
         }, PointerEventTypes.POINTERMOVE);
     }
 
+    /**
+     * Clear the scene ready observer
+     */
+    public clearSceneReadyObserver() {
+        this._sceneReadyObserver?.remove();
+    }
+
     public dispose() {
         this._sceneDisposeObserver?.remove();
         this._sceneReadyObserver?.remove();
