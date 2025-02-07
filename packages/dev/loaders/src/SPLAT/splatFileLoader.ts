@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { AssetContainer } from "core/assetContainer";
@@ -565,4 +565,4 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 }
 
 // Add this loader into the register plugin
-registerSceneLoaderPlugin(new SPLATFileLoader());
+RegisterSceneLoaderPlugin(new SPLATFileLoader());

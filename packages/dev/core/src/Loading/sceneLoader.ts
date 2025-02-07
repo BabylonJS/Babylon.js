@@ -1,6 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -781,7 +781,7 @@ function _getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFile
  * Adds a new plugin to the list of registered plugins
  * @param plugin defines the plugin to add
  */
-export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
+export function RegisterSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
     if (typeof plugin.extensions === "string") {
         const extension = plugin.extensions;
         registeredPlugins[extension.toLowerCase()] = {
@@ -798,6 +798,46 @@ export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoa
             };
         });
     }
+}
+
+/**
+ * Adds a new plugin to the list of registered plugins
+ * @deprecated Please use `RegisterSceneLoaderPlugin` instead.
+ * @param plugin defines the plugin to add
+ */
+export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
+    RegisterSceneLoaderPlugin(plugin);
+}
+
+/**
+ * Gets metadata for all currently registered scene loader plugins.
+ * @returns An array where each entry has metadata for a single scene loader plugin.
+ */
+export function GetRegisteredSceneLoaderPluginMetadata(): DeepImmutable<
+    Array<
+        Pick<ISceneLoaderPluginMetadata, "name"> & {
+            /**
+             * The extensions supported by the plugin.
+             */
+            extensions: ({
+                /**
+                 * The file extension.
+                 */
+                extension: string;
+            } & ISceneLoaderPluginExtensions[string])[];
+        }
+    >
+> {
+    return Array.from(
+        Object.entries(registeredPlugins).reduce((pluginMap, [extension, extensionRegistration]) => {
+            let pluginMetadata = pluginMap.get(extensionRegistration.plugin.name);
+            if (!pluginMetadata) {
+                pluginMap.set(extensionRegistration.plugin.name, (pluginMetadata = []));
+            }
+            pluginMetadata.push({ extension, isBinary: extensionRegistration.isBinary, mimeType: extensionRegistration.mimeType });
+            return pluginMap;
+        }, new Map<string, ({ extension: string } & ISceneLoaderPluginExtensions[string])[]>())
+    ).map(([name, extensions]) => ({ name, extensions }));
 }
 
 async function importMeshAsync(
@@ -982,15 +1022,26 @@ async function loadSceneImplAsync(
 
 /**
  * Load a scene
- * @experimental
+ * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+ * @param engine is the instance of BABYLON.Engine to use to create the scene
+ * @param options an object that configures aspects of how the scene is loaded
+ * @returns The loaded scene
+ */
+export function LoadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
+    const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
+    return loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
+}
+
+/**
+ * Load a scene
+ * @deprecated Please use `LoadSceneAsync` instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param engine is the instance of BABYLON.Engine to use to create the scene
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded scene
  */
 export function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
-    const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
+    return LoadSceneAsync(source, engine, options);
 }
 
 // This function is shared between the new module level loadSceneAsync and the legacy SceneLoader.LoadAsync
@@ -1131,14 +1182,26 @@ async function appendSceneImplAsync(
 
 /**
  * Append a scene
- * @experimental
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
+ * @returns A promise that resolves when the scene is appended
  */
-export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
+export async function AppendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await appendSceneSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+}
+
+/**
+ * Append a scene
+ * @deprecated Please use `AppendSceneAsync` instead.
+ * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+ * @param scene is the instance of BABYLON.Scene to append to
+ * @param options an object that configures aspects of how the scene is loaded
+ * @returns A promise that resolves when the scene is appended
+ */
+export function appendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
+    return AppendSceneAsync(source, scene, options);
 }
 
 // This function is shared between the new module level appendSceneAsync and the legacy SceneLoader.AppendAsync
@@ -1278,15 +1341,26 @@ async function loadAssetContainerImplAsync(
 
 /**
  * Load a scene into an asset container
- * @experimental
+ * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+ * @param scene is the instance of Scene to append to
+ * @param options an object that configures aspects of how the scene is loaded
+ * @returns The loaded asset container
+ */
+export function LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
+    const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
+    return loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+}
+
+/**
+ * Load a scene into an asset container
+ * @deprecated Please use `LoadAssetContainerAsync` instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded asset container
  */
 export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
-    const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return LoadAssetContainerAsync(source, scene, options);
 }
 
 // This function is shared between the new module level loadAssetContainerAsync and the legacy SceneLoader.LoadAssetContainerAsync
@@ -1403,14 +1477,26 @@ async function importAnimationsImplAsync(
 
 /**
  * Import animations from a file into a scene
- * @experimental
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
+ * @returns A promise that resolves when the animations are imported
  */
-export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
+export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await importAnimationsSharedAsync(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
+}
+
+/**
+ * Import animations from a file into a scene
+ * @deprecated Please use `ImportAnimationsAsync` instead.
+ * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+ * @param scene is the instance of BABYLON.Scene to append to
+ * @param options an object that configures aspects of how the scene is loaded
+ * @returns A promise that resolves when the animations are imported
+ */
+export function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
+    return ImportAnimationsAsync(source, scene, options);
 }
 
 // This function is shared between the new module level importAnimationsAsync and the legacy SceneLoader.ImportAnimationsAsync
@@ -1455,6 +1541,7 @@ function importAnimationsSharedAsync(
 /**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
+ * @deprecated The module level functions (such as LoadAssetContainerAsync) are more efficient for bundler tree shaking and allow plugin options to be passed through. Future improvements to scene loading will primarily be in the module level functions. The SceneLoader class will remain available, but it will be beneficial to prefer the module level functions.
  */
 export class SceneLoader {
     /**
@@ -1564,7 +1651,7 @@ export class SceneLoader {
      * @param plugin defines the plugin to add
      */
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
-        registerSceneLoaderPlugin(plugin);
+        RegisterSceneLoaderPlugin(plugin);
     }
 
     /**
