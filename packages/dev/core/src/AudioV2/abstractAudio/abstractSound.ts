@@ -7,7 +7,7 @@ import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
-import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode, _VolumeAudioDefaults } from "./subNodes/volumeAudioSubNode";
+import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
 import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 
