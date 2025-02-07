@@ -34,11 +34,6 @@ export abstract class StreamingSound extends AbstractSound {
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions> = {}) {
         super(name, engine, options);
-
-        this._options = {
-            preloadCount: 1,
-            ...this._options,
-        };
     }
 
     /**

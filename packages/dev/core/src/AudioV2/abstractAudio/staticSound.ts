@@ -92,16 +92,6 @@ export abstract class StaticSound extends AbstractSound {
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions> = {}) {
         super(name, engine, options);
-
-        this._options = {
-            duration: 0,
-            loopStart: 0,
-            loopEnd: 0,
-            pitch: 0,
-            playbackRate: 1,
-            skipCodecCheck: false,
-            ...this._options,
-        };
     }
 
     /**
