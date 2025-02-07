@@ -116,11 +116,16 @@ export abstract class _AbstractAudioSubGraph {
             return Promise.reject(`Failed to create subnode "${name}"`);
         }
 
-        promise.then((node) => {
-            this._addSubNode(node);
+        this._createSubNodePromises[name] = new Promise((resolve, reject) => {
+            promise
+                .then((node) => {
+                    this._addSubNode(node);
+                    resolve(node);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
         });
-
-        this._createSubNodePromises[name] = promise;
 
         return promise;
     }
