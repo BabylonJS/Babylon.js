@@ -4,7 +4,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { RegisterClass } from "core/Misc";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * This simple Util block takes an array as input and selects a single element from it.

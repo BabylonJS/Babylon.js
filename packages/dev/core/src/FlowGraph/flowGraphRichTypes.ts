@@ -2,7 +2,7 @@ import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vec
 import { Color3, Color4 } from "../Maths/math.color";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { Constants } from "core/Engines/constants";
-import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
 export const enum FlowGraphTypes {
     Any = "any",

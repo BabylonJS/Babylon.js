@@ -10,7 +10,7 @@ import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 
 export type FlowGraphNumber = number | FlowGraphInteger;
 export type FlowGraphVector = Vector2 | Vector3 | Vector4;
