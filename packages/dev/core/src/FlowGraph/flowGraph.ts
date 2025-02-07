@@ -13,7 +13,6 @@ import type { IAssetContainer } from "core/IAssetContainer";
 import { FlowGraphEventType } from "./flowGraphEventType";
 import type { IFlowGraphEventTrigger } from "./flowGraphSceneEventCoordinator";
 import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
-import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _isADescendantOf } from "./utils";
 
