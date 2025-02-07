@@ -17,9 +17,11 @@ import {
     ParseFlowGraphBlockWithClassType,
     ParseFlowGraphContext,
     ParseFlowGraph,
+    ParseFlowGraphAsync,
 } from "core/FlowGraph";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -166,7 +168,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.getVariable("test4").uniqueId).toEqual(mesh.uniqueId);
     });
 
-    it("Serializes and parses a graph", () => {
+    it("Serializes and parses a graph", async () => {
         const mockContext: any = jest.mock("core/FlowGraph/flowGraphContext") as any;
         const pathConverter = new FlowGraphPathConverter(mockContext);
 
@@ -191,11 +193,10 @@ describe("Flow Graph Serialization", () => {
         // Graph is serialized with all blocks
         expect(serialized.allBlocks.length).toBe(3);
 
-        const parsed = ParseFlowGraph(serialized, { coordinator, pathConverter }, [FlowGraphSceneReadyEventBlock, FlowGraphConsoleLogBlock, FlowGraphGetVariableBlock]);
-        expect(parsed._eventBlocks.length).toBe(1);
+        const parsed = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
+        expect(parsed._eventBlocks[FlowGraphEventType.SceneReady].length).toBe(1);
         parsed.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(Logger.Log).toHaveBeenCalledWith(42);
     });
 
