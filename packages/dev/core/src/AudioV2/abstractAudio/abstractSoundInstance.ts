@@ -11,6 +11,9 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's playback ends */
     public readonly onEndedObservable = new Observable<_AbstractSoundInstance>();
 
+    /** Observable triggered if the sound instance encounters an error and can not be played */
+    public readonly onErrorObservable = new Observable<any>();
+
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 

@@ -1,3 +1,4 @@
+import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
@@ -8,8 +9,8 @@ import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { SoundState } from "../soundState";
 import { _CleanUrl } from "../audioUtils";
+import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
@@ -32,7 +33,12 @@ export async function CreateStreamingSoundAsync(
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StreamingSound> {
     const sound = new _WebAudioStreamingSound(name, _GetWebAudioEngine(engine), options);
-    await sound.init(source, options);
+
+    try {
+        await sound.init(source, options);
+    } catch (e) {
+        Logger.Error(`Failed to create streaming sound ${name}`);
+    }
 
     return sound;
 }
@@ -180,8 +186,9 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
     private _isReady: boolean = false;
-    private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
+    private _isReadyPromise: Promise<HTMLMediaElement> = new Promise((resolve, reject) => {
         this._resolveIsReadyPromise = resolve;
+        this._rejectIsReadyPromise = reject;
     });
     private _mediaElement: HTMLMediaElement;
     private _sourceNode: Nullable<MediaElementAudioSourceNode>;
@@ -255,8 +262,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._sourceNode?.disconnect(this._volumeNode);
         this._sourceNode = null;
 
+        this._mediaElement.removeEventListener("error", this._onError);
         this._mediaElement.removeEventListener("ended", this._onEnded);
         this._mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
+
         for (const source of Array.from(this._mediaElement.children)) {
             this._mediaElement.removeChild(source);
         }
@@ -369,6 +378,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         mediaElement.addEventListener("ended", this._onEnded, { once: true });
+        mediaElement.addEventListener("error", this._onError, { once: true });
 
         mediaElement.load();
 
@@ -410,6 +420,13 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this.dispose();
     };
 
+    private _onError: (reason: any) => void = (reason: any) => {
+        this._setState(SoundState.FailedToStart);
+        this.onErrorObservable.notifyObservers(reason);
+        this._rejectIsReadyPromise(reason);
+        this.dispose();
+    };
+
     private _onEngineStateChanged = () => {
         if (this.engine.state !== "running") {
             return;
@@ -430,7 +447,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         this._setState(SoundState.Starting);
 
         if (!this._isReady) {
-            this._playAsync();
+            this._playWhenReady();
             return;
         }
 
@@ -462,11 +479,18 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
     }
 
-    private async _playAsync(): Promise<void> {
-        await this._isReadyPromise;
-        this._play();
+    private _playWhenReady(): void {
+        this._isReadyPromise
+            .then(() => {
+                this._play();
+            })
+            .catch(() => {
+                Logger.Error("Streaming sound instance failed to play");
+                this._setState(SoundState.FailedToStart);
+            });
     }
 
+    private _rejectIsReadyPromise: (reason?: any) => void;
     private _resolveIsReadyPromise: (mediaElement: HTMLMediaElement) => void;
 
     private _stop(): void {

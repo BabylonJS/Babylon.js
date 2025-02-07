@@ -54,12 +54,12 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      * @returns A promise that resolves when the instance is preloaded.
      */
-    public async preloadInstance(): Promise<void> {
+    public preloadInstance(): Promise<void> {
         const instance = this._createInstance();
 
         this._addPreloadedInstance(instance);
 
-        await instance.preloadedPromise;
+        return instance.preloadedPromise;
     }
 
     /**
