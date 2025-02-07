@@ -320,6 +320,11 @@
             "referenceImage": "basis.png"
         },
         {
+            "title": "Basis encoder",
+            "playgroundId": "#07WYDW#12",
+            "referenceImage": "basisEncoder.png"
+        },
+        {
             "title": "Unindexed mesh",
             "playgroundId": "#4IHSY2#0",
             "referenceImage": "unindexedmesh.png"
