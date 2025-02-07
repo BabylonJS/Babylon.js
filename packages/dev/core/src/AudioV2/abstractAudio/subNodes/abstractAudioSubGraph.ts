@@ -39,7 +39,7 @@ export abstract class _AbstractAudioSubGraph {
 
         const promise = this._createSubNodePromises[name] ?? this._createAndAddSubNode(name);
 
-        promise?.then((node) => {
+        promise.then((node) => {
             callback(node as T);
         });
     }
@@ -109,11 +109,11 @@ export abstract class _AbstractAudioSubGraph {
         node.onNameChangedObservable.add(this._onSubNodeNameChanged);
     }
 
-    protected _createAndAddSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
+    protected _createAndAddSubNode(name: string): Promise<_AbstractAudioSubNode> {
         const promise = this._createSubNode(name);
 
         if (!promise) {
-            return null;
+            return Promise.reject(`Failed to create subnode "${name}"`);
         }
 
         promise.then((node) => {
