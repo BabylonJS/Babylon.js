@@ -289,7 +289,9 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._mediaElement.currentTime = startOffset;
         }
 
-        this._volumeNode.gain.value = options.volume ?? this.options.volume;
+        this.options.volume = options.volume ?? 1;
+
+        this._volumeNode.gain.value = this.options.volume;
 
         this._play();
     }

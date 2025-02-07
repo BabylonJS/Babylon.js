@@ -369,9 +369,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         if (options.startOffset !== undefined) {
             this.options.startOffset = options.startOffset;
         }
-        if (options.volume !== undefined) {
-            this.options.volume = options.volume;
-        }
+        this.options.volume = options.volume ?? 1;
 
         let startOffset = this.options.startOffset;
 
