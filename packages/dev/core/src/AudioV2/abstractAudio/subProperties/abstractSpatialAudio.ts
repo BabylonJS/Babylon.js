@@ -5,6 +5,7 @@ import type { Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 
 export const _SpatialAudioDefaults = {
+    attachmentType: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
     coneInnerAngle: 6.28318530718,
     coneOuterAngle: 6.28318530718,
     coneOuterVolume: 0,

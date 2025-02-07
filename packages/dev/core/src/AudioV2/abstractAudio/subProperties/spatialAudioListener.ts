@@ -1,3 +1,9 @@
+import type { Camera } from "../../../Cameras/camera";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Nullable } from "../../../types";
+import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
 import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
 
@@ -77,7 +83,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /** @internal */
-    public setOptions(options: Partial<ISpatialAudioListenerOptions>): Promise<void> {
+    public async setOptions(options: Partial<ISpatialAudioListenerOptions>): Promise<void> {
         if (options.listenerAttachedCamera !== undefined) {
             this.attachedCamera = options.listenerAttachedCamera;
         } else if (options.listenerAttachedMesh !== undefined) {
@@ -90,22 +96,24 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
             this.attachmentType = options.listenerAttachmentType;
         }
 
+        await this._attacher.isReadyPromise;
+
         if (options.listenerMinUpdateTime !== undefined) {
             this.minUpdateTime = options.listenerMinUpdateTime;
         }
 
-        if (options.listenerPosition !== undefined) {
+        if (!this._attacher.isAttachedToRotation && options.listenerPosition !== undefined) {
             this.position = options.listenerPosition.clone();
         }
 
-        if (options.listenerRotationQuaternion !== undefined) {
-            this.rotationQuaternion = options.listenerRotationQuaternion.clone();
-        } else if (options.listenerRotation !== undefined) {
-            this.rotation = options.listenerRotation.clone();
-        } else {
-            this.rotationQuaternion = _SpatialAudioListenerDefaults.rotationQuaternion.clone();
+        if (!this._attacher.isAttachedToRotation && options.listenerRotationQuaternion !== undefined) {
+            if (options.listenerRotationQuaternion !== undefined) {
+                this.rotationQuaternion = options.listenerRotationQuaternion.clone();
+            } else if (options.listenerRotation !== undefined) {
+                this.rotation = options.listenerRotation.clone();
+            } else {
+                this.rotationQuaternion = _SpatialAudioListenerDefaults.rotationQuaternion.clone();
+            }
         }
-
-        return this._attacher.isReadyPromise;
     }
 }
