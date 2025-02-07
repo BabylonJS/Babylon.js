@@ -216,7 +216,10 @@ export class HDRIrradianceFiltering {
                     resolve(null);
                 });
             });
-            this._cdfGenerator.renderWhenReady();
+
+            this._cdfGenerator.renderWhenReady().catch((e) => {
+                return Promise.reject("Irradiance Prefiltering: CDF Generator failed. " + e);
+            });
         }
 
         return cdfGeneratedPromise.then(() => {
