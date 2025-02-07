@@ -20,12 +20,21 @@ export type HotSpotQuery = {
 
 /**
  * Create a HotSpotQuery from a picking info
- * @remarks If there is no pickedMesh or the pickedMesh has no indices, null will be returned
+ * @remarks If there is no pickedMesh or the pickedMesh has no indices and no positions, null will be returned
  * @param pickingInfo picking info to use
  * @returns HotSpotQuery or null if it was not possible to create one
  */
 export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): Nullable<HotSpotQuery> {
-    const indices = pickingInfo.pickedMesh?.getIndices();
+    let indices = pickingInfo.pickedMesh?.getIndices();
+
+    // Generate indices if none exist
+    if (!indices || indices.length === 0) {
+        const positions = pickingInfo.pickedMesh?.getVerticesData(VertexBuffer.PositionKind);
+        if (positions) {
+            indices = Array.from({ length: positions.length / 3 }, (_, i) => i);
+        }
+    }
+
     if (indices) {
         const base = pickingInfo.faceId * 3;
         return {
