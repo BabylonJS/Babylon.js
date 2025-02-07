@@ -1,7 +1,135 @@
 {
-    "fromTag": "7.47.3",
+    "fromTag": "7.48.0",
     "changelog": {
         "7.48.0": [],
+        "7.48.1": [
+            {
+                "pr": "16154",
+                "title": "Make SceneLoader module level functions PascalCase and add GetRegisteredSceneLoaderPluginMetadata",
+                "description": "- To make the SceneLoader module more consistent with the rest of the API, I am updating the module level functions to be PascalCase. The camalCase ones are marked as deprecated, and the new PascalCase ones are not marked as experimental.\r\n- Also marking the SceneLoader class as deprecated, suggesting using the module level functions instead.\r\n- Exposing a new function GetRegisteredSceneLoaderPluginMetadata to get the metadata of the registered SceneLoader plugins. I want to use this for tooling like Sandbox so it doesn't have to hardcode a list of supported extensions. This adds no state, so it should have zero bundle impact for consumers that don't use it.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts",
+                    "packages/dev/loaders/src/dynamic.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16156",
+                "title": "Fix pointerId leak when a pen is lifted off the digitizer",
+                "description": "When a pen is lifted off the digitizer, beyond the range of the digitizer to detect it, the pointerleave event is raised.  This fix listens to that event, and the pointer is a pen, it calls into the existing logic to cancel a touch operation.  \r\n\r\nThis addresses the issue reported here in the forum: https://forum.babylonjs.com/t/onpointerobservable-ignoring-tablet-pen-input/56405",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16155",
+                "title": "Viewer: Add removeEventListener typings",
+                "description": "Previously I had added strong typing for `addEventListener` for the `ViewerElement`'s custom events, but I forgot to do the same for `removeEventListener`. In this PR, I am adding `removeEventListener`, but I'm also moving this to be type only. Previously I did this typing by overriding the base `addEventListener` and calling it on `super`, but there is nothing actually needed at runtime for this, so we may as well remove any runtime impact (one extra frame on the callstack, a tiny bit of extra code in the final bundle).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16153",
+                "title": "Preserve vertex buffer types in DracoEncoder",
+                "description": "- Preserve original data type as much as possible\r\n- Reduce copies made for transferring to worker",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.types.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts"
+                ],
+                "tags": [
+                    "optimizations",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16150",
+                "title": "Add more cases of calling error callbacks",
+                "description": "Several of the previously synchronous functions somewhat recently [became asynchronous](https://github.com/BabylonJS/Babylon.js/pull/15798). However, this left us in a state where thrown errors end up in ignored `Promise`s, and so you just see an unhandled error in the console log, rather than the error propagating to the caller through a final `Promise` and/or `onError` callback. This change tries to catch those missed cases and route them correctly, but at this point the code is very hard to reason about and understand where additional error handling is needed. Since there is no synchronous path anymore, we should rewrite a lot of this code to just use async/await, and have the callback based functions just be wrappers that still exist for back compat. This would make it way easier to understand and maintain the code. That said, this should probably be a post-8.0 release change.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16152",
+                "title": "Update camera.ts to include default maxZ value",
+                "description": "Add default for maxZ so it will be displayed on https://doc.babylonjs.com/typedoc/classes/BABYLON.Camera#maxz",
+                "author": {
+                    "name": "mthaddon",
+                    "url": "https://github.com/mthaddon"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16149",
+                "title": "Add Irradiance texture support in Env format",
+                "description": "This PR allows to easily generate an env containing the required information to render like the right column. Thanks to @MiiBond for the support of this awesome improvment.\r\n\r\n![image](https://github.com/user-attachments/assets/8d1afa87-f1dc-4638-8aba-e23f5d0d4152)\r\n",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/tools/sandbox/src/tools/environmentTools.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16151",
+                "title": "Make sure an engine with exception is cleared",
+                "description": "See https://forum.babylonjs.com/t/safari-mac-bug-glb-fails-to-load-after-create-screenshot-using-render-target/56381/12?u=raananw\n\nAs a side note, to test this I forced-threw an exception during engine construction (of course not commited :-) )",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.47.3": [
             {
                 "pr": "16148",
