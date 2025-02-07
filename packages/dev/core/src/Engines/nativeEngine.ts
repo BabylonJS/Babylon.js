@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } from "../types";
+import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable, int } from "../types";
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -33,7 +33,17 @@ import type { IStencilState } from "../States/IStencilState";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
-import type { INative, INativeCamera, INativeEngine, NativeFramebuffer, NativeProgram, NativeTexture, NativeUniform, NativeVertexArrayObject } from "./Native/nativeInterfaces";
+import type {
+    INative,
+    INativeCamera,
+    INativeEngine,
+    NativeFramebuffer,
+    NativeFrameStats,
+    NativeProgram,
+    NativeTexture,
+    NativeUniform,
+    NativeVertexArrayObject,
+} from "./Native/nativeInterfaces";
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
@@ -57,6 +67,7 @@ import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+import { _TimeToken } from "core/Instrumentation";
 
 // REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
 declare module "../Materials/effect" {
@@ -218,6 +229,8 @@ export class NativeEngine extends Engine {
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
 
     private readonly _commandBufferEncoder = new CommandBufferEncoder(this._engine);
+
+    private readonly _frameStats: NativeFrameStats = { gpuTimeNs: Number.NaN };
 
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = _native.Engine.DEPTH_TEST_LEQUAL;
@@ -2703,5 +2716,19 @@ export class NativeEngine extends Engine {
 
                 return buffer;
             });
+    }
+
+    override startTimeQuery(): Nullable<_TimeToken> {
+        if (!this._gpuFrameTimeToken) {
+            this._gpuFrameTimeToken = new _TimeToken();
+        }
+
+        // Always return the same time token. For native, we don't need a start marker, we just query for native frame stats.
+        return this._gpuFrameTimeToken;
+    }
+
+    override endTimeQuery(token: _TimeToken): int {
+        this._engine.populateFrameStats(this._frameStats);
+        return this._frameStats.gpuTimeNs;
     }
 }

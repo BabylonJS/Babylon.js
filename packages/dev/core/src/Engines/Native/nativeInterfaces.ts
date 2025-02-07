@@ -13,6 +13,12 @@ export type NativeProgram = NativeData;
 export type NativeUniform = NativeData;
 
 /** @internal */
+export type NativeFrameStats = {
+    /** @internal */
+    gpuTimeNs: number;
+};
+
+/** @internal */
 export interface INativeEngine {
     dispose(): void;
 
@@ -97,6 +103,8 @@ export interface INativeEngine {
 
     setCommandDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
+
+    populateFrameStats(stats: NativeFrameStats): void;
 }
 
 /** @internal */
