@@ -1,6 +1,22 @@
 {
-    "fromTag": "7.48.1",
+    "fromTag": "7.48.2",
     "changelog": {
+        "7.48.3": [
+            {
+                "pr": "16159",
+                "title": "NativeEngine captureGPUFrameTime + getGPUFrameTimeCounter",
+                "description": "This change overrides `startTimeQuery` and `endTimeQuery` in `NativeEngine` such that `captureGPUFrameTime` and `getGPUFrameTimeCounter` work. They do so by calling the new `populateFrameStats` function on the native side of `NativeEngine`.\r\nCorresponding BN change: https://github.com/BabylonJS/BabylonNative/pull/1458",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.48.2": [
             {
                 "pr": "16160",

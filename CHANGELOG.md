@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.48.3
+
+### Core
+
+- NativeEngine captureGPUFrameTime + getGPUFrameTimeCounter - by [ryantrem](https://github.com/ryantrem) ([#16159](https://github.com/BabylonJS/Babylon.js/pull/16159))
+
 ## 7.48.2
 
 ### Core
