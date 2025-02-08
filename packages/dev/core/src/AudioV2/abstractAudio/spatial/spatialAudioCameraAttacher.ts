@@ -11,9 +11,10 @@ const TempQuaternion = Quaternion.Identity();
 export async function _CreateSpatialAudioCameraAttacherAsync(
     camera: Camera,
     spatialAudioNode: ISpatialAudioNode,
-    attachmentType: SpatialAudioAttachmentType
+    attachmentType: SpatialAudioAttachmentType,
+    minUpdateTime: number
 ): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioCameraAttacher(camera, spatialAudioNode, attachmentType);
+    return new _SpatialAudioCameraAttacher(camera, spatialAudioNode, attachmentType, minUpdateTime);
 }
 
 /** @internal */
@@ -21,8 +22,8 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     protected _camera: Nullable<Camera> = null;
 
     /** @internal */
-    public constructor(camera: Camera, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
-        super(spatialAudioNode, attachmentType);
+    public constructor(camera: Camera, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType, minUpdateTime: number) {
+        super(spatialAudioNode, attachmentType, minUpdateTime);
 
         this.camera = camera;
     }
@@ -35,12 +36,13 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
 
         this._clearCamera();
 
-        this._setScene(null);
         this._camera = camera;
+
         this._setScene(this._camera?.getScene() ?? null);
 
         this._isDirty = true;
-        this._camera?.onViewMatrixChangedObservable.add(this._onCameraViewMatrixChanged);
+
+        this._update();
     }
 
     protected get _attachedPosition(): Vector3 {
@@ -74,6 +76,20 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
         this._isDirty = false;
     }
 
+    protected override _updateObservers() {
+        super._updateObservers();
+
+        if (!this._camera) {
+            return;
+        }
+
+        if (0 < this.minUpdateTime) {
+            this._camera.onViewMatrixChangedObservable.add(this._onCameraViewMatrixChanged);
+        } else {
+            this._camera.onViewMatrixChangedObservable.removeCallback(this._onCameraViewMatrixChanged);
+        }
+    }
+
     private _clearCamera() {
         this._camera?.onViewMatrixChangedObservable.removeCallback(this._onCameraViewMatrixChanged);
         this._camera = null;
@@ -81,5 +97,6 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
 
     private _onCameraViewMatrixChanged = () => {
         this._isDirty = true;
+        this._update();
     };
 }

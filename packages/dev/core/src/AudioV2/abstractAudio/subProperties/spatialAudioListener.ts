@@ -70,6 +70,15 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         return this._attacher.isAttachedToRotation;
     }
 
+    /** @internal */
+    public get minUpdateTime(): number {
+        return this._attacher.minUpdateTime;
+    }
+
+    public set minUpdateTime(value: number) {
+        this._attacher.minUpdateTime = value;
+    }
+
     /**
      * Detaches the audio source from the currently attached camera, mesh or transform node.
      */

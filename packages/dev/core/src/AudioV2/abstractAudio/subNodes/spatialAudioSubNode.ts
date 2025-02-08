@@ -15,9 +15,6 @@ import { AudioSubNode } from "./audioSubNode";
 export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     private _attacher: _ExclusiveSpatialAudioAttacher;
 
-    /** @internal */
-    public minUpdateTime: number = 0;
-
     protected constructor(engine: AudioEngineV2) {
         super(AudioSubNode.SPATIAL, engine);
 
@@ -67,6 +64,15 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     /** @internal */
     public get isAttached(): boolean {
         return this._attacher.isAttached;
+    }
+
+    /** @internal */
+    public get minUpdateTime(): number {
+        return this._attacher.minUpdateTime;
+    }
+
+    public set minUpdateTime(value: number) {
+        this._attacher.minUpdateTime = value;
     }
 
     /** @internal */

@@ -11,9 +11,10 @@ const TempQuaternion = Quaternion.Identity();
 export async function _CreateSpatialAudioTransformNodeAttacherAsync(
     transformNode: TransformNode,
     spatialAudioNode: ISpatialAudioNode,
-    attachmentType: SpatialAudioAttachmentType
+    attachmentType: SpatialAudioAttachmentType,
+    minUpdateTime: number
 ): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioTransformNodeAttacher(transformNode, spatialAudioNode, attachmentType);
+    return new _SpatialAudioTransformNodeAttacher(transformNode, spatialAudioNode, attachmentType, minUpdateTime);
 }
 
 /** @internal */
@@ -21,8 +22,8 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     protected _transformNode: Nullable<TransformNode> = null;
 
     /** @internal */
-    public constructor(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
-        super(spatialAudioNode, attachmentType);
+    public constructor(transformNode: TransformNode, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType, minUpdateTime: number) {
+        super(spatialAudioNode, attachmentType, minUpdateTime);
 
         this.transformNode = transformNode;
     }
@@ -33,9 +34,14 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
             return;
         }
 
-        this._setScene(null);
+        this._clearTransformNode();
+
         this._transformNode = transformNode;
+
         this._setScene(this._transformNode?.getScene() ?? null);
+
+        this._isDirty = true;
+        this._update();
     }
 
     protected get _attachedPosition(): Vector3 {
@@ -53,7 +59,39 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     }
 
     /** @internal */
+    public override dispose(): void {
+        super.dispose();
+        this._clearTransformNode();
+    }
+
+    /** @internal */
     public getClassName(): string {
         return "_SpatialAudioTransformNodeAttacher";
     }
+
+    protected override _update() {
+        super._update();
+
+        this._isDirty = false;
+    }
+
+    protected override _updateObservers() {
+        super._updateObservers();
+
+        if (!this._transformNode) {
+            return;
+        }
+
+        this._transformNode.onAfterWorldMatrixUpdateObservable.add(this._onWorldMatrixChanged);
+    }
+
+    private _clearTransformNode() {
+        this._transformNode?.onAfterWorldMatrixUpdateObservable.removeCallback(this._onWorldMatrixChanged);
+        this._transformNode = null;
+    }
+
+    private _onWorldMatrixChanged = () => {
+        this._isDirty = true;
+        this._update();
+    };
 }

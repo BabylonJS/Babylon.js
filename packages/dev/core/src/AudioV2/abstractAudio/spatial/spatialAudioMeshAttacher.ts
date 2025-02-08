@@ -9,9 +9,10 @@ import { _SpatialAudioTransformNodeAttacher } from "./spatialAudioTransformNodeA
 export async function _CreateSpatialAudioMeshAttacherAsync(
     mesh: AbstractMesh,
     spatialAudioNode: ISpatialAudioNode,
-    attachmentType: SpatialAudioAttachmentType
+    attachmentType: SpatialAudioAttachmentType,
+    minUpdateTime: number
 ): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioMeshAttacher(mesh, spatialAudioNode, attachmentType);
+    return new _SpatialAudioMeshAttacher(mesh, spatialAudioNode, attachmentType, minUpdateTime);
 }
 
 /** @internal */
@@ -19,8 +20,8 @@ class _SpatialAudioMeshAttacher extends _SpatialAudioTransformNodeAttacher {
     protected override _transformNode: Nullable<AbstractMesh>;
 
     /** @internal */
-    public constructor(mesh: AbstractMesh, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType) {
-        super(mesh, spatialAudioNode, attachmentType);
+    public constructor(mesh: AbstractMesh, spatialAudioNode: ISpatialAudioNode, attachmentType: SpatialAudioAttachmentType, minUpdateTime: number) {
+        super(mesh, spatialAudioNode, attachmentType, minUpdateTime);
     }
 
     protected override get _attachedPosition(): Vector3 {

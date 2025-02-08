@@ -107,7 +107,7 @@ export abstract class AbstractSpatialAudioListener {
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
      * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */
-    public minUpdateTime: number = 0;
+    public abstract minUpdateTime: number;
 
     /**
      * The listener position. Defaults to (0, 0, 0).

@@ -16,6 +16,7 @@ export class _ExclusiveSpatialAudioAttacher {
     private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
     private _attachmentType: SpatialAudioAttachmentType;
     private _isReadyPromise: Nullable<Promise<void>> = null;
+    private _minUpdateTime: number = 0;
     private _spatialAudioNode: ISpatialAudioNode;
 
     /**
@@ -124,6 +125,25 @@ export class _ExclusiveSpatialAudioAttacher {
     }
 
     /**
+     * The minimum time in seconds between updates to the audio listener or source.
+     */
+    public get minUpdateTime(): number {
+        return this._minUpdateTime;
+    }
+
+    public set minUpdateTime(value: number) {
+        if (this._minUpdateTime === value) {
+            return;
+        }
+
+        this._minUpdateTime = value;
+
+        if (this._attacher) {
+            this._attacher.minUpdateTime = value;
+        }
+    }
+
+    /**
      * Detaches the attached entity.
      */
     public detach() {
@@ -141,12 +161,16 @@ export class _ExclusiveSpatialAudioAttacher {
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
         switch (attacherClassName) {
             case _SpatialAudioAttacher.CAMERA:
-                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode, this._attachmentType) : null;
+                return this._attachedEntity
+                    ? _CreateSpatialAudioCameraAttacherAsync(this._attachedEntity as Camera, this._spatialAudioNode, this._attachmentType, this._minUpdateTime)
+                    : null;
             case _SpatialAudioAttacher.MESH:
-                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this._attachedEntity as AbstractMesh, this._spatialAudioNode, this._attachmentType) : null;
+                return this._attachedEntity
+                    ? _CreateSpatialAudioMeshAttacherAsync(this._attachedEntity as AbstractMesh, this._spatialAudioNode, this._attachmentType, this._minUpdateTime)
+                    : null;
             case _SpatialAudioAttacher.TRANSFORM_NODE:
                 return this._attachedEntity
-                    ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode, this._attachmentType)
+                    ? _CreateSpatialAudioTransformNodeAttacherAsync(this._attachedEntity as TransformNode, this._spatialAudioNode, this._attachmentType, this._minUpdateTime)
                     : null;
         }
         return null;
