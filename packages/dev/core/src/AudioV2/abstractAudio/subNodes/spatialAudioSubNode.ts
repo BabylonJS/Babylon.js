@@ -3,7 +3,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import type { AudioEngineV2 } from "../audioEngineV2";
-import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
+import { _SpatialAudioAttacher } from "../spatial/spatialAudioAttacher";
 import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import type { ISpatialAudioOptions } from "../subProperties/abstractSpatialAudio";
 import { _SpatialAudioDefaults } from "../subProperties/abstractSpatialAudio";
@@ -13,12 +13,12 @@ import { AudioSubNode } from "./audioSubNode";
 
 /** @internal */
 export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
-    private _attacher: _ExclusiveSpatialAudioAttacher;
+    private _attacher: _SpatialAudioAttacher;
 
     protected constructor(engine: AudioEngineV2) {
         super(AudioSubNode.SPATIAL, engine);
 
-        this._attacher = new _ExclusiveSpatialAudioAttacher(this);
+        this._attacher = new _SpatialAudioAttacher(this);
     }
 
     public abstract coneInnerAngle: number;

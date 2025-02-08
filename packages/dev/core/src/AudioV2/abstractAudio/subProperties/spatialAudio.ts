@@ -162,7 +162,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Force the attached entity to update the spatial audio position and rotation.
+     * Forces the attached entity to update the spatial audio position and rotation.
      */
     public updateAttached(): void {
         _GetSpatialAudioSubNode(this._subGraph)?.updateAttached();

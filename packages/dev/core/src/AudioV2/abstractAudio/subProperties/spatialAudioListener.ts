@@ -2,19 +2,19 @@ import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import { _ExclusiveSpatialAudioAttacher } from "../spatial/exclusiveSpatialAudioAttacher";
+import { _SpatialAudioAttacher } from "../spatial/spatialAudioAttacher";
 import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
 import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
 
 /** @internal */
 export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener {
-    private _attacher: _ExclusiveSpatialAudioAttacher;
+    private _attacher: _SpatialAudioAttacher;
 
     protected constructor() {
         super();
 
-        this._attacher = new _ExclusiveSpatialAudioAttacher(this);
+        this._attacher = new _SpatialAudioAttacher(this);
     }
 
     /** @internal */
@@ -126,7 +126,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         }
     }
     /**
-     * Force the attached entity to update the spatial audio position and rotation.
+     * Forces the attached entity to update the spatial audio position and rotation.
      */
     public updateAttached(): void {
         this._attacher.update();
