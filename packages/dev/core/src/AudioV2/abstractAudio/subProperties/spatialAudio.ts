@@ -4,8 +4,9 @@ import type { Nullable } from "../../../types";
 import type { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { AudioSubNode } from "../subNodes/audioSubNode";
-import { _GetSpatialAudioProperty, _SetSpatialAudioProperty, type _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
-import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAudio";
+import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
+import { AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
 export class _SpatialAudio extends AbstractSpatialAudio {
@@ -20,35 +21,29 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get attachedMesh(): Nullable<AbstractMesh> {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.attachedMesh ?? null;
+        return _GetSpatialAudioProperty(this._subGraph, "attachedMesh");
     }
 
     public set attachedMesh(value: Nullable<AbstractMesh>) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL, (node) => {
-            node.attachedMesh = value;
-        });
+        _SetSpatialAudioProperty(this._subGraph, "attachedMesh", value);
     }
 
     /** @internal */
     public get attachedTransformNode(): Nullable<TransformNode> {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.attachedTransformNode ?? null;
+        return _GetSpatialAudioProperty(this._subGraph, "attachedTransformNode");
     }
 
     public set attachedTransformNode(value: Nullable<TransformNode>) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL, (node) => {
-            node.attachedTransformNode = value;
-        });
+        _SetSpatialAudioProperty(this._subGraph, "attachedTransformNode", value);
     }
 
     /** @internal */
     public get attachmentType(): SpatialAudioAttachmentType {
-        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.attachmentType ?? _SpatialAudioDefaults.attachmentType;
+        return _GetSpatialAudioProperty(this._subGraph, "attachmentType");
     }
 
     public set attachmentType(value: SpatialAudioAttachmentType) {
-        this._subGraph.callOnSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL, (node) => {
-            node.attachmentType = value;
-        });
+        _SetSpatialAudioProperty(this._subGraph, "attachmentType", value);
     }
 
     /** @internal */
@@ -163,6 +158,6 @@ export class _SpatialAudio extends AbstractSpatialAudio {
      * Detaches the audio source from the currently attached camera, mesh or transform node.
      */
     public detach(): void {
-        this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.detach();
+        _GetSpatialAudioSubNode(this._subGraph)?.detach();
     }
 }
