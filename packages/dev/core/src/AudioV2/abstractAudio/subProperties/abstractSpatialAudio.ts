@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import { SpatialAudioAttachmentType } from "../spatial/spatialAudioAttacher";
+import { SpatialAudioAttachmentType } from "../spatialAttachers/spatialAudioAttacher";
 
 export const _SpatialAudioDefaults = {
     attachedMesh: null as Nullable<AbstractMesh>,
