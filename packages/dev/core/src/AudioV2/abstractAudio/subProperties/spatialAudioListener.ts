@@ -125,4 +125,10 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
             }
         }
     }
+    /**
+     * Force the attached entity to update the spatial audio position and rotation.
+     */
+    public updateAttached(): void {
+        this._attacher.update();
+    }
 }

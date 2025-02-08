@@ -61,15 +61,8 @@ export abstract class _AbstractSpatialAudioAttacher {
     /** @internal */
     public abstract getClassName(): string;
 
-    protected _setScene(scene: Nullable<Scene>) {
-        this._detachScene();
-
-        this._scene = scene;
-
-        this._updateObservers();
-    }
-
-    protected _update(): void {
+    /** @internal */
+    public update(force: boolean = false): void {
         if (!this.spatialAudioNode) {
             return;
         }
@@ -95,6 +88,14 @@ export abstract class _AbstractSpatialAudioAttacher {
         }
     }
 
+    protected _setScene(scene: Nullable<Scene>) {
+        this._detachScene();
+
+        this._scene = scene;
+
+        this._updateObservers();
+    }
+
     protected _updateObservers(): void {
         if (!this._scene) {
             return;
@@ -114,6 +115,6 @@ export abstract class _AbstractSpatialAudioAttacher {
     }
 
     private _onAfterRender = (): void => {
-        this._update();
+        this.update();
     };
 }

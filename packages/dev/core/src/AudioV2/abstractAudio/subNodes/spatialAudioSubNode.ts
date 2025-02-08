@@ -110,6 +110,11 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
             }
         }
     }
+
+    /** @internal */
+    public updateAttached(): void {
+        this._attacher.update();
+    }
 }
 
 /** @internal */

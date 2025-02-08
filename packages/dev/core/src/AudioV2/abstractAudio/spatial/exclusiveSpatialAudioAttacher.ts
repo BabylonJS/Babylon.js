@@ -158,6 +158,13 @@ export class _ExclusiveSpatialAudioAttacher {
         this.detach();
     }
 
+    /**
+     *
+     */
+    public update() {
+        this._attacher?.update(true);
+    }
+
     private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
         switch (attacherClassName) {
             case _SpatialAudioAttacher.CAMERA:

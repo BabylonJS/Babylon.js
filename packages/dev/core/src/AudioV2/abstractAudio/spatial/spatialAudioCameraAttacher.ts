@@ -42,7 +42,7 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
 
         this._isDirty = true;
 
-        this._update();
+        this.update();
     }
 
     protected get _attachedPosition(): Vector3 {
@@ -70,8 +70,13 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
         return "_SpatialAudioCameraAttacher";
     }
 
-    protected override _update() {
-        super._update();
+    /** @internal */
+    public override update(force = false): void {
+        super.update();
+
+        if (force) {
+            this._camera?.computeWorldMatrix();
+        }
 
         this._isDirty = false;
     }
@@ -97,6 +102,6 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
 
     private _onCameraViewMatrixChanged = () => {
         this._isDirty = true;
-        this._update();
+        this.update();
     };
 }

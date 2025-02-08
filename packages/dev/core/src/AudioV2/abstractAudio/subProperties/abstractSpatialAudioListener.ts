@@ -123,4 +123,9 @@ export abstract class AbstractSpatialAudioListener {
      * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Force the attached entity (if set) to update the spatial audio position and rotation.
+     */
+    public abstract updateAttached(): void;
 }

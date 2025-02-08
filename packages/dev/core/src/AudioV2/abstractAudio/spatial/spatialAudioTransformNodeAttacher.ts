@@ -41,7 +41,7 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
         this._setScene(this._transformNode?.getScene() ?? null);
 
         this._isDirty = true;
-        this._update();
+        this.update();
     }
 
     protected get _attachedPosition(): Vector3 {
@@ -69,8 +69,13 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
         return "_SpatialAudioTransformNodeAttacher";
     }
 
-    protected override _update() {
-        super._update();
+    /** @internal */
+    public override update(force = false): void {
+        super.update();
+
+        if (force) {
+            this._transformNode?.computeWorldMatrix(true);
+        }
 
         this._isDirty = false;
     }
@@ -92,6 +97,6 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
 
     private _onWorldMatrixChanged = () => {
         this._isDirty = true;
-        this._update();
+        this.update();
     };
 }
