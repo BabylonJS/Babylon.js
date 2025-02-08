@@ -2728,7 +2728,7 @@ export class NativeEngine extends Engine {
     }
 
     override endTimeQuery(token: _TimeToken): int {
-        this._engine.populateFrameStats(this._frameStats);
+        this._engine.populateFrameStats?.(this._frameStats);
         return this._frameStats.gpuTimeNs;
     }
 }

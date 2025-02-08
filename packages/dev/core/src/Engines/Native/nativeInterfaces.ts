@@ -104,7 +104,7 @@ export interface INativeEngine {
     setCommandDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
 
-    populateFrameStats(stats: NativeFrameStats): void;
+    populateFrameStats?(stats: NativeFrameStats): void;
 }
 
 /** @internal */
