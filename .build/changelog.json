@@ -1,7 +1,41 @@
 {
-    "fromTag": "7.48.0",
+    "fromTag": "7.48.1",
     "changelog": {
-        "7.48.0": [],
+        "7.48.2": [
+            {
+                "pr": "16160",
+                "title": "Fix HDR irradiance filtering not rendering if scene not rendering yet",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16158",
+                "title": "Fix tests after alpha changes",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.48.1": [
             {
                 "pr": "16154",
@@ -130,6 +164,7 @@
                 "tags": []
             }
         ],
+        "7.48.0": [],
         "7.47.3": [
             {
                 "pr": "16148",
