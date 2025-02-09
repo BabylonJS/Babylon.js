@@ -1646,7 +1646,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */
-    public _loadAnimationChannelAsync(
+    public async _loadAnimationChannelAsync(
         context: string,
         animationContext: string,
         animation: IAnimation,
@@ -1675,6 +1675,8 @@ export class GLTFLoader implements IGLTFLoader {
         if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
             return Promise.resolve();
         }
+        // async-load the animation sampler to provide the interpolation of the channelTargetPath
+        await import("./glTFLoaderAnimation");
 
         let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
