@@ -476,6 +476,11 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
     };
 
     const internalCallback = (data: any) => {
+        // If the texture has been disposed
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
         const width = texture.width;
         const faceDataArrays = callback(data);
 

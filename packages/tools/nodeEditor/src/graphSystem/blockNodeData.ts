@@ -117,4 +117,16 @@ export class BlockNodeData implements INodeData {
             });
         }
     }
+
+    public get canBeActivated() {
+        return this.data.getClassName() === "NodeMaterialDebugBlock";
+    }
+
+    public get isActive() {
+        return (this.data as any).isActive;
+    }
+
+    public setIsActive(value: boolean) {
+        (this.data as any).isActive = value;
+    }
 }

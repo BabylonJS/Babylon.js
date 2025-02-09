@@ -16,8 +16,10 @@ import { CurveDisplayManager } from "./display/curveDisplayManager";
 import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
 import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { LoopDisplayManager } from "./display/loopDisplayManager";
+import { DebugDisplayManager } from "./display/debugDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
+    DisplayLedger.RegisteredControls["NodeMaterialDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["LoopBlock"] = LoopDisplayManager;
     DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["VertexOutputBlock"] = OutputDisplayManager;

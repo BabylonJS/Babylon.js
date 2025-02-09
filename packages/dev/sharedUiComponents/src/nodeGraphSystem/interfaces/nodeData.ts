@@ -23,4 +23,8 @@ export interface INodeData {
     invisibleEndpoints?: Nullable<any[]>;
 
     isConnectedToOutput?: () => boolean;
+
+    isActive?: boolean;
+    setIsActive?: (value: boolean) => void;
+    canBeActivated?: boolean;
 }

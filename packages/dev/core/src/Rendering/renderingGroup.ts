@@ -411,7 +411,7 @@ export class RenderingGroup {
         if (material.needAlphaBlendingForMesh(mesh)) {
             // Transparent
             this._transparentSubMeshes.push(subMesh);
-        } else if (material.needAlphaTesting()) {
+        } else if (material.needAlphaTestingForMesh(mesh)) {
             // Alpha test
             if (material.needDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);

@@ -73,7 +73,7 @@ export interface IEffectCreationOptions {
     /**
      * Uniform buffer variable names that will be set in the shader.
      */
-    uniformBuffersNames: string[];
+    uniformBuffersNames?: string[];
     /**
      * Sampler texture variable names that will be set in the shader.
      */
@@ -131,6 +131,11 @@ export interface IEffectCreationOptions {
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
+
+    /**
+     * If set to true the shader will not be compiles asynchronously, even if the engine allows it.
+     */
+    disableParallelShaderCompilation?: boolean;
 }
 
 /**
@@ -258,6 +263,7 @@ export class Effect implements IDisposable {
     private _fragmentSourceCodeOverride: string = "";
     private _transformFeedbackVaryings: Nullable<string[]> = null;
     private _shaderLanguage: ShaderLanguage;
+    private _disableParallelShaderCompilation: boolean = false;
     /**
      * Compiled shader to webGL program.
      * @internal
@@ -343,6 +349,7 @@ export class Effect implements IDisposable {
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
             this._multiTarget = !!options.multiTarget;
             this._shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
+            this._disableParallelShaderCompilation = !!options.disableParallelShaderCompilation;
 
             if (options.uniformBuffersNames) {
                 this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
@@ -596,6 +603,16 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Wait until compilation before fulfilling.
+     * @returns a promise to wait for completion.
+     */
+    public whenCompiledAsync(): Promise<Effect> {
+        return new Promise((resolve) => {
+            this.executeWhenCompiled(resolve);
+        });
+    }
+
+    /**
      * Adds a callback to the onCompiled observable and call the callback immediately if already ready.
      * @param func The callback to be used.
      */
@@ -800,7 +817,7 @@ export class Effect implements IDisposable {
                     existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
                     vertex,
                     fragment,
-                    context: engine.shaderPlatformName === "WEBGL2" ? (engine as any)._gl : undefined,
+                    context: engine.shaderPlatformName === "WEBGL2" || engine.shaderPlatformName === "WEBGL1" ? (engine as any)._gl : undefined,
                     rebuildRebind: (
                         vertexSourceCode: string,
                         fragmentSourceCode: string,
@@ -811,7 +828,7 @@ export class Effect implements IDisposable {
                     transformFeedbackVaryings: this._transformFeedbackVaryings,
                     name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
                     createAsRaw: overrides,
-                    parallelShaderCompile: engine._caps.parallelShaderCompile,
+                    disableParallelCompilation: this._disableParallelShaderCompilation,
                     shaderProcessingContext: this._processingContext,
                     onRenderingStateCompiled: (pipelineContext) => {
                         if (previousPipelineContext && !keepExistingPipelineContext) {

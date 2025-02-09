@@ -93,21 +93,21 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * Gets the particle positions computed by the Point Cloud System
      */
-    public get positions() {
+    public get positions(): Float32Array {
         return this._positions32;
     }
 
     /**
      * Gets the particle colors computed by the Point Cloud System
      */
-    public get colors() {
+    public get colors(): Float32Array {
         return this._colors32;
     }
 
     /**
      * Gets the particle uvs computed by the Point Cloud System
      */
-    public get uvs() {
+    public get uvs(): Float32Array {
         return this._uvs32;
     }
 

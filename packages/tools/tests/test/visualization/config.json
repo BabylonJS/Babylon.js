@@ -52,7 +52,7 @@
         },
         {
             "title": "NME Loop Block",
-            "playgroundId": "#D8AK3Z#109",
+            "playgroundId": "#D8AK3Z#115",
             "referenceImage": "nme-loop.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1149,17 +1149,17 @@
         },
         {
             "title": "PBR shader code coverage 1",
-            "playgroundId": "#QI7TL3#55",
+            "playgroundId": "#QI7TL3#59",
             "referenceImage": "pbr-codecoverage1.png"
         },
         {
             "title": "PBR shader code coverage 2",
-            "playgroundId": "#QI7TL3#57",
+            "playgroundId": "#QI7TL3#60",
             "referenceImage": "pbr-codecoverage2.png"
         },
         {
             "title": "PBR shader code coverage 3",
-            "playgroundId": "#QI7TL3#56",
+            "playgroundId": "#QI7TL3#61",
             "referenceImage": "pbr-codecoverage3.png"
         },
         {
@@ -1302,7 +1302,7 @@
         },
         {
             "title": "Visibility",
-            "playgroundId": "#PXC9CF#2",
+            "playgroundId": "#PXC9CF#6",
             "referenceImage": "visibility.png"
         },
         {
@@ -1606,7 +1606,7 @@
         {
             "title": "Prepass SSAO + visibility",
             "renderCount": 30,
-            "playgroundId": "#PXC9CF#4",
+            "playgroundId": "#PXC9CF#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-visibility.png"
         },
@@ -2094,7 +2094,7 @@
         },
         {
             "title": "Command encoder order in WebGPU 1",
-            "playgroundId": "#064AUB#121",
+            "playgroundId": "#064AUB#125",
             "referenceImage": "CommandEncodedWebGPU1.png",
             "excludedEngines": ["webgl1"]
         },
@@ -2464,6 +2464,11 @@
         {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#7"
+        },
+        {
+            "title": "Synchronous Effect",
+            "playgroundId": "#D9XXL3#1",
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "Show Loading Screen",

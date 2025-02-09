@@ -176,6 +176,13 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         propertyName="upperRadiusLimit"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Lower target Y limit"
+                        target={camera}
+                        propertyName="lowerTargetYLimit"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="BEHAVIORS" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent

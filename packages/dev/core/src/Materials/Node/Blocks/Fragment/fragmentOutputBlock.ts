@@ -38,7 +38,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment, true);
+        super(name, NodeMaterialBlockTargets.Fragment, true, true);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);

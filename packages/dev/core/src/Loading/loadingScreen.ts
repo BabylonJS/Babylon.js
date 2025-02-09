@@ -328,8 +328,8 @@ export class DefaultLoadingScreen implements ILoadingScreen {
                 const canvasPositioning = window.getComputedStyle(canvas).position;
 
                 loadingDiv.style.position = canvasPositioning === "fixed" ? "fixed" : "absolute";
-                loadingDiv.style.left = currentCanvasRect.left + "px";
-                loadingDiv.style.top = currentCanvasRect.top + "px";
+                loadingDiv.style.left = currentCanvasRect.left + window.scrollX + "px";
+                loadingDiv.style.top = currentCanvasRect.top + window.scrollY + "px";
                 loadingDiv.style.width = currentCanvasRect.width + "px";
                 loadingDiv.style.height = currentCanvasRect.height + "px";
 

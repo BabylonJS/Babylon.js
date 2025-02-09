@@ -2,6 +2,14 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
 
+/**
+ * Union of TypedArrays that can be used for vertex data.
+ */
+export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
+
+/**
+ * Interface for a constructor of a TypedArray.
+ */
 export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     new (length: number): T;
     new (elements: Iterable<number>): T;
@@ -129,7 +137,7 @@ export function GetTypeByteLength(type: number): number {
  * @param componentType the component type
  * @returns the constructor object
  */
-export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor {
+export function GetTypedArrayConstructor(componentType: number): TypedArrayConstructor<VertexDataTypedArray> {
     switch (componentType) {
         case Constants.BYTE:
             return Int8Array;
@@ -193,7 +201,7 @@ export function EnumerateFloatValues(
             offset += stride;
         }
     } else {
-        const dataView = data instanceof ArrayBuffer ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
+        const dataView = !ArrayBuffer.isView(data) ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
         const componentByteLength = GetTypeByteLength(componentType);
         for (let index = 0; index < count; index += componentCount) {
             for (let componentIndex = 0, componentByteOffset = byteOffset; componentIndex < componentCount; componentIndex++, componentByteOffset += componentByteLength) {
@@ -274,6 +282,105 @@ export function GetFloatData(
     }
 
     return data;
+}
+
+/**
+ * Gets the given data array as a typed array that matches the component type. If the data cannot be used directly, a copy is made to support the new typed array.
+ * If the data is number[], byteOffset and byteStride must be a multiple of 4, as data will be treated like a list of floats.
+ * @param data the input data array
+ * @param size the number of components
+ * @param type the component type
+ * @param byteOffset the byte offset of the data
+ * @param byteStride the byte stride of the data
+ * @param normalized whether the data is normalized
+ * @param totalVertices number of vertices in the buffer to take into account
+ * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+ * @returns a typed array containing vertex data
+ */
+export function GetTypedArrayData(
+    data: DataArray,
+    size: number,
+    type: number,
+    byteOffset: number,
+    byteStride: number,
+    normalized: boolean,
+    totalVertices: number,
+    forceCopy?: boolean
+): VertexDataTypedArray {
+    const typeByteLength = GetTypeByteLength(type);
+    const constructor = GetTypedArrayConstructor(type);
+    const count = totalVertices * size;
+
+    // Handle number[]
+    if (Array.isArray(data)) {
+        if ((byteOffset & 3) !== 0 || (byteStride & 3) !== 0) {
+            throw new Error("byteOffset and byteStride must be a multiple of 4 for number[] data.");
+        }
+
+        const offset = byteOffset / 4;
+        const stride = byteStride / 4;
+
+        const lastIndex = offset + (totalVertices - 1) * stride + size;
+        if (lastIndex > data.length) {
+            throw new Error("Last accessed index is out of bounds.");
+        }
+
+        if (stride < size) {
+            throw new Error("Data stride cannot be smaller than the component size.");
+        }
+        if (stride !== size) {
+            const copy = new constructor(count);
+            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+                for (let i = 0; i < size; i++) {
+                    copy[index + i] = values[i];
+                }
+            });
+            return copy;
+        }
+
+        return new constructor(data.slice(offset, offset + count));
+    }
+
+    // Handle ArrayBuffer and ArrayBufferView
+    let buffer: ArrayBuffer;
+    let adjustedByteOffset = byteOffset;
+
+    if (data instanceof ArrayBuffer) {
+        buffer = data;
+    } else {
+        buffer = data.buffer;
+        adjustedByteOffset += data.byteOffset;
+    }
+
+    const lastByteOffset = adjustedByteOffset + (totalVertices - 1) * byteStride + size * typeByteLength;
+    if (lastByteOffset > buffer.byteLength) {
+        throw new Error("Last accessed byte is out of bounds.");
+    }
+
+    const tightlyPackedByteStride = size * typeByteLength;
+    if (byteStride < tightlyPackedByteStride) {
+        throw new Error("Byte stride cannot be smaller than the component's byte size.");
+    }
+    if (byteStride !== tightlyPackedByteStride) {
+        const copy = new constructor(count);
+        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, normalized, (values, index) => {
+            for (let i = 0; i < size; i++) {
+                copy[index + i] = values[i];
+            }
+        });
+        return copy;
+    }
+
+    if (typeByteLength !== 1 && (adjustedByteOffset & (typeByteLength - 1)) !== 0) {
+        Logger.Warn("Array must be aligned to border of element size. Data will be copied.");
+        forceCopy = true;
+    }
+
+    if (forceCopy) {
+        return new constructor(buffer.slice(adjustedByteOffset, adjustedByteOffset + count * typeByteLength));
+    }
+
+    return new constructor(buffer, adjustedByteOffset, count);
 }
 
 /**

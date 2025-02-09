@@ -32,6 +32,18 @@ export class NodeMaterialBlock {
     private _name = "";
     protected _isUnique = false;
     protected _codeIsReady = true;
+    /** @internal */
+    public _isFinalOutput = false;
+
+    /** @internal */
+    public get _isFinalOutputAndActive() {
+        return this._isFinalOutput;
+    }
+
+    /** @internal */
+    public get _hasPrecedence() {
+        return false;
+    }
 
     /**
      * Observable raised when the block code is ready (if the code loading is async)
@@ -210,11 +222,13 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+     * @param isFinalOutput defines a boolean indicating that this block is generating a final output and no other block should be generated after
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isFinalOutput = false) {
         this._target = target;
         this._originalTargetIsNeutral = target === NodeMaterialBlockTargets.Neutral;
         this._isFinalMerger = isFinalMerger;
+        this._isFinalOutput = isFinalOutput;
         switch (this.getClassName()) {
             case "InputBlock":
                 this._isInput = true;
