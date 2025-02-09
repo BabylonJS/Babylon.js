@@ -1058,7 +1058,7 @@ export function getMappingForKey(key: string): IObjectAccessor | undefined {
         current = current[part];
     }
     // validate that current is an object accessor
-    if (current && current.type && current.get && current.set) {
+    if (current && current.type && current.get) {
         return current;
     }
     return undefined;
@@ -1081,7 +1081,7 @@ export function setInterpolationForKey(key: string, interpolation?: IInterpolati
         current = current[part];
     }
     // validate that the current object is an object accessor
-    if (current && current.type && current.get && current.set) {
+    if (current && current.type && current.get) {
         (current as IObjectAccessor).interpolation = interpolation;
     }
 }
