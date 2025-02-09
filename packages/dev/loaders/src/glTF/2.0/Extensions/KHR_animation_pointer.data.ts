@@ -189,7 +189,7 @@ setInterpolationForKey("/materials/{}/extensions/KHR_materials_emissive_strength
 setInterpolationForKey("/materials/{}/extensions/KHR_materials_ior/ior", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction", getFloat, () => 1),
 ]);
-setInterpolationForKey("/matterials/{}/extensions/KHR_materials_iridescence/iridescenceFactor", [
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_iridescence/iridescenceFactor", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity", getFloat, () => 1),
 ]);
 setInterpolationForKey("/materials/{}/extensions/KHR_materials_iridescence/iridescenceIor", [
