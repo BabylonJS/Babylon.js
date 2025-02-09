@@ -17,12 +17,12 @@ import { _GetWebAudioEngine } from "./webAudioUtils";
 type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
 /**
- * Creates a new static sound.
+ * Creates a new sound.
  * @param name - The name of the sound.
  * @param source - The source of the sound.
- * @param options - The options for the static sound.
+ * @param options - The options for the sound.
  * @param engine - The audio engine.
- * @returns A promise that resolves to the created static sound.
+ * @returns A promise that resolves to the created sound.
  */
 export async function CreateSoundAsync(
     name: string,
