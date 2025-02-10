@@ -70,7 +70,11 @@ export class ToolsTabComponent extends PaneComponent {
     private _reflectorHostname: string = "localhost";
     private _reflectorPort: number = 1234;
     private _reflector: Reflector;
-    private _envOptions = { imageTypeIndex: 0, imageQuality: 0.8 };
+    private _envOptions = {
+        imageTypeIndex: 0,
+        imageQuality: 0.8,
+        iblDiffuse: false,
+    };
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -306,10 +310,15 @@ export class ToolsTabComponent extends PaneComponent {
     }
 
     createEnvTexture() {
+        if (!this.props.scene.environmentTexture) {
+            return;
+        }
+
         const scene = this.props.scene;
         EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
             imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
             imageQuality: this._envOptions.imageQuality,
+            disableIrradianceTexture: !this._envOptions.iblDiffuse,
         })
             .then((buffer: ArrayBuffer) => {
                 const blob = new Blob([buffer], { type: "octet/stream" });
@@ -446,6 +455,17 @@ export class ToolsTabComponent extends PaneComponent {
                     {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
                         <>
                             <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                            {scene.environmentTexture.irradianceTexture && (
+                                <CheckBoxLineComponent
+                                    label="Diffuse Texture"
+                                    target={this._envOptions}
+                                    propertyName="iblDiffuse"
+                                    onSelect={(value) => {
+                                        this._envOptions.iblDiffuse = value;
+                                        this.forceUpdate();
+                                    }}
+                                />
+                            )}
                             <OptionsLine
                                 label="Image type"
                                 options={envExportImageTypes}
