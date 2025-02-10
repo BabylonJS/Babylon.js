@@ -20,7 +20,11 @@ export class PointListPropertyTabComponent extends React.Component<IPropertyComp
         this.forceUpdate();
     }
 
-    removePoint(index: number) {}
+    removePoint(index: number) {
+        const block = this.props.nodeData.data as PointListBlock;
+        block.points.splice(index, 1);
+        this.forceUpdate();
+    }
 
     override render() {
         const block = this.props.nodeData.data as PointListBlock;
