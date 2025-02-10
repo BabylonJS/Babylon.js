@@ -3,7 +3,7 @@
  */
 
 import { ArcRotateCamera, FreeCamera } from "core/Cameras";
-import type { PickingInfo } from "core/Collisions/pickingInfo";
+import { PickingInfo } from "core/Collisions/pickingInfo";
 import { DeviceType, PointerInput } from "core/DeviceInput";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
 import { NullEngine } from "core/Engines";
@@ -18,6 +18,8 @@ import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { SpriteManager } from "core/Sprites";
+import { Mesh } from "core/Meshes/mesh";
+import { ActionEvent, ActionManager, ExecuteCodeAction } from "core/Actions";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -62,6 +64,9 @@ describe("InputManager", () => {
     let deviceInputSystem: Nullable<ITestDeviceInputSystem> = null;
 
     beforeEach(() => {
+        // So that GetPointerPrefix knows we are going to simulate pointer events
+        window.PointerEvent = jest.fn() as any;
+
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -83,6 +88,91 @@ describe("InputManager", () => {
         camera?.dispose();
         scene?.dispose();
         engine?.dispose();
+    });
+
+    describe("when a OnPickDownTrigger is used in a touch device", () => {
+        // Note: touch devices raise down then move (see webDeviceInputSystem _pointerDownEvent)
+
+        let meshA: Nullable<Mesh>;
+        let meshB: Nullable<Mesh>;
+        let onPickDownCallback: jest.Mock<any, any>;
+
+        beforeEach(() => {
+            onPickDownCallback = jest.fn();
+
+            meshA = MeshBuilder.CreateSphere("meshA", { diameter: 2, segments: 32 }, scene);
+            meshA.isPickable = true;
+            meshA.actionManager = new ActionManager(scene);
+            meshA.actionManager.registerAction(
+                new ExecuteCodeAction(
+                    {
+                        trigger: ActionManager.OnPickDownTrigger,
+                    },
+                    onPickDownCallback
+                )
+            );
+
+            meshB = MeshBuilder.CreateSphere("meshB", { diameter: 2, segments: 32 }, scene);
+            meshB.isPickable = true;
+            meshB.actionManager = new ActionManager(scene);
+            meshB.actionManager.registerAction(
+                new ExecuteCodeAction(
+                    {
+                        trigger: ActionManager.OnPickDownTrigger,
+                    },
+                    onPickDownCallback
+                )
+            );
+        });
+
+        afterEach(() => {
+            meshA?.dispose();
+            meshB?.dispose();
+        });
+
+        it("should set the evt source and meshUnderPointer values correctly", () => {
+            // Arrange
+            const pickResult = new PickingInfo();
+            pickResult.pickedMesh = meshA;
+
+            // Act
+            scene?.simulatePointerDown(pickResult);
+            scene?.simulatePointerMove(pickResult);
+
+            // Assert
+            expect(onPickDownCallback).toHaveBeenCalledTimes(1);
+            const evt: ActionEvent = onPickDownCallback.mock.calls[0][0];
+            expect(evt.source).toEqual(meshA);
+            expect(evt.meshUnderPointer).toEqual(meshA);
+        });
+
+        describe("when bouncing back and forth between picking different meshes", () => {
+            it("should set the evt source and meshUnderPointer values correctly", () => {
+                // Arrange
+                let pickResult: PickingInfo;
+                let evt: ActionEvent;
+                function pickMesh(mesh: Mesh) {
+                    // Act
+                    pickResult = new PickingInfo();
+                    pickResult.pickedMesh = mesh;
+                    scene?.simulatePointerDown(pickResult);
+                    scene?.simulatePointerMove(pickResult);
+
+                    // Assert
+                    expect(onPickDownCallback).toHaveBeenCalledTimes(1);
+                    evt = onPickDownCallback.mock.calls[0][0];
+                    expect(evt.source.name).toEqual(mesh.name);
+                    expect(evt.meshUnderPointer).toBeDefined();
+                    expect(evt.meshUnderPointer!.name).toEqual(mesh.name);
+                    onPickDownCallback.mockReset();
+                }
+
+                pickMesh(meshA!);
+                pickMesh(meshB!);
+                pickMesh(meshA!);
+                pickMesh(meshB!);
+            });
+        });
     });
 
     it("callbacks can pick and fire", () => {
@@ -291,7 +381,7 @@ describe("InputManager", () => {
 
         expect(lazyPickCt).toBe(2);
         expect(lazyPickHitCt).toBe(1);
-        expect(pickSpy).toBeCalledTimes(6);
+        expect(pickSpy).toHaveBeenCalledTimes(6);
     });
 
     it("onPointerObservable returns correct PointerEventTypes", () => {
@@ -806,7 +896,8 @@ describe("InputManager", () => {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }
                 // We expect this to not be called at all as the picking should already be done by this point
-                expect(generateSpy).toBeCalledTimes(0);
+                // eslint-disable-next-line jest/no-conditional-expect
+                expect(generateSpy).toHaveBeenCalledTimes(0);
             });
 
             // Set initial point
