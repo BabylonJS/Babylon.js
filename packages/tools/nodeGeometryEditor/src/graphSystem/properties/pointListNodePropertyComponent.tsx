@@ -18,12 +18,14 @@ export class PointListPropertyTabComponent extends React.Component<IPropertyComp
         const block = this.props.nodeData.data as PointListBlock;
         block.points.push(Vector3.Zero());
         this.forceUpdate();
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     removePoint(index: number) {
         const block = this.props.nodeData.data as PointListBlock;
         block.points.splice(index, 1);
         this.forceUpdate();
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     override render() {
@@ -38,9 +40,10 @@ export class PointListPropertyTabComponent extends React.Component<IPropertyComp
                         {block.points.map((point, i) => {
                             return (
                                 <Vector3LineComponent
+                                    onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                     lockObject={this.props.stateManager.lockObject}
                                     directValue={point}
-                                    label=""
+                                    label={`#${i}:`}
                                     key={i}
                                     additionalCommands={[
                                         <div className="delete hoverIcon" onClick={() => this.removePoint(i)} title="Delete">

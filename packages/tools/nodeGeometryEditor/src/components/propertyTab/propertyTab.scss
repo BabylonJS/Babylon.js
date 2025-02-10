@@ -442,10 +442,6 @@
                 .firstLine {
                     grid-template-columns: 1fr auto 20px 20px 10px;
 
-                    .label {
-                        display: none;
-                    }
-
                     .delete {
                         grid-column: 4;
                         display: grid;
