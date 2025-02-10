@@ -7,7 +7,7 @@ import type { WorkerPool } from "./workerPool";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Constants } from "core/Engines/constants";
 import { Logger } from "./logger";
-import { GetTextureDataAsync } from "./textureTools";
+import { GetTextureDataAsync, WhenTextureReadyAsync } from "./textureTools";
 import { _GetDefaultNumWorkers, _IsWasmConfigurationAvailable } from "./workerUtils";
 
 declare let BASIS: any; // FUTURE TODO: Create TS declaration file for the Basis Universal API
@@ -81,10 +81,8 @@ export function DisposeBasisEncoder(): void {
  * ```typescript
  * InitializeBasisEncoderAsync();
  * const texture = new Texture("texture.png", scene);
- * texture.onLoadObservable.addOnce(async () => {
- *      const ktx2Data = await EncodeTextureToBasisAsync(texture, { basisFormat: "UASTC4x4" });
- *      DisposeBasisEncoder();
- * });
+ * const ktx2Data = await EncodeTextureToBasisAsync(texture, { basisFormat: "UASTC4x4" });
+ * DisposeBasisEncoder();
  * ```
  * @param babylonTexture the Babylon texture to encode
  * @param options additional options for encoding
@@ -95,12 +93,16 @@ export function DisposeBasisEncoder(): void {
  * @experimental This API is subject to change in the future.
  */
 export async function EncodeTextureToBasisAsync(babylonTexture: BaseTexture, options?: Pick<BasisEncoderParameters, "basisFormat">): Promise<Uint8Array> {
-    if (babylonTexture.isCube) {
-        throw new Error(`Cube textures are not currently supported for Basis encoding.`);
-    }
+    // Wait for texture to load so we can get its size
+    await WhenTextureReadyAsync(babylonTexture);
+
+    // Validate texture properties
     const size = babylonTexture.getSize();
     if ((size.width & 3) !== 0 || (size.height & 3) !== 0) {
         throw new Error(`Texture dimensions must be a multiple of 4 for Basis encoding.`);
+    }
+    if (babylonTexture.isCube) {
+        throw new Error(`Cube textures are not currently supported for Basis encoding.`);
     }
     if (babylonTexture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && babylonTexture.textureType !== Constants.TEXTURETYPE_BYTE) {
         Logger.Warn("Texture data will be converted into unsigned bytes for Basis encoding. This may result in loss of precision.");
