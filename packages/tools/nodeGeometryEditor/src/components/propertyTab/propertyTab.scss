@@ -437,6 +437,26 @@
             }
         }
 
+        .point-list {
+            .vector3Line {
+                .firstLine {
+                    grid-template-columns: 1fr auto 20px 20px 10px;
+
+                    .label {
+                        display: none;
+                    }
+
+                    .delete {
+                        grid-column: 4;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+
         .vector3Line {
             padding-left: $line-padding-left;
             display: grid;

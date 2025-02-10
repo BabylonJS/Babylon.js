@@ -13,8 +13,8 @@ import copyIcon from "../imgs/copy.svg";
 
 interface IVector3LineComponentProps {
     label: string;
-    target: any;
-    propertyName: string;
+    target?: any;
+    propertyName?: string;
     step?: number;
     onChange?: (newvalue: Vector3) => void;
     useEuler?: boolean;
@@ -23,6 +23,8 @@ interface IVector3LineComponentProps {
     icon?: string;
     iconLabel?: string;
     lockObject: LockObject;
+    directValue?: Vector3;
+    additionalCommands?: JSX.Element[];
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean; value: Vector3 }> {
@@ -41,11 +43,23 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     }
 
     getCurrentValue() {
-        return this.props.target[this.props.propertyName];
+        if (this.props.directValue) {
+            return this.props.directValue;
+        }
+        return this.props.target[this.props.propertyName!];
     }
 
     override shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean; value: Vector3 }) {
-        const nextPropsValue = nextProps.target[nextProps.propertyName];
+        if (nextProps.directValue) {
+            if (!nextProps.directValue.equals(nextState.value) || this._localChange) {
+                nextState.value = nextProps.directValue.clone();
+                this._localChange = false;
+                return true;
+            }
+            return false;
+        }
+
+        const nextPropsValue = nextProps.target[nextProps.propertyName!];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
@@ -70,15 +84,22 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         }
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
-            property: this.props.propertyName,
+            property: this.props.propertyName!,
             value: this.state.value,
             initialValue: previousValue,
         });
     }
 
     updateVector3() {
-        const store = this.props.target[this.props.propertyName].clone();
-        this.props.target[this.props.propertyName] = this.state.value;
+        if (this.props.directValue) {
+            this.props.directValue.set(this.state.value.x, this.state.value.y, this.state.value.z);
+            this.forceUpdate();
+            this.raiseOnPropertyChanged(this.state.value);
+            return;
+        }
+
+        const store = this.props.target[this.props.propertyName!].clone();
+        this.props.target[this.props.propertyName!] = this.state.value;
 
         this.setState({ value: store });
 
@@ -145,6 +166,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
                         <img src={copyIcon} alt="Copy" />
                     </div>
+                    {this.props.additionalCommands && this.props.additionalCommands.map((c) => c)}
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
