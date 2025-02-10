@@ -320,7 +320,13 @@ export type ViewerBoundingInfo = {
     readonly center: readonly [x: number, y: number, z: number];
 };
 
+type ModelInternal = {
+    _animationPlaying(): boolean;
+    _shouldRender(): boolean;
+};
+
 export type Model = IDisposable &
+    ModelInternal &
     Readonly<{
         /**
          * The asset container representing the model.
@@ -881,7 +887,7 @@ export class Viewer implements IDisposable {
      * True if an animation is currently playing.
      */
     public get isAnimationPlaying(): boolean {
-        return this._activeAnimation?.isPlaying ?? false;
+        return this._activeModel?._animationPlaying() ?? false;
     }
 
     /**
@@ -1046,6 +1052,17 @@ export class Viewer implements IDisposable {
             const model = {
                 assetContainer,
                 materialVariantsController,
+                _animationPlaying: () => {
+                    const activeAnimation = assetContainer.animationGroups[selectedAnimation];
+                    return activeAnimation.isPlaying;
+                },
+                _shouldRender: () => {
+                    const stillTransitioning = model?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted));
+                    // Should render if :
+                    // 1. An animation is playing.
+                    // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+                    return model._animationPlaying() || stillTransitioning;
+                },
                 getHotSpotToRef: (query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult) => {
                     return this._getHotSpotToRef(assetContainer, query, result);
                 },
@@ -1367,20 +1384,17 @@ export class Viewer implements IDisposable {
         return true;
     }
 
+    private _shouldModelRenderPredicate(model: Model) {
+        return model._shouldRender();
+    }
+
     protected get _shouldRender() {
         // We should render if:
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
-        // 4. An animation is playing.
-        // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
-        return (
-            !this._autoSuspendRendering ||
-            this._sceneMutated ||
-            !this._snapshotHelper.isReady ||
-            this.isAnimationPlaying ||
-            this._activeModel?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted))
-        );
+        // 4. At least one model should render (playing animations).
+        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some(this._shouldModelRenderPredicate);
     }
 
     protected _markSceneMutated() {
