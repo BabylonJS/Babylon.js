@@ -181,20 +181,6 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
 }
 
 /**
- * Return the bounding info for the model by computing its maximum extents, size, and center considering animation, skeleton, and morph targets.
- * @param meshes The meshes to consider when computing the bounding info
- * @param animationGroup The animation group to consider when computing the bounding info
- * @returns The computed bounding info for the model or null if no meshes are present in the asset container
- */
-function computeBoundingInfos(meshes: AbstractMesh[], animationGroup: Nullable<AnimationGroup> = null): Nullable<ViewerBoundingInfo> {
-    if (meshes.length) {
-        const maxExtents = computeMaxExtents(meshes, animationGroup);
-        return reduceMeshesExtendsToBoundingInfo(maxExtents);
-    }
-    return null;
-}
-
-/**
  * Compute the bounding info for the models by computing their maximum extents, size, and center considering animation, skeleton, and morph targets.
  * @param models The models to consider when computing the bounding info
  * @returns The computed bounding info for the models or null
@@ -1081,7 +1067,7 @@ export class Viewer implements IDisposable {
                 getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
-                        worldBounds = computeBoundingInfos(assetContainer.meshes, assetContainer.animationGroups[animationIndex]);
+                        worldBounds = computeModelsBoundingInfos([model]);
                         if (worldBounds) {
                             cachedWorldBounds[animationIndex] = worldBounds;
                         }
