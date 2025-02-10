@@ -3,7 +3,7 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Vector3 } from "core/Maths";
+import { Vector3 } from "core/Maths/math.vector";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
