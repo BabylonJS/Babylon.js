@@ -8,6 +8,7 @@ import { defaultValueSerializationFunction } from "./serialization";
 import type { Scene } from "../scene";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { IAssetContainer } from "core/IAssetContainer";
+import type { FlowGraphAction, IFlowGraphLogItem } from "./flowGraphLogger";
 
 /**
  * @experimental
@@ -178,6 +179,15 @@ export class FlowGraphBlock {
      */
     public deserialize(_serializationObject: ISerializedFlowGraphBlock) {
         // no-op by default
+    }
+
+    protected _log(context: FlowGraphContext, action: FlowGraphAction, payload?: any) {
+        context.logger?.addLogItem({
+            action,
+            payload,
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+        });
     }
 
     /**

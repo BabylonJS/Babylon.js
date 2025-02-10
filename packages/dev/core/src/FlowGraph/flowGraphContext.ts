@@ -16,6 +16,7 @@ import type { PointerInfo } from "core/Events/pointerEvents";
 import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { _isADescendantOf } from "./utils";
+import { FlowGraphAction, FlowGraphLogger } from "./flowGraphLogger";
 
 /**
  * Construction parameters for the context.
@@ -117,6 +118,30 @@ export class FlowGraphContext {
      */
     public treatDataAsRightHanded = false;
 
+    private _enableLogging = false;
+
+    /**
+     * The logger used by the context to log actions.
+     */
+    public logger: Nullable<FlowGraphLogger>;
+
+    public get enableLogging() {
+        return this._enableLogging;
+    }
+
+    public set enableLogging(value: boolean) {
+        if (this._enableLogging === value) {
+            return;
+        }
+        this._enableLogging = value;
+        if (this._enableLogging) {
+            this.logger = new FlowGraphLogger();
+            this.logger.logToConsole = true;
+        } else {
+            this.logger = null;
+        }
+    }
+
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
         this.assetsContext = params.assetsContext ?? params.scene;
@@ -138,6 +163,12 @@ export class FlowGraphContext {
      */
     public setVariable(name: string, value: any) {
         this._userVariables[name] = value;
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.ContextVariableSet,
+        });
     }
 
     /**
@@ -185,6 +216,12 @@ export class FlowGraphContext {
      * @returns the variable value or the default value if the variable is not defined
      */
     public _getGlobalContextVariable<T>(name: string, defaultValue: T): T {
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.GlobalVariableGet,
+        });
         if (this._hasGlobalContextVariable(name)) {
             return this._globalContextVariables[name];
         } else {
@@ -199,6 +236,12 @@ export class FlowGraphContext {
      * @param value the value of the variable
      */
     public _setGlobalContextVariable<T>(name: string, value: T) {
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.GlobalVariableSet,
+        });
         this._globalContextVariables[name] = value;
     }
 
@@ -208,6 +251,12 @@ export class FlowGraphContext {
      * @param name the name of the variable
      */
     public _deleteGlobalContextVariable(name: string) {
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.GlobalVariableDelete,
+        });
         delete this._globalContextVariables[name];
     }
 
@@ -284,6 +333,16 @@ export class FlowGraphContext {
      */
     public _setConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>, value: T) {
         this._connectionValues[connectionPoint.uniqueId] = value;
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.SetConnectionValue,
+            payload: {
+                connectionPointId: connectionPoint.uniqueId,
+                value,
+            },
+        });
     }
 
     /**
@@ -303,6 +362,16 @@ export class FlowGraphContext {
      * @returns
      */
     public _getConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>): T {
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.GetConnectionValue,
+            payload: {
+                connectionPointId: connectionPoint.uniqueId,
+                value: this._connectionValues[connectionPoint.uniqueId],
+            },
+        });
         return this._connectionValues[connectionPoint.uniqueId];
     }
 
@@ -388,6 +457,12 @@ export class FlowGraphContext {
      */
     public _notifyExecuteNode(node: FlowGraphBlock) {
         this.onNodeExecutedObservable.notifyObservers(node);
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: node.getClassName(),
+            uniqueId: node.uniqueId,
+            action: FlowGraphAction.ExecuteBlock,
+        });
     }
 
     /**

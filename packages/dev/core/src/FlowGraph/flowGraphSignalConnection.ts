@@ -2,6 +2,7 @@ import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { RegisterClass } from "../Misc/typeStore";
+import { FlowGraphAction } from "./flowGraphLogger";
 
 /**
  * @experimental
@@ -35,6 +36,15 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      * @internal
      */
     public _activateSignal(context: FlowGraphContext): void {
+        context.logger?.addLogItem({
+            action: FlowGraphAction.ActivateSignal,
+            className: this._ownerBlock.getClassName(),
+            uniqueId: this._ownerBlock.uniqueId,
+            payload: {
+                connectionType: this.connectionType,
+                name: this.name,
+            },
+        });
         if (this.connectionType === FlowGraphConnectionType.Input) {
             context._notifyExecuteNode(this._ownerBlock);
             this._ownerBlock._execute(context, this);
