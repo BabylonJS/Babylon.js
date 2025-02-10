@@ -436,6 +436,7 @@ export class Viewer implements IDisposable {
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
+    private readonly _beforeRenderObserver: Observer<Scene>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: Model[] = [];
     private _activeModelBacking: Nullable<Model> = null;
@@ -546,6 +547,9 @@ export class Viewer implements IDisposable {
         this._scene.skipPointerUpPicking = true;
         this._scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
+        this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+            this._snapshotHelper.updateMesh(this._scene.meshes);
+        });
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
@@ -1279,6 +1283,7 @@ export class Viewer implements IDisposable {
         this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
+        this._beforeRenderObserver.remove();
 
         this._isDisposed = true;
     }
