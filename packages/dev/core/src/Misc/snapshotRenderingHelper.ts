@@ -282,14 +282,14 @@ export class SnapshotRenderingHelper {
         if (Array.isArray(mesh)) {
             for (const m of mesh) {
                 if (!updateInstancedMeshes || !this._updateInstancedMesh(m)) {
-                    m.transferToEffect(m.computeWorldMatrix(true));
+                    m.transferToEffect(m.computeWorldMatrix());
                 }
             }
             return;
         }
 
         if (!updateInstancedMeshes || !this._updateInstancedMesh(mesh)) {
-            mesh.transferToEffect(mesh.computeWorldMatrix(true));
+            mesh.transferToEffect(mesh.computeWorldMatrix());
         }
     }
 
