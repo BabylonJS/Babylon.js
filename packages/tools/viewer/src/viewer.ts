@@ -1094,21 +1094,23 @@ export class Viewer implements IDisposable {
                 get selectedAnimation() {
                     return selectedAnimation;
                 },
-                selectAnimation: (index: number) => {
-                    const startAnimation = this.isAnimationPlaying;
-                    if (this._activeAnimation) {
-                        this._activeAnimation.pause();
-                        this._activeAnimation.goToFrame(0);
+                selectAnimation(index: number) {
+                    let activeAnimation = assetContainer.animationGroups[selectedAnimation];
+                    const startAnimation = activeAnimation?.isPlaying ?? false;
+                    if (activeAnimation) {
+                        activeAnimation.pause();
+                        activeAnimation.goToFrame(0);
                     }
 
                     selectedAnimation = index;
+                    activeAnimation = assetContainer.animationGroups[selectedAnimation];
 
-                    if (this._activeAnimation) {
-                        this._activeAnimation.goToFrame(0);
-                        this._activeAnimation.play(true);
+                    if (activeAnimation) {
+                        activeAnimation.goToFrame(0);
+                        activeAnimation.play(true);
 
                         if (!startAnimation) {
-                            this.pauseAnimation();
+                            activeAnimation.pause();
                         }
                     }
                 },
