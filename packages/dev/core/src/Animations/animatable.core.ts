@@ -438,11 +438,6 @@ export class Animatable {
 
         this._goToFrame = null;
 
-        if (this._weight === 0) {
-            // We consider that an animatable with a weight === 0 is "actively" paused
-            return true;
-        }
-
         // Animating
         let running = false;
         const runtimeAnimations = this._runtimeAnimations;
