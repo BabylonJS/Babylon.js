@@ -419,8 +419,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                a: { name: "a", gltfType: "floatN" },
-                b: { name: "b", gltfType: "floatN" },
+                a: { name: "a" },
+                b: { name: "b" },
             },
         },
         outputs: {
@@ -1434,6 +1434,10 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
             return serializedObjects;
         },
     };
+}
+
+export function getAllSupportedNativeNodeTypes(): string[] {
+    return Object.keys(gltfToFlowGraphMapping);
 }
 
 /**
