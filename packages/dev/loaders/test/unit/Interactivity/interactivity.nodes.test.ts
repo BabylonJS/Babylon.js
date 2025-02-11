@@ -10,65 +10,15 @@ import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
-const typesAndLengths = {
+const typesAndLengths: {
+    [key: string]: number;
+} = {
     float: 1,
     float2: 2,
     float3: 3,
     float4: 4,
     int: 1,
     float4x4: 16,
-};
-
-const generalMathOperations = {
-    "math/e": [],
-    "math/pi": [],
-    "math/inf": [],
-    "math/nan": [],
-    "math/random": [],
-    "math/abs": {
-        a: ["float", "float2", "float3", "float4"],
-    },
-    "math/sign": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math/trunc": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math/floor": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math/ceil": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math/round": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math.fract": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    "math/neg": {
-        a: ["float", "float2", "float3", "float4"],
-        value: ["float", "float2", "float3", "float4"],
-    },
-    // "math/add": 2,
-    // "math/sub": 2,
-    // "math/mul": 2,
-    // "math/div": 2,
-    // "math/rem": 2,
-    // "math/min": 2,
-    // "math/max": 2,
-    // "math/clamp": 3,
-    // "math/saturate": 1,
-    // "math/mix": 3,
-    // "math/eq": 2,
-    // "math/lt": 2,
-    // "math/le": 2,
 };
 
 /**
@@ -199,77 +149,184 @@ describe("Interactivity nodes", () => {
         expect(isNaN(logItem!.payload.value)).toBe(true);
     });
 
-    // Object.keys(typesAndLengths).forEach((type) => {
-    //     it(`should use math/random with ${type}`, async () => {
-    //         const graph = await generateSimpleNodeGraph(
-    //             [{ op: "math/random" }],
-    //             [
-    //                 {
-    //                     declaration: 0,
-    //                 },
-    //             ],
-    //             [{ signature: type }]
-    //         );
-
-    //         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-    //         expect(logItem).toBeDefined();
-    //         expect(logItem!.payload.value.length).toBe(typesAndLengths[type]);
-    //     });
-    // });
-
-    it("should run math/abs with a float", async () => {
-        const val = -Math.random() * 100 - 50;
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/abs" }],
-            [
-                {
-                    declaration: 0,
-                    values: {
-                        a: {
-                            type: 0,
-                            value: [val],
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float" }]
-        );
-
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        expect(logItem!.payload.value).toBe(Math.abs(val));
-    });
-
-    // math/abs with vector3
-    it("should run math/abs with a vector3", async () => {
-        const val = {
-            x: -Math.random() * 100 - 50,
-            y: Math.random() * 100 - 50,
-            z: -Math.random() * 100 - 50,
+    const testMathNodes: {
+        [key: string]: {
+            operation: (...args: any) => any;
+            types: string[];
+            inputs: number;
         };
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/abs" }],
-            [
-                {
-                    declaration: 0,
-                    values: {
-                        a: {
+    } = {
+        "math/abs": {
+            operation: Math.abs,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/sign": {
+            operation: Math.sign,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/trunc": {
+            operation: Math.trunc,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/floor": {
+            operation: Math.floor,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/ceil": {
+            operation: Math.ceil,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/round": {
+            operation: (val: number) => (val < 0 ? -Math.round(-val) : Math.round(val)),
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/fract": {
+            operation: (val: number) => val - Math.floor(val),
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/neg": {
+            operation: (val: number) => -val,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/add": {
+            operation: (a: number, b: number) => a + b,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/sub": {
+            operation: (a: number, b: number) => a - b,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/mul": {
+            operation: (a: number, b: number) => a * b,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/div": {
+            operation: (a: number, b: number) => a / b,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/clamp": {
+            operation: (a: number, b: number, c: number) => Math.min(Math.max(a, Math.min(b, c)), Math.max(b, c)),
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 3,
+        },
+        "math/min": {
+            operation: Math.min,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/max": {
+            operation: Math.max,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/rem": {
+            operation: (a: number, b: number) => a % b,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 2,
+        },
+        "math/saturate": {
+            operation: (a: number) => Math.min(Math.max(a, 0), 1),
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 1,
+        },
+        "math/mix": {
+            operation: (a: number, b: number, c: number) => a * (1 - c) + b * c,
+            types: ["float", "float2", "float3", "float4", "float4x4"],
+            inputs: 3,
+        },
+    };
+
+    const filterType = "";
+    const filterTest = "";
+
+    const testScenarios: { [key: string]: (length: number) => number[] } = {
+        allRandom: (length: number) => Array.from({ length }, () => Math.random() * 100 - 50),
+        allPositive: (length: number) => Array.from({ length }, () => Math.random() * 100),
+        allNegative: (length: number) => Array.from({ length }, () => Math.random() * -100),
+        allZero: (length: number) => Array.from({ length }, () => 0),
+    };
+
+    Object.keys(testMathNodes).forEach((nodeName) => {
+        if (filterTest && nodeName !== filterTest) {
+            return;
+        }
+        const testNode = testMathNodes[nodeName];
+        testNode.types.forEach((type) => {
+            if (filterType && type !== filterType) {
+                return;
+            }
+            // skip matrix for now
+            if (type === "float4x4") {
+                return;
+            }
+            Object.keys(testScenarios).forEach((scenarioName) => {
+                // skip allZero in math/rem and math/div
+                if (scenarioName === "allZero" && (nodeName === "math/rem" || nodeName === "math/div")) {
+                    return;
+                }
+                it(`should run ${nodeName} with ${type} and ${scenarioName}`, async () => {
+                    if (!typesAndLengths[type]) {
+                        throw new Error(`Type ${type} is not supported`);
+                    }
+                    const length = typesAndLengths[type];
+                    const valArrays: number[][] = [];
+                    const values: any = {};
+                    for (let i = 0; i < testNode.inputs; i++) {
+                        const val = testScenarios[scenarioName](length);
+                        const key = i === 0 ? "a" : i === 1 ? "b" : i === 2 ? "c" : "d";
+                        values[key] = {
                             type: 0,
-                            value: [val.x, val.y, val.z],
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float3" }]
-        );
-
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        const value = logItem!.payload.value;
-        expect(value.x).toBe(Math.abs(val.x));
-        expect(value.y).toBe(Math.abs(val.y));
-        expect(value.z).toBe(Math.abs(val.z));
+                            value: val,
+                        };
+                        valArrays.push(val);
+                    }
+                    const graph = await generateSimpleNodeGraph(
+                        [{ op: nodeName }],
+                        [
+                            {
+                                declaration: 0,
+                                values,
+                            },
+                        ],
+                        [{ signature: type as IKHRInteractivity_Type["signature"] }]
+                    );
+                    const expected: number[] = [];
+                    for (let i = 0; i < length; i++) {
+                        expected.push(testNode.operation(...valArrays.map((v) => v[i])));
+                    }
+                    // reorder if the output is a matrix
+                    if (type === "float4x4") {
+                        const reordered = [];
+                        for (let i = 0; i < 4; i++) {
+                            for (let j = 0; j < 4; j++) {
+                                reordered.push(expected[j * 4 + i]);
+                            }
+                        }
+                        expected.splice(0, expected.length, ...reordered);
+                    }
+                    const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+                    expect(logItem).toBeDefined();
+                    const resultArray = logItem!.payload.value.asArray ? [...logItem!.payload.value.asArray()] : [logItem!.payload.value];
+                    expect(typeof resultArray[0]).toBe("number");
+                    // make sure nothing is NaN
+                    for (let i = 0; i < resultArray.length; i++) {
+                        expect(resultArray[i]).not.toBeNaN();
+                    }
+                    expect(resultArray).toEqual(expected);
+                });
+            });
+        });
     });
-
-    // math
 });
