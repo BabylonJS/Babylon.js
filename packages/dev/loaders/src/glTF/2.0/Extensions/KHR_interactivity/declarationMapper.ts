@@ -328,7 +328,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                a: { name: "input" },
+                a: { name: "a" },
             },
         },
         outputs: {
