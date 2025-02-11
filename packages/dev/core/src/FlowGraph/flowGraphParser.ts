@@ -153,6 +153,9 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
  */
 export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions, rightHanded?: boolean): FlowGraphContext {
     const result = options.graph.createContext();
+    if (serializationObject.enableLogging) {
+        result.enableLogging = true;
+    }
     result.treatDataAsRightHanded = rightHanded || false;
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;

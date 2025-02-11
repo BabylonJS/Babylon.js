@@ -145,8 +145,6 @@ export class FlowGraphContext {
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
         this.assetsContext = params.assetsContext ?? params.scene;
-
-        this.enableLogging = true;
     }
 
     /**
@@ -170,6 +168,10 @@ export class FlowGraphContext {
             className: this.getClassName(),
             uniqueId: this.uniqueId,
             action: FlowGraphAction.ContextVariableSet,
+            payload: {
+                name,
+                value,
+            },
         });
     }
 
@@ -189,6 +191,16 @@ export class FlowGraphContext {
      * @returns the value of the variable
      */
     public getVariable(name: string): any {
+        this.logger?.addLogItem({
+            time: Date.now(),
+            className: this.getClassName(),
+            uniqueId: this.uniqueId,
+            action: FlowGraphAction.ContextVariableGet,
+            payload: {
+                name,
+                value: this._userVariables[name],
+            },
+        });
         return this._userVariables[name];
     }
 
@@ -223,6 +235,11 @@ export class FlowGraphContext {
             className: this.getClassName(),
             uniqueId: this.uniqueId,
             action: FlowGraphAction.GlobalVariableGet,
+            payload: {
+                name,
+                defaultValue,
+                possibleValue: this._globalContextVariables[name],
+            },
         });
         if (this._hasGlobalContextVariable(name)) {
             return this._globalContextVariables[name];
@@ -243,6 +260,7 @@ export class FlowGraphContext {
             className: this.getClassName(),
             uniqueId: this.uniqueId,
             action: FlowGraphAction.GlobalVariableSet,
+            payload: { name, value },
         });
         this._globalContextVariables[name] = value;
     }
@@ -258,6 +276,7 @@ export class FlowGraphContext {
             className: this.getClassName(),
             uniqueId: this.uniqueId,
             action: FlowGraphAction.GlobalVariableDelete,
+            payload: { name },
         });
         delete this._globalContextVariables[name];
     }

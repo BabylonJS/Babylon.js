@@ -20,7 +20,7 @@ declare module "../../glTFFileLoader" {
 export function updateInteractivity() {
     addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.MeshPickEvent, FlowGraphBlockNames.GetVariable],
+        blocks: [FlowGraphBlockNames.MeshPickEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         configuration: {
             stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
@@ -33,8 +33,7 @@ export function updateInteractivity() {
         },
         outputs: {
             values: {
-                // TODO - not mapped currently!
-                selectedNodeIndex: { name: "pickedMesh" },
+                selectedNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
                 controllerIndex: { name: "pointerId" },
                 selectionPoint: { name: "pickedPoint" },
                 selectionRayOrigin: { name: "pickOrigin" },
@@ -51,8 +50,27 @@ export function updateInteractivity() {
                 outputBlockIndex: 1,
                 isVariable: true,
             },
+            {
+                input: "array",
+                output: "nodes",
+                inputBlockIndex: 2,
+                outputBlockIndex: 3,
+                isVariable: true,
+            },
+            {
+                input: "object",
+                output: "pickedMesh",
+                inputBlockIndex: 2,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            // add the glTF to the configuration of the last serialized object
+            const serializedObject = serializedObjects[serializedObjects.length - 1];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.glTF = globalGLTF;
+            // find the listener nodeIndex value
             const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
             if (nodeIndex === undefined || typeof nodeIndex !== "number") {
                 throw new Error("nodeIndex not found in configuration");

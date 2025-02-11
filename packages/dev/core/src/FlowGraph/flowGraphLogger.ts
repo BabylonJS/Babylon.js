@@ -12,6 +12,7 @@ export const enum FlowGraphAction {
     GetConnectionValue = "GetConnectionValue",
     SetConnectionValue = "SetConnectionValue",
     ActivateSignal = "ActivateSignal",
+    ContextVariableGet = "ContextVariableGet",
 }
 export interface IFlowGraphLogItem {
     time?: number;
@@ -39,7 +40,7 @@ export class FlowGraphLogger {
         if (this.logToConsole) {
             const value = item.payload?.value;
             if (typeof value === "object" && value.getClassName) {
-                Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(value.getClassName())}`);
+                Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(value.getClassName())}: ${value.toString()}`);
             } else {
                 Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(item.payload)}`);
             }

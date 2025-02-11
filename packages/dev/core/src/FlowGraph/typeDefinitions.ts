@@ -81,6 +81,11 @@ export interface ISerializedFlowGraphContext {
      * Assets context, if not the scene
      */
     _assetsContext?: { [key: string]: any };
+
+    /**
+     * Should logging be enabled?
+     */
+    enableLogging?: boolean;
 }
 
 /**

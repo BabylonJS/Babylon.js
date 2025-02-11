@@ -3,7 +3,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
-import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
+import { Quaternion, Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
@@ -13,7 +13,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 
 export type FlowGraphNumber = number | FlowGraphInteger;
-export type FlowGraphVector = Vector2 | Vector3 | Vector4;
+export type FlowGraphVector = Vector2 | Vector3 | Vector4 | Quaternion;
 export type FlowGraphMatrix = Matrix | FlowGraphMatrix2D | FlowGraphMatrix3D;
 export type FlowGraphMathOperationType = FlowGraphNumber | FlowGraphVector | FlowGraphMatrix | boolean;
 
@@ -93,6 +93,9 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
         if (_areSameVectorClass(aClassName, bClassName) || _areSameMatrixClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but any other cast will be fine
             return (a as Vector3).add(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
+            // this is a simple add, and should be also supported between Quat and Vector4. Therefore -
+            return (a as Quaternion).add(b as Quaternion);
         } else {
             return (a as number) + (b as number);
         }
@@ -121,6 +124,9 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
         const bClassName = _getClassNameOf(b);
         if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName) || _areSameMatrixClass(aClassName, bClassName)) {
             return (a as Vector3).subtract(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
+            // this is a simple subtract, and should be also supported between Quat and Vector4. Therefore -
+            return (a as Quaternion).subtract(b as Quaternion);
         } else {
             return (a as number) - (b as number);
         }
@@ -150,6 +156,14 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
         const bClassName = _getClassNameOf(b);
         if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).multiply(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
+            // this is a simple multiply (per component!), and should be also supported between Quat and Vector4. Therefore -
+            const aClone = (a as Quaternion).clone();
+            aClone.x *= (b as Quaternion).x;
+            aClone.y *= (b as Quaternion).y;
+            aClone.z *= (b as Quaternion).z;
+            aClone.w *= (b as Quaternion).w;
+            return aClone;
         } else if (_areSameMatrixClass(aClassName, bClassName)) {
             if (this.config?.useMatrixPerComponent) {
                 // this is the definition of multiplication of glTF interactivity
@@ -199,6 +213,14 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
         if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).divide(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
+            // this is a simple division (per component!), and should be also supported between Quat and Vector4. Therefore -
+            const aClone = (a as Quaternion).clone();
+            aClone.x /= (b as Quaternion).x;
+            aClone.y /= (b as Quaternion).y;
+            aClone.z /= (b as Quaternion).z;
+            aClone.w /= (b as Quaternion).w;
+            return aClone;
         } else if (_areSameMatrixClass(aClassName, bClassName)) {
             if (this.config?.useMatrixPerComponent) {
                 // get a's m as array, and divide each component with b's m
@@ -315,6 +337,9 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
         case FlowGraphTypes.Vector4:
             a = a as Vector4;
             return new Vector4(op(a.x), op(a.y), op(a.z), op(a.w));
+        case FlowGraphTypes.Quaternion:
+            a = a as Quaternion;
+            return new Quaternion(op(a.x), op(a.y), op(a.z), op(a.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
             return Matrix.FromValues(
@@ -502,6 +527,10 @@ function _componentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGra
             a = a as Vector4;
             b = b as Vector4;
             return new Vector4(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
+        case FlowGraphTypes.Quaternion:
+            a = a as Quaternion;
+            b = b as Quaternion;
+            return new Quaternion(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
             b = b as Matrix;
@@ -623,6 +652,11 @@ function _componentWiseTernaryOperation(
             b = b as Vector4;
             c = c as Vector4;
             return new Vector4(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
+        case FlowGraphTypes.Quaternion:
+            a = a as Quaternion;
+            b = b as Quaternion;
+            c = c as Quaternion;
+            return new Quaternion(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
             b = b as Matrix;

@@ -38,6 +38,11 @@ export class FlowGraphSceneEventCoordinator {
      */
     public onEventTriggeredObservable: Observable<IFlowGraphEventTrigger> = new Observable();
 
+    /**
+     * Was scene-ready already triggered?
+     */
+    public sceneReadyTriggered: boolean = false;
+
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     private _sceneReadyObserver: Nullable<Observer<Scene>>;
     private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>>;
@@ -53,13 +58,12 @@ export class FlowGraphSceneEventCoordinator {
     }
 
     private _initialize() {
-        // if (this._scene.isReady(true)) {
-        //     this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
-        // } else {
         this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
-            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+            if (!this.sceneReadyTriggered) {
+                this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+                this.sceneReadyTriggered = true;
+            }
         });
-        // }
 
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneDispose });
@@ -98,13 +102,6 @@ export class FlowGraphSceneEventCoordinator {
             }
             this._pointerUnderMeshState[pointerId] = mesh;
         }, PointerEventTypes.POINTERMOVE);
-    }
-
-    /**
-     * Clear the scene ready observer
-     */
-    public clearSceneReadyObserver() {
-        this._sceneReadyObserver?.remove();
     }
 
     public dispose() {

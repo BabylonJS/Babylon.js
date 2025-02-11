@@ -8,7 +8,7 @@ import { defaultValueSerializationFunction } from "./serialization";
 import type { Scene } from "../scene";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { IAssetContainer } from "core/IAssetContainer";
-import type { FlowGraphAction, IFlowGraphLogItem } from "./flowGraphLogger";
+import type { FlowGraphAction } from "./flowGraphLogger";
 
 /**
  * @experimental

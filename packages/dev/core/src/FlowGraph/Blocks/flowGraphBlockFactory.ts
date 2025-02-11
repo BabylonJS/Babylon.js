@@ -280,6 +280,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Utils/flowGraphContextBlock")).FlowGraphContextBlock;
         case FlowGraphBlockNames.ArrayIndex:
             return async () => (await import("./Data/Utils/flowGraphArrayIndexBlock")).FlowGraphArrayIndexBlock;
+        case FlowGraphBlockNames.CodeExecution:
+            return async () => (await import("./Data/Utils/flowGraphCodeExecutionBlock")).FlowGraphCodeExecutionBlock;
+        case FlowGraphBlockNames.IndexOf:
+            return async () => (await import("./Data/Utils/flowGraphIndexOfBlock")).FlowGraphIndexOfBlock;
         default:
             // check if the block is a custom block
             if (customBlocks[blockName]) {
