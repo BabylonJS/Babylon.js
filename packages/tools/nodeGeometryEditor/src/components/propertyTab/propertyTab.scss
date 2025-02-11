@@ -4,6 +4,10 @@
         color: white;
         background: #333333;
 
+        .hoverIcon:hover {
+            opacity: 0.8;
+        }
+
         #header {
             height: 30px;
             font-size: 16px;
