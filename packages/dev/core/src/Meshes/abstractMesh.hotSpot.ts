@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractMesh, Nullable, PickingInfo } from "core/index";
+import type { AbstractMesh, PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "core/Engines/constants";
@@ -20,11 +20,11 @@ export type HotSpotQuery = {
 
 /**
  * Create a HotSpotQuery from a picking info
- * @remarks If there is no pickedMesh or the pickedMesh has no indices, null will be returned
+ * @remarks If there is no pickedMesh or the pickedMesh has no indices, the faceId is used as the base index
  * @param pickingInfo picking info to use
- * @returns HotSpotQuery or null if it was not possible to create one
+ * @returns the created HotSpotQuery
  */
-export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): Nullable<HotSpotQuery> {
+export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): HotSpotQuery {
     const indices = pickingInfo.pickedMesh?.getIndices();
     const base = pickingInfo.faceId * 3;
 
