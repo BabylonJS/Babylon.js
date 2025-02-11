@@ -90,7 +90,7 @@ void main(void) {
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
     vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
 #endif
 
@@ -109,7 +109,7 @@ void main(void) {
         , vAlbedoInfos
     #endif
         , baseWeight
-    #ifdef BASEWEIGHT
+    #ifdef BASE_WEIGHT
         , baseWeightTexture
         , vBaseWeightInfos
     #endif

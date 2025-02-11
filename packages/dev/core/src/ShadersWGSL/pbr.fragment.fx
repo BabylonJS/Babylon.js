@@ -75,7 +75,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var albedoTexture: vec4f = textureSample(albedoSampler, albedoSamplerSampler, fragmentInputs.vAlbedoUV + uvOffset);
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
     var baseWeightTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
@@ -94,7 +94,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , uniforms.vAlbedoInfos
     #endif
         , uniforms.baseWeight
-    #ifdef BASEWEIGHT
+    #ifdef BASE_WEIGHT
         , baseWeightTexture
         , uniforms.vBaseWeightInfos
     #endif
