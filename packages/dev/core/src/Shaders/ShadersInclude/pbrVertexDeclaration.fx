@@ -9,7 +9,7 @@ uniform mat4 albedoMatrix;
 uniform vec2 vAlbedoInfos;
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
 uniform mat4 baseWeightMatrix;
 uniform vec2 vBaseWeightInfos;
 #endif
