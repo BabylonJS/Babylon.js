@@ -30,7 +30,7 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
 
     /** @internal */
     public set camera(camera: Nullable<Camera>) {
-        if (this._camera === this.camera) {
+        if (this._camera === camera) {
             return;
         }
 
