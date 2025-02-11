@@ -2277,6 +2277,7 @@
         {
             "title": "terrain-erosion",
             "renderCount": 15,
+            "errorRatio": 6,
             "playgroundId": "#C90R62#17",
             "excludedEngines": ["webgl1", "webgl2"]
         },
