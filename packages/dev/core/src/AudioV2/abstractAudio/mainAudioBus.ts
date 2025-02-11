@@ -1,11 +1,12 @@
 import { AbstractAudioBus } from "./abstractAudioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import type { IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
 
 /**
  * Options for creating a main audio bus.
  */
-export interface IMainAudioBusOptions extends IVolumeAudioOptions {}
+export interface IMainAudioBusOptions extends IAudioAnalyzerOptions, IVolumeAudioOptions {}
 
 /**
  * Abstract class representing a main audio bus.

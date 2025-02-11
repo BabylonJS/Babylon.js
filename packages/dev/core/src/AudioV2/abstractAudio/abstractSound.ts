@@ -8,8 +8,10 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
+import type { IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
 import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
+import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 
 /**
  * Options for playing a sound.
@@ -28,7 +30,7 @@ export interface ICommonSoundPlayOptions extends IVolumeAudioOptions {
 /**
  * Options for creating a sound.
  */
-export interface ICommonSoundOptions extends ICommonSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
+export interface ICommonSoundOptions extends IAudioAnalyzerOptions, ICommonSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
      * Whether the sound should start playing immediately. Defaults to `false`.
      */
@@ -48,6 +50,7 @@ export interface ICommonSoundOptions extends ICommonSoundPlayOptions, ISpatialAu
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
+    private _analyzer: Nullable<_AudioAnalyzer> = null;
     private _privateInstances = new Set<_AbstractSoundInstance>();
     private _newestInstance: Nullable<_AbstractSoundInstance> = null;
     private _outBus: Nullable<PrimaryAudioBus> = null;
@@ -66,6 +69,13 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
 
         this._options = options;
+    }
+
+    /**
+     * The analyzer features of the sound.
+     */
+    public get analyzer(): _AudioAnalyzer {
+        return this._analyzer ?? (this._analyzer = new _AudioAnalyzer(this._subGraph));
     }
 
     /**
@@ -145,7 +155,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /**
-     * The spatial properties of the sound.
+     * The spatial features of the sound.
      */
     public abstract spatial: AbstractSpatialAudio;
 
@@ -168,7 +178,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /**
-     * The stereo properties of the sound.
+     * The stereo features of the sound.
      */
     public abstract stereo: AbstractStereoAudio;
 
@@ -197,6 +207,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this.stop();
 
+        this._analyzer = null;
         this._newestInstance = null;
         this._outBus = null;
 

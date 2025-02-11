@@ -239,7 +239,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._mainOut = await _CreateMainAudioOutAsync(this);
         this._mainOut.volume = this._volume;
 
-        await CreateMainAudioBusAsync("default", this);
+        await CreateMainAudioBusAsync("default", {}, this);
     };
 
     private _onAudioContextStateChange = () => {

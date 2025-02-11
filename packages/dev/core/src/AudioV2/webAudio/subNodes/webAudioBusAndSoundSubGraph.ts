@@ -34,10 +34,10 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.SPATIAL);
+            this.createAndAddSubNode(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.STEREO);
+            this.createAndAddSubNode(AudioSubNode.STEREO);
         }
 
         await this._createSubNodePromisesResolved();
@@ -73,6 +73,8 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     }
 
     protected override _onSubNodesChanged(): void {
+        super._onSubNodesChanged();
+
         const spatialNode = _GetSpatialAudioSubNode(this);
         const stereoNode = _GetStereoAudioSubNode(this);
         const volumeNode = _GetVolumeAudioSubNode(this);

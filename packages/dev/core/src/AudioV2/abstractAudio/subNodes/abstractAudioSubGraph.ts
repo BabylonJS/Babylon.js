@@ -37,11 +37,37 @@ export abstract class _AbstractAudioSubGraph {
             return;
         }
 
-        const promise = this._createSubNodePromises[name] ?? this._createAndAddSubNode(name);
+        const promise = this._createSubNodePromises[name] ?? this.createAndAddSubNode(name);
 
         promise.then((node) => {
             callback(node as T);
         });
+    }
+
+    /**
+     * Creates a sub node with the given name and adds it to the sub graph.
+     * @param name - The name of the sub node
+     * @returns A promise that resolves with the created sub node
+     */
+    public createAndAddSubNode<T extends _AbstractAudioSubNode>(name: string): Promise<T> {
+        const promise = this._createSubNode(name) as Promise<T>;
+
+        if (!promise) {
+            return Promise.reject(`Failed to create subnode "${name}"`);
+        }
+
+        this._createSubNodePromises[name] = new Promise((resolve, reject) => {
+            promise
+                .then((node) => {
+                    this._addSubNode(node);
+                    resolve(node);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
+
+        return promise;
     }
 
     /**
@@ -107,27 +133,6 @@ export abstract class _AbstractAudioSubGraph {
 
         node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
         node.onNameChangedObservable.add(this._onSubNodeNameChanged);
-    }
-
-    protected _createAndAddSubNode(name: string): Promise<_AbstractAudioSubNode> {
-        const promise = this._createSubNode(name);
-
-        if (!promise) {
-            return Promise.reject(`Failed to create subnode "${name}"`);
-        }
-
-        this._createSubNodePromises[name] = new Promise((resolve, reject) => {
-            promise
-                .then((node) => {
-                    this._addSubNode(node);
-                    resolve(node);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
-        });
-
-        return promise;
     }
 
     private _onSubNodeDisposed = (node: AbstractAudioNode) => {
