@@ -1094,7 +1094,7 @@ export function PrepareUniformsAndSamplersForLight(
  */
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
     let uniformsList: string[];
-    let uniformBuffersList: Nullable<string[]> = null;
+    let uniformBuffersList: string[] | undefined;
 
     if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
         const options = <IEffectCreationOptions>uniformsListOrOptions;

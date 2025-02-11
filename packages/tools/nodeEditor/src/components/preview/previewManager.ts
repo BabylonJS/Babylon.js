@@ -41,9 +41,7 @@ import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
-import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
-import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import type { NodeRenderGraphClearBlock, NodeRenderGraphCopyTextureBlock } from "core/FrameGraph";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 const dontSerializeTextureContent = true;
 
 /**
@@ -63,9 +61,6 @@ export class PreviewManager {
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
-    private _nrg: NodeRenderGraph;
-    private _objectListBlock: NodeRenderGraphInputBlock;
-    private _clearBlock: NodeRenderGraphClearBlock;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial | StandardMaterial;
@@ -153,7 +148,7 @@ export class PreviewManager {
         });
 
         this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(() => {
-            this._clearBlock.color = this._globalState.backgroundColor;
+            this._scene.clearColor = this._globalState.backgroundColor;
         });
 
         this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(() => {
@@ -173,7 +168,7 @@ export class PreviewManager {
 
     public async _initAsync(targetCanvas: HTMLCanvasElement) {
         if (this._nodeMaterial.shaderLanguage === ShaderLanguage.WGSL) {
-            this._engine = new WebGPUEngine(targetCanvas);
+            this._engine = new WebGPUEngine(targetCanvas, { enableAllFeatures: true });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(targetCanvas);
@@ -224,37 +219,27 @@ export class PreviewManager {
             canvas.addEventListener("drop", onDrop, false);
         }
 
-        this._nrg = await NodeRenderGraph.ParseFromSnippetAsync("P1CTNO#10", this._scene, {
-            autoFillExternalInputs: false,
-            debugTextures: false,
+        // Adding a rtt to read from
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false);
+        this._globalState.pickingTexture = new RenderTargetTexture("rtt2", 256, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
+        this._globalState.previewTexture.renderList = null;
+        this._globalState.pickingTexture.renderList = null;
+        this._globalState.previewTexture.particleSystemList = null;
+        this._globalState.pickingTexture.particleSystemList = null;
+        this._globalState.pickingTexture.useCameraPostProcesses = true;
+        this._globalState.previewTexture.useCameraPostProcesses = true;
+        this._scene.customRenderTargets.push(this._globalState.previewTexture);
+        this._scene.customRenderTargets.push(this._globalState.pickingTexture);
+
+        // Observable
+        this._scene.onAfterRenderObservable.add(() => {
+            this._globalState.onPreviewSceneAfterRenderObservable.notifyObservers();
         });
 
-        this._clearBlock = this._nrg.getBlockByName<NodeRenderGraphClearBlock>("Clear")!;
-        this._clearBlock.color = this._globalState.backgroundColor;
-
-        const cameraBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Camera")!;
-        cameraBlock.value = this._camera;
-
-        this._scene.cameraToUseForPointers = this._camera;
-
-        this._objectListBlock = this._nrg.getBlockByName<NodeRenderGraphInputBlock>("Object List")!;
-
+        // Preview
         this._refreshPreviewMesh();
-        this._objectListBlock.value = { meshes: this._meshes, particleSystems: [] };
 
-        const copyTextureTask = this._nrg.getBlockByName<NodeRenderGraphCopyTextureBlock>("Copy texture")!.task;
-
-        this._nrg.frameGraph.onBuildObservable.add(() => {
-            const rtw = this._nrg.frameGraph.textureManager.getTextureFromHandle(copyTextureTask.outputTexture)!;
-            rtw.incrementReferences();
-        });
-
-        this._nrg.build();
-
-        await this._nrg.whenReadyAsync();
-
-        this._scene.frameGraph = this._nrg.frameGraph;
-
+        // Render loop
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -538,12 +523,16 @@ export class PreviewManager {
                 }
             } else if (this._globalState.mode === NodeMaterialModes.ProceduralTexture) {
                 this._layer = new Layer("proceduralLayer", null, this._scene, false);
+                this._layer.renderTargetTextures.push(this._globalState.previewTexture!);
+                this._layer.renderTargetTextures.push(this._globalState.pickingTexture!);
+                this._prepareScene();
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewType) {
                     case PreviewType.DefaultParticleSystem:
                         this._particleSystem = ParticleHelper.CreateDefault(new Vector3(0, 0, 0), 500, this._scene);
                         this._particleSystem.blendMode = DataStorage.ReadNumber("DefaultParticleSystemBlendMode", ParticleSystem.BLENDMODE_ONEONE);
                         this._particleSystem.start();
+                        this._prepareScene();
                         break;
                     case PreviewType.Bubbles:
                         this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
@@ -561,6 +550,7 @@ export class PreviewManager {
                         this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
                         this._particleSystem.gravity = new Vector3(0, -1.0, 0);
                         this._particleSystem.start();
+                        this._prepareScene();
                         break;
                     case PreviewType.Explosion:
                         this._loadParticleSystem(this._globalState.previewType, 1);
@@ -611,6 +601,8 @@ export class PreviewManager {
                         this._globalState.filesInput.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
                         return;
                 }
+            } else {
+                this._prepareScene();
             }
         }
     }
@@ -661,7 +653,6 @@ export class PreviewManager {
     private _updatePreview() {
         try {
             const serializationObject = this._serializeMaterial();
-
             const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
             const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", this._nodeMaterial.shaderLanguage);
@@ -698,6 +689,8 @@ export class PreviewManager {
                         this._material.dispose();
                     }
                     this._material = tempMaterial;
+
+                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
                 case NodeMaterialModes.ProceduralTexture: {
@@ -713,6 +706,7 @@ export class PreviewManager {
                         this._layer.texture = this._proceduralTexture;
                     }
 
+                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
 
@@ -735,6 +729,8 @@ export class PreviewManager {
                         this._material.dispose();
                     }
                     this._material = tempMaterial;
+
+                    this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     break;
                 }
 
@@ -757,13 +753,16 @@ export class PreviewManager {
 
                                 this._material = tempMaterial;
                                 this._globalState.onIsLoadingChanged.notifyObservers(false);
+                                this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                             })
                             .catch((reason) => {
                                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
                                 this._globalState.onIsLoadingChanged.notifyObservers(false);
+                                this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                             });
                     } else {
                         this._material = tempMaterial;
+                        this._globalState.onPreviewUpdatedObservable.notifyObservers(tempMaterial);
                     }
                     break;
                 }
@@ -785,6 +784,16 @@ export class PreviewManager {
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         this._globalState.onBackgroundHDRUpdated.remove(this._onBackgroundHDRUpdatedObserver);
 
+        if (this._globalState.previewTexture) {
+            this._globalState.previewTexture.dispose();
+            this._globalState.previewTexture = null;
+        }
+
+        if (this._globalState.pickingTexture) {
+            this._globalState.pickingTexture.dispose();
+            this._globalState.pickingTexture = null;
+        }
+
         if (this._material) {
             this._material.dispose(false, true);
         }
@@ -794,7 +803,6 @@ export class PreviewManager {
             mesh.dispose();
         }
 
-        this._nrg.dispose();
         this._scene.dispose();
         this._engine.dispose();
     }

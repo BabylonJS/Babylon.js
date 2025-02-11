@@ -4,7 +4,7 @@ import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { IAccessor, IBufferView, IKHRDracoMeshCompression, IMeshPrimitive } from "babylonjs-gltf2interface";
 import type { BufferManager } from "../bufferManager";
 import { DracoEncoder } from "core/Meshes/Compression/dracoEncoder";
-import { GetFloatData, GetTypeByteLength } from "core/Buffers/bufferUtils";
+import { GetTypedArrayData, GetTypeByteLength } from "core/Buffers/bufferUtils";
 import { GetAccessorElementCount } from "../glTFUtilities";
 import type { DracoAttributeName, IDracoAttributeData, IDracoEncoderOptions } from "core/Meshes/Compression/dracoEncoder.types";
 import { Logger } from "core/Misc/logger";
@@ -84,7 +84,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             const accessor = accessors[primitive.indices];
             const bufferView = bufferManager.getBufferView(accessor);
             // Per exportIndices, indices must be either Uint16Array or Uint32Array
-            indices = bufferManager.getData(bufferView) as Uint32Array | Uint16Array;
+            indices = bufferManager.getData(bufferView).slice() as Uint32Array | Uint16Array;
 
             primitiveBufferViews.push(bufferView);
             primitiveAccessors.push(accessor);
@@ -95,22 +95,20 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         for (const [name, accessorIndex] of Object.entries(primitive.attributes)) {
             const accessor = accessors[accessorIndex];
             const bufferView = bufferManager.getBufferView(accessor);
-            const data = bufferManager.getData(bufferView);
 
             const size = GetAccessorElementCount(accessor.type);
-            // TODO: Implement a way to preserve original data type, as Draco can handle more than just floats
-            // TODO: Add flag in DracoEncoder API to prevent copying data (a second time) to transferable buffer
-            const floatData = GetFloatData(
-                data,
+            const data = GetTypedArrayData(
+                bufferManager.getData(bufferView),
                 size,
                 accessor.componentType,
                 accessor.byteOffset || 0,
                 bufferView.byteStride || GetTypeByteLength(accessor.componentType) * size,
                 accessor.normalized || false,
-                accessor.count
-            ) as Float32Array; // Because data is a TypedArray, GetFloatData will return a Float32Array
+                accessor.count,
+                true
+            );
 
-            attributes.push({ kind: name, dracoName: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: floatData });
+            attributes.push({ kind: name, dracoName: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: data });
 
             primitiveBufferViews.push(bufferView);
             primitiveAccessors.push(accessor);

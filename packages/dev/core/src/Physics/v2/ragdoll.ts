@@ -35,7 +35,7 @@ export class RagdollBoneProperties {
     /**
      * Type of Physics Constraint used between bones
      */
-    joint?: number | undefined;
+    joint?: number | undefined | PhysicsConstraintType;
     /**
      * Main rotation axis used by the constraint, in local space
      */
@@ -68,7 +68,7 @@ export class Ragdoll {
     private _rootTransformNode: Mesh | TransformNode;
     private _config: any;
     private _boxConfigs: Array<RagdollBoneProperties> = new Array<RagdollBoneProperties>();
-    private _joints: Array<PhysicsConstraint> = new Array<PhysicsConstraint>();
+    private _constraints: Array<PhysicsConstraint> = new Array<PhysicsConstraint>();
     private _bones: Array<Bone> = new Array<Bone>();
     private _initialRotation: Array<Quaternion> = new Array<Quaternion>();
     // without mesh transform, to figure out later
@@ -108,6 +108,14 @@ export class Ragdoll {
         this._defaultJoint = PhysicsConstraintType.HINGE;
 
         this._init();
+    }
+
+    /**
+     * returns an array of created constraints
+     * @returns array of created constraints
+     */
+    public getConstraints(): Array<PhysicsConstraint> {
+        return this._constraints;
     }
 
     /**
@@ -227,8 +235,9 @@ export class Ragdoll {
             const boxAbsPos = this._transforms[i].position.clone();
             const myConnectedPivot = boneAbsPos.subtract(boxAbsPos);
 
-            const joint = new PhysicsConstraint(
-                PhysicsConstraintType.BALL_AND_SOCKET,
+            const constraintType = this._boxConfigs[i].joint ?? this._defaultJoint;
+            const constraint = new PhysicsConstraint(
+                constraintType,
                 {
                     pivotA: distanceFromParentBoxToBone,
                     pivotB: myConnectedPivot,
@@ -239,9 +248,9 @@ export class Ragdoll {
                 this._scene
             );
 
-            this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, joint);
-            joint.isEnabled = false;
-            this._joints.push(joint);
+            this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, constraint);
+            constraint.isEnabled = false;
+            this._constraints.push(constraint);
         }
     }
 
@@ -363,8 +372,8 @@ export class Ragdoll {
         this._skeleton.bones.forEach((bone) => {
             bone.linkTransformNode(null);
         });
-        for (let i = 0; i < this._joints.length; i++) {
-            this._joints[i].isEnabled = true;
+        for (let i = 0; i < this._constraints.length; i++) {
+            this._constraints[i].isEnabled = true;
         }
         for (let i = 0; i < this._aggregates.length; i++) {
             this._aggregates[i].body.setMotionType(PhysicsMotionType.DYNAMIC);

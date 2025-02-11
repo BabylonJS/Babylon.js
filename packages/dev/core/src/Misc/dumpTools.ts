@@ -37,10 +37,15 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
             };
             import("../Engines/thinEngine")
                 .then(({ ThinEngine: thinEngineClass }) => {
+                    const engineInstanceCount = EngineStore.Instances.length;
                     try {
                         canvas = new OffscreenCanvas(100, 100); // will be resized later
                         engine = new thinEngineClass(canvas, false, options);
                     } catch (e) {
+                        if (engineInstanceCount < EngineStore.Instances.length) {
+                            // The engine was created by another instance, let's use it
+                            EngineStore.Instances.pop()?.dispose();
+                        }
                         // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
                         canvas = document.createElement("canvas");
                         engine = new thinEngineClass(canvas, false, options);

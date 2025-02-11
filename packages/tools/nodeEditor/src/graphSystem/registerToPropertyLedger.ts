@@ -8,9 +8,11 @@ import { LightInformationPropertyTabComponent } from "./properties/lightInformat
 import { TexturePropertyTabComponent } from "./properties/texturePropertyTabComponent";
 import { VectorMergerPropertyTabComponent } from "./properties/vectorMergerPropertyComponent";
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
+import { DebugNodePropertyTabComponent } from "./properties/debugNodePropertyTabComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["NodeMaterialDebugBlock"] = DebugNodePropertyTabComponent;
     PropertyLedger.RegisteredControls["InputBlock"] = InputPropertyTabComponent;
     PropertyLedger.RegisteredControls["GradientBlock"] = GradientPropertyTabComponent;
     PropertyLedger.RegisteredControls["LightInformationBlock"] = LightInformationPropertyTabComponent;

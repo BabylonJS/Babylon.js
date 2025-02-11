@@ -4,6 +4,10 @@
         color: white;
         background: #333333;
 
+        .hoverIcon:hover {
+            opacity: 0.8;
+        }
+
         #header {
             height: 30px;
             font-size: 16px;
@@ -434,6 +438,22 @@
 
             .copy {
                 display: none;
+            }
+        }
+
+        .point-list {
+            .vector3Line {
+                .firstLine {
+                    grid-template-columns: 1fr auto 20px 20px 10px;
+
+                    .delete {
+                        grid-column: 4;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                    }
+                }
             }
         }
 

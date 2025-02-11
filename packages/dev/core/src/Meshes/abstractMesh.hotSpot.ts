@@ -26,15 +26,12 @@ export type HotSpotQuery = {
  */
 export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): Nullable<HotSpotQuery> {
     const indices = pickingInfo.pickedMesh?.getIndices();
-    if (indices) {
-        const base = pickingInfo.faceId * 3;
-        return {
-            pointIndex: [indices[base], indices[base + 1], indices[base + 2]],
-            barycentric: [pickingInfo.bu, pickingInfo.bv, 1 - pickingInfo.bu - pickingInfo.bv],
-        };
-    }
+    const base = pickingInfo.faceId * 3;
 
-    return null;
+    return {
+        pointIndex: indices ? [indices[base], indices[base + 1], indices[base + 2]] : [base, base + 1, base + 2],
+        barycentric: [pickingInfo.bu, pickingInfo.bv, 1 - pickingInfo.bu - pickingInfo.bv],
+    };
 }
 
 /**

@@ -610,6 +610,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             // Register blocks
             const ledger = NodeLedger.RegisteredNodeNames;
+            ledger.length = 0;
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
