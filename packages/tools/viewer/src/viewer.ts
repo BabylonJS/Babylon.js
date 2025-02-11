@@ -320,13 +320,7 @@ export type ViewerBoundingInfo = {
     readonly center: readonly [x: number, y: number, z: number];
 };
 
-type ModelInternal = {
-    _animationPlaying(): boolean;
-    _shouldRender(): boolean;
-};
-
 export type Model = IDisposable &
-    ModelInternal &
     Readonly<{
         /**
          * The asset container representing the model.
@@ -367,6 +361,11 @@ export type Model = IDisposable &
          */
         resetWorldBounds(): void;
     }>;
+
+type ModelInternal = Model & {
+    _animationPlaying(): boolean;
+    _shouldRender(): boolean;
+};
 
 /**
  * @experimental
@@ -459,8 +458,8 @@ export class Viewer implements IDisposable {
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
-    private _loadedModelsBacking: Model[] = [];
-    private _activeModelBacking: Nullable<Model> = null;
+    private _loadedModelsBacking: ModelInternal[] = [];
+    private _activeModelBacking: Nullable<ModelInternal> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _skyboxVisible: boolean = true;
@@ -809,16 +808,16 @@ export class Viewer implements IDisposable {
         return false;
     }
 
-    protected get _loadedModels(): readonly Model[] {
+    protected get _loadedModels(): readonly ModelInternal[] {
         return this._loadedModelsBacking;
     }
 
-    protected get _activeModel(): Nullable<Model> {
+    protected get _activeModel(): Nullable<ModelInternal> {
         return this._activeModelBacking;
     }
 
     protected _setActiveModel(
-        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
+        ...args: [model: null] | [model: ModelInternal, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
     ): void {
         const [model, options] = args;
         if (model !== this._activeModelBacking) {
@@ -887,7 +886,7 @@ export class Viewer implements IDisposable {
      * True if an animation is currently playing.
      */
     public get isAnimationPlaying(): boolean {
-        return this._activeModel?._animationPlaying() ?? false;
+        return this._activeModelBacking?._animationPlaying() ?? false;
     }
 
     /**
@@ -995,7 +994,7 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
+    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<ModelInternal> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         const loadOperation = this._beginLoadOperation();
@@ -1384,17 +1383,13 @@ export class Viewer implements IDisposable {
         return true;
     }
 
-    private _shouldModelRenderPredicate(model: Model) {
-        return model._shouldRender();
-    }
-
     protected get _shouldRender() {
         // We should render if:
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
         // 4. At least one model should render (playing animations).
-        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some(this._shouldModelRenderPredicate);
+        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some((model) => model._shouldRender());
     }
 
     protected _markSceneMutated() {
