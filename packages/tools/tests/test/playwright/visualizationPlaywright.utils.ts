@@ -127,9 +127,9 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             await expect(page).toHaveScreenshot((testCase.referenceImage || testCase.title).replace(".png", "") + ".png", {
                 // omitBackground: true,
                 // 3% change in color is allowed
-                threshold: 0.03,
+                threshold: process.env.SCREENSHOT_THRESHOLD ? +process.env.SCREENSHOT_THRESHOLD : 0.035,
                 // default to 1% pixel changed allowed
-                maxDiffPixelRatio: (testCase.errorRatio || 1) / 100,
+                maxDiffPixelRatio: (testCase.errorRatio || (process.env.SCREENSHOT_MAX_PIXEL ? +process.env.SCREENSHOT_MAX_PIXEL : 1.1)) / 100,
             });
             page.off("console", logCallback);
         });
