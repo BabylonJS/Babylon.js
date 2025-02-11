@@ -348,7 +348,7 @@ export class InteractivityGraphToFlowGraphParser {
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
-                } else if ((value as IKHRInteractivity_OutputSocketReference).node) {
+                } else if (typeof (value as IKHRInteractivity_OutputSocketReference).node !== "undefined") {
                     const nodeOutId = (value as IKHRInteractivity_OutputSocketReference).node;
                     const nodeOutSocketName = (value as IKHRInteractivity_OutputSocketReference).socket || "value";
                     const nodeOut = this._nodes[nodeOutId];
