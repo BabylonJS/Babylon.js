@@ -152,11 +152,13 @@ export class UtilityLayerRenderer implements IDisposable {
      * Instantiates a UtilityLayerRenderer
      * @param originalScene the original scene that will be rendered on top of
      * @param handleEvents boolean indicating if the utility layer should handle events
+     * @param manualRender boolean indicating if the utility layer should render manually.
      */
     constructor(
         /** the original scene that will be rendered on top of */
         public originalScene: Scene,
-        handleEvents: boolean = true
+        public readonly handleEvents: boolean = true,
+        manualRender = false
     ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
         this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
@@ -327,12 +329,14 @@ export class UtilityLayerRenderer implements IDisposable {
         // Render directly on top of existing scene without clearing
         this.utilityLayerScene.autoClear = false;
 
-        this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
-            // Only render when the render camera finishes rendering
-            if (this.shouldRender && camera == this.getRenderCamera()) {
-                this.render();
-            }
-        });
+        if (!manualRender) {
+            this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
+                // Only render when the render camera finishes rendering
+                if (this.shouldRender && camera == this.getRenderCamera()) {
+                    this.render();
+                }
+            });
+        }
 
         this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(() => {
             this.dispose();
