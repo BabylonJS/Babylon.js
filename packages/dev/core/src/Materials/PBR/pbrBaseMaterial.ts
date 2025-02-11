@@ -100,8 +100,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
 
-    public BASEWEIGHT = false;
-    public BASEWEIGHTDIRECTUV = 0;
+    public BASE_WEIGHT = false;
+    public BASE_WEIGHTDIRECTUV = 0;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
@@ -1647,7 +1647,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
-                defines.BASEWEIGHTDIRECTUV = 0;
+                defines.BASE_WEIGHTDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
                 defines.EMISSIVEDIRECTUV = 0;
@@ -1670,9 +1670,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._baseWeightTexture, defines, "BASEWEIGHT");
+                    PrepareDefinesForMergedUV(this._baseWeightTexture, defines, "BASE_WEIGHT");
                 } else {
-                    defines.BASEWEIGHT = false;
+                    defines.BASE_WEIGHT = false;
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {

@@ -20,7 +20,7 @@ uniform vec3 vAmbientColor;
 uniform vec2 vAlbedoInfos;
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
 uniform vec2 vBaseWeightInfos;
 #endif
 
