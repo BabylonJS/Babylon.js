@@ -138,7 +138,9 @@ export class FlowGraph {
                 }
             }
             if (event.type === FlowGraphEventType.SceneReady) {
-                this._sceneEventCoordinator.clearSceneReadyObserver();
+                setTimeout(() => {
+                    this._sceneEventCoordinator.clearSceneReadyObserver();
+                });
             }
         });
     }

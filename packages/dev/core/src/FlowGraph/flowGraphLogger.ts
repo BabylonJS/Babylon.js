@@ -37,7 +37,12 @@ export class FlowGraphLogger {
         }
         this.log.push(item);
         if (this.logToConsole) {
-            Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(item.payload)}`);
+            const value = item.payload?.value;
+            if (typeof value === "object" && value.getClassName) {
+                Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(value.getClassName())}`);
+            } else {
+                Logger.Log(`[FGLog] ${item.className}:${item.uniqueId.split("-")[0]} ${item.action} - ${JSON.stringify(item.payload)}`);
+            }
         }
     }
 

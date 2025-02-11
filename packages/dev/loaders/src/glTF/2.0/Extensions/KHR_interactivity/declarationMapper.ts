@@ -345,10 +345,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/fract": getSimpleInputMapping(FlowGraphBlockNames.Fract),
     "math/neg": getSimpleInputMapping(FlowGraphBlockNames.Negation),
-    "math/add": getSimpleInputMapping(FlowGraphBlockNames.Add, ["a", "b"]),
-    "math/sub": getSimpleInputMapping(FlowGraphBlockNames.Subtract, ["a", "b"]),
-    "math/mul": getSimpleInputMapping(FlowGraphBlockNames.Multiply, ["a", "b"]),
-    "math/div": getSimpleInputMapping(FlowGraphBlockNames.Divide, ["a", "b"]),
+    "math/add": getSimpleInputMapping(FlowGraphBlockNames.Add, ["a", "b"], true),
+    "math/sub": getSimpleInputMapping(FlowGraphBlockNames.Subtract, ["a", "b"], true),
+    "math/mul": getSimpleInputMapping(FlowGraphBlockNames.Multiply, ["a", "b"], true),
+    "math/div": getSimpleInputMapping(FlowGraphBlockNames.Divide, ["a", "b"], true),
     "math/rem": getSimpleInputMapping(FlowGraphBlockNames.Modulo, ["a", "b"]),
     "math/min": getSimpleInputMapping(FlowGraphBlockNames.Min, ["a", "b"]),
     "math/max": getSimpleInputMapping(FlowGraphBlockNames.Max, ["a", "b"]),
@@ -1126,6 +1126,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 isVariable: true,
             },
         ],
+        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            serializedObjects.forEach((serializedObject) => {
+                // check if it is the json pointer block
+                if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
+                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config.outputValue = true;
+                }
+            });
+            return serializedObjects;
+        },
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
@@ -1167,6 +1177,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 isVariable: true,
             },
         ],
+        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            serializedObjects.forEach((serializedObject) => {
+                // check if it is the json pointer block
+                if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
+                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config.outputValue = true;
+                }
+            });
+            return serializedObjects;
+        },
     },
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
@@ -1376,7 +1396,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
 };
 
-function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"]): IGLTFToFlowGraphMapping {
+function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {
     return {
         blocks: [type],
         inputs: {
@@ -1393,7 +1413,26 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
                 value: { name: "value" },
             },
         },
-        configuration: {},
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            if (inferType) {
+                // configure it to work the way glTF specifies
+                serializedObjects[0].config = serializedObjects[0].config || {};
+                // try to infer the type or fallback to Integer
+                // check the gltf block for the inputs, see if they have a type
+                let type = -1;
+                Object.keys(_gltfBlock.values || {}).find((value) => {
+                    if (_gltfBlock.values?.[value].type !== undefined) {
+                        type = _gltfBlock.values[value].type;
+                        return true;
+                    }
+                    return false;
+                });
+                if (type !== -1) {
+                    serializedObjects[0].config.type = _parser.arrays.types[type];
+                }
+            }
+            return serializedObjects;
+        },
     };
 }
 

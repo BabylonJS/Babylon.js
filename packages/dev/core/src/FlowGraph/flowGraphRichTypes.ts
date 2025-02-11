@@ -132,7 +132,7 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
  * @param flowGraphType the flow graph type
  * @returns the rich type that corresponds to the flow graph type
  */
-export function getRichTypeByFlowGraphType(flowGraphType: string): RichType<any> {
+export function getRichTypeByFlowGraphType(flowGraphType?: string): RichType<any> {
     switch (flowGraphType) {
         case FlowGraphTypes.String:
             return RichTypeString;

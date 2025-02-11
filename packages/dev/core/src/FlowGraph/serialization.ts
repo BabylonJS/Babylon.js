@@ -129,6 +129,8 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = new FlowGraphMatrix3D(intermediateValue.value);
     } else if (className === FlowGraphTypes.Integer) {
         finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Number || className === FlowGraphTypes.String || className === FlowGraphTypes.Boolean) {
+        finalValue = intermediateValue.value[0];
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {

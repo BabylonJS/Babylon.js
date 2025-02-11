@@ -145,6 +145,8 @@ export class FlowGraphContext {
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
         this.assetsContext = params.assetsContext ?? params.scene;
+
+        this.enableLogging = true;
     }
 
     /**

@@ -58,14 +58,33 @@ function isNumeric(a: FlowGraphMathOperationType): a is FlowGraphNumber {
 function getNumericValue(a: FlowGraphNumber): number {
     return typeof a === "number" ? a : a.value;
 }
+export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * If true, the multiplication is done per component.
+     * This is the behavior in glTF interactivity.
+     */
+    useMatrixPerComponent?: boolean;
+
+    /**
+     * The type of the variable.
+     */
+    type?: FlowGraphTypes;
+}
 
 /**
  * @experimental
  * Polymorphic add block.
  */
 export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicAdd(a, b), FlowGraphBlockNames.Add, config);
+    constructor(config?: IFlowGraphMathBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            (a, b) => this._polymorphicAdd(a, b),
+            FlowGraphBlockNames.Add,
+            config
+        );
     }
 
     private _polymorphicAdd(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
@@ -86,8 +105,15 @@ RegisterClass(FlowGraphBlockNames.Add, FlowGraphAddBlock);
  * Polymorphic add block.
  */
 export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicSubtract(a, b), FlowGraphBlockNames.Subtract, config);
+    constructor(config?: IFlowGraphMathBlockConfiguration) {
+        super(
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            (a, b) => this._polymorphicSubtract(a, b),
+            FlowGraphBlockNames.Subtract,
+            config
+        );
     }
 
     private _polymorphicSubtract(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
@@ -102,14 +128,6 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
 }
 RegisterClass(FlowGraphBlockNames.Subtract, FlowGraphSubtractBlock);
 
-export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * If true, the multiplication is done per component.
-     * This is the behavior in glTF interactivity.
-     */
-    useMatrixPerComponent?: boolean;
-}
-
 /**
  * @experimental
  * Polymorphic multiply block.
@@ -117,7 +135,14 @@ export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfigu
  */
 export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphMathBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicMultiply(a, b), FlowGraphBlockNames.Multiply, config);
+        super(
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            (a, b) => this._polymorphicMultiply(a, b),
+            FlowGraphBlockNames.Multiply,
+            config
+        );
     }
 
     private _polymorphicMultiply(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
@@ -158,7 +183,14 @@ RegisterClass(FlowGraphBlockNames.Multiply, FlowGraphMultiplyBlock);
  */
 export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphMathBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicDivide(a, b), FlowGraphBlockNames.Divide, config);
+        super(
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            getRichTypeByFlowGraphType(config?.type),
+            (a, b) => this._polymorphicDivide(a, b),
+            FlowGraphBlockNames.Divide,
+            config
+        );
     }
 
     private _polymorphicDivide(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
