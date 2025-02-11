@@ -14,6 +14,11 @@ uniform mat4 baseWeightMatrix;
 uniform vec2 vBaseWeightInfos;
 #endif
 
+#ifdef BASE_DIFFUSE_ROUGHNESS
+uniform mat4 baseDiffuseRoughnessMatrix;
+uniform vec2 vBaseDiffuseRoughnessInfos;
+#endif
+
 #ifdef AMBIENT
 uniform mat4 ambientMatrix;
 uniform vec4 vAmbientInfos;
