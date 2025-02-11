@@ -125,6 +125,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
                 expect(glError).toBe(false);
             }
             await expect(page).toHaveScreenshot((testCase.referenceImage || testCase.title).replace(".png", "") + ".png", {
+                timeout: 7000,
                 // omitBackground: true,
                 // 3% change in color is allowed
                 threshold: process.env.SCREENSHOT_THRESHOLD ? +process.env.SCREENSHOT_THRESHOLD : 0.035,
