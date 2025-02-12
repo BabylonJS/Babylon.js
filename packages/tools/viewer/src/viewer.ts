@@ -1155,8 +1155,6 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-            } else {
-                this._setActiveModel(null);
             }
         });
     }
