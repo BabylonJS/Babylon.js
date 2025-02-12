@@ -82,6 +82,11 @@
     #ifdef AREALIGHT{X}
         uniform vec4 vLightWidth{X};
         uniform vec4 vLightHeight{X};
+
+        #ifdef RECTAREALIGHTEMISSIONTEXTURE{X}
+		    uniform sampler2D rectAreaLightEmissionTexture{X};
+	    #endif
+
 	#endif
 	#ifdef IESLIGHTTEXTURE{X}
 		uniform sampler2D iesLightTexture{X};

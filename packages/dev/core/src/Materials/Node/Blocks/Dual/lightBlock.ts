@@ -251,7 +251,8 @@ export class LightBlock extends NodeMaterialBlock {
                 defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
                 uniformBuffers,
                 onlyUpdateBuffersList,
-                defines["IESLIGHTTEXTURE" + lightIndex]
+                defines["IESLIGHTTEXTURE" + lightIndex],
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
             );
         }
     }

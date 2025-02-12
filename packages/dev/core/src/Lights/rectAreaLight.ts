@@ -6,6 +6,9 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { Scene } from "core/scene";
 import { AreaLight } from "./areaLight";
+import type { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);
@@ -21,6 +24,29 @@ export class RectAreaLight extends AreaLight {
     protected readonly _pointTransformedPosition: Vector3;
     protected readonly _pointTransformedWidth: Vector3;
     protected readonly _pointTransformedHeight: Vector3;
+    private _emissionTextureTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Gets or sets the IES profile texture used to create the spotlight
+     * #UIAXAU#1
+     */
+    public get emissionTexture(): Nullable<BaseTexture> {
+        return this._emissionTextureTexture;
+    }
+
+    public set emissionTexture(value: Nullable<BaseTexture>) {
+        if (this._emissionTextureTexture === value) {
+            return;
+        }
+
+        this._emissionTextureTexture = value;
+
+        if (this._emissionTextureTexture) {
+            this._emissionTextureTexture.onLoadObservable.addOnce(() => {
+                this._markMeshesAsLightDirty();
+            });
+        }
+    }
 
     /**
      * Rect Area Light width.
@@ -132,6 +158,16 @@ export class RectAreaLight extends AreaLight {
         return this;
     }
 
+    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        super.transferTexturesToEffect(effect, lightIndex);
+
+        if (this._emissionTextureTexture && this._emissionTextureTexture.isReady()) {
+            effect.setTexture("rectAreaLightEmissionTexture" + lightIndex, this._emissionTextureTexture);
+        }
+
+        return this;
+    }
+
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         if (this._computeTransformedInformation()) {
             effect.setFloat3(lightDataUniformName, this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z);
@@ -139,6 +175,16 @@ export class RectAreaLight extends AreaLight {
             effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
         }
         return this;
+    }
+
+    /**
+     * Prepares the list of defines specific to the light type.
+     * @param defines the list of defines
+     * @param lightIndex defines the index of the light for the effect
+     */
+    public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+        super.prepareLightSpecificDefines(defines, lightIndex);
+        defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex] = this._emissionTextureTexture && this._emissionTextureTexture.isReady() ? true : false;
     }
 }
 
