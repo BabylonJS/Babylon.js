@@ -59,6 +59,8 @@ type UpdateModelOptions = {
     animationAutoPlay?: boolean;
 };
 
+type ActivateModelOptions = UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
+
 export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
 
 export type CameraAutoOrbit = {
@@ -363,9 +365,9 @@ export type Model = IDisposable &
 
         /**
          * Makes the model the current active model in the viewer.
-         * @returns True if the model was successfully made active, otherwise false.
+         * @param options Options for activating the model.
          */
-        makeActive(): boolean;
+        makeActive(options?: ActivateModelOptions): void;
     }>;
 
 type ModelInternal = Model & {
@@ -822,11 +824,10 @@ export class Viewer implements IDisposable {
         return this._activeModelBacking;
     }
 
-    protected _setActiveModel(
-        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
-    ) {
+    private _setActiveModel(...args: [model: null] | [model: ModelInternal, options?: ActivateModelOptions]) {
         const [model, options] = args;
-        if (model && model.makeActive()) {
+        if (model !== this._activeModelBacking) {
+            this._activeModelBacking = model;
             this._updateLight();
             this._applyAnimationSpeed();
             this._selectAnimation(options?.defaultAnimation ?? 0, false);
@@ -999,7 +1000,7 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<ModelInternal> {
+    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         const loadOperation = this._beginLoadOperation();
@@ -1121,12 +1122,8 @@ export class Viewer implements IDisposable {
                         }
                     }
                 },
-                makeActive: (): boolean => {
-                    if (model !== this._activeModelBacking) {
-                        this._activeModelBacking = model;
-                        return true;
-                    }
-                    return false;
+                makeActive: (options?: ActivateModelOptions) => {
+                    this._setActiveModel(model, options);
                 },
             };
 
@@ -1157,7 +1154,9 @@ export class Viewer implements IDisposable {
 
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
-                this._setActiveModel(model, Object.assign({ source, interpolateCamera: false }, options));
+                model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+            } else {
+                this._setActiveModel(null);
             }
         });
     }
