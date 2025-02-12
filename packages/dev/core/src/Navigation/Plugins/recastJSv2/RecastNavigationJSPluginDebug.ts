@@ -1,13 +1,14 @@
-import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
-import { Color3 } from "@babylonjs/core/Maths/math.color";
-import { Matrix } from "@babylonjs/core/Maths/math.vector";
-import { CreateDisc } from "@babylonjs/core/Meshes/Builders/discBuilder";
-import { CreateGreasedLine } from "@babylonjs/core/Meshes/Builders/greasedLineBuilder";
-import type { GreasedLineMaterialOptions } from "@babylonjs/core/Materials/GreasedLine/greasedLineMaterialInterfaces";
-import type { GreasedLineMeshOptions } from "@babylonjs/core/Meshes/GreasedLine/greasedLineBaseMesh";
-import { Mesh } from "@babylonjs/core/Meshes/mesh";
-import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
-import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import { StandardMaterial } from "../../../Materials/standardMaterial";
+import type { GreasedLineMaterialOptions } from "../../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import type { GreasedLineMeshOptions } from "../../../Meshes/GreasedLine/greasedLineBaseMesh";
+import { Color3 } from "../../../Maths/math.color";
+import { CreateDisc } from "../../../Meshes/Builders/discBuilder";
+import { Mesh } from "../../../Meshes/mesh";
+import { Matrix } from "../../../Maths/math.vector";
+import { CreateGreasedLine } from "../../../Meshes/Builders/greasedLineBuilder";
+import { VertexData } from "../../../Meshes/mesh.vertexData";
+import { TransformNode } from "../../../Meshes/transformNode";
+
 import type {
     DebugDrawerPrimitive,
     NavMesh,

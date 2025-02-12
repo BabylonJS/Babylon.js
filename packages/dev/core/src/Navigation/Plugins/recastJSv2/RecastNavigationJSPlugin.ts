@@ -1,23 +1,25 @@
 /* eslint-disable no-console */
-import type { ICrowd, IAgentParameters, INavMeshParameters, IObstacle, INavigationEnginePlugin } from "@babylonjs/core/Navigation/INavigationEngine";
-import type { Scene } from "@babylonjs/core/scene";
-import type { Nullable } from "@babylonjs/core/types";
-import type { IVector3Like } from "@babylonjs/core/Maths/math.like";
-import { Logger } from "@babylonjs/core/Misc/logger";
-import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
-import { Mesh } from "@babylonjs/core/Meshes/mesh";
-import { Epsilon, Matrix, Vector3 } from "@babylonjs/core/Maths/math";
-import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import { Observable } from "@babylonjs/core/Misc/observable";
-import { VertexBuffer } from "@babylonjs/core/Buffers/buffer";
+
+import * as Recast2 from "recast-navigation";
+import { Matrix, Vector3 } from "../../../Maths/math.vector";
+import type { IAgentParameters, ICrowd, INavigationEnginePlugin, INavMeshParameters, IObstacle } from "../../INavigationEngine";
+import type { IVector3Like } from "../../../Maths/math.like";
+import { Mesh } from "../../../Meshes/mesh";
+import type { Nullable } from "../../../types";
+import { VertexBuffer } from "../../../Meshes/buffer";
+import { Logger } from "../../../Misc/logger";
+import type { Scene } from "../../../scene";
+import { VertexData } from "../../../Meshes/mesh.vertexData";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Observer } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable";
+import { Epsilon } from "../../../Maths/math.constants";
 
 import type { SoloNavMeshGeneratorConfig, SoloNavMeshGeneratorIntermediates, TiledNavMeshGeneratorConfig, TiledNavMeshGeneratorIntermediates } from "recast-navigation/generators";
 import type { NavMesh, QueryFilter, TileCache } from "recast-navigation";
 import { generateSoloNavMesh, generateTileCache, generateTiledNavMesh } from "recast-navigation/generators";
 import { Crowd, Detour, exportNavMesh, getNavMeshPositionsAndIndices, getRandomSeed, importNavMesh, NavMeshQuery, setRandomSeed } from "recast-navigation";
 
-import * as Recast2 from "recast-navigation";
 // declare let Recast2: any;
 
 const _delta = new Vector3();
@@ -130,8 +132,8 @@ export interface INavigationEnginePluginV2 extends INavigationEnginePlugin {
         }
     ): void;
 
-    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void;
-    createNavMeshWorker(meshes: Array<Mesh>, parameters: INavMeshParameters, completion: (data?: Uint8Array) => void): void;
+    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParametersV2, completion?: (navmeshData: Uint8Array) => void): void;
+    createNavMeshWorker(meshes: Array<Mesh>, parameters: INavMeshParametersV2, completion: (data?: Uint8Array) => void): void;
     computePathSmooth(
         start: Vector3,
         end: Vector3,
@@ -239,7 +241,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         this.setTimeStep();
     }
 
-    createNavMeshWorker(_meshes: Array<Mesh>, _parameters: INavMeshParameters, _completion: (data?: Uint8Array) => void): void {
+    createNavMeshWorker(_meshes: Array<Mesh>, _parameters: INavMeshParametersV2, _completion: (data?: Uint8Array) => void): void {
         // TODO: implement
         throw new Error("Method not implemented.");
     }
@@ -1413,12 +1415,9 @@ export class RecastJSCrowdV2 implements ICrowd {
 
         this._scene = scene;
 
-        // this._onBeforeAnimationsObserver =
-        //     scene.onBeforeAnimationsObservable.add(() => {
-        //         this.update(
-        //             scene.getEngine().getDeltaTime() * 0.001 * plugin.timeFactor
-        //         );
-        //     });
+        this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+            this.update(scene.getEngine().getDeltaTime() * 0.001 * plugin.timeFactor);
+        });
     }
 
     /**

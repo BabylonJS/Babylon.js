@@ -1,2 +1,2 @@
 export * from "./recastJSPlugin";
-export * from "./recastJSv2/RecastNavigationJSPlugin";
+export * from "./recastJSV2/RecastNavigationJSPlugin";
