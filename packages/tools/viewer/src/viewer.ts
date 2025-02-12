@@ -59,6 +59,8 @@ type UpdateModelOptions = {
     animationAutoPlay?: boolean;
 };
 
+type ActivateModelOptions = UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
+
 export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
 
 export type CameraAutoOrbit = {
@@ -360,7 +362,18 @@ export type Model = IDisposable &
          * Should be called after the model undergoes transformations.
          */
         resetWorldBounds(): void;
+
+        /**
+         * Makes the model the current active model in the viewer.
+         * @param options Options for activating the model.
+         */
+        makeActive(options?: ActivateModelOptions): void;
     }>;
+
+type ModelInternal = Model & {
+    _animationPlaying(): boolean;
+    _shouldRender(): boolean;
+};
 
 /**
  * @experimental
@@ -453,8 +466,8 @@ export class Viewer implements IDisposable {
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _renderLoopController: Nullable<IDisposable> = null;
-    private _loadedModelsBacking: Model[] = [];
-    private _activeModelBacking: Nullable<Model> = null;
+    private _loadedModelsBacking: ModelInternal[] = [];
+    private _activeModelBacking: Nullable<ModelInternal> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _skyboxVisible: boolean = true;
@@ -811,9 +824,7 @@ export class Viewer implements IDisposable {
         return this._activeModelBacking;
     }
 
-    protected _setActiveModel(
-        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
-    ): void {
+    private _setActiveModel(...args: [model: null] | [model: ModelInternal, options?: ActivateModelOptions]) {
         const [model, options] = args;
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
@@ -881,7 +892,7 @@ export class Viewer implements IDisposable {
      * True if an animation is currently playing.
      */
     public get isAnimationPlaying(): boolean {
-        return this._activeAnimation?.isPlaying ?? false;
+        return this._activeModelBacking?._animationPlaying() ?? false;
     }
 
     /**
@@ -1046,6 +1057,17 @@ export class Viewer implements IDisposable {
             const model = {
                 assetContainer,
                 materialVariantsController,
+                _animationPlaying: () => {
+                    const activeAnimation = assetContainer.animationGroups[selectedAnimation];
+                    return activeAnimation.isPlaying;
+                },
+                _shouldRender: () => {
+                    const stillTransitioning = model?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted));
+                    // Should render if :
+                    // 1. An animation is playing.
+                    // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+                    return model._animationPlaying() || stillTransitioning;
+                },
                 getHotSpotToRef: (query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult) => {
                     return this._getHotSpotToRef(assetContainer, query, result);
                 },
@@ -1058,7 +1080,7 @@ export class Viewer implements IDisposable {
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
                         if (model === this._activeModel) {
-                            this._setActiveModel(null);
+                            this._activeModelBacking = null;
                         }
                     }
 
@@ -1100,6 +1122,9 @@ export class Viewer implements IDisposable {
                         }
                     }
                 },
+                makeActive: (options?: ActivateModelOptions) => {
+                    this._setActiveModel(model, options);
+                },
             };
 
             this._loadedModelsBacking.push(model);
@@ -1124,11 +1149,12 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             throwIfAborted(abortSignal, abortController.signal);
             this._activeModel?.dispose();
-            this._setActiveModel(null);
+            this._activeModelBacking = null;
             this.selectedAnimation = -1;
 
             if (source) {
-                this._setActiveModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
+                const model = await this._loadModel(source, options, abortController.signal);
+                model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
             }
         });
     }
@@ -1372,15 +1398,8 @@ export class Viewer implements IDisposable {
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
-        // 4. An animation is playing.
-        // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
-        return (
-            !this._autoSuspendRendering ||
-            this._sceneMutated ||
-            !this._snapshotHelper.isReady ||
-            this.isAnimationPlaying ||
-            this._activeModel?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted))
-        );
+        // 4. At least one model should render (playing animations).
+        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some((model) => model._shouldRender());
     }
 
     protected _markSceneMutated() {
