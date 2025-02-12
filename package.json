@@ -108,5 +108,8 @@
         "nextVersion": "Unreleased",
         "ignoreCommitters": [],
         "feature": "New Feature"
+    },
+    "dependencies": {
+        "recast-navigation": "^0.39.0"
     }
 }
