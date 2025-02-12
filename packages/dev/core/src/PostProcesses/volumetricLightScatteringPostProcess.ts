@@ -212,6 +212,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         let uv1 = false;
         let uv2 = false;
+        let color = false;
 
         // Alpha test
         if (material) {
@@ -267,7 +268,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                   false, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color, // useColorMorph
               )
             : 0;
 

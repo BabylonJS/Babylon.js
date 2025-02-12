@@ -136,5 +136,32 @@ export function BuildMorphTargetBuffers(
         }
     }
 
+    if (morphTarget.hasColors) {
+        const morphColors = morphTarget.getColors()!;
+        const originalColors = mesh.getVerticesData(VertexBuffer.ColorKind, undefined, undefined, true);
+
+        if (originalColors) {
+            vertexCount = originalColors.length / 4;
+            const colorData = new Float32Array(vertexCount * 4);
+            vertexStart = 0;
+            for (let i = vertexStart; i < vertexCount; ++i) {
+                const originalColor = Vector3.FromArray(originalColors, i * 4);
+                const morphColor = Vector3.FromArray(morphColors, i * 4);
+
+                morphColor.subtractToRef(originalColor, difference);
+                colorData[i * 4] = difference.x;
+                colorData[i * 4 + 1] = difference.y;
+                colorData[i * 4 + 2] = difference.z;
+                colorData[i * 4 + 3] = 0;
+            }
+            const bufferView = bufferManager.createBufferView(colorData, floatSize * 4);
+            const accessor = bufferManager.createAccessor(bufferView, AccessorType.VEC4, AccessorComponentType.FLOAT, vertexCount, 0);
+            accessors.push(accessor);
+            result.attributes["COLOR_0"] = accessors.length - 1;
+        } else {
+            Tools.Warn(`Morph target colors for mesh ${mesh.name} were not exported. Mesh does not have colors vertex data`);
+        }
+    }
+
     return result;
 }

@@ -35,11 +35,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         );
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerInput("uv2", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4)
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("uv2Output", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerOutput("colorOutput", NodeMaterialBlockConnectionPointTypes.Color4);
     }
 
     /**
@@ -85,6 +87,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    public get color(): NodeMaterialConnectionPoint {
+        return this._inputs[5];
+    }
+
     /**
      * Gets the position output component
      */
@@ -118,6 +124,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
      */
     public get uv2Output(): NodeMaterialConnectionPoint {
         return this._outputs[4];
+    }
+
+    public get colorOutput(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
     }
 
     public override initialize(state: NodeMaterialBuildState) {
@@ -195,6 +205,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             }
             uv2Input.output.connectTo(this.uv2);
         }
+        if (!this.color.isConnected) {
+            let colorInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "color" && additionalFilteringInfo(b));
+
+            if (!colorInput) {
+                colorInput = new InputBlock("color");
+                colorInput.setAsAttribute("color");
+            }
+            colorInput.output.connectTo(this.color);
+        }
     }
 
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -234,11 +253,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const tangent = this.tangent;
         const uv = this.uv;
         const uv2 = this.uv2;
+        const color = this.color;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
         const uv2Output = this.uv2Output;
+        const colorOutput = this.colorOutput;
         const state = vertexShaderState;
         const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
 
@@ -248,6 +269,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const supportTangents = manager && manager.supportsTangents;
         const supportUVs = manager && manager.supportsUVs;
         const supportUV2s = manager && manager.supportsUV2s;
+        const supportColors = manager && manager.supportsColors;
 
         let injectionCode = "";
 
@@ -310,6 +332,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 injectionCode += `${uv2Output.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv2.associatedVariableName}) * morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
+            injectionCode += `#ifdef MORPHTARGETTEXTURE_HASUV2S\n`;
+            injectionCode += `vertexID += 1.0;\n`;
+            injectionCode += `#endif\n`;
+
+            if (supportColors) {
+                injectionCode += `#ifdef MORPHTARGETS_COLOR\n`;
+                injectionCode += `${colorOutput.associatedVariableName} += (readVector4FromRawSampler(i, vertexID) - ${color.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
+                injectionCode += `#endif\n`;
+            }
 
             injectionCode += "}\n";
         } else {
@@ -349,6 +380,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                     injectionCode += `${uv2Output.associatedVariableName}.xy += (uv2_${index} - ${uv2.associatedVariableName}.xy) * morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
                 }
+
+                if (supportColors && defines["COLORS"]) {
+                    injectionCode += `#ifdef MORPHTARGETS_COLOR\n`;
+                    injectionCode += `${colorOutput.associatedVariableName} += (color${index} - ${color.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
+                    injectionCode += `#endif\n`;
+                }
             }
         }
         injectionCode += `#endif\n`;
@@ -376,6 +413,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 if (supportUV2s && defines["UV2"]) {
                     state.attributes.push(VertexBuffer.UV2Kind + "_" + index);
                 }
+
+                if (supportColors && defines["COLORS"]) {
+                    state.attributes.push(VertexBuffer.ColorKind + index);
+                }
             }
         }
     }
@@ -398,11 +439,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const tangent = this.tangent;
         const uv = this.uv;
         const uv2 = this.uv2;
+        const color = this.color;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
         const uv2Output = this.uv2Output;
+        const colorOutput = this.colorOutput;
         const comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -436,6 +479,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `${state._declareOutput(uv2Output)} = ${uv2.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
         state.compilationString += `${state._declareOutput(uv2Output)} = vec2(0., 0.);\n`;
+        state.compilationString += `#endif\n`;
+        state.compilationString += `#ifdef VERTEXCOLOR\n`;
+        state.compilationString += `${state._declareOutput(colorOutput)} = ${color.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${state._declareOutput(colorOutput)} = vec4(0., 0., 0., 0.);\n`;
         state.compilationString += `#endif\n`;
 
         // Repeatable content

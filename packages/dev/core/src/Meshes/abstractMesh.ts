@@ -61,6 +61,9 @@ function applyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTar
         case VertexBuffer.UVKind:
             getTargetData = (target) => target.getUVs();
             break;
+        case VertexBuffer.ColorKind:
+            getTargetData = (target) => target.getColors();
+            break;
         default:
             return;
     }

@@ -28,6 +28,7 @@ const _TmpMorphInfluencers = {
     TANGENT: false,
     UV: false,
     UV2: false,
+    COLOR: false,
 };
 
 /**
@@ -88,7 +89,8 @@ export function PrepareDefinesAndAttributesForMorphTargets(
     useNormalMorph: boolean,
     useTangentMorph: boolean,
     useUVMorph: boolean,
-    useUV2Morph: boolean
+    useUV2Morph: boolean,
+    useColorMorph: boolean,
 ): number {
     const numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
     if (numMorphInfluencers <= 0) {
@@ -102,12 +104,14 @@ export function PrepareDefinesAndAttributesForMorphTargets(
     if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
     if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
     if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+    if (morphTargetManager.hasColors) defines.push("#define MORPHTARGETTEXTURE_HASCOLORS");
 
     if (morphTargetManager.supportsPositions && usePositionMorph) defines.push("#define MORPHTARGETS_POSITION");
     if (morphTargetManager.supportsNormals && useNormalMorph) defines.push("#define MORPHTARGETS_NORMAL");
     if (morphTargetManager.supportsTangents && useTangentMorph) defines.push("#define MORPHTARGETS_TANGENT");
     if (morphTargetManager.supportsUVs && useUVMorph) defines.push("#define MORPHTARGETS_UV");
     if (morphTargetManager.supportsUV2s && useUV2Morph) defines.push("#define MORPHTARGETS_UV2");
+    if (morphTargetManager.supportsColors && useColorMorph) defines.push("#define MORPHTARGETS_COLOR");
 
     defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
@@ -120,6 +124,7 @@ export function PrepareDefinesAndAttributesForMorphTargets(
     _TmpMorphInfluencers.TANGENT = useTangentMorph;
     _TmpMorphInfluencers.UV = useUVMorph;
     _TmpMorphInfluencers.UV2 = useUV2Morph;
+    _TmpMorphInfluencers.COLOR = useColorMorph;
 
     PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, usePositionMorph);
     return numMorphInfluencers;
@@ -137,6 +142,7 @@ export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], m
     _TmpMorphInfluencers.TANGENT = false;
     _TmpMorphInfluencers.UV = false;
     _TmpMorphInfluencers.UV2 = false;
+    _TmpMorphInfluencers.COLOR = false;
     PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, true);
 }
 
@@ -161,6 +167,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
         const uv2 = manager && manager.supportsUV2s && defines["UV2"];
+        const color = manager && manager.supportsColors && defines["COLOR"];
         for (let index = 0; index < influencers; index++) {
             if (position) {
                 attribs.push(Constants.PositionKind + index);
@@ -180,6 +187,10 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
 
             if (uv2) {
                 attribs.push(Constants.UV2Kind + "_" + index);
+            }
+
+            if (color) {
+                attribs.push(Constants.ColorKind + index);
             }
 
             if (attribs.length > maxAttributesCount) {
@@ -764,12 +775,14 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
         defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
         defines["MORPHTARGETS_POSITION"] = manager.supportsPositions;
+        defines["MORPHTARGETS_COLOR"] = manager.supportsColors;
 
         defines["MORPHTARGETTEXTURE_HASUVS"] = manager.hasUVs;
         defines["MORPHTARGETTEXTURE_HASUV2S"] = manager.hasUV2s;
         defines["MORPHTARGETTEXTURE_HASTANGENTS"] = manager.hasTangents;
         defines["MORPHTARGETTEXTURE_HASNORMALS"] = manager.hasNormals;
         defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = manager.hasPositions;
+        defines["MORPHTARGETTEXTURE_HASCOLORS"] = manager.hasColors;
 
         defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
         defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
@@ -781,12 +794,14 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
         defines["MORPHTARGETS_TANGENT"] = false;
         defines["MORPHTARGETS_NORMAL"] = false;
         defines["MORPHTARGETS_POSITION"] = false;
+        defines["MORPHTARGETS_COLOR"] = false;
 
         defines["MORPHTARGETTEXTURE_HASUVS"] = false;
         defines["MORPHTARGETTEXTURE_HASUV2S"] = false;
         defines["MORPHTARGETTEXTURE_HASTANGENTS"] = false;
         defines["MORPHTARGETTEXTURE_HASNORMALS"] = false;
         defines["MORPHTARGETTEXTURE_HASPOSITIONS"] = false;
+        defines["MORPHTARGETTEXTURE_HAS_COLORS"] = false;
 
         defines["MORPHTARGETS"] = false;
         defines["NUM_MORPH_INFLUENCERS"] = 0;

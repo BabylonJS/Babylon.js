@@ -1292,6 +1292,20 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMorphTarget.setUV2s(uvs);
         });
 
+        loadAttribute("COLOR_0", VertexBuffer.ColorKind, (babylonVertexBuffer, data) => {
+            const colors = new Float32Array(data.length / 3 * 4);
+            babylonVertexBuffer.forEach(data.length, (value, index) => {
+                const pixid = Math.floor(index / 3);
+                const channel = index % 3;
+                colors[4 * pixid + channel] = data[3 * pixid + channel] + value;
+            });
+            for (let i = 0; i < data.length / 3; ++i) {
+                colors[4 * i + 3] = 1;
+            }
+
+            babylonMorphTarget.setColors(colors);
+        });
+
         return Promise.all(promises).then(() => {});
     }
 

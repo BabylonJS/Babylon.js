@@ -34,6 +34,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
+#ifdef VERTEXCOLOR
+    vec4 colorUpdated = color;
+#endif
+
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>

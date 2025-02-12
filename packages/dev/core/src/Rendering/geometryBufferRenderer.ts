@@ -556,6 +556,7 @@ export class GeometryBufferRenderer {
 
         let uv1 = false;
         let uv2 = false;
+        let color = false;
 
         if (material) {
             let needUv = false;
@@ -792,7 +793,8 @@ export class GeometryBufferRenderer {
                   true, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color, // useColorMorph
               )
             : 0;
 

@@ -90,6 +90,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef UV2
     var uv2Updated: vec2f = vertexInputs.uv2;
 #endif
+#ifdef VERTEXCOLOR
+    vec4 colorUpdated = color;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
