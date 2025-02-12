@@ -347,7 +347,28 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/neg": getSimpleInputMapping(FlowGraphBlockNames.Negation),
     "math/add": getSimpleInputMapping(FlowGraphBlockNames.Add, ["a", "b"], true),
     "math/sub": getSimpleInputMapping(FlowGraphBlockNames.Subtract, ["a", "b"], true),
-    "math/mul": getSimpleInputMapping(FlowGraphBlockNames.Multiply, ["a", "b"], true),
+    "math/mul": {
+        blocks: [FlowGraphBlockNames.Multiply],
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            serializedObjects[0].config.useMatrixPerComponent = true;
+            // try to infer the type or fallback to Integer
+            // check the gltf block for the inputs, see if they have a type
+            let type = -1;
+            Object.keys(_gltfBlock.values || {}).find((value) => {
+                if (_gltfBlock.values?.[value].type !== undefined) {
+                    type = _gltfBlock.values[value].type;
+                    return true;
+                }
+                return false;
+            });
+            if (type !== -1) {
+                serializedObjects[0].config.type = _parser.arrays.types[type];
+            }
+            return serializedObjects;
+        },
+    },
     "math/div": getSimpleInputMapping(FlowGraphBlockNames.Divide, ["a", "b"], true),
     "math/rem": getSimpleInputMapping(FlowGraphBlockNames.Modulo, ["a", "b"]),
     "math/min": getSimpleInputMapping(FlowGraphBlockNames.Min, ["a", "b"]),

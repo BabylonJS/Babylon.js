@@ -1,6 +1,7 @@
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { NullEngine } from "core/Engines/nullEngine";
+import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphAction } from "core/FlowGraph/flowGraphLogger";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
@@ -267,16 +268,14 @@ describe("Interactivity nodes", () => {
             if (filterType && type !== filterType) {
                 return;
             }
-            // skip matrix for now
-            if (type === "float4x4") {
-                return;
-            }
             Object.keys(testScenarios).forEach((scenarioName) => {
                 // skip allZero in math/rem and math/div
                 if (scenarioName === "allZero" && (nodeName === "math/rem" || nodeName === "math/div")) {
                     return;
                 }
                 it(`should run ${nodeName} with ${type} and ${scenarioName}`, async () => {
+                    // make sure we don't use float32array for deterministic tests
+                    PerformanceConfigurator.MatrixCurrentType = Array;
                     if (!typesAndLengths[type]) {
                         throw new Error(`Type ${type} is not supported`);
                     }
@@ -284,7 +283,7 @@ describe("Interactivity nodes", () => {
                     const valArrays: number[][] = [];
                     const values: any = {};
                     for (let i = 0; i < testNode.inputs; i++) {
-                        const val = testScenarios[scenarioName](length);
+                        const val = testScenarios[scenarioName](length).map((v) => Math.round(v * 10000) / 10000);
                         const key = i === 0 ? "a" : i === 1 ? "b" : i === 2 ? "c" : "d";
                         values[key] = {
                             type: 0,
@@ -305,16 +304,6 @@ describe("Interactivity nodes", () => {
                     const expected: number[] = [];
                     for (let i = 0; i < length; i++) {
                         expected.push(testNode.operation(...valArrays.map((v) => v[i])));
-                    }
-                    // reorder if the output is a matrix
-                    if (type === "float4x4") {
-                        const reordered = [];
-                        for (let i = 0; i < 4; i++) {
-                            for (let j = 0; j < 4; j++) {
-                                reordered.push(expected[j * 4 + i]);
-                            }
-                        }
-                        expected.splice(0, expected.length, ...reordered);
                     }
                     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
                     expect(logItem).toBeDefined();

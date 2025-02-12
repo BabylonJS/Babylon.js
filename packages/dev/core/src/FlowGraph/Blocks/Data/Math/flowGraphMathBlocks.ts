@@ -342,23 +342,24 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
             return new Quaternion(op(a.x), op(a.y), op(a.z), op(a.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
-            return Matrix.FromValues(
-                op(a.m[0]),
-                op(a.m[4]),
-                op(a.m[8]),
-                op(a.m[12]),
-                op(a.m[1]),
-                op(a.m[5]),
-                op(a.m[9]),
-                op(a.m[13]),
-                op(a.m[2]),
-                op(a.m[6]),
-                op(a.m[10]),
-                op(a.m[14]),
-                op(a.m[3]),
-                op(a.m[7]),
-                op(a.m[11]),
-                op(a.m[15])
+            return Matrix.FromArray(
+                // op(a.m[0]),
+                // op(a.m[4]),
+                // op(a.m[8]),
+                // op(a.m[12]),
+                // op(a.m[1]),
+                // op(a.m[5]),
+                // op(a.m[9]),
+                // op(a.m[13]),
+                // op(a.m[2]),
+                // op(a.m[6]),
+                // op(a.m[10]),
+                // op(a.m[14]),
+                // op(a.m[3]),
+                // op(a.m[7]),
+                // op(a.m[11]),
+                // op(a.m[15])
+                a.m.map(op)
             );
         case FlowGraphTypes.Matrix2D:
             a = a as FlowGraphMatrix2D;
@@ -533,24 +534,24 @@ function _componentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGra
             return new Quaternion(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
-            b = b as Matrix;
-            return Matrix.FromValues(
-                op(a.m[0], b.m[0]),
-                op(a.m[4], b.m[4]),
-                op(a.m[8], b.m[8]),
-                op(a.m[12], b.m[12]),
-                op(a.m[1], b.m[1]),
-                op(a.m[5], b.m[5]),
-                op(a.m[9], b.m[9]),
-                op(a.m[13], b.m[13]),
-                op(a.m[2], b.m[2]),
-                op(a.m[6], b.m[6]),
-                op(a.m[10], b.m[10]),
-                op(a.m[14], b.m[14]),
-                op(a.m[3], b.m[3]),
-                op(a.m[7], b.m[7]),
-                op(a.m[11], b.m[11]),
-                op(a.m[15], b.m[15])
+            return Matrix.FromArray(
+                // op(a.m[0], b.m[0]),
+                // op(a.m[4], b.m[4]),
+                // op(a.m[8], b.m[8]),
+                // op(a.m[12], b.m[12]),
+                // op(a.m[1], b.m[1]),
+                // op(a.m[5], b.m[5]),
+                // op(a.m[9], b.m[9]),
+                // op(a.m[13], b.m[13]),
+                // op(a.m[2], b.m[2]),
+                // op(a.m[6], b.m[6]),
+                // op(a.m[10], b.m[10]),
+                // op(a.m[14], b.m[14]),
+                // op(a.m[3], b.m[3]),
+                // op(a.m[7], b.m[7]),
+                // op(a.m[11], b.m[11]),
+                // op(a.m[15], b.m[15])
+                a.m.map((v, i) => op(v, (b as Matrix).m[i]))
             );
         case FlowGraphTypes.Matrix2D:
             a = a as FlowGraphMatrix2D;
@@ -661,23 +662,24 @@ function _componentWiseTernaryOperation(
             a = a as Matrix;
             b = b as Matrix;
             c = c as Matrix;
-            return Matrix.FromValues(
-                op(a.m[0], b.m[0], c.m[0]),
-                op(a.m[4], b.m[4], c.m[4]),
-                op(a.m[8], b.m[8], c.m[8]),
-                op(a.m[12], b.m[12], c.m[12]),
-                op(a.m[1], b.m[1], c.m[1]),
-                op(a.m[5], b.m[5], c.m[5]),
-                op(a.m[9], b.m[9], c.m[9]),
-                op(a.m[13], b.m[13], c.m[13]),
-                op(a.m[2], b.m[2], c.m[2]),
-                op(a.m[6], b.m[6], c.m[6]),
-                op(a.m[10], b.m[10], c.m[10]),
-                op(a.m[14], b.m[14], c.m[14]),
-                op(a.m[3], b.m[3], c.m[3]),
-                op(a.m[7], b.m[7], c.m[7]),
-                op(a.m[11], b.m[11], c.m[11]),
-                op(a.m[15], b.m[15], c.m[15])
+            return Matrix.FromArray(
+                // op(a.m[0], b.m[0], c.m[0]),
+                // op(a.m[4], b.m[4], c.m[4]),
+                // op(a.m[8], b.m[8], c.m[8]),
+                // op(a.m[12], b.m[12], c.m[12]),
+                // op(a.m[1], b.m[1], c.m[1]),
+                // op(a.m[5], b.m[5], c.m[5]),
+                // op(a.m[9], b.m[9], c.m[9]),
+                // op(a.m[13], b.m[13], c.m[13]),
+                // op(a.m[2], b.m[2], c.m[2]),
+                // op(a.m[6], b.m[6], c.m[6]),
+                // op(a.m[10], b.m[10], c.m[10]),
+                // op(a.m[14], b.m[14], c.m[14]),
+                // op(a.m[3], b.m[3], c.m[3]),
+                // op(a.m[7], b.m[7], c.m[7]),
+                // op(a.m[11], b.m[11], c.m[11]),
+                // op(a.m[15], b.m[15], c.m[15])
+                a.m.map((v, i) => op(v, (b as Matrix).m[i], (c as Matrix).m[i]))
             );
         case FlowGraphTypes.Matrix2D:
             a = a as FlowGraphMatrix2D;
