@@ -3,7 +3,7 @@ import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDraco
 import type { DecoderMessage } from "./dracoDecoder.types";
 import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, EncoderModule, MeshBuilder, Encoder, DracoInt8Array } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
-import type { TypedArrayConstructor } from "core/Buffers";
+import type { TypedArrayConstructor, VertexDataTypedArray } from "core/Buffers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -59,10 +59,27 @@ export function EncodeMesh(
         // Add the faces
         meshBuilder.AddFacesToMesh(mesh, indices.length / 3, indices);
 
+        const addAttributeMap = new Map<
+            Function,
+            (builder: MeshBuilder, mesh: Mesh, attr: any, count: number, size: number, data: Exclude<VertexDataTypedArray, Uint8ClampedArray>) => number
+        >([
+            [Float32Array, (mb, m, a, c, s, d) => mb.AddFloatAttribute(m, a, c, s, d)],
+            [Uint32Array, (mb, m, a, c, s, d) => mb.AddUInt32Attribute(m, a, c, s, d)],
+            [Uint16Array, (mb, m, a, c, s, d) => mb.AddUInt16Attribute(m, a, c, s, d)],
+            [Uint8Array, (mb, m, a, c, s, d) => mb.AddUInt8Attribute(m, a, c, s, d)],
+            [Int32Array, (mb, m, a, c, s, d) => mb.AddInt32Attribute(m, a, c, s, d)],
+            [Int16Array, (mb, m, a, c, s, d) => mb.AddInt16Attribute(m, a, c, s, d)],
+            [Int8Array, (mb, m, a, c, s, d) => mb.AddInt8Attribute(m, a, c, s, d)],
+        ]);
+
         // Add the attributes
         for (const attribute of attributes) {
+            if (attribute.data instanceof Uint8ClampedArray) {
+                attribute.data = new Uint8Array(attribute.data); // Draco does not support Uint8ClampedArray
+            }
+            const addAttribute = addAttributeMap.get(attribute.data.constructor)!;
             const verticesCount = attribute.data.length / attribute.size;
-            attributeIDs[attribute.kind] = meshBuilder.AddFloatAttribute(mesh, encoderModule[attribute.dracoName], verticesCount, attribute.size, attribute.data);
+            attributeIDs[attribute.kind] = addAttribute(meshBuilder, mesh, encoderModule[attribute.dracoName], verticesCount, attribute.size, attribute.data);
             if (options.quantizationBits && options.quantizationBits[attribute.dracoName]) {
                 encoder.SetAttributeQuantization(encoderModule[attribute.dracoName], options.quantizationBits[attribute.dracoName]);
             }
@@ -77,7 +94,7 @@ export function EncodeMesh(
         }
 
         // Encode to native buffer
-        encodedNativeBuffer = new encoderModule.DracoInt8Array() as DracoInt8Array;
+        encodedNativeBuffer = new encoderModule.DracoInt8Array();
         const encodedLength = encoder.EncodeMeshToDracoBuffer(mesh, encodedNativeBuffer);
         if (encodedLength <= 0) {
             throw new Error("Draco encoding failed.");

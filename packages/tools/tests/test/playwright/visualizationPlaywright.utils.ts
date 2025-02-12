@@ -125,9 +125,12 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
                 expect(glError).toBe(false);
             }
             await expect(page).toHaveScreenshot((testCase.referenceImage || testCase.title).replace(".png", "") + ".png", {
+                timeout: 7000,
                 // omitBackground: true,
-                threshold: 0.1,
-                maxDiffPixelRatio: (testCase.errorRatio || 3) / 100,
+                // 3% change in color is allowed
+                threshold: process.env.SCREENSHOT_THRESHOLD ? +process.env.SCREENSHOT_THRESHOLD : 0.035,
+                // default to 1% pixel changed allowed
+                maxDiffPixelRatio: (testCase.errorRatio || (process.env.SCREENSHOT_MAX_PIXEL ? +process.env.SCREENSHOT_MAX_PIXEL : 1.1)) / 100,
             });
             page.off("console", logCallback);
         });

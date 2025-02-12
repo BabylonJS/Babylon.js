@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { GlobalState } from "../../globalState";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -20,6 +20,7 @@ export class DebugNodePropertyTabComponent extends React.Component<IPropertyComp
         return (
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <ButtonLineComponent label="Refresh all" onClick={() => this.refreshAll()} />
                 </LineContainerComponent>
