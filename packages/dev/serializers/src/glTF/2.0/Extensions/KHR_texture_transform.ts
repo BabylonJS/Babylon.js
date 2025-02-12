@@ -8,16 +8,20 @@ const NAME = "KHR_texture_transform";
 
 /**
  * Computes the adjusted offset for a rotation centered about the origin.
- * This does not work when scaling is involved; investigation is needed.
  * @internal
  */
 function AdjustOffsetForRotationCenter(babylonTexture: Texture): [number, number] {
-    const { uOffset, vOffset, uRotationCenter, vRotationCenter, wAng } = babylonTexture;
+    const { uOffset, vOffset, uRotationCenter, vRotationCenter, wAng, uScale, vScale } = babylonTexture;
     const cosAngle = Math.cos(-wAng);
     const sinAngle = Math.sin(-wAng);
-    const deltaU = uRotationCenter * (1 - cosAngle) - vRotationCenter * sinAngle;
-    const deltaV = vRotationCenter * (1 - cosAngle) + uRotationCenter * sinAngle;
-    return [uOffset + deltaU, vOffset + deltaV];
+    // Apply scaling to rotation center coordinates
+    const scaledUCenter = uRotationCenter * uScale;
+    const scaledVCenter = vRotationCenter * vScale;
+    // Calculate offset adjustments with scaling
+    const deltaU = scaledUCenter * (1 - cosAngle) - scaledVCenter * sinAngle;
+    const deltaV = scaledVCenter * (1 - cosAngle) + scaledUCenter * sinAngle;
+    // Apply scaling to the final offset
+    return [(uOffset + deltaU) * uScale, (vOffset + deltaV) * vScale];
 }
 
 /**
@@ -49,7 +53,8 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
         const scene = babylonTexture.getScene();
         if (!scene) {
-            Tools.Warn(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
+            Tools.Warn(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}! Not exporting with ${NAME}.`);
+            return;
         }
 
         /*
@@ -58,11 +63,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
          */
         if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
             Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
-            // Usually, we'd always early return here if the texture uses an unsupported combination of transform properties,
-            // but we're making an exception here to maintain backwards compatibility.
-            if (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0) {
-                return;
-            }
+            return;
         }
 
         const textureTransform: IKHRTextureTransform = {};
@@ -80,10 +81,6 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
         if (babylonTexture.wAng !== 0) {
             if (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0) {
-                if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                    Tools.Warn(`${context}: Texture ${babylonTexture.name} with scaling and a rotation not centered at the origin cannot be exported with ${NAME}`);
-                    return;
-                }
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin will be exported with an adjusted texture offset for ${NAME}.`);
                 textureTransform.offset = AdjustOffsetForRotationCenter(babylonTexture);
             }
