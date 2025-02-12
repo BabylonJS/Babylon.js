@@ -360,6 +360,12 @@ export type Model = IDisposable &
          * Should be called after the model undergoes transformations.
          */
         resetWorldBounds(): void;
+
+        /**
+         * Makes the model the current active model in the viewer.
+         * @returns True if the model was successfully made active, otherwise false.
+         */
+        makeActive(): boolean;
     }>;
 
 type ModelInternal = Model & {
@@ -808,20 +814,19 @@ export class Viewer implements IDisposable {
         return false;
     }
 
-    protected get _loadedModels(): readonly ModelInternal[] {
+    protected get _loadedModels(): readonly Model[] {
         return this._loadedModelsBacking;
     }
 
-    protected get _activeModel(): Nullable<ModelInternal> {
+    protected get _activeModel(): Nullable<Model> {
         return this._activeModelBacking;
     }
 
     protected _setActiveModel(
-        ...args: [model: null] | [model: ModelInternal, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
-    ): void {
+        ...args: [model: null] | [model: Model, options?: UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>]
+    ) {
         const [model, options] = args;
-        if (model !== this._activeModelBacking) {
-            this._activeModelBacking = model;
+        if (model && model.makeActive()) {
             this._updateLight();
             this._applyAnimationSpeed();
             this._selectAnimation(options?.defaultAnimation ?? 0, false);
@@ -1074,7 +1079,7 @@ export class Viewer implements IDisposable {
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
                         if (model === this._activeModel) {
-                            this._setActiveModel(null);
+                            this._activeModelBacking = null;
                         }
                     }
 
@@ -1116,6 +1121,13 @@ export class Viewer implements IDisposable {
                         }
                     }
                 },
+                makeActive: (): boolean => {
+                    if (model !== this._activeModelBacking) {
+                        this._activeModelBacking = model;
+                        return true;
+                    }
+                    return false;
+                },
             };
 
             this._loadedModelsBacking.push(model);
@@ -1140,11 +1152,12 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             throwIfAborted(abortSignal, abortController.signal);
             this._activeModel?.dispose();
-            this._setActiveModel(null);
+            this._activeModelBacking = null;
             this.selectedAnimation = -1;
 
             if (source) {
-                this._setActiveModel(await this._loadModel(source, options, abortController.signal), Object.assign({ source, interpolateCamera: false }, options));
+                const model = await this._loadModel(source, options, abortController.signal);
+                this._setActiveModel(model, Object.assign({ source, interpolateCamera: false }, options));
             }
         });
     }
