@@ -111,6 +111,25 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
     );
 }
 
+/** @internal */
+export function _InitSpatialAudioOptions(options: Partial<ISpatialAudioOptions>): ISpatialAudioOptions {
+    return {
+        spatialEnabled: false,
+        spatialConeInnerAngle: _SpatialAudioDefaults.coneInnerAngle,
+        spatialConeOuterAngle: _SpatialAudioDefaults.coneOuterAngle,
+        spatialConeOuterVolume: _SpatialAudioDefaults.coneOuterVolume,
+        spatialDistanceModel: _SpatialAudioDefaults.distanceModel,
+        spatialMaxDistance: _SpatialAudioDefaults.maxDistance,
+        spatialPanningModel: _SpatialAudioDefaults.panningModel,
+        spatialPosition: _SpatialAudioDefaults.position,
+        spatialReferenceDistance: _SpatialAudioDefaults.referenceDistance,
+        spatialRolloffFactor: _SpatialAudioDefaults.rolloffFactor,
+        spatialRotation: _SpatialAudioDefaults.rotation,
+        spatialRotationQuaternion: _SpatialAudioDefaults.rotationQuaternion,
+        ...options,
+    };
+}
+
 /**
  * Abstract class representing the `spatial` audio property on a sound or audio bus.
  *

@@ -1,14 +1,15 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "../abstractAudio/staticSound";
+import type { IStaticSoundOptions, IStaticSoundStoredOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "../abstractAudio/staticSound";
 import { StaticSound } from "../abstractAudio/staticSound";
+import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
-import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
+import { _StaticSoundInstance, type IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { SoundState } from "../soundState";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
+import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
@@ -45,7 +46,7 @@ export async function CreateSoundAsync(
  */
 export async function CreateSoundBufferAsync(
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-    options: Partial<IStaticSoundOptions> = {},
+    options: Partial<IStaticSoundBufferOptions> = {},
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
     const buffer = new _WebAudioStaticSoundBuffer(_GetWebAudioEngine(engine));
@@ -59,6 +60,7 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _spatial: Nullable<_SpatialAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
+    protected override readonly _options: IStaticSoundStoredOptions;
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
@@ -68,8 +70,20 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions> = {}) {
-        super(name, engine, options);
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions>) {
+        super(name, engine);
+
+        this._options = {
+            autoplay: options.autoplay ?? false,
+            duration: options.duration ?? 0,
+            loop: options.loop ?? false,
+            loopEnd: options.loopEnd ?? 0,
+            loopStart: options.loopStart ?? 0,
+            maxInstances: options.maxInstances ?? Infinity,
+            pitch: options.pitch ?? 0,
+            playbackRate: options.playbackRate ?? 1,
+            startOffset: options.startOffset ?? 0,
+        };
 
         this._subGraph = new _WebAudioStaticSound._SubGraph(this);
     }
@@ -201,7 +215,7 @@ class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         super(engine);
     }
 
-    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
+    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundBufferOptions>): Promise<void> {
         if (source instanceof AudioBuffer) {
             this.audioBuffer = source;
         } else if (typeof source === "string") {
@@ -274,13 +288,16 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     private _sourceNode: Nullable<AudioBufferSourceNode> = null;
     private _volumeNode: GainNode;
 
+    protected override readonly _options: IStaticSoundInstanceOptions;
     protected override _sound: _WebAudioStaticSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
-    public constructor(sound: _WebAudioStaticSound, options: Partial<IStaticSoundOptions>) {
-        super(sound, options);
+    public constructor(sound: _WebAudioStaticSound, options: IStaticSoundInstanceOptions) {
+        super(sound);
+
+        this._options = options;
 
         this._volumeNode = new GainNode(sound.audioContext);
         this._initSourceNode();
@@ -293,7 +310,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         }
 
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
-        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
+        return this._enginePauseTime + timeSinceLastStart + this._options.startOffset;
     }
 
     public set currentTime(value: number) {
@@ -304,7 +321,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             this._deinitSourceNode();
         }
 
-        this.options.startOffset = value;
+        this._options.startOffset = value;
 
         if (restart) {
             this.play();
@@ -343,35 +360,34 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
-    public play(options: Partial<IStaticSoundPlayOptions> = this.options): void {
+    public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Started) {
             return;
         }
 
         if (options.duration !== undefined) {
-            this.options.duration = options.duration;
+            this._options.duration = options.duration;
         }
         if (options.loop !== undefined) {
-            this.options.loop = options.loop;
+            this._options.loop = options.loop;
         }
         if (options.loopStart !== undefined) {
-            this.options.loopStart = options.loopStart;
+            this._options.loopStart = options.loopStart;
         }
         if (options.loopEnd !== undefined) {
-            this.options.loopEnd = options.loopEnd;
+            this._options.loopEnd = options.loopEnd;
         }
         if (options.pitch !== undefined) {
-            this.options.pitch = options.pitch;
+            this._options.pitch = options.pitch;
         }
         if (options.playbackRate !== undefined) {
-            this.options.playbackRate = options.playbackRate;
+            this._options.playbackRate = options.playbackRate;
         }
         if (options.startOffset !== undefined) {
-            this.options.startOffset = options.startOffset;
+            this._options.startOffset = options.startOffset;
         }
-        this.options.volume = options.volume ?? 1;
 
-        let startOffset = this.options.startOffset;
+        let startOffset = this._options.startOffset;
 
         if (this._state === SoundState.Paused) {
             startOffset += this.currentTime;
@@ -380,14 +396,14 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
-        this._volumeNode.gain.value = this.options.volume;
+        this._volumeNode.gain.value = options.volume ?? 1;
 
         this._initSourceNode();
 
         if (this.engine.state === "running") {
             this._setState(SoundState.Started);
-            this._sourceNode?.start(this._enginePlayTime, startOffset, this.options.duration > 0 ? this.options.duration : undefined);
-        } else if (this.options.loop) {
+            this._sourceNode?.start(this._enginePlayTime, startOffset, this._options.duration > 0 ? this._options.duration : undefined);
+        } else if (this._options.loop) {
             this._setState(SoundState.Starting);
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
         }
@@ -479,33 +495,23 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     private _initSourceNode(): void {
-        if (this._sourceNode) {
-            const node = this._sourceNode;
+        if (!this._sourceNode) {
+            this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, { buffer: this._sound.buffer.audioBuffer });
 
-            node.detune.value = this.options.pitch;
-            node.loop = this.options.loop;
-            node.loopEnd = this.options.loopEnd;
-            node.loopStart = this.options.loopStart;
-            node.playbackRate.value = this.options.playbackRate;
+            this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
+            this._sourceNode.connect(this._volumeNode);
 
-            return;
+            if (!this._connect(this._sound)) {
+                throw new Error("Connect failed");
+            }
         }
 
-        this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, {
-            buffer: this._sound.buffer.audioBuffer,
-            detune: this.options.pitch,
-            loop: this.options.loop,
-            loopEnd: this.options.loopEnd,
-            loopStart: this.options.loopStart,
-            playbackRate: this.options.playbackRate,
-        });
-
-        this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
-        this._sourceNode.connect(this._volumeNode);
-
-        if (!this._connect(this._sound)) {
-            throw new Error("Connect failed");
-        }
+        const node = this._sourceNode;
+        node.detune.value = this._options.pitch;
+        node.loop = this._options.loop;
+        node.loopEnd = this._options.loopEnd;
+        node.loopStart = this._options.loopStart;
+        node.playbackRate.value = this._options.playbackRate;
     }
 
     private _onEngineStateChanged = () => {
@@ -513,7 +519,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        if (this.options.loop && this.state === SoundState.Starting) {
+        if (this._options.loop && this.state === SoundState.Starting) {
             this.play();
         }
 

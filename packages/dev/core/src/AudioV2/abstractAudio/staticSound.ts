@@ -1,15 +1,23 @@
 import { SoundState } from "../soundState";
-import type { ICommonSoundOptions, ICommonSoundPlayOptions } from "./abstractSound";
+import type { IAbstractSoundOptions, IAbstractSoundStoredOptions, IAbstractSoundPlayOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { StaticSoundBuffer } from "./staticSoundBuffer";
+import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";
 import type { _StaticSoundInstance } from "./staticSoundInstance";
 
-interface ICommonStaticSoundOptions {
+/** @internal */
+export interface IStaticSoundOptionsBase {
     /**
-     * The amount of time to play the sound for, in seconds. If not specified, the sound plays for its full duration.
+     * The amount of time to play the sound for, in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the sound plays for its full duration.
      */
     duration: number;
+    /**
+     * The end of the loop range in seconds. Defaults to `0`.
+     * - If less than or equal to `0`, the loop plays for the sound's full duration.
+     * - Has no effect if {@link loop} is `false`.
+     */
+    loopEnd: number;
     /**
      * The start of the loop range in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
@@ -18,32 +26,34 @@ interface ICommonStaticSoundOptions {
      */
     loopStart: number;
     /**
-     * The end of the loop range in seconds. Defaults to `0`.
-     * - If less than or equal to `0`, the loop plays for the sound's full duration.
-     * - Has no effect if {@link loop} is `false`.
-     */
-    loopEnd: number;
-    /**
-     * The pitch of the sound, in cents.
+     * The pitch of the sound, in cents. Defaults to `0`.
      * - Can be combined with {@link playbackRate}.
      */
     pitch: number;
     /**
-     * The playback rate of the sound.
+     * The playback rate of the sound. Defaults to `1`.
      * - Can be combined with {@link pitch}.
      */
     playbackRate: number;
 }
 
-/**
- * Options for playing a static sound.
- */
-export interface IStaticSoundPlayOptions extends ICommonSoundPlayOptions, ICommonStaticSoundOptions {
+/** @internal */
+export interface IStaticSoundPlayOptionsBase {
     /**
      * The time to wait before playing the sound, in seconds.
      */
     waitTime: number;
 }
+
+/**
+ * Options for creating a static sound.
+ */
+export interface IStaticSoundOptions extends IAbstractSoundOptions, IStaticSoundBufferOptions, IStaticSoundStoredOptions {}
+
+/**
+ * Options for playing a static sound.
+ */
+export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, IStaticSoundOptionsBase, IStaticSoundPlayOptionsBase {}
 
 /**
  * Options for stopping a static sound.
@@ -56,16 +66,10 @@ export interface IStaticSoundStopOptions {
 }
 
 /**
- * Options for creating a static sound.
+ * Options stored in a static sound.
+ * @internal
  */
-export interface IStaticSoundOptions extends ICommonSoundOptions, ICommonStaticSoundOptions {
-    /**
-     * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
-     * - Has no effect if the sound's source is not a string array.
-     * @see {@link CreateSoundAsync} `source` parameter.
-     */
-    skipCodecCheck: boolean;
-}
+export interface IStaticSoundStoredOptions extends IAbstractSoundStoredOptions, IStaticSoundOptionsBase {}
 
 /**
  * Abstract class representing a static sound.
@@ -81,7 +85,7 @@ export interface IStaticSoundOptions extends ICommonSoundOptions, ICommonStaticS
  */
 export abstract class StaticSound extends AbstractSound {
     protected override _instances: Set<_StaticSoundInstance>;
-    protected override _options: Partial<IStaticSoundOptions>;
+    protected abstract override readonly _options: IStaticSoundStoredOptions;
 
     /**
      * The sound buffer that the sound uses.
@@ -90,8 +94,8 @@ export abstract class StaticSound extends AbstractSound {
      */
     public abstract readonly buffer: StaticSoundBuffer;
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions> = {}) {
-        super(name, engine, options);
+    protected constructor(name: string, engine: AudioEngineV2) {
+        super(name, engine);
     }
 
     /**
@@ -99,7 +103,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the sound plays for its full duration.
      */
     public get duration(): number {
-        return this._options.duration ?? 0;
+        return this._options.duration;
     }
 
     public set duration(value: number) {
@@ -111,7 +115,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the loop starts at the beginning of the sound.
      */
     public get loopStart(): number {
-        return this._options.loopStart ?? 0;
+        return this._options.loopStart;
     }
 
     public set loopStart(value: number) {
@@ -123,7 +127,7 @@ export abstract class StaticSound extends AbstractSound {
      * - If less than or equal to `0`, the loop plays for the sound's full duration.
      */
     public get loopEnd(): number {
-        return this._options.loopEnd ?? 0;
+        return this._options.loopEnd;
     }
 
     public set loopEnd(value: number) {
@@ -135,7 +139,7 @@ export abstract class StaticSound extends AbstractSound {
      * - Gets combined with {@link playbackRate} to determine the final pitch.
      */
     public get pitch(): number {
-        return this._options.pitch ?? 0;
+        return this._options.pitch;
     }
 
     public set pitch(value: number) {
@@ -147,7 +151,7 @@ export abstract class StaticSound extends AbstractSound {
      * - Gets combined with {@link pitch} to determine the final playback rate.
      */
     public get playbackRate(): number {
-        return this._options.playbackRate ?? 1;
+        return this._options.playbackRate;
     }
 
     public set playbackRate(value: number) {
