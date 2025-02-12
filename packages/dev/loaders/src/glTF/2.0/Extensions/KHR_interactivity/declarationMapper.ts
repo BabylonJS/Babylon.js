@@ -400,7 +400,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math.random": {
+    "math/random": {
         blocks: [FlowGraphBlockNames.Random],
         outputs: {
             values: {

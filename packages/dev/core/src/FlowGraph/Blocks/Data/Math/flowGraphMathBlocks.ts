@@ -247,6 +247,23 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
 }
 RegisterClass(FlowGraphBlockNames.Divide, FlowGraphDivideBlock);
 
+export interface IFlowGraphRandomBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The minimum value. defaults to 0.
+     */
+    min?: number;
+    /**
+     * The maximum value. defaults to 1.
+     */
+    max?: number;
+
+    /**
+     * The seed for the random number generator for deterministic random values.
+     * If not set, Math.random() is used.
+     */
+    seed?: number;
+}
+
 /**
  * @experimental
  * Random number between min and max (defaults to 0 to 1)
@@ -264,16 +281,34 @@ export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGr
      */
     public readonly max: FlowGraphDataConnection<number>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    private _seed?: number;
+
+    constructor(config?: IFlowGraphRandomBlockConfiguration) {
         super(RichTypeNumber, (context) => this._random(context), FlowGraphBlockNames.Random, config);
-        this.min = this.registerDataInput("min", RichTypeNumber, 0);
-        this.max = this.registerDataInput("max", RichTypeNumber, 1);
+        this.min = this.registerDataInput("min", RichTypeNumber, config?.min ?? 0);
+        this.max = this.registerDataInput("max", RichTypeNumber, config?.max ?? 1);
+        if (config?.seed) {
+            this._seed = config.seed;
+        }
+    }
+
+    private _isSeed(seed = this._seed): seed is number {
+        return seed !== undefined;
+    }
+
+    private _getRandomValue() {
+        if (this._isSeed(this._seed)) {
+            // compute seed-based random number, deterministic randomness!
+            const x = Math.sin(this._seed++) * 10000;
+            return x - Math.floor(x);
+        }
+        return Math.random();
     }
 
     private _random(context: FlowGraphContext) {
         const min = this.min.getValue(context);
         const max = this.max.getValue(context);
-        return Math.random() * (max - min) + min;
+        return this._getRandomValue() * (max - min) + min;
     }
 }
 RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
