@@ -364,7 +364,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 return false;
             });
             if (type !== -1) {
-                serializedObjects[0].config.type = _parser.arrays.types[type];
+                serializedObjects[0].config.type = _parser.arrays.types[type].flowGraphType;
             }
             return serializedObjects;
         },
@@ -1292,7 +1292,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                             // get the type of the value
                             const type = value.type;
                             if (type !== undefined) {
-                                serializedObject.config.animationType = parser.arrays.types[type];
+                                serializedObject.config.animationType = parser.arrays.types[type].flowGraphType;
                             }
                         }
                     });
@@ -1449,7 +1449,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
                     return false;
                 });
                 if (type !== -1) {
-                    serializedObjects[0].config.type = _parser.arrays.types[type];
+                    serializedObjects[0].config.type = _parser.arrays.types[type].flowGraphType;
                 }
             }
             return serializedObjects;

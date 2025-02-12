@@ -22,6 +22,9 @@ export interface IFlowGraphMatrix<VectorType> {
     equals(other: IFlowGraphMatrix<VectorType>, epsilon?: number): boolean;
 }
 
+/**
+ * Column-major 2x2 matrix.
+ */
 export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     /**
      * @internal
@@ -41,8 +44,11 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     }
 
     public transformVectorToRef(v: Vector2, result: Vector2): Vector2 {
-        result.x = v.x * this._m[0] + v.y * this._m[1];
-        result.y = v.x * this._m[2] + v.y * this._m[3];
+        const m = this._m;
+        // Column-major ordering: first column is [m[0], m[1]],
+        // second column is [m[2], m[3]]
+        result.x = v.x * m[0] + v.y * m[2];
+        result.y = v.x * m[1] + v.y * m[3];
         return result;
     }
 
@@ -69,10 +75,18 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const o = other._m;
         const r = result._m;
 
-        r[0] = m[0] * o[0] + m[1] * o[2];
-        r[1] = m[0] * o[1] + m[1] * o[3];
-        r[2] = m[2] * o[0] + m[3] * o[2];
-        r[3] = m[2] * o[1] + m[3] * o[3];
+        // For column-major 2x2, A = [a, b, c, d] represents:
+        // | a  c |
+        // | b  d |
+        // Multiply A * B:
+        // r[0] = a*e + c*f
+        // r[1] = b*e + d*f
+        // r[2] = a*g + c*h
+        // r[3] = b*g + d*h
+        r[0] = m[0] * o[0] + m[2] * o[1];
+        r[1] = m[1] * o[0] + m[3] * o[1];
+        r[2] = m[0] * o[2] + m[2] * o[3];
+        r[3] = m[1] * o[2] + m[3] * o[3];
 
         return result;
     }
@@ -86,11 +100,9 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const o = other._m;
         const r = result._m;
 
-        r[0] = m[0] / o[0];
-        r[1] = m[1] / o[1];
-        r[2] = m[2] / o[2];
-        r[3] = m[3] / o[3];
-
+        for (let i = 0; i < 4; i++) {
+            r[i] = m[i] / o[i];
+        }
         return result;
     }
 
@@ -103,11 +115,9 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] + o[0];
-        r[1] = m[1] + o[1];
-        r[2] = m[2] + o[2];
-        r[3] = m[3] + o[3];
-
+        for (let i = 0; i < 4; i++) {
+            r[i] = m[i] + o[i];
+        }
         return result;
     }
 
@@ -120,11 +130,9 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] - o[0];
-        r[1] = m[1] - o[1];
-        r[2] = m[2] - o[2];
-        r[3] = m[3] - o[3];
-
+        for (let i = 0; i < 4; i++) {
+            r[i] = m[i] - o[i];
+        }
         return result;
     }
 
@@ -134,11 +142,20 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
 
     public transpose(): FlowGraphMatrix2D {
         const m = this._m;
+        // For a column-major 2x2 matrix:
+        // Original: [a, b, c, d] → | a  c |
+        //                           | b  d |
+        // Transpose:  | a  b |
+        //             | c  d |
+        // as column-major: [a, c, b, d]
         return new FlowGraphMatrix2D([m[0], m[2], m[1], m[3]]);
     }
 
     public determinant(): number {
         const m = this._m;
+        // For matrix [a, b, c, d] (column-major => | a  c |
+        //                                          | b  d | )
+        // determinant = a*d - b*c
         return m[0] * m[3] - m[1] * m[2];
     }
 
@@ -149,6 +166,7 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         }
         const m = this._m;
         const invDet = 1 / det;
+        // For inverse of [a, b, c, d] => [d, -b, -c, a]*invDet
         return new FlowGraphMatrix2D([m[3] * invDet, -m[1] * invDet, -m[2] * invDet, m[0] * invDet]);
     }
 
@@ -166,6 +184,9 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     }
 }
 
+/**
+ * Column-major 3x3 matrix.
+ */
 export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
     /**
      * @internal
@@ -186,9 +207,10 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     public transformVectorToRef(v: Vector3, result: Vector3): Vector3 {
         const m = this._m;
-        result.x = v.x * m[0] + v.y * m[1] + v.z * m[2];
-        result.y = v.x * m[3] + v.y * m[4] + v.z * m[5];
-        result.z = v.x * m[6] + v.y * m[7] + v.z * m[8];
+        // Updated for column-major ordering:
+        result.x = v.x * m[0] + v.y * m[3] + v.z * m[6];
+        result.y = v.x * m[1] + v.y * m[4] + v.z * m[7];
+        result.z = v.x * m[2] + v.y * m[5] + v.z * m[8];
         return result;
     }
 
@@ -197,17 +219,20 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] * o[0] + m[1] * o[3] + m[2] * o[6];
-        r[1] = m[0] * o[1] + m[1] * o[4] + m[2] * o[7];
-        r[2] = m[0] * o[2] + m[1] * o[5] + m[2] * o[8];
+        // For a column-major 3x3 matrix,
+        // The element at row i, column j is at index i + j*3
+        // Thus, for the multiplication:
+        r[0] = m[0] * o[0] + m[3] * o[1] + m[6] * o[2];
+        r[1] = m[1] * o[0] + m[4] * o[1] + m[7] * o[2];
+        r[2] = m[2] * o[0] + m[5] * o[1] + m[8] * o[2];
 
-        r[3] = m[3] * o[0] + m[4] * o[3] + m[5] * o[6];
-        r[4] = m[3] * o[1] + m[4] * o[4] + m[5] * o[7];
-        r[5] = m[3] * o[2] + m[4] * o[5] + m[5] * o[8];
+        r[3] = m[0] * o[3] + m[3] * o[4] + m[6] * o[5];
+        r[4] = m[1] * o[3] + m[4] * o[4] + m[7] * o[5];
+        r[5] = m[2] * o[3] + m[5] * o[4] + m[8] * o[5];
 
-        r[6] = m[6] * o[0] + m[7] * o[3] + m[8] * o[6];
-        r[7] = m[6] * o[1] + m[7] * o[4] + m[8] * o[7];
-        r[8] = m[6] * o[2] + m[7] * o[5] + m[8] * o[8];
+        r[6] = m[0] * o[6] + m[3] * o[7] + m[6] * o[8];
+        r[7] = m[1] * o[6] + m[4] * o[7] + m[7] * o[8];
+        r[8] = m[2] * o[6] + m[5] * o[7] + m[8] * o[8];
 
         return result;
     }
@@ -221,16 +246,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] / o[0];
-        r[1] = m[1] / o[1];
-        r[2] = m[2] / o[2];
-        r[3] = m[3] / o[3];
-        r[4] = m[4] / o[4];
-        r[5] = m[5] / o[5];
-        r[6] = m[6] / o[6];
-        r[7] = m[7] / o[7];
-        r[8] = m[8] / o[8];
-
+        for (let i = 0; i < 9; i++) {
+            r[i] = m[i] / o[i];
+        }
         return result;
     }
 
@@ -243,16 +261,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] + o[0];
-        r[1] = m[1] + o[1];
-        r[2] = m[2] + o[2];
-        r[3] = m[3] + o[3];
-        r[4] = m[4] + o[4];
-        r[5] = m[5] + o[5];
-        r[6] = m[6] + o[6];
-        r[7] = m[7] + o[7];
-        r[8] = m[8] + o[8];
-
+        for (let i = 0; i < 9; i++) {
+            r[i] = m[i] + o[i];
+        }
         return result;
     }
 
@@ -265,16 +276,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const o = other.m;
         const r = result.m;
 
-        r[0] = m[0] - o[0];
-        r[1] = m[1] - o[1];
-        r[2] = m[2] - o[2];
-        r[3] = m[3] - o[3];
-        r[4] = m[4] - o[4];
-        r[5] = m[5] - o[5];
-        r[6] = m[6] - o[6];
-        r[7] = m[7] - o[7];
-        r[8] = m[8] - o[8];
-
+        for (let i = 0; i < 9; i++) {
+            r[i] = m[i] - o[i];
+        }
         return result;
     }
 
@@ -302,12 +306,13 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     public transpose(): FlowGraphMatrix3D {
         const m = this._m;
+        // When transposing a column-major matrix, swap rows and columns
         return new FlowGraphMatrix3D([m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]]);
     }
 
     public determinant(): number {
         const m = this._m;
-        return m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) + m[2] * (m[3] * m[7] - m[4] * m[6]);
+        return m[0] * (m[4] * m[8] - m[5] * m[7]) - m[3] * (m[1] * m[8] - m[2] * m[7]) + m[6] * (m[1] * m[5] - m[2] * m[4]);
     }
 
     public inverse(): FlowGraphMatrix3D {
@@ -333,7 +338,6 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
     public equals(other: IFlowGraphMatrix<Vector3>, epsilon: number = 0): boolean {
         const m = this._m;
         const o = other.m;
-        // performance shortcut
         if (epsilon === 0) {
             return m[0] === o[0] && m[1] === o[1] && m[2] === o[2] && m[3] === o[3] && m[4] === o[4] && m[5] === o[5] && m[6] === o[6] && m[7] === o[7] && m[8] === o[8];
         }

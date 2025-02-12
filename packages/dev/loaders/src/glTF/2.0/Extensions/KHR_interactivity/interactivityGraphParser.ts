@@ -20,17 +20,17 @@ export interface InteractivityEvent {
     }[];
 }
 export const gltfTypeToBabylonType: {
-    [key: string]: FlowGraphTypes;
+    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
 } = {
-    float: FlowGraphTypes.Number,
-    bool: FlowGraphTypes.Boolean,
-    float2: FlowGraphTypes.Vector2,
-    float3: FlowGraphTypes.Vector3,
-    float4: FlowGraphTypes.Vector4,
-    float4x4: FlowGraphTypes.Matrix,
-    float2x2: FlowGraphTypes.Matrix2D, // we don't have matrix3 and matrix2. We only have 4x4
-    float3x3: FlowGraphTypes.Matrix3D, // we don't have matrix3 and matrix2. We only have 4x4
-    int: FlowGraphTypes.Integer,
+    float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
+    bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
+    float2: { length: 2, flowGraphType: FlowGraphTypes.Vector2, elementType: "number" },
+    float3: { length: 3, flowGraphType: FlowGraphTypes.Vector3, elementType: "number" },
+    float4: { length: 4, flowGraphType: FlowGraphTypes.Vector4, elementType: "number" },
+    float4x4: { length: 16, flowGraphType: FlowGraphTypes.Matrix, elementType: "number" },
+    float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
+    float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
+    int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
 };
 
 export class InteractivityGraphToFlowGraphParser {
@@ -38,7 +38,7 @@ export class InteractivityGraphToFlowGraphParser {
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: FlowGraphTypes[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" }[] = [];
     private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
@@ -113,9 +113,15 @@ export class InteractivityGraphToFlowGraphParser {
             Logger.Error(["No type found for variable", variable]);
             throw new Error("Error parsing variables");
         }
+        if (variable.value) {
+            if (variable.value.length !== type.length) {
+                Logger.Error(["Invalid value length for variable", variable, type]);
+                throw new Error("Error parsing variables");
+            }
+        }
         const value = variable.value || [];
         if (!value.length) {
-            switch (type) {
+            switch (type.flowGraphType) {
                 case FlowGraphTypes.Boolean:
                     value.push(false);
                     break;
@@ -145,7 +151,7 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
             }
         }
-        return { type, value: dataTransform ? dataTransform(value, this) : value };
+        return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
     }
 
     private _parseEvents() {
@@ -177,7 +183,7 @@ export class InteractivityGraphToFlowGraphParser {
                     }
                     return {
                         id: key,
-                        type,
+                        type: type.flowGraphType,
                         eventData: true,
                         value: eventValue.value,
                     };
