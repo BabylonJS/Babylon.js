@@ -212,3 +212,26 @@ export type Constructor<C extends new (...args: any[]) => any, I extends Instanc
  * Alias type for image sources
  */
 export type ImageSource = ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas;
+
+/**
+ * Type for typed array like objects
+ */
+export interface TypedArrayLike extends ArrayBufferView {
+    /**
+     * The size in bytes of the array.
+     */
+    readonly length: number;
+    [n: number]: number;
+}
+
+/**
+ * Type for typed array constructor
+ */
+export interface TypedArrayConstructor<T extends TypedArray> {
+    new (length: number): T;
+    new (buffer: ArrayBufferLike, byteOffset: number, length?: number): T;
+    /**
+     * The size in bytes of each element in the array.
+     */
+    BYTES_PER_ELEMENT: number;
+}
