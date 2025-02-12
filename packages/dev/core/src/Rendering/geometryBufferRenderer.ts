@@ -556,7 +556,7 @@ export class GeometryBufferRenderer {
 
         let uv1 = false;
         let uv2 = false;
-        let color = false;
+        const color = false;
 
         if (material) {
             let needUv = false;

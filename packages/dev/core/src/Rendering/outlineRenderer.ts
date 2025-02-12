@@ -289,7 +289,7 @@ export class OutlineRenderer implements ISceneComponent {
 
         let uv1 = false;
         let uv2 = false;
-        let color = false;
+        const color = false;
 
         // Alpha test
         if (material.needAlphaTestingForMesh(mesh)) {
