@@ -3,8 +3,11 @@ import { SoundState } from "../soundState";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound, IAbstractSoundPlayOptions, IAbstractSoundPlayOptionsBase } from "./abstractSound";
 
-/** @internal */
-export interface IAbstractSoundInstanceStoredOptions extends IAbstractSoundPlayOptionsBase {}
+/**
+ * Options for creating a sound instance.
+ * @internal
+ * */
+export interface IAbstractSoundInstanceOptions extends IAbstractSoundPlayOptionsBase {}
 
 /** @internal */
 export abstract class _AbstractSoundInstance extends AbstractAudioNode {
@@ -20,7 +23,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
     /** Observable triggered when the sound instance's state changes */
     public readonly onStateChangedObservable = new Observable<_AbstractSoundInstance>();
 
-    protected abstract readonly _options: IAbstractSoundInstanceStoredOptions;
+    protected abstract readonly _options: IAbstractSoundInstanceOptions;
 
     protected constructor(sound: AbstractSound) {
         super(sound.engine, AudioNodeType.HAS_OUTPUTS);

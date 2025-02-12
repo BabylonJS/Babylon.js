@@ -1,13 +1,13 @@
 import { Observable } from "../../Misc/observable";
-import type { IAbstractSoundPlayOptionsBase } from "./abstractSound";
+import type { IAbstractSoundInstanceOptions } from "./abstractSoundInstance";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { IStreamingSoundOptionsBase, StreamingSound } from "./streamingSound";
 
 /**
- * Options stored in a static sound instance.
+ * Options for creating streaming sound instance.
  * @internal
  */
-export interface IStreamingSoundInstanceOptions extends IStreamingSoundOptionsBase, IAbstractSoundPlayOptionsBase {}
+export interface IStreamingSoundInstanceOptions extends IAbstractSoundInstanceOptions, IStreamingSoundOptionsBase {}
 
 /** @internal */
 export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {

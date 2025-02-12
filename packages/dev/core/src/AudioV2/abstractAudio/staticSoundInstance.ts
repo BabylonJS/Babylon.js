@@ -1,12 +1,12 @@
-import type { IAbstractSoundPlayOptionsBase } from "./abstractSound";
+import type { IAbstractSoundInstanceOptions } from "./abstractSoundInstance";
 import { _AbstractSoundInstance } from "./abstractSoundInstance";
 import type { IStaticSoundOptionsBase, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "./staticSound";
 
 /**
- * Options stored in a static sound instance.
+ * Options for creating a static sound instance.
  * @internal
  */
-export interface IStaticSoundInstanceOptions extends IStaticSoundOptionsBase, IAbstractSoundPlayOptionsBase {}
+export interface IStaticSoundInstanceOptions extends IAbstractSoundInstanceOptions, IStaticSoundOptionsBase {}
 
 /** @internal */
 export abstract class _StaticSoundInstance extends _AbstractSoundInstance {
