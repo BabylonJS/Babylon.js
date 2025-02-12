@@ -16,7 +16,10 @@ struct preLightingInfo
     float NdotLUnclamped;
     float NdotL;
     float VdotH;
+
+     // TODO: the code would probably be leaner with material properties out of the structure.
     float roughness;
+    float diffuseRoughness;
 
     #ifdef IRIDESCENCE
         float iridescenceIntensity;
@@ -91,7 +94,7 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
-preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness ) 
+preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness )
 {
 	preLightingInfo result;
     result.lightOffset = lightData.xyz - vPosition;
@@ -103,7 +106,7 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
 
 #ifdef SPECULARTERM
     result.areaLightFresnel = data.Fresnel;
-    result.areaLightSpecular = data.Specular;	
+    result.areaLightSpecular = data.Specular;
 #endif
 	result.areaLightDiffuse = data.Diffuse;
 	return result;

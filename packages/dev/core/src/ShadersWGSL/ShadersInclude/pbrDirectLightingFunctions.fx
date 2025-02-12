@@ -23,7 +23,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 fn adjustRoughnessFromLightProperties(roughness: f32, lightRadius: f32, lightDistance: f32) -> f32 {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         var lightRoughness: f32 = lightRadius / lightDistance;
         // Distribution can sum.
         var totalRoughness: f32 = saturate(lightRoughness + roughness);
@@ -44,7 +44,7 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 #endif
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
-    var diffuseTerm: f32 = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    var diffuseTerm: f32 = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
