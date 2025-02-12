@@ -1,14 +1,14 @@
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
-import type { Effect } from "core/Materials/effect";
-import { RegisterClass } from "core/Misc/typeStore";
+import type { Effect } from "../Materials/effect";
+import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
-import type { Scene } from "core/scene";
+import type { Scene } from "../scene";
 import { AreaLight } from "./areaLight";
 import type { Nullable } from "core/types";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture } from "core/Materials/Textures/texture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { Texture } from "../Materials/Textures/texture";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);
@@ -41,7 +41,7 @@ export class RectAreaLight extends AreaLight {
 
         this._emissionTextureTexture = value;
 
-        if (this._emissionTextureTexture) {
+        if (this._emissionTextureTexture && RectAreaLight._IsTexture(this._emissionTextureTexture)) {
             this._emissionTextureTexture.onLoadObservable.addOnce(() => {
                 this._markMeshesAsLightDirty();
             });
@@ -130,6 +130,10 @@ export class RectAreaLight extends AreaLight {
         }
 
         return false;
+    }
+
+    private static _IsTexture(texture: BaseTexture): texture is Texture {
+        return (texture as Texture).onLoadObservable !== undefined;
     }
 
     /**
