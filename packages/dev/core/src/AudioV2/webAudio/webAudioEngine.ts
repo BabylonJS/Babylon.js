@@ -4,7 +4,8 @@ import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode"
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { MainAudioBus } from "../abstractAudio/mainAudioBus";
-import { _HasSpatialAudioListenerOptions, type AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
+import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
+import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { CreateMainAudioBusAsync } from "./webAudioMainBus";

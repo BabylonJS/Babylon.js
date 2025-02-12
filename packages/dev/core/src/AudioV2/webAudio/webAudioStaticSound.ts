@@ -5,7 +5,8 @@ import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOpti
 import { StaticSound } from "../abstractAudio/staticSound";
 import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
-import { _StaticSoundInstance, type IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
+import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
+import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
