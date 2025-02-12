@@ -124,7 +124,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var uv2Updated: vec2f = vertexInputs.uv2;
 #endif
 #ifdef VERTEXCOLOR
-    vec4 colorUpdated = color;
+    var colorUpdated: vec4f = vertexInputs.color;
 #endif
 
 #include<morphTargetsVertexGlobal>

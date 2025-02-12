@@ -35,7 +35,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 #ifdef VERTEXCOLOR
-    vec4 colorUpdated = color;
+    var colorUpdated: vec4f = vertexInputs.color;
 #endif
 
 #include<instancesVertex>
