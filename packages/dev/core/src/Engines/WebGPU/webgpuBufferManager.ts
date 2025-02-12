@@ -82,17 +82,24 @@ export class WebGPUBufferManager {
 
         byteLength = byteLength || src.byteLength - srcByteOffset;
 
-        // we might copy more than requested to make sure the write is aligned
+        // Make sure the dst offset is aligned to 4 bytes
         const startPre = dstByteOffset & 3;
 
         srcByteOffset -= startPre;
         dstByteOffset -= startPre;
 
+        // Make sure the byte length is aligned to 4 bytes
         const originalByteLength = byteLength;
 
         byteLength = (byteLength + startPre + 3) & ~3;
 
-        if (originalByteLength !== byteLength) {
+        // Check if the backing buffer of src is large enough to cope with the additional bytes copied because of alignment
+        const backingBufferSize = src.buffer.byteLength - src.byteOffset;
+
+        if (backingBufferSize < byteLength) {
+            // Not enough place in the backing buffer for the aligned copy.
+            // Creates a new buffer and copy the source data to it.
+            // The buffer will have byteLength - originalByteLength zeros at the end.
             const tmpBuffer = new Uint8Array(byteLength);
             tmpBuffer.set(new Uint8Array(src.buffer, src.byteOffset + srcByteOffset, originalByteLength));
             src = tmpBuffer;
