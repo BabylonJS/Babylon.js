@@ -1,7 +1,8 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
+import type { PropertyValues } from "lit";
 
-import { LitElement, PropertyValues, css, html } from "lit";
+import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { ViewerElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";
