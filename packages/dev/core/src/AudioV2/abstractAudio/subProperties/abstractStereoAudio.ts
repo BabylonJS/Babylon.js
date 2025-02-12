@@ -30,15 +30,6 @@ export function _HasStereoAudioOptions(options: Partial<IStereoAudioOptions>): b
     return options.stereoEnabled || options.stereoPan !== undefined;
 }
 
-/** @internal */
-export function _InitStereoAudioOptions(options: Partial<IStereoAudioOptions>): IStereoAudioOptions {
-    return {
-        stereoEnabled: false,
-        stereoPan: _StereoAudioDefaults.pan,
-        ...options,
-    };
-}
-
 /**
  * Abstract class representing the `stereo` audio property on a sound or audio bus.
  *
