@@ -7,6 +7,11 @@
             "referenceImage": "openpbr_base_weight.png"
         },
         {
+            "title": "OpenPBR Base Diffuse Roughness",
+            "playgroundId": "#MXACV7",
+            "referenceImage": "openpbr_base_diffuse_roughness.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
