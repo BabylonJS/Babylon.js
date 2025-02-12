@@ -20,7 +20,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance) {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         float lightRoughness = lightRadius / lightDistance;
         // Distribution can sum.
         float totalRoughness = saturate(lightRoughness + roughness);
@@ -41,7 +41,7 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
 #endif
 
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
-    float diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    float diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
@@ -64,7 +64,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float trAdapt = step(0., info.NdotLUnclamped);
         vec3 transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
 
-        float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
+        float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
         return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
     }
 #endif
