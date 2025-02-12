@@ -78,6 +78,7 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
  * @param useTangentMorph Whether the tangent morph target is used
  * @param useUVMorph Whether the UV morph target is used
  * @param useUV2Morph Whether the UV2 morph target is used
+ * @param useColorMorph Whether the color morph target is used
  * @returns The maxSimultaneousMorphTargets for the effect
  */
 export function PrepareDefinesAndAttributesForMorphTargets(
