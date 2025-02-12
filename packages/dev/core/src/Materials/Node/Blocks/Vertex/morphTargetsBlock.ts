@@ -35,7 +35,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         );
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerInput("uv2", NodeMaterialBlockConnectionPointTypes.Vector2);
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4)
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector4);

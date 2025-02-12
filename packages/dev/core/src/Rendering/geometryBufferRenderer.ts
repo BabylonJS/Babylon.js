@@ -794,7 +794,7 @@ export class GeometryBufferRenderer {
                   false, // useTangentMorph
                   uv1, // useUVMorph
                   uv2, // useUV2Morph
-                  color, // useColorMorph
+                  color // useColorMorph
               )
             : 0;
 

@@ -163,7 +163,9 @@ export class MorphTarget implements IAnimatable {
                   ? this._uvs.length / 2
                   : this._uv2s
                     ? this._uv2s.length / 2
-                    : this._colors ? this._colors.length / 4 : 0;
+                    : this._colors
+                      ? this._colors.length / 4
+                      : 0;
     }
 
     /**

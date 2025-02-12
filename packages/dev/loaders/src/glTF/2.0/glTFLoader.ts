@@ -1293,7 +1293,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
 
         loadAttribute("COLOR_0", VertexBuffer.ColorKind, (babylonVertexBuffer, data) => {
-            const colors = new Float32Array(data.length / 3 * 4);
+            const colors = new Float32Array((data.length / 3) * 4);
             babylonVertexBuffer.forEach(data.length, (value, index) => {
                 const pixid = Math.floor(index / 3);
                 const channel = index % 3;

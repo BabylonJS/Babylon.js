@@ -90,7 +90,7 @@ export function PrepareDefinesAndAttributesForMorphTargets(
     useTangentMorph: boolean,
     useUVMorph: boolean,
     useUV2Morph: boolean,
-    useColorMorph: boolean,
+    useColorMorph: boolean
 ): number {
     const numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
     if (numMorphInfluencers <= 0) {

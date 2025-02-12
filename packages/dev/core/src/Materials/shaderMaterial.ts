@@ -787,7 +787,7 @@ export class ShaderMaterial extends PushMaterial {
                 tangent, // useTangentMorph
                 uv, // useUVMorph
                 uv2, // useUV2Morph
-                color, // useColorMorph
+                color // useColorMorph
             );
             if (manager.isUsingTextureForTargets) {
                 if (uniforms.indexOf("morphTargetTextureIndices") === -1) {

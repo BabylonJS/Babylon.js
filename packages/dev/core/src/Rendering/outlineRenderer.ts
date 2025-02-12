@@ -348,7 +348,7 @@ export class OutlineRenderer implements ISceneComponent {
                   false, // useTangentMorph
                   uv1, // useUVMorph
                   uv2, // useUV2Morph
-                  color, // useColorMorph
+                  color // useColorMorph
               )
             : 0;
 
