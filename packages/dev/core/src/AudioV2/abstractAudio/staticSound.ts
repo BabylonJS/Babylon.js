@@ -1,5 +1,5 @@
 import { SoundState } from "../soundState";
-import type { IAbstractSoundOptions, IAbstractSoundStoredOptions, IAbstractSoundPlayOptions } from "./abstractSound";
+import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";

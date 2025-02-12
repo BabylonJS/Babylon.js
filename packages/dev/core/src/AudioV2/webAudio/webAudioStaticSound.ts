@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import type { IStaticSoundOptions, IStaticSoundStoredOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions } from "../abstractAudio/staticSound";
+import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions, IStaticSoundStoredOptions } from "../abstractAudio/staticSound";
 import { StaticSound } from "../abstractAudio/staticSound";
 import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";

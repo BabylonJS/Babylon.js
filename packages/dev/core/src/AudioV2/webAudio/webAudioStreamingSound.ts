@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import type { IStreamingSoundOptions, IStreamingSoundStoredOptions, IStreamingSoundPlayOptions } from "../abstractAudio/streamingSound";
+import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";

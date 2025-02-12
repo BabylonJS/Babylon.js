@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { SoundState } from "../soundState";
-import { AudioNodeType, AbstractAudioNode } from "./abstractAudioNode";
+import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound, IAbstractSoundPlayOptions, IAbstractSoundPlayOptionsBase } from "./abstractSound";
 
 /** @internal */
