@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
 
-import { LitElement, css, html } from "lit";
+import { LitElement, PropertyValues, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { ViewerElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";
@@ -35,6 +35,7 @@ export class HTML3DAnnotationElement extends LitElement {
     private readonly _internals = this.attachInternals();
     private _viewerAttachment: Nullable<IDisposable> = null;
     private _connectingAbortController: Nullable<AbortController> = null;
+    private _updateAnnotation: Nullable<() => void> = null;
 
     /**
      * The name of the hotspot to track.
@@ -71,7 +72,7 @@ export class HTML3DAnnotationElement extends LitElement {
 
             const viewerElement = this.parentElement;
             const hotSpotResult = new ViewerHotSpotResult();
-            const onViewerRendered = () => {
+            const updateAnnotation = (this._updateAnnotation = () => {
                 if (this.hotSpot) {
                     if (viewerElement.queryHotSpot(this.hotSpot, hotSpotResult)) {
                         const [screenX, screenY] = hotSpotResult.screenPosition;
@@ -87,12 +88,13 @@ export class HTML3DAnnotationElement extends LitElement {
                         this._internals.states?.add("invalid");
                     }
                 }
-            };
+            });
 
-            viewerElement.addEventListener("viewerrender", onViewerRendered);
+            this._updateAnnotation();
+            viewerElement.addEventListener("viewerrender", updateAnnotation);
             this._viewerAttachment = {
                 dispose() {
-                    viewerElement.removeEventListener("viewerrender", onViewerRendered);
+                    viewerElement.removeEventListener("viewerrender", updateAnnotation);
                 },
             };
         })();
@@ -109,11 +111,22 @@ export class HTML3DAnnotationElement extends LitElement {
         this._viewerAttachment = null;
 
         this._internals.states?.add("invalid");
+
+        this._updateAnnotation = null;
     }
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
         return html` <slot></slot> `;
+    }
+
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected override update(changedProperties: PropertyValues<this>): void {
+        super.update(changedProperties);
+        if (changedProperties.has("hotSpot")) {
+            this._updateAnnotation?.();
+        }
     }
 }
