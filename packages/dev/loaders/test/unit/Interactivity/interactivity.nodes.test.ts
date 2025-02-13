@@ -268,12 +268,12 @@ describe("Interactivity math nodes", () => {
     } = {
         "math/abs": {
             operation: Math.abs,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 1,
         },
         "math/sign": {
             operation: Math.sign,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 1,
         },
         "math/trunc": {
@@ -303,47 +303,47 @@ describe("Interactivity math nodes", () => {
         },
         "math/neg": {
             operation: (val: number) => -val,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 1,
         },
         "math/add": {
             operation: (a: number, b: number) => a + b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/sub": {
             operation: (a: number, b: number) => a - b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/mul": {
             operation: (a: number, b: number) => a * b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/div": {
             operation: (a: number, b: number) => a / b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/clamp": {
             operation: (a: number, b: number, c: number) => Math.min(Math.max(a, Math.min(b, c)), Math.max(b, c)),
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 3,
         },
         "math/min": {
             operation: Math.min,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/max": {
             operation: Math.max,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/rem": {
             operation: (a: number, b: number) => a % b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
         },
         "math/saturate": {
@@ -358,31 +358,31 @@ describe("Interactivity math nodes", () => {
         },
         "math/eq": {
             operation: (a: number, b: number) => a === b,
-            types: ["float", "float2", "float3", "float4", "float4x4"],
+            types: ["float", "float2", "float3", "float4", "float4x4", "int"],
             inputs: 2,
             returnLength: 1,
         },
         "math/lt": {
             operation: (a: number, b: number) => a < b,
-            types: ["float"],
+            types: ["float", "int"],
             inputs: 2,
             returnLength: 1,
         },
         "math/le": {
             operation: (a: number, b: number) => a <= b,
-            types: ["float"],
+            types: ["float", "int"],
             inputs: 2,
             returnLength: 1,
         },
         "math/gt": {
             operation: (a: number, b: number) => a > b,
-            types: ["float"],
+            types: ["float", "int"],
             inputs: 2,
             returnLength: 1,
         },
         "math/ge": {
             operation: (a: number, b: number) => a >= b,
-            types: ["float"],
+            types: ["float", "int"],
             inputs: 2,
             returnLength: 1,
         },
@@ -505,7 +505,7 @@ describe("Interactivity math nodes", () => {
         },
     };
 
-    const filterType = "";
+    const filterType = "int";
     const filterTest = "";
 
     const testScenarios: { [key: string]: (length: number) => number[] } = {
@@ -544,7 +544,7 @@ describe("Interactivity math nodes", () => {
                     valArrays.push(val);
                 }
                 // get the wrong type
-                const wrongType = testNode.types.find((t) => t !== type);
+                const wrongType = type === "int" || type === "float" ? "float2" : testNode.types.find((t) => t !== type);
                 // expect the next call to throw:
                 let error;
                 try {
@@ -579,7 +579,10 @@ describe("Interactivity math nodes", () => {
                     const valArrays: number[][] = [];
                     const values: any = {};
                     for (let i = 0; i < testNode.inputs; i++) {
-                        const val = testScenarios[scenarioName](length).map((v) => Math.round(v * 10000) / 10000);
+                        let val = testScenarios[scenarioName](length).map((v) => Math.round(v * 10000) / 10000);
+                        if (type === "int") {
+                            val = val.map((v) => v | 0);
+                        }
                         const key = i === 0 ? "a" : i === 1 ? "b" : i === 2 ? "c" : "d";
                         values[key] = {
                             type: 0, // first position in the types array defined below
@@ -599,7 +602,9 @@ describe("Interactivity math nodes", () => {
                     );
                     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
                     expect(logItem).toBeDefined();
-                    const resultArray = logItem!.payload.value.asArray ? [...logItem!.payload.value.asArray()] : [logItem!.payload.value];
+                    const resultArray = logItem!.payload.value.asArray
+                        ? [...logItem!.payload.value.asArray()]
+                        : [typeof logItem!.payload.value.value !== "undefined" ? logItem!.payload.value.value : logItem!.payload.value];
                     expect(typeof resultArray[0]).not.toBe("undefined");
                     expect(resultArray.length).toBe(testNode.returnLength || length);
                     // make sure nothing is NaN
@@ -612,6 +617,10 @@ describe("Interactivity math nodes", () => {
                     }
                     if (typeof expected[0] === "boolean") {
                         expected = [expected.every((v) => v)];
+                    }
+                    // handle int
+                    if (type === "int" && typeof expected[0] === "number") {
+                        expected = expected.map((v) => (v as number) | 0);
                     }
                     expect(resultArray).toEqual(expected);
                 });
@@ -1525,6 +1534,182 @@ describe("Interactivity math nodes", () => {
         expect(logItem).toBeDefined();
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
         const expected = [randomValue, randomValue2, randomValue3, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/combine3x3 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const randomValue3 = Math.random() - 0.5;
+        const randomValue4 = Math.random() - 0.5;
+        const randomValue5 = Math.random() - 0.5;
+        const randomValue6 = Math.random() - 0.5;
+        const randomValue7 = Math.random() - 0.5;
+        const randomValue8 = Math.random() - 0.5;
+        const randomValue9 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine3x3" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                        c: {
+                            type: 0,
+                            value: [randomValue3],
+                        },
+                        d: {
+                            type: 0,
+                            value: [randomValue4],
+                        },
+                        e: {
+                            type: 0,
+                            value: [randomValue5],
+                        },
+                        f: {
+                            type: 0,
+                            value: [randomValue6],
+                        },
+                        g: {
+                            type: 0,
+                            value: [randomValue7],
+                        },
+                        h: {
+                            type: 0,
+                            value: [randomValue8],
+                        },
+                        i: {
+                            type: 0,
+                            value: [randomValue9],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [randomValue, randomValue2, randomValue3, randomValue4, randomValue5, randomValue6, randomValue7, randomValue8, randomValue9].map(
+            (v: number) => Math.round(v * 1000) / 1000
+        );
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/combine4x4 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const randomValue3 = Math.random() - 0.5;
+        const randomValue4 = Math.random() - 0.5;
+        const randomValue5 = Math.random() - 0.5;
+        const randomValue6 = Math.random() - 0.5;
+        const randomValue7 = Math.random() - 0.5;
+        const randomValue8 = Math.random() - 0.5;
+        const randomValue9 = Math.random() - 0.5;
+        const randomValue10 = Math.random() - 0.5;
+        const randomValue11 = Math.random() - 0.5;
+        const randomValue12 = Math.random() - 0.5;
+        const randomValue13 = Math.random() - 0.5;
+        const randomValue14 = Math.random() - 0.5;
+        const randomValue15 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine4x4" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                        c: {
+                            type: 0,
+                            value: [randomValue3],
+                        },
+                        d: {
+                            type: 0,
+                            value: [randomValue4],
+                        },
+                        e: {
+                            type: 0,
+                            value: [randomValue5],
+                        },
+                        f: {
+                            type: 0,
+                            value: [randomValue6],
+                        },
+                        g: {
+                            type: 0,
+                            value: [randomValue7],
+                        },
+                        h: {
+                            type: 0,
+                            value: [randomValue8],
+                        },
+                        i: {
+                            type: 0,
+                            value: [randomValue9],
+                        },
+                        j: {
+                            type: 0,
+                            value: [randomValue10],
+                        },
+                        k: {
+                            type: 0,
+                            value: [randomValue11],
+                        },
+                        l: {
+                            type: 0,
+                            value: [randomValue12],
+                        },
+                        m: {
+                            type: 0,
+                            value: [randomValue13],
+                        },
+                        n: {
+                            type: 0,
+                            value: [randomValue14],
+                        },
+                        o: {
+                            type: 0,
+                            value: [randomValue15],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [
+            randomValue,
+            randomValue2,
+            randomValue3,
+            randomValue4,
+            randomValue5,
+            randomValue6,
+            randomValue7,
+            randomValue8,
+            randomValue9,
+            randomValue10,
+            randomValue11,
+            randomValue12,
+            randomValue13,
+            randomValue14,
+            randomValue15,
+        ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
 });
