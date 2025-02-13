@@ -183,8 +183,13 @@ export class WebGPUCacheSampler {
             case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
+                // In WebGL, if sampling mode is TEXTURE_BILINEAR_SAMPLINGMODE and anisotropy is greater than 1, anisotropy is enabled for the sampler
+                if (anisotropy > 1) {
+                    mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                } else {
+                    mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                    lodMinClamp = lodMaxClamp = 0;
+                }
                 break;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
@@ -200,7 +205,7 @@ export class WebGPUCacheSampler {
                 break;
         }
 
-        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0) && mipmapFilter !== WebGPUConstants.FilterMode.Nearest) {
+        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0)) {
             return {
                 magFilter: WebGPUConstants.FilterMode.Linear,
                 minFilter: WebGPUConstants.FilterMode.Linear,
@@ -243,7 +248,19 @@ export class WebGPUCacheSampler {
     }
 
     private static _GetSamplerDescriptor(sampler: TextureSampler, label?: string): GPUSamplerDescriptor {
-        const anisotropy = sampler.useMipMaps && sampler._cachedAnisotropicFilteringLevel ? sampler._cachedAnisotropicFilteringLevel : 1;
+        // The check with Constants.TEXTURE_LINEAR_LINEAR is to be iso with the WebGL implementation
+        let anisotropy =
+            (sampler.useMipMaps || sampler.samplingMode === Constants.TEXTURE_LINEAR_LINEAR) && sampler._cachedAnisotropicFilteringLevel
+                ? sampler._cachedAnisotropicFilteringLevel
+                : 1;
+        // To be iso with the WebGL implementation
+        if (
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST &&
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR &&
+            sampler.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR
+        ) {
+            anisotropy = 1;
+        }
         const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
             label,

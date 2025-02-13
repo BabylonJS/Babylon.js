@@ -572,12 +572,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
-    public get worldMatrixInstancedBuffer() {
+    public get worldMatrixInstancedBuffer(): Float32Array {
         return this._instanceDataStorage.instancesData;
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
-    public get previousWorldMatrixInstancedBuffer() {
+    public get previousWorldMatrixInstancedBuffer(): Float32Array {
         return this._instanceDataStorage.instancesPreviousData;
     }
 
@@ -2085,29 +2085,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * This method will also draw the instances if fillMode and effect are passed
      * @internal
      */
-    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
+    public _updateInstancedBuffers(subMesh: SubMesh, batch: _InstancesBatch, currentInstancesBufferSize: number, engine: AbstractEngine, fillMode?: number, effect?: Effect) {
         const visibleInstances = batch.visibleInstances[subMesh._id];
         const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
         const instanceStorage = this._instanceDataStorage;
-        const currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         let instancesBuffer = instanceStorage.instancesBuffer;
         let instancesPreviousBuffer = instanceStorage.instancesPreviousBuffer;
-        const matricesCount = visibleInstanceCount + 1;
-        const bufferSize = matricesCount * 16 * 4;
-
-        while (instanceStorage.instancesBufferSize < bufferSize) {
-            instanceStorage.instancesBufferSize *= 2;
-        }
-
-        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
-        }
-        if ((this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousData) || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
-        }
 
         let offset = 0;
         let instancesCount = 0;
@@ -2217,15 +2204,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._processInstancedBuffers(visibleInstances, renderSelf);
 
-        // Stats
-        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+        if (effect && fillMode !== undefined) {
+            // Stats
+            this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
-        // Draw
-        if (engine._currentDrawContext) {
-            engine._currentDrawContext.useInstancing = true;
+            // Draw
+            if (engine._currentDrawContext) {
+                engine._currentDrawContext.useInstancing = true;
+            }
+            this._bind(subMesh, effect, fillMode);
+            this._draw(subMesh, fillMode, instancesCount);
         }
-        this._bind(subMesh, effect, fillMode);
-        this._draw(subMesh, fillMode, instancesCount);
 
         // Write current matrices as previous matrices in case of manual update
         // Default behaviour when previous matrices are not specified explicitly
@@ -2239,6 +2228,32 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         ) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
+        const visibleInstances = batch.visibleInstances[subMesh._id];
+        const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
+
+        const instanceStorage = this._instanceDataStorage;
+        const currentInstancesBufferSize = instanceStorage.instancesBufferSize;
+        const matricesCount = visibleInstanceCount + 1;
+        const bufferSize = matricesCount * 16 * 4;
+
+        while (instanceStorage.instancesBufferSize < bufferSize) {
+            instanceStorage.instancesBufferSize *= 2;
+        }
+
+        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+        }
+        if ((this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousData) || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+            instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+        }
+
+        this._updateInstancedBuffers(subMesh, batch, currentInstancesBufferSize, engine, fillMode, effect);
 
         engine.unbindInstanceAttributes();
         return this;

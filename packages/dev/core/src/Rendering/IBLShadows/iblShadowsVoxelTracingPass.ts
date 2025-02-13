@@ -217,6 +217,19 @@ export class _IblShadowsVoxelTracingPass {
         this._invWorldScaleMatrix = matrix;
     }
 
+    /**
+     * Render the shadows in color rather than black and white.
+     * This is slightly more expensive than black and white shadows but can be much
+     * more accurate when the strongest lights in the IBL are non-white.
+     */
+    public set coloredShadows(value: boolean) {
+        this._coloredShadows = value;
+    }
+    public get coloredShadows(): boolean {
+        return this._coloredShadows;
+    }
+    private _coloredShadows: boolean = false;
+
     private _debugVoxelMarchEnabled: boolean = false;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
@@ -278,13 +291,7 @@ export class _IblShadowsVoxelTracingPass {
     }
 
     private _createTextures() {
-        let defines = "";
-        if (this._scene.useRightHandedSystem) {
-            defines += "#define RIGHT_HANDED\n";
-        }
-        if (this._debugVoxelMarchEnabled) {
-            defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
-        }
+        const defines = this._createDefines();
         const isWebGPU = this._engine.isWebGPU;
         const textureOptions: IProceduralTextureCreationOptions = {
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
@@ -330,10 +337,22 @@ export class _IblShadowsVoxelTracingPass {
         });
     }
 
-    private _setBindings(camera: Camera) {
+    private _createDefines(): string {
+        let defines = "";
         if (this._scene.useRightHandedSystem) {
-            this._outputTexture.defines = "#define RIGHT_HANDED\n";
+            defines += "#define RIGHT_HANDED\n";
         }
+        if (this._debugVoxelMarchEnabled) {
+            defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+        }
+        if (this._coloredShadows) {
+            defines += "#define COLOR_SHADOWS 1u\n";
+        }
+        return defines;
+    }
+
+    private _setBindings(camera: Camera) {
+        this._outputTexture.defines = this._createDefines();
         this._outputTexture.setMatrix("viewMtx", camera.getViewMatrix());
         this._outputTexture.setMatrix("projMtx", camera.getProjectionMatrix());
         camera.getProjectionMatrix().invertToRef(this._cameraInvProj);
@@ -368,8 +387,8 @@ export class _IblShadowsVoxelTracingPass {
         if (cdfGenerator) {
             this._outputTexture.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
         }
-        if (this._debugVoxelMarchEnabled) {
-            this._outputTexture.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+        if (this._coloredShadows && this._scene.environmentTexture) {
+            this._outputTexture.setTexture("iblSampler", this._scene.environmentTexture);
         }
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;

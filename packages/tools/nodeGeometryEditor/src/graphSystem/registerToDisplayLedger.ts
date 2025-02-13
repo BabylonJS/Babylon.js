@@ -13,6 +13,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["GeometryOutputBlock"] = OutputDisplayManager;
     DisplayLedger.RegisteredControls["GeometryElbowBlock"] = ElbowDisplayManager;
     DisplayLedger.RegisteredControls["DebugBlock"] = DebugDisplayManager;
+    DisplayLedger.RegisteredControls["PointListBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["BoxBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["PlaneBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["SphereBlock"] = SourceDisplayManager;

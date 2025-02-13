@@ -13,6 +13,7 @@ export interface IThinEngineStateObject {
     validateShaderPrograms?: boolean;
     _webGLVersion: number;
     parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
+    disableParallelShaderCompile?: boolean;
     _context?: WebGLContext;
     _createShaderProgramInjection?: typeof _createShaderProgram;
     createRawShaderProgramInjection?: typeof createRawShaderProgram;
@@ -150,7 +151,7 @@ export function createShaderProgram(
 export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
     const stateObject = getStateObject(context);
-    if (stateObject.parallelShaderCompile) {
+    if (stateObject.parallelShaderCompile && !stateObject.disableParallelShaderCompile) {
         pipelineContext.isParallelCompiled = true;
     }
     pipelineContext.context = stateObject._context;

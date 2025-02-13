@@ -839,7 +839,7 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Alpha test
-        if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
+        if (mesh && this.needAlphaTestingForMesh(mesh)) {
             defines.push("#define ALPHATEST");
         }
 

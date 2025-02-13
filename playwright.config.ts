@@ -95,6 +95,11 @@ export default defineConfig({
             testMatch: "**/*.tools.test.ts",
             use: getUseDefinition("Graph Tools"),
         },
+        {
+            name: "viewer",
+            testMatch: "packages/tools/viewer/test/viewer.test.ts",
+            use: getUseDefinition("Viewer"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",

@@ -70,6 +70,13 @@ export class RectAreaLightPropertyGridComponent extends React.Component<IRectAre
                         propertyName="height"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Intensity"
+                        target={light}
+                        propertyName="intensity"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <CommonLightPropertyGridComponent
                     globalState={this.props.globalState}

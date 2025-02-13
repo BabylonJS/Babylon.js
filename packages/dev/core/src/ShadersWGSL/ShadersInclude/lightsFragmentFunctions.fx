@@ -165,10 +165,10 @@ var areaLightsLTC1Sampler: texture_2d<f32>;
 var areaLightsLTC2SamplerSampler: sampler;
 var areaLightsLTC2Sampler: texture_2d<f32>;
 
-fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightData:vec4f, halfWidth:vec3f,  halfHeight:vec3f, diffuseColor:vec3f, specularColor:vec3f, roughness:f32 ) -> lightingInfo
+fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightPosition:vec3f, halfWidth:vec3f,  halfHeight:vec3f, diffuseColor:vec3f, specularColor:vec3f, roughness:f32 ) -> lightingInfo
 {
 	var result: lightingInfo;
-	var data: areaLightData = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc1Sampler, ltc2, ltc2Sampler, viewDirectionW, vNormal, vPosition, lightData.xyz, halfWidth, halfHeight, roughness);
+	var data: areaLightData = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc1Sampler, ltc2, ltc2Sampler, viewDirectionW, vNormal, vPosition, lightPosition, halfWidth, halfHeight, roughness);
 #ifdef SPECULARTERM
 	var fresnel:vec3f = ( specularColor * data.Fresnel.x + ( vec3f( 1.0 ) - specularColor ) * data.Fresnel.y );
 	result.specular += specularColor * fresnel * data.Specular;

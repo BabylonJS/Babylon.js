@@ -19,6 +19,7 @@ export * from "./Blocks/Sources/cylinderBlock";
 export * from "./Blocks/Sources/capsuleBlock";
 export * from "./Blocks/Sources/discBlock";
 export * from "./Blocks/Sources/nullBlock";
+export * from "./Blocks/Sources/pointListBlock";
 export * from "./Blocks/Set/setPositionsBlock";
 export * from "./Blocks/Set/setNormalsBlock";
 export * from "./Blocks/Set/setUVsBlock";

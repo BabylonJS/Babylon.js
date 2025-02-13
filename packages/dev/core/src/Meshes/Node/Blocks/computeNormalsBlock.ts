@@ -47,6 +47,10 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
             }
 
             const vertexData = this.geometry.getConnectedValue(state);
+            if (!vertexData) {
+                return null;
+            }
+
             if (!vertexData.normals) {
                 vertexData.normals = [];
             }

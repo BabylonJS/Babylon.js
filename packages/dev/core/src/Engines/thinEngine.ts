@@ -1985,6 +1985,8 @@ export class ThinEngine extends AbstractEngine {
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
         const globalDefines = this._getGlobalDefines()!;
 
+        const isOptions = (attributesNamesOrOptions as IEffectCreationOptions).attributes !== undefined;
+
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
 
         if (globalDefines) {
@@ -2006,7 +2008,7 @@ export class ThinEngine extends AbstractEngine {
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
-            uniformsNamesOrEngine,
+            isOptions ? this : uniformsNamesOrEngine,
             samplers,
             this,
             defines,

@@ -1002,7 +1002,7 @@ export class Engine extends ThinEngine {
     /**
      * @internal
      */
-    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Nullable<Promise<ArrayBufferView>> {
         if (this._webGLVersion < 2) {
             throw new Error("_readPixelsAsync only work on WebGL2+");
         }

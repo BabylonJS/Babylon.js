@@ -66,6 +66,8 @@ class FurMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public AREALIGHTSUPPORTED = true;
+    public AREALIGHTNOROUGHTNESS = true;
 
     constructor() {
         super();
@@ -228,7 +230,7 @@ export class FurMaterial extends PushMaterial {
         }
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -309,7 +311,7 @@ export class FurMaterial extends PushMaterial {
                 "furOcclusion",
             ];
             addClipPlaneUniforms(uniforms);
-            const samplers = ["diffuseSampler", "heightTexture", "furTexture"];
+            const samplers = ["diffuseSampler", "heightTexture", "furTexture", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
 
             const uniformBuffers: string[] = [];
 
@@ -341,6 +343,16 @@ export class FurMaterial extends PushMaterial {
                 this._materialContext
             );
         }
+
+        // Check if Area Lights have LTC texture.
+        if (defines["AREALIGHTUSED"]) {
+            for (let index = 0; index < mesh.lightSources.length; index++) {
+                if (!mesh.lightSources[index]._isReady()) {
+                    return false;
+                }
+            }
+        }
+
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
         }

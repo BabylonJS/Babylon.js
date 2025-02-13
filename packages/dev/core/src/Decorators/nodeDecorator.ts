@@ -108,7 +108,7 @@ export function editableInPropertyPage(
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
-            className: target.constructor.name,
+            className: target.getClassName(),
         });
     };
 }

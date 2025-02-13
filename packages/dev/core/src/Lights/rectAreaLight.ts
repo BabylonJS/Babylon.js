@@ -125,7 +125,7 @@ export class RectAreaLight extends AreaLight {
                 lightIndex
             );
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightHeight", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
         }
@@ -133,7 +133,11 @@ export class RectAreaLight extends AreaLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        // TO DO: Implement this to add support for NME.
+        if (this._computeTransformedInformation()) {
+            effect.setFloat3(lightDataUniformName, this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+        }
         return this;
     }
 }

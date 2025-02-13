@@ -16,6 +16,7 @@ import type {
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
 import { ScenePerformancePriority } from "core/scene";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Options for the snapshot rendering helper
@@ -44,6 +45,14 @@ export class SnapshotRenderingHelper {
     private _disableRenderingRefCount = 0;
     private _currentPerformancePriorityMode = ScenePerformancePriority.BackwardCompatible;
     private _pendingCurrentPerformancePriorityMode?: ScenePerformancePriority;
+    private _isEnabling = false;
+    private _enableCancelFunctions: Map<() => void, () => void> = new Map(); // first function is the callback, second function is the cancel function
+    private _disableCancelFunctions: Map<() => void, () => void> = new Map(); // same as above
+
+    /**
+     * Indicates if debug logs should be displayed
+     */
+    public showDebugLogs = false;
 
     /**
      * Creates a new snapshot rendering helper
@@ -70,9 +79,15 @@ export class SnapshotRenderingHelper {
         this.fixMeshes();
 
         this._onResizeObserver = this._engine.onResizeObservable.add(() => {
+            this._log("onResize", "start");
+
             // enableSnapshotRendering() will delay the actual enabling of snapshot rendering by at least a frame, so these two lines are not redundant!
-            this.disableSnapshotRendering();
-            this.enableSnapshotRendering();
+            if (this._fastSnapshotRenderingEnabled) {
+                this.disableSnapshotRendering();
+                this.enableSnapshotRendering();
+            }
+
+            this._log("onResize", "end");
         });
 
         this._scene.onBeforeRenderObservable.add(() => {
@@ -117,6 +132,13 @@ export class SnapshotRenderingHelper {
     }
 
     /**
+     * Gets a value indicating if the helper is in a steady state (not in the process of enabling snapshot rendering).
+     */
+    public get isReady() {
+        return !this._isEnabling;
+    }
+
+    /**
      * Enable snapshot rendering
      * Use this method instead of engine.snapshotRendering=true, to make sure everything is ready before enabling snapshot rendering.
      * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
@@ -130,22 +152,44 @@ export class SnapshotRenderingHelper {
             return;
         }
 
+        this._log("enableSnapshotRendering", "called");
+        if (this._disableCancelFunctions.size > 0) {
+            this._log("enableSnapshotRendering", `cancelling ${this._disableCancelFunctions.size} "disable" callbacks`);
+        }
+
+        this._disableCancelFunctions.forEach((cancel) => cancel());
+        this._disableCancelFunctions.clear();
+
+        this._isEnabling = true;
         this._disableRenderingRefCount = 0;
 
         this._currentPerformancePriorityMode = this._pendingCurrentPerformancePriorityMode ?? this._scene.performancePriority;
         this._pendingCurrentPerformancePriorityMode = undefined;
         this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
 
-        this._scene.executeWhenReady(() => {
-            if (this._disableRenderingRefCount > 0) {
-                return;
-            }
+        const callbackWhenSceneReady = () => {
+            this._enableCancelFunctions.delete(callbackWhenSceneReady);
 
             // Make sure a full frame is rendered before enabling snapshot rendering, so use "+2" instead of "+1"
-            this._executeAtFrame(this._engine.frameId + 2, () => {
+            const targetFrameId = this._engine.frameId + 2;
+
+            this._log("enableSnapshotRendering", `scene ready, add callbacks for frames ${targetFrameId} and ${targetFrameId + 1}`);
+
+            this._executeAtFrame(targetFrameId, () => {
+                this._log("enableSnapshotRendering", `callback #1, enable snapshot rendering at the engine level`);
                 this._engine.snapshotRendering = true;
             });
-        });
+
+            // Render one frame with snapshot rendering enabled to make sure everything is ready
+            this._executeAtFrame(targetFrameId + 1, () => {
+                this._log("enableSnapshotRendering", `callback #2, signals that snapshot rendering helper is ready`);
+                this._isEnabling = false;
+            });
+        };
+
+        this._enableCancelFunctions.set(callbackWhenSceneReady, () => this._scene.onReadyObservable.removeCallback(callbackWhenSceneReady));
+
+        this._scene.executeWhenReady(callbackWhenSceneReady);
     }
 
     /**
@@ -157,26 +201,47 @@ export class SnapshotRenderingHelper {
             return;
         }
 
+        this._log("disableSnapshotRendering", "called");
+
         if (this._disableRenderingRefCount === 0) {
+            if (this._enableCancelFunctions.size > 0) {
+                this._log("disableSnapshotRendering", `cancelling ${this._enableCancelFunctions.size} "enable" callbacks`);
+            }
+
+            this._enableCancelFunctions.forEach((cancel) => cancel());
+            this._enableCancelFunctions.clear();
+
+            this._isEnabling = false;
+
             // Snapshot rendering switches from enabled to disabled
             // We reset the performance priority mode to that which it was before enabling snapshot rendering, but first set it to “BackwardCompatible” to allow the system to regenerate resources that may have been optimized for snapshot rendering.
             // We'll then restore the original mode at the next frame.
             this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
             if (this._currentPerformancePriorityMode !== ScenePerformancePriority.BackwardCompatible) {
+                this._log(
+                    "disableSnapshotRendering",
+                    `makes sure that the scene is rendered once in BackwardCompatible mode (code: ${ScenePerformancePriority.BackwardCompatible}) before switching to mode ${this._currentPerformancePriorityMode}`
+                );
+
                 this._pendingCurrentPerformancePriorityMode = this._currentPerformancePriorityMode;
-                this._scene.executeWhenReady(() => {
+
+                const callbackWhenSceneReady = () => {
+                    this._log("disableSnapshotRendering", `scene ready, add callback for frame ${this._engine.frameId + 2}`);
+
                     this._executeAtFrame(
                         this._engine.frameId + 2,
                         () => {
-                            // if this._disableRenderingRefCount === 0, snapshot rendering has been enabled in the meantime, so do nothing
-                            if (this._disableRenderingRefCount > 0 && this._pendingCurrentPerformancePriorityMode !== undefined) {
-                                this._scene.performancePriority = this._pendingCurrentPerformancePriorityMode;
-                            }
+                            this._log("disableSnapshotRendering", `switching to performance priority mode ${this._pendingCurrentPerformancePriorityMode}`);
+                            this._scene.performancePriority = this._pendingCurrentPerformancePriorityMode!;
                             this._pendingCurrentPerformancePriorityMode = undefined;
                         },
-                        true
+                        "whenDisabled"
                     );
-                });
+                };
+
+                this._disableCancelFunctions.set(callbackWhenSceneReady, () => this._scene.onReadyObservable.removeCallback(callbackWhenSceneReady));
+
+                this._scene.executeWhenReady(callbackWhenSceneReady);
             }
         }
 
@@ -207,20 +272,41 @@ export class SnapshotRenderingHelper {
     /**
      * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
      * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
+     * @param updateInstancedMeshes If true, the method will also update instanced meshes. Default is true. If you know instanced meshes won't move (or you don't have instanced meshes), you can set this to false to save some CPU time.
      */
-    public updateMesh(mesh: AbstractMesh | AbstractMesh[]) {
+    public updateMesh(mesh: AbstractMesh | AbstractMesh[], updateInstancedMeshes = true) {
         if (!this._fastSnapshotRenderingEnabled) {
             return;
         }
 
         if (Array.isArray(mesh)) {
             for (const m of mesh) {
-                m.transferToEffect(m.computeWorldMatrix(true));
+                if (!updateInstancedMeshes || !this._updateInstancedMesh(m)) {
+                    m.transferToEffect(m.computeWorldMatrix());
+                }
             }
             return;
         }
 
-        mesh.transferToEffect(mesh.computeWorldMatrix(true));
+        if (!updateInstancedMeshes || !this._updateInstancedMesh(mesh)) {
+            mesh.transferToEffect(mesh.computeWorldMatrix());
+        }
+    }
+
+    private _updateInstancedMesh(mesh: AbstractMesh) {
+        if (mesh.hasInstances) {
+            if (mesh.subMeshes) {
+                const sourceMesh = mesh as Mesh;
+                for (const subMesh of sourceMesh.subMeshes) {
+                    sourceMesh._updateInstancedBuffers(subMesh, sourceMesh._getInstancesRenderList(subMesh._id), sourceMesh._instanceDataStorage.instancesBufferSize, this._engine);
+                }
+            }
+            return true;
+        } else if (mesh.isAnInstance) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -290,16 +376,30 @@ export class SnapshotRenderingHelper {
         }
     }
 
-    private _executeAtFrame(frameId: number, func: () => void, executeWhenModeIsDisabled = false) {
-        const obs = this._engine.onEndFrameObservable.add(() => {
-            if ((this._disableRenderingRefCount > 0 && !executeWhenModeIsDisabled) || (this._disableRenderingRefCount === 0 && executeWhenModeIsDisabled)) {
-                this._engine.onEndFrameObservable.remove(obs);
-                return;
-            }
+    private _executeAtFrame(frameId: number, func: () => void, mode: "whenEnabled" | "whenDisabled" = "whenEnabled") {
+        const callback = () => {
             if (this._engine.frameId >= frameId) {
                 this._engine.onEndFrameObservable.remove(obs);
+                if (mode === "whenEnabled") {
+                    this._enableCancelFunctions.delete(callback);
+                } else {
+                    this._disableCancelFunctions.delete(callback);
+                }
                 func();
             }
-        });
+        };
+
+        const obs = this._engine.onEndFrameObservable.add(callback);
+        if (mode === "whenEnabled") {
+            this._enableCancelFunctions.set(callback, () => this._engine.onEndFrameObservable.remove(obs));
+        } else {
+            this._disableCancelFunctions.set(callback, () => this._engine.onEndFrameObservable.remove(obs));
+        }
+    }
+
+    private _log(funcName: string, message: string) {
+        if (this.showDebugLogs) {
+            Logger.Log(`[Frame: ${this._engine.frameId}] SnapshotRenderingHelper:${funcName} - ${message}`);
+        }
     }
 }
