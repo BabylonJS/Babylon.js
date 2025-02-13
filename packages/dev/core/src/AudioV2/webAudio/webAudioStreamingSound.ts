@@ -2,9 +2,9 @@ import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { ICommonSoundPlayOptions } from "../abstractAudio/abstractSound";
+import type {} from "../abstractAudio/abstractSound";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import type { IStreamingSoundOptions } from "../abstractAudio/streamingSound";
+import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
@@ -48,6 +48,7 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
     private _spatial: Nullable<_SpatialAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
+    protected override readonly _options: IStreamingSoundStoredOptions;
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
@@ -60,8 +61,16 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
     public source: StreamingSoundSourceType;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions> = {}) {
-        super(name, engine, options);
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
+        super(name, engine);
+
+        this._options = {
+            autoplay: options.autoplay ?? false,
+            loop: options.loop ?? false,
+            maxInstances: options.maxInstances ?? Infinity,
+            preloadCount: options.preloadCount ?? 1,
+            startOffset: options.startOffset ?? 0,
+        };
 
         this._subGraph = new _WebAudioStreamingSound._SubGraph(this);
     }
@@ -194,14 +203,16 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     private _sourceNode: Nullable<MediaElementAudioSourceNode>;
     private _volumeNode: GainNode;
 
+    protected override readonly _options: IStreamingSoundStoredOptions;
     protected override _sound: _WebAudioStreamingSound;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
-    public constructor(sound: _WebAudioStreamingSound, options: Partial<IStreamingSoundOptions>) {
-        super(sound, options);
+    public constructor(sound: _WebAudioStreamingSound, options: IStreamingSoundStoredOptions) {
+        super(sound);
 
+        this._options = options;
         this._volumeNode = new GainNode(sound.audioContext);
 
         if (typeof sound.source === "string") {
@@ -220,7 +231,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._enginePlayTime;
-        return this._enginePauseTime + timeSinceLastStart + this.options.startOffset;
+        return this._enginePauseTime + timeSinceLastStart + this._options.startOffset;
     }
 
     public set currentTime(value: number) {
@@ -231,10 +242,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._setState(SoundState.Stopped);
         }
 
-        this.options.startOffset = value;
+        this._options.startOffset = value;
 
         if (restart) {
-            this.play();
+            this.play({ startOffset: value });
         } else if (this._state === SoundState.Paused) {
             this._currentTimeChangedWhilePaused = true;
         }
@@ -275,32 +286,30 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     /** @internal */
-    public play(options: Partial<ICommonSoundPlayOptions> = this.options): void {
+    public play(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Started) {
             return;
         }
 
         if (options.loop !== undefined) {
-            this.options.loop = options.loop;
+            this._options.loop = options.loop;
         }
-        this._mediaElement.loop = this.options.loop;
+        this._mediaElement.loop = this._options.loop;
 
         let startOffset = options.startOffset;
 
         if (this._currentTimeChangedWhilePaused) {
-            startOffset = this.options.startOffset;
+            startOffset = this._options.startOffset;
             this._currentTimeChangedWhilePaused = false;
         } else if (this._state === SoundState.Paused) {
-            startOffset = this.currentTime + this.options.startOffset;
+            startOffset = this.currentTime + this._options.startOffset;
         }
 
         if (startOffset && startOffset > 0) {
             this._mediaElement.currentTime = startOffset;
         }
 
-        this.options.volume = options.volume ?? 1;
-
-        this._volumeNode.gain.value = this.options.volume;
+        this._volumeNode.gain.value = options.volume ?? 1;
 
         this._play();
     }
@@ -322,7 +331,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         if (this._state === SoundState.Paused) {
             this.play();
         } else if (this._currentTimeChangedWhilePaused) {
-            this.play(this.options);
+            this.play();
         }
     }
 
@@ -373,7 +382,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
 
         mediaElement.controls = false;
-        mediaElement.loop = this.options.loop;
+        mediaElement.loop = this._options.loop;
         mediaElement.preload = "auto";
 
         mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
@@ -432,7 +441,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             return;
         }
 
-        if (this.options.loop && this.state === SoundState.Starting) {
+        if (this._options.loop && this.state === SoundState.Starting) {
             this.play();
         }
 
@@ -467,11 +476,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             result.catch(() => {
                 this._setState(SoundState.FailedToStart);
 
-                if (this.options.loop) {
+                if (this._options.loop) {
                     this.engine.userGestureObservable.addOnce(this._onUserGesture);
                 }
             });
-        } else if (this.options.loop) {
+        } else if (this._options.loop) {
             this.engine.stateChangedObservable.add(this._onEngineStateChanged);
         } else {
             this.stop();

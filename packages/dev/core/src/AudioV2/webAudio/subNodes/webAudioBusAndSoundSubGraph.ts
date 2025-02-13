@@ -13,7 +13,8 @@ import { _HasStereoAudioOptions } from "../../abstractAudio/subProperties/abstra
 import type { IWebAudioOutNode, IWebAudioSubNode } from "../webAudioNode";
 import type { _SpatialWebAudioSubNode } from "./spatialWebAudioSubNode";
 import { _CreateSpatialAudioSubNodeAsync } from "./spatialWebAudioSubNode";
-import { _CreateStereoAudioSubNodeAsync, type _StereoWebAudioSubNode } from "./stereoWebAudioSubNode";
+import type { _StereoWebAudioSubNode } from "./stereoWebAudioSubNode";
+import { _CreateStereoAudioSubNodeAsync } from "./stereoWebAudioSubNode";
 import type { _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
 import { _WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
 
