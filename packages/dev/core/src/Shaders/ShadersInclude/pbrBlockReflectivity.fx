@@ -2,6 +2,7 @@ struct reflectivityOutParams
 {
     float microSurface;
     float roughness;
+    float diffuseRoughness;
     vec3 surfaceReflectivityColor;
 #ifdef METALLICWORKFLOW
     vec3 surfaceAlbedo;
@@ -32,6 +33,11 @@ reflectivityOutParams reflectivityBlock(
 #ifdef METALLICWORKFLOW
     , in vec3 surfaceAlbedo
     , in vec4 metallicReflectanceFactors
+#endif
+    , in float baseDiffuseRoughness
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    , in float baseDiffuseRoughnessTexture
+    , in vec2 vBaseDiffuseRoughnessInfos
 #endif
 #ifdef REFLECTIVITY
     , in vec3 reflectivityInfos
@@ -97,7 +103,7 @@ reflectivityOutParams reflectivityBlock(
         #endif
 
         #define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
-        
+
         // Compute microsurface from roughness.
         microSurface = 1.0 - metallicRoughness.g;
 
@@ -148,9 +154,9 @@ reflectivityOutParams reflectivityBlock(
                 #ifdef MICROSURFACEMAP
                     microSurface *= microSurfaceTexel.r;
                 #endif
-                
+
                 #define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
-                
+
             #endif
         #endif
     #endif
@@ -160,8 +166,14 @@ reflectivityOutParams reflectivityBlock(
     // Compute roughness.
     float roughness = 1. - microSurface;
 
+    var diffuseRoughness = baseDiffuseRoughness;
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    diffuseRoughness *= baseDiffuseRoughnessTexture;
+#endif
+
     outParams.microSurface = microSurface;
     outParams.roughness = roughness;
+    outParams.diffuseRoughness = diffuseRoughness;
     outParams.surfaceReflectivityColor = surfaceReflectivityColor;
 
     return outParams;

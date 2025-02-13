@@ -94,7 +94,6 @@
                     info.diffuseTransmission = vec3f(0.0);
                 #endif
             #else
-                preInfo.roughness = diffuseRoughness;
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
             #endif
 

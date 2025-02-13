@@ -24,6 +24,10 @@ uniform vec2 vAlbedoInfos;
 uniform vec2 vBaseWeightInfos;
 #endif
 
+#ifdef BASE_DIFFUSE_ROUGHNESS
+uniform vec2 vBaseDiffuseRoughnessInfos;
+#endif
+
 #ifdef AMBIENT
 uniform vec4 vAmbientInfos;
 #endif

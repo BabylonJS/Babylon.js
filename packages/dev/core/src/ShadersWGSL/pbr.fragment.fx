@@ -161,6 +161,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var microSurfaceTexel: vec4f = textureSample(microSurfaceSampler, microSurfaceSamplerSampler, fragmentInputs.vMicroSurfaceSamplerUV + uvOffset) * uniforms.vMicroSurfaceSamplerInfos.y;
 #endif
 
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    var baseDiffuseRoughnessTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
+#endif
+
 #ifdef METALLICWORKFLOW
     var metallicReflectanceFactors: vec4f = uniforms.vMetallicReflectanceFactors;
     #ifdef REFLECTANCE
@@ -190,6 +194,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , surfaceAlbedo
         , metallicReflectanceFactors
     #endif
+        , uniforms.baseDiffuseRoughness
+    #ifdef BASE_WEIGHT
+        , baseDiffuseRoughnessTexture
+        , uniforms.vBaseDiffuseRoughnessInfos
+    #endif
     #ifdef REFLECTIVITY
         , uniforms.vReflectivityInfos
         , surfaceMetallicOrReflectivityColorMap
@@ -208,6 +217,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var microSurface: f32 = reflectivityOut.microSurface;
     var roughness: f32 = reflectivityOut.roughness;
+    var diffuseRoughness: f32 = reflectivityOut.diffuseRoughness;
 
     #ifdef METALLICWORKFLOW
         surfaceAlbedo = reflectivityOut.surfaceAlbedo;

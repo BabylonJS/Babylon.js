@@ -199,11 +199,20 @@ void main(void) {
     #endif
 #endif
 
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    float baseDiffuseRoughnessTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
+#endif
+
     reflectivityOut = reflectivityBlock(
         vReflectivityColor
     #ifdef METALLICWORKFLOW
         , surfaceAlbedo
         , metallicReflectanceFactors
+    #endif
+        , baseDiffuseRoughness
+    #ifdef BASE_DIFFUSE_ROUGHNESS
+        , baseDiffuseRoughnessTexture
+        , vBaseDiffuseRoughnessInfos
     #endif
     #ifdef REFLECTIVITY
         , vReflectivityInfos
@@ -223,6 +232,7 @@ void main(void) {
 
     float microSurface = reflectivityOut.microSurface;
     float roughness = reflectivityOut.roughness;
+    float diffuseRoughness = reflectivityOut.diffuseRoughness;
 
     #ifdef METALLICWORKFLOW
         surfaceAlbedo = reflectivityOut.surfaceAlbedo;
