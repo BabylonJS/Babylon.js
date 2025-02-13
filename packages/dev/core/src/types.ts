@@ -225,13 +225,14 @@ export interface TypedArrayLike extends ArrayBufferView {
 }
 
 /**
- * Type for typed array constructor
+ * Interface for a constructor of a TypedArray.
  */
-export interface TypedArrayConstructor<T extends TypedArray> {
+export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
     new (length: number): T;
-    new (buffer: ArrayBufferLike, byteOffset: number, length?: number): T;
+    new (elements: Iterable<number>): T;
+    new (buffer: ArrayBufferLike, byteOffset?: number, length?: number): T;
     /**
      * The size in bytes of each element in the array.
      */
-    BYTES_PER_ELEMENT: number;
+    readonly BYTES_PER_ELEMENT: number;
 }
