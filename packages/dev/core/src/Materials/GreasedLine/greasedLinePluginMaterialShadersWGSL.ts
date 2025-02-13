@@ -64,27 +64,16 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
                     let grlNext: vec3f = input.grl_nextAndCounters.xyz;
                     vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
 
-                    let grlMatrix: mat4x4f = uniforms.viewProjection * finalWorld;
-                    var grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
-                    let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
-                    let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
-
-                    let grlCurrentP: vec2f = grlFix(grlFinalPosition, grlAspect);
-                    let grlPrevP: vec2f = grlFix(grlPrevPos, grlAspect);
-                    let grlNextP: vec2f = grlFix(grlNextPos, grlAspect);
-
                     let grlWidth: f32 = grlBaseWidth * input.grl_widths;
 
-                    var grlDir: vec2f;
-                    if (all(grlNextP == grlCurrentP)) {
-                        grlDir = normalize(grlCurrentP - grlPrevP);
-                    } else if (all(grlPrevP == grlCurrentP)) {
-                        grlDir = normalize(grlNextP - grlCurrentP);
-                    } else {
-                        let grlDir1: vec2f = normalize(grlCurrentP - grlPrevP);
-                        let grlDir2: vec2f = normalize(grlNextP - grlCurrentP);
-                        grlDir = normalize(grlDir1 + grlDir2);
-                    }
+                    let worldDir: vec3f = normalize(grlNext - grlPrevious);
+                    let nearPosition: vec3f = positionUpdated + (worldDir * 0.001);
+                    let grlMatrix: mat4x4f = uniforms.viewProjection * finalWorld;
+                    let grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0); 
+                    let screenNearPos: vec4f = grlMatrix * vec4(nearPosition, 1.0);
+                    let grlLinePosition: vec2f = grlFix(grlFinalPosition, grlAspect);
+                    let grlLineNearPosition: vec2f = grlFix(screenNearPos, grlAspect);
+                    let grlDir: vec2f = normalize(grlLineNearPosition - grlLinePosition);
 
                     var grlNormal: vec4f = vec4f(-grlDir.y, grlDir.x, 0.0, 1.0);
 

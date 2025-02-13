@@ -42,33 +42,24 @@ void main() {
 
         vec3 grlNext = grl_nextAndCounters.xyz;
         grlCounters = grl_nextAndCounters.w;
-
-
-        vec3 grlPositionOffset = grl_offsets;
-        vec4 grlFinalPosition = grlMatrix * vec4( position + grlPositionOffset , 1.0 );
-        vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
-        vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );
-
-        vec2 grlCurrentP = grlFix( grlFinalPosition, grlAspect );
-        vec2 grlPrevP = grlFix( grlPrevPos, grlAspect );
-        vec2 grlNextP = grlFix( grlNextPos, grlAspect );
-
         float grlWidth = grlBaseWidth * grl_widths;
 
-        vec2 grlDir;
-        if( grlNextP == grlCurrentP ) grlDir = normalize( grlCurrentP - grlPrevP );
-        else if( grlPrevP == grlCurrentP ) grlDir = normalize( grlNextP - grlCurrentP );
-        else {
-            vec2 grlDir1 = normalize( grlCurrentP - grlPrevP );
-            vec2 grlDir2 = normalize( grlNextP - grlCurrentP );
-            grlDir = normalize( grlDir1 + grlDir2 );
-        }
+        vec3 positionUpdated = position + grl_offsets;
+        vec3 worldDir = normalize(grlNext - grlPrevious);
+        vec3 nearPosition = positionUpdated + (worldDir * 0.001);
+        vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0);
+        vec4 screenNearPos = grlMatrix * vec4(nearPosition, 1.0);
+        vec2 grlLinePosition = grlFix(grlFinalPosition, grlAspect);
+        vec2 grlLineNearPosition = grlFix(screenNearPos, grlAspect);
+        vec2 grlDir = normalize(grlLineNearPosition - grlLinePosition);
+
         vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
         #ifdef GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM
             grlNormal.xy *= -.5 * grlWidth;
         #else
             grlNormal.xy *= .5 * grlWidth;
         #endif
+
         grlNormal *= projection;
         if (grlSizeAttenuation == 1.) {
             grlNormal.xy *= grlFinalPosition.w;
