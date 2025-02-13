@@ -1,18 +1,32 @@
 import { SoundState } from "../soundState";
-import type { ICommonSoundOptions, ICommonSoundPlayOptions } from "./abstractSound";
+import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _StreamingSoundInstance } from "./streamingSoundInstance";
 
-/**
- * Options for creating a streaming sound.
- */
-export interface IStreamingSoundOptions extends ICommonSoundOptions {
+/** @internal */
+export interface IStreamingSoundOptionsBase {
     /**
      * The number of instances to preload. Defaults to 1.
      * */
     preloadCount: number;
 }
+
+/**
+ * Options for creating a streaming sound.
+ */
+export interface IStreamingSoundOptions extends IAbstractSoundOptions, IStreamingSoundOptionsBase {}
+
+/**
+ * Options for playing a streaming sound.
+ */
+export interface IStreamingSoundPlayOptions extends IAbstractSoundPlayOptions {}
+
+/**
+ * Options stored in a streaming sound.
+ * @internal
+ */
+export interface IStreamingSoundStoredOptions extends IAbstractSoundStoredOptions, IStreamingSoundOptionsBase {}
 
 /**
  * Abstract class representing a streaming sound.
@@ -22,7 +36,7 @@ export interface IStreamingSoundOptions extends ICommonSoundOptions {
  *
  * Due to the way streaming sounds are typically implemented, there can be a significant delay when attempting to play
  * a streaming sound for the first time. To prevent this delay, it is recommended to preload instances of the sound
- * using the {@link IStreamingSoundOptions.preloadCount} options, or the {@link preloadInstance} and
+ * using the {@link IStreamingSoundStoredOptions.preloadCount} options, or the {@link preloadInstance} and
  * {@link preloadInstances} methods before calling the `play` method.
  *
  * Streaming sounds are created by the {@link CreateStreamingSoundAsync} function.
@@ -30,10 +44,10 @@ export interface IStreamingSoundOptions extends ICommonSoundOptions {
 export abstract class StreamingSound extends AbstractSound {
     private _preloadedInstances = new Array<_StreamingSoundInstance>();
 
-    protected override _options: Partial<IStreamingSoundOptions>;
+    protected abstract override readonly _options: IStreamingSoundStoredOptions;
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions> = {}) {
-        super(name, engine, options);
+    protected constructor(name: string, engine: AudioEngineV2) {
+        super(name, engine);
     }
 
     /**
@@ -80,7 +94,7 @@ export abstract class StreamingSound extends AbstractSound {
      * - Triggers `onEndedObservable` if played for the full duration and the `loop` option is not set.
      * @param options The options to use when playing the sound. Options set here override the sound's options.
      */
-    public play(options: Partial<ICommonSoundPlayOptions> = {}): void {
+    public play(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
             this.resume();
             return;
@@ -90,7 +104,7 @@ export abstract class StreamingSound extends AbstractSound {
 
         if (this.preloadCompletedCount > 0) {
             instance = this._preloadedInstances[0];
-            instance.options.startOffset = this.startOffset;
+            instance.startOffset = this.startOffset;
             this._removePreloadedInstance(instance);
         } else {
             instance = this._createInstance();
@@ -104,8 +118,8 @@ export abstract class StreamingSound extends AbstractSound {
         };
         instance.onStateChangedObservable.add(onInstanceStateChanged);
 
-        options.startOffset ??= this._options.startOffset;
-        options.loop ??= this._options.loop;
+        options.startOffset ??= this.startOffset;
+        options.loop ??= this.loop;
         options.volume ??= 1;
 
         this._beforePlay(instance);

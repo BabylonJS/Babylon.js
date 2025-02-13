@@ -13,10 +13,20 @@ import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 
-/**
- * Options for playing a sound.
- */
-export interface ICommonSoundPlayOptions extends IVolumeAudioOptions {
+/** @internal */
+export interface IAbstractSoundOptionsBase {
+    /**
+     * Whether the sound should start playing automatically. Defaults to `false`.
+     */
+    autoplay: boolean;
+    /**
+     * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
+     */
+    maxInstances: number;
+}
+
+/** @internal */
+export interface IAbstractSoundPlayOptionsBase {
     /**
      * Whether the sound should loop. Defaults to `false`.
      */
@@ -30,34 +40,38 @@ export interface ICommonSoundPlayOptions extends IVolumeAudioOptions {
 /**
  * Options for creating a sound.
  */
-export interface ICommonSoundOptions extends IAudioAnalyzerOptions, ICommonSoundPlayOptions, ISpatialAudioOptions, IStereoAudioOptions {
+export interface IAbstractSoundOptions extends IAbstractSoundOptionsBase, IAbstractSoundPlayOptions, IAudioAnalyzerOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
-     * Whether the sound should start playing immediately. Defaults to `false`.
-     */
-    autoplay: boolean;
-    /**
-     * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
-     */
-    maxInstances: number;
-    /**
-     * The output bus for the sound. Defaults to the audio engine's default main bus.
+     * The output bus for the sound. Defaults to `null`.
+     * - If not set or `null`, the sound is automatically connected to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
-    outBus: PrimaryAudioBus;
+    outBus: Nullable<PrimaryAudioBus>;
 }
+
+/**
+ * Options for playing a sound.
+ */
+export interface IAbstractSoundPlayOptions extends IAbstractSoundPlayOptionsBase, IVolumeAudioOptions {}
+
+/**
+ * Options stored in a sound.
+ * @internal
+ */
+export interface IAbstractSoundStoredOptions extends IAbstractSoundOptionsBase, IAbstractSoundPlayOptionsBase {}
 
 /**
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
     private _analyzer: Nullable<_AudioAnalyzer> = null;
-    private _privateInstances = new Set<_AbstractSoundInstance>();
     private _newestInstance: Nullable<_AbstractSoundInstance> = null;
     private _outBus: Nullable<PrimaryAudioBus> = null;
+    private _privateInstances = new Set<_AbstractSoundInstance>();
     private _state: SoundState = SoundState.Stopped;
 
     protected _instances: ReadonlySet<_AbstractSoundInstance> = this._privateInstances;
-    protected _options: Partial<ICommonSoundOptions>;
+    protected abstract readonly _options: IAbstractSoundStoredOptions;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
@@ -65,10 +79,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      */
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<ICommonSoundOptions> = {}) {
+    protected constructor(name: string, engine: AudioEngineV2) {
         super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
-
-        this._options = options;
     }
 
     /**
@@ -79,10 +91,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /**
-     * Whether the sound should start playing immediately. Defaults to `false`.
+     * Whether the sound should start playing automatically. Defaults to `false`.
      */
     public get autoplay(): boolean {
-        return this._options.autoplay ?? false;
+        return this._options.autoplay;
     }
 
     /**
@@ -106,7 +118,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Whether the sound should loop. Defaults to `false`.
      */
     public get loop(): boolean {
-        return this._options.loop ?? false;
+        return this._options.loop;
     }
 
     public set loop(value: boolean) {
@@ -117,7 +129,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The maximum number of instances that can play at the same time. Defaults to `Infinity`.
      */
     public get maxInstances(): number {
-        return this._options.maxInstances ?? Infinity;
+        return this._options.maxInstances;
     }
 
     public set maxInstances(value: number) {
@@ -125,7 +137,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /**
-     * The output bus for the sound. Defaults to the audio engine's default main bus.
+     * The output bus for the sound. Defaults to `null`.
+     * - If not set or `null`, the sound is automatically connected to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
     public get outBus(): Nullable<PrimaryAudioBus> {
@@ -163,7 +176,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The time within the sound buffer to start playing at, in seconds. Defaults to `0`.
      */
     public get startOffset(): number {
-        return this._options.startOffset ?? 0;
+        return this._options.startOffset;
     }
 
     public set startOffset(value: number) {
@@ -220,7 +233,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * - Triggers `onEndedObservable` if played for the full duration and the `loop` option is not set.
      * @param options The options to use when playing the sound. Options set here override the sound's options.
      */
-    public abstract play(options?: Partial<ICommonSoundPlayOptions>): void;
+    public abstract play(options?: Partial<IAbstractSoundPlayOptions>): void;
 
     /**
      * Pauses the sound.
