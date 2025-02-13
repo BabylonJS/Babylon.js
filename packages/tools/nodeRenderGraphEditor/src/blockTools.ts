@@ -27,6 +27,7 @@ import { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/execute
 import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/glowLayerBlock";
 import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
+import { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 
 /**
  * Static class for BlockTools
@@ -46,6 +47,8 @@ export class BlockTools {
                 return new NodeRenderGraphResourceContainerBlock("Resources", frameGraph, scene);
             case "ExecuteBlock":
                 return new NodeRenderGraphExecuteBlock("Execute", frameGraph, scene);
+            case "UtilityLayerRendererBlock":
+                return new NodeRenderGraphUtilityLayerRendererBlock("Utility Layer", frameGraph, scene);
             case "TextureBlock": {
                 return new NodeRenderGraphInputBlock("Texture", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
             }

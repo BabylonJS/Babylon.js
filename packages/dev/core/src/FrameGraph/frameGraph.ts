@@ -51,6 +51,13 @@ export class FrameGraph {
     }
 
     /**
+     * Gets the list of tasks in the frame graph
+     */
+    public get tasks() {
+        return this._tasks;
+    }
+
+    /**
      * Constructs the frame graph
      * @param engine defines the hosting engine
      * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector
