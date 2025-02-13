@@ -166,7 +166,7 @@ reflectivityOutParams reflectivityBlock(
     // Compute roughness.
     float roughness = 1. - microSurface;
 
-    var diffuseRoughness = baseDiffuseRoughness;
+    float diffuseRoughness = baseDiffuseRoughness;
 #ifdef BASE_DIFFUSE_ROUGHNESS
     diffuseRoughness *= baseDiffuseRoughnessTexture;
 #endif
