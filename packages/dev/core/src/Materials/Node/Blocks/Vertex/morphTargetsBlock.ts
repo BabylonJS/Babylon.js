@@ -87,6 +87,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the color input component
+     */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
@@ -126,6 +129,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._outputs[4];
     }
 
+    /**
+     * Gets the color output component
+     */
     public get colorOutput(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
@@ -381,7 +387,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                     injectionCode += `#endif\n`;
                 }
 
-                if (supportColors && defines["COLORS"]) {
+                if (supportColors && defines["VERTEXCOLOR_NME"]) {
                     injectionCode += `#ifdef MORPHTARGETS_COLOR\n`;
                     injectionCode += `${colorOutput.associatedVariableName} += (color${index} - ${color.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
@@ -414,7 +420,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                     state.attributes.push(VertexBuffer.UV2Kind + "_" + index);
                 }
 
-                if (supportColors && defines["COLORS"]) {
+                if (supportColors && defines["VERTEXCOLOR_NME"]) {
                     state.attributes.push(VertexBuffer.ColorKind + index);
                 }
             }
@@ -480,7 +486,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#else\n`;
         state.compilationString += `${state._declareOutput(uv2Output)} = vec2(0., 0.);\n`;
         state.compilationString += `#endif\n`;
-        state.compilationString += `#ifdef VERTEXCOLOR\n`;
+        state.compilationString += `#ifdef VERTEXCOLOR_NME\n`;
         state.compilationString += `${state._declareOutput(colorOutput)} = ${color.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
         state.compilationString += `${state._declareOutput(colorOutput)} = vec4(0., 0., 0., 0.);\n`;

@@ -89,6 +89,9 @@ export class MorphTargetManager implements IDisposable {
      */
     public enableUV2Morphing = true;
 
+    /**
+     * Gets or sets a boolean indicating if colors must be morphed
+     */
     public enableColorMorphing = true;
 
     /**
@@ -207,6 +210,9 @@ export class MorphTargetManager implements IDisposable {
         return this._supportsUV2s && this.enableUV2Morphing;
     }
 
+    /**
+     * Gets a boolean indicating if this manager supports morphing of colors
+     */
     public get supportsColors(): boolean {
         return this._supportsColors && this.enableColorMorphing;
     }
@@ -246,6 +252,9 @@ export class MorphTargetManager implements IDisposable {
         return this._supportsUV2s;
     }
 
+    /**
+     * Gets a boolean indicating if this manager has data for morphing colors
+     */
     public get hasColors(): boolean {
         return this._supportsColors;
     }

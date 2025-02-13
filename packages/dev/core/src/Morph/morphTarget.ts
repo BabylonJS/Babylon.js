@@ -278,6 +278,10 @@ export class MorphTarget implements IAnimatable {
         return this._uv2s;
     }
 
+    /**
+     * Affects color data to this target
+     * @param data defines the color data to use
+     */
     public setColors(data: Nullable<FloatArray>) {
         const hadColors = this.hasColors;
 
@@ -288,6 +292,10 @@ export class MorphTarget implements IAnimatable {
         }
     }
 
+    /**
+     * Gets the color data stored in this target
+     * @returns a FloatArray containing the color data (or null if not present)
+     */
     public getColors(): Nullable<FloatArray> {
         return this._colors;
     }
