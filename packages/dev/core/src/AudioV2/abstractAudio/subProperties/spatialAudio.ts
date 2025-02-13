@@ -1,6 +1,11 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { AbstractMesh, TransformNode } from "../../../Meshes";
+import type { Nullable } from "../../../types";
+import type { SpatialAudioAttachmentType } from "../spatialAttachers/spatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
-import { _GetSpatialAudioProperty, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
+import { AudioSubNode } from "../subNodes/audioSubNode";
+import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
 import { AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
@@ -10,7 +15,35 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     /** @internal */
     public constructor(subGraph: _AbstractAudioSubGraph) {
         super();
+
         this._subGraph = subGraph;
+    }
+
+    /** @internal */
+    public get attachedMesh(): Nullable<AbstractMesh> {
+        return _GetSpatialAudioProperty(this._subGraph, "attachedMesh");
+    }
+
+    public set attachedMesh(value: Nullable<AbstractMesh>) {
+        _SetSpatialAudioProperty(this._subGraph, "attachedMesh", value);
+    }
+
+    /** @internal */
+    public get attachedTransformNode(): Nullable<TransformNode> {
+        return _GetSpatialAudioProperty(this._subGraph, "attachedTransformNode");
+    }
+
+    public set attachedTransformNode(value: Nullable<TransformNode>) {
+        _SetSpatialAudioProperty(this._subGraph, "attachedTransformNode", value);
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return _GetSpatialAudioProperty(this._subGraph, "attachmentType");
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        _SetSpatialAudioProperty(this._subGraph, "attachmentType", value);
     }
 
     /** @internal */
@@ -47,6 +80,11 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     public set distanceModel(value: DistanceModelType) {
         _SetSpatialAudioProperty(this._subGraph, "distanceModel", value);
+    }
+
+    /** @internal */
+    public get isAttached(): boolean {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.isAttached ?? false;
     }
 
     /** @internal */
@@ -114,5 +152,19 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     public set rotationQuaternion(value: Quaternion) {
         _SetSpatialAudioProperty(this._subGraph, "rotationQuaternion", value);
+    }
+
+    /**
+     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     */
+    public detach(): void {
+        _GetSpatialAudioSubNode(this._subGraph)?.detach();
+    }
+
+    /**
+     * Forces the attached entity to update the spatial audio position and rotation.
+     */
+    public updateAttached(): void {
+        _GetSpatialAudioSubNode(this._subGraph)?.updateAttached();
     }
 }

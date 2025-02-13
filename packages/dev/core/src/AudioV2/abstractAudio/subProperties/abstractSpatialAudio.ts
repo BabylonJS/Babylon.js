@@ -1,6 +1,13 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Nullable } from "../../../types";
+import { SpatialAudioAttachmentType } from "../spatialAttachers/spatialAudioAttacher";
 
 export const _SpatialAudioDefaults = {
+    attachedMesh: null as Nullable<AbstractMesh>,
+    attachedTransformNode: null as Nullable<TransformNode>,
+    attachmentType: SpatialAudioAttachmentType.POSITION_AND_ROTATION,
     coneInnerAngle: 6.28318530718,
     coneOuterAngle: 6.28318530718,
     coneOuterVolume: 0,
@@ -19,6 +26,18 @@ export const _SpatialAudioDefaults = {
  */
 export interface ISpatialAudioOptions {
     /**
+     * The mesh the spatialization will use to update its position and rotation. Defaults to `null`.
+     */
+    spatialAttachedMesh: AbstractMesh;
+    /**
+     * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
+     */
+    spatialAttachedTransformNode: TransformNode;
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    spatialAttachmentType: SpatialAudioAttachmentType;
+    /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
      * - When the listener is inside the cone inner angle, the volume is at its maximum.
      */
@@ -34,7 +53,7 @@ export interface ISpatialAudioOptions {
      */
     spatialConeOuterVolume: number;
     /**
-     * The algorithm to use to reduce the volume of the audio source as it moves away from the listener. Defaults to "inverse".
+     * The algorithm to use to reduce the volume of the spatial audio source as it moves away from the listener. Defaults to "inverse".
      * @see {@link spatialMaxDistance}
      * @see {@link spatialReferenceDistance}
      * @see {@link spatialRolloffFactor}
@@ -53,11 +72,16 @@ export interface ISpatialAudioOptions {
      */
     spatialEnabled: boolean;
     /**
-     * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
+     * The maximum distance between the spatial source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link spatialDistanceModel} is set to `"linear"`.
      * @see {@link spatialDistanceModel}
      */
     spatialMaxDistance: number;
+    /**
+     * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
+     * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    spatialMinUpdateTime: number;
     /**
      * The spatial panning model. Defaults to "equalpower".
      * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
@@ -69,13 +93,13 @@ export interface ISpatialAudioOptions {
      */
     spatialPosition: Vector3;
     /**
-     * The distance for reducing volume as the audio source moves away from the listener – i.e. the distance the volume reduction starts at. Defaults to 1.
+     * The distance for reducing volume as the spatial source moves away from the listener – i.e. the distance the volume reduction starts at. Defaults to 1.
      * - This value is used by all distance models.
      * @see {@link spatialDistanceModel}
      */
     spatialReferenceDistance: number;
     /**
-     * How quickly the volume is reduced as the source moves away from the listener. Defaults to 1.
+     * How quickly the volume is reduced as the spatial source moves away from the listener. Defaults to 1.
      * - This value is used by all distance models.
      * @see {@link spatialDistanceModel}
      */
@@ -97,11 +121,15 @@ export interface ISpatialAudioOptions {
 export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>): boolean {
     return (
         options.spatialEnabled ||
+        options.spatialAttachedMesh !== undefined ||
+        options.spatialAttachedTransformNode !== undefined ||
+        options.spatialAttachmentType !== undefined ||
         options.spatialConeInnerAngle !== undefined ||
         options.spatialConeOuterAngle !== undefined ||
         options.spatialConeOuterVolume !== undefined ||
         options.spatialDistanceModel !== undefined ||
         options.spatialMaxDistance !== undefined ||
+        options.spatialMinUpdateTime !== undefined ||
         options.spatialPanningModel !== undefined ||
         options.spatialPosition !== undefined ||
         options.spatialReferenceDistance !== undefined ||
@@ -117,6 +145,21 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
  * @see {@link AudioEngineV2.listener}
  */
 export abstract class AbstractSpatialAudio {
+    /**
+     * The mesh the spatialization will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedMesh: Nullable<AbstractMesh>;
+
+    /**
+     * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedTransformNode: Nullable<TransformNode>;
+
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    public abstract attachmentType: SpatialAudioAttachmentType;
+
     /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
      * - When the listener is inside the cone inner angle, the volume is at its maximum.
@@ -144,11 +187,22 @@ export abstract class AbstractSpatialAudio {
     public abstract distanceModel: "linear" | "inverse" | "exponential";
 
     /**
+     * Whether the audio source is attached to a mesh or transform node.
+     */
+    public abstract isAttached: boolean;
+
+    /**
      * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link distanceModel} is set to `"linear"`.
      * @see {@link distanceModel}
      */
     public abstract maxDistance: number;
+
+    /**
+     * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
+     * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    public minUpdateTime: number = 0;
 
     /**
      * The spatial panning model. Defaults to "equalpower".
@@ -185,4 +239,9 @@ export abstract class AbstractSpatialAudio {
      * The spatial rotation quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Force the attached entity (if set) to update the spatial audio position and rotation.
+     */
+    public abstract updateAttached(): void;
 }

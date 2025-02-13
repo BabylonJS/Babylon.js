@@ -1,4 +1,9 @@
+import type { Camera } from "../../../Cameras";
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Nullable } from "../../../types";
+import type { SpatialAudioAttachmentType } from "../spatialAttachers/spatialAudioAttacher";
 
 export const _SpatialAudioListenerDefaults = {
     position: Vector3.Zero(),
@@ -11,9 +16,30 @@ export const _SpatialAudioListenerDefaults = {
  */
 export interface ISpatialAudioListenerOptions {
     /**
+     * The camera the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    listenerAttachedCamera: Camera;
+    /**
+     * The mesh the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    listenerAttachedMesh: AbstractMesh;
+    /**
+     * The transform node the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    listenerAttachedTransformNode: TransformNode;
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    listenerAttachmentType: SpatialAudioAttachmentType;
+    /**
      * Set to `true` to enable the listener. Defaults to `false`.
      */
     listenerEnabled: boolean;
+    /**
+     * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
+     * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    listenerMinUpdateTime: number;
     /**
      * The listener position. Defaults to (0, 0, 0).
      */
@@ -33,7 +59,17 @@ export interface ISpatialAudioListenerOptions {
  * @returns `true` if spatial audio listener options are defined, otherwise `false`.
  */
 export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioListenerOptions>): boolean {
-    return options.listenerPosition !== undefined || options.listenerRotation !== undefined || options.listenerRotationQuaternion !== undefined;
+    return (
+        options.listenerEnabled ||
+        options.listenerAttachedCamera !== undefined ||
+        options.listenerAttachedMesh !== undefined ||
+        options.listenerAttachedTransformNode !== undefined ||
+        options.listenerAttachmentType !== undefined ||
+        options.listenerMinUpdateTime !== undefined ||
+        options.listenerPosition !== undefined ||
+        options.listenerRotation !== undefined ||
+        options.listenerRotationQuaternion !== undefined
+    );
 }
 
 /**
@@ -42,6 +78,37 @@ export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioLi
  * @see {@link AudioEngineV2.listener}
  */
 export abstract class AbstractSpatialAudioListener {
+    /**
+     * The camera the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedCamera: Nullable<Camera>;
+
+    /**
+     * The mesh the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedMesh: Nullable<AbstractMesh>;
+
+    /**
+     * The transform node the listener will use to update its position and rotation. Defaults to `null`.
+     */
+    public abstract attachedTransformNode: Nullable<TransformNode>;
+
+    /**
+     * The type of attachment to use; position, rotation, or both. Defaults to both.
+     */
+    public abstract attachmentType: SpatialAudioAttachmentType;
+
+    /**
+     * Whether the listener is attached to a camera, mesh or transform node.
+     */
+    public abstract isAttached: boolean;
+
+    /**
+     * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
+     * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    public abstract minUpdateTime: number;
+
     /**
      * The listener position. Defaults to (0, 0, 0).
      */
@@ -56,4 +123,9 @@ export abstract class AbstractSpatialAudioListener {
      * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Force the attached entity (if set) to update the spatial audio position and rotation.
+     */
+    public abstract updateAttached(): void;
 }
