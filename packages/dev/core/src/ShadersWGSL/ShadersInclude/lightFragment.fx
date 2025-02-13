@@ -86,7 +86,6 @@
             #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
             #else
-                preInfo.roughness = diffuseRoughness;
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
                 #ifdef SS_TRANSLUCENCY
                     info.diffuse *= (1.0 - subSurfaceOut.translucencyIntensity);
