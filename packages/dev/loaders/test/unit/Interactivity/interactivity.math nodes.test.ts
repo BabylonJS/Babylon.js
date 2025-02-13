@@ -1533,7 +1533,8 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomValue, randomValue2, randomValue3, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+        // expected column to row major
+        const expected = [randomValue, randomValue3, randomValue2, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1597,14 +1598,15 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomValue, randomValue2, randomValue3, randomValue4, randomValue5, randomValue6, randomValue7, randomValue8, randomValue9].map(
+        // expected column to row major
+        const expected = [randomValue, randomValue3, randomValue6, randomValue2, randomValue5, randomValue8, randomValue4, randomValue7, randomValue9].map(
             (v: number) => Math.round(v * 1000) / 1000
         );
         expect(resultArray).toEqual(expected);
     });
 
     it("should use math/combine4x4 correctly", async () => {
-        const randomValue = Math.random() - 0.5;
+        const randomValue1 = Math.random() - 0.5;
         const randomValue2 = Math.random() - 0.5;
         const randomValue3 = Math.random() - 0.5;
         const randomValue4 = Math.random() - 0.5;
@@ -1627,7 +1629,7 @@ describe("Interactivity math nodes", () => {
                     values: {
                         a: {
                             type: 0,
-                            value: [randomValue],
+                            value: [randomValue1],
                         },
                         b: {
                             type: 0,
@@ -1693,21 +1695,23 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        // expected column to row major
         const expected = [
-            randomValue,
-            randomValue2,
-            randomValue3,
-            randomValue4,
+            randomValue1,
             randomValue5,
-            randomValue6,
-            randomValue7,
-            randomValue8,
             randomValue9,
-            randomValue10,
-            randomValue11,
-            randomValue12,
             randomValue13,
+            randomValue2,
+            randomValue6,
+            randomValue10,
             randomValue14,
+            randomValue3,
+            randomValue7,
+            randomValue11,
+            randomValue15,
+            randomValue4,
+            randomValue8,
+            randomValue12,
             randomValue15,
         ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);

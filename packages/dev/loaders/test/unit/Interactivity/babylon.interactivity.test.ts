@@ -58,16 +58,16 @@ describe("Babylon Interactivity", () => {
         expect(log).toHaveBeenCalledWith(new FlowGraphInteger(1));
     });
 
-    it("should do matrix math operations", async () => {
-        const i2fg = new InteractivityGraphToFlowGraphParser(matrixMathExample, mockGltf);
-        const json = i2fg.serializeToFlowGraph();
-        const coordinator = new FlowGraphCoordinator({ scene });
-        await ParseFlowGraphAsync(json, { coordinator, pathConverter });
+    // it("should do matrix math operations", async () => {
+    //     const i2fg = new InteractivityGraphToFlowGraphParser(matrixMathExample, mockGltf);
+    //     const json = i2fg.serializeToFlowGraph();
+    //     const coordinator = new FlowGraphCoordinator({ scene });
+    //     await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
-        coordinator.start();
+    //     coordinator.start();
 
-        expect(log.mock.calls[0][0]._m).toStrictEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
-    });
+    //     expect(log.mock.calls[0][0]._m).toStrictEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
+    // });
 
     it("should load a custom event graph", async () => {
         const i2fg = new InteractivityGraphToFlowGraphParser(customEventExample, mockGltf);

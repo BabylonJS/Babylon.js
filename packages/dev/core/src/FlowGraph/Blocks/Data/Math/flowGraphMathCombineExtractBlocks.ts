@@ -203,9 +203,10 @@ export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<Flo
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix2D>>(this, "cachedMatrix", null) as FlowGraphMatrix2D;
         const array = this.config?.inputIsColumnMajor
             ? [
+                  // column to row-major
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
                   this.getDataInput("input_2")!.getValue(context),
+                  this.getDataInput("input_1")!.getValue(context),
                   this.getDataInput("input_3")!.getValue(context),
               ]
             : [
@@ -241,14 +242,15 @@ export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<Flo
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix3D>>(this, "cachedMatrix", null) as FlowGraphMatrix3D;
         const array = this.config?.inputIsColumnMajor
             ? [
+                  // column to row major
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
                   this.getDataInput("input_3")!.getValue(context),
-                  this.getDataInput("input_4")!.getValue(context),
-                  this.getDataInput("input_5")!.getValue(context),
                   this.getDataInput("input_6")!.getValue(context),
+                  this.getDataInput("input_1")!.getValue(context),
+                  this.getDataInput("input_4")!.getValue(context),
                   this.getDataInput("input_7")!.getValue(context),
+                  this.getDataInput("input_2")!.getValue(context),
+                  this.getDataInput("input_5")!.getValue(context),
                   this.getDataInput("input_8")!.getValue(context),
               ]
             : [

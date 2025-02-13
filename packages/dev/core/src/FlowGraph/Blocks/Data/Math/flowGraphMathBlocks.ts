@@ -52,7 +52,7 @@ function _areSameIntegerClass(className: string, className2: string) {
 }
 
 function isNumeric(a: FlowGraphMathOperationType): a is FlowGraphNumber {
-    return typeof a === "number" || (a as FlowGraphInteger).value !== undefined;
+    return typeof a === "number" || (a as FlowGraphInteger)?.value !== undefined;
 }
 
 function getNumericValue(a: FlowGraphNumber): number {
