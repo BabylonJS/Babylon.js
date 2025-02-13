@@ -3391,6 +3391,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uvs) {
                     target.setUVs(separateVertices(uvs, 2));
                 }
+
+                const colors = target.getColors();
+                if (colors) {
+                    target.setColors(separateVertices(colors, 4));
+                }
             }
             this.morphTargetManager.synchronize();
         }
@@ -4128,6 +4133,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uv2s) {
                     this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
                 }
+
+                const colors = morphTarget.getColors();
+                if (colors) {
+                    this.geometry.setVerticesData(VertexBuffer.ColorKind + index, colors, false, 4);
+                }
             }
         } else {
             let index = 0;
@@ -4147,6 +4157,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.ColorKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.ColorKind + index);
                 }
                 index++;
             }
