@@ -2359,7 +2359,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 ubo.updateFloat("baseWeight", this._baseWeight);
-                ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness);
+                if (this._baseDiffuseRoughness !== null && this._baseDiffuseRoughness !== undefined) {
+                    ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness);
+                } else if (this._roughness !== null && this._roughness !== undefined) {
+                    ubo.updateFloat("baseDiffuseRoughness", this._roughness);
+                }
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;

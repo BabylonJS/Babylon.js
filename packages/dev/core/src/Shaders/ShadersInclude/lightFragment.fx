@@ -88,7 +88,6 @@
             #elif defined(SS_TRANSLUCENCY)
                 info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
             #else
-                preInfo.roughness = diffuseRoughness;
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
             #endif
 
