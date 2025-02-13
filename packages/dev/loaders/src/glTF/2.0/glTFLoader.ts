@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable, TypedArray } from "core/types";
+import type { IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -80,7 +80,6 @@ import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtensio
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
-import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
 
 export { GLTFFileLoader };
 
