@@ -26,7 +26,7 @@ const typesAndLengths: {
  * This test is for the interactivity nodes. Each nodes will have its own test, making sure it is working according to the specs.
  * Note that this expects that the Flow Graph is working correctly, as the nodes will be converted to FlowGraph blocks.
  */
-describe("Interactivity nodes", () => {
+describe("Interactivity math nodes", () => {
     let engine;
     let scene: Scene;
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
@@ -888,8 +888,8 @@ describe("Interactivity nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // column-major matrix
-        const expected = [1 * randomMatrix[0] + 1 * randomMatrix[2], 1 * randomMatrix[1] + 1 * randomMatrix[3]].map((v: number) => Math.round(v * 1000) / 1000);
+        // row-major matrix
+        const expected = [1 * randomMatrix[0] + 1 * randomMatrix[1], 1 * randomMatrix[2] + 1 * randomMatrix[3]].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
 
@@ -920,11 +920,11 @@ describe("Interactivity nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // column-major matrix!
+        // row-major matrix!
         const expected = [
-            1 * randomMatrix[0] + 1 * randomMatrix[3] + 1 * randomMatrix[6],
-            1 * randomMatrix[1] + 1 * randomMatrix[4] + 1 * randomMatrix[7],
-            1 * randomMatrix[2] + 1 * randomMatrix[5] + 1 * randomMatrix[8],
+            1 * randomMatrix[0] + 1 * randomMatrix[1] + 1 * randomMatrix[2],
+            1 * randomMatrix[3] + 1 * randomMatrix[4] + 1 * randomMatrix[5],
+            1 * randomMatrix[6] + 1 * randomMatrix[7] + 1 * randomMatrix[8],
         ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
@@ -957,10 +957,10 @@ describe("Interactivity nodes", () => {
         // round result to 3 decimals
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
         const expected = [
-            1 * randomMatrix[0] + 1 * randomMatrix[4] + 1 * randomMatrix[8] + 1 * randomMatrix[12],
-            1 * randomMatrix[1] + 1 * randomMatrix[5] + 1 * randomMatrix[9] + 1 * randomMatrix[13],
-            1 * randomMatrix[2] + 1 * randomMatrix[6] + 1 * randomMatrix[10] + 1 * randomMatrix[14],
-            1 * randomMatrix[3] + 1 * randomMatrix[7] + 1 * randomMatrix[11] + 1 * randomMatrix[15],
+            1 * randomMatrix[0] + 1 * randomMatrix[1] + 1 * randomMatrix[2] + 1 * randomMatrix[3],
+            1 * randomMatrix[4] + 1 * randomMatrix[5] + 1 * randomMatrix[6] + 1 * randomMatrix[7],
+            1 * randomMatrix[8] + 1 * randomMatrix[9] + 1 * randomMatrix[10] + 1 * randomMatrix[11],
+            1 * randomMatrix[12] + 1 * randomMatrix[13] + 1 * randomMatrix[14] + 1 * randomMatrix[15],
         ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
@@ -1282,12 +1282,12 @@ describe("Interactivity nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // column major matrix
+        // row major matrix
         const expected = [
-            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[2] * randomMatrix2[1],
-            randomMatrix1[1] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[1],
-            randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[2] * randomMatrix2[3],
-            randomMatrix1[1] * randomMatrix2[2] + randomMatrix1[3] * randomMatrix2[3],
+            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[2],
+            randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[3],
+            randomMatrix1[2] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[2],
+            randomMatrix1[2] * randomMatrix2[1] + randomMatrix1[3] * randomMatrix2[3],
         ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
@@ -1319,18 +1319,17 @@ describe("Interactivity nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        // row-major matrix
         const expected = [
-            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[1] + randomMatrix1[6] * randomMatrix2[2],
-            randomMatrix1[1] * randomMatrix2[0] + randomMatrix1[4] * randomMatrix2[1] + randomMatrix1[7] * randomMatrix2[2],
-            randomMatrix1[2] * randomMatrix2[0] + randomMatrix1[5] * randomMatrix2[1] + randomMatrix1[8] * randomMatrix2[2],
-
-            randomMatrix1[0] * randomMatrix2[3] + randomMatrix1[3] * randomMatrix2[4] + randomMatrix1[6] * randomMatrix2[5],
-            randomMatrix1[1] * randomMatrix2[3] + randomMatrix1[4] * randomMatrix2[4] + randomMatrix1[7] * randomMatrix2[5],
-            randomMatrix1[2] * randomMatrix2[3] + randomMatrix1[5] * randomMatrix2[4] + randomMatrix1[8] * randomMatrix2[5],
-
-            randomMatrix1[0] * randomMatrix2[6] + randomMatrix1[3] * randomMatrix2[7] + randomMatrix1[6] * randomMatrix2[8],
-            randomMatrix1[1] * randomMatrix2[6] + randomMatrix1[4] * randomMatrix2[7] + randomMatrix1[7] * randomMatrix2[8],
-            randomMatrix1[2] * randomMatrix2[6] + randomMatrix1[5] * randomMatrix2[7] + randomMatrix1[8] * randomMatrix2[8],
+            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[3] + randomMatrix1[2] * randomMatrix2[6],
+            randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[4] + randomMatrix1[2] * randomMatrix2[7],
+            randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[1] * randomMatrix2[5] + randomMatrix1[2] * randomMatrix2[8],
+            randomMatrix1[3] * randomMatrix2[0] + randomMatrix1[4] * randomMatrix2[3] + randomMatrix1[5] * randomMatrix2[6],
+            randomMatrix1[3] * randomMatrix2[1] + randomMatrix1[4] * randomMatrix2[4] + randomMatrix1[5] * randomMatrix2[7],
+            randomMatrix1[3] * randomMatrix2[2] + randomMatrix1[4] * randomMatrix2[5] + randomMatrix1[5] * randomMatrix2[8],
+            randomMatrix1[6] * randomMatrix2[0] + randomMatrix1[7] * randomMatrix2[3] + randomMatrix1[8] * randomMatrix2[6],
+            randomMatrix1[6] * randomMatrix2[1] + randomMatrix1[7] * randomMatrix2[4] + randomMatrix1[8] * randomMatrix2[7],
+            randomMatrix1[6] * randomMatrix2[2] + randomMatrix1[7] * randomMatrix2[5] + randomMatrix1[8] * randomMatrix2[8],
         ].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
@@ -1379,6 +1378,153 @@ describe("Interactivity nodes", () => {
             randomMatrix1[12] * randomMatrix2[2] + randomMatrix1[13] * randomMatrix2[6] + randomMatrix1[14] * randomMatrix2[10] + randomMatrix1[15] * randomMatrix2[14],
             randomMatrix1[12] * randomMatrix2[3] + randomMatrix1[13] * randomMatrix2[7] + randomMatrix1[14] * randomMatrix2[11] + randomMatrix1[15] * randomMatrix2[15],
         ].map((v: number) => Math.round(v * 1000) / 1000);
+        expect(resultArray).toEqual(expected);
+    });
+
+    // test math/combine2
+
+    it("should use math/combine2 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine2" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        // matrix2d
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [randomValue, randomValue2].map((v: number) => Math.round(v * 1000) / 1000);
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/combine3 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const randomValue3 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine3" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        // matrix2d
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                        c: {
+                            type: 0,
+                            value: [randomValue3],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [randomValue, randomValue2, randomValue3].map((v: number) => Math.round(v * 1000) / 1000);
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/combine4 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const randomValue3 = Math.random() - 0.5;
+        const randomValue4 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine4" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        // matrix2d
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                        c: {
+                            type: 0,
+                            value: [randomValue3],
+                        },
+                        d: {
+                            type: 0,
+                            value: [randomValue4],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [randomValue, randomValue2, randomValue3, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/combine2x2 correctly", async () => {
+        const randomValue = Math.random() - 0.5;
+        const randomValue2 = Math.random() - 0.5;
+        const randomValue3 = Math.random() - 0.5;
+        const randomValue4 = Math.random() - 0.5;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine4" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        // matrix2d
+                        a: {
+                            type: 0,
+                            value: [randomValue],
+                        },
+                        b: {
+                            type: 0,
+                            value: [randomValue2],
+                        },
+                        c: {
+                            type: 0,
+                            value: [randomValue3],
+                        },
+                        d: {
+                            type: 0,
+                            value: [randomValue4],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = [randomValue, randomValue2, randomValue3, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
         expect(resultArray).toEqual(expected);
     });
 });

@@ -221,7 +221,6 @@ const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: 
     BABYLON_Logging: {
         "babylon/log": {
             blocks: [FlowGraphBlockNames.ConsoleLog],
-            configuration: {},
             inputs: {
                 flows: {
                     // in: { name: "in" },
@@ -260,7 +259,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
-        configuration: {},
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
@@ -385,7 +383,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/isinf": getSimpleInputMapping(FlowGraphBlockNames.IsInfinity),
     "math/select": {
         blocks: [FlowGraphBlockNames.Conditional],
-        configuration: {},
         inputs: {
             values: {
                 condition: { name: "condition" },
@@ -437,7 +434,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/transform": {
         // glTF transform is vectorN with matrixN
         blocks: [FlowGraphBlockNames.TransformVector],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "a" },
@@ -452,7 +448,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/combine2": {
         blocks: [FlowGraphBlockNames.CombineVector2],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -467,7 +462,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/combine3": {
         blocks: [FlowGraphBlockNames.CombineVector3],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -483,7 +477,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/combine4": {
         blocks: [FlowGraphBlockNames.CombineVector4],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -501,7 +494,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     // one input, N outputs! outputs named using numbers.
     "math/extract2": {
         blocks: [FlowGraphBlockNames.ExtractVector2],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input", gltfType: "number" },
@@ -516,7 +508,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/extract3": {
         blocks: [FlowGraphBlockNames.ExtractVector3],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input", gltfType: "number" },
@@ -532,7 +523,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/extract4": {
         blocks: [FlowGraphBlockNames.ExtractVector4],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input", gltfType: "number" },
@@ -553,7 +543,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/matmul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -567,10 +556,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value" },
             },
         },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            serializedObjects[0].config.inputIsColumnMajor = true;
+            return serializedObjects;
+        },
     },
     "math/extract2x2": {
         blocks: [FlowGraphBlockNames.ExtractMatrix2D],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input", gltfType: "float2x2" },
@@ -587,7 +581,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/combine3x3": {
         blocks: [FlowGraphBlockNames.CombineMatrix3D],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -606,10 +599,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value" },
             },
         },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            serializedObjects[0].config.inputIsColumnMajor = true;
+            return serializedObjects;
+        },
     },
     "math/extract3x3": {
         blocks: [FlowGraphBlockNames.ExtractMatrix3D],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input", gltfType: "float3x3" },
@@ -631,7 +629,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/combine4x4": {
         blocks: [FlowGraphBlockNames.CombineMatrix],
-        configuration: {},
         inputs: {
             values: {
                 a: { name: "input_0", gltfType: "number" },
@@ -656,6 +653,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // configure it to work the way glTF specifies
+            serializedObjects[0].config = serializedObjects[0].config || {};
+            serializedObjects[0].config.inputIsColumnMajor = true;
+            return serializedObjects;
         },
     },
     "math/extract4x4": {

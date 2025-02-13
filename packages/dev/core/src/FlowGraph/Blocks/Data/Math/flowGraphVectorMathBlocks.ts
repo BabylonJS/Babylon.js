@@ -151,10 +151,10 @@ function _transformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVect
             a = a as Vector4;
             // transform the vector 4 with the matrix here. Vector4.TransformCoordinates transforms a 3D coordinate, not Vector4
             return new Vector4(
-                a.x * b.m[0] + a.y * b.m[4] + a.z * b.m[8] + a.w * b.m[12],
-                a.x * b.m[1] + a.y * b.m[5] + a.z * b.m[9] + a.w * b.m[13],
-                a.x * b.m[2] + a.y * b.m[6] + a.z * b.m[10] + a.w * b.m[14],
-                a.x * b.m[3] + a.y * b.m[7] + a.z * b.m[11] + a.w * b.m[15]
+                a.x * b.m[0] + a.y * b.m[1] + a.z * b.m[2] + a.w * b.m[3],
+                a.x * b.m[4] + a.y * b.m[5] + a.z * b.m[6] + a.w * b.m[7],
+                a.x * b.m[8] + a.y * b.m[9] + a.z * b.m[10] + a.w * b.m[11],
+                a.x * b.m[12] + a.y * b.m[13] + a.z * b.m[14] + a.w * b.m[15]
             );
         default:
             throw new Error(`Cannot transform value ${a}`);
