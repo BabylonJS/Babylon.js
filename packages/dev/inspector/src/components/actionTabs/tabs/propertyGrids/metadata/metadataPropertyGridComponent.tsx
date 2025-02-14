@@ -68,7 +68,7 @@ export class MetadataGridComponent extends React.Component<
      */
     override componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
         if (this.props.entity) {
-            if (!prevProps.entity || prevProps.entity.id !== this.props.entity.id) {
+            if (prevProps.entity !== this.props.entity) {
                 this.refreshSelected();
             }
         }
