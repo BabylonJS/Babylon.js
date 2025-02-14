@@ -749,6 +749,170 @@ describe("Flow Nodes", () => {
         expect(log).toHaveBeenCalledWith(1);
     });
 
+    test("variable/interpolate with float", async () => {
+        // linear interpolation from 1 to 5 in 1 second
+        await generateSimpleNodeGraph(
+            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "event/onTick" }, { op: "variable/get" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                        useSlerp: {
+                            value: [false],
+                        },
+                    },
+                    values: {
+                        value: {
+                            type: 0,
+                            value: [5],
+                        },
+                        duration: {
+                            type: 0,
+                            value: [1], // 1 second
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 2,
+                            socket: "value",
+                        },
+                    },
+                },
+                // get variable
+                {
+                    declaration: 3,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                    },
+                },
+                // onTick for logging
+                {
+                    declaration: 2,
+                    flows: {
+                        out: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }],
+            [{ type: 0, value: [1] }]
+        );
+
+        // wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
+        // flatten the calls
+        const logs = log.mock.calls.map((c) => c[0]);
+        // expect each value to be bigger than the last one, and lower than 5
+        expect(logs.every((v, i, a) => (i ? v >= a[i - 1] : true) && v <= 5)).toBe(true);
+        expect(log).toHaveBeenCalledWith(5);
+    });
+
+    // variable/interpolate with a vector3 and easing function
+    test("variable/interpolate with vector3 and easing function", async () => {
+        await generateSimpleNodeGraph(
+            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "event/onTick" }, { op: "variable/get" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                        useSlerp: {
+                            value: [false],
+                        },
+                    },
+                    values: {
+                        value: {
+                            type: 0,
+                            value: [1, 1, 1],
+                        },
+                        duration: {
+                            type: 2,
+                            value: [1], // 1 second
+                        },
+                        // control point 1 for bezier easing - expoInOut
+                        p1: {
+                            type: 1,
+                            value: [1, 0],
+                        },
+                        p2: {
+                            type: 1,
+                            value: [0, 1],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 2,
+                            socket: "value",
+                        },
+                    },
+                },
+                // get variable
+                {
+                    declaration: 3,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                    },
+                },
+                // onTick for logging
+                {
+                    declaration: 2,
+                    flows: {
+                        out: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float3" }, { signature: "float2" }, { signature: "float" }],
+            [{ type: 0, value: [0, 0, 0] }]
+        );
+
+        const calls: any[] = [];
+
+        // the reason for cloning is that the same vector is being returned, meaning that the values will be the same at the end of the interpolation
+        log.mockImplementation((val) => {
+            calls.push(val.clone());
+        });
+
+        // wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
+        // expect the log to be called with 1,1,1
+        expect(log).toHaveBeenCalledWith(new Vector3(1, 1, 1));
+        // check that the calls interpolation worked, i.e. the vector x is between 0 and 1
+        expect(calls.every((v) => v.x >= 0 && v.x <= 1)).toBe(true);
+        log.mockImplementation(() => {});
+    });
+
     // now we have variable get/set we can test while loop
     test("flow/while", async () => {
         // a while loop that increments an integer (setting a variable). condition is using math/gt

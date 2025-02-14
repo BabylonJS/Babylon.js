@@ -166,6 +166,32 @@ export function getRichTypeByFlowGraphType(flowGraphType?: string): RichType<any
 }
 
 /**
+ * get the animation type for a given flow graph type
+ * @param flowGraphType the flow graph type
+ * @returns the animation type for this flow graph type
+ */
+export function getAnimationTypeByFlowGraphType(flowGraphType: FlowGraphTypes): number {
+    switch (flowGraphType) {
+        case FlowGraphTypes.Number:
+            return Constants.ANIMATIONTYPE_FLOAT;
+        case FlowGraphTypes.Vector2:
+            return Constants.ANIMATIONTYPE_VECTOR2;
+        case FlowGraphTypes.Vector3:
+            return Constants.ANIMATIONTYPE_VECTOR3;
+        case FlowGraphTypes.Matrix:
+            return Constants.ANIMATIONTYPE_MATRIX;
+        case FlowGraphTypes.Color3:
+            return Constants.ANIMATIONTYPE_COLOR3;
+        case FlowGraphTypes.Color4:
+            return Constants.ANIMATIONTYPE_COLOR4;
+        case FlowGraphTypes.Quaternion:
+            return Constants.ANIMATIONTYPE_QUATERNION;
+        default:
+            return Constants.ANIMATIONTYPE_FLOAT;
+    }
+}
+
+/**
  * Given an animation type, return the rich type that corresponds to it.
  * @param animationType the animation type
  * @returns the rich type that corresponds to the animation type

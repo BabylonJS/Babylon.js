@@ -5,8 +5,7 @@ import { Logger } from "core/Misc/logger";
 import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import type { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./interactivityGraphParser";
 import type { IGLTF } from "../../glTFLoaderInterfaces";
-import { Constants } from "core/Engines/constants";
-import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
@@ -1031,12 +1030,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
     },
     "variable/interpolate": {
-        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.Context, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
+        blocks: [
+            FlowGraphBlockNames.ValueInterpolation,
+            FlowGraphBlockNames.Context,
+            FlowGraphBlockNames.PlayAnimation,
+            FlowGraphBlockNames.Easing,
+            FlowGraphBlockNames.GetVariable,
+        ],
         configuration: {
             variable: {
                 name: "propertyName",
-                gltfType: "number",
-                flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
@@ -1045,7 +1048,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
             useSlerp: {
                 name: "animationType",
-                gltfType: "boolean",
                 inOptions: true,
                 defaultValue: false,
                 dataTransformer: (value) => {
@@ -1102,18 +1104,31 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 input: "value-0",
                 output: "value",
                 inputBlockIndex: 0,
-                outputBlockIndex: 1,
+                outputBlockIndex: 4,
                 isVariable: true,
             },
         ],
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+        extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
             // is useSlerp is used, animationType should be set to be quaternion!
             const serializedValueInterpolation = serializedObjects[0];
-            if (serializedValueInterpolation.config.useSlerp) {
-                serializedValueInterpolation.config.animationType = Constants.ANIMATIONTYPE_QUATERNION;
-                serializedValueInterpolation.config.useSlerp = undefined;
+            const propertyIndex = gltfBlock.configuration?.variable.value[0];
+            if (typeof propertyIndex !== "number") {
+                Logger.Error("Variable index is not defined for variable interpolation block");
+                throw new Error("Variable index is not defined for variable interpolation block");
+            }
+            const variable = parser.arrays.staticVariables[propertyIndex];
+            // if not set by useSlerp
+            if (typeof serializedValueInterpolation.config.animationType.value === "undefined") {
+                // get the value type
+                parser.arrays.staticVariables;
+                serializedValueInterpolation.config.animationType.value = getAnimationTypeByFlowGraphType(variable.type);
             }
 
+            // variable/get configuration
+            const serializedGetVariable = serializedObjects[4];
+            serializedGetVariable.config = serializedGetVariable.config || {};
+            serializedGetVariable.config.variable = serializedGetVariable.config.variable || {};
+            serializedGetVariable.config.variable.value = parser.getVariableName(propertyIndex);
             return serializedObjects;
         },
     },

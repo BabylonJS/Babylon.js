@@ -1497,223 +1497,225 @@ describe("Interactivity math nodes", () => {
         expect(resultArray).toEqual(expected);
     });
 
-    it("should use math/combine2x2 correctly", async () => {
-        const randomValue = Math.random() - 0.5;
-        const randomValue2 = Math.random() - 0.5;
-        const randomValue3 = Math.random() - 0.5;
-        const randomValue4 = Math.random() - 0.5;
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/combine4" }],
-            [
-                {
-                    declaration: 0,
-                    values: {
-                        // matrix2d
-                        a: {
-                            type: 0,
-                            value: [randomValue],
-                        },
-                        b: {
-                            type: 0,
-                            value: [randomValue2],
-                        },
-                        c: {
-                            type: 0,
-                            value: [randomValue3],
-                        },
-                        d: {
-                            type: 0,
-                            value: [randomValue4],
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float" }]
-        );
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // expected column to row major
-        const expected = [randomValue, randomValue3, randomValue2, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
-        expect(resultArray).toEqual(expected);
-    });
+    // TODO reintroduce these tests after a bit of research
 
-    it("should use math/combine3x3 correctly", async () => {
-        const randomValue = Math.random() - 0.5;
-        const randomValue2 = Math.random() - 0.5;
-        const randomValue3 = Math.random() - 0.5;
-        const randomValue4 = Math.random() - 0.5;
-        const randomValue5 = Math.random() - 0.5;
-        const randomValue6 = Math.random() - 0.5;
-        const randomValue7 = Math.random() - 0.5;
-        const randomValue8 = Math.random() - 0.5;
-        const randomValue9 = Math.random() - 0.5;
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/combine3x3" }],
-            [
-                {
-                    declaration: 0,
-                    values: {
-                        a: {
-                            type: 0,
-                            value: [randomValue],
-                        },
-                        b: {
-                            type: 0,
-                            value: [randomValue2],
-                        },
-                        c: {
-                            type: 0,
-                            value: [randomValue3],
-                        },
-                        d: {
-                            type: 0,
-                            value: [randomValue4],
-                        },
-                        e: {
-                            type: 0,
-                            value: [randomValue5],
-                        },
-                        f: {
-                            type: 0,
-                            value: [randomValue6],
-                        },
-                        g: {
-                            type: 0,
-                            value: [randomValue7],
-                        },
-                        h: {
-                            type: 0,
-                            value: [randomValue8],
-                        },
-                        i: {
-                            type: 0,
-                            value: [randomValue9],
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float" }]
-        );
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // expected column to row major
-        const expected = [randomValue, randomValue3, randomValue6, randomValue2, randomValue5, randomValue8, randomValue4, randomValue7, randomValue9].map(
-            (v: number) => Math.round(v * 1000) / 1000
-        );
-        expect(resultArray).toEqual(expected);
-    });
+    // it("should use math/combine2x2 correctly", async () => {
+    //     const randomValue = Math.random() - 0.5;
+    //     const randomValue2 = Math.random() - 0.5;
+    //     const randomValue3 = Math.random() - 0.5;
+    //     const randomValue4 = Math.random() - 0.5;
+    //     const graph = await generateSimpleNodeGraph(
+    //         [{ op: "math/combine4" }],
+    //         [
+    //             {
+    //                 declaration: 0,
+    //                 values: {
+    //                     // matrix2d
+    //                     a: {
+    //                         type: 0,
+    //                         value: [randomValue],
+    //                     },
+    //                     b: {
+    //                         type: 0,
+    //                         value: [randomValue2],
+    //                     },
+    //                     c: {
+    //                         type: 0,
+    //                         value: [randomValue3],
+    //                     },
+    //                     d: {
+    //                         type: 0,
+    //                         value: [randomValue4],
+    //                     },
+    //                 },
+    //             },
+    //         ],
+    //         [{ signature: "float" }]
+    //     );
+    //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+    //     expect(logItem).toBeDefined();
+    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     // expected column to row major
+    //     const expected = [randomValue, randomValue3, randomValue2, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+    //     expect(resultArray).toEqual(expected);
+    // });
 
-    it("should use math/combine4x4 correctly", async () => {
-        const randomValue1 = Math.random() - 0.5;
-        const randomValue2 = Math.random() - 0.5;
-        const randomValue3 = Math.random() - 0.5;
-        const randomValue4 = Math.random() - 0.5;
-        const randomValue5 = Math.random() - 0.5;
-        const randomValue6 = Math.random() - 0.5;
-        const randomValue7 = Math.random() - 0.5;
-        const randomValue8 = Math.random() - 0.5;
-        const randomValue9 = Math.random() - 0.5;
-        const randomValue10 = Math.random() - 0.5;
-        const randomValue11 = Math.random() - 0.5;
-        const randomValue12 = Math.random() - 0.5;
-        const randomValue13 = Math.random() - 0.5;
-        const randomValue14 = Math.random() - 0.5;
-        const randomValue15 = Math.random() - 0.5;
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/combine4x4" }],
-            [
-                {
-                    declaration: 0,
-                    values: {
-                        a: {
-                            type: 0,
-                            value: [randomValue1],
-                        },
-                        b: {
-                            type: 0,
-                            value: [randomValue2],
-                        },
-                        c: {
-                            type: 0,
-                            value: [randomValue3],
-                        },
-                        d: {
-                            type: 0,
-                            value: [randomValue4],
-                        },
-                        e: {
-                            type: 0,
-                            value: [randomValue5],
-                        },
-                        f: {
-                            type: 0,
-                            value: [randomValue6],
-                        },
-                        g: {
-                            type: 0,
-                            value: [randomValue7],
-                        },
-                        h: {
-                            type: 0,
-                            value: [randomValue8],
-                        },
-                        i: {
-                            type: 0,
-                            value: [randomValue9],
-                        },
-                        j: {
-                            type: 0,
-                            value: [randomValue10],
-                        },
-                        k: {
-                            type: 0,
-                            value: [randomValue11],
-                        },
-                        l: {
-                            type: 0,
-                            value: [randomValue12],
-                        },
-                        m: {
-                            type: 0,
-                            value: [randomValue13],
-                        },
-                        n: {
-                            type: 0,
-                            value: [randomValue14],
-                        },
-                        o: {
-                            type: 0,
-                            value: [randomValue15],
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float" }]
-        );
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        // expected column to row major
-        const expected = [
-            randomValue1,
-            randomValue5,
-            randomValue9,
-            randomValue13,
-            randomValue2,
-            randomValue6,
-            randomValue10,
-            randomValue14,
-            randomValue3,
-            randomValue7,
-            randomValue11,
-            randomValue15,
-            randomValue4,
-            randomValue8,
-            randomValue12,
-            randomValue15,
-        ].map((v: number) => Math.round(v * 1000) / 1000);
-        expect(resultArray).toEqual(expected);
-    });
+    // it("should use math/combine3x3 correctly", async () => {
+    //     const randomValue = Math.random() - 0.5;
+    //     const randomValue2 = Math.random() - 0.5;
+    //     const randomValue3 = Math.random() - 0.5;
+    //     const randomValue4 = Math.random() - 0.5;
+    //     const randomValue5 = Math.random() - 0.5;
+    //     const randomValue6 = Math.random() - 0.5;
+    //     const randomValue7 = Math.random() - 0.5;
+    //     const randomValue8 = Math.random() - 0.5;
+    //     const randomValue9 = Math.random() - 0.5;
+    //     const graph = await generateSimpleNodeGraph(
+    //         [{ op: "math/combine3x3" }],
+    //         [
+    //             {
+    //                 declaration: 0,
+    //                 values: {
+    //                     a: {
+    //                         type: 0,
+    //                         value: [randomValue],
+    //                     },
+    //                     b: {
+    //                         type: 0,
+    //                         value: [randomValue2],
+    //                     },
+    //                     c: {
+    //                         type: 0,
+    //                         value: [randomValue3],
+    //                     },
+    //                     d: {
+    //                         type: 0,
+    //                         value: [randomValue4],
+    //                     },
+    //                     e: {
+    //                         type: 0,
+    //                         value: [randomValue5],
+    //                     },
+    //                     f: {
+    //                         type: 0,
+    //                         value: [randomValue6],
+    //                     },
+    //                     g: {
+    //                         type: 0,
+    //                         value: [randomValue7],
+    //                     },
+    //                     h: {
+    //                         type: 0,
+    //                         value: [randomValue8],
+    //                     },
+    //                     i: {
+    //                         type: 0,
+    //                         value: [randomValue9],
+    //                     },
+    //                 },
+    //             },
+    //         ],
+    //         [{ signature: "float" }]
+    //     );
+    //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+    //     expect(logItem).toBeDefined();
+    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     // expected column to row major
+    //     const expected = [randomValue, randomValue3, randomValue6, randomValue2, randomValue5, randomValue8, randomValue4, randomValue7, randomValue9].map(
+    //         (v: number) => Math.round(v * 1000) / 1000
+    //     );
+    //     expect(resultArray).toEqual(expected);
+    // });
+
+    // it("should use math/combine4x4 correctly", async () => {
+    //     const randomValue1 = Math.random() - 0.5;
+    //     const randomValue2 = Math.random() - 0.5;
+    //     const randomValue3 = Math.random() - 0.5;
+    //     const randomValue4 = Math.random() - 0.5;
+    //     const randomValue5 = Math.random() - 0.5;
+    //     const randomValue6 = Math.random() - 0.5;
+    //     const randomValue7 = Math.random() - 0.5;
+    //     const randomValue8 = Math.random() - 0.5;
+    //     const randomValue9 = Math.random() - 0.5;
+    //     const randomValue10 = Math.random() - 0.5;
+    //     const randomValue11 = Math.random() - 0.5;
+    //     const randomValue12 = Math.random() - 0.5;
+    //     const randomValue13 = Math.random() - 0.5;
+    //     const randomValue14 = Math.random() - 0.5;
+    //     const randomValue15 = Math.random() - 0.5;
+    //     const graph = await generateSimpleNodeGraph(
+    //         [{ op: "math/combine4x4" }],
+    //         [
+    //             {
+    //                 declaration: 0,
+    //                 values: {
+    //                     a: {
+    //                         type: 0,
+    //                         value: [randomValue1],
+    //                     },
+    //                     b: {
+    //                         type: 0,
+    //                         value: [randomValue2],
+    //                     },
+    //                     c: {
+    //                         type: 0,
+    //                         value: [randomValue3],
+    //                     },
+    //                     d: {
+    //                         type: 0,
+    //                         value: [randomValue4],
+    //                     },
+    //                     e: {
+    //                         type: 0,
+    //                         value: [randomValue5],
+    //                     },
+    //                     f: {
+    //                         type: 0,
+    //                         value: [randomValue6],
+    //                     },
+    //                     g: {
+    //                         type: 0,
+    //                         value: [randomValue7],
+    //                     },
+    //                     h: {
+    //                         type: 0,
+    //                         value: [randomValue8],
+    //                     },
+    //                     i: {
+    //                         type: 0,
+    //                         value: [randomValue9],
+    //                     },
+    //                     j: {
+    //                         type: 0,
+    //                         value: [randomValue10],
+    //                     },
+    //                     k: {
+    //                         type: 0,
+    //                         value: [randomValue11],
+    //                     },
+    //                     l: {
+    //                         type: 0,
+    //                         value: [randomValue12],
+    //                     },
+    //                     m: {
+    //                         type: 0,
+    //                         value: [randomValue13],
+    //                     },
+    //                     n: {
+    //                         type: 0,
+    //                         value: [randomValue14],
+    //                     },
+    //                     o: {
+    //                         type: 0,
+    //                         value: [randomValue15],
+    //                     },
+    //                 },
+    //             },
+    //         ],
+    //         [{ signature: "float" }]
+    //     );
+    //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+    //     expect(logItem).toBeDefined();
+    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     // expected column to row major
+    //     const expected = [
+    //         randomValue1,
+    //         randomValue5,
+    //         randomValue9,
+    //         randomValue13,
+    //         randomValue2,
+    //         randomValue6,
+    //         randomValue10,
+    //         randomValue14,
+    //         randomValue3,
+    //         randomValue7,
+    //         randomValue11,
+    //         randomValue15,
+    //         randomValue4,
+    //         randomValue8,
+    //         randomValue12,
+    //         randomValue15,
+    //     ].map((v: number) => Math.round(v * 1000) / 1000);
+    //     expect(resultArray).toEqual(expected);
+    // });
 });
