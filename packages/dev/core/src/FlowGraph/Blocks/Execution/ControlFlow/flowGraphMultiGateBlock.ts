@@ -2,10 +2,11 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 /**
  * @experimental
  * Configuration for the multi gate block.
@@ -41,7 +42,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     /**
      * Output connection: The index of the current output flow.
      */
-    public readonly lastIndex: FlowGraphDataConnection<number>;
+    public readonly lastIndex: FlowGraphDataConnection<FlowGraphInteger>;
 
     constructor(
         /**
@@ -51,7 +52,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.lastIndex = this.registerDataOutput("lastIndex", RichTypeNumber, -1);
+        this.lastIndex = this.registerDataOutput("lastIndex", RichTypeFlowGraphInteger, new FlowGraphInteger(-1));
         this.setNumberOfOutputFlows(config?.numberOutputFlows);
     }
 
@@ -103,16 +104,16 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
 
         if (callingSignal === this.reset) {
             context._deleteExecutionVariable(this, "indexesUsed");
-            this.lastIndex.setValue(-1, context);
+            this.lastIndex.setValue(new FlowGraphInteger(-1), context);
             return;
         }
         const indexesUsed = context._getExecutionVariable(this, "indexesUsed", [] as boolean[]);
         const nextIndex = this._getNextIndex(indexesUsed);
         if (nextIndex > -1) {
-            this.lastIndex.setValue(nextIndex, context);
-            this.outFlows[nextIndex]._activateSignal(context);
+            this.lastIndex.setValue(new FlowGraphInteger(nextIndex), context);
             indexesUsed[nextIndex] = true;
             context._setExecutionVariable(this, "indexesUsed", indexesUsed);
+            this.outFlows[nextIndex]._activateSignal(context);
         }
     }
 

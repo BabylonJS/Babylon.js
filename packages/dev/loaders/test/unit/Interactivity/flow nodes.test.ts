@@ -1086,7 +1086,7 @@ describe("Flow Nodes", () => {
                     },
                     flows: {
                         out: {
-                            node: 2,
+                            node: 2, // trigger the sequence node
                             socket: "in",
                         },
                     },
@@ -1106,11 +1106,11 @@ describe("Flow Nodes", () => {
                     declaration: 2,
                     flows: {
                         "1": {
-                            node: 1,
+                            node: 1, // logging node
                             socket: "in",
                         },
                         "2": {
-                            node: 0,
+                            node: 0, // doN loop
                             socket: "in",
                         },
                     },
@@ -1119,8 +1119,149 @@ describe("Flow Nodes", () => {
             [{ signature: "int" }]
         );
 
-        // expect the log to be called 5 times with 0, 1,2,3,4 as a value
-        console.log(log.mock.calls.map((c) => c[0]));
+        // expect the log to be called 5 times with 1,2,3,4,5 as a value
+        const values = log.mock.calls.map((c) => c[0].value);
         expect(log).toHaveBeenCalledTimes(5);
+        expect(values).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    // flow/multiGate
+    test("flow/multiGate", async () => {
+        // a multiGate that will trigger the logging node 3 times
+        await generateSimpleNodeGraph(
+            [{ op: "flow/multiGate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [
+                // multiGate
+                {
+                    declaration: 0,
+                    flows: {
+                        "1": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "3": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "4": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "5": {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when multiGate is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 0,
+                            socket: "lastIndex",
+                        },
+                    },
+                },
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            node: 1, // logging node
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 0, // multigate
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        const values = log.mock.calls.map((c) => c[0].value);
+        // expect the log to be called 3 times with 0 as a value
+        expect(log).toHaveBeenCalledTimes(5);
+        expect(values).toEqual([0, 1, 2, 3, 4]);
+    });
+
+    // flow/multiGate
+    test("flow/multiGate with random", async () => {
+        // a multiGate that will trigger the logging node 3 times
+        await generateSimpleNodeGraph(
+            [{ op: "flow/multiGate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [
+                // multiGate
+                {
+                    declaration: 0,
+                    configuration: {
+                        isRandom: {
+                            value: [true],
+                        },
+                    },
+                    flows: {
+                        "1": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "3": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "4": {
+                            node: 2,
+                            socket: "in",
+                        },
+                        "5": {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when multiGate is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 0,
+                            socket: "lastIndex",
+                        },
+                    },
+                },
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            node: 1, // logging node
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 0, // multigate
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        const values = log.mock.calls.map((c) => c[0].value);
+        // expect the log to be called 3 times with 0 as a value
+        expect(log).toHaveBeenCalledTimes(5);
+        // they should not be sorted!
+        expect(values).not.toEqual([0, 1, 2, 3, 4]);
+        // however, when sorted, they should be this array. Not that .sort works because it is a single digit!
+        expect(values.sort()).toEqual([0, 1, 2, 3, 4]);
     });
 });

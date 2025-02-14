@@ -941,6 +941,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
             serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            serializedObject.signalOutputs.forEach((output, index) => {
+                output.name = "out_" + index;
+            });
             return serializedObjects;
         },
     },
