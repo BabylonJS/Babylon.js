@@ -55,7 +55,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         this.completed = this._registerSignalOutput("completed");
         this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputFlows || 0);
         // The first inFlow is the default input signal all execution blocks have
-        for (let i = 1; i < this.config.inputFlows; i++) {
+        for (let i = 0; i < this.config.inputFlows; i++) {
             this.inFlows.push(this._registerSignalInput(`in_${i}`));
         }
         // no need for in
@@ -87,7 +87,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         } else {
             const index = this.inFlows.indexOf(callingSignal);
             if (index >= 0) {
-                activationState[index + 1] = true;
+                activationState[index] = true;
             }
         }
 

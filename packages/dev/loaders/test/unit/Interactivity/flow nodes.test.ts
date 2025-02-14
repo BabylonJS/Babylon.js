@@ -1264,4 +1264,110 @@ describe("Flow Nodes", () => {
         // however, when sorted, they should be this array. Not that .sort works because it is a single digit!
         expect(values.sort()).toEqual([0, 1, 2, 3, 4]);
     });
+
+    // flow/waitAll
+    test("flow/waitAll", async () => {
+        // a waitAll that will trigger the logging node 3 times
+        await generateSimpleNodeGraph(
+            [{ op: "flow/waitAll" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            node: 5, // delay
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 4, // delay
+                            socket: "in",
+                        },
+                        "3": {
+                            node: 3, // delay
+                            socket: "in",
+                        },
+                    },
+                },
+                // waitAll
+                {
+                    declaration: 0,
+                    configuration: {
+                        inputFlows: {
+                            value: [3],
+                        },
+                    },
+                    flows: {
+                        completed: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when waitAll is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            type: 0,
+                            value: [100],
+                        },
+                    },
+                },
+                // setDelay
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.4],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 1,
+                            socket: "0",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.5],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 1,
+                            socket: "1",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.2],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 1,
+                            socket: "2",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        // wait for 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
+        // expect log to be called once with 100
+        expect(log).toHaveBeenCalledTimes(1);
+        expect(log).toHaveBeenCalledWith(100);
+    });
 });

@@ -321,8 +321,17 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No mapping found for input node", nodeIn]);
                     throw new Error("Error parsing node connections");
                 }
-                const flowInMapping = inputMapper.inputs?.flows?.[flow.socket || "in"];
-                const nodeInSocketName = flowInMapping?.name || flow.socket || "in";
+                let flowInMapping = inputMapper.inputs?.flows?.[flow.socket || "in"];
+                let arrayMapping = false;
+                if (!flowInMapping) {
+                    for (const key in inputMapper.inputs?.flows) {
+                        if (key.startsWith("[") && key.endsWith("]")) {
+                            arrayMapping = true;
+                            flowInMapping = inputMapper.inputs?.flows?.[key];
+                        }
+                    }
+                }
+                const nodeInSocketName = flowInMapping ? (arrayMapping ? flowInMapping.name.replace("$1", flow.socket || "") : flowInMapping.name) : flow.socket || "in";
                 const inputBlock = (flowInMapping && flowInMapping.toBlock && nodeIn.blocks.find((b) => b.className === flowInMapping.toBlock)) || nodeIn.blocks[0];
                 // in all of the flow graph input connections, find the one with the same name as the socket
                 let socketIn = inputBlock.signalInputs.find((s) => s.name === nodeInSocketName);

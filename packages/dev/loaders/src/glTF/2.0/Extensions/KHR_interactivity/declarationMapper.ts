@@ -952,6 +952,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true, defaultValue: 0 },
         },
+        inputs: {
+            flows: {
+                "[segment]": { name: "in_$1" },
+            },
+        },
         validation(gltfBlock) {
             // check that the configuration value is an integer
             if (typeof gltfBlock.configuration?.inputFlows?.value[0] !== "number") {
@@ -960,10 +965,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 };
                 gltfBlock.configuration.inputFlows.value = [0];
             }
-            // go over all output flows, check that they are all integers as strings
-            return Object.keys(gltfBlock.flows || {}).every((flow) => {
-                return typeof flow === "string" && /^\d+$/.test(flow);
-            });
+            return true;
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             // process the input flows and add them to the inFlow array
