@@ -78,6 +78,11 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
             value: value.asArray(),
             className,
         };
+    } else if (className === FlowGraphTypes.Integer) {
+        serializationObject[key] = {
+            value: value.value,
+            className,
+        };
     } else {
         if (className && (value.id || value.name)) {
             serializationObject[key] = {
