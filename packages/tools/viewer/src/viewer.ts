@@ -314,61 +314,73 @@ export class ViewerHotSpotResult {
 }
 
 export type ViewerBoundingInfo = {
+    /**
+     * The minimum and maximum extents of the model.
+     */
     extents: Readonly<{
+        /**
+         * The minimum extent of the model.
+         */
         readonly min: readonly [x: number, y: number, z: number];
+
+        /**
+         * The maximum extent of the model.
+         */
         readonly max: readonly [x: number, y: number, z: number];
     }>;
+
+    /**
+     * The size of the model.
+     */
     readonly size: readonly [x: number, y: number, z: number];
+
+    /**
+     * The center of the model.
+     */
     readonly center: readonly [x: number, y: number, z: number];
 };
 
-export type Model = IDisposable &
-    Readonly<{
-        /**
-         * The asset container representing the model.
-         */
-        assetContainer: AssetContainer;
+export type Model = IDisposable & {
+    /**
+     * The asset container representing the model.
+     */
+    readonly assetContainer: AssetContainer;
 
-        /**
-         * The material variants controller for the model.
-         */
-        materialVariantsController: Nullable<MaterialVariantsController>;
+    /**
+     * The material variants controller for the model.
+     */
+    readonly materialVariantsController: Nullable<MaterialVariantsController>;
 
-        /**
-         * The current animation.
-         */
-        get selectedAnimation(): number;
-    }> & {
-        /**
-         * Returns the world position and visibility of a hot spot.
-         */
-        getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
+    /**
+     * The current animation.
+     */
+    selectedAnimation: number;
 
-        /**
-         * Compute and return the world bounds of the model.
-         * The minimum and maximum extents, the size and the center.
-         * @param animationIndex The index of the animation group to consider when computing the bounding info.
-         * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
-         */
-        getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+    /**
+     * Returns the world position and visibility of a hot spot.
+     */
+    getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean;
 
-        /**
-         * Resets the computed world bounds of the model.
-         * Should be called after the model undergoes transformations.
-         */
-        resetWorldBounds(): void;
+    /**
+     * Compute and return the world bounds of the model.
+     * The minimum and maximum extents, the size and the center.
+     * @param animationIndex The index of the animation group to consider when computing the bounding info.
+     * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
+     */
+    getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
 
-        /**
-         * Makes the model the current active model in the viewer.
-         * @param options Options for activating the model.
-         */
-        makeActive(options?: ActivateModelOptions): void;
+    /**
+     * Resets the computed world bounds of the model.
+     * Should be called after the model undergoes transformations.
+     */
+    resetWorldBounds(): void;
 
-        /**
-         * Selects an animation by index.
-         */
-        set selectedAnimation(index: number);
-    };
+    /**
+     * Makes the model the current active model in the viewer.
+     * @param options Options for activating the model.
+     */
+    makeActive(options?: ActivateModelOptions): void;
+};
 
 type ModelInternal = Model & {
     _animationPlaying(): boolean;
@@ -845,7 +857,7 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The list of animation names.
+     * The list of animation names for the currently loaded model.
      */
     public get animations(): readonly string[] {
         return this._activeModel?.assetContainer.animationGroups.map((group) => group.name) ?? [];
@@ -1069,7 +1081,7 @@ export class Viewer implements IDisposable {
                     const stillTransitioning = model?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted));
                     // Should render if :
                     // 1. An animation is playing.
-                    // 5. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
+                    // 2. Animation is paused, but any individual animatable hasn't transitioned to a paused state yet.
                     return model._animationPlaying() || stillTransitioning;
                 },
                 getHotSpotToRef: (query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult) => {
