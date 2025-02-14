@@ -23,7 +23,7 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -465,6 +465,7 @@ export class Viewer implements IDisposable {
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
+    private readonly _beforeRenderObserver: Observer<Scene>;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
@@ -574,6 +575,9 @@ export class Viewer implements IDisposable {
         this._scene.skipPointerUpPicking = true;
         this._scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
+        this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+            this._snapshotHelper.updateMesh(this._scene.meshes);
+        });
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
@@ -1043,7 +1047,7 @@ export class Viewer implements IDisposable {
         this._snapshotHelper.disableSnapshotRendering();
 
         try {
-            const assetContainer = await loadAssetContainerAsync(source, this._scene, options);
+            const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
             assetContainer.animationGroups.forEach((group) => {
                 group.start(true, this.animationSpeed);
                 group.pause();
@@ -1332,6 +1336,7 @@ export class Viewer implements IDisposable {
         this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
+        this._beforeRenderObserver.remove();
 
         this._isDisposed = true;
     }
@@ -1451,6 +1456,10 @@ export class Viewer implements IDisposable {
 
                     this._sceneMutated = false;
                     this._scene.render();
+
+                    // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                    this._camera.panningSensibility = 5000 / this._camera.radius;
+                    this._camera.speed = this._camera.radius * 0.2;
 
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();

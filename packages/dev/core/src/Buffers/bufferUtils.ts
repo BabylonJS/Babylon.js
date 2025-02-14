@@ -1,15 +1,11 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "../types";
 
+/**
+ * Union of TypedArrays that can be used for vertex data.
+ */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
-
-export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
-    new (length: number): T;
-    new (elements: Iterable<number>): T;
-    new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
-    readonly BYTES_PER_ELEMENT: number;
-}
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {

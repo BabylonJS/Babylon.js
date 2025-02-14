@@ -544,10 +544,11 @@ export class ThinEffectLayer {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         // Diffuse
         if (material) {
-            const needAlphaTest = material.needAlphaTesting();
+            const needAlphaTest = material.needAlphaTestingForMesh(mesh);
 
             const diffuseTexture = material.getAlphaTestTexture();
             const needAlphaBlendFromDiffuse =
@@ -652,7 +653,8 @@ export class ThinEffectLayer {
                   false, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 
@@ -941,7 +943,7 @@ export class ThinEffectLayer {
             }
 
             if (!renderingMaterial) {
-                const needAlphaTest = material.needAlphaTesting();
+                const needAlphaTest = material.needAlphaTestingForMesh(effectiveMesh);
 
                 const diffuseTexture = material.getAlphaTestTexture();
                 const needAlphaBlendFromDiffuse =

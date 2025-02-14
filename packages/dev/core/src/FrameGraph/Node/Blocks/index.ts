@@ -21,6 +21,7 @@ export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
 export * from "./Rendering/taaObjectRendererBlock";
+export * from "./Rendering/utilityLayerRendererBlock";
 
 export * from "./Teleport/teleportInBlock";
 export * from "./Teleport/teleportOutBlock";

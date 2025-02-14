@@ -31,7 +31,7 @@ export class EnvironmentTools {
         }
 
         if (path.indexOf(".hdr") === path.length - 4) {
-            return new HDRCubeTexture(path, scene, 256, false, true, false, true);
+            return new HDRCubeTexture(path, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         }
 
         const envTexture = CubeTexture.CreateFromPrefilteredData(path, scene);
@@ -46,6 +46,9 @@ export class EnvironmentTools {
 
     public static ResetEnvironmentTexture() {
         const currentScene = EngineStore.LastCreatedScene!;
+        if (!currentScene) {
+            return;
+        }
 
         if (currentScene.environmentTexture) {
             currentScene.environmentTexture.dispose();
@@ -60,9 +63,12 @@ export class EnvironmentTools {
                     if (material.reflectionTexture) {
                         material.reflectionTexture.dispose();
                     }
-                    material.reflectionTexture = currentScene.environmentTexture.clone();
-                    if (material.reflectionTexture) {
-                        material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+
+                    if (currentScene.environmentTexture) {
+                        material.reflectionTexture = currentScene.environmentTexture.clone();
+                        if (material.reflectionTexture) {
+                            material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+                        }
                     }
                 }
             }

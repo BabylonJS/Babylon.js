@@ -48,6 +48,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerCancelEvent = (evt: any) => {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _pointerCancelTouch = (pointerId: number) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _pointerLeaveEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerWheelEvent = (evt: any) => {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
@@ -224,6 +228,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "leave", this._pointerLeaveEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
             if (this._usingMacOS && this._isUsingChromium) {
                 this._elementToAttachTo.removeEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
@@ -616,6 +621,28 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         };
 
+        this._pointerCancelTouch = (pointerId: number) => {
+            const deviceSlot = this._activeTouchIds.indexOf(pointerId);
+
+            // If we're getting a pointercancel event for a touch that isn't active, just return
+            if (deviceSlot === -1) {
+                return;
+            }
+
+            if (this._elementToAttachTo.hasPointerCapture?.(pointerId)) {
+                this._elementToAttachTo.releasePointerCapture(pointerId);
+            }
+
+            this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
+
+            const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo, pointerId);
+
+            this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
+
+            this._activeTouchIds[deviceSlot] = -1;
+            this._onDeviceDisconnected(DeviceType.Touch, deviceSlot);
+        };
+
         this._pointerCancelEvent = (evt) => {
             if (evt.pointerType === "mouse") {
                 const pointer = this._inputs[DeviceType.Mouse][0];
@@ -634,33 +661,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
             } else {
-                const deviceSlot = this._activeTouchIds.indexOf(evt.pointerId);
+                this._pointerCancelTouch(evt.pointerId);
+            }
+        };
 
-                // If we're getting a pointercancel event for a touch that isn't active, just return
-                if (deviceSlot === -1) {
-                    return;
-                }
-
-                if (this._elementToAttachTo.hasPointerCapture?.(evt.pointerId)) {
-                    this._elementToAttachTo.releasePointerCapture(evt.pointerId);
-                }
-
-                this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
-
-                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
-                    DeviceType.Touch,
-                    deviceSlot,
-                    PointerInput.LeftClick,
-                    0,
-                    this,
-                    this._elementToAttachTo,
-                    evt.pointerId
-                );
-
-                this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
-
-                this._activeTouchIds[deviceSlot] = -1;
-                this._onDeviceDisconnected(DeviceType.Touch, deviceSlot);
+        this._pointerLeaveEvent = (evt) => {
+            if (evt.pointerType === "pen") {
+                // If a pen leaves the hover range detectible by the hardware this event is raised and we need to cancel the operation
+                // Note that pen operations are treated as touch operations
+                this._pointerCancelTouch(evt.pointerId);
             }
         };
 
@@ -801,6 +810,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "leave", this._pointerLeaveEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 

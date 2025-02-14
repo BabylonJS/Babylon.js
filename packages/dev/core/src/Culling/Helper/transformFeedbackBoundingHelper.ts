@@ -95,7 +95,8 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                       false, // useNormalMorph
                       false, // useTangentMorph
                       false, // useUVMorph
-                      false // useUV2Morph
+                      false, // useUV2Morph
+                      false // useColorMorph
                   )
                 : 0;
 

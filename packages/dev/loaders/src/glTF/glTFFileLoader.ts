@@ -10,7 +10,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Material } from "core/Materials/material";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { ISceneLoaderPluginFactory, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -1392,4 +1392,4 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _endPerformanceCounterDisabled(counterName: string): void {}
 }
 
-registerSceneLoaderPlugin(new GLTFFileLoader());
+RegisterSceneLoaderPlugin(new GLTFFileLoader());
