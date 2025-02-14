@@ -1059,7 +1059,7 @@ export class Viewer implements IDisposable {
                 materialVariantsController,
                 _animationPlaying: () => {
                     const activeAnimation = assetContainer.animationGroups[selectedAnimation];
-                    return activeAnimation.isPlaying;
+                    return activeAnimation?.isPlaying ?? false;
                 },
                 _shouldRender: () => {
                     const stillTransitioning = model?.assetContainer.animationGroups.some((group) => group.animatables.some((animatable) => animatable.animationStarted));
@@ -1102,7 +1102,7 @@ export class Viewer implements IDisposable {
                 get selectedAnimation() {
                     return selectedAnimation;
                 },
-                selectAnimation(index: number) {
+                set selectedAnimation(index: number) {
                     let activeAnimation = assetContainer.animationGroups[selectedAnimation];
                     const startAnimation = activeAnimation?.isPlaying ?? false;
                     if (activeAnimation) {
