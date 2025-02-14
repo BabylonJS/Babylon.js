@@ -338,12 +338,7 @@ export type Model = IDisposable &
          * The current animation.
          */
         get selectedAnimation(): number;
-
-        /**
-         * Selects an animation by index.
-         */
-        selectAnimation(index: number): void;
-
+    }> & {
         /**
          * Returns the world position and visibility of a hot spot.
          */
@@ -368,7 +363,12 @@ export type Model = IDisposable &
          * @param options Options for activating the model.
          */
         makeActive(options?: ActivateModelOptions): void;
-    }>;
+
+        /**
+         * Selects an animation by index.
+         */
+        set selectedAnimation(index: number);
+    };
 
 type ModelInternal = Model & {
     _animationPlaying(): boolean;
@@ -864,7 +864,7 @@ export class Viewer implements IDisposable {
             this._activeAnimationObservers.forEach((observer) => observer.remove());
             this._activeAnimationObservers = [];
 
-            this._activeModel.selectAnimation(index);
+            this._activeModel.selectedAnimation = index;
 
             if (this._activeAnimation) {
                 this._activeAnimationObservers = [
