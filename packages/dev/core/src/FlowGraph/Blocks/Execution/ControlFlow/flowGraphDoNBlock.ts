@@ -45,7 +45,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
         this.config.startIndex = config.startIndex ?? new FlowGraphInteger(0);
         this.reset = this._registerSignalInput("reset");
         this.maxExecutions = this.registerDataInput("maxExecutions", RichTypeFlowGraphInteger);
-        this.executionCount = this.registerDataOutput("executionCount", RichTypeFlowGraphInteger);
+        this.executionCount = this.registerDataOutput("executionCount", RichTypeFlowGraphInteger, new FlowGraphInteger(0));
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {

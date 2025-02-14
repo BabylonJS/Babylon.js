@@ -1010,4 +1010,117 @@ describe("Flow Nodes", () => {
         expect(log).toHaveBeenCalledWith(5);
         expect(log).toHaveBeenCalledTimes(1);
     });
+
+    // flow/for
+    test("flow/for", async () => {
+        // a for loop that increments an integer (setting a variable). condition is using math/gt
+        await generateSimpleNodeGraph(
+            [{ op: "flow/for" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [
+                // for loop
+                {
+                    declaration: 0,
+                    configuration: {
+                        initialIndex: {
+                            value: [1],
+                        },
+                    },
+                    values: {
+                        startIndex: {
+                            type: 0,
+                            value: [0],
+                        },
+                        endIndex: {
+                            type: 0,
+                            value: [5],
+                        },
+                    },
+                    flows: {
+                        loopBody: {
+                            node: 1,
+                            socket: "in",
+                        },
+                        completed: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when for loop is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 0,
+                            socket: "index",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        // expect the log to be called 6 times with 0, 1,2,3,4 as a value, and then again with 4 on completed
+        expect(log).toHaveBeenCalledTimes(6);
+        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith(1);
+        expect(log).toHaveBeenCalledWith(2);
+        expect(log).toHaveBeenCalledWith(3);
+        expect(log).toHaveBeenCalledWith(4);
+    });
+
+    // for/doN
+    test("flow/doN", async () => {
+        // a for loop that increments an integer (setting a variable). condition is using math/gt
+        await generateSimpleNodeGraph(
+            [{ op: "flow/doN" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [
+                // doN loop
+                {
+                    declaration: 0,
+                    values: {
+                        n: {
+                            type: 0,
+                            value: [5],
+                        },
+                    },
+                    flows: {
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when doN loop is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 0,
+                            socket: "currentCount",
+                        },
+                    },
+                },
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            node: 1,
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 0,
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "int" }]
+        );
+
+        // expect the log to be called 5 times with 0, 1,2,3,4 as a value
+        console.log(log.mock.calls.map((c) => c[0]));
+        expect(log).toHaveBeenCalledTimes(5);
+    });
 });
