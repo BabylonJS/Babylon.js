@@ -742,7 +742,11 @@ export class Viewer implements IDisposable {
     }
 
     private _updateAutoClear() {
-        this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
+        // NOTE: Not clearing (even when every pixel is rendered with an opaque color) results in rendering
+        //       artifacts in Chromium browsers on Intel-based Macs (see https://issues.chromium.org/issues/396612322).
+        //       The performance impact of clearing when not necessary is very small, so for now just always auto clear.
+        //this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
+        this._scene.autoClear = true;
         this._markSceneMutated();
     }
 
