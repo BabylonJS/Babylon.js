@@ -1,6 +1,8 @@
+import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 
 const NAME = "KHR_node_hoverability";
 
@@ -14,6 +16,109 @@ declare module "../../glTFFileLoader" {
         ["KHR_node_hoverability"]: {};
     }
 }
+
+// interactivity
+export function updateHoverabilityInteractivity() {
+    addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
+        // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
+        blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable],
+        configuration: {
+            stopPropagation: { name: "stopPropagation" },
+            nodeIndex: {
+                name: "variable",
+                toBlock: FlowGraphBlockNames.GetVariable,
+                dataTransformer(data) {
+                    return "targetMeshPointerOver_" + data;
+                },
+            },
+        },
+        outputs: {
+            values: {
+                // TODO - not mapped the same as glTF after the graph has started
+                hoverNodeIndex: { name: "meshUnderPointer" },
+                controllerIndex: { name: "pointerId" },
+            },
+            flows: {
+                out: { name: "done" },
+            },
+        },
+        interBlockConnectors: [
+            {
+                input: "targetMesh",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+                isVariable: true,
+            },
+        ],
+        extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
+                throw new Error("nodeIndex not found in configuration");
+            }
+            const variableName = "targetMeshPointerOver_" + nodeIndex;
+            // find the nodeIndex value
+            serializedObjects[1].config.variable = variableName;
+            context._userVariables[variableName] = {
+                className: "Mesh",
+                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
+            };
+            return serializedObjects;
+        },
+    });
+
+    addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
+        // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
+        blocks: [FlowGraphBlockNames.PointerOutEvent, FlowGraphBlockNames.GetVariable],
+        configuration: {
+            stopPropagation: { name: "stopPropagation" },
+            nodeIndex: {
+                name: "variable",
+                toBlock: FlowGraphBlockNames.GetVariable,
+                dataTransformer(data) {
+                    return "targetMeshPointerOut_" + data;
+                },
+            },
+        },
+        outputs: {
+            values: {
+                // TODO - not mapped the same as glTF after the graph has started
+                hoverNodeIndex: { name: "meshOutOfPointer" },
+                controllerIndex: { name: "pointerId" },
+            },
+            flows: {
+                out: { name: "done" },
+            },
+        },
+        interBlockConnectors: [
+            {
+                input: "targetMesh",
+                output: "value",
+                inputBlockIndex: 0,
+                outputBlockIndex: 1,
+                isVariable: true,
+            },
+        ],
+        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
+                throw new Error("nodeIndex not found in configuration");
+            }
+            const variableName = "targetMeshPointerOut_" + nodeIndex;
+            // find the nodeIndex value
+            serializedObjects[1].config.variable = variableName;
+            context._userVariables[variableName] = {
+                className: "Mesh",
+                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
+            };
+            return serializedObjects;
+        },
+    });
+}
+
+updateHoverabilityInteractivity();
 
 /**
  * Loader extension for KHR_node_hoverability

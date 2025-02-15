@@ -5,6 +5,8 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
+import { Logger } from "core/Misc/logger";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for the while loop block.
@@ -13,7 +15,7 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
     /**
      * If true, the loop body will be executed at least once.
      */
-    isDo?: boolean;
+    doWhile?: boolean;
 }
 
 /**
@@ -22,13 +24,25 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
  */
 export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The maximum number of iterations allowed in a loop.
+     * This can be set to avoid an infinite loop.
+     */
+    public static MaxLoopCount = 10000;
+
+    /**
      * Input connection: The condition to evaluate.
      */
     public readonly condition: FlowGraphDataConnection<boolean>;
     /**
      * Output connection: The loop body.
      */
-    public readonly loopBody: FlowGraphSignalConnection;
+    public readonly executionFlow: FlowGraphSignalConnection;
+
+    /**
+     * Output connection: The completed signal. Triggered when condition is false.
+     * No out signal is available.
+     */
+    public readonly completed: FlowGraphSignalConnection;
 
     constructor(
         /**
@@ -39,40 +53,35 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         super(config);
 
         this.condition = this.registerDataInput("condition", RichTypeBoolean);
-        this.loopBody = this._registerSignalOutput("loopBody");
+        this.executionFlow = this._registerSignalOutput("executionFlow");
+        this.completed = this._registerSignalOutput("completed");
+        // unregister "out" signal
+        this._unregisterSignalOutput("out");
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         let conditionValue = this.condition.getValue(context);
-        if (this.config?.isDo && !conditionValue) {
-            this.loopBody._activateSignal(context);
+        if (this.config?.doWhile && !conditionValue) {
+            this.executionFlow._activateSignal(context);
         }
+        let i = 0;
         while (conditionValue) {
-            this.loopBody._activateSignal(context);
+            this.executionFlow._activateSignal(context);
+            ++i;
+            if (i >= FlowGraphWhileLoopBlock.MaxLoopCount) {
+                Logger.Warn("FlowGraphWhileLoopBlock: Max loop count reached. Breaking.");
+                break;
+            }
             conditionValue = this.condition.getValue(context);
         }
-        this.out._activateSignal(context);
+        // out is not triggered
+        // TODO - should completed be the out signal?
+        this.completed._activateSignal(context);
     }
 
-    /**
-     * @returns class name of the block.
-     */
     public override getClassName(): string {
-        return FlowGraphWhileLoopBlock.ClassName;
-    }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGWhileLoopBlock";
-
-    /**
-     * Serializes the block to a JSON object.
-     * @param serializationObject the object to serialize to.
-     */
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.isDo = this.config?.isDo;
+        return FlowGraphBlockNames.WhileLoop;
     }
 }
-RegisterClass(FlowGraphWhileLoopBlock.ClassName, FlowGraphWhileLoopBlock);
+
+RegisterClass(FlowGraphBlockNames.WhileLoop, FlowGraphWhileLoopBlock);

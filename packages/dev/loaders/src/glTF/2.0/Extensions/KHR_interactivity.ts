@@ -3,10 +3,13 @@ import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraph } from "core/FlowGraph/flowGraph";
-import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
-import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
+import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import { getPathToObjectConverter } from "./objectModelMapping";
+import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
+import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
+import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
 const NAME = "KHR_interactivity";
 
@@ -34,7 +37,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: InteractivityPathToObjectConverter;
+    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
 
     /**
      * @internal
@@ -42,7 +45,9 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
+        this._pathConverter = getPathToObjectConverter(this._loader.gltf);
+        // avoid starting animations automatically.
+        _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
     }
 
     public dispose() {
@@ -50,20 +55,33 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._pathConverter;
     }
 
-    public onReady(): void {
+    public async onReady(): Promise<void> {
         if (!this._loader.babylonScene || !this._pathConverter) {
             return;
         }
         const scene = this._loader.babylonScene;
         const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+        if (!interactivityDefinition) {
+            // This can technically throw, but it's not a critical error
+            return;
+        }
 
-        const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
+        const graphs = interactivityDefinition.graphs.map((graph) => {
+            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf);
+            return parser.serializeToFlowGraph();
+        });
+        // parse each graph async
+        await Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
 
         coordinator.start();
     }
 }
+
+// Register flow graph blocks. Do it here so they are available when the extension is enabled.
+addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
+    return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+});
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new KHR_interactivity(loader));
