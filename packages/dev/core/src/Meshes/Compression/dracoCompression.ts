@@ -1,4 +1,4 @@
-import { _GetDefaultNumWorkers, _IsConfigurationAvailable } from "./dracoCodec";
+import { _GetDefaultNumWorkers } from "core/Misc/workerUtils";
 import type { IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
 import type { MeshData } from "./dracoDecoder.types";
@@ -87,7 +87,7 @@ export class DracoCompression {
      * Returns true if the decoder configuration is available.
      */
     public static get DecoderAvailable(): boolean {
-        return _IsConfigurationAvailable(DracoDecoder.DefaultConfiguration);
+        return DracoDecoder.DefaultAvailable;
     }
 
     /**

@@ -238,6 +238,27 @@ export function FromHalfFloat(value: number): number {
     return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
 }
 
+/**
+ * Wait for a texture to be ready to be used (downloaded, converted, mip mapped...)
+ * @param texture the Babylon texture to wait for
+ * @returns a promise that resolves when the texture is ready
+ */
+export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+    if (texture.isReady()) {
+        return;
+    }
+
+    if (!texture._texture) {
+        throw new Error("Texture does not have an associated internal texture.");
+    }
+
+    return await new Promise<void>((resolve) => {
+        texture._texture!.onLoadedObservable.addOnce(() => {
+            resolve();
+        });
+    });
+}
+
 const ProcessAsync = async (texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> => {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
@@ -334,17 +355,7 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
-    if (!texture.isReady() && texture._texture) {
-        await new Promise((resolve, reject) => {
-            if (texture._texture === null) {
-                reject(0);
-                return;
-            }
-            texture._texture.onLoadedObservable.addOnce(() => {
-                resolve(0);
-            });
-        });
-    }
+    await WhenTextureReadyAsync(texture);
     return await ProcessAsync(texture, width, height, face, lod);
 }
 
