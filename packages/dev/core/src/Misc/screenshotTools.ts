@@ -349,6 +349,9 @@ export function CreateScreenshotUsingRenderTarget(
                 camera.outputRenderTarget = texture;
                 scene.spritesEnabled = renderSprites;
 
+                const currentMeshList = scene.meshes;
+                scene.meshes = texture.renderList || scene.meshes;
+
                 // render the scene on the RTT
                 try {
                     scene.render();
@@ -358,6 +361,7 @@ export function CreateScreenshotUsingRenderTarget(
                     scene.activeCameras = originalCameras;
                     camera.outputRenderTarget = originalOutputRenderTarget;
                     scene.spritesEnabled = originalSpritesEnabled;
+                    scene.meshes = currentMeshList;
 
                     engine.getRenderWidth = originalGetRenderWidth;
                     engine.getRenderHeight = originalGetRenderHeight;
