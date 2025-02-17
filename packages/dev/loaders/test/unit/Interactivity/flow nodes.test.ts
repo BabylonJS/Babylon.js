@@ -1266,7 +1266,7 @@ describe("Flow Nodes", () => {
     });
 
     // flow/waitAll
-    test("flow/waitAll", async () => {
+    test("flow/waitAll - standard", async () => {
         // a waitAll that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
             [{ op: "flow/waitAll" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
@@ -1302,6 +1302,10 @@ describe("Flow Nodes", () => {
                             node: 2,
                             socket: "in",
                         },
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
                     },
                 },
                 // logging, when waitAll is done
@@ -1309,8 +1313,8 @@ describe("Flow Nodes", () => {
                     declaration: 1,
                     values: {
                         message: {
-                            type: 0,
-                            value: [100],
+                            node: 1,
+                            socket: "remainingInputs",
                         },
                     },
                 },
@@ -1366,8 +1370,181 @@ describe("Flow Nodes", () => {
 
         // wait for 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
-        // expect log to be called once with 100
-        expect(log).toHaveBeenCalledTimes(1);
-        expect(log).toHaveBeenCalledWith(100);
+        const values = log.mock.calls.map((c) => c[0]);
+        // expect log to be called 3 times - after the first was triggered (2 remaining), then after the second (1 remaining), and then after the last one (0 remaining - completed.)
+        expect(log).toHaveBeenCalledTimes(3);
+        // last remaining inputs test, also testing out and completed flows
+        expect(values).toEqual([2, 1, 0]);
+    });
+
+    // flow throttle
+    test("flow/throttle", async () => {
+        // a throttle that will trigger the logging node 3 times
+        await generateSimpleNodeGraph(
+            [{ op: "flow/throttle" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            node: 6, // delay
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 5, // delay
+                            socket: "in",
+                        },
+                        "3": {
+                            node: 3, // delay
+                            socket: "in",
+                        },
+                        "4": {
+                            node: 7, // delay
+                            socket: "in",
+                        },
+                        "5": {
+                            node: 8, // delay
+                            socket: "in",
+                        },
+                    },
+                },
+                // throttle
+                {
+                    declaration: 0,
+                    values: {
+                        duration: {
+                            value: [0.2],
+                            type: 0,
+                        },
+                    },
+                    flows: {
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // logging, when throttle is done
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 1,
+                            socket: "lastRemainingTime",
+                        },
+                    },
+                },
+                // setDelay
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.25],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 4,
+                            socket: "in",
+                        },
+                    },
+                },
+                // sequence - one to log, one to throttle
+                {
+                    declaration: 2,
+                    flows: {
+                        "1": {
+                            // first log
+                            node: 1,
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.5],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 4, // log
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.1],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 4, // log
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.38],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 4, // log
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 3,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.65],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 4, // log
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        // wait for 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
+        const values = log.mock.calls.map((c) => c[0]);
+        // expect log to be called 8 times - 5 times from the delays, and 3 executions from the throttle
+        expect(log).toHaveBeenCalledTimes(8);
+        // now - expect positions 0,1 to equal 0
+        expect(values.slice(0, 2)).toEqual([0, 0]);
+        // same for positions 3,4
+        expect(values.slice(3, 5)).toEqual([0, 0]);
+        // same for positions 6,7
+        expect(values.slice(6, 8)).toEqual([0, 0]);
+        // expect position 2 and position 5 to NOT be 0 and to be positive, and less than 0.2
+        expect(values[2]).toBeGreaterThan(0);
+        expect(values[2]).toBeLessThan(0.2);
+        expect(values[5]).toBeGreaterThan(0);
+        expect(values[5]).toBeLessThan(0.2);
     });
 });

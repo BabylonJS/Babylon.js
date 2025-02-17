@@ -43,6 +43,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
             return this.error._activateSignal(context);
         }
         const lastRemainingTime = context._getExecutionVariable(this, "lastRemainingTime", NaN);
+        // Using Date.now() to get ms since epoch. not using performance.now() because its precision is not needed here
         const currentTime = Date.now();
         if (isNaN(lastRemainingTime)) {
             this.lastRemainingTime.setValue(0, context);
