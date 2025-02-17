@@ -82,8 +82,10 @@ export class SnapshotRenderingHelper {
             this._log("onResize", "start");
 
             // enableSnapshotRendering() will delay the actual enabling of snapshot rendering by at least a frame, so these two lines are not redundant!
-            this.disableSnapshotRendering();
-            this.enableSnapshotRendering();
+            if (this._fastSnapshotRenderingEnabled) {
+                this.disableSnapshotRendering();
+                this.enableSnapshotRendering();
+            }
 
             this._log("onResize", "end");
         });
@@ -270,20 +272,41 @@ export class SnapshotRenderingHelper {
     /**
      * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
      * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
+     * @param updateInstancedMeshes If true, the method will also update instanced meshes. Default is true. If you know instanced meshes won't move (or you don't have instanced meshes), you can set this to false to save some CPU time.
      */
-    public updateMesh(mesh: AbstractMesh | AbstractMesh[]) {
+    public updateMesh(mesh: AbstractMesh | AbstractMesh[], updateInstancedMeshes = true) {
         if (!this._fastSnapshotRenderingEnabled) {
             return;
         }
 
         if (Array.isArray(mesh)) {
             for (const m of mesh) {
-                m.transferToEffect(m.computeWorldMatrix(true));
+                if (!updateInstancedMeshes || !this._updateInstancedMesh(m)) {
+                    m.transferToEffect(m.computeWorldMatrix());
+                }
             }
             return;
         }
 
-        mesh.transferToEffect(mesh.computeWorldMatrix(true));
+        if (!updateInstancedMeshes || !this._updateInstancedMesh(mesh)) {
+            mesh.transferToEffect(mesh.computeWorldMatrix());
+        }
+    }
+
+    private _updateInstancedMesh(mesh: AbstractMesh) {
+        if (mesh.hasInstances) {
+            if (mesh.subMeshes) {
+                const sourceMesh = mesh as Mesh;
+                for (const subMesh of sourceMesh.subMeshes) {
+                    sourceMesh._updateInstancedBuffers(subMesh, sourceMesh._getInstancesRenderList(subMesh._id), sourceMesh._instanceDataStorage.instancesBufferSize, this._engine);
+                }
+            }
+            return true;
+        } else if (mesh.isAnInstance) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -39,6 +39,10 @@
 			#ifdef MORPHTARGETS_UV2
 				uv2Updated = uv2Updated + (readVector3FromRawSampler(i, vertexID).xy - vertexInputs.uv2) * uniforms.morphTargetInfluences[i];
 			#endif
+
+			#ifdef MORPHTARGETS_COLOR
+				colorUpdated = colorUpdated + (readVector4FromRawSampler(i, vertexID) - vertexInputs.color) * uniforms.morphTargetInfluences[i];
+			#endif
 		}
 		#endif
 	#else
@@ -60,6 +64,10 @@
 
 		#ifdef MORPHTARGETS_UV2
 		    uv2Updated = uv2Updated + (vertexInputs.uv2_{X} - vertexInputs.uv2) * uniforms.morphTargetInfluences[{X}];
+		#endif
+
+		#ifdef MORPHTARGETS_COLOR
+		    colorUpdated = colorUpdated + (vertexInputs.color{X} - vertexInputs.color) * uniforms.morphTargetInfluences[{X}];
 		#endif
 	#endif
 #endif

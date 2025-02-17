@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
 import { ThinWebGPUEngine } from "./thinWebGPUEngine";
-import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray, TypedArrayConstructor, TypedArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
@@ -1560,6 +1560,20 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     //------------------------------------------------------------------------------
     //                              Vertex/Index/Storage Buffers
     //------------------------------------------------------------------------------
+
+    public createAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
+        let byteSize = elementCount * type.BYTES_PER_ELEMENT;
+
+        if ((byteSize & 3) === 0) {
+            return new type(elementCount);
+        }
+
+        byteSize = (byteSize + 3) & ~3;
+
+        const backingBuffer = new ArrayBuffer(byteSize);
+
+        return new type(backingBuffer, 0, elementCount);
+    }
 
     /**
      * Creates a vertex buffer

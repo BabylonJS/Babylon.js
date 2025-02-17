@@ -1,7 +1,418 @@
 {
-    "fromTag": "7.48.0",
+    "fromTag": "7.48.3",
     "changelog": {
-        "7.48.0": [],
+        "7.48.3": [
+            {
+                "pr": "16159",
+                "title": "NativeEngine captureGPUFrameTime + getGPUFrameTimeCounter",
+                "description": "This change overrides `startTimeQuery` and `endTimeQuery` in `NativeEngine` such that `captureGPUFrameTime` and `getGPUFrameTimeCounter` work. They do so by calling the new `populateFrameStats` function on the native side of `NativeEngine`.\r\nCorresponding BN change: https://github.com/BabylonJS/BabylonNative/pull/1458",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.49.0": [
+            {
+                "pr": "16182",
+                "title": "Update manifold to 3.0.1",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16175",
+                "title": "NGE is using the materials lib but doesn't load it",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16178",
+                "title": "Viewer: update annotations while viewer is suspended",
+                "description": "Previously, all Viewer annotation updates were done in the render loop. However, if an annotation is added while the Viewer is in a suspended state (e.g. the render loop is not running), then the annotation won't get its initial update. This change adds two explicit calls to update the annotation:\r\n1. One right after the element is connected to the dom (basically when it is \"initialized\").\r\n2. Another any time the `hotspot` attribute changes.\r\n\r\nEither of these things can happen while the Viewer is in a suspended state.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerAnnotationElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16177",
+                "title": "Viewer: Bring back panning sensitivity adjustment",
+                "description": "I accidentally removed this in a bad merge as part of https://github.com/BabylonJS/Babylon.js/pull/15864/files#diff-fd483dcfe4da7f71155ac0921ac2464a6da99751aec6af2b75fe06cf1537726bL1242-L1244. Just adding it back.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16126",
+                "title": "Update snapshots and test configs",
+                "description": "There was a change in lighting lately, but our tests didn't catch the changes due to the configuration of color-difference per pixel (threshold was 10%). This threshold was now reduced to 3%, and the number of changed pixels was lowered to 1% (strict!).\nThis resulted in many tests slightly failing.\n\nAll font-based tests have received a higher trheshold and other tests as well, depending on the test in hand.\n\nPlease review each of those, and check if it is in your responsibility. If it is, please check if the change makes sense or if something is wrong!\n\nI also had to update a few playgrounds that simply didn't work correctly.\n\nNote that some tests are still failing - deliberatly. I wanted to ask the people who added them to go over them and see what the reason for such a high change in pixels.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/CesiumMan.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/CommandEncodedWebGPU1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Decal-Map.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-depth-of-field.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Gizmos.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Heart.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Hillvalley.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/MeshDebugPluginMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/PBRMetallicRoughnessMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/PBRSpecularGlossinessMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Screen-Space-Reflections-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SerializeScene-and-ImportMesh-with-string-skeletonIds.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Sprites-Pixel-Perfect.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/apply-all-post-processes.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/assetContainer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bakedVertexAnimationDOF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bakedVertexAnimationVLS.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/clearCoat.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-BoxAnimated.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/decal-map-pp.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/defaultPipeline.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/depthOfField.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/displacementMap.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/dissolve-effect-with-node-material-and-glow-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/enableDisablePostProcess.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/environment-from-data-buffer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/exportGltfKHRTextureTransform.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFClearCoat.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKHRPunctualLightLH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKHRPunctualLightRH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKhrMaterialsClearcoat.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfAnimationNode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfAnimationNodeMisc.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfAnimationSkin0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfAnimationSkin1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfAnimationSkinType.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfBufferInterleaved.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfExtensionExtMeshGpuInstancingTest.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfExtensionKhrMaterialsVolumeAttenuation.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMSFTLOD.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialAlphaBlend.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialAlphaMask.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialDoubleSidedBack.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialDoubleSidedFront.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialMetallicRoughness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialSpecularGlossiness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimAttribTest.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitiveAttribute.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitiveMode0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitiveMode1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitiveVertexColor.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitives.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitivesUV0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfNodeAttribute0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfNodeNegativeScale0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfTextureSampler0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfTextureSampler1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/guiSlate.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/highlights.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/iridescence-gltf.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/iridescence.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material3.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage3.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbrrough.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pillars-sphere-and-torus-with-PCSS-shadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-b-and-w.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-clip-planes.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-default-pipeline.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-dof.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-glow-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-lod.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-msaa.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-thin-instances.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/proceduralTexturePlayground.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/realtimeFiltering.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/retail.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/shadowsinstancesleft.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/subemitters.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/terrain-erosion.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/trailMesh.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/water-material.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/weighted-animations.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16174",
+                "title": "WebGPU: Fix distance attenuation calculation in SSR2",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts",
+                    "packages/dev/core/src/ShadersWGSL/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16171",
+                "title": "Several tiny fixes for animations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.core.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16172",
+                "title": "Update return type and comments in CreateHotSpotQueryForPickingInfo",
+                "description": "I missed this in my previous PR https://github.com/BabylonJS/Babylon.js/pull/16157",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16173",
+                "title": "RSMGI: Fix shaders not yet loaded when generating GI",
+                "description": "See https://forum.babylonjs.com/t/what-is-the-minimal-import-for-girsm/56499/8.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16170",
+                "title": "Add missing classname",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16168",
+                "title": "Add support for PointListBlock - Used to manually defines a geometry based on a list of points",
+                "description": "cc @PatrickRyanMS \r\n\r\nYou can update the point list with `block.points =[]` which is an array of Vector3",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/pointListBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/pointListNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16169",
+                "title": "UT for processing pointer down triggers, ensuring the meshUnderPointer passed to the handler is up to date",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    ".vscode/settings.json",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "tests"
+                ]
+            },
+            {
+                "pr": "16167",
+                "title": "Fix OnPickDownTrigger passing along a stale meshUnderPointer value on touch devices",
+                "description": "On touch devices, tapping on a mesh results in a pointer down without a previous pointer move operation.  _pointerDownEvent() in the webDeviceInputSystem will notify about a move input after processing a down input, but during the down input, we trigger the  OnPickDownTrigger handler and currently pass along stale information about the meshUnderPointer.  In mouse scenarios, this is unlikely to be a problem, since a move would have likely been processed before the down.  \r\n\r\nWith this change, the ActionEvent created to hand off to the OnPickDownTrigger handler will no longer ask the scene for the current meshUnderPointer, but instead will just use the picked mesh for that value, since that's always the most up to date, and always correct in the context of a down operation.\r\n\r\nThis issue was reported in the forum: https://forum.babylonjs.com/t/onpickdowntrigger-for-touch-devices/56497",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16166",
+                "title": "Viewer: Call updateMesh on SnapshotHelper",
+                "description": "This is a follow up from https://github.com/BabylonJS/Babylon.js/pull/16163 and https://github.com/BabylonJS/Babylon.js/pull/16165. With this change, the Viewer will update meshes if needed for SnapshotHelper, with negligible impact on perf.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16165",
+                "title": "SnapshotRenderingHelper: Don't force world matrix computation",
+                "description": "It should not be necessary to force the calculation of the world matrix, and the performances will be better.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16164",
+                "title": "Fix nge crash when no data is present for Compute Normals",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/computeNormalsBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16157",
+                "title": "Add indices calculation in CreateHotSpotQueryForPickingInfo",
+                "description": "Just improve `CreateHotSpotQueryForPickingInfo` when no indices",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16163",
+                "title": "SnapshotRenderingHelper: Support animated instances in fast snapshot mode",
+                "description": "See https://forum.babylonjs.com/t/snapshot-rendering-and-default-play-animations/56366",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "WebGPU"
+                ]
+            }
+        ],
+        "7.48.2": [
+            {
+                "pr": "16160",
+                "title": "Fix HDR irradiance filtering not rendering if scene not rendering yet",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16158",
+                "title": "Fix tests after alpha changes",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.48.1": [
             {
                 "pr": "16154",
@@ -130,6 +541,7 @@
                 "tags": []
             }
         ],
+        "7.48.0": [],
         "7.47.3": [
             {
                 "pr": "16148",
