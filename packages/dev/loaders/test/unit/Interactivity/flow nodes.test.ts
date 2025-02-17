@@ -1547,4 +1547,86 @@ describe("Flow Nodes", () => {
         expect(values[5]).toBeGreaterThan(0);
         expect(values[5]).toBeLessThan(0.2);
     });
+
+    // flow/cancelDelay
+    test("flow/cancelDelay", async () => {
+        // a cancelDelay that will trigger the logging node 3 times
+        await generateSimpleNodeGraph(
+            [{ op: "flow/setDelay" }, { op: "flow/cancelDelay" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [
+                // sequence node - go to logging in AND the doN loop
+                {
+                    declaration: 3,
+                    flows: {
+                        "1": {
+                            node: 1, // setDelay that goes to log
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 2, // set delay that cancels the first delay
+                            socket: "in",
+                        },
+                    },
+                },
+                // setDelay
+                {
+                    declaration: 0,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.7],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                // setDelay to cancel the first delay
+                {
+                    declaration: 0,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.5],
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 3,
+                            socket: "in",
+                        },
+                    },
+                },
+                // cancelDelay
+                {
+                    declaration: 1,
+                    values: {
+                        delayIndex: {
+                            type: 1,
+                            value: [0],
+                        },
+                    },
+                },
+                // logging, when delay is done - not expected to be called
+                {
+                    declaration: 2,
+                    values: {
+                        message: {
+                            node: 1,
+                            socket: "lastDelayIndex",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "int" }]
+        );
+
+        // wait for 1 second + 100 ,s buffer
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
+        // expect log to be not have been called
+        expect(log).not.toHaveBeenCalled();
+    });
 });
