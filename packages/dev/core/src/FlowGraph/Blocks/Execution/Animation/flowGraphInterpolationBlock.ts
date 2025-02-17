@@ -158,7 +158,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         if (typeof propertyName === "string") {
             const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
             animation.setKeys(keys);
-            return animation;
+            return [animation];
         } else {
             const animations = propertyName.map((name) => {
                 const animation = Animation.CreateAnimation(name, type.animationType, 60, easingFunction);

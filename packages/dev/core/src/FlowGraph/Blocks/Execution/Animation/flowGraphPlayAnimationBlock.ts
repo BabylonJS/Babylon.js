@@ -113,21 +113,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
                 let isInterpolation = false;
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
-                if (Array.isArray(animation)) {
-                    for (const anim of animation) {
-                        animationGroupToUse.addTargetedAnimation(anim, target);
-                        if (interpolationAnimations.indexOf(anim.uniqueId) !== -1) {
-                            isInterpolation = true;
-                        }
-                    }
-                } else {
-                    animationGroupToUse.addTargetedAnimation(animation, target);
-                    if (interpolationAnimations.indexOf(animation.uniqueId) !== -1) {
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                for (const anim of animationsArray) {
+                    animationGroupToUse.addTargetedAnimation(anim, target);
+                    if (interpolationAnimations.indexOf(anim.uniqueId) !== -1) {
                         isInterpolation = true;
                     }
                 }
+
                 if (isInterpolation) {
-                    this._checkInterpolationDuplications(context, animation, target);
+                    this._checkInterpolationDuplications(context, animationsArray, target);
                 }
             }
             // not accepting 0
@@ -171,12 +166,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onAnimationGroupEnd(context: FlowGraphContext) {
-        const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
-        const index = currentlyRunningAnimationGroups.indexOf(this.currentAnimationGroup.getValue(context).uniqueId);
-        if (index !== -1) {
-            currentlyRunningAnimationGroups.splice(index, 1);
-            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
-        }
+        this._removeFromCurrentlyRunning(context, this.currentAnimationGroup.getValue(context));
         this._resetAfterCanceled(context);
         this.done._activateSignal(context);
     }
@@ -187,20 +177,14 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * If they do, we want to stop the already-running animation group.
      * @internal
      */
-    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation | Animation[], target: any) {
+    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation[], target: any) {
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const uniqueId of currentlyRunningAnimationGroups) {
             const ag = context.assetsContext.animationGroups.find((ag) => ag.uniqueId === uniqueId);
             if (ag) {
                 for (const anim of ag.targetedAnimations) {
-                    if (Array.isArray(animation)) {
-                        for (const animToCheck of animation) {
-                            if (anim.animation.targetProperty === animToCheck.targetProperty && anim.target === target) {
-                                this._stopAnimationGroup(context, ag);
-                            }
-                        }
-                    } else {
-                        if (anim.animation.targetProperty === animation.targetProperty && anim.target === target) {
+                    for (const animToCheck of animation) {
+                        if (anim.animation.targetProperty === animToCheck.targetProperty && anim.target === target) {
                             this._stopAnimationGroup(context, ag);
                         }
                     }
@@ -210,10 +194,14 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _stopAnimationGroup(context: FlowGraphContext, animationGroup: AnimationGroup) {
-        animationGroup.stop();
+        // stop, while skipping the on AnimationEndObservable to avoid the "done" signal
+        animationGroup.stop(true);
         animationGroup.dispose();
+        this._removeFromCurrentlyRunning(context, animationGroup);
+    }
+
+    private _removeFromCurrentlyRunning(context: FlowGraphContext, animationGroup: AnimationGroup) {
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
-        // check if it already running
         const idx = currentlyRunningAnimationGroups.indexOf(animationGroup.uniqueId);
         if (idx !== -1) {
             currentlyRunningAnimationGroups.splice(idx, 1);

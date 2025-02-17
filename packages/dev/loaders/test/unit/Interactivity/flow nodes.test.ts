@@ -823,6 +823,125 @@ describe("Flow Nodes", () => {
         expect(log).toHaveBeenCalledWith(5);
     });
 
+    test("variable/interpolate with float - colliding, cancel 1st", async () => {
+        // linear interpolation from 1 to 5 in 1 second
+        await generateSimpleNodeGraph(
+            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "variable/get" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [
+                {
+                    declaration: 3,
+                    flows: {
+                        "1": {
+                            node: 1,
+                            socket: "in",
+                        },
+                        "2": {
+                            node: 4, // delay - 0.5 seconds to run interpolation again
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                        useSlerp: {
+                            value: [false],
+                        },
+                    },
+                    values: {
+                        value: {
+                            type: 0,
+                            value: [5],
+                        },
+                        duration: {
+                            type: 0,
+                            value: [1], // 1 second
+                        },
+                    },
+                    flows: {
+                        done: {
+                            // not expected to be called!
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 3,
+                            socket: "value",
+                        },
+                    },
+                },
+                // get variable
+                {
+                    declaration: 2,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                    },
+                },
+                // set delay
+                {
+                    declaration: 4,
+                    values: {
+                        duration: {
+                            type: 0,
+                            value: [0.5], // 0.5 seconds
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 5,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: {
+                            value: [0], //the index of the variable
+                        },
+                        useSlerp: {
+                            value: [false],
+                        },
+                    },
+                    values: {
+                        value: {
+                            type: 0,
+                            value: [3],
+                        },
+                        duration: {
+                            type: 0,
+                            value: [0.6], // 1 second
+                        },
+                    },
+                    flows: {
+                        done: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }],
+            [{ type: 0, value: [1] }]
+        );
+
+        // wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 200));
+        // only one time, and ONLY with 3! not with 5
+        expect(log).toHaveBeenCalledTimes(1);
+        expect(log).toHaveBeenCalledWith(3);
+    });
+
     // variable/interpolate with a vector3 and easing function
     test("variable/interpolate with vector3 and easing function", async () => {
         await generateSimpleNodeGraph(
