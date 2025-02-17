@@ -90,6 +90,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
                 activationState[index] = true;
             }
         }
+        this.remainingInputs.setValue(activationState.filter((v) => !v).length, context);
 
         context._setExecutionVariable(this, "activationState", activationState.slice());
 
