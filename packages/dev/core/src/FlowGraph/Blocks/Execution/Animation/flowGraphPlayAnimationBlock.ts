@@ -109,11 +109,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                     this.error._activateSignal(context);
                     return;
                 }
-                const name = Array.isArray(animation) ? animation[0].name : animation.name;
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                const name = animationsArray[0].name;
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
                 let isInterpolation = false;
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
-                const animationsArray = Array.isArray(animation) ? animation : [animation];
                 for (const anim of animationsArray) {
                     animationGroupToUse.addTargetedAnimation(anim, target);
                     if (interpolationAnimations.indexOf(anim.uniqueId) !== -1) {
@@ -162,7 +162,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
     public _execute(context: FlowGraphContext): void {
         this._startPendingTasks(context);
-        this.out._activateSignal(context);
     }
 
     private _onAnimationGroupEnd(context: FlowGraphContext) {

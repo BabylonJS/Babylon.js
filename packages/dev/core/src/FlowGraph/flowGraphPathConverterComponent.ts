@@ -6,7 +6,7 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 
-const pathHasTemplatesRegex = new RegExp(/\{(\w+)\}/g);
+const pathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}\//g);
 
 /**
  * @experimental
@@ -22,8 +22,13 @@ export class FlowGraphPathConverterComponent {
         public ownerBlock: FlowGraphBlock
     ) {
         let match = pathHasTemplatesRegex.exec(path);
+        const templateSet = new Set<string>();
         while (match) {
             const [, matchGroup] = match;
+            if (templateSet.has(matchGroup)) {
+                throw new Error("Duplicate template variable detected.");
+            }
+            templateSet.add(matchGroup);
             this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger, new FlowGraphInteger(0)));
             match = pathHasTemplatesRegex.exec(path);
         }
