@@ -1,9 +1,9 @@
-import type { Nullable, TypedArray } from "core/types";
+import type { Nullable, TypedArray, TypedArrayConstructor } from "core/types";
 import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
 import type { DecoderMessage } from "./dracoDecoder.types";
 import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, EncoderModule, MeshBuilder, Encoder, DracoInt8Array } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
-import type { TypedArrayConstructor, VertexDataTypedArray } from "core/Buffers";
+import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;

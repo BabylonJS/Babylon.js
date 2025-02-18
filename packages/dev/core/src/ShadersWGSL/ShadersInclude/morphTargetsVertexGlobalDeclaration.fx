@@ -15,5 +15,13 @@
 			let textureUV = vec2<f32>((x + 0.5) / uniforms.morphTargetTextureInfo.y, (y + 0.5) / uniforms.morphTargetTextureInfo.z);
 			return textureSampleLevel(morphTargets, morphTargetsSampler, textureUV, i32(uniforms.morphTargetTextureIndices[targetIndex]), 0.0).xyz;
 		}
+
+		fn readVector4FromRawSampler(targetIndex : i32, vertexIndex : f32) -> vec4<f32>
+		{			
+			let y = floor(vertexIndex / uniforms.morphTargetTextureInfo.y);
+			let x = vertexIndex - y * uniforms.morphTargetTextureInfo.y;
+			let textureUV = vec2<f32>((x + 0.5) / uniforms.morphTargetTextureInfo.y, (y + 0.5) / uniforms.morphTargetTextureInfo.z);
+			return textureSampleLevel(morphTargets, morphTargetsSampler, textureUV, i32(uniforms.morphTargetTextureIndices[targetIndex]), 0.0);
+		}
 	#endif
 #endif

@@ -544,6 +544,7 @@ export class ThinEffectLayer {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         // Diffuse
         if (material) {
@@ -652,7 +653,8 @@ export class ThinEffectLayer {
                   false, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 

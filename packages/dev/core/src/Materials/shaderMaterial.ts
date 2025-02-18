@@ -776,6 +776,7 @@ export class ShaderMaterial extends PushMaterial {
             const uv2 = defines.indexOf("#define UV2") !== -1;
             const tangent = defines.indexOf("#define TANGENT") !== -1;
             const normal = defines.indexOf("#define NORMAL") !== -1;
+            const color = defines.indexOf("#define VERTEXCOLOR") !== -1;
             numInfluencers = PrepareDefinesAndAttributesForMorphTargets(
                 manager,
                 defines,
@@ -785,7 +786,8 @@ export class ShaderMaterial extends PushMaterial {
                 normal, // useNormalMorph
                 tangent, // useTangentMorph
                 uv, // useUVMorph
-                uv2 // useUV2Morph
+                uv2, // useUV2Morph
+                color // useColorMorph
             );
             if (manager.isUsingTextureForTargets) {
                 if (uniforms.indexOf("morphTargetTextureIndices") === -1) {

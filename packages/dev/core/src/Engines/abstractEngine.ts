@@ -1,5 +1,5 @@
 import type { Observer } from "../Misc/observable";
-import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "../types";
 import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
@@ -1383,6 +1383,14 @@ export abstract class AbstractEngine {
     public abstract get needPOTTextures(): boolean;
 
     /**
+     * Creates a typed array suitable for GPU buffer operations, as some engines require CPU buffer sizes to be aligned to specific boundaries (e.g., 4 bytes).
+     * The use of non-aligned arrays still works but may result in a performance penalty.
+     * @param type The type of the array. For instance, Float32Array or Uint8Array
+     * @param elementCount The number of elements to store in the array
+     */
+    public abstract createAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T;
+
+    /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
      * @param _updatable defines if the index buffer must be updatable
@@ -1861,14 +1869,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.48.3";
+        return "babylonjs@7.49.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.48.3";
+        return "7.49.0";
     }
 
     /**

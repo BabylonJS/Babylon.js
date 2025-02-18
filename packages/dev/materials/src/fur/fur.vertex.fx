@@ -77,6 +77,10 @@ float Rand(vec3 rv) {
 void main(void) {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
+#ifdef VERTEXCOLOR
+    vec4 colorUpdated = color;
+#endif
+
 	#include<instancesVertex>
     #include<bonesVertex>
     #include<bakedVertexAnimation>
