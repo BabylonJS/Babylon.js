@@ -274,7 +274,7 @@ export class InteractivityGraphToFlowGraphParser {
                     }
                     // make sure we transform the data if needed
                     if (configMapping && configMapping.dataTransformer) {
-                        configuration[configKey].value = configMapping.dataTransformer(configuration[configKey].value, this);
+                        configuration[configKey].value = configMapping.dataTransformer([configuration[configKey].value], this)[0];
                     }
                 }
             });

@@ -71,7 +71,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
         this.speed = this.registerDataInput("speed", RichTypeNumber);
         this.loop = this.registerDataInput("loop", RichTypeBoolean);
-        this.from = this.registerDataInput("from", RichTypeNumber);
+        this.from = this.registerDataInput("from", RichTypeNumber, 0);
         this.to = this.registerDataInput("to", RichTypeNumber);
 
         this.currentFrame = this.registerDataOutput("currentFrame", RichTypeNumber);
@@ -138,7 +138,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (currentlyRunningAnimationGroups.indexOf(animationGroupToUse.uniqueId) !== -1) {
                 animationGroupToUse.stop();
             }
-            animationGroupToUse.reset();
             animationGroupToUse.start(loop, speed, from, to);
             animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
             animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
@@ -152,7 +151,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * @internal
      */
-    public override _executeOnFrame(_context: FlowGraphContext): void {
+    public override _executeOnTick(_context: FlowGraphContext): void {
         const ag = this.currentAnimationGroup.getValue(_context);
         if (ag) {
             this.currentFrame.setValue(ag.getCurrentFrame(), _context);

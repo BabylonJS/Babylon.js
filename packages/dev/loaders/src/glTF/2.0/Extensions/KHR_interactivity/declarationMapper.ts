@@ -25,7 +25,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
-    dataTransformer?: (data: I, parser: InteractivityGraphToFlowGraphParser) => O;
+    dataTransformer?: (data: I[], parser: InteractivityGraphToFlowGraphParser) => O[];
     /**
      * If the property is in the options passed to the constructor of the block.
      */
@@ -1014,7 +1014,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
-                    return parser.getVariableName(index);
+                    return [parser.getVariableName(index[0])];
                 },
             },
         },
@@ -1029,7 +1029,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
-                    return parser.getVariableName(index);
+                    return [parser.getVariableName(index[0])];
                 },
             },
         },
@@ -1048,7 +1048,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
-                    return parser.getVariableName(index);
+                    return [parser.getVariableName(index[0])];
                 },
             },
             useSlerp: {
@@ -1056,11 +1056,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 defaultValue: false,
                 dataTransformer: (value) => {
-                    if (value === true) {
-                        return FlowGraphTypes.Quaternion;
+                    if (value[0] === true) {
+                        return [FlowGraphTypes.Quaternion];
                     } else {
                         // TODO - should we return undefined or the default value?
-                        return undefined;
+                        return [undefined];
                     }
                 },
             },
@@ -1331,8 +1331,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time * 60 },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number) => time * 60 },
+                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
+                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
             },
         },
         outputs: {
@@ -1406,7 +1406,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time * 60 },
+                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
             },
         },
         outputs: {
