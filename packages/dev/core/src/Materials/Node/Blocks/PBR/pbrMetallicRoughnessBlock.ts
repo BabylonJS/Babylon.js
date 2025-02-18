@@ -70,9 +70,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
         const that = block as PBRMetallicRoughnessBlock;
 
-        if (that.worldPosition.isConnected) {
+        if (that.worldPosition.isConnected || that.worldNormal.isConnected) {
             that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
-            Logger.Error("The worldPosition input must not be connected to be able to switch!");
+            Logger.Error("The worldPosition and worldNormal inputs must not be connected to be able to switch!");
             return false;
         }
 
@@ -84,6 +84,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _setTarget(): void {
         this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
         this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+        this.getInputByName("worldNormal")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
     }
 
     private _lightId: number;
@@ -1086,10 +1087,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let worldNormalVarName = this.worldNormal.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVarName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction(
+                "pbr_globalworldpos",
+                isWebGPU ? `var<private> ${worldPosVarName}:vec3${state.fSuffix};\n` : `vec3${state.fSuffix} ${worldPosVarName};\n`,
+                comments
+            );
             state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\n`;
 
             worldNormalVarName = state._getFreeVariableName("globalWorldNormal");
-            state.compilationString += `${worldNormalVarName} = ${this.worldNormal.associatedVariableName}.xyz;\n`;
+            state._emitFunction(
+                "pbr_globalworldnorm",
+                isWebGPU ? `var<private> ${worldNormalVarName}:vec4${state.fSuffix};\n` : `vec4${state.fSuffix} ${worldNormalVarName};\n`,
+                comments
+            );
+            state.compilationString += `${worldNormalVarName} = ${this.worldNormal.associatedVariableName};\n`;
 
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
