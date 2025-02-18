@@ -1,5 +1,5 @@
 import type { Observer } from "../Misc/observable";
-import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
 import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
@@ -1381,14 +1381,6 @@ export abstract class AbstractEngine {
      * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
      */
     public abstract get needPOTTextures(): boolean;
-
-    /**
-     * Creates a typed array suitable for GPU buffer operations, as some engines require CPU buffer sizes to be aligned to specific boundaries (e.g., 4 bytes).
-     * The use of non-aligned arrays still works but may result in a performance penalty.
-     * @param type The type of the array. For instance, Float32Array or Uint8Array
-     * @param elementCount The number of elements to store in the array
-     */
-    public abstract createAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T;
 
     /**
      * Creates a new index buffer

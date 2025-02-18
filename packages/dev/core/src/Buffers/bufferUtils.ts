@@ -444,3 +444,24 @@ export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number)
     }
     return count >= 65536;
 }
+
+/**
+ * Creates a typed array suitable for GPU buffer operations, as some engines require CPU buffer sizes to be aligned to specific boundaries (e.g., 4 bytes).
+ * The use of non-aligned arrays still works but may result in a performance penalty.
+ * @param type The type of the array. For instance, Float32Array or Uint8Array
+ * @param elementCount The number of elements to store in the array
+ * @returns The aligned typed array
+ */
+export function CreateAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
+    let byteSize = elementCount * type.BYTES_PER_ELEMENT;
+
+    if ((byteSize & 3) === 0) {
+        return new type(elementCount);
+    }
+
+    byteSize = (byteSize + 3) & ~3;
+
+    const backingBuffer = new ArrayBuffer(byteSize);
+
+    return new type(backingBuffer, 0, elementCount);
+}
