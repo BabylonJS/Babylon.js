@@ -6,6 +6,7 @@ import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { FlowGraphNumber, getNumericValue } from "core/FlowGraph/utils";
 
 /**
  * This simple Util block takes an array as input and selects a single element from it.
@@ -19,7 +20,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
     /**
      * Input connection: The index to select.
      */
-    public readonly index: FlowGraphDataConnection<FlowGraphInteger | number>;
+    public readonly index: FlowGraphDataConnection<FlowGraphNumber>;
 
     /**
      * Output connection: The selected element.
@@ -43,8 +44,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      */
     public override _updateOutputs(context: FlowGraphContext): void {
         const array = this.array.getValue(context);
-        const index: number =
-            typeof this.index.getValue(context) === "number" ? (this.index.getValue(context) as number) : (this.index.getValue(context) as FlowGraphInteger).value;
+        const index = getNumericValue(this.index.getValue(context));
         if (array && index >= 0 && index < array.length) {
             this.value.setValue(array[index], context);
         }

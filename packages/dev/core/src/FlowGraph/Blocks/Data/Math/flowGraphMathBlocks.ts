@@ -11,53 +11,8 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
-
-export type FlowGraphNumber = number | FlowGraphInteger;
-export type FlowGraphVector = Vector2 | Vector3 | Vector4 | Quaternion;
-export type FlowGraphMatrix = Matrix | FlowGraphMatrix2D | FlowGraphMatrix3D;
-export type FlowGraphMathOperationType = FlowGraphNumber | FlowGraphVector | FlowGraphMatrix | boolean;
-
-/**
- * @internal
- */
-export function _getClassNameOf(v: any) {
-    if (v.getClassName) {
-        return v.getClassName();
-    }
-    return;
-}
-
-/**
- * @internal
- * @returns
- */
-function _areSameVectorClass(className: string, className2: string) {
-    return className === className2 && (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4);
-}
-
-/**
- * @internal
- * @returns
- */
-function _areSameMatrixClass(className: string, className2: string) {
-    return className === className2 && (className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D);
-}
-
-/**
- * @internal
- * @returns
- */
-function _areSameIntegerClass(className: string, className2: string) {
-    return className === "FlowGraphInteger" && className2 === "FlowGraphInteger";
-}
-
-function isNumeric(a: FlowGraphMathOperationType): a is FlowGraphNumber {
-    return typeof a === "number" || (a as FlowGraphInteger)?.value !== undefined;
-}
-
-function getNumericValue(a: FlowGraphNumber): number {
-    return typeof a === "number" ? a : a.value;
-}
+import type { FlowGraphMathOperationType, FlowGraphNumber } from "core/FlowGraph/utils";
+import { _areSameIntegerClass, _areSameMatrixClass, _areSameVectorClass, _getClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * If true, the multiplication is done per component.
