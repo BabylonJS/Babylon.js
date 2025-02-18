@@ -55,10 +55,15 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
             parts.push(...split);
         }
 
+        let ignoreObjectTree = false;
+
         for (const part of parts) {
             const isLength = part === "length";
             if (isLength && !infoTree.__array__) {
                 throw new Error(`Path ${path} is invalid`);
+            }
+            if (infoTree.__ignoreObjectTree__) {
+                ignoreObjectTree = true;
             }
             if (infoTree.__array__ && !isLength) {
                 infoTree = infoTree.__array__;
@@ -68,11 +73,13 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
                     throw new Error(`Path ${path} is invalid`);
                 }
             }
-            if (objectTree === undefined) {
-                throw new Error(`Path ${path} is invalid`);
-            }
-            if (!isLength) {
-                objectTree = objectTree[part];
+            if (!ignoreObjectTree) {
+                if (objectTree === undefined) {
+                    throw new Error(`Path ${path} is invalid`);
+                }
+                if (!isLength) {
+                    objectTree = objectTree?.[part];
+                }
             }
 
             if (infoTree.__target__ || isLength) {

@@ -1092,7 +1092,10 @@ export function setInterpolationForKey(key: string, interpolation?: IInterpolati
  * @param key the key to add the object accessor at. For example /cameras/\{\}/perspective/aspectRatio
  * @param accessor the object accessor to add
  */
-export function addObjectAccessorToKey(key: string, accessor: IObjectAccessor): void {
+export function addObjectAccessorToKey<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any>(
+    key: string,
+    accessor: IObjectAccessor<GLTFTargetType, BabylonTargetType, BabylonValueType>
+): void {
     // replace every `{}` in key with __array__ to match the object model
     const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
     let current = objectModelMapping as any;
@@ -1102,6 +1105,10 @@ export function addObjectAccessorToKey(key: string, accessor: IObjectAccessor): 
             continue;
         }
         if (!current[part]) {
+            if (part === "?") {
+                current.__ignoreObjectTree__ = true;
+                continue;
+            }
             current[part] = {};
             // if the part is __array__ then add the __target__ property
             if (part === "__array__") {
@@ -1110,5 +1117,5 @@ export function addObjectAccessorToKey(key: string, accessor: IObjectAccessor): 
         }
         current = current[part];
     }
-    current = accessor;
+    Object.assign(current, accessor);
 }

@@ -8,6 +8,7 @@ import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
+import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
 import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { Mesh } from "core/Meshes/mesh";
@@ -68,9 +69,10 @@ describe("glTF interactivity Object Model", () => {
     beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
-        new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
+        new ArcRotateCamera("", Math.PI / 2, Math.PI / 2, 4, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
+        _AddInteractivityObjectModel(scene);
         renderInterval = setInterval(() => scene?.render(), 16);
     });
 
@@ -161,6 +163,80 @@ describe("glTF interactivity Object Model", () => {
         );
 
         expect(log).toHaveBeenCalledWith(new Vector3(1, 2, 3));
+    });
+
+    it("should get the active camera's position", async () => {
+        await generateSimpleNodeGraph(
+            {
+                extensions: {
+                    KHR_interactivity: {},
+                },
+            },
+            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 1,
+                            socket: "value",
+                        },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/extensions/KHR_interactivity/activeCamera/position"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float3" }]
+        );
+        // the result comes from the definition in the beforeEach function - a: PI/2, b: PI/2, r: 4
+        const lastCallValue = log.mock.calls[log.mock.calls.length - 1][0];
+        // round the result
+        expect(lastCallValue.x).toBeCloseTo(0);
+        expect(lastCallValue.y).toBeCloseTo(0);
+        expect(lastCallValue.z).toBeCloseTo(4);
+    });
+
+    // check activeCamera/rotation
+    it("should get the active camera's rotation", async () => {
+        await generateSimpleNodeGraph(
+            {
+                extensions: {
+                    KHR_interactivity: {},
+                },
+            },
+            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: {
+                            node: 1,
+                            socket: "value",
+                        },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/extensions/KHR_interactivity/activeCamera/rotation"] },
+                        type: { value: [1] },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+
+        const lastCallValue = log.mock.calls[log.mock.calls.length - 1][0];
+        // should be 0,1,0,0
+        expect(lastCallValue.x).toBeCloseTo(0);
+        expect(lastCallValue.y).toBeCloseTo(1);
+        expect(lastCallValue.z).toBeCloseTo(0);
+        expect(lastCallValue.w).toBeCloseTo(0);
     });
 
     it("should set a pointer value and get it correctly", async () => {

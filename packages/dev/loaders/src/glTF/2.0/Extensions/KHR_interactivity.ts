@@ -6,10 +6,13 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import { getPathToObjectConverter } from "./objectModelMapping";
+import { addObjectAccessorToKey, getPathToObjectConverter } from "./objectModelMapping";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import type { Scene } from "core/scene";
+import type { IAnimation } from "../glTFLoaderInterfaces";
 
 const NAME = "KHR_interactivity";
 
@@ -48,6 +51,18 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         this._pathConverter = getPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
         _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
+
+        // Register flow graph blocks. Do it here so they are available when the extension is enabled.
+        addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
+            return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+        });
+
+        // Update object model with new pointers
+
+        const scene = _loader.babylonScene;
+        if (scene) {
+            _AddInteractivityObjectModel(scene);
+        }
     }
 
     public dispose() {
@@ -78,10 +93,85 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 }
 
-// Register flow graph blocks. Do it here so they are available when the extension is enabled.
-addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
-    return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
-});
+/**
+ * @internal
+ * populates the object model with the interactivity extension
+ */
+export function _AddInteractivityObjectModel(scene: Scene) {
+    // Note - all of those are read-only, as per the specs!
+
+    // active camera rotation
+    addObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/rotation", {
+        get: () => {
+            if (!scene.activeCamera) {
+                return new Quaternion(NaN, NaN, NaN, NaN);
+            }
+            return Quaternion.FromRotationMatrix(scene.activeCamera.getWorldMatrix()).normalize();
+        },
+        type: "Quaternion",
+        getTarget: () => scene.activeCamera,
+    });
+    // activeCamera position
+    addObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/position", {
+        get: () => {
+            if (!scene.activeCamera) {
+                return new Vector3(NaN, NaN, NaN);
+            }
+            return scene.activeCamera.position; // not global position
+        },
+        type: "Vector3",
+        getTarget: () => scene.activeCamera,
+    });
+
+    // /animations/{} pointers:
+    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
+        get: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup?.isPlaying ?? false;
+        },
+        type: "boolean",
+        getTarget: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup;
+        },
+    });
+    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
+        get: (animation: IAnimation) => {
+            return (animation._babylonAnimationGroup?.from ?? 0) / 60; // fixed factor for duration-to-frames conversion
+        },
+        type: "number",
+        getTarget: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup;
+        },
+    });
+    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
+        get: (animation: IAnimation) => {
+            return (animation._babylonAnimationGroup?.to ?? 0) / 60; // fixed factor for duration-to-frames conversion
+        },
+        type: "number",
+        getTarget: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup;
+        },
+    });
+    // playhead
+    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
+        get: (animation: IAnimation) => {
+            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+        },
+        type: "number",
+        getTarget: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup;
+        },
+    });
+    //virtualPlayhead - TODO, do we support this property in our animations? getCurrentFrame  is the only method we have for this.
+    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
+        get: (animation: IAnimation) => {
+            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+        },
+        type: "number",
+        getTarget: (animation: IAnimation) => {
+            return animation._babylonAnimationGroup;
+        },
+    });
+}
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new KHR_interactivity(loader));
