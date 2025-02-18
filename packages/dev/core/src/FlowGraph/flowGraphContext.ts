@@ -418,35 +418,35 @@ export class FlowGraphContext {
         this._pendingBlocks.sort((a, b) => a.priority - b.priority);
     }
 
-    /** @internal */
-    public _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
-        const order: FlowGraphAsyncExecutionBlock[] = [];
-        // TODO - improve pick sorting
-        for (const block1 of this._pendingBlocks) {
-            // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
-            if (block1.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
-                const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
-                let i = 0;
-                for (; i < order.length; i++) {
-                    const block2 = order[i];
-                    if (block2.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
-                        const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
-                        if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
-                            break;
-                        }
-                    }
-                }
-                order.splice(i, 0, block1);
-            } else {
-                order.push(block1);
-            }
-        }
-        for (const block of order) {
-            if (!block._executeOnPicked(this, pointerInfo)) {
-                return;
-            }
-        }
-    }
+    // /** @internal */
+    // public _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
+    //     const order: FlowGraphAsyncExecutionBlock[] = [];
+    //     // TODO - improve pick sorting
+    //     for (const block1 of this._pendingBlocks) {
+    //         // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
+    //         if (block1.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+    //             const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+    //             let i = 0;
+    //             for (; i < order.length; i++) {
+    //                 const block2 = order[i];
+    //                 if (block2.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+    //                     const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+    //                     if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+    //                         break;
+    //                     }
+    //                 }
+    //             }
+    //             order.splice(i, 0, block1);
+    //         } else {
+    //             order.push(block1);
+    //         }
+    //     }
+    //     for (const block of order) {
+    //         if (!block._executeOnPicked(this, pointerInfo)) {
+    //             return;
+    //         }
+    //     }
+    // }
 
     /**
      * Remove a block from the list of blocks that have pending tasks.
@@ -484,6 +484,13 @@ export class FlowGraphContext {
             uniqueId: node.uniqueId,
             action: FlowGraphAction.ExecuteBlock,
         });
+    }
+
+    public _notifyOnTick() {
+        // iterate the pending blocks and run each one's onFrame function
+        for (const block of this._pendingBlocks) {
+            block._executeOnTick?.(this);
+        }
     }
 
     /**

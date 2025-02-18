@@ -40,7 +40,7 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      * while the async task is pending.
      * @param context the context in which it is running
      */
-    public _executeOnFrame(_context: FlowGraphContext): void {}
+    public _executeOnTick(_context: FlowGraphContext): void {}
 
     public _executeOnPicked(_context: FlowGraphContext, _pickedInfo: PointerInfo): boolean {
         return true;

@@ -137,8 +137,19 @@ export class FlowGraph {
                     }
                 }
             }
-            if (event.type === FlowGraphEventType.SceneReady) {
-                this._sceneEventCoordinator.sceneReadyTriggered = true;
+            // custom behavior(s) of specific events
+            switch (event.type) {
+                case FlowGraphEventType.SceneReady:
+                    this._sceneEventCoordinator.sceneReadyTriggered = true;
+                    break;
+                case FlowGraphEventType.SceneBeforeRender:
+                    for (const context of this._executionContexts) {
+                        context._notifyOnTick();
+                    }
+                    break;
+                case FlowGraphEventType.SceneDispose:
+                    this.dispose();
+                    break;
             }
         });
     }
