@@ -52,11 +52,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         // avoid starting animations automatically.
         _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
 
-        // Register flow graph blocks. Do it here so they are available when the extension is enabled.
-        addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
-            return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
-        });
-
         // Update object model with new pointers
 
         const scene = _loader.babylonScene;
@@ -172,6 +167,11 @@ export function _AddInteractivityObjectModel(scene: Scene) {
         },
     });
 }
+
+// Register flow graph blocks. Do it here so they are available when the extension is enabled.
+addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
+    return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+});
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new KHR_interactivity(loader));
