@@ -28,7 +28,7 @@ export function updateHoverabilityInteractivity() {
                 name: "variable",
                 toBlock: FlowGraphBlockNames.GetVariable,
                 dataTransformer(data) {
-                    return "targetMeshPointerOver_" + data;
+                    return ["targetMeshPointerOver_" + data[0]];
                 },
             },
         },
@@ -77,7 +77,7 @@ export function updateHoverabilityInteractivity() {
                 name: "variable",
                 toBlock: FlowGraphBlockNames.GetVariable,
                 dataTransformer(data) {
-                    return "targetMeshPointerOut_" + data;
+                    return ["targetMeshPointerOver_" + data[0]];
                 },
             },
         },

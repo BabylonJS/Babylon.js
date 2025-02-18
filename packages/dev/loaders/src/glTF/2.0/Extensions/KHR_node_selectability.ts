@@ -27,7 +27,7 @@ export function updateInteractivity() {
                 name: "variable",
                 toBlock: FlowGraphBlockNames.GetVariable,
                 dataTransformer(data) {
-                    return "pickedMesh_" + data;
+                    return ["pickedMesh_" + data[0]];
                 },
             },
         },
