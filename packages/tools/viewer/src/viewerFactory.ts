@@ -16,7 +16,15 @@ const defaultCanvasViewerOptions: CanvasViewerOptions = {};
  * @returns The default engine to use.
  */
 export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
-    // TODO: When WebGPU is fully production ready, we may want to prefer it if it is supported by the browser.
+    // First check for WebGPU support.
+    if ("gpu" in navigator) {
+        // For now, only use WebGPU with chromium-based browsers.
+        // WebGPU can be enabled in other browsers once they are fully functional and the performance is at least as good as WebGL.
+        if ("chrome" in window) {
+            return "WebGPU";
+        }
+    }
+
     return "WebGL";
 }
 
