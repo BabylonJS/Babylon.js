@@ -2,9 +2,10 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeFlowGraphInteger } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 /**
  * This simple Util block takes an array as input and selects a single element from it.
@@ -18,7 +19,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
     /**
      * Input connection: The index to select.
      */
-    public readonly index: FlowGraphDataConnection<number>;
+    public readonly index: FlowGraphDataConnection<FlowGraphInteger | number>;
 
     /**
      * Output connection: The selected element.
@@ -33,7 +34,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
         super(config);
 
         this.array = this.registerDataInput("array", RichTypeAny);
-        this.index = this.registerDataInput("index", RichTypeNumber);
+        this.index = this.registerDataInput("index", RichTypeAny, new FlowGraphInteger(-1));
         this.value = this.registerDataOutput("value", RichTypeAny);
     }
 
@@ -42,7 +43,8 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      */
     public override _updateOutputs(context: FlowGraphContext): void {
         const array = this.array.getValue(context);
-        const index = this.index.getValue(context);
+        const index: number =
+            typeof this.index.getValue(context) === "number" ? (this.index.getValue(context) as number) : (this.index.getValue(context) as FlowGraphInteger).value;
         if (array && index >= 0 && index < array.length) {
             this.value.setValue(array[index], context);
         }
