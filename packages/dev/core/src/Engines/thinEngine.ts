@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable, TypedArray, TypedArrayConstructor } from "../types";
+import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
 import type { IColor4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IPipelineContext } from "./IPipelineContext";
@@ -1304,10 +1304,6 @@ export class ThinEngine extends AbstractEngine {
     protected _resetIndexBufferBinding(): void {
         this.bindIndexBuffer(null);
         this._cachedIndexBuffer = null;
-    }
-
-    public createAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
-        return new type(elementCount);
     }
 
     /**
