@@ -31,8 +31,8 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      * @internal
      */
     public _execute(context: FlowGraphContext): void {
-        const messageValue = this.message.getValue(context);
         const typeValue = this.logType.getValue(context);
+        const messageValue = this.message.getValue(context);
         if (typeValue === "warn") {
             Logger.Warn(messageValue);
         } else if (typeValue === "error") {
