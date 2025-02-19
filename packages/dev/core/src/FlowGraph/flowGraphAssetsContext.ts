@@ -7,6 +7,9 @@ import type { Camera } from "core/Cameras/camera";
 import type { Light } from "core/Lights/light";
 import type { IAssetContainer } from "core/IAssetContainer";
 
+/**
+ * The type of the assets that flow graph supports
+ */
 export const enum FlowGraphAssetType {
     Animation = "Animation",
     AnimationGroup = "AnimationGroup",

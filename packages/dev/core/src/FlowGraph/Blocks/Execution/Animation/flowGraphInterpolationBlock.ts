@@ -8,6 +8,9 @@ import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
+/**
+ * Configuration for the interpolation block.
+ */
 export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The number of keyframes to interpolate between.

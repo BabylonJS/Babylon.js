@@ -28,7 +28,6 @@ export const enum FlowGraphState {
 }
 
 /**
- * @experimental
  * Parameters used to create a flow graph.
  */
 export interface IFlowGraphParams {
@@ -43,7 +42,6 @@ export interface IFlowGraphParams {
 }
 
 /**
- * @experimental
  * Options for parsing a flow graph.
  */
 export interface IFlowGraphParseOptions {
@@ -64,11 +62,12 @@ export interface IFlowGraphParseOptions {
     pathConverter?: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
- * @experimental
  * Class used to represent a flow graph.
  * A flow graph is a graph of blocks that can be used to create complex logic.
  * Blocks can be added to the graph and connected to each other.
  * The graph can then be started, which will init and start all of its event blocks.
+ *
+ * @experimental FlowGraph is still in development and is subject to change.
  */
 export class FlowGraph {
     /**

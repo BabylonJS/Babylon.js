@@ -14,11 +14,33 @@ export const enum FlowGraphAction {
     ActivateSignal = "ActivateSignal",
     ContextVariableGet = "ContextVariableGet",
 }
+
+/**
+ * An item in the flow graph log.
+ */
 export interface IFlowGraphLogItem {
+    /**
+     * The time of the log item.
+     */
     time?: number;
+    /**
+     * The class that triggered the log.
+     */
     className: string;
+    /**
+     * The unique id of the block/module that triggered the log.
+     */
     uniqueId: string;
+    /**
+     * The action that was logged.
+     */
     action: FlowGraphAction;
+    /**
+     * The payload of the log
+     * This can be any data that is relevant to the action.
+     * For example, the value of a connection, the value of a variable, etc.
+     * This is optional.
+     */
     payload?: any;
 }
 
@@ -28,8 +50,15 @@ export interface IFlowGraphLogItem {
  * It attaches to a flow graph and uses meta-programming to replace the methods of the flow graph to add logging abilities.
  */
 export class FlowGraphLogger {
+    /**
+     * Whether to log to the console.
+     */
     public logToConsole: boolean = false;
 
+    /**
+     * The log cache of the flow graph.
+     * Each item is a logged item, in order of execution.
+     */
     public log: IFlowGraphLogItem[] = [];
 
     public addLogItem(item: IFlowGraphLogItem) {

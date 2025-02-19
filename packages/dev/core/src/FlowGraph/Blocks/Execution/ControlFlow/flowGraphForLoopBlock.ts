@@ -10,6 +10,9 @@ import type { FlowGraphNumber } from "core/FlowGraph/utils";
 import { getNumericValue } from "core/FlowGraph/utils";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
+/**
+ * Configuration for the For Loop block.
+ */
 export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The initial index of the loop.

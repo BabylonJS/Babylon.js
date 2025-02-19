@@ -9,7 +9,7 @@ import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
- * @experimental
+ * Configuration for the DoN block.
  */
 export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -19,7 +19,6 @@ export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfigur
 }
 /**
  * A block that executes a branch a set number of times.
- * @experimental
  */
 export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**

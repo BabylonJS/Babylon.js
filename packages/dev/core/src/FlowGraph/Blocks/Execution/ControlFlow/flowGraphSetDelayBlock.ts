@@ -9,6 +9,9 @@ import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
+/**
+ * Block that sets a delay in seconds before activating the output signal.
+ */
 export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * The maximum number of parallel delays that can be set per node.

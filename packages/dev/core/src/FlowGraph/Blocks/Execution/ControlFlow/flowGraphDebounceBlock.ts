@@ -8,7 +8,6 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
- * @experimental
  * This block debounces the execution of a input, i.e. ensures that the input is only executed once every X times
  */
 export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal {

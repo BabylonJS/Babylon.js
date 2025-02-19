@@ -6,7 +6,6 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 /**
- * @experimental
  * Configuration for the sequence block.
  */
 export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -17,7 +16,6 @@ export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockCon
 }
 
 /**
- * @experimental
  * A block that executes its output flows in sequence.
  */
 export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {

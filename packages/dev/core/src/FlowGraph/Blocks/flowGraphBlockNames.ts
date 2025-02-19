@@ -101,7 +101,6 @@ export const enum FlowGraphBlockNames {
     MultiGate = "FlowGraphMultiGateBlock",
     Sequence = "FlowGraphSequenceBlock",
     Switch = "FlowGraphSwitchBlock",
-    Timer = "FlowGraphTimerBlock",
     WaitAll = "FlowGraphWaitAllBlock",
     WhileLoop = "FlowGraphWhileLoopBlock",
     ConsoleLog = "FlowGraphConsoleLogBlock",
@@ -141,6 +140,6 @@ export const enum FlowGraphBlockNames {
     ArrayIndex = "FlowGraphArrayIndexBlock",
     CodeExecution = "FlowGraphCodeExecutionBlock",
     IndexOf = "FlowGraphIndexOfBlock",
-    FunctionReference = "FunctionReference",
-    BezierCurveEasing = "BezierCurveEasing",
+    FunctionReference = "FlowGraphFunctionReference",
+    BezierCurveEasing = "FlowGraphBezierCurveEasing",
 }

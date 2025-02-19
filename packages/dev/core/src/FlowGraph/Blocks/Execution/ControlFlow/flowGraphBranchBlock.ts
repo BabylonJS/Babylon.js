@@ -8,8 +8,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
- * @experimental
- * A block that evaluates a condition and executes one of two branches.
+ * A block that evaluates a condition and activates one of two branches.
  */
 export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     /**

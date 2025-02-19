@@ -7,7 +7,6 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
  * A block that throttles the execution of its output flow.
  */
 export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal {

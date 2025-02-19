@@ -6,7 +6,6 @@ import type { IObjectAccessor } from "./typeDefinitions";
 import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
- * @experimental
  * Parameters used to create a flow graph engine.
  */
 export interface IFlowGraphCoordinatorConfiguration {
@@ -17,7 +16,6 @@ export interface IFlowGraphCoordinatorConfiguration {
 }
 
 /**
- * @experimental
  * Parameters used to parse a flow graph coordinator.
  */
 export interface FlowGraphCoordinatorParseOptions {
@@ -40,6 +38,8 @@ export interface FlowGraphCoordinatorParseOptions {
 /**
  * This class holds all of the existing flow graphs and is responsible for creating new ones.
  * It also handles starting/stopping multiple graphs and communication between them through an Event Coordinator
+ * This is the entry point for the flow graph system.
+ * @experimental This class is still in development and is subject to change.
  */
 export class FlowGraphCoordinator {
     /**

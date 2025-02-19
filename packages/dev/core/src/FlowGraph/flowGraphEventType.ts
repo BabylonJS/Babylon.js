@@ -1,3 +1,6 @@
+/**
+ * Event types supported by the FlowGraph.
+ */
 export const enum FlowGraphEventType {
     SceneReady = "SceneReady",
     SceneDispose = "SceneDispose",

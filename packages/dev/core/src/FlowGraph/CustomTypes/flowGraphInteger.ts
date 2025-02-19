@@ -1,7 +1,6 @@
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
- * @experimental
  * Class that represents an integer value.
  */
 export class FlowGraphInteger {

@@ -8,7 +8,6 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutio
 import { Logger } from "core/Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
  * Configuration for the while loop block.
  */
 export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -19,7 +18,6 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
 }
 
 /**
- * @experimental
  * A block that executes a branch while a condition is true.
  */
 export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
@@ -27,7 +25,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
      * The maximum number of iterations allowed in a loop.
      * This can be set to avoid an infinite loop.
      */
-    public static MaxLoopCount = 10000;
+    public static MaxLoopCount = 1000;
 
     /**
      * Input connection: The condition to evaluate.

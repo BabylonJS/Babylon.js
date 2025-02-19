@@ -8,7 +8,6 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 /**
- * @experimental
  * Configuration for the multi gate block.
  */
 export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -25,10 +24,9 @@ export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockCo
      */
     isLoop?: boolean;
 }
+
 /**
- * @experimental
  * A block that has an input flow and routes it to any potential output flows, randomly or sequentially
- * @see https://docs.google.com/document/d/1MT7gL-IEn_PUw-4XGBazMxsyqsxqgAVGYcNeC4Cj_9Q/edit#heading=h.i2sn85fbjo60
  */
 export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     /**

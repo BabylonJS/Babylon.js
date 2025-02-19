@@ -7,7 +7,6 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
  * Configuration for a switch block.
  */
 export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
@@ -18,7 +17,6 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
 }
 
 /**
- * @experimental
  * A block that executes a branch based on a selection.
  */
 export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {

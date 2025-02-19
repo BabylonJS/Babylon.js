@@ -8,6 +8,9 @@ import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
+/**
+ * This block cancels a delay that was previously scheduled.
+ */
 export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The index value of the scheduled activation to be cancelled.

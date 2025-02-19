@@ -202,8 +202,6 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Execution/ControlFlow/flowGraphSequenceBlock")).FlowGraphSequenceBlock;
         case FlowGraphBlockNames.Switch:
             return async () => (await import("./Execution/ControlFlow/flowGraphSwitchBlock")).FlowGraphSwitchBlock;
-        case FlowGraphBlockNames.Timer:
-            return async () => (await import("./Execution/ControlFlow/flowGraphTimerBlock")).FlowGraphTimerBlock;
         case FlowGraphBlockNames.WaitAll:
             return async () => (await import("./Execution/ControlFlow/flowGraphWaitAllBlock")).FlowGraphWaitAllBlock;
         case FlowGraphBlockNames.WhileLoop:

@@ -8,7 +8,6 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
- * @experimental
  * This block flip flops between two outputs.
  */
 export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {

@@ -1,8 +1,7 @@
 import { RandomGUID } from "../Misc/guid";
 
 /**
- * @experimental
- * The type of a connection point - inpput or output.
+ * The type of a connection point - input or output.
  */
 export const enum FlowGraphConnectionType {
     Input,
@@ -10,7 +9,7 @@ export const enum FlowGraphConnectionType {
 }
 
 /**
- * @experimental
+ * An interface for a connectable point in the flow graph.
  */
 export interface IConnectable {
     /**
@@ -37,7 +36,6 @@ export interface IConnectable {
 }
 
 /**
- * @experimental
  * The base connection class.
  */
 export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> implements IConnectable {

@@ -5,7 +5,6 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
- * @experimental
  * A block that executes some action. Always has an input signal (which is not used by event blocks).
  * Can have one or more output signals.
  */

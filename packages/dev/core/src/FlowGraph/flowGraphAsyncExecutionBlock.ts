@@ -7,7 +7,6 @@ import type { PointerInfo } from "core/Events/pointerEvents";
 /**
  * An async execution block can start tasks that will be executed asynchronously.
  * It should also be responsible for clearing it in _cancelPendingTasks.
- * @experimental
  */
 export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**

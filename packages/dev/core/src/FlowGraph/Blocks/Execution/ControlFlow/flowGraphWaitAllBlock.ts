@@ -7,7 +7,6 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
  * Configuration for the wait all block.
  */
 export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -19,7 +18,6 @@ export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConf
 }
 
 /**
- * @experimental
  * A block that waits for all input flows to be activated before activating its output flow.
  */
 export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal {
