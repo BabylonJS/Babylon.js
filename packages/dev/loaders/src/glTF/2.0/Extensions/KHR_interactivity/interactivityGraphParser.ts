@@ -163,13 +163,6 @@ export class InteractivityGraphToFlowGraphParser {
                 eventId: event.id || "internalEvent_" + this._internalEventsCounter++,
             };
             if (event.values) {
-                // converted.eventData = event.values.map((value) => {
-                //     return {
-                //         id: value.id,
-                //         type: types[value.type],
-                //         eventData: true,
-                //     };
-                // });
                 converted.eventData = Object.keys(event.values).map((key) => {
                     const eventValue = event.values?.[key];
                     if (!eventValue) {
@@ -181,11 +174,12 @@ export class InteractivityGraphToFlowGraphParser {
                         Logger.Error(["No type found for event value", eventValue]);
                         throw new Error("Error parsing events");
                     }
+                    const value = typeof eventValue.value !== "undefined" ? this._parseVariable(eventValue) : undefined;
                     return {
                         id: key,
                         type: type.flowGraphType,
                         eventData: true,
-                        value: eventValue.value,
+                        value,
                     };
                 });
             }
