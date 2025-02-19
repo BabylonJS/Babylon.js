@@ -148,7 +148,7 @@ export class NodeRenderGraph {
 
         this._options = options;
 
-        this._frameGraph = new FrameGraph(this._engine, options.debugTextures, this._scene);
+        this._frameGraph = new FrameGraph(this._scene, options.debugTextures);
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(() => {
