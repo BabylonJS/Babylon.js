@@ -59,7 +59,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
-    private readonly _loadingOptions: Readonly<SPLATLoadingOptions>;
+    private _loadingOptions: SPLATLoadingOptions;
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
@@ -83,6 +83,19 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return new SPLATFileLoader(options[SPLATFileLoaderMetadata.name]);
     }
 
+    /**
+     * set option flipY
+     */
+    public set flipY(flipY: boolean) {
+        this._loadingOptions.flipY = flipY;
+    }
+
+    /**
+     * get option flipY
+     */
+    public get flipY(): boolean {
+        return !!this._loadingOptions.flipY;
+    }
     /**
      * Imports  from the loaded gaussian splatting data and adds them to the scene
      * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
@@ -223,11 +236,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const rgba = new Uint8ClampedArray(buffer);
         const rot = new Uint8ClampedArray(buffer);
 
+        let coordinateSign = 1;
+        let quaternionOffset = 0;
+        if (!this._loadingOptions.flipY) {
+            coordinateSign = -1;
+            quaternionOffset = 255;
+        }
         // positions
         for (let i = 0; i < splatCount; i++) {
             position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
-            position[i * 8 + 1] = -read24bComponent(ubuf, byteOffset + 3);
-            position[i * 8 + 2] = -read24bComponent(ubuf, byteOffset + 6);
+            position[i * 8 + 1] = coordinateSign * read24bComponent(ubuf, byteOffset + 3);
+            position[i * 8 + 2] = coordinateSign * read24bComponent(ubuf, byteOffset + 6);
             byteOffset += 9;
         }
 
@@ -259,8 +278,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         // convert quaternion
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
-            const y = 255 - ubuf[byteOffset + 1];
-            const z = 255 - ubuf[byteOffset + 2];
+            const y = ubuf[byteOffset + 1] * coordinateSign + quaternionOffset;
+            const z = ubuf[byteOffset + 2] * coordinateSign + quaternionOffset;
             const nx = x / 127.5 - 1;
             const ny = y / 127.5 - 1;
             const nz = z / 127.5 - 1;
