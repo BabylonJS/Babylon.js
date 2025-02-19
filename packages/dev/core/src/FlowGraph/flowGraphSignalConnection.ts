@@ -5,7 +5,6 @@ import { RegisterClass } from "../Misc/typeStore";
 import { FlowGraphAction } from "./flowGraphLogger";
 
 /**
- * @experimental
  * Represents a connection point for a signal.
  * When an output point is activated, it will activate the connected input point.
  * When an input point is activated, it will execute the block it belongs to.

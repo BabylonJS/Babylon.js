@@ -32,7 +32,10 @@ export function _getClassNameOf(v: any) {
 
 /**
  * @internal
- * @returns
+ * Check if two classname are the same and are vector classes.
+ * @param className the first class name
+ * @param className2 the second class name
+ * @returns whether the two class names are the same and are vector classes.
  */
 export function _areSameVectorClass(className: string, className2: string) {
     return className === className2 && (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4);
@@ -40,7 +43,10 @@ export function _areSameVectorClass(className: string, className2: string) {
 
 /**
  * @internal
- * @returns
+ * Check if two classname are the same and are matrix classes.
+ * @param className the first class name
+ * @param className2 the second class name
+ * @returns whether the two class names are the same and are matrix classes.
  */
 export function _areSameMatrixClass(className: string, className2: string) {
     return className === className2 && (className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D);
@@ -48,7 +54,10 @@ export function _areSameMatrixClass(className: string, className2: string) {
 
 /**
  * @internal
- * @returns
+ * Check if two classname are the same and are integer classes.
+ * @param className the first class name
+ * @param className2 the second class name
+ * @returns whether the two class names are the same and are integer classes.
  */
 export function _areSameIntegerClass(className: string, className2: string) {
     return className === "FlowGraphInteger" && className2 === "FlowGraphInteger";
@@ -60,7 +69,7 @@ export function _areSameIntegerClass(className: string, className2: string) {
  * @returns whether a is a FlowGraphNumber (Integer or number).
  */
 export function isNumeric(a: FlowGraphMathOperationType): a is FlowGraphNumber {
-    return typeof a === "number" || (a as FlowGraphInteger)?.value !== undefined;
+    return typeof a === "number" || typeof (a as FlowGraphInteger)?.value === "number";
 }
 
 /**

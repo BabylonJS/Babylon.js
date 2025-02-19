@@ -6,9 +6,17 @@ import type { FlowGraphConnectionType } from "./flowGraphConnection";
  * Interpolation generator
  */
 export interface IInterpolationPropertyInfo {
+    /**
+     * type of the interpolation
+     */
     type: number;
+    /**
+     * The name of the property
+     */
     name: string;
+    /** @internal */
     getValue: (target: any, source: Float32Array, offset: number, scale: number) => any;
+    /** @internal */
     getStride: (target: any) => number;
     /**
      * @internal

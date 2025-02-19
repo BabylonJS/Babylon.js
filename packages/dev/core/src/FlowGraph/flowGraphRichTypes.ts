@@ -4,6 +4,9 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { Constants } from "core/Engines/constants";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
+/**
+ * The types supported by the flow graph.
+ */
 export const enum FlowGraphTypes {
     Any = "any",
     String = "string",
@@ -25,7 +28,6 @@ export const enum FlowGraphTypes {
 /**
  * A rich type represents extra information about a type,
  * such as its name and a default value constructor.
- * @experimental
  */
 export class RichType<T> {
     constructor(

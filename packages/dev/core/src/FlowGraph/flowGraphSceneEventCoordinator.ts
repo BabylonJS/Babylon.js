@@ -25,7 +25,6 @@ export interface IFlowGraphEventTrigger {
  * This class is responsible for coordinating the events that are triggered in the scene.
  * It registers all observers needed to track certain events and triggers the blocks that are listening to them.
  * Abstracting the events from the class will allow us to easily change the events that are being listened to, and trigger them in any order.
- * @experimental
  */
 export class FlowGraphSceneEventCoordinator {
     /**
