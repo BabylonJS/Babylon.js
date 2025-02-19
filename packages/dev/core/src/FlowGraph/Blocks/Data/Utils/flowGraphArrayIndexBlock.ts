@@ -6,7 +6,8 @@ import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { FlowGraphNumber, getNumericValue } from "core/FlowGraph/utils";
+import type { FlowGraphNumber } from "core/FlowGraph/utils";
+import { getNumericValue } from "core/FlowGraph/utils";
 
 /**
  * This simple Util block takes an array as input and selects a single element from it.

@@ -60,6 +60,9 @@ export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphI
 
 RegisterClass(FlowGraphBlockNames.IntToFloat, FlowGraphIntToFloat);
 
+/**
+ * Configuration for the float to int block.
+ */
 export interface IFlowGraphFloatToIntConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The rounding mode to use.

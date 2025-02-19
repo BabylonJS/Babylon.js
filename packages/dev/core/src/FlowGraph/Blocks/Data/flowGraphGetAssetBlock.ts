@@ -4,13 +4,16 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import type { Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import type { FlowGraphNumber } from "core/FlowGraph/utils";
+import { getNumericValue } from "core/FlowGraph/utils";
 
 /**
- * @experimental
+ * Configuration for the get asset block.
  */
 export interface IFlowGraphGetAssetBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
@@ -21,7 +24,7 @@ export interface IFlowGraphGetAssetBlockConfiguration<T> extends IFlowGraphBlock
      * The index of the asset in the corresponding array in the assets context.
      * If not provided you can still change it using the input connection.
      */
-    index?: number;
+    index?: number | FlowGraphInteger;
 
     /**
      * If set to true, instead of the index in the array it will search for the unique id of the asset.
@@ -50,7 +53,7 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
     /**
      * Input connection: The index of the asset in the corresponding array in the assets context.
      */
-    public readonly index: FlowGraphDataConnection<number>;
+    public readonly index: FlowGraphDataConnection<FlowGraphNumber>;
 
     public constructor(
         /**
@@ -61,14 +64,14 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
         super(config);
         this.type = this.registerDataInput("type", RichTypeAny, config.type);
         this.value = this.registerDataOutput("value", RichTypeAny);
-        this.index = this.registerDataInput("index", RichTypeNumber, config.index);
+        this.index = this.registerDataInput("index", RichTypeAny, new FlowGraphInteger(getNumericValue(config.index ?? -1)));
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
         const type = this.type.getValue(context);
         const index = this.index.getValue(context);
         // get the asset from the context
-        const asset = GetFlowGraphAssetWithType(context.assetsContext, type, index, this.config.useIndexAsUniqueId);
+        const asset = GetFlowGraphAssetWithType(context.assetsContext, type, getNumericValue(index), this.config.useIndexAsUniqueId);
         this.value.setValue(asset, context);
     }
 
