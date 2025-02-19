@@ -459,6 +459,10 @@ export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
         ...options,
     };
 
+    if (Manifold) {
+        return; // Already initialized
+    }
+
     if (localOptions.manifoldInstance) {
         Manifold = localOptions.manifoldInstance;
         ManifoldMesh = localOptions.manifoldMeshInstance;
