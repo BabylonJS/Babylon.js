@@ -1,0 +1,52 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphRenderPass, Camera, FrameGraphTextureHandle } from "core/index";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
+import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
+
+/**
+ * Task which applies a SSR post process.
+ * Don't use it directly but use the FrameGraphSSRRenderingPipelineTask instead.
+ * @internal
+ */
+export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
+    public normalTexture: FrameGraphTextureHandle;
+
+    public depthTexture: FrameGraphTextureHandle;
+
+    public reflectivityTexture: FrameGraphTextureHandle;
+
+    public camera: Camera;
+
+    public override readonly postProcess: ThinSSRPostProcess;
+
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinSSRPostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinSSRPostProcess(name, frameGraph.scene));
+    }
+
+    public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
+        if (
+            this.sourceTexture === undefined ||
+            this.normalTexture === undefined ||
+            this.depthTexture === undefined ||
+            this.reflectivityTexture === undefined ||
+            this.camera === undefined
+        ) {
+            throw new Error(`FrameGraphSSRTask "${this.name}": sourceTexture, normalTexture, depthTexture, reflectivityTexture and camera are required`);
+        }
+
+        const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
+            this.postProcess.camera = this.camera;
+
+            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "normalSampler", this.normalTexture);
+            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
+            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "reflectivitySampler", this.reflectivityTexture);
+        });
+
+        pass.addDependencies([this.normalTexture, this.depthTexture, this.reflectivityTexture]);
+
+        this.postProcess.textureWidth = this._outputWidth;
+        this.postProcess.textureHeight = this._outputHeight;
+
+        return pass;
+    }
+}

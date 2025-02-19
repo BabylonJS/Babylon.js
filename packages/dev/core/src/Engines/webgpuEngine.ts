@@ -2318,10 +2318,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const texture = new InternalTexture(this, source);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
-        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth ?? 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers ?? 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;

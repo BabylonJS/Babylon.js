@@ -980,7 +980,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"],
             1.0,
             null,
-            this._textureType,
+            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
             "",

@@ -320,6 +320,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
             context.render(this._renderer, this._textureWidth, this._textureHeight);
         });
+
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setRenderTargetDepth(this.depthTexture);
+        passDisabled.setExecuteFunc((_context) => {});
     }
 
     public override dispose(): void {
