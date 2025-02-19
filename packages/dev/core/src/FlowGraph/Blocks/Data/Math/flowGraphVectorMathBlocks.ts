@@ -4,11 +4,11 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import type { FlowGraphMatrix, FlowGraphVector } from "./flowGraphMathBlocks";
-import { _getClassNameOf } from "./flowGraphMathBlocks";
 import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
+import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
+import { _getClassNameOf } from "core/FlowGraph/utils";
 
 /**
  * @experimental

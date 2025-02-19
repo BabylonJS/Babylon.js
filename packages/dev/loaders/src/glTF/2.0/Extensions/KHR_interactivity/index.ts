@@ -1,4 +1,3 @@
-// export * from "./interactivityFunctions";
-// export * from "./interactivityUtils";
 export * from "./declarationMapper";
 export * from "./interactivityGraphParser";
+export * from "./flowGraphGLTFDataProvider";

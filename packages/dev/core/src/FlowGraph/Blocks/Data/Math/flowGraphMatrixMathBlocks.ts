@@ -7,9 +7,9 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import type { FlowGraphMatrix } from "./flowGraphMathBlocks";
 import type { FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
+import type { FlowGraphMatrix } from "core/FlowGraph/utils";
 
 export interface IFlowGraphMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
     matrixType: FlowGraphTypes;
