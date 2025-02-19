@@ -1,7 +1,7 @@
 import type { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import type { Node } from "../node";
 import type { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
-import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes";
+import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 import { FlowGraphTypes } from "./flowGraphRichTypes";
 
 /**
