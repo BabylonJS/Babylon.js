@@ -16,7 +16,7 @@ export class FlowGraphCodeExecutionBlock extends FlowGraphBlock {
     /**
      * Input connection: The function to execute.
      */
-    public readonly function: FlowGraphDataConnection<CodeExecutionFunction>;
+    public readonly executionFunction: FlowGraphDataConnection<CodeExecutionFunction>;
 
     /**
      * Input connection: The value to pass to the function.
@@ -35,7 +35,7 @@ export class FlowGraphCodeExecutionBlock extends FlowGraphBlock {
     constructor(public override config: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.function = this.registerDataInput("function", RichTypeAny);
+        this.executionFunction = this.registerDataInput("function", RichTypeAny);
         this.value = this.registerDataInput("value", RichTypeAny);
         this.result = this.registerDataOutput("result", RichTypeAny);
     }
@@ -44,7 +44,7 @@ export class FlowGraphCodeExecutionBlock extends FlowGraphBlock {
      * @internal
      */
     public override _updateOutputs(context: FlowGraphContext): void {
-        const func = this.function.getValue(context);
+        const func = this.executionFunction.getValue(context);
         const value = this.value.getValue(context);
         if (func) {
             this.result.setValue(func(value, context), context);
