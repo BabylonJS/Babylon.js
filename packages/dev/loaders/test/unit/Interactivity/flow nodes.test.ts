@@ -1180,12 +1180,13 @@ describe("Flow Nodes", () => {
         );
 
         // expect the log to be called 6 times with 0, 1,2,3,4 as a value, and then again with 4 on completed
+        // called with flowgraphintegers
         expect(log).toHaveBeenCalledTimes(6);
-        expect(log).toHaveBeenCalledWith(0);
-        expect(log).toHaveBeenCalledWith(1);
-        expect(log).toHaveBeenCalledWith(2);
-        expect(log).toHaveBeenCalledWith(3);
-        expect(log).toHaveBeenCalledWith(4);
+        expect(log).toHaveBeenCalledWith({ value: 0 });
+        expect(log).toHaveBeenCalledWith({ value: 1 });
+        expect(log).toHaveBeenCalledWith({ value: 2 });
+        expect(log).toHaveBeenCalledWith({ value: 3 });
+        expect(log).toHaveBeenCalledWith({ value: 4 });
     });
 
     // for/doN

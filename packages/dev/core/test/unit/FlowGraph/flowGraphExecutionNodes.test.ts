@@ -112,9 +112,9 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
 
         expect(Logger.Log).toHaveBeenCalledTimes(4);
-        expect(Logger.Log).toHaveBeenNthCalledWith(1, 1);
-        expect(Logger.Log).toHaveBeenNthCalledWith(2, 3);
-        expect(Logger.Log).toHaveBeenNthCalledWith(3, 5);
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, { value: 1 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, { value: 3 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(3, { value: 5 });
         expect(Logger.Log).toHaveBeenNthCalledWith(4, "done");
     });
 
