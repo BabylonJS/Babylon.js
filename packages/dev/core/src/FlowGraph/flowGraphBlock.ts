@@ -95,6 +95,8 @@ export class FlowGraphBlock {
 
     /**
      * @internal
+     * This function is called when the block needs to update its output flows.
+     * @param _context the context in which it is running
      */
     public _updateOutputs(_context: FlowGraphContext): void {
         // empty by default, overridden in data blocks

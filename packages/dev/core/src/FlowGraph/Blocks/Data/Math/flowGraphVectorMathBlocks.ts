@@ -11,7 +11,6 @@ import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _getClassNameOf } from "core/FlowGraph/utils";
 
 /**
- * @experimental
  * Vector length block.
  */
 export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraphVector, number> {
@@ -45,7 +44,6 @@ export interface IFlowGraphNormalizeBlockConfiguration extends IFlowGraphBlockCo
 }
 
 /**
- * @experimental
  * Vector normalize block.
  */
 export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGraphVector, FlowGraphVector> {
@@ -76,7 +74,6 @@ export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.Normalize, FlowGraphNormalizeBlock);
 
 /**
- * @experimental
  * Dot product block.
  */
 export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVector, FlowGraphVector, number> {
@@ -100,7 +97,6 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVe
 RegisterClass(FlowGraphBlockNames.Dot, FlowGraphDotBlock);
 
 /**
- * @experimental
  * Cross product block.
  */
 export class FlowGraphCrossBlock extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
@@ -111,7 +107,6 @@ export class FlowGraphCrossBlock extends FlowGraphBinaryOperationBlock<Vector3, 
 RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
 
 /**
- * @experimental
  * 2D rotation block.
  */
 export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
@@ -122,7 +117,6 @@ export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector
 RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
 
 /**
- * @experimental
  * 3D rotation block.
  */
 export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vector3, Vector3, number, Vector3> {
@@ -172,7 +166,6 @@ export interface IFlowGraphTransformBlockConfiguration extends IFlowGraphBlockCo
 }
 
 /**
- * @experimental
  * Transform a vector3 by a matrix.
  */
 export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowGraphVector, FlowGraphMatrix, FlowGraphVector> {
@@ -194,7 +187,6 @@ export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowG
 RegisterClass(FlowGraphBlockNames.TransformVector, FlowGraphTransformBlock);
 
 /**
- * @experimental
  * Transform a vector3 by a matrix.
  */
 export class FlowGraphTransformCoordinatesBlock extends FlowGraphBinaryOperationBlock<Vector3, Matrix, Vector3> {

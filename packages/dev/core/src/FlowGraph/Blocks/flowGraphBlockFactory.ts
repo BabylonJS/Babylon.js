@@ -259,17 +259,17 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
         case FlowGraphBlockNames.MatrixCompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixComposeBlock;
         case FlowGraphBlockNames.BooleanToFloat:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphBooleanToFloat;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphBooleanToFloat;
         case FlowGraphBlockNames.BooleanToInt:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphBooleanToInt;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphBooleanToInt;
         case FlowGraphBlockNames.FloatToBoolean:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphFloatToBoolean;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphFloatToBoolean;
         case FlowGraphBlockNames.IntToBoolean:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphIntToBoolean;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphIntToBoolean;
         case FlowGraphBlockNames.IntToFloat:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphIntToFloat;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphIntToFloat;
         case FlowGraphBlockNames.FloatToInt:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphFloatToInt;
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphFloatToInt;
         case FlowGraphBlockNames.Easing:
             return async () => (await import("./Execution/Animation/flowGraphEasingBlock")).FlowGraphEasingBlock;
         case FlowGraphBlockNames.PointerOverEvent:
@@ -284,6 +284,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Utils/flowGraphCodeExecutionBlock")).FlowGraphCodeExecutionBlock;
         case FlowGraphBlockNames.IndexOf:
             return async () => (await import("./Data/Utils/flowGraphIndexOfBlock")).FlowGraphIndexOfBlock;
+        case FlowGraphBlockNames.FunctionReference:
+            return async () => (await import("./Data/Utils/flowGraphFunctionReferenceBlock")).FlowGraphFunctionReferenceBlock;
         default:
             // check if the block is a custom block
             if (customBlocks[blockName]) {

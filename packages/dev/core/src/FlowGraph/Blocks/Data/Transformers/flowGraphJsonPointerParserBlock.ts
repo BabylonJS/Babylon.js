@@ -14,6 +14,9 @@ import type { EasingFunction } from "core/Animations/easing";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
+/**
+ * Configuration for the JSON pointer parser block.
+ */
 export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The JSON pointer to parse.
@@ -48,6 +51,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     /**
      * Output connection: The value of the property.
+     * Note that per default this is not outputted. It can be enabled by setting the outputValue property to true.
      */
     public readonly value: FlowGraphDataConnection<P>;
 

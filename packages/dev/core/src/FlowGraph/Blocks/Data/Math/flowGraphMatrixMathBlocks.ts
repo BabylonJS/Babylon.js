@@ -11,14 +11,23 @@ import type { FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatr
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import type { FlowGraphMatrix } from "core/FlowGraph/utils";
 
+/**
+ * Configuration for the matrix blocks.
+ */
 export interface IFlowGraphMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The type of the matrix. Default is Matrix (which is 4x4)
+     */
     matrixType: FlowGraphTypes;
 }
 /**
- * @experimental
  * Transposes a matrix.
  */
 export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    /**
+     * Creates a new instance of the block.
+     * @param config the configuration of the block
+     */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
@@ -32,10 +41,13 @@ export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.Transpose, FlowGraphTransposeBlock);
 
 /**
- * @experimental
  * Gets the determinant of a matrix.
  */
 export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, number> {
+    /**
+     * Creates a new instance of the block.
+     * @param config the configuration of the block
+     */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
         super(getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix), RichTypeNumber, (a) => a.determinant(), FlowGraphBlockNames.Determinant, config);
     }
@@ -43,10 +55,13 @@ export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<Flow
 RegisterClass(FlowGraphBlockNames.Determinant, FlowGraphDeterminantBlock);
 
 /**
- * @experimental
  * Inverts a matrix.
  */
 export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+    /**
+     * Creates a new instance of the inverse block.
+     * @param config the configuration of the block
+     */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
@@ -60,10 +75,14 @@ export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<Flo
 RegisterClass(FlowGraphBlockNames.InvertMatrix, FlowGraphInvertMatrixBlock);
 
 /**
- * @experimental
  * Multiplies two matrices.
  */
 export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix, FlowGraphMatrix> {
+    /**
+     * Creates a new instance of the multiplication block.
+     * Note - this is similar to the math multiplication if not using matrix per-component multiplication.
+     * @param config the configuration of the block
+     */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),

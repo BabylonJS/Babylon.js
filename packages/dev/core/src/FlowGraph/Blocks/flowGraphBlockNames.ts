@@ -141,4 +141,5 @@ export const enum FlowGraphBlockNames {
     ArrayIndex = "FlowGraphArrayIndexBlock",
     CodeExecution = "FlowGraphCodeExecutionBlock",
     IndexOf = "FlowGraphIndexOfBlock",
+    FunctionReference = "FunctionReference",
 }

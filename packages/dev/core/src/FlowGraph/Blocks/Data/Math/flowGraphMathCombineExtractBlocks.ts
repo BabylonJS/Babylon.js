@@ -18,6 +18,13 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 
 abstract class FlowGraphMathCombineBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
+    /**
+     * Base class for blocks that combine multiple numeric inputs into a single result.
+     * Handles registering data inputs and managing cached outputs.
+     * @param numberOfInputs The number of input values to combine.
+     * @param type The type of the result.
+     * @param config The block configuration.
+     */
     constructor(numberOfInputs: number, type: RichType<ResultT>, config?: IFlowGraphBlockConfiguration) {
         super(type, config);
         for (let i = 0; i < numberOfInputs; i++) {
@@ -26,7 +33,17 @@ abstract class FlowGraphMathCombineBlock<ResultT> extends FlowGraphCachedOperati
     }
 }
 
+/**
+ * Abstract class representing a flow graph block that extracts multiple outputs from a single input.
+ */
 abstract class FlowGraphMathExtractBlock<InputT> extends FlowGraphBlock {
+    /**
+     * Creates an instance of FlowGraphMathExtractBlock.
+     *
+     * @param numberOfOutputs - The number of outputs to be extracted from the input.
+     * @param type - The type of the input data.
+     * @param config - Optional configuration for the flow graph block.
+     */
     constructor(numberOfOutputs: number, type: RichType<InputT>, config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.registerDataInput("input", type);
@@ -36,7 +53,6 @@ abstract class FlowGraphMathExtractBlock<InputT> extends FlowGraphBlock {
     }
 }
 /**
- * @experimental
  * Combines two floats into a new Vector2
  */
 export class FlowGraphCombineVector2Block extends FlowGraphMathCombineBlock<Vector2> {
@@ -44,6 +60,10 @@ export class FlowGraphCombineVector2Block extends FlowGraphMathCombineBlock<Vect
         super(2, RichTypeVector2, config);
     }
 
+    /**
+     * @internal
+     * Combines two floats into a new Vector2
+     */
     public override _doOperation(context: FlowGraphContext): Vector2 {
         if (!context._hasExecutionVariable(this, "cachedVector")) {
             context._setExecutionVariable(this, "cachedVector", new Vector2());
@@ -61,7 +81,6 @@ export class FlowGraphCombineVector2Block extends FlowGraphMathCombineBlock<Vect
 RegisterClass(FlowGraphBlockNames.CombineVector2, FlowGraphCombineVector2Block);
 
 /**
- * @experimental
  * Combines three floats into a new Vector3
  */
 export class FlowGraphCombineVector3Block extends FlowGraphMathCombineBlock<Vector3> {
@@ -86,7 +105,6 @@ export class FlowGraphCombineVector3Block extends FlowGraphMathCombineBlock<Vect
 RegisterClass(FlowGraphBlockNames.CombineVector3, FlowGraphCombineVector3Block);
 
 /**
- * @experimental
  * Combines four floats into a new Vector4
  */
 export class FlowGraphCombineVector4Block extends FlowGraphMathCombineBlock<Vector4> {
@@ -115,15 +133,18 @@ export class FlowGraphCombineVector4Block extends FlowGraphMathCombineBlock<Vect
 
 RegisterClass(FlowGraphBlockNames.CombineVector4, FlowGraphCombineVector4Block);
 
+/**
+ * Configuration for the matrix combine blocks.
+ */
 export interface IFlowGraphCombineMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * Whether the input is in column-major order. Default is false.
+     * Note - Babylon's matrix is the same as WebGL's. So unless your matrix requires transformation, you should leave this as false.
      */
     inputIsColumnMajor?: boolean;
 }
 
 /**
- * @experimental
  * Combines 16 floats into a new Matrix
  *
  * Note that glTF interactivity's combine4x4 uses column-major order, while Babylon.js uses row-major order.
@@ -188,7 +209,6 @@ export class FlowGraphCombineMatrixBlock extends FlowGraphMathCombineBlock<Matri
 RegisterClass(FlowGraphBlockNames.CombineMatrix, FlowGraphCombineMatrixBlock);
 
 /**
- * @experimental
  * Combines 4 floats into a new Matrix
  */
 export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix2D> {
@@ -227,7 +247,6 @@ export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<Flo
 RegisterClass(FlowGraphBlockNames.CombineMatrix2D, FlowGraphCombineMatrix2DBlock);
 
 /**
- * @experimental
  * Combines 9 floats into a new Matrix3D
  */
 export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix3D> {
@@ -276,13 +295,13 @@ export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<Flo
 RegisterClass(FlowGraphBlockNames.CombineMatrix3D, FlowGraphCombineMatrix3DBlock);
 
 /**
- * @experimental
  * Extracts two floats from a Vector2
  */
 export class FlowGraphExtractVector2Block extends FlowGraphMathExtractBlock<Vector2> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(2, RichTypeVector2, config);
     }
+
     public override _updateOutputs(context: FlowGraphContext): void {
         let input = this.getDataInput("input")?.getValue(context) as Vector2;
         if (!input) {
@@ -301,7 +320,6 @@ export class FlowGraphExtractVector2Block extends FlowGraphMathExtractBlock<Vect
 RegisterClass(FlowGraphBlockNames.ExtractVector2, FlowGraphExtractVector2Block);
 
 /**
- * @experimental
  * Extracts three floats from a Vector3
  */
 export class FlowGraphExtractVector3Block extends FlowGraphMathExtractBlock<Vector3> {
@@ -327,7 +345,6 @@ export class FlowGraphExtractVector3Block extends FlowGraphMathExtractBlock<Vect
 RegisterClass(FlowGraphBlockNames.ExtractVector3, FlowGraphExtractVector3Block);
 
 /**
- * @experimental
  * Extracts four floats from a Vector4
  */
 export class FlowGraphExtractVector4Block extends FlowGraphMathExtractBlock<Vector4> {
@@ -354,7 +371,6 @@ export class FlowGraphExtractVector4Block extends FlowGraphMathExtractBlock<Vect
 RegisterClass(FlowGraphBlockNames.ExtractVector4, FlowGraphExtractVector4Block);
 
 /**
- * @experimental
  * Extracts 16 floats from a Matrix
  */
 export class FlowGraphExtractMatrixBlock extends FlowGraphMathExtractBlock<Matrix> {
@@ -380,7 +396,6 @@ export class FlowGraphExtractMatrixBlock extends FlowGraphMathExtractBlock<Matri
 RegisterClass(FlowGraphBlockNames.ExtractMatrix, FlowGraphExtractMatrixBlock);
 
 /**
- * @experimental
  * Extracts 4 floats from a Matrix2D
  */
 export class FlowGraphExtractMatrix2DBlock extends FlowGraphMathExtractBlock<FlowGraphMatrix2D> {
@@ -406,7 +421,6 @@ export class FlowGraphExtractMatrix2DBlock extends FlowGraphMathExtractBlock<Flo
 RegisterClass(FlowGraphBlockNames.ExtractMatrix2D, FlowGraphExtractMatrix2DBlock);
 
 /**
- * @experimental
  * Extracts 4 floats from a Matrix2D
  */
 export class FlowGraphExtractMatrix3DBlock extends FlowGraphMathExtractBlock<FlowGraphMatrix3D> {
