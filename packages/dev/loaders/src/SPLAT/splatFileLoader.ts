@@ -226,8 +226,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         // positions
         for (let i = 0; i < splatCount; i++) {
             position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
-            position[i * 8 + 1] = read24bComponent(ubuf, byteOffset + 3);
-            position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
+            position[i * 8 + 1] = -read24bComponent(ubuf, byteOffset + 3);
+            position[i * 8 + 2] = -read24bComponent(ubuf, byteOffset + 6);
             byteOffset += 9;
         }
 
@@ -259,8 +259,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         // convert quaternion
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
-            const y = ubuf[byteOffset + 1];
-            const z = ubuf[byteOffset + 2];
+            const y = 255 - ubuf[byteOffset + 1];
+            const z = 255 - ubuf[byteOffset + 2];
             const nx = x / 127.5 - 1;
             const ny = y / 127.5 - 1;
             const nz = z / 127.5 - 1;
