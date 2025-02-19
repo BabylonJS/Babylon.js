@@ -59,7 +59,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
-    private _loadingOptions: SPLATLoadingOptions;
+    private readonly _loadingOptions: Readonly<SPLATLoadingOptions>;
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
@@ -76,6 +76,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private static readonly _DefaultLoadingOptions = {
         keepInRam: false,
+        flipY: false,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -83,19 +84,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return new SPLATFileLoader(options[SPLATFileLoaderMetadata.name]);
     }
 
-    /**
-     * set option flipY
-     */
-    public set flipY(flipY: boolean) {
-        this._loadingOptions.flipY = flipY;
-    }
-
-    /**
-     * get option flipY
-     */
-    public get flipY(): boolean {
-        return !!this._loadingOptions.flipY;
-    }
     /**
      * Imports  from the loaded gaussian splatting data and adds them to the scene
      * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
