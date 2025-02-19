@@ -1,5 +1,5 @@
 import type { EasingFunction } from "core/Animations/easing";
-import { BackEase, BezierCurveEase, BounceEase, CircleEase, CubicEase, ElasticEase } from "core/Animations/easing";
+import { BackEase, BezierCurveEase, BounceEase, CircleEase, CubicEase, ElasticEase, ExponentialEase } from "core/Animations/easing";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
@@ -42,13 +42,15 @@ function CreateEasingFunction(type: EasingFunctionType, ...parameters: number[])
         case EasingFunctionType.CircleEase:
             return new CircleEase();
         case EasingFunctionType.BackEase:
-            return new BackEase(parameters[0]);
+            return new BackEase(...parameters);
         case EasingFunctionType.BounceEase:
             return new BounceEase(...parameters);
         case EasingFunctionType.CubicEase:
             return new CubicEase();
         case EasingFunctionType.ElasticEase:
             return new ElasticEase(...parameters);
+        case EasingFunctionType.ExponentialEase:
+            return new ExponentialEase(...parameters);
         default:
             throw new Error("Easing type not yet implemented");
     }
