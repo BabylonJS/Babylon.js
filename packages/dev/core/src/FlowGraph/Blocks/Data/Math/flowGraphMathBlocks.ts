@@ -13,6 +13,10 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import type { FlowGraphMathOperationType, FlowGraphNumber } from "core/FlowGraph/utils";
 import { _areSameIntegerClass, _areSameMatrixClass, _areSameVectorClass, _getClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
+
+/**
+ * A configuration interface  for math blocks
+ */
 export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * If true, the multiplication is done per component.
@@ -27,10 +31,13 @@ export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfigu
 }
 
 /**
- * @experimental
  * Polymorphic add block.
  */
 export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
+    /**
+     * Construct a new add block.
+     * @param config optional configuration
+     */
     constructor(config?: IFlowGraphMathBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.type),
@@ -59,10 +66,13 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Add, FlowGraphAddBlock);
 
 /**
- * @experimental
- * Polymorphic add block.
+ * Polymorphic subtract block.
  */
 export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
+    /**
+     * Construct a new subtract block.
+     * @param config optional configuration
+     */
     constructor(config?: IFlowGraphMathBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.type),
@@ -90,9 +100,8 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.Subtract, FlowGraphSubtractBlock);
 
 /**
- * @experimental
  * Polymorphic multiply block.
- * In case of matrix, it is a component wise multiplication.
+ * In case of matrix, it is configurable whether the multiplication is done per component.
  */
 export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphMathBlockConfiguration) {
@@ -147,7 +156,6 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.Multiply, FlowGraphMultiplyBlock);
 
 /**
- * @experimental
  * Polymorphic division block.
  */
 export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -202,6 +210,9 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
 }
 RegisterClass(FlowGraphBlockNames.Divide, FlowGraphDivideBlock);
 
+/**
+ * Configuration interface for the random block.
+ */
 export interface IFlowGraphRandomBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The minimum value. defaults to 0.
@@ -220,7 +231,6 @@ export interface IFlowGraphRandomBlockConfiguration extends IFlowGraphBlockConfi
 }
 
 /**
- * @experimental
  * Random number between min and max (defaults to 0 to 1)
  *
  * This node will cache the result for he same node reference. i.e., a Math.eq that references the SAME random node will always return true.
@@ -238,6 +248,10 @@ export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGr
 
     private _seed?: number;
 
+    /**
+     * Construct a new random block.
+     * @param config optional configuration
+     */
     constructor(config?: IFlowGraphRandomBlockConfiguration) {
         super(RichTypeNumber, (context) => this._random(context), FlowGraphBlockNames.Random, config);
         this.min = this.registerDataInput("min", RichTypeNumber, config?.min ?? 0);
@@ -269,7 +283,6 @@ export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
 
 /**
- * @experimental
  * E constant.
  */
 export class FlowGraphEBlock extends FlowGraphConstantOperationBlock<number> {
@@ -280,7 +293,6 @@ export class FlowGraphEBlock extends FlowGraphConstantOperationBlock<number> {
 RegisterClass(FlowGraphBlockNames.E, FlowGraphEBlock);
 
 /**
- * @experimental
  * Pi constant.
  */
 export class FlowGraphPiBlock extends FlowGraphConstantOperationBlock<number> {
@@ -291,7 +303,6 @@ export class FlowGraphPiBlock extends FlowGraphConstantOperationBlock<number> {
 RegisterClass(FlowGraphBlockNames.PI, FlowGraphPiBlock);
 
 /**
- * @experimental
  * Positive inf constant.
  */
 export class FlowGraphInfBlock extends FlowGraphConstantOperationBlock<number> {
@@ -302,7 +313,6 @@ export class FlowGraphInfBlock extends FlowGraphConstantOperationBlock<number> {
 RegisterClass(FlowGraphBlockNames.Inf, FlowGraphInfBlock);
 
 /**
- * @experimental
  * NaN constant.
  */
 export class FlowGraphNaNBlock extends FlowGraphConstantOperationBlock<number> {
@@ -332,32 +342,14 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
             return new Quaternion(op(a.x), op(a.y), op(a.z), op(a.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
-            return Matrix.FromArray(
-                // op(a.m[0]),
-                // op(a.m[4]),
-                // op(a.m[8]),
-                // op(a.m[12]),
-                // op(a.m[1]),
-                // op(a.m[5]),
-                // op(a.m[9]),
-                // op(a.m[13]),
-                // op(a.m[2]),
-                // op(a.m[6]),
-                // op(a.m[10]),
-                // op(a.m[14]),
-                // op(a.m[3]),
-                // op(a.m[7]),
-                // op(a.m[11]),
-                // op(a.m[15])
-                a.m.map(op)
-            );
+            return Matrix.FromArray(a.m.map(op));
         case FlowGraphTypes.Matrix2D:
             a = a as FlowGraphMatrix2D;
             // reason for not using .map is performance
-            return new FlowGraphMatrix2D([op(a.m[0]), op(a.m[1]), op(a.m[2]), op(a.m[3])]);
+            return new FlowGraphMatrix2D(a.m.map(op));
         case FlowGraphTypes.Matrix3D:
             a = a as FlowGraphMatrix3D;
-            return new FlowGraphMatrix3D([op(a.m[0]), op(a.m[1]), op(a.m[2]), op(a.m[3]), op(a.m[4]), op(a.m[5]), op(a.m[6]), op(a.m[7]), op(a.m[8])]);
+            return new FlowGraphMatrix3D(a.m.map(op));
         default:
             a = a as number;
             return op(a);
@@ -365,7 +357,6 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
 }
 
 /**
- * @experimental
  * Absolute value block.
  */
 export class FlowGraphAbsBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -380,7 +371,6 @@ export class FlowGraphAbsBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 RegisterClass(FlowGraphBlockNames.Abs, FlowGraphAbsBlock);
 
 /**
- * @experimental
  * Sign block.
  */
 export class FlowGraphSignBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -395,7 +385,6 @@ export class FlowGraphSignBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Sign, FlowGraphSignBlock);
 
 /**
- * @experimental
  * Truncation block.
  */
 export class FlowGraphTruncBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -410,7 +399,6 @@ export class FlowGraphTruncBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Trunc, FlowGraphTruncBlock);
 
 /**
- * @experimental
  * Floor block.
  */
 export class FlowGraphFloorBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -425,7 +413,6 @@ export class FlowGraphFloorBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Floor, FlowGraphFloorBlock);
 
 /**
- * @experimental
  * Ceiling block.
  */
 export class FlowGraphCeilBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -450,7 +437,6 @@ export interface IFlowGraphRoundBlockConfiguration extends IFlowGraphBlockConfig
     roundHalfAwayFromZero?: boolean;
 }
 /**
- * @experimental
  * Round block.
  */
 export class FlowGraphRoundBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -466,8 +452,7 @@ export class FlowGraphRoundBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Round, FlowGraphRoundBlock);
 
 /**
- * @experimental
- * Fract block.
+ * A block that returns the fractional part of a number.
  */
 export class FlowGraphFractBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphBlockConfiguration) {
@@ -481,7 +466,6 @@ export class FlowGraphFractBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Fract, FlowGraphFractBlock);
 
 /**
- * @experimental
  * Negation block.
  */
 export class FlowGraphNegationBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -524,50 +508,19 @@ function _componentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGra
             return new Quaternion(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
         case FlowGraphTypes.Matrix:
             a = a as Matrix;
-            return Matrix.FromArray(
-                // op(a.m[0], b.m[0]),
-                // op(a.m[4], b.m[4]),
-                // op(a.m[8], b.m[8]),
-                // op(a.m[12], b.m[12]),
-                // op(a.m[1], b.m[1]),
-                // op(a.m[5], b.m[5]),
-                // op(a.m[9], b.m[9]),
-                // op(a.m[13], b.m[13]),
-                // op(a.m[2], b.m[2]),
-                // op(a.m[6], b.m[6]),
-                // op(a.m[10], b.m[10]),
-                // op(a.m[14], b.m[14]),
-                // op(a.m[3], b.m[3]),
-                // op(a.m[7], b.m[7]),
-                // op(a.m[11], b.m[11]),
-                // op(a.m[15], b.m[15])
-                a.m.map((v, i) => op(v, (b as Matrix).m[i]))
-            );
+            return Matrix.FromArray(a.m.map((v, i) => op(v, (b as Matrix).m[i])));
         case FlowGraphTypes.Matrix2D:
             a = a as FlowGraphMatrix2D;
-            b = b as FlowGraphMatrix2D;
-            return new FlowGraphMatrix2D([op(a.m[0], b.m[0]), op(a.m[1], b.m[1]), op(a.m[2], b.m[2]), op(a.m[3], b.m[3])]);
+            return new FlowGraphMatrix2D(a.m.map((v, i) => op(v, (b as FlowGraphMatrix2D).m[i])));
         case FlowGraphTypes.Matrix3D:
             a = a as FlowGraphMatrix3D;
-            b = b as FlowGraphMatrix3D;
-            return new FlowGraphMatrix3D([
-                op(a.m[0], b.m[0]),
-                op(a.m[1], b.m[1]),
-                op(a.m[2], b.m[2]),
-                op(a.m[3], b.m[3]),
-                op(a.m[4], b.m[4]),
-                op(a.m[5], b.m[5]),
-                op(a.m[6], b.m[6]),
-                op(a.m[7], b.m[7]),
-                op(a.m[8], b.m[8]),
-            ]);
+            return new FlowGraphMatrix3D(a.m.map((v, i) => op(v, (b as FlowGraphMatrix3D).m[i])));
         default:
             return op(a as number, b as number);
     }
 }
 
 /**
- * @experimental
  * Remainder block.
  */
 export class FlowGraphModuloBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -582,7 +535,6 @@ export class FlowGraphModuloBlock extends FlowGraphBinaryOperationBlock<FlowGrap
 RegisterClass(FlowGraphBlockNames.Modulo, FlowGraphModuloBlock);
 
 /**
- * @experimental
  * Min block.
  */
 export class FlowGraphMinBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -597,7 +549,6 @@ export class FlowGraphMinBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Min, FlowGraphMinBlock);
 
 /**
- * @experimental
  * Max block
  */
 export class FlowGraphMaxBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -649,55 +600,17 @@ function _componentWiseTernaryOperation(
             c = c as Quaternion;
             return new Quaternion(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
         case FlowGraphTypes.Matrix:
-            a = a as Matrix;
-            b = b as Matrix;
-            c = c as Matrix;
-            return Matrix.FromArray(
-                // op(a.m[0], b.m[0], c.m[0]),
-                // op(a.m[4], b.m[4], c.m[4]),
-                // op(a.m[8], b.m[8], c.m[8]),
-                // op(a.m[12], b.m[12], c.m[12]),
-                // op(a.m[1], b.m[1], c.m[1]),
-                // op(a.m[5], b.m[5], c.m[5]),
-                // op(a.m[9], b.m[9], c.m[9]),
-                // op(a.m[13], b.m[13], c.m[13]),
-                // op(a.m[2], b.m[2], c.m[2]),
-                // op(a.m[6], b.m[6], c.m[6]),
-                // op(a.m[10], b.m[10], c.m[10]),
-                // op(a.m[14], b.m[14], c.m[14]),
-                // op(a.m[3], b.m[3], c.m[3]),
-                // op(a.m[7], b.m[7], c.m[7]),
-                // op(a.m[11], b.m[11], c.m[11]),
-                // op(a.m[15], b.m[15], c.m[15])
-                a.m.map((v, i) => op(v, (b as Matrix).m[i], (c as Matrix).m[i]))
-            );
+            return Matrix.FromArray((a as Matrix).m.map((v, i) => op(v, (b as Matrix).m[i], (c as Matrix).m[i])));
         case FlowGraphTypes.Matrix2D:
-            a = a as FlowGraphMatrix2D;
-            b = b as FlowGraphMatrix2D;
-            c = c as FlowGraphMatrix2D;
-            return new FlowGraphMatrix2D([op(a.m[0], b.m[0], c.m[0]), op(a.m[1], b.m[1], c.m[1]), op(a.m[2], b.m[2], c.m[2]), op(a.m[3], b.m[3], c.m[3])]);
+            return new FlowGraphMatrix2D((a as FlowGraphMatrix2D).m.map((v, i) => op(v, (b as FlowGraphMatrix2D).m[i], (c as FlowGraphMatrix2D).m[i])));
         case FlowGraphTypes.Matrix3D:
-            a = a as FlowGraphMatrix3D;
-            b = b as FlowGraphMatrix3D;
-            c = c as FlowGraphMatrix3D;
-            return new FlowGraphMatrix3D([
-                op(a.m[0], b.m[0], c.m[0]),
-                op(a.m[1], b.m[1], c.m[1]),
-                op(a.m[2], b.m[2], c.m[2]),
-                op(a.m[3], b.m[3], c.m[3]),
-                op(a.m[4], b.m[4], c.m[4]),
-                op(a.m[5], b.m[5], c.m[5]),
-                op(a.m[6], b.m[6], c.m[6]),
-                op(a.m[7], b.m[7], c.m[7]),
-                op(a.m[8], b.m[8], c.m[8]),
-            ]);
+            return new FlowGraphMatrix3D((a as FlowGraphMatrix3D).m.map((v, i) => op(v, (b as FlowGraphMatrix3D).m[i], (c as FlowGraphMatrix3D).m[i])));
         default:
             return op(a as number, b as number, c as number);
     }
 }
 
 /**
- * @experimental
  * Clamp block.
  */
 export class FlowGraphClampBlock extends FlowGraphTernaryOperationBlock<
@@ -721,7 +634,6 @@ function _saturate(a: number): number {
 }
 
 /**
- * @experimental
  * Saturate block.
  */
 export class FlowGraphSaturateBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -740,7 +652,6 @@ function _interpolate(a: number, b: number, c: number) {
 }
 
 /**
- * @experimental
  * Interpolate block.
  */
 export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBlock<
@@ -760,7 +671,6 @@ export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBl
 RegisterClass(FlowGraphBlockNames.MathInterpolation, FlowGraphMathInterpolationBlock);
 
 /**
- * @experimental
  * Equals block.
  */
 export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, boolean> {
@@ -789,7 +699,6 @@ function _comparisonOperators(a: FlowGraphNumber, b: FlowGraphNumber, op: (a: nu
 }
 
 /**
- * @experimental
  * Less than block.
  */
 export class FlowGraphLessThanBlock extends FlowGraphBinaryOperationBlock<FlowGraphNumber, FlowGraphNumber, boolean> {
@@ -804,7 +713,6 @@ export class FlowGraphLessThanBlock extends FlowGraphBinaryOperationBlock<FlowGr
 RegisterClass(FlowGraphBlockNames.LessThan, FlowGraphLessThanBlock);
 
 /**
- * @experimental
  * Less than or equal block.
  */
 export class FlowGraphLessThanOrEqualBlock extends FlowGraphBinaryOperationBlock<FlowGraphNumber, FlowGraphNumber, boolean> {
@@ -820,7 +728,6 @@ export class FlowGraphLessThanOrEqualBlock extends FlowGraphBinaryOperationBlock
 RegisterClass(FlowGraphBlockNames.LessThanOrEqual, FlowGraphLessThanOrEqualBlock);
 
 /**
- * @experimental
  * Greater than block.
  */
 export class FlowGraphGreaterThanBlock extends FlowGraphBinaryOperationBlock<FlowGraphNumber, FlowGraphNumber, boolean> {
@@ -836,7 +743,6 @@ export class FlowGraphGreaterThanBlock extends FlowGraphBinaryOperationBlock<Flo
 RegisterClass(FlowGraphBlockNames.GreaterThan, FlowGraphGreaterThanBlock);
 
 /**
- * @experimental
  * Greater than or equal block.
  */
 export class FlowGraphGreaterThanOrEqualBlock extends FlowGraphBinaryOperationBlock<FlowGraphNumber, FlowGraphNumber, boolean> {
@@ -851,7 +757,6 @@ export class FlowGraphGreaterThanOrEqualBlock extends FlowGraphBinaryOperationBl
 RegisterClass(FlowGraphBlockNames.GreaterThanOrEqual, FlowGraphGreaterThanOrEqualBlock);
 
 /**
- * @experimental
  * Is NaN block.
  */
 export class FlowGraphIsNanBlock extends FlowGraphUnaryOperationBlock<FlowGraphNumber, boolean> {
@@ -870,7 +775,6 @@ export class FlowGraphIsNanBlock extends FlowGraphUnaryOperationBlock<FlowGraphN
 RegisterClass(FlowGraphBlockNames.IsNaN, FlowGraphIsNanBlock);
 
 /**
- * @experimental
  * Is Inf block.
  */
 export class FlowGraphIsInfinityBlock extends FlowGraphUnaryOperationBlock<FlowGraphNumber, boolean> {
@@ -890,7 +794,6 @@ export class FlowGraphIsInfinityBlock extends FlowGraphUnaryOperationBlock<FlowG
 RegisterClass(FlowGraphBlockNames.IsInfinity, FlowGraphIsInfinityBlock);
 
 /**
- * @experimental
  * Convert degrees to radians block.
  */
 export class FlowGraphDegToRadBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -910,7 +813,6 @@ export class FlowGraphDegToRadBlock extends FlowGraphUnaryOperationBlock<FlowGra
 RegisterClass(FlowGraphBlockNames.DegToRad, FlowGraphDegToRadBlock);
 
 /**
- * @experimental
  * Convert radians to degrees block.
  */
 export class FlowGraphRadToDegBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -929,7 +831,6 @@ export class FlowGraphRadToDegBlock extends FlowGraphUnaryOperationBlock<FlowGra
 RegisterClass(FlowGraphBlockNames.RadToDeg, FlowGraphRadToDegBlock);
 
 /**
- * @experimental
  * Sin block.
  */
 export class FlowGraphSinBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -943,7 +844,6 @@ export class FlowGraphSinBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 }
 
 /**
- * @experimental
  * Cos block.
  */
 export class FlowGraphCosBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -957,7 +857,6 @@ export class FlowGraphCosBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 }
 
 /**
- * @experimental
  * Tan block.
  */
 export class FlowGraphTanBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -971,7 +870,6 @@ export class FlowGraphTanBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 }
 
 /**
- * @experimental
  * Arcsin block.
  */
 export class FlowGraphAsinBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -986,7 +884,6 @@ export class FlowGraphAsinBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Asin, FlowGraphAsinBlock);
 
 /**
- * @experimental
  * Arccos block.
  */
 export class FlowGraphAcosBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1001,7 +898,6 @@ export class FlowGraphAcosBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Acos, FlowGraphAcosBlock);
 
 /**
- * @experimental
  * Arctan block.
  */
 export class FlowGraphAtanBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1016,7 +912,6 @@ export class FlowGraphAtanBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Atan, FlowGraphAtanBlock);
 
 /**
- * @experimental
  * Arctan2 block.
  */
 export class FlowGraphAtan2Block extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1031,7 +926,6 @@ export class FlowGraphAtan2Block extends FlowGraphBinaryOperationBlock<FlowGraph
 RegisterClass(FlowGraphBlockNames.Atan2, FlowGraphAtan2Block);
 
 /**
- * @experimental
  * Hyperbolic sin block.
  */
 export class FlowGraphSinhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1046,7 +940,6 @@ export class FlowGraphSinhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Sinh, FlowGraphSinhBlock);
 
 /**
- * @experimental
  * Hyperbolic cos block.
  */
 export class FlowGraphCoshBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1061,7 +954,6 @@ export class FlowGraphCoshBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Cosh, FlowGraphCoshBlock);
 
 /**
- * @experimental
  * Hyperbolic tan block.
  */
 export class FlowGraphTanhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1076,7 +968,6 @@ export class FlowGraphTanhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Tanh, FlowGraphTanhBlock);
 
 /**
- * @experimental
  * Hyperbolic arcsin block.
  */
 export class FlowGraphAsinhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1091,7 +982,6 @@ export class FlowGraphAsinhBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Asinh, FlowGraphAsinhBlock);
 
 /**
- * @experimental
  * Hyperbolic arccos block.
  */
 export class FlowGraphAcoshBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1106,7 +996,6 @@ export class FlowGraphAcoshBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Acosh, FlowGraphAcoshBlock);
 
 /**
- * @experimental
  * Hyperbolic arctan block.
  */
 export class FlowGraphAtanhBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1121,7 +1010,6 @@ export class FlowGraphAtanhBlock extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Atanh, FlowGraphAtanhBlock);
 
 /**
- * @experimental
  * Exponential block.
  */
 export class FlowGraphExpBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1136,7 +1024,6 @@ export class FlowGraphExpBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 RegisterClass(FlowGraphBlockNames.Exponential, FlowGraphExpBlock);
 
 /**
- * @experimental
  * Logarithm block.
  */
 export class FlowGraphLogBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1151,7 +1038,6 @@ export class FlowGraphLogBlock extends FlowGraphUnaryOperationBlock<FlowGraphMat
 RegisterClass(FlowGraphBlockNames.Log, FlowGraphLogBlock);
 
 /**
- * @experimental
  * Base 2 logarithm block.
  */
 export class FlowGraphLog2Block extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1166,7 +1052,6 @@ export class FlowGraphLog2Block extends FlowGraphUnaryOperationBlock<FlowGraphMa
 RegisterClass(FlowGraphBlockNames.Log2, FlowGraphLog2Block);
 
 /**
- * @experimental
  * Base 10 logarithm block.
  */
 export class FlowGraphLog10Block extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1181,7 +1066,6 @@ export class FlowGraphLog10Block extends FlowGraphUnaryOperationBlock<FlowGraphM
 RegisterClass(FlowGraphBlockNames.Log10, FlowGraphLog10Block);
 
 /**
- * @experimental
  * Square root block.
  */
 export class FlowGraphSquareRootBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1196,7 +1080,6 @@ export class FlowGraphSquareRootBlock extends FlowGraphUnaryOperationBlock<FlowG
 RegisterClass(FlowGraphBlockNames.SquareRoot, FlowGraphSquareRootBlock);
 
 /**
- * @experimental
  * Cube root block.
  */
 export class FlowGraphCubeRootBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1211,7 +1094,6 @@ export class FlowGraphCubeRootBlock extends FlowGraphUnaryOperationBlock<FlowGra
 RegisterClass(FlowGraphBlockNames.CubeRoot, FlowGraphCubeRootBlock);
 
 /**
- * @experimental
  * Power block.
  */
 export class FlowGraphPowerBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
@@ -1239,7 +1121,6 @@ export interface IFlowGraphBitwiseBlockConfiguration extends IFlowGraphBlockConf
 
 type FlowGraphBitwiseTypes = FlowGraphInteger | FlowGraphNumber | boolean;
 /**
- * @experimental
  * Bitwise NOT operation
  */
 export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
@@ -1263,7 +1144,6 @@ export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowG
 RegisterClass(FlowGraphBlockNames.BitwiseNot, FlowGraphBitwiseNotBlock);
 
 /**
- * @experimental
  * Bitwise AND operation
  */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
@@ -1292,7 +1172,6 @@ export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<Flow
 RegisterClass(FlowGraphBlockNames.BitwiseAnd, FlowGraphBitwiseAndBlock);
 
 /**
- * @experimental
  * Bitwise OR operation
  */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
@@ -1320,7 +1199,6 @@ export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowG
 RegisterClass(FlowGraphBlockNames.BitwiseOr, FlowGraphBitwiseOrBlock);
 
 /**
- * @experimental
  * Bitwise XOR operation
  */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<FlowGraphBitwiseTypes, FlowGraphBitwiseTypes, FlowGraphBitwiseTypes> {
@@ -1348,7 +1226,6 @@ export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<Flow
 RegisterClass(FlowGraphBlockNames.BitwiseXor, FlowGraphBitwiseXorBlock);
 
 /**
- * @experimental
  * Bitwise left shift operation
  */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
@@ -1366,7 +1243,6 @@ export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBloc
 RegisterClass(FlowGraphBlockNames.BitwiseLeftShift, FlowGraphBitwiseLeftShiftBlock);
 
 /**
- * @experimental
  * Bitwise right shift operation
  */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
@@ -1384,7 +1260,6 @@ export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlo
 RegisterClass(FlowGraphBlockNames.BitwiseRightShift, FlowGraphBitwiseRightShiftBlock);
 
 /**
- * @experimental
  * Count leading zeros operation
  */
 export class FlowGraphLeadingZerosBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
@@ -1395,7 +1270,6 @@ export class FlowGraphLeadingZerosBlock extends FlowGraphUnaryOperationBlock<Flo
 RegisterClass(FlowGraphBlockNames.LeadingZeros, FlowGraphLeadingZerosBlock);
 
 /**
- * @experimental
  * Count trailing zeros operation
  */
 export class FlowGraphTrailingZerosBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
@@ -1430,7 +1304,6 @@ function _countOnes(n: number) {
 }
 
 /**
- * @experimental
  * Count one bits operation
  */
 export class FlowGraphOneBitsCounterBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
