@@ -3,8 +3,9 @@ import type { RichType } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
- * @experimental
  * Block that outputs a value of type ResultT, resulting of an operation with no inputs.
+ * This block is being extended by some math operations and should not be used directly.
+ * @internal
  */
 export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     constructor(

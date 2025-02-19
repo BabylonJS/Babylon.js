@@ -7,7 +7,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
- * @experimental
  * Block that returns a value based on a condition.
  */
 export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
@@ -47,12 +46,10 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      * @internal
      */
     public override _updateOutputs(context: FlowGraphContext): void {
-        // get all values
+        // get the value of the condition
         const condition = this.condition.getValue(context);
-        const onTrue = this.onTrue.getValue(context);
-        const onFalse = this.onFalse.getValue(context);
-        // check that onTrue and onFalse have the same type
-        this.output.setValue(condition ? onTrue : onFalse, context);
+        // set the value based on the condition truth-ness.
+        this.output.setValue(condition ? this.onTrue.getValue(context) : this.onFalse.getValue(context), context);
     }
 
     /**

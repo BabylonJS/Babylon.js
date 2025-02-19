@@ -12,7 +12,7 @@ import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flo
 import type { Vector3 } from "core/Maths/math.vector";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
- * @experimental
+ * Configuration for the mesh pick event block.
  */
 export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -26,7 +26,6 @@ export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlo
     targetMesh?: AbstractMesh;
 }
 /**
- * @experimental
  * A block that activates when a mesh is picked.
  */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {

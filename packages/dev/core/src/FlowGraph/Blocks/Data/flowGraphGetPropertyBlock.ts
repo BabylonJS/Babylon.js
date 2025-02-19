@@ -31,7 +31,7 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
  *
  * For example, with an input of a mesh asset, the property name "position.x" will deliver the x component of the position of the mesh.
  *
- * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
+ * Note that it is recommended to input the object on which you are working on (i.e. a material) rather than providing a mesh as object and then getting the material from it.
  */
 export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
     /**

@@ -13,10 +13,10 @@ import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import type { IAssetContainer } from "core/IAssetContainer";
 import type { Nullable } from "core/types";
 import { FlowGraphAction, FlowGraphLogger } from "./flowGraphLogger";
+import type { IFlowGraphOnTickEventPayload } from "./Blocks/Event/flowGraphSceneTickEventBlock";
 
 /**
  * Construction parameters for the context.
- * @experimental
  */
 export interface IFlowGraphContextConfiguration {
     /**
@@ -36,7 +36,6 @@ export interface IFlowGraphContextConfiguration {
 }
 
 /**
- * @experimental
  * Options for parsing a context.
  */
 export interface IFlowGraphContextParseOptions {
@@ -54,7 +53,6 @@ export interface IFlowGraphContextParseOptions {
     readonly graph: FlowGraph;
 }
 /**
- * @experimental
  * The context represents the current state and execution of the flow graph.
  * It contains both user-defined variables, which are derived from
  * a more general variable definition, and execution variables that
@@ -452,7 +450,10 @@ export class FlowGraphContext {
         });
     }
 
-    public _notifyOnTick() {
+    public _notifyOnTick(framePayload: IFlowGraphOnTickEventPayload) {
+        // set the values as global variables
+        this._setGlobalContextVariable("timeSinceStart", framePayload.timeSinceStart);
+        this._setGlobalContextVariable("deltaTime", framePayload.deltaTime);
         // iterate the pending blocks and run each one's onFrame function
         for (const block of this._pendingBlocks) {
             block._executeOnTick?.(this);

@@ -8,7 +8,6 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
- * @experimental
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
  */
 export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -25,12 +24,12 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
 }
 
 /**
- * @experimental
- * A block that receives a custom event. It saves the data sent in the eventData output.
+ * A block that receives a custom event.
+ * It saves the event data in the data outputs, based on the provided eventData in the configuration. For example, if the event data is
+ * `{ x: { type: RichTypeNumber }, y: { type: RichTypeNumber } }`, the block will have two data outputs: x and y.
  */
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = 1;
-    private _eventObserver: Nullable<Observer<any>>;
 
     constructor(
         /**
@@ -47,23 +46,25 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
 
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
-        this._eventObserver = observable.add((eventData: any[]) => {
+        const eventObserver = observable.add((eventData: any[]) => {
             for (let i = 0; i < eventData.length; i++) {
                 this.dataOutputs[i].setValue(eventData[i], context);
             }
             this._execute(context);
         });
+        context._setExecutionVariable(this, "_eventObserver", eventObserver);
     }
     public _cancelPendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         if (observable) {
-            observable.remove(this._eventObserver);
+            const eventObserver = context._getExecutionVariable<Observer<any[]> | null>(this, "_eventObserver", null);
+            observable.remove(eventObserver);
         } else {
             Tools.Warn(`FlowGraphReceiveCustomEventBlock: Missing observable for event ${this.config.eventId}`);
         }
     }
 
-    public override _executeEvent(context: FlowGraphContext, payload: any): boolean {
+    public override _executeEvent(_context: FlowGraphContext, _payload: any): boolean {
         return true;
     }
 

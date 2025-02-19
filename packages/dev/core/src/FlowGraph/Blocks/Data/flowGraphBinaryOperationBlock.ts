@@ -4,7 +4,6 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
- * @experimental
  * The base block for all binary operation blocks. Receives an input of type
  * LeftT, one of type RightT, and outputs a value of type ResultT.
  */

@@ -7,7 +7,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
- * @experimental
  * Configuration for a constant block.
  */
 export interface IFlowGraphConstantBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
@@ -17,7 +16,6 @@ export interface IFlowGraphConstantBlockConfiguration<T> extends IFlowGraphBlock
     value: T;
 }
 /**
- * @experimental
  * Block that returns a constant value.
  */
 export class FlowGraphConstantBlock<T> extends FlowGraphBlock {

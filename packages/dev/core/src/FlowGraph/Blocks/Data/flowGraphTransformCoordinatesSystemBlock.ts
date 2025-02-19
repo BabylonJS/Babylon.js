@@ -7,8 +7,8 @@ import type { TransformNode } from "../../../Meshes/transformNode";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+
 /**
- * @experimental
  * This blocks transforms a vector from one coordinate system to another.
  */
 export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {

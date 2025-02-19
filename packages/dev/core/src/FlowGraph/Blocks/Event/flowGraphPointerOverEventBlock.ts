@@ -10,7 +10,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { _isADescendantOf } from "core/FlowGraph/utils";
 
 /**
- * @experimental
+ * Configuration for the pointer over event block.
  */
 export interface IFlowGraphPointerOverEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -24,6 +24,9 @@ export interface IFlowGraphPointerOverEventBlockConfiguration extends IFlowGraph
     targetMesh?: AbstractMesh;
 }
 
+/**
+ * Payload for the pointer over event.
+ */
 export interface IFlowGraphPointerOverEventPayload {
     /**
      * The pointer id.
@@ -40,11 +43,24 @@ export interface IFlowGraphPointerOverEventPayload {
     out?: AbstractMesh;
 }
 
+/**
+ * A pointer over event block.
+ * This block can be used as an entry pointer to when a pointer is over a specific target mesh.
+ */
 export class FlowGraphPointerOverEventBlock extends FlowGraphEventBlock {
+    /**
+     * Output connection: The pointer id.
+     */
     public readonly pointerId: FlowGraphDataConnection<number>;
 
+    /**
+     * Input connection: The mesh to listen to.
+     */
     public readonly targetMesh: FlowGraphDataConnection<AbstractMesh>;
 
+    /**
+     * Output connection: The mesh that is under the pointer.
+     */
     public readonly meshUnderPointer: FlowGraphDataConnection<AbstractMesh>;
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.PointerOver;

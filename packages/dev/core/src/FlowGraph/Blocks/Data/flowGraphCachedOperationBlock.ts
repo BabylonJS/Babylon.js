@@ -9,7 +9,7 @@ const cacheName = "cachedOperationValue";
 const cacheExecIdName = "cachedExecutionId";
 
 /**
- * @experimental
+ * A block that will cache the result of an operation and deliver it as an output.
  */
 export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBlock {
     /**

@@ -6,7 +6,6 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
- * @experimental
  * Parameters used to create a FlowGraphSendCustomEventBlock.
  */
 export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -21,7 +20,10 @@ export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphB
     eventData: { [key: string]: { type: RichType<any>; value?: any } };
 }
 /**
- * @experimental
+ * A block that sends a custom event.
+ * To receive this event you need to use the ReceiveCustomEvent block.
+ * This block has no output, but does have inputs based on the eventData from the configuration.
+ * @see FlowGraphReceiveCustomEventBlock
  */
 export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOutSignal {
     public constructor(

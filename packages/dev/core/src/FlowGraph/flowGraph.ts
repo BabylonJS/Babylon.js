@@ -144,7 +144,7 @@ export class FlowGraph {
                     break;
                 case FlowGraphEventType.SceneBeforeRender:
                     for (const context of this._executionContexts) {
-                        context._notifyOnTick();
+                        context._notifyOnTick(event.payload);
                     }
                     break;
                 case FlowGraphEventType.SceneDispose:

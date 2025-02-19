@@ -7,7 +7,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
- * @experimental
  * The configuration of the FlowGraphGetVariableBlock.
  */
 export interface IFlowGraphGetVariableBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
@@ -24,7 +23,7 @@ export interface IFlowGraphGetVariableBlockConfiguration<T> extends IFlowGraphBl
 
 /**
  * A block that gets the value of a variable.
- * @experimental
+ * Variables are an stored in the context of the flow graph.
  */
 export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     /**

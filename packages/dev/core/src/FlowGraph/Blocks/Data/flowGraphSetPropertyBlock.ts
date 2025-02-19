@@ -15,7 +15,6 @@ export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAsse
 
     /**
      * The target asset from which the property will be retrieved
-     * // TODO - should it be any? or do we only support assets from the assetsContext?
      */
     target?: AssetType<O>;
 }

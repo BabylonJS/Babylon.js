@@ -10,7 +10,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { _isADescendantOf } from "core/FlowGraph/utils";
 
 /**
- * @experimental
+ * Configuration for the pointer out event block.
  */
 export interface IFlowGraphPointerOutEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -24,6 +24,9 @@ export interface IFlowGraphPointerOutEventBlockConfiguration extends IFlowGraphB
     targetMesh?: AbstractMesh;
 }
 
+/**
+ * Payload for the pointer out event.
+ */
 export interface IFlowGraphPointerOutEventPayload {
     /**
      * The pointer id.
@@ -40,11 +43,24 @@ export interface IFlowGraphPointerOutEventPayload {
     over?: AbstractMesh;
 }
 
+/**
+ * A pointe out event block.
+ * This block can be used as an entry pointer to when a pointer is out of a specific target mesh.
+ */
 export class FlowGraphPointerOutEventBlock extends FlowGraphEventBlock {
+    /**
+     * Output connection: The pointer id.
+     */
     public readonly pointerId: FlowGraphDataConnection<number>;
 
+    /**
+     * Input connection: The mesh to listen to.
+     */
     public readonly targetMesh: FlowGraphDataConnection<AbstractMesh>;
 
+    /**
+     * Output connection: The mesh that the pointer is out of.
+     */
     public readonly meshOutOfPointer: FlowGraphDataConnection<AbstractMesh>;
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.PointerOut;

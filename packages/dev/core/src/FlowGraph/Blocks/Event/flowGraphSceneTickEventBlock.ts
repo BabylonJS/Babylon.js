@@ -6,13 +6,21 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 
+/**
+ * Payload for the scene tick event.
+ */
 export interface IFlowGraphOnTickEventPayload {
+    /**
+     * the time in seconds since the scene started.
+     */
     timeSinceStart: number;
+    /**
+     * the time in seconds since the last frame.
+     */
     deltaTime: number;
 }
 
 /**
- * @experimental
  * Block that triggers on scene tick (before each render).
  */
 export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {

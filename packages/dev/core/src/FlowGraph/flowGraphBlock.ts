@@ -11,7 +11,6 @@ import type { IAssetContainer } from "core/IAssetContainer";
 import type { FlowGraphAction } from "./flowGraphLogger";
 
 /**
- * @experimental
  * Options for parsing a block.
  */
 export interface IFlowGraphBlockParseOptions {
@@ -38,7 +37,6 @@ export interface IFlowGraphBlockParseOptions {
 }
 
 /**
- * @experimental
  * Configuration for a block.
  */
 export interface IFlowGraphBlockConfiguration {
@@ -50,7 +48,6 @@ export interface IFlowGraphBlockConfiguration {
 }
 
 /**
- * @experimental
  * A block in a flow graph. The most basic form
  * of a block has inputs and outputs that contain
  * data.

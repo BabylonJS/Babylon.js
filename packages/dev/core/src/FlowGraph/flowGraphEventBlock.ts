@@ -3,7 +3,6 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphEventType } from "./flowGraphEventType";
 
 /**
- * @experimental
  * A type of block that listens to an event observable and activates
  * its output signal when the event is triggered.
  */
