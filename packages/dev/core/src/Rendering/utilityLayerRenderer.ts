@@ -237,6 +237,11 @@ export class UtilityLayerRenderer implements IDisposable {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
 
+                if (prePointerInfo.originalPickingInfo?.aimTransform && utilityScenePick) {
+                    utilityScenePick.aimTransform = prePointerInfo.originalPickingInfo.aimTransform;
+                    utilityScenePick.gripTransform = prePointerInfo.originalPickingInfo.gripTransform;
+                }
+
                 // always fire the prepointer observable
                 this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
@@ -279,6 +284,7 @@ export class UtilityLayerRenderer implements IDisposable {
                                 prePointerInfo.skipOnPointerObservable = true;
                             } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                             } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
                                 if (this._lastPointerEvents[pointerEvent.pointerId]) {
                                     // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
