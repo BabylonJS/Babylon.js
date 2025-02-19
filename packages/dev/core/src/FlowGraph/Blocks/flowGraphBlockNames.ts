@@ -33,7 +33,7 @@ export const enum FlowGraphBlockNames {
     Floor = "FlowGraphFloorBlock",
     Ceil = "FlowGraphCeilBlock",
     Round = "FlowGraphRoundBlock",
-    Fract = "FlowGraphFractBlock",
+    Fraction = "FlowGraphFractBlock",
     Negation = "FlowGraphNegationBlock",
     Modulo = "FlowGraphModuloBlock",
     Min = "FlowGraphMinBlock",

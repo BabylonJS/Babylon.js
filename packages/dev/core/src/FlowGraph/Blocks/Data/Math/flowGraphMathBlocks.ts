@@ -159,6 +159,10 @@ RegisterClass(FlowGraphBlockNames.Multiply, FlowGraphMultiplyBlock);
  * Polymorphic division block.
  */
 export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, FlowGraphMathOperationType> {
+    /**
+     * Construct a new divide block.
+     * @param config - Optional configuration
+     */
     constructor(config?: IFlowGraphMathBlockConfiguration) {
         super(
             getRichTypeByFlowGraphType(config?.type),
@@ -454,16 +458,16 @@ RegisterClass(FlowGraphBlockNames.Round, FlowGraphRoundBlock);
 /**
  * A block that returns the fractional part of a number.
  */
-export class FlowGraphFractBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
+export class FlowGraphFractionBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeAny, RichTypeAny, (a) => this._polymorphicFract(a), FlowGraphBlockNames.Fract, config);
+        super(RichTypeAny, RichTypeAny, (a) => this._polymorphicFraction(a), FlowGraphBlockNames.Fraction, config);
     }
 
-    private _polymorphicFract(a: FlowGraphMathOperationType) {
+    private _polymorphicFraction(a: FlowGraphMathOperationType) {
         return _componentWiseUnaryOperation(a, (a) => a - Math.floor(a));
     }
 }
-RegisterClass(FlowGraphBlockNames.Fract, FlowGraphFractBlock);
+RegisterClass(FlowGraphBlockNames.Fraction, FlowGraphFractionBlock);
 
 /**
  * Negation block.
@@ -797,6 +801,10 @@ RegisterClass(FlowGraphBlockNames.IsInfinity, FlowGraphIsInfinityBlock);
  * Convert degrees to radians block.
  */
 export class FlowGraphDegToRadBlock extends FlowGraphUnaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType> {
+    /**
+     * Constructs a new instance of the flow graph math block.
+     * @param config - Optional configuration for the flow graph block.
+     */
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, (a) => this._polymorphicDegToRad(a), FlowGraphBlockNames.DegToRad, config);
     }

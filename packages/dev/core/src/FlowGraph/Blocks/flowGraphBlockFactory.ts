@@ -72,8 +72,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCeilBlock;
         case FlowGraphBlockNames.Round:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRoundBlock;
-        case FlowGraphBlockNames.Fract:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphFractBlock;
+        case FlowGraphBlockNames.Fraction:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphFractionBlock;
         case FlowGraphBlockNames.Negation:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphNegationBlock;
         case FlowGraphBlockNames.Modulo:
