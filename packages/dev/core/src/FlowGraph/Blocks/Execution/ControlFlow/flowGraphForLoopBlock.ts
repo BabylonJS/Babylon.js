@@ -22,6 +22,11 @@ export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConf
  */
 export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The maximum number of iterations allowed for the loop.
+     * If the loop exceeds this number, it will stop. This number is configurable to avoid infinite loops.
+     */
+    public static MaxLoopIterations = 1000;
+    /**
      * Input connection: The start index of the loop.
      */
     public readonly startIndex: FlowGraphDataConnection<FlowGraphNumber>;
@@ -73,11 +78,12 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
             endIndex = getNumericValue(this.endIndex.getValue(context));
+            if (i > FlowGraphForLoopBlock.MaxLoopIterations) {
+                break;
+            }
         }
 
         this.completed._activateSignal(context);
-        // TODO - this is an actual for loop. If the loop is long, we should break it and continue in the next frame.
-        // To do that we should probably re-execute the block in the next frame, maintaining the state.
     }
 
     /**
