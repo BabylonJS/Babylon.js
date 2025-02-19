@@ -1,14 +1,16 @@
 import type { EasingFunction } from "core/Animations/easing";
-import { BezierCurveEase } from "core/Animations/easing";
+import { BackEase, BezierCurveEase, BounceEase, CircleEase, CubicEase, ElasticEase } from "core/Animations/easing";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector2 } from "core/FlowGraph/flowGraphRichTypes";
-import type { Vector2 } from "core/Maths/math.vector";
+import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
+/**
+ * The type of the easing function.
+ */
 export const enum EasingFunctionType {
     CircleEase = 0,
     BackEase = 1,
@@ -26,13 +28,27 @@ export const enum EasingFunctionType {
 
 /**
  * @internal
- * The reason only BezierCurveEase is implemented is because it is the only one used in interactivity.
- * We will need to find a better and more tree-shaking-friendly way to generate easing functions.
+ * Creates an easing function object based on the type and parameters provided.
+ * This is not tree-shaking friendly, so if you need cubic bezier, use the dedicated bezier block.
+ * @param type The type of the easing function.
+ * @param controlPoint1 The first control point for the bezier curve.
+ * @param controlPoint2 The second control point for the bezier curve.
+ * @returns The easing function object.
  */
-function CreateEasingFunction(type: EasingFunctionType, mode: number, controlPoint1: Vector2, controlPoint2: Vector2): EasingFunction {
+function CreateEasingFunction(type: EasingFunctionType, ...parameters: number[]): EasingFunction {
     switch (type) {
         case EasingFunctionType.BezierCurveEase:
-            return new BezierCurveEase(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y);
+            return new BezierCurveEase(...parameters);
+        case EasingFunctionType.CircleEase:
+            return new CircleEase();
+        case EasingFunctionType.BackEase:
+            return new BackEase(parameters[0]);
+        case EasingFunctionType.BounceEase:
+            return new BounceEase(...parameters);
+        case EasingFunctionType.CubicEase:
+            return new CubicEase();
+        case EasingFunctionType.ElasticEase:
+            return new ElasticEase(...parameters);
         default:
             throw new Error("Easing type not yet implemented");
     }
@@ -54,13 +70,9 @@ export class FlowGraphEasingBlock extends FlowGraphBlock {
     public readonly mode: FlowGraphDataConnection<number>;
 
     /**
-     * Input connection: Control point 1 for bezier curve.
+     * Input connection:parameters for easing. for example control points for BezierCurveEase.
      */
-    public readonly controlPoint1: FlowGraphDataConnection<Vector2>;
-    /**
-     * Input connection: Control point 2 for bezier curve.
-     */
-    public readonly controlPoint2: FlowGraphDataConnection<Vector2>;
+    public readonly parameters: FlowGraphDataConnection<number[]>;
 
     /**
      * Output connection: The easing function object.
@@ -83,8 +95,7 @@ export class FlowGraphEasingBlock extends FlowGraphBlock {
 
         this.type = this.registerDataInput("type", RichTypeAny, 11);
         this.mode = this.registerDataInput("mode", RichTypeNumber, 0);
-        this.controlPoint1 = this.registerDataInput("controlPoint1", RichTypeVector2);
-        this.controlPoint2 = this.registerDataInput("controlPoint2", RichTypeVector2);
+        this.parameters = this.registerDataInput("parameters", RichTypeAny, [1, 0, 0, 1]);
 
         this.easingFunction = this.registerDataOutput("easingFunction", RichTypeAny);
     }
@@ -92,16 +103,16 @@ export class FlowGraphEasingBlock extends FlowGraphBlock {
     public override _updateOutputs(context: FlowGraphContext) {
         const type = this.type.getValue(context);
         const mode = this.mode.getValue(context);
-        const controlPoint1 = this.controlPoint1.getValue(context);
-        const controlPoint2 = this.controlPoint2.getValue(context);
+        const parameters = this.parameters.getValue(context);
 
         if (type === undefined || mode === undefined) {
             return;
         }
 
-        const key = `${type}-${mode}-${controlPoint1.x}-${controlPoint1.y}-${controlPoint2.x}-${controlPoint2.y}`;
+        const key = `${type}-${mode}-${parameters.join("-")}`;
         if (!this._easingFunctions[key]) {
-            const easing = CreateEasingFunction(type, mode, controlPoint1, controlPoint2);
+            const easing = CreateEasingFunction(type, ...parameters);
+            easing.setEasingMode(mode);
             this._easingFunctions[key] = easing;
         }
         this.easingFunction.setValue(this._easingFunctions[key], context);

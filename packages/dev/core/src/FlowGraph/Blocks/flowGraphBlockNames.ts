@@ -142,4 +142,5 @@ export const enum FlowGraphBlockNames {
     CodeExecution = "FlowGraphCodeExecutionBlock",
     IndexOf = "FlowGraphIndexOfBlock",
     FunctionReference = "FunctionReference",
+    BezierCurveEasing = "BezierCurveEasing",
 }

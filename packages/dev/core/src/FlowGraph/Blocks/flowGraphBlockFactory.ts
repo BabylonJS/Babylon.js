@@ -272,6 +272,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphFloatToInt;
         case FlowGraphBlockNames.Easing:
             return async () => (await import("./Execution/Animation/flowGraphEasingBlock")).FlowGraphEasingBlock;
+        case FlowGraphBlockNames.BezierCurveEasing:
+            return async () => (await import("./Execution/Animation/flowGraphBezierCurveEasingBlock")).FlowGraphBezierCurveEasingBlock;
         case FlowGraphBlockNames.PointerOverEvent:
             return async () => (await import("./Event/flowGraphPointerOverEventBlock")).FlowGraphPointerOverEventBlock;
         case FlowGraphBlockNames.PointerOutEvent:

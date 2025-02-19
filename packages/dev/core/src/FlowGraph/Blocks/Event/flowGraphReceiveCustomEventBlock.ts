@@ -57,7 +57,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public _cancelPendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         if (observable) {
-            const eventObserver = context._getExecutionVariable<Observer<any[]> | null>(this, "_eventObserver", null);
+            const eventObserver = context._getExecutionVariable<Nullable<Observer<any[]>>>(this, "_eventObserver", null);
             observable.remove(eventObserver);
         } else {
             Tools.Warn(`FlowGraphReceiveCustomEventBlock: Missing observable for event ${this.config.eventId}`);

@@ -340,7 +340,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
-    "math/fract": getSimpleInputMapping(FlowGraphBlockNames.Fract),
+    "math/fract": getSimpleInputMapping(FlowGraphBlockNames.Fraction),
     "math/neg": getSimpleInputMapping(FlowGraphBlockNames.Negation),
     "math/add": getSimpleInputMapping(FlowGraphBlockNames.Add, ["a", "b"], true),
     "math/sub": getSimpleInputMapping(FlowGraphBlockNames.Subtract, ["a", "b"], true),
@@ -1039,7 +1039,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             FlowGraphBlockNames.ValueInterpolation,
             FlowGraphBlockNames.Context,
             FlowGraphBlockNames.PlayAnimation,
-            FlowGraphBlockNames.Easing,
+            FlowGraphBlockNames.BezierCurveEasing,
             FlowGraphBlockNames.GetVariable,
         ],
         configuration: {
@@ -1069,8 +1069,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value-1" },
                 duration: { name: "duration-1", gltfType: "number" },
-                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.Easing },
-                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.Easing },
+                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
@@ -1134,6 +1134,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             serializedGetVariable.config = serializedGetVariable.config || {};
             serializedGetVariable.config.variable = serializedGetVariable.config.variable || {};
             serializedGetVariable.config.variable.value = parser.getVariableName(propertyIndex);
+
+            // get the control points from the easing block
+            serializedObjects[3].config = serializedObjects[3].config || {};
+
             return serializedObjects;
         },
     },
