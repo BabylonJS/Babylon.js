@@ -8,15 +8,16 @@ const NAME = "KHR_texture_transform";
 
 /**
  * Computes the adjusted offset for a rotation centered about the origin.
- * This does not work when scaling is involved; investigation is needed.
  * @internal
  */
 function AdjustOffsetForRotationCenter(babylonTexture: Texture): [number, number] {
-    const { uOffset, vOffset, uRotationCenter, vRotationCenter, wAng } = babylonTexture;
-    const cosAngle = Math.cos(-wAng);
-    const sinAngle = Math.sin(-wAng);
-    const deltaU = uRotationCenter * (1 - cosAngle) - vRotationCenter * sinAngle;
-    const deltaV = vRotationCenter * (1 - cosAngle) + uRotationCenter * sinAngle;
+    const { uOffset, vOffset, uRotationCenter, vRotationCenter, uScale, vScale, wAng } = babylonTexture;
+    const cosAngle = Math.cos(wAng);
+    const sinAngle = Math.sin(wAng);
+    const scaledURotationCenter = uRotationCenter * uScale;
+    const scaledVRotationCenter = vRotationCenter * vScale;
+    const deltaU = scaledURotationCenter * (1 - cosAngle) + scaledVRotationCenter * sinAngle;
+    const deltaV = scaledVRotationCenter * (1 - cosAngle) - scaledURotationCenter * sinAngle;
     return [uOffset + deltaU, vOffset + deltaV];
 }
 
@@ -80,11 +81,14 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
         if (babylonTexture.wAng !== 0) {
             if (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0) {
-                if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                    Tools.Warn(`${context}: Texture ${babylonTexture.name} with scaling and a rotation not centered at the origin cannot be exported with ${NAME}`);
+                // See https://github.com/mrdoob/three.js/issues/15831 for more details.
+                if (babylonTexture.homogeneousRotationInUVTransform && babylonTexture.uScale !== babylonTexture.vScale) {
+                    Tools.Warn(
+                        `${context}: Texture ${babylonTexture.name} with homogenousRotationInUVTransform, non-uniform scaling, and non-zero rotation cannot be exported with ${NAME}.`
+                    );
                     return;
                 }
-                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin will be exported with an adjusted texture offset for ${NAME}.`);
+                Tools.Warn(`${context}: Texture ${babylonTexture.name} with non-origin rotation center will be exported using an adjusted offset with ${NAME}.`);
                 textureTransform.offset = AdjustOffsetForRotationCenter(babylonTexture);
             }
             textureTransform.rotation = -babylonTexture.wAng;

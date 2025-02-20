@@ -325,6 +325,10 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         const zoomTargetY = bottom + (top - bottom) * this._positionScale;
         const radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
 
+        if (!isFinite(zoomTargetY)) {
+            return false; // Abort mission as there is no target
+        }
+
         if (focusOnOriginXZ) {
             zoomTarget = new Vector3(0, zoomTargetY, 0);
         } else {
