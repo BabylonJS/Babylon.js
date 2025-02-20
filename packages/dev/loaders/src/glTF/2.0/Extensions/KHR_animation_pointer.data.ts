@@ -329,14 +329,6 @@ setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/spot/innerConeA
 setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", [
     new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1),
 ]);
-// TODO - add ies back in
 
-//     EXT_lights_ies: {
-//         lights: {
-//             __array__: {
-//                 __target__: true,
-//                 color: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)],
-//                 multiplier: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)],
-//             },
-//         },
-//     }
+setInterpolationForKey("extensions/EXT_lights_ies/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
+setInterpolationForKey("extensions/EXT_lights_ies/lights/{}/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);

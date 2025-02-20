@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import type { TransformNode } from "core/Meshes/transformNode";
-import type { ICamera, IGLTF, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
+import type { IAnimation, ICamera, IGLTF, IKHRLightsPunctual_Light, IMaterial, IMesh, INode } from "../glTFLoaderInterfaces";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
@@ -14,7 +14,6 @@ import type { SpotLight } from "core/Lights/spotLight";
 import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph/typeDefinitions";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 
 export interface IGLTFObjectModelTree {
@@ -39,17 +38,6 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
             __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
-        extensions: {
-            KHR_node_visibility: {
-                visible: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
-            };
-            KHR_node_hoverability: {
-                hoverable: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
-            };
-            KHR_node_selectability: {
-                selectable: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
-            };
-        };
     };
 }
 
@@ -254,11 +242,11 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    // EXT_lights_ies: {
-    //     lights: {
-    //         length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
-    //     };
-    // };
+    EXT_lights_ies: {
+        lights: {
+            length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
+        };
+    };
     EXT_lights_image_based: {
         lights: {
             __array__: {
@@ -336,88 +324,38 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getPropertyName: [() => "_worldMatrix"],
             isReadOnly: true,
         },
-        extensions: {
-            KHR_node_visibility: {
-                visible: {
-                    get: (node: INode) => {
-                        const tn = node._babylonTransformNode as any;
-                        if (tn && tn.isVisible !== undefined) {
-                            return tn.isVisible;
-                        }
-                        return true;
-                    },
-                    set: (value: boolean, node: INode) => {
-                        node._primitiveBabylonMeshes?.forEach((mesh) => {
-                            mesh.inheritVisibility = true;
-                        });
-                        if (node._babylonTransformNode) {
-                            (node._babylonTransformNode as AbstractMesh).isVisible = value;
-                        }
-                        node._primitiveBabylonMeshes?.forEach((mesh) => {
-                            mesh.isVisible = value;
-                        });
-                    },
-                    getTarget: (node: INode) => node._babylonTransformNode,
-                    getPropertyName: [() => "isVisible"],
-                    type: "boolean",
-                },
-            },
-            KHR_node_hoverability: {
-                hoverable: {
-                    get: (node: INode) => {
-                        const tn = node._babylonTransformNode as any;
-                        if (tn && tn.pointerOverDisableMeshTesting !== undefined) {
-                            return tn.pointerOverDisableMeshTesting;
-                        }
-                        return true;
-                    },
-                    set: (value: boolean, node: INode) => {
-                        node._primitiveBabylonMeshes?.forEach((mesh) => {
-                            mesh.pointerOverDisableMeshTesting = !value;
-                        });
-                    },
-                    getTarget: (node: INode) => node._babylonTransformNode,
-                    getPropertyName: [() => "pointerOverDisableMeshTesting"],
-                    type: "boolean",
-                },
-            },
-            KHR_node_selectability: {
-                selectable: {
-                    get: (node: INode) => {
-                        const tn = node._babylonTransformNode as any;
-                        if (tn && tn.isPickable !== undefined) {
-                            return tn.isPickable;
-                        }
-                        return true;
-                    },
-                    set: (value: boolean, node: INode) => {
-                        node._primitiveBabylonMeshes?.forEach((mesh) => {
-                            mesh.isPickable = value;
-                        });
-                    },
-                    getTarget: (node: INode) => node._babylonTransformNode,
-                    getPropertyName: [() => "isPickable"],
-                    type: "boolean",
-                },
-            },
-        },
     },
 };
 
-// const animationsTree = {
-//     length: {
-//         get: (animations: IAnimation[]) => {
-//             return animations.length;
-//         },
-//         getObject(animations: IAnimation[]) {
-//             return animations;
-//         },
-//         getPropertyName(_animations: IAnimation[]) {
-//             return "length";
-//         },
-//     },
-//     __array__: {},
-// };
+const animationsTree = {
+    length: {
+        get: (animations: IAnimation[]) => {
+            return animations.length;
+        },
+        getObject(animations: IAnimation[]) {
+            return animations;
+        },
+        getPropertyName(_animations: IAnimation[]) {
+            return "length";
+        },
+    },
+    __array__: {},
+};
+
+const meshesTree = {
+    length: {
+        get: (meshes: IMesh[]) => {
+            return meshes.length;
+        },
+        getObject(meshes: IMesh[]) {
+            return meshes;
+        },
+        getPropertyName(_meshes: IMesh[]) {
+            return "length";
+        },
+    },
+    __array__: {},
+};
 
 const camerasTree: IGLTFObjectModelTreeCamerasObject = {
     __array__: {
@@ -926,16 +864,16 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
             },
         },
     },
-    // EXT_lights_ies: {
-    //     lights: {
-    //         length: {
-    //             type: "number",
-    //             get: (lights: IKHRLightsPunctual_Light[]) => lights.length,
-    //             getTarget: (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!),
-    //             getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
-    //         },
-    //     },
-    // },
+    EXT_lights_ies: {
+        lights: {
+            length: {
+                type: "number",
+                get: (lights: IKHRLightsPunctual_Light[]) => lights.length,
+                getTarget: (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!),
+                getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
+            },
+        },
+    },
     EXT_lights_image_based: {
         lights: {
             length: {
@@ -1027,8 +965,8 @@ const objectModelMapping: IGLTFObjectModelTree = {
     nodes: nodesTree,
     materials: materialsTree,
     extensions: extensionsTree,
-    animations: {},
-    meshes: {},
+    animations: animationsTree,
+    meshes: meshesTree,
 };
 
 /**
