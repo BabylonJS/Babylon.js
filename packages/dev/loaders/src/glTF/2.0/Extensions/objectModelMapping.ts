@@ -10,7 +10,7 @@ import { Color4 } from "core/Maths/math.color";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Light } from "core/Lights/light";
 import type { Nullable } from "core/types";
-import type { SpotLight } from "core/Lights/spotLight";
+import { SpotLight } from "core/Lights/spotLight";
 import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph/typeDefinitions";
@@ -38,6 +38,12 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
             __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
+        extensions: {
+            EXT_lights_ies?: {
+                multiplier: IObjectAccessor<INode, Light, number>;
+                color: IObjectAccessor<INode, Light, Color3>;
+            };
+        };
     };
 }
 
@@ -210,10 +216,6 @@ export interface IGLTFObjectModelTreeMaterialsObject {
                     };
                 };
             };
-            EXT_lights_ies?: {
-                multiplier: IObjectAccessor<IMaterial, PBRMaterial, number>;
-                color: IObjectAccessor<IMaterial, PBRMaterial, Color3>;
-            };
         };
     };
 }
@@ -323,6 +325,40 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getTarget: (node: INode) => node._babylonTransformNode,
             getPropertyName: [() => "_worldMatrix"],
             isReadOnly: true,
+        },
+        extensions: {
+            EXT_lights_ies: {
+                multiplier: {
+                    type: "number",
+                    get: (node: INode) => {
+                        return node._babylonTransformNode?.getChildren((child) => child instanceof SpotLight, true)[0]?.intensity;
+                    },
+                    getTarget: (node: INode) => node._babylonTransformNode?.getChildren((child) => child instanceof SpotLight, true)[0],
+                    set: (value, node) => {
+                        if (node._babylonTransformNode) {
+                            const light = node._babylonTransformNode.getChildren((child) => child instanceof SpotLight, true)[0];
+                            if (light) {
+                                light.intensity = value;
+                            }
+                        }
+                    },
+                },
+                color: {
+                    type: "Color3",
+                    get: (node: INode) => {
+                        return node._babylonTransformNode?.getChildren((child) => child instanceof SpotLight, true)[0]?.diffuse;
+                    },
+                    getTarget: (node: INode) => node._babylonTransformNode?.getChildren((child) => child instanceof SpotLight, true)[0],
+                    set: (value, node: INode) => {
+                        if (node._babylonTransformNode) {
+                            const light = node._babylonTransformNode.getChildren((child) => child instanceof SpotLight, true)[0];
+                            if (light) {
+                                light.diffuse = value;
+                            }
+                        }
+                    },
+                },
+            },
         },
     },
 };
@@ -581,20 +617,6 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     },
                 },
             },
-            // EXT_lights_ies: {
-            //     multiplier: {
-            //         type: "number",
-            //         get: (material, index?, payload?) => getMaterial(material, index, payload).light?.intensity],
-            //         getTarget: getMaterial,
-            //         set: (value, material, index?, payload?) => (getMaterial(material, index, payload).light.intensity = value),
-            //     },
-            //     color: {
-            //         type: "Color3",
-            //         get: (material: IMaterial) => material.light?.color],
-            //         getTarget: (material: IMaterial) => material._babylonMaterial],
-            //         set: (value: Color3, material: IMaterial) => (material._babylonMaterial ? (material._babylonMaterial.light.color = value) : undefined),
-            //     },
-            // },
             KHR_materials_clearcoat: {
                 clearcoatFactor: {
                     type: "number",

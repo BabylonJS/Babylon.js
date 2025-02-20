@@ -95,8 +95,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             this.error._activateSignal(context);
             return;
         } else {
-            // if an animation group was created, dispose it and create a new one
-            // TODO - is it possible to be sure this animationGroup can be reused?
+            // if an animation group was already created, dispose it and create a new one
             const currentAnimationGroup = this.currentAnimationGroup.getValue(context);
             if (currentAnimationGroup && currentAnimationGroup !== ag) {
                 currentAnimationGroup.dispose();

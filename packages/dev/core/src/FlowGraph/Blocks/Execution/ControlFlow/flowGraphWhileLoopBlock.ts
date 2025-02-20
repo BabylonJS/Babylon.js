@@ -72,8 +72,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
             }
             conditionValue = this.condition.getValue(context);
         }
-        // out is not triggered
-        // TODO - should completed be the out signal?
+        // out is not triggered - completed is triggered
         this.completed._activateSignal(context);
     }
 

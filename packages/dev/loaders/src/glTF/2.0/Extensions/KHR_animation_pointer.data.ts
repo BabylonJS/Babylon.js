@@ -275,16 +275,16 @@ setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/attenuatio
 setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/attenuationDistance", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", getFloat, () => 1),
 ]);
-setInterpolationForKey("materials/{}/extensions/KHR_materials_volume/thicknessFactor", [
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/thicknessFactor", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", getFloat, () => 1),
 ]);
 
 const thicknessTextureInterpolation = getTextureTransformTree("subSurface.thicknessTexture");
-setInterpolationForKey("materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/scale", thicknessTextureInterpolation.scale);
-setInterpolationForKey("materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/offset", thicknessTextureInterpolation.offset);
-setInterpolationForKey("materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/rotation", thicknessTextureInterpolation.rotation);
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/scale", thicknessTextureInterpolation.scale);
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/offset", thicknessTextureInterpolation.offset);
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_volume/thicknessTexture/extensions/KHR_texture_transform/rotation", thicknessTextureInterpolation.rotation);
 
-setInterpolationForKey("materials/{}/extensions/KHR_materials_diffuse_transmission/diffuseTransmissionFactor", [
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_diffuse_transmission/diffuseTransmissionFactor", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.translucencyIntensity", getFloat, () => 1),
 ]);
 
@@ -302,7 +302,7 @@ setInterpolationForKey(
     diffuseTransmissionTextureInterpolation.rotation
 );
 
-setInterpolationForKey("materials/{}/extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorFactor", [
+setInterpolationForKey("/materials/{}/extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorFactor", [
     new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.translucencyColor", getColor3, () => 3),
 ]);
 
@@ -320,15 +320,15 @@ setInterpolationForKey(
     diffuseTransmissionColorTextureInterpolation.rotation
 );
 
-setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
-setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/intensity", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
-setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/range", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "range", getFloat, () => 1)]);
-setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", [
+setInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
+setInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/intensity", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
+setInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/range", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "range", getFloat, () => 1)]);
+setInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", [
     new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", getFloatBy2, () => 1),
 ]);
-setInterpolationForKey("extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", [
+setInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", [
     new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1),
 ]);
 
-setInterpolationForKey("extensions/EXT_lights_ies/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
-setInterpolationForKey("extensions/EXT_lights_ies/lights/{}/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
+setInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
+setInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);

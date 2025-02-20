@@ -46,7 +46,13 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                         if (targetAnimation.animation.targetProperty === this.config?.variable) {
                             // stop the animation
                             animation.stop();
-                            // TODO - should it now be removed from the animation groups array?
+                            // remove the animation from the currently running animations
+                            const index = currentlyRunningAnimationGroups.indexOf(animationUniqueId);
+                            if (index > -1) {
+                                currentlyRunningAnimationGroups.splice(index, 1);
+                            }
+                            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+                            break;
                         }
                     }
                 }

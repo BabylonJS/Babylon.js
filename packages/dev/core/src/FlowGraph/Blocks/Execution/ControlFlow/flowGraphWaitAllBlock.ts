@@ -51,7 +51,6 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
 
         this.reset = this._registerSignalInput("reset");
         this.completed = this._registerSignalOutput("completed");
-        // TODO - should this be an integer?
         this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputFlows || 0);
         // The first inFlow is the default input signal all execution blocks have
         for (let i = 0; i < this.config.inputFlows; i++) {

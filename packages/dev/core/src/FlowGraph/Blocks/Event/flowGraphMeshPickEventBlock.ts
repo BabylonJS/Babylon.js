@@ -108,7 +108,11 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
             // stop the propagation if the configuration says so
             return !this.config?.stopPropagation;
         } else {
-            // TODO - does it make sense to reset the values? The event will not be triggered anyway.
+            // reset the outputs
+            this.pointerId.resetToDefaultValue(context);
+            this.pickOrigin.resetToDefaultValue(context);
+            this.pickedPoint.resetToDefaultValue(context);
+            this.pickedMesh.resetToDefaultValue(context);
         }
         return true;
     }
