@@ -146,8 +146,11 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
                     return acc;
                 }
                 acc[val.id] = {
-                    type: getRichTypeByFlowGraphType(val.className),
+                    type: getRichTypeByFlowGraphType(val.type),
                 };
+                if (typeof val.value !== "undefined") {
+                    acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
+                }
                 return acc;
             }, {});
         } else {

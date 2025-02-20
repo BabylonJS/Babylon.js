@@ -292,6 +292,28 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
+        validation(gltfBlock, globalGLTF) {
+            if (!gltfBlock.configuration) {
+                Logger.Error("Receive event should have a configuration object");
+                return false;
+            }
+            const eventConfiguration = gltfBlock.configuration["event"];
+            if (!eventConfiguration) {
+                Logger.Error("Receive event should have a single configuration object, the event itself");
+                return false;
+            }
+            const eventId = eventConfiguration.value[0] as number;
+            if (typeof eventId !== "number") {
+                Logger.Error("Event id should be a number");
+                return false;
+            }
+            const event: InteractivityEvent = globalGLTF?.extensions?.KHR_interactivity?.events[eventId];
+            if (!event) {
+                Logger.Error(`Event with id ${eventId} not found`);
+                return false;
+            }
+            return true;
+        },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
             // validate that we are running it on the right block.
