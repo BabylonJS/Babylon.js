@@ -88,7 +88,7 @@ export class FlowGraphContext {
     /**
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
-    private _pendingBlocks: Set<FlowGraphAsyncExecutionBlock> = new Set();
+    private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
     /**
      * A monotonically increasing ID for each execution.
      * Incremented for every block executed.
@@ -406,14 +406,13 @@ export class FlowGraphContext {
      * @param block
      */
     public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
-        this._pendingBlocks.add(block);
-        const arr = Array.from(this._pendingBlocks);
-        // sort pending blocks by priority
-        arr.sort((a, b) => a.priority - b.priority);
-        this._pendingBlocks.clear();
-        for (const b of arr) {
-            this._pendingBlocks.add(b);
+        // check if block is already in the array
+        if (this._pendingBlocks.includes(block)) {
+            return;
         }
+        this._pendingBlocks.push(block);
+        // sort pending blocks by priority
+        this._pendingBlocks.sort((a, b) => a.priority - b.priority);
     }
 
     /**
@@ -422,7 +421,10 @@ export class FlowGraphContext {
      * @param block
      */
     public _removePendingBlock(block: FlowGraphAsyncExecutionBlock) {
-        this._pendingBlocks.delete(block);
+        const index = this._pendingBlocks.indexOf(block);
+        if (index !== -1) {
+            this._pendingBlocks.splice(index, 1);
+        }
     }
 
     /**
@@ -430,10 +432,10 @@ export class FlowGraphContext {
      * @internal
      */
     public _clearPendingBlocks() {
-        for (const block of [...this._pendingBlocks]) {
+        for (const block of this._pendingBlocks) {
             block._cancelPendingTasks(this);
         }
-        this._pendingBlocks.clear();
+        this._pendingBlocks.length = 0;
     }
 
     /**
