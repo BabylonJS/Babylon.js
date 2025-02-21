@@ -1,3 +1,4 @@
+import { _GetDefaultNumWorkers } from "core/Misc/workerUtils";
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
 import type { WorkerPool } from "../../Misc/workerPool";
@@ -44,26 +45,6 @@ export interface IDracoCodecConfiguration {
      * The codec module if already available.
      */
     jsModule?: unknown /* DracoDecoderModule | DracoEncoderModule */;
-}
-
-/**
- * @internal
- */
-export function _GetDefaultNumWorkers(): number {
-    if (typeof navigator !== "object" || !navigator.hardwareConcurrency) {
-        return 1;
-    }
-
-    // Use 50% of the available logical processors but capped at 4.
-    return Math.min(Math.floor(navigator.hardwareConcurrency * 0.5), 4);
-}
-
-/**
- * @internal
- */
-export function _IsConfigurationAvailable(config: IDracoCodecConfiguration): boolean {
-    return !!((config.wasmUrl && (config.wasmBinary || config.wasmBinaryUrl) && typeof WebAssembly === "object") || config.fallbackUrl);
-    // TODO: Account for jsModule
 }
 
 /**
