@@ -3,10 +3,23 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 /**
  * Block used to subdivide for a geometry using Catmull-Clark algorithm
  */
 export class SubdivideBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     */
+    @editableInPropertyPage("Flat Only", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public flatOnly = false;
+
+    /**
+     * Gets or sets a float defining the loop weight. i.e how much to weigh favoring heavy corners vs favoring Loop's formula
+     */
+    @editableInPropertyPage("Loop weight", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, min: 0, max: 1, notifiers: { rebuild: true } })
+    public loopWeight = 1.0;
+
     /**
      * Creates a new ComputeNormalsBlock
      * @param name defines the block name
@@ -61,8 +74,37 @@ export class SubdivideBlock extends NodeGeometryBlock {
 
             const level = this.level.getConnectedValue(state);
 
-            return Subdivide(vertexData, level);
+            return Subdivide(vertexData, level, {
+                flatOnly: this.flatOnly,
+                weight: this.loopWeight,
+            });
         };
+    }
+
+    protected override _dumpPropertiesCode() {
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.flatOnly = ${this.flatOnly ? "true" : "false"};\n`;
+        codeString += `${this._codeVariableName}.loopWeight = ${this.loopWeight};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.flatOnly = this.flatOnly;
+        serializationObject.loopWeight = this.loopWeight;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.flatOnly = serializationObject.flatOnly;
+        this.loopWeight = serializationObject.loopWeight;
     }
 }
 
