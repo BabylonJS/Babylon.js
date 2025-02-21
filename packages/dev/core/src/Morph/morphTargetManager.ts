@@ -32,6 +32,7 @@ export class MorphTargetManager implements IDisposable {
     private _supportsTangents = false;
     private _supportsUVs = false;
     private _supportsUV2s = false;
+    private _supportsColors = false;
     private _vertexCount = 0;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
@@ -87,6 +88,11 @@ export class MorphTargetManager implements IDisposable {
      * Gets or sets a boolean indicating if UV2 must be morphed
      */
     public enableUV2Morphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if colors must be morphed
+     */
+    public enableColorMorphing = true;
 
     /**
      * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
@@ -205,6 +211,13 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
+     * Gets a boolean indicating if this manager supports morphing of colors
+     */
+    public get supportsColors(): boolean {
+        return this._supportsColors && this.enableColorMorphing;
+    }
+
+    /**
      * Gets a boolean indicating if this manager has data for morphing positions
      */
     public get hasPositions(): boolean {
@@ -237,6 +250,13 @@ export class MorphTargetManager implements IDisposable {
      */
     public get hasUV2s(): boolean {
         return this._supportsUV2s;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager has data for morphing colors
+     */
+    public get hasColors(): boolean {
+        return this._supportsColors;
     }
 
     /**
@@ -393,6 +413,7 @@ export class MorphTargetManager implements IDisposable {
         copy.enableTangentMorphing = this.enableTangentMorphing;
         copy.enableUVMorphing = this.enableUVMorphing;
         copy.enableUV2Morphing = this.enableUV2Morphing;
+        copy.enableColorMorphing = this.enableColorMorphing;
 
         return copy;
     }
@@ -490,6 +511,7 @@ export class MorphTargetManager implements IDisposable {
         this._supportsTangents = true;
         this._supportsUVs = true;
         this._supportsUV2s = true;
+        this._supportsColors = true;
         this._vertexCount = 0;
 
         this._targetStoreTexture?.dispose();
@@ -505,6 +527,7 @@ export class MorphTargetManager implements IDisposable {
             this._supportsTangents = this._supportsTangents && target.hasTangents;
             this._supportsUVs = this._supportsUVs && target.hasUVs;
             this._supportsUV2s = this._supportsUV2s && target.hasUV2s;
+            this._supportsColors = this._supportsColors && target.hasColors;
 
             const vertexCount = target.vertexCount;
             if (this._vertexCount === 0) {
@@ -524,7 +547,8 @@ export class MorphTargetManager implements IDisposable {
             this._supportsNormals && this._textureVertexStride++;
             this._supportsTangents && this._textureVertexStride++;
             this._supportsUVs && this._textureVertexStride++;
-            this.supportsUV2s && this._textureVertexStride++;
+            this._supportsUV2s && this._textureVertexStride++;
+            this._supportsColors && this._textureVertexStride++;
 
             this._textureWidth = this._vertexCount * this._textureVertexStride || 1;
             this._textureHeight = 1;
@@ -547,6 +571,7 @@ export class MorphTargetManager implements IDisposable {
                 const uvs = target.getUVs();
                 const tangents = target.getTangents();
                 const uv2s = target.getUV2s();
+                const colors = target.getColors();
 
                 offset = index * this._textureWidth * this._textureHeight * 4;
                 for (let vertex = 0; vertex < this._vertexCount; vertex++) {
@@ -580,6 +605,14 @@ export class MorphTargetManager implements IDisposable {
                     if (this._supportsUV2s && uv2s) {
                         data[offset] = uv2s[vertex * 2];
                         data[offset + 1] = uv2s[vertex * 2 + 1];
+                        offset += 4;
+                    }
+
+                    if (this._supportsColors && colors) {
+                        data[offset] = colors[vertex * 4];
+                        data[offset + 1] = colors[vertex * 4 + 1];
+                        data[offset + 2] = colors[vertex * 4 + 2];
+                        data[offset + 3] = colors[vertex * 4 + 3];
                         offset += 4;
                     }
                 }

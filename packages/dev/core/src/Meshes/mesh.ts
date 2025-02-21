@@ -56,16 +56,49 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * @internal
  **/
 export class _CreationDataStorage {
+    /**
+     *
+     */
     public closePath?: boolean;
+    /**
+     *
+     */
     public closeArray?: boolean;
+    /**
+     *
+     */
     public idx: number[];
+    /**
+     *
+     */
     public dashSize: number;
+    /**
+     *
+     */
     public gapSize: number;
+    /**
+     *
+     */
     public path3D: Path3D;
+    /**
+     *
+     */
     public pathArray: Vector3[][];
+    /**
+     *
+     */
     public arc: number;
+    /**
+     *
+     */
     public radius: number;
+    /**
+     *
+     */
     public cap: number;
+    /**
+     *
+     */
     public tessellation: number;
 }
 
@@ -97,9 +130,21 @@ class _InstanceDataStorage {
  * @internal
  **/
 export class _InstancesBatch {
+    /**
+     *
+     */
     public mustReturn = false;
+    /**
+     *
+     */
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
+    /**
+     *
+     */
     public renderSelf: boolean[] = [];
+    /**
+     *
+     */
     public hardwareInstancedRendering: boolean[] = [];
 }
 
@@ -2085,29 +2130,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * This method will also draw the instances if fillMode and effect are passed
      * @internal
      */
-    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
+    public _updateInstancedBuffers(subMesh: SubMesh, batch: _InstancesBatch, currentInstancesBufferSize: number, engine: AbstractEngine, fillMode?: number, effect?: Effect) {
         const visibleInstances = batch.visibleInstances[subMesh._id];
         const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
         const instanceStorage = this._instanceDataStorage;
-        const currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         let instancesBuffer = instanceStorage.instancesBuffer;
         let instancesPreviousBuffer = instanceStorage.instancesPreviousBuffer;
-        const matricesCount = visibleInstanceCount + 1;
-        const bufferSize = matricesCount * 16 * 4;
-
-        while (instanceStorage.instancesBufferSize < bufferSize) {
-            instanceStorage.instancesBufferSize *= 2;
-        }
-
-        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
-        }
-        if ((this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousData) || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
-        }
 
         let offset = 0;
         let instancesCount = 0;
@@ -2217,15 +2249,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._processInstancedBuffers(visibleInstances, renderSelf);
 
-        // Stats
-        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+        if (effect && fillMode !== undefined) {
+            // Stats
+            this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
-        // Draw
-        if (engine._currentDrawContext) {
-            engine._currentDrawContext.useInstancing = true;
+            // Draw
+            if (engine._currentDrawContext) {
+                engine._currentDrawContext.useInstancing = true;
+            }
+            this._bind(subMesh, effect, fillMode);
+            this._draw(subMesh, fillMode, instancesCount);
         }
-        this._bind(subMesh, effect, fillMode);
-        this._draw(subMesh, fillMode, instancesCount);
 
         // Write current matrices as previous matrices in case of manual update
         // Default behaviour when previous matrices are not specified explicitly
@@ -2239,6 +2273,32 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         ) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
+        const visibleInstances = batch.visibleInstances[subMesh._id];
+        const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
+
+        const instanceStorage = this._instanceDataStorage;
+        const currentInstancesBufferSize = instanceStorage.instancesBufferSize;
+        const matricesCount = visibleInstanceCount + 1;
+        const bufferSize = matricesCount * 16 * 4;
+
+        while (instanceStorage.instancesBufferSize < bufferSize) {
+            instanceStorage.instancesBufferSize *= 2;
+        }
+
+        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+        }
+        if ((this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousData) || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+            instanceStorage.instancesPreviousData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+        }
+
+        this._updateInstancedBuffers(subMesh, batch, currentInstancesBufferSize, engine, fillMode, effect);
 
         engine.unbindInstanceAttributes();
         return this;
@@ -3011,9 +3071,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @param forceUnique indicates whether to force the mesh geometry to be unique
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true, forceUnique: boolean = false): Mesh {
+        if (forceUnique) {
+            this.makeGeometryUnique();
+        }
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
         this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;
@@ -3375,6 +3439,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const uvs = target.getUVs();
                 if (uvs) {
                     target.setUVs(separateVertices(uvs, 2));
+                }
+
+                const colors = target.getColors();
+                if (colors) {
+                    target.setColors(separateVertices(colors, 4));
                 }
             }
             this.morphTargetManager.synchronize();
@@ -4113,6 +4182,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uv2s) {
                     this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
                 }
+
+                const colors = morphTarget.getColors();
+                if (colors) {
+                    this.geometry.setVerticesData(VertexBuffer.ColorKind + index, colors, false, 4);
+                }
             }
         } else {
             let index = 0;
@@ -4132,6 +4206,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.ColorKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.ColorKind + index);
                 }
                 index++;
             }

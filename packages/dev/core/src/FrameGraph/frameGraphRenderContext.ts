@@ -11,6 +11,7 @@ import type {
     Scene,
     FrameGraphRenderTarget,
     InternalTexture,
+    UtilityLayerRenderer,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "../Engines/constants";
@@ -32,7 +33,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _depthTest: boolean;
     private _depthWrite: boolean;
 
-    private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
+    private static _IsObjectRenderer(value: Layer | ObjectRenderer | UtilityLayerRenderer): value is ObjectRenderer {
         return (value as ObjectRenderer).initRender !== undefined;
     }
 
@@ -262,7 +263,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param viewportWidth The width of the viewport (optional for Layer, but mandatory for ObjectRenderer)
      * @param viewportHeight The height of the viewport (optional for Layer, but mandatory for ObjectRenderer)
      */
-    public render(object: Layer | ObjectRenderer, viewportWidth?: number, viewportHeight?: number): void {
+    public render(object: Layer | ObjectRenderer | UtilityLayerRenderer, viewportWidth?: number, viewportHeight?: number): void {
         if (FrameGraphRenderContext._IsObjectRenderer(object)) {
             if (object.shouldRender()) {
                 this._scene.incrementRenderId();

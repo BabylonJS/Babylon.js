@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used for the particle ramp gradient section
@@ -68,17 +69,19 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
         state._emit2DSampler("rampSampler", "RAMPGRADIENT");
         state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
+        const varyingString = state.shaderLanguage === ShaderLanguage.GLSL ? "" : "fragmentInputs.";
+
         state.compilationString += `
             #ifdef RAMPGRADIENT
                 ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
                 ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
 
-                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
+                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - ${varyingString}remapRanges.x) / ${varyingString}remapRanges.y, 0.0, 1.0);
 
                 ${state._declareLocalVar("rampColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${state._generateTextureSample("vec2(1.0 - remappedColorIndex, 0.)", "rampSampler")};
 
                 // Remapped alpha
-                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0));
+                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - ${varyingString}remapRanges.z) / ${varyingString}remapRanges.w, 0.0, 1.0));
             #else
                 ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
             #endif

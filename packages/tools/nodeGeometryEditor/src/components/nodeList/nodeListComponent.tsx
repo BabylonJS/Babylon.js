@@ -22,6 +22,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
+        PointListBlock: "Create a geometry made of a list of points",
         BoxBlock: "Create a box geometry",
         PlaneBlock: "Create a plane geometry",
         SphereBlock: "Create a sphere geometry",
@@ -148,6 +149,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         LatticeBlock: "Block used to apply Lattice on geometry",
         AggregatorBlock: "Block used to aggregate values from a geometry",
         CleanGeometryBlock: "Try to clean a geometry",
+        SubdivideBlock: "Subdivide a geometry using Catmull-Clark algorithm",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -232,7 +234,20 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GridBlock", "NullBlock"],
+            Sources: [
+                "BoxBlock",
+                "PlaneBlock",
+                "SphereBlock",
+                "TorusBlock",
+                "CylinderBlock",
+                "CapsuleBlock",
+                "DiscBlock",
+                "IcoSphereBlock",
+                "MeshBlock",
+                "GridBlock",
+                "NullBlock",
+                "PointListBlock",
+            ],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int"],
             Interpolation: ["LerpBlock", "NLerpBlock", "SmoothStepBlock", "StepBlock"],
             Color_Management: ["DesaturateBlock", "PosterizeBlock", "ReplaceColorBlock"],
@@ -327,6 +342,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MappingBlock",
                 "LatticeBlock",
                 "AggregatorBlock",
+                "SubdivideBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Textures: ["TextureBlock", "TextureFetchBlock"],

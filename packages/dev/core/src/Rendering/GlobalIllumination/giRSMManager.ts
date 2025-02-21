@@ -461,8 +461,8 @@ export class GIRSMManager {
             const currentRenderTarget = this._engine._currentRenderTarget;
             let rebindCurrentRenderTarget = false;
 
-            if (this._enable) {
-                if (!this.pause) {
+            if (this._enable && this._shadersLoaded) {
+                if (!this.pause && this._ppGlobalIllumination.length > 0) {
                     this._scene.postProcessManager.directRender(this._ppGlobalIllumination, this._ppGlobalIllumination[0].inputTexture);
                     this._engine.unBindFramebuffer(this._ppGlobalIllumination[0].inputTexture, true);
 

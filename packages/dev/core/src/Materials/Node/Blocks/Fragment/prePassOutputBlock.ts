@@ -25,6 +25,8 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("velocity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("velocityLinear", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
         this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
         this.inputs[3].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -36,6 +38,8 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
                 NodeMaterialBlockConnectionPointTypes.Color3 |
                 NodeMaterialBlockConnectionPointTypes.Color4
         );
+        this.inputs[7].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[8].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -95,6 +99,20 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[6];
     }
 
+    /**
+     * Gets the velocity component
+     */
+    public get velocity(): NodeMaterialConnectionPoint {
+        return this._inputs[7];
+    }
+
+    /**
+     * Gets the linear velocity component
+     */
+    public get velocityLinear(): NodeMaterialConnectionPoint {
+        return this._inputs[8];
+    }
+
     private _getFragData(isWebGPU: boolean, index: number) {
         return isWebGPU ? `fragmentOutputs.fragData${index}` : `gl_FragData[${index}]`;
     }
@@ -109,6 +127,8 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         const viewDepth = this.viewDepth;
         const reflectivity = this.reflectivity;
         const screenDepth = this.screenDepth;
+        const velocity = this.velocity;
+        const velocityLinear = this.velocityLinear;
 
         state.sharedData.blocksWithDefines.push(this);
 
@@ -184,6 +204,26 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         } else {
             // We have to write something on the reflectivity output or it will raise a gl error
             state.compilationString += ` fragData[PREPASS_REFLECTIVITY_INDEX] = ${vec4}(0.0, 0.0, 0.0, 1.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_VELOCITY\r\n`;
+        if (velocity.connectedPoint) {
+            state.compilationString += ` fragData[PREPASS_VELOCITY_INDEX] = ${vec4}(${velocity.associatedVariableName}.rgb, ${
+                velocity.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? velocity.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the reflectivity output or it will raise a gl error
+            state.compilationString += ` fragData[PREPASS_VELOCITY_INDEX] = ${vec4}(0.0, 0.0, 0.0, 1.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_VELOCITY_LINEAR\r\n`;
+        if (velocityLinear.connectedPoint) {
+            state.compilationString += ` fragData[PREPASS_VELOCITY_LINEAR_INDEX] = ${vec4}(${velocityLinear.associatedVariableName}.rgb, ${
+                velocityLinear.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? velocityLinear.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the reflectivity output or it will raise a gl error
+            state.compilationString += ` fragData[PREPASS_VELOCITY_LINEAR_INDEX] = ${vec4}(0.0, 0.0, 0.0, 1.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
 

@@ -35,6 +35,7 @@ export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";
 export * from "./Tasks/Rendering/taaObjectRendererTask";
+export * from "./Tasks/Rendering/utilityLayerRendererTask";
 
 export * from "./frameGraph";
 export * from "./frameGraphContext";

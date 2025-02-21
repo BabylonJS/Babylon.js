@@ -1596,6 +1596,7 @@ export class ShadowGenerator implements IShadowGenerator {
             let useNormal = false;
             let uv1 = false;
             let uv2 = false;
+            const color = false;
 
             // Normal bias.
             if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -1608,9 +1609,9 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Alpha test
-            const needAlphaTesting = material.needAlphaTesting();
+            const needAlphaTesting = material.needAlphaTestingForMesh(mesh);
 
-            if (needAlphaTesting || material.needAlphaBlending()) {
+            if (needAlphaTesting || material.needAlphaBlendingForMesh(mesh)) {
                 if (this.useOpacityTextureForTransparentShadow) {
                     this._opacityTexture = (material as any).opacityTexture;
                 } else {
@@ -1677,7 +1678,8 @@ export class ShadowGenerator implements IShadowGenerator {
                       useNormal, // useNormalMorph
                       false, // useTangentMorph
                       uv1, // useUVMorph
-                      uv2 // useUV2Morph
+                      uv2, // useUV2Morph
+                      color // useColorMorph
                   )
                 : 0;
 

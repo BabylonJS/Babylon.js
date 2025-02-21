@@ -68,7 +68,8 @@ fn computeAttenuationForIntersection(ihitPixel: vec2f, hitUV: vec2f, vsRayOrigin
 #endif
 
 #ifdef SSR_ATTENUATE_INTERSECTION_DISTANCE
-    // Attenuation based on the distance between the origin of the reflection ray and the intersection povar attenuation: i32 *= 1.0 - clamp(distance(vsRayOrigin, vsHitPoint) / maxRayDistance, 0.0, 1.0);
+    // Attenuation based on the distance between the origin of the reflection ray and the intersection point
+    attenuation *= 1.0 - clamp(distance(vsRayOrigin, vsHitPoint) / maxRayDistance, 0.0, 1.0);
 #endif
 
 #ifdef SSR_ATTENUATE_INTERSECTION_NUMITERATIONS

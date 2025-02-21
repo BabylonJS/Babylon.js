@@ -47,6 +47,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
         this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 256);
         this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
+        this.registerInput("offset", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
         this.registerInput("gridSize", NodeGeometryBlockConnectionPointTypes.Int, true, 10);
@@ -132,17 +133,24 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     /**
+     * Gets the offset input component
+     */
+    public get offset(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
      * Gets the rotation input component
      */
     public get rotation(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[5];
     }
 
     /**
      * Gets the scaling input component
      */
     public get scaling(): NodeGeometryConnectionPoint {
-        return this._inputs[5];
+        return this._inputs[6];
     }
 
     /**
@@ -279,8 +287,12 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
                     const transform = this.matrix.getConnectedValue(state);
                     state._instantiateWithPositionAndMatrix(clone, this._currentPosition, transform, additionalVertexData);
                 } else {
+                    const offset = state.adaptInput(this.offset, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.ZeroReadOnly);
                     const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
                     const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+
+                    this._currentPosition.addInPlace(offset);
+
                     state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
                 }
                 this._currentLoopIndex++;

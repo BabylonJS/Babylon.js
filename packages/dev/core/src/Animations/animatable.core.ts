@@ -21,6 +21,7 @@ export class Animatable {
     private _scene: Scene;
     private _speedRatio = 1;
     private _weight = -1.0;
+    private _previousWeight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
     private _frameToSyncFromJump: Nullable<number> = null;
     private _goToFrame: Nullable<number> = null;
@@ -438,10 +439,12 @@ export class Animatable {
 
         this._goToFrame = null;
 
-        if (this._weight === 0) {
+        if (this._weight === 0 && this._previousWeight === 0) {
             // We consider that an animatable with a weight === 0 is "actively" paused
             return true;
         }
+
+        this._previousWeight = this._weight;
 
         // Animating
         let running = false;

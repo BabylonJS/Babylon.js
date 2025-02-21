@@ -11,13 +11,13 @@ import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 import { RGBDTextureTools } from "./rgbdTextureTools";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-
-import "../Materials/Textures/baseTexture.polynomial";
-
 import { DumpDataAsync } from "../Misc/dumpTools";
 import { ShaderLanguage } from "core/Materials";
+
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { Engine, WebGPUEngine } from "core/Engines";
+
+import "../Materials/Textures/baseTexture.polynomial";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -44,12 +44,12 @@ interface EnvironmentTextureInfoV1 {
     /**
      * Irradiance information stored in the file.
      */
-    irradiance: any;
+    irradiance: Nullable<EnvironmentTextureIrradianceInfoV1>;
 
     /**
      * Specular information stored in the file.
      */
-    specular: any;
+    specular: EnvironmentTextureSpecularInfoV1;
 }
 
 /**
@@ -69,17 +69,22 @@ interface EnvironmentTextureInfoV2 {
     /**
      * Irradiance information stored in the file.
      */
-    irradiance: any;
+    irradiance: Nullable<EnvironmentTextureIrradianceInfoV1>;
 
     /**
      * Specular information stored in the file.
      */
-    specular: any;
+    specular: EnvironmentTextureSpecularInfoV1;
 
     /**
      * The mime type used to encode the image data.
      */
     imageType: string;
+
+    /**
+     * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+     */
+    binaryDataPosition?: number;
 }
 
 /**
@@ -98,18 +103,30 @@ interface BufferImageData {
 }
 
 /**
+ * Defines the diffuse data enclosed in the file.
+ * This corresponds to the version 1 of the data.
+ */
+export interface EnvironmentTextureIrradianceTextureInfoV1 {
+    /**
+     * Size of the texture faces.
+     */
+    size: number;
+    /**
+     * This contains all the images data needed to reconstruct the cubemap.
+     */
+    faces: Array<BufferImageData>;
+}
+
+/**
  * Defines the specular data enclosed in the file.
  * This corresponds to the version 1 of the data.
  */
 export interface EnvironmentTextureSpecularInfoV1 {
     /**
-     * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
-     */
-    specularDataPosition?: number;
-    /**
      * This contains all the images data needed to reconstruct the cubemap.
      */
     mipmaps: Array<BufferImageData>;
+
     /**
      * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
      */
@@ -131,6 +148,8 @@ interface EnvironmentTextureIrradianceInfoV1 {
     yz: Array<number>;
     zx: Array<number>;
     xy: Array<number>;
+
+    irradianceTexture?: EnvironmentTextureIrradianceTextureInfoV1 | undefined;
 }
 
 /**
@@ -146,6 +165,11 @@ export interface CreateEnvTextureOptions {
      * the image quality of encoded WebP images.
      */
     imageQuality?: number;
+
+    /**
+     * Disables the generation of irradiance texture even if present on the source.
+     */
+    disableIrradianceTexture?: boolean;
 }
 
 /**
@@ -178,9 +202,10 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
 
     let manifest: EnvironmentTextureInfo = JSON.parse(manifestString);
     manifest = normalizeEnvInfo(manifest);
+    // Extend the header with the position of the payload.
+    manifest.binaryDataPosition = pos;
+
     if (manifest.specular) {
-        // Extend the header with the position of the payload.
-        manifest.specular.specularDataPosition = pos;
         // Fallback to 0.8 exactly if lodGenerationScale is not defined for backward compatibility.
         manifest.specular.lodGenerationScale = manifest.specular.lodGenerationScale || 0.8;
     }
@@ -223,8 +248,6 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         return Promise.reject("The cube texture is invalid.");
     }
 
-    const imageType = options.imageType ?? DefaultEnvironmentTextureImageType;
-
     const engine = internalTexture.getEngine();
 
     if (
@@ -255,9 +278,12 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     const cubeWidth = internalTexture.width;
     const hostingScene = new Scene(engine);
     const specularTextures: { [key: number]: ArrayBuffer } = {};
+    const diffuseTextures: { [key: number]: ArrayBuffer } = {};
 
     // As we are going to readPixels the faces of the cube, make sure the drawing/update commands for the cube texture are fully sent to the GPU in case it is drawn for the first time in this very frame!
     engine.flushFramebuffer();
+
+    const imageType = options.imageType ?? DefaultEnvironmentTextureImageType;
 
     // Read and collect all mipmaps data from the cube.
     const mipmapsCount = ILog2(internalTexture.width);
@@ -266,44 +292,18 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
-            let faceData = await texture.readPixels(face, i, undefined, false);
-            if (faceData && faceData.byteLength === (faceData as Uint8Array).length) {
-                const faceDataFloat = new Float32Array(faceData!.byteLength * 4);
-                for (let i = 0; i < faceData.byteLength; i++) {
-                    faceDataFloat[i] = (faceData as Uint8Array)[i] / 255;
-                    // Gamma to linear
-                    faceDataFloat[i] = Math.pow(faceDataFloat[i], 2.2);
-                }
-                faceData = faceDataFloat;
-            } else if (faceData && texture.gammaSpace) {
-                const floatData = faceData as Float32Array;
-                for (let i = 0; i < floatData.length; i++) {
-                    // Gamma to linear
-                    floatData[i] = Math.pow(floatData[i], 2.2);
-                }
-            }
+            specularTextures[i * 6 + face] = await _getTextureEncodedData(hostingScene, texture, textureType, face, i, faceWidth, imageType, options.imageQuality);
+        }
+    }
 
-            const tempTexture = engine.createRawTexture(
-                faceData,
-                faceWidth,
-                faceWidth,
-                Constants.TEXTUREFORMAT_RGBA,
-                false,
-                true,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                null,
-                textureType
-            );
+    // Read and collect all irradiance data from the cube.
+    const irradianceTexture = options.disableIrradianceTexture ? null : texture.irradianceTexture;
+    if (irradianceTexture) {
+        const faceWidth = irradianceTexture.getSize().width;
 
-            await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
-
-            const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
-
-            const imageEncodedData = await DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
-
-            specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
-
-            tempTexture.dispose();
+        // All faces of the cube.
+        for (let face = 0; face < 6; face++) {
+            diffuseTextures[face] = await _getTextureEncodedData(hostingScene, irradianceTexture, textureType, face, 0, faceWidth, imageType, options.imageQuality);
         }
     }
 
@@ -340,6 +340,34 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         }
     }
 
+    // Sets the irradiance image data information
+    if (irradianceTexture) {
+        info.irradiance = info.irradiance || {
+            x: [0, 0, 0],
+            xx: [0, 0, 0],
+            y: [0, 0, 0],
+            yy: [0, 0, 0],
+            z: [0, 0, 0],
+            zz: [0, 0, 0],
+            yz: [0, 0, 0],
+            zx: [0, 0, 0],
+            xy: [0, 0, 0],
+        };
+        info.irradiance.irradianceTexture = {
+            size: irradianceTexture.getSize().width,
+            faces: [],
+        };
+
+        for (let face = 0; face < 6; face++) {
+            const byteLength = diffuseTextures[face].byteLength;
+            info.irradiance.irradianceTexture.faces.push({
+                length: byteLength,
+                position: position,
+            });
+            position += byteLength;
+        }
+    }
+
     // Encode the JSON as an array buffer
     const infoString = JSON.stringify(info);
     const infoBuffer = new ArrayBuffer(infoString.length + 1);
@@ -366,7 +394,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     finalBufferView.set(new Uint8Array(infoBuffer), pos);
     pos += infoBuffer.byteLength;
 
-    // Finally inserts the texture data
+    // Finally inserts the radiance texture data
     for (let i = 0; i <= mipmapsCount; i++) {
         for (let face = 0; face < 6; face++) {
             const dataBuffer = specularTextures[i * 6 + face];
@@ -375,8 +403,62 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         }
     }
 
+    // Finally inserts the irradiance texture data
+    if (irradianceTexture) {
+        for (let face = 0; face < 6; face++) {
+            const dataBuffer = diffuseTextures[face];
+            finalBufferView.set(new Uint8Array(dataBuffer), pos);
+            pos += dataBuffer.byteLength;
+        }
+    }
+
     // Voila
     return finalBuffer;
+}
+
+/**
+ * Get the texture encoded data from the current texture
+ * @internal
+ */
+async function _getTextureEncodedData(
+    hostingScene: Scene,
+    texture: BaseTexture,
+    textureType: number,
+    face: number,
+    i: number,
+    size: number,
+    imageType: string,
+    imageQuality?: number
+) {
+    let faceData = await texture.readPixels(face, i, undefined, false);
+    if (faceData && faceData.byteLength === (faceData as Uint8Array).length) {
+        const faceDataFloat = new Float32Array(faceData!.byteLength * 4);
+        for (let i = 0; i < faceData.byteLength; i++) {
+            faceDataFloat[i] = (faceData as Uint8Array)[i] / 255;
+            // Gamma to linear
+            faceDataFloat[i] = Math.pow(faceDataFloat[i], 2.2);
+        }
+        faceData = faceDataFloat;
+    } else if (faceData && texture.gammaSpace) {
+        const floatData = faceData as Float32Array;
+        for (let i = 0; i < floatData.length; i++) {
+            // Gamma to linear
+            floatData[i] = Math.pow(floatData[i], 2.2);
+        }
+    }
+
+    const engine = hostingScene.getEngine();
+    const tempTexture = engine.createRawTexture(faceData, size, size, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
+
+    await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
+
+    const rgbdEncodedData = await engine._readTexturePixels(tempTexture, size, size);
+
+    const imageEncodedData = await DumpDataAsync(size, size, rgbdEncodedData, imageType, undefined, false, true, imageQuality);
+
+    tempTexture.dispose();
+
+    return imageEncodedData as ArrayBuffer;
 }
 
 /**
@@ -402,7 +484,7 @@ function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<Environment
         yz: [polynmials.yz.x, polynmials.yz.y, polynmials.yz.z],
         zx: [polynmials.zx.x, polynmials.zx.y, polynmials.zx.z],
         xy: [polynmials.xy.x, polynmials.xy.y, polynmials.xy.z],
-    } as any;
+    };
 }
 
 /**
@@ -411,10 +493,10 @@ function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<Environment
  * @param info parameters that determine what views will be created for accessing the underlying buffer
  * @returns the views described by info providing access to the underlying buffer
  */
-export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
+export function CreateRadianceImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
     info = normalizeEnvInfo(info);
 
-    const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+    const specularInfo = info.specular;
 
     // Double checks the enclosed info
     let mipmapsCount = Math.log2(info.width);
@@ -428,7 +510,33 @@ export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: Env
         imageData[i] = new Array<ArrayBufferView>(6);
         for (let face = 0; face < 6; face++) {
             const imageInfo = specularInfo.mipmaps[i * 6 + face];
-            imageData[i][face] = new Uint8Array(data.buffer, data.byteOffset + specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+            imageData[i][face] = new Uint8Array(data.buffer, data.byteOffset + info.binaryDataPosition! + imageInfo.position, imageInfo.length);
+        }
+    }
+
+    return imageData;
+}
+
+/**
+ * Creates the ArrayBufferViews used for initializing environment texture image data.
+ * @param data the image data
+ * @param info parameters that determine what views will be created for accessing the underlying buffer
+ * @returns the views described by info providing access to the underlying buffer
+ */
+export function CreateIrradianceImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<ArrayBufferView> {
+    info = normalizeEnvInfo(info);
+
+    const imageData = new Array<ArrayBufferView>(6);
+
+    const irradianceTexture = info.irradiance?.irradianceTexture;
+    if (irradianceTexture) {
+        if (irradianceTexture.faces.length !== 6) {
+            throw new Error(`Incorrect irradiance texture faces number "${irradianceTexture.faces.length}"`);
+        }
+
+        for (let face = 0; face < 6; face++) {
+            const imageInfo = irradianceTexture.faces[face];
+            imageData[face] = new Uint8Array(data.buffer, data.byteOffset + info.binaryDataPosition! + imageInfo.position, imageInfo.length);
         }
     }
 
@@ -442,20 +550,29 @@ export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: Env
  * @param info defines the texture info retrieved through the GetEnvInfo method
  * @returns a promise
  */
-export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
+export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
     info = normalizeEnvInfo(info);
 
     const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
     if (!specularInfo) {
         // Nothing else parsed so far
-        return Promise.resolve();
+        return Promise.resolve([]);
     }
 
     texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
-    const imageData = CreateImageDataArrayBufferViews(data, info);
+    const promises: Promise<void>[] = [];
 
-    return UploadLevelsAsync(texture, imageData, info.imageType);
+    const radianceImageData = CreateRadianceImageDataArrayBufferViews(data, info);
+    promises.push(UploadRadianceLevelsAsync(texture, radianceImageData, info.imageType));
+
+    const irradianceTexture = info.irradiance?.irradianceTexture;
+    if (irradianceTexture) {
+        const irradianceImageData = CreateIrradianceImageDataArrayBufferViews(data, info);
+        promises.push(UploadIrradianceLevelsAsync(texture, irradianceImageData, irradianceTexture.size, info.imageType));
+    }
+
+    return Promise.all(promises);
 }
 
 function _OnImageReadyAsync(
@@ -530,7 +647,72 @@ function _OnImageReadyAsync(
  * @param imageType the mime type of the image data
  * @returns a promise
  */
-export async function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
+export async function UploadRadianceLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
+    const engine = texture.getEngine() as Engine;
+    texture.format = Constants.TEXTUREFORMAT_RGBA;
+    texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    texture.generateMipMaps = true;
+    texture._cachedAnisotropicFilteringLevel = null;
+    engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
+
+    await _UploadLevelsAsync(texture, imageData, true, imageType);
+
+    // Flag internal texture as ready in case they are in use.
+    texture.isReady = true;
+}
+
+/**
+ * Uploads the levels of image data to the GPU.
+ * @param mainTexture defines the internal texture to upload to
+ * @param imageData defines the array buffer views of image data [mipmap][face]
+ * @param size defines the size of the texture faces
+ * @param imageType the mime type of the image data
+ * @returns a promise
+ */
+export async function UploadIrradianceLevelsAsync(
+    mainTexture: InternalTexture,
+    imageData: ArrayBufferView[],
+    size: number,
+    imageType: string = DefaultEnvironmentTextureImageType
+): Promise<void> {
+    // Gets everything ready.
+    const engine = mainTexture.getEngine() as Engine;
+    const texture = new InternalTexture(engine, InternalTextureSource.RenderTarget);
+    const baseTexture = new BaseTexture(engine, texture);
+    mainTexture._irradianceTexture = baseTexture;
+
+    texture.isCube = true;
+    texture.format = Constants.TEXTUREFORMAT_RGBA;
+    texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    texture.generateMipMaps = true;
+    texture._cachedAnisotropicFilteringLevel = null;
+    texture.generateMipMaps = true;
+    texture.width = size;
+    texture.height = size;
+    engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
+
+    await _UploadLevelsAsync(texture, [imageData], false, imageType);
+
+    engine.generateMipMapsForCubemap(texture);
+
+    // Flag internal texture as ready in case they are in use.
+    texture.isReady = true;
+}
+
+/**
+ * Uploads the levels of image data to the GPU.
+ * @param texture defines the internal texture to upload to
+ * @param imageData defines the array buffer views of image data [mipmap][face]
+ * @param canGenerateNonLODTextures defines whether or not to generate non lod textures
+ * @param imageType the mime type of the image data
+ * @returns a promise
+ */
+async function _UploadLevelsAsync(
+    texture: InternalTexture,
+    imageData: ArrayBufferView[][],
+    canGenerateNonLODTextures: boolean,
+    imageType: string = DefaultEnvironmentTextureImageType
+) {
     if (!Tools.IsExponentOfTwo(texture.width)) {
         throw new Error("Texture size must be a power of two");
     }
@@ -546,20 +728,10 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
     let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
     const caps = engine.getCaps();
 
-    texture.format = Constants.TEXTUREFORMAT_RGBA;
-    texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-    texture.generateMipMaps = true;
-    texture._cachedAnisotropicFilteringLevel = null;
-    engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
-
-    // Add extra process if texture lod is not supported
     if (!caps.textureLOD) {
         expandTexture = false;
-        generateNonLODTextures = true;
-        lodTextures = {};
-    }
-    // in webgl 1 there are no ways to either render or copy lod level information for float textures.
-    else if (!engine._features.supportRenderAndCopyToLodForFloatTextures) {
+        generateNonLODTextures = canGenerateNonLODTextures;
+    } else if (!engine._features.supportRenderAndCopyToLodForFloatTextures) {
         expandTexture = false;
     }
     // If half float available we can uncompress the texture
@@ -620,6 +792,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
         // In case of missing support, applies the same patch than DDS files.
         if (generateNonLODTextures) {
             const mipSlices = 3;
+            lodTextures = {};
             const scale = texture._lodGenerationScale;
             const offset = texture._lodGenerationOffset;
 
@@ -634,6 +807,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
                 const lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                 const mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
+                //compute LOD from even spacing in smoothness (matching shader calculation)
                 const glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
                 glTextureFromLod.isCube = true;
                 glTextureFromLod.invertY = true;
@@ -704,7 +878,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
         const size = Math.pow(2, mipmapsCount - 1 - imageData.length);
         const dataLength = size * size * 4;
         switch (texture.type) {
-            case Constants.TEXTURETYPE_UNSIGNED_INT: {
+            case Constants.TEXTURETYPE_UNSIGNED_BYTE: {
                 data = new Uint8Array(dataLength);
                 break;
             }
@@ -724,30 +898,32 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
         }
     }
 
-    // Once all done, finishes the cleanup and return
-    return Promise.all(promises).then(() => {
-        // Release temp RTT.
-        if (cubeRtt) {
-            engine._releaseTexture(texture);
-            cubeRtt._swapAndDie(texture);
+    await Promise.all(promises);
+
+    // Release temp RTT.
+    if (cubeRtt) {
+        const irradiance = texture._irradianceTexture;
+        texture._irradianceTexture = null;
+        engine._releaseTexture(texture);
+        cubeRtt._swapAndDie(texture);
+        texture._irradianceTexture = irradiance;
+    }
+    // Release temp Post Process.
+    if (rgbdPostProcess) {
+        rgbdPostProcess.dispose();
+    }
+    // Flag internal texture as ready in case they are in use.
+    if (generateNonLODTextures) {
+        if (texture._lodTextureHigh && texture._lodTextureHigh._texture) {
+            texture._lodTextureHigh._texture.isReady = true;
         }
-        // Release temp Post Process.
-        if (rgbdPostProcess) {
-            rgbdPostProcess.dispose();
+        if (texture._lodTextureMid && texture._lodTextureMid._texture) {
+            texture._lodTextureMid._texture.isReady = true;
         }
-        // Flag internal texture as ready in case they are in use.
-        if (generateNonLODTextures) {
-            if (texture._lodTextureHigh && texture._lodTextureHigh._texture) {
-                texture._lodTextureHigh._texture.isReady = true;
-            }
-            if (texture._lodTextureMid && texture._lodTextureMid._texture) {
-                texture._lodTextureMid._texture.isReady = true;
-            }
-            if (texture._lodTextureLow && texture._lodTextureLow._texture) {
-                texture._lodTextureLow._texture.isReady = true;
-            }
+        if (texture._lodTextureLow && texture._lodTextureLow._texture) {
+            texture._lodTextureLow._texture.isReady = true;
         }
-    });
+    }
 }
 
 /**
@@ -798,7 +974,7 @@ export function _UpdateRGBDAsync(
             internalTexture.samplingMode,
             internalTexture._compression
         );
-    const proxyPromise = UploadLevelsAsync(proxy, data).then(() => internalTexture);
+    const proxyPromise = UploadRadianceLevelsAsync(proxy, data).then(() => internalTexture);
     internalTexture.onRebuildCallback = (_internalTexture) => {
         return {
             proxy: proxyPromise,
@@ -812,7 +988,7 @@ export function _UpdateRGBDAsync(
     internalTexture._lodGenerationOffset = lodOffset;
     internalTexture._sphericalPolynomial = sphericalPolynomial;
 
-    return UploadLevelsAsync(internalTexture, data).then(() => {
+    return UploadRadianceLevelsAsync(internalTexture, data).then(() => {
         internalTexture.isReady = true;
         return internalTexture;
     });
@@ -847,7 +1023,15 @@ export const EnvironmentTextureTools = {
      * @param info parameters that determine what views will be created for accessing the underlying buffer
      * @returns the views described by info providing access to the underlying buffer
      */
-    CreateImageDataArrayBufferViews,
+    CreateRadianceImageDataArrayBufferViews,
+
+    /**
+     * Creates the ArrayBufferViews used for initializing environment texture image data.
+     * @param data the image data
+     * @param info parameters that determine what views will be created for accessing the underlying buffer
+     * @returns the views described by info providing access to the underlying buffer
+     */
+    CreateIrradianceImageDataArrayBufferViews,
 
     /**
      * Uploads the texture info contained in the env file to the GPU.
@@ -865,7 +1049,16 @@ export const EnvironmentTextureTools = {
      * @param imageType the mime type of the image data
      * @returns a promise
      */
-    UploadLevelsAsync,
+    UploadRadianceLevelsAsync,
+
+    /**
+     * Uploads the levels of image data to the GPU.
+     * @param texture defines the internal texture to upload to
+     * @param imageData defines the array buffer views of image data [mipmap][face]
+     * @param imageType the mime type of the image data
+     * @returns a promise
+     */
+    UploadIrradianceLevelsAsync,
 
     /**
      * Uploads spherical polynomials information to the texture.
