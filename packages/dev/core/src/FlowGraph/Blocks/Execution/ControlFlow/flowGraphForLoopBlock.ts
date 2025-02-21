@@ -2,22 +2,41 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import type { FlowGraphNumber } from "core/FlowGraph/utils";
+import { getNumericValue } from "core/FlowGraph/utils";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+
 /**
- * @experimental
+ * Configuration for the For Loop block.
+ */
+export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The initial index of the loop.
+     * if not set will default to 0
+     */
+    initialIndex?: FlowGraphNumber;
+}
+/**
  * Block that executes an action in a loop.
  */
 export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The maximum number of iterations allowed for the loop.
+     * If the loop exceeds this number, it will stop. This number is configurable to avoid infinite loops.
+     */
+    public static MaxLoopIterations = 1000;
+    /**
      * Input connection: The start index of the loop.
      */
-    public readonly startIndex: FlowGraphDataConnection<number>;
+    public readonly startIndex: FlowGraphDataConnection<FlowGraphNumber>;
     /**
      * Input connection: The end index of the loop.
      */
-    public readonly endIndex: FlowGraphDataConnection<number>;
+    public readonly endIndex: FlowGraphDataConnection<FlowGraphNumber>;
     /**
      * Input connection: The step of the loop.
      */
@@ -25,56 +44,56 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * Output connection: The current index of the loop.
      */
-    public readonly index: FlowGraphDataConnection<number>;
+    public readonly index: FlowGraphDataConnection<FlowGraphInteger>;
     /**
      * Output connection: The signal that is activated when the loop body is executed.
      */
-    public readonly onLoop: FlowGraphSignalConnection;
+    public readonly executionFlow: FlowGraphSignalConnection;
 
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    /**
+     * Output connection: The completed signal. Triggered when condition is false.
+     * No out signal is available.
+     */
+    public readonly completed: FlowGraphSignalConnection;
+
+    public constructor(config?: IFlowGraphForLoopBlockConfiguration) {
         super(config);
 
-        this.startIndex = this.registerDataInput("startIndex", RichTypeNumber);
-        this.endIndex = this.registerDataInput("endIndex", RichTypeNumber);
-        this.step = this.registerDataInput("step", RichTypeNumber);
+        this.startIndex = this.registerDataInput("startIndex", RichTypeAny, 0);
+        this.endIndex = this.registerDataInput("endIndex", RichTypeAny);
+        this.step = this.registerDataInput("step", RichTypeNumber, 1);
 
-        this.index = this.registerDataOutput("index", RichTypeNumber);
-        this.onLoop = this._registerSignalOutput("onLoop");
-    }
+        this.index = this.registerDataOutput("index", RichTypeFlowGraphInteger, new FlowGraphInteger(getNumericValue(config?.initialIndex ?? 0)));
+        this.executionFlow = this._registerSignalOutput("executionFlow");
+        this.completed = this._registerSignalOutput("completed");
 
-    private _executeLoop(context: FlowGraphContext) {
-        let index = context._getExecutionVariable(this, "index");
-        const endIndex = context._getExecutionVariable(this, "endIndex");
-        if (index < endIndex) {
-            this.index.setValue(index, context);
-            this.onLoop._activateSignal(context);
-            const step = context._getExecutionVariable(this, "step", 1);
-            index += step;
-            context._setExecutionVariable(this, "index", index);
-            this._executeLoop(context);
-        } else {
-            this.out._activateSignal(context);
-        }
+        this._unregisterSignalOutput("out");
     }
 
     /**
      * @internal
      */
     public _execute(context: FlowGraphContext): void {
-        const index = this.startIndex.getValue(context);
-        const endIndex = this.endIndex.getValue(context);
+        const index = getNumericValue(this.startIndex.getValue(context));
         const step = this.step.getValue(context);
-        context._setExecutionVariable(this, "index", index);
-        context._setExecutionVariable(this, "endIndex", endIndex);
-        context._setExecutionVariable(this, "step", step);
-        this._executeLoop(context);
+        let endIndex = getNumericValue(this.endIndex.getValue(context));
+        for (let i = index; i < endIndex; i += step) {
+            this.index.setValue(new FlowGraphInteger(i), context);
+            this.executionFlow._activateSignal(context);
+            endIndex = getNumericValue(this.endIndex.getValue(context));
+            if (i > FlowGraphForLoopBlock.MaxLoopIterations) {
+                break;
+            }
+        }
+
+        this.completed._activateSignal(context);
     }
 
     /**
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGForLoopBlock";
+        return FlowGraphBlockNames.ForLoop;
     }
 }
-RegisterClass("FGForLoopBlock", FlowGraphForLoopBlock);
+RegisterClass(FlowGraphBlockNames.ForLoop, FlowGraphForLoopBlock);

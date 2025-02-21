@@ -1361,58 +1361,161 @@ declare module BABYLON.GLTF2 {
      * Interfaces for the KHR_interactivity extension
      */
     interface IKHRInteractivity {
-        nodes: IKHRInteractivity_Node[];
-        customEvents?: IKHRInteractivity_CustomEvent[];
-        types?: IKHRInteractivity_Type[];
+        /**
+         * Holding all of the graphs in the glTF
+         */
+        graphs: IKHRInteractivity_Graph[];
+        /**
+         * The graph to run. Defaults to index 0
+         */
+        graph?: number;
+    }
+
+    interface IKHRInteractivity_Graph {
+        types?: IKHRInteractivity_Type /* | IKHRInteractivity_CustomType */[]; // should technically behave as a set - no two signatures should match
         variables?: IKHRInteractivity_Variable[];
+        events?: IKHRInteractivity_Event[];
+        declarations?: IKHRInteractivity_Declaration[];
+        nodes?: IKHRInteractivity_Node[];
     }
 
-    interface IKHRInteractivity_Node {
-        type: string;
-        flows?: IKHRInteractivity_Flow[];
-        configuration?: IKHRInteractivity_Configuration[];
-        values?: IKHRInteractivity_Value[];
-        metadata?: any;
-    }
+    /**
+     * An index of the types array
+     */
+    type TypeIndex = number;
+    /**
+     * An index of the declaration array
+     */
+    type DeclarationIndex = number;
 
-    interface IKHRInteractivity_Flow {
-        id: string;
-        node: number;
-        socket: string;
-    }
+    /**
+     * An index of the nodes array
+     */
+    type NodeIndex = number;
+    /**
+     * Value types supported (in js it is either boolean or number)
+     */
+    type ValueType = (boolean | number)[];
 
-    interface IKHRInteractivity_Configuration {
-        id: string;
-        value: any;
-        type?: number;
-    }
+    type ValueSignature = "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "custom";
 
-    interface IKHRInteractivity_Value {
-        id: string;
-        value?: any;
-        node?: number;
-        socket?: string;
-        type?: number;
-    }
+    type ConfigurationValueSignature = "bool" | "int" | "int[]" | "string";
 
-    interface IKHRInteractivity_CustomEvent {
-        id: string;
-        values: IKHRInteractivity_CustomEventValue[];
-    }
+    type ConfigurationValueType = (boolean | number | string)[];
 
-    interface IKHRInteractivity_CustomEventValue {
-        id: string;
-        type: number;
-        description: string;
+    interface IKHRInteractivity_Event {
+        /**
+         * The event id is an application-specific event identifier recognized by the execution environment. If the id property is undefined, the event is considered internal to the graph.
+         */
+        id?: string;
+        /**
+         * The properties of the values object define ids and the values of those properties define types and optional initial values of the value sockets associated with the event.
+         */
+        values?:
+            | {
+                  [id: string]: IKHRInteractivity_Variable;
+              }
+            | undefined;
     }
 
     interface IKHRInteractivity_Type {
-        signature: string;
+        /**
+         * A signature of this type or custom if defined by an external extension
+         */
+        signature: ValueSignature;
     }
 
+    // interface IKHRInteractivity_CustomType {
+    //     signature: string;
+    // }
+
     interface IKHRInteractivity_Variable {
-        id: string;
-        value: any;
-        type: number;
+        /**
+         * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
+         * if value is not provided it should be initialized to the default value of the type according to the specs - NaN for floats, 0 for integers, false for booleans.
+         */
+        value?: ValueType;
+        /**
+         * An index in the types array
+         */
+        type: TypeIndex;
+    }
+
+    /**
+     * a KHR_Interactivity operation declaration.
+     * Declarations are considered equal when their op, extension and input values are equal.
+     * If stating an external extension it is possible the declaration is not supported by the engine. In this case the operation will be a no-op
+     */
+    interface IKHRInteractivity_Declaration {
+        /**
+         * the operation identifier.
+         * Either defined by the interactivity extension or a custom operation by an external extension
+         */
+        op: string;
+        /**
+         * If the op is not defined by the interactivity specs, this states the extension that defines the operation
+         */
+        extension?: string;
+        /**
+         * If custom operation, this is the output values signatures of the event
+         * if undefined the custom operation has no outputs
+         */
+        outputValueSockets?: { [id: string]: { type: TypeIndex } };
+        /**
+         * if custom operation, this is the input values signatures of the event
+         * If undefined the custom operation has no inputs
+         */
+        inputValueSockets?: { [id: string]: { type: TypeIndex } };
+    }
+
+    interface IKHRInteractivity_Node {
+        /**
+         * An index in the declarations array
+         */
+        declaration: DeclarationIndex;
+        /**
+         * Input value sockets
+         */
+        values?: { [id: string]: IKHRInteractivity_Variable | IKHRInteractivity_OutputSocketReference };
+
+        /**
+         * Output Flow Socket Pointers
+         */
+        flows?: { [id: string]: IKHRInteractivity_OutputFlow };
+        configuration?: { [id: string]: IKHRInteractivity_Configuration };
+    }
+
+    interface IKHRInteractivity_OutputSocketReference {
+        /**
+         * An index in the nodes array
+         */
+        node: NodeIndex;
+        /**
+         * Must be defined if the node doesn't have a "value" output socket
+         */
+        socket?: string;
+        /**
+         * An optional type that must match the type of the output socket of the target node
+         */
+        type?: TypeIndex;
+    }
+
+    interface IKHRInteractivity_OutputFlow {
+        /**
+         * An index in the nodes array
+         */
+        node: NodeIndex;
+        /**
+         * The socket to connect to in the target node
+         * defaults to "in" when undefined.
+         */
+        socket?: string;
+    }
+
+    interface IKHRInteractivity_Configuration {
+        /**
+         * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
+         */
+        value: ConfigurationValueType;
     }
 }

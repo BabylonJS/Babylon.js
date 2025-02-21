@@ -2,11 +2,11 @@ import type { IObjectInfo, IPathToObjectConverter } from "../ObjectModel/objectM
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 
-const pathHasTemplatesRegex = new RegExp(/\{(\w+)\}/g);
+const pathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}\//g);
 
 /**
  * @experimental
@@ -22,17 +22,32 @@ export class FlowGraphPathConverterComponent {
         public ownerBlock: FlowGraphBlock
     ) {
         let match = pathHasTemplatesRegex.exec(path);
+        const templateSet = new Set<string>();
         while (match) {
             const [, matchGroup] = match;
-            this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger));
+            if (templateSet.has(matchGroup)) {
+                throw new Error("Duplicate template variable detected.");
+            }
+            templateSet.add(matchGroup);
+            this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger, new FlowGraphInteger(0)));
             match = pathHasTemplatesRegex.exec(path);
         }
     }
 
+    /**
+     * Get the accessor for the path.
+     * @param pathConverter the path converter to use to convert the path to an object accessor.
+     * @param context the context to use.
+     * @returns the accessor for the path.
+     * @throws if the value for a templated input is invalid.
+     */
     public getAccessor(pathConverter: IPathToObjectConverter<IObjectAccessor>, context: FlowGraphContext): IObjectInfo<IObjectAccessor> {
         let finalPath = this.path;
         for (const templatedInput of this.templatedInputs) {
             const valueToReplace = templatedInput.getValue(context).value;
+            if (typeof valueToReplace !== "number" || valueToReplace < 0) {
+                throw new Error("Invalid value for templated input.");
+            }
             finalPath = finalPath.replace(`{${templatedInput.name}}`, valueToReplace.toString());
         }
         return pathConverter.convert(finalPath);
