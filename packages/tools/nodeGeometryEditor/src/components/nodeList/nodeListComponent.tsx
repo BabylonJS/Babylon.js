@@ -149,6 +149,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         LatticeBlock: "Block used to apply Lattice on geometry",
         AggregatorBlock: "Block used to aggregate values from a geometry",
         CleanGeometryBlock: "Try to clean a geometry",
+        SubdivideBlock: "Subdivide a geometry using Catmull-Clark algorithm",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -341,6 +342,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MappingBlock",
                 "LatticeBlock",
                 "AggregatorBlock",
+                "SubdivideBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Textures: ["TextureBlock", "TextureFetchBlock"],

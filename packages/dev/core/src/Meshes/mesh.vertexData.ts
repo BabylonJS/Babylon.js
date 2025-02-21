@@ -1414,7 +1414,7 @@ export class VertexData implements IVertexDataLike {
             serializationObject.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
         }
 
-        serializationObject.indices = Array.from(this.indices as number[]);
+        serializationObject.indices = this.indices ? Array.from(this.indices as number[]) : [];
 
         if (this.materialInfos) {
             serializationObject.materialInfos = [];
