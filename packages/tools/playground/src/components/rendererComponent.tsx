@@ -424,7 +424,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                                     schema: Array.from(recorder[P_ACTION_RECORDER].schemaMap.entries()),
                                     frames: recorder[P_ACTION_RECORDER].compressedFrames,
                                 };
-                                debugger;
                                 const date = new Date().toISOString().replace("T", "_").split(".")[0];
                                 const filename = `${(this.props.globalState.currentSnippetToken || 'snippet')}-${date}.json`;
                                 StringTools.DownloadAsFile(document, JSON.stringify(out), filename, 'application/json');
