@@ -25,7 +25,7 @@ export class FlowGraphFunctionReferenceBlock extends FlowGraphBlock {
      */
     public readonly context: FlowGraphDataConnection<any>;
     /**
-     * A the function functionName from the object, bound to the context.
+     * The function referenced by functionName from the object, bound to the context.
      */
     public readonly output: FlowGraphDataConnection<Function>;
 
