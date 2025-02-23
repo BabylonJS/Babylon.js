@@ -92,6 +92,10 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
 
     test.afterEach(async () => {
         await page.evaluate(() => {
+            const exitXRButton = document.getElementsByClassName('babylonVRicon')[0] as HTMLButtonElement;
+            if (exitXRButton){
+                exitXRButton.click();
+            }
             window.engine && window.engine.dispose();
             window.scene = null;
             window.engine = null;
@@ -113,12 +117,31 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             page.on("console", logCallback);
             console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
             test.setTimeout(timeout);
+            let xrActions = null;
+            if (testCase.isWebXR){
+                await page.evaluate(() => {
+                    return new Promise<void>((resolve) => {
+                        const immersiveWebEmulationRuntimeScript = "https://unpkg.com/iwer@2.0.1/build/iwer.min.js";
+                        const script = document.createElement("script");
+                        script.src = immersiveWebEmulationRuntimeScript;
+                        script.onload = () => {
+                            const xrDevice = new IWER.XRDevice(IWER.metaQuest3);
+                            xrDevice.installRuntime();
+                            window.xrDevice = xrDevice;
+                            resolve();
+                        };
+                        document.head.appendChild(script);
+                    })
+                });
+                const xrActionsPath = path.resolve(__dirname, "../visualization/XRActions", testCase.actions);
+                xrActions = JSON.parse(fs.readFileSync(xrActionsPath , "utf-8"));
+            }
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
                 globalConfig: getGlobalConfig({ root: config.root }),
             });
             const renderCount = testCase.renderCount || 1;
-            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, { renderCount });
+            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, { renderCount, xrActions });
             expect(renderResult).toBeTruthy();
             if (engineType.startsWith("webgl")) {
                 const glError = await page.evaluate(evaluateIsGLError);
@@ -355,7 +378,7 @@ export const evaluatePrepareScene = async ({
     return true;
 };
 
-export const evaluateRenderSceneForVisualization = async ({ renderCount }: { renderCount: number }) => {
+export const evaluateRenderSceneForVisualization = async ({ renderCount, xrActions }: { renderCount: number, xrActions: unknown }) => {
     return new Promise((resolve) => {
         if (!window.scene || !window.engine) {
             return resolve(false);
@@ -363,7 +386,14 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount }: { ren
         BABYLON.SceneLoader.ShowLoadingScreen = false;
         window.scene.useConstantAnimationDeltaTime = true;
 
+        const enterXRButton = document.getElementsByClassName('babylonVRicon')[0] as HTMLButtonElement;
+        if (enterXRButton){
+            enterXRButton.click();
+        }
+        
         window.scene.executeWhenReady(function () {
+            let player = {} as any;
+
             if (!window.scene || !window.engine) {
                 return resolve(false);
             }
@@ -377,19 +407,24 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount }: { ren
             let renderAfterGuiIsReadyCount = 1;
             window.engine.runRenderLoop(function () {
                 try {
-                    if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
-                        if (window.scene!.isReady()) {
-                            window.engine && window.engine.stopRenderLoop();
-                            return resolve(true);
-                        } else {
-                            console.error("Scene is not ready after rendering is done");
-                            return resolve(false);
-                        }
+                    // keep rendering the scene when you are in XR
+                    if (enterXRButton){
+                        window.scene!.render();
                     } else {
-                        window.scene && window.scene.render();
-                        renderCount--;
-                        if (adtsAreReady()) {
-                            renderAfterGuiIsReadyCount--;
+                        if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
+                            if (window.scene!.isReady()) {
+                                window.engine && window.engine.stopRenderLoop();
+                                return resolve(true);
+                            } else {
+                                console.error("Scene is not ready after rendering is done");
+                                return resolve(false);
+                            }
+                        } else {
+                            window.scene && window.scene.render();
+                            renderCount--;
+                            if (adtsAreReady()) {
+                                renderAfterGuiIsReadyCount--;
+                            }
                         }
                     }
                 } catch (e) {
@@ -398,6 +433,15 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount }: { ren
                     return resolve(false);
                 }
             });
+            const xrSessionManager = window.scene._webXRDefaultExperience?.baseExperience.sessionManager;
+            if (xrSessionManager){    
+                xrSessionManager.onXRReady.add(() => {
+                    player = window.xrDevice.createActionPlayer(xrSessionManager.baseReferenceSpace, xrActions);
+                    // rewrite stop function otherwise IWER's stop function restore camera and controllers to initial position
+                    player.stop = () => { resolve(true) };
+                    player.play();
+                });
+            }
         }, true);
     });
 };

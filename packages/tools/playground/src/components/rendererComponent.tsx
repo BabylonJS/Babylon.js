@@ -5,7 +5,9 @@ import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, EngineStore, WebGPUEngine } from "@dev/core";
 
-import type { Nullable, Scene } from "@dev/core";
+import type { Nullable, Scene, WebXRDefaultExperience } from "@dev/core";
+import { StringTools } from "shared-ui-components/stringTools";
+import { ActionRecorder, P_ACTION_RECORDER } from "iwer";
 
 import "../scss/rendering.scss";
 
@@ -298,7 +300,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                             if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
                                 this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
                             }
-                        }
+                        }                        
                     });
                 };
                 code += "\r\nstartRenderLoop(engine, canvas);";
@@ -358,6 +360,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 globalObject.scene.then((s: Scene) => {
                     this._scene = s;
                     globalObject.scene = this._scene;
+                    if (Utilities.ReadBoolFromStore("record-xr-session", false)){
+                        this._addRecordActions();
+                    }
                 });
             } else {
                 this._scene = globalObject.scene as Scene;
@@ -395,6 +400,51 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
+    }
+
+    private _addRecordActions(){
+
+            let recorder: ActionRecorder;
+            let isRecording = true;
+
+            const webXrDefaultExperience = this._scene!._webXRDefaultExperience as WebXRDefaultExperience;
+            const xrSessionManager = webXrDefaultExperience.baseExperience.sessionManager;
+
+            webXrDefaultExperience.input.onControllerAddedObservable.add((controller) => {
+                controller.onMotionControllerInitObservable.add((motionController) => {
+                if (motionController.handness === 'right') {
+                    const xr_ids = motionController.getComponentIds();
+                    // TODO: change it with another less common button (maybe button menu?)
+                    const abuttonComponent = motionController.getComponent(xr_ids[3]); //a-button
+                    if (abuttonComponent){
+                        abuttonComponent.onButtonStateChangedObservable.add(() => {
+                            if (abuttonComponent.pressed) {
+                                isRecording = false;
+                                const out = {
+                                    schema: Array.from(recorder[P_ACTION_RECORDER].schemaMap.entries()),
+                                    frames: recorder[P_ACTION_RECORDER].compressedFrames,
+                                };
+                                debugger;
+                                const date = new Date().toISOString().replace("T", "_").split(".")[0];
+                                const filename = `${(this.props.globalState.currentSnippetToken || 'snippet')}-${date}.json`;
+                                StringTools.DownloadAsFile(document, JSON.stringify(out), filename, 'application/json');
+                            }
+                        });
+                    }
+                }
+                })
+            })
+
+            webXrDefaultExperience.baseExperience.onInitialXRPoseSetObservable.add(() => {
+                recorder = new ActionRecorder(xrSessionManager.session, xrSessionManager.referenceSpace);
+                isRecording = true;
+            });
+
+            xrSessionManager.onXRFrameObservable.add((xrFrame) => {
+                if (isRecording) {
+                    recorder.recordFrame(xrFrame);
+                }
+            });
     }
 
     public override render() {

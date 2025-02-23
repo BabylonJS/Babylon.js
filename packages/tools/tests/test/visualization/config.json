@@ -2514,6 +2514,12 @@
             "title": "Hide Loading Screen",
             "playgroundId": "#EQP888#8",
             "referenceImage": "Hide-Loading-Screen.png"
+        },
+        {
+            "title": "VR Test",
+            "playgroundId": "#F41V6N#2096",
+            "isWebXR": true,
+            "actions": "F41V6N-2025-02-22_18_35_38.json"
         }
     ]
 }
