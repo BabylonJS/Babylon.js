@@ -5,11 +5,12 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
  * A block that counts the number of times it has been called.
+ * Afterwards it activates its out signal.
  */
-export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal {
+export class FlowGraphCallCounterBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Output connection: The number of times the block has been called.
      */
@@ -32,7 +33,7 @@ export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal 
             this.count.setValue(0, context);
             return;
         }
-        const countValue = (context._getExecutionVariable(this, "count") ?? 0) + 1;
+        const countValue = context._getExecutionVariable(this, "count", 0) + 1;
 
         context._setExecutionVariable(this, "count", countValue);
         this.count.setValue(countValue, context);
@@ -43,7 +44,7 @@ export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal 
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGCounterBlock";
+        return FlowGraphBlockNames.CallCounter;
     }
 }
-RegisterClass("FGCounterBlock", FlowGraphCounterBlock);
+RegisterClass(FlowGraphBlockNames.CallCounter, FlowGraphCallCounterBlock);

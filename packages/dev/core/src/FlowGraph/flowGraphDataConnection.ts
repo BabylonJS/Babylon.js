@@ -1,22 +1,38 @@
+import type { Nullable } from "core/types";
 import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
-import { RichType } from "./flowGraphRichTypes";
+import type { RichType } from "./flowGraphRichTypes";
+import { Observable } from "core/Misc/observable";
+import { defaultValueSerializationFunction } from "./serialization";
 /**
- * @experimental
  * Represents a connection point for data.
  * An unconnected input point can have a default value.
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
+    private _isDiabled: boolean = false;
+
+    /**
+     * a data transformer function, if needed.
+     * This can be used, for example, to force seconds into milliseconds output, if it makes sense in your case.
+     */
+    public dataTransformer: Nullable<(value: T) => T> = null;
+
+    /**
+     * An observable that is triggered when the value of the connection changes.
+     */
+    public onValueChangedObservable = new Observable<T>();
     /**
      * Create a new data connection point.
-     * @param name
-     * @param connectionType
-     * @param ownerBlock
-     * @param richType
+     * @param name the name of the connection
+     * @param connectionType the type of the connection
+     * @param ownerBlock the block that owns this connection
+     * @param richType the type of the data in this block
+     * @param _defaultValue the default value of the connection
+     * @param _optional if the connection is optional
      */
     public constructor(
         name: string,
@@ -25,9 +41,43 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         /**
          * the type of the data in this block
          */
-        public richType: RichType<T>
+        public richType: RichType<T>,
+        /**
+         * [any] the default value of the connection
+         */
+        private _defaultValue: T = richType.defaultValue,
+        /**
+         * [false] if the connection is optional
+         */
+        private _optional: boolean = false
     ) {
         super(name, connectionType, ownerBlock);
+    }
+
+    /**
+     * Whether or not the connection is optional.
+     * Currently only used for UI control.
+     */
+    public get optional(): boolean {
+        return this._optional;
+    }
+
+    /**
+     * is this connection disabled
+     * If the connection is disabled you will not be able to connect anything to it.
+     */
+    public get isDisabled(): boolean {
+        return this._isDiabled;
+    }
+
+    public set isDisabled(value: boolean) {
+        if (this._isDiabled === value) {
+            return;
+        }
+        this._isDiabled = value;
+        if (this._isDiabled) {
+            this.disconnectFromAll();
+        }
     }
 
     /**
@@ -45,7 +95,20 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param context the context to which the value is set
      */
     public setValue(value: T, context: FlowGraphContext): void {
+        // check if the value is different
+        if (context._getConnectionValue(this) === value) {
+            return;
+        }
         context._setConnectionValue(this, value);
+        this.onValueChangedObservable.notifyObservers(value);
+    }
+
+    /**
+     * Reset the value of the connection to the default value.
+     * @param context the context in which the value is reset
+     */
+    public resetToDefaultValue(context: FlowGraphContext): void {
+        context._setConnectionValue(this, this._defaultValue);
     }
 
     /**
@@ -53,15 +116,15 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param point the point to connect to.
      */
     public override connectTo(point: FlowGraphDataConnection<T>): void {
+        if (this._isDiabled) {
+            return;
+        }
         super.connectTo(point);
     }
 
     private _getValueOrDefault(context: FlowGraphContext): T {
-        if (context._hasConnectionValue(this)) {
-            return context._getConnectionValue(this);
-        } else {
-            return this.richType.defaultValue;
-        }
+        const val = context._getConnectionValue(this) ?? this._defaultValue;
+        return this.dataTransformer ? this.dataTransformer(val) : val;
     }
 
     /**
@@ -87,7 +150,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @returns class name of the object.
      */
     public override getClassName(): string {
-        return "FGDataConnection";
+        return "FlowGraphDataConnection";
     }
 
     /**
@@ -98,19 +161,9 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         super.serialize(serializationObject);
         serializationObject.richType = {};
         this.richType.serialize(serializationObject.richType);
-    }
-
-    /**
-     * Parses a data connection from a serialized object.
-     * @param serializationObject the object to parse from
-     * @param ownerBlock the block that owns the connection
-     * @returns the parsed connection
-     */
-    public static override Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
-        const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
-        obj.richType = RichType.Parse(serializationObject.richType);
-        return obj;
+        serializationObject.optional = this._optional;
+        defaultValueSerializationFunction("defaultValue", this._defaultValue, serializationObject);
     }
 }
 
-RegisterClass("FGDataConnection", FlowGraphDataConnection);
+RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);
