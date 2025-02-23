@@ -91,6 +91,9 @@ void main(void) {
 #ifdef UV2
     vec2 uv2Updated = uv2;
 #endif
+#ifdef VERTEXCOLOR
+    vec4 colorUpdated = color;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]

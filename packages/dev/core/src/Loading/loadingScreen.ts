@@ -263,7 +263,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingText = text;
 
         if (this._loadingTextDiv) {
-            this._loadingTextDiv.innerHTML = this._loadingText;
+            this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+                // set loadingTextDiv of current loadingDiv
+                loadingDiv.children[0].innerHTML = this._loadingText;
+            });
         }
     }
 

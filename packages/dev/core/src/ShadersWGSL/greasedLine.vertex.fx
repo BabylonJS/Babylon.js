@@ -49,33 +49,23 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
         let grlNext: vec3f = input.grl_nextAndCounters.xyz;
         vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
+        let grlWidth:f32 = grlBaseWidth * input.grl_widths;
 
         #ifdef GREASED_LINE_USE_OFFSETS
             var grlPositionOffset: vec3f = input.grl_offsets;
         #else
             var grlPositionOffset = vec3f(0.);
         #endif
-        let grlFinalPosition: vec4f = grlMatrix * vec4f(vertexInputs.position + grlPositionOffset , 1.0);
-        let grlPrevPos: vec4f = grlMatrix * vec4f(grlPrevious + grlPositionOffset, 1.0);
-        let grlNextPos: vec4f = grlMatrix * vec4f(grlNext + grlPositionOffset, 1.0);
-
-        let grlCurrentP: vec2f = grlFix(grlFinalPosition, uniforms.grlAspect);
-        let grlPrevP: vec2f = grlFix(grlPrevPos, uniforms.grlAspect);
-        let grlNextP: vec2f= grlFix(grlNextPos, uniforms.grlAspect);
-
-        let grlWidth:f32 = grlBaseWidth * input.grl_widths;
-
-        var grlDir: vec2f;
-        if (all(grlNextP == grlCurrentP)) {
-            grlDir = normalize(grlCurrentP - grlPrevP);
-        } else if (all(grlPrevP == grlCurrentP)) {
-            grlDir = normalize(grlNextP - grlCurrentP);
-        } else {
-            let grlDir1: vec2f = normalize(grlCurrentP - grlPrevP);
-            let grlDir2: vec2f = normalize(grlNextP - grlCurrentP);
-            grlDir = normalize(grlDir1 + grlDir2);
-        }
-
+        let positionUpdated: vec3f = vertexInputs.position + grlPositionOffset;
+        
+        let worldDir: vec3f = normalize(grlNext - grlPrevious);
+        let nearPosition: vec3f = positionUpdated + (worldDir * 0.001);
+        let grlFinalPosition: vec4f = grlMatrix * vec4f(positionUpdated, 1.0);
+        let screenNearPos: vec4f = grlMatrix * vec4(nearPosition, 1.0);
+        let grlLinePosition: vec2f = grlFix(grlFinalPosition, uniforms.grlAspect);
+        let grlLineNearPosition: vec2f = grlFix(screenNearPos, uniforms.grlAspect);
+        let grlDir: vec2f = normalize(grlLineNearPosition - grlLinePosition);
+       
         var grlNormal: vec4f = vec4f(-grlDir.y, grlDir.x, 0.0, 1.0);
 
         let grlHalfWidth: f32 = 0.5 * grlWidth;

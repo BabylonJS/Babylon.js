@@ -56,16 +56,49 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * @internal
  **/
 export class _CreationDataStorage {
+    /**
+     *
+     */
     public closePath?: boolean;
+    /**
+     *
+     */
     public closeArray?: boolean;
+    /**
+     *
+     */
     public idx: number[];
+    /**
+     *
+     */
     public dashSize: number;
+    /**
+     *
+     */
     public gapSize: number;
+    /**
+     *
+     */
     public path3D: Path3D;
+    /**
+     *
+     */
     public pathArray: Vector3[][];
+    /**
+     *
+     */
     public arc: number;
+    /**
+     *
+     */
     public radius: number;
+    /**
+     *
+     */
     public cap: number;
+    /**
+     *
+     */
     public tessellation: number;
 }
 
@@ -97,9 +130,21 @@ class _InstanceDataStorage {
  * @internal
  **/
 export class _InstancesBatch {
+    /**
+     *
+     */
     public mustReturn = false;
+    /**
+     *
+     */
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
+    /**
+     *
+     */
     public renderSelf: boolean[] = [];
+    /**
+     *
+     */
     public hardwareInstancedRendering: boolean[] = [];
 }
 
@@ -3026,9 +3071,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @param forceUnique indicates whether to force the mesh geometry to be unique
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true, forceUnique: boolean = false): Mesh {
+        if (forceUnique) {
+            this.makeGeometryUnique();
+        }
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
         this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;
@@ -3390,6 +3439,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const uvs = target.getUVs();
                 if (uvs) {
                     target.setUVs(separateVertices(uvs, 2));
+                }
+
+                const colors = target.getColors();
+                if (colors) {
+                    target.setColors(separateVertices(colors, 4));
                 }
             }
             this.morphTargetManager.synchronize();
@@ -4128,6 +4182,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (uv2s) {
                     this.geometry.setVerticesData(VertexBuffer.UV2Kind + "_" + index, uv2s, false, 2);
                 }
+
+                const colors = morphTarget.getColors();
+                if (colors) {
+                    this.geometry.setVerticesData(VertexBuffer.ColorKind + index, colors, false, 4);
+                }
             }
         } else {
             let index = 0;
@@ -4147,6 +4206,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.ColorKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.ColorKind + index);
                 }
                 index++;
             }

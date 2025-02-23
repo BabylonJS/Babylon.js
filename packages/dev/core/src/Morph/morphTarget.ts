@@ -28,6 +28,7 @@ export class MorphTarget implements IAnimatable {
     private _tangents: Nullable<FloatArray> = null;
     private _uvs: Nullable<FloatArray> = null;
     private _uv2s: Nullable<FloatArray> = null;
+    private _colors: Nullable<FloatArray> = null;
     private _influence: number;
     private _uniqueId = 0;
 
@@ -144,6 +145,10 @@ export class MorphTarget implements IAnimatable {
         return !!this._uv2s;
     }
 
+    public get hasColors(): boolean {
+        return !!this._colors;
+    }
+
     /**
      * Gets the number of vertices stored in this target
      */
@@ -158,7 +163,9 @@ export class MorphTarget implements IAnimatable {
                   ? this._uvs.length / 2
                   : this._uv2s
                     ? this._uv2s.length / 2
-                    : 0;
+                    : this._colors
+                      ? this._colors.length / 4
+                      : 0;
     }
 
     /**
@@ -272,6 +279,28 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Affects color data to this target
+     * @param data defines the color data to use
+     */
+    public setColors(data: Nullable<FloatArray>) {
+        const hadColors = this.hasColors;
+
+        this._colors = data;
+
+        if (hadColors !== this.hasColors) {
+            this._onDataLayoutChanged.notifyObservers(undefined);
+        }
+    }
+
+    /**
+     * Gets the color data stored in this target
+     * @returns a FloatArray containing the color data (or null if not present)
+     */
+    public getColors(): Nullable<FloatArray> {
+        return this._colors;
+    }
+
+    /**
      * Clone the current target
      * @returns a new MorphTarget
      */
@@ -283,6 +312,7 @@ export class MorphTarget implements IAnimatable {
         newOne._tangents = this._tangents;
         newOne._uvs = this._uvs;
         newOne._uv2s = this._uv2s;
+        newOne._colors = this._colors;
 
         return newOne;
     }
@@ -312,6 +342,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (this.hasUV2s) {
             serializationObject.uv2s = Array.prototype.slice.call(this.getUV2s());
+        }
+        if (this.hasColors) {
+            serializationObject.colors = Array.prototype.slice.call(this.getColors());
         }
 
         // Animations
@@ -355,6 +388,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (serializationObject.uv2s) {
             result.setUV2s(serializationObject.uv2s);
+        }
+        if (serializationObject.colors) {
+            result.setColors(serializationObject.colors);
         }
 
         // Animations
@@ -408,6 +444,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
             result.setUV2s(<FloatArray>mesh.getVerticesData(VertexBuffer.UV2Kind));
+        }
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+            result.setColors(<FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind));
         }
 
         return result;

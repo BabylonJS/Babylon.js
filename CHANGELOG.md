@@ -1,5 +1,50 @@
 # Changelog
 
+## 7.50.0
+
+### Core
+
+- Prevent multiple instances of Manifold from being created - by [klibertowski](https://github.com/klibertowski) ([#16200](https://github.com/BabylonJS/Babylon.js/pull/16200))
+- Add offset to instantiate nodes - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16198](https://github.com/BabylonJS/Babylon.js/pull/16198))
+- Enhance XR pointer handling and drag behavior improvements - by [RaananW](https://github.com/RaananW) ([#16195](https://github.com/BabylonJS/Babylon.js/pull/16195))
+- Add Flag for bakeCurrentTransformIntoVertices - by [Pryme8](https://github.com/Pryme8) ([#16197](https://github.com/BabylonJS/Babylon.js/pull/16197))
+- Fix script error when no mesh is in the scene for camera framing behavior - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16194](https://github.com/BabylonJS/Babylon.js/pull/16194))
+- NME: Fix global worldPos and worldNormal not declared in "Generate only fragment code" mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16190](https://github.com/BabylonJS/Babylon.js/pull/16190))
+- NME: Add support for velocity to prepass output block - by [Popov72](https://github.com/Popov72) ([#16191](https://github.com/BabylonJS/Babylon.js/pull/16191))
+- Screenshot tool: Use the right mesh list - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16187](https://github.com/BabylonJS/Babylon.js/pull/16187))
+- FrameGraph: add support for utility layer renderers - by [Popov72](https://github.com/Popov72) ([#16185](https://github.com/BabylonJS/Babylon.js/pull/16185))
+- GreasedLine screen space vertex shaders - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16186](https://github.com/BabylonJS/Babylon.js/pull/16186))
+- add vertex color morph target - by [kmatzen](https://github.com/kmatzen) ([#16179](https://github.com/BabylonJS/Babylon.js/pull/16179))
+- WebGPU: Fix GPU buffers update when parameters are not aligned - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16110](https://github.com/BabylonJS/Babylon.js/pull/16110))
+
+### GUI
+
+- FrameGraph: add support for utility layer renderers - by [Popov72](https://github.com/Popov72) ([#16185](https://github.com/BabylonJS/Babylon.js/pull/16185))
+
+### Inspector
+
+- Fix Inspector metadata update - by [ryantrem](https://github.com/ryantrem) ([#16188](https://github.com/BabylonJS/Babylon.js/pull/16188))
+- FrameGraph: add support for utility layer renderers - by [Popov72](https://github.com/Popov72) ([#16185](https://github.com/BabylonJS/Babylon.js/pull/16185))
+
+### Loaders
+
+- add vertex color morph target - by [kmatzen](https://github.com/kmatzen) ([#16179](https://github.com/BabylonJS/Babylon.js/pull/16179))
+- WebGPU: Fix GPU buffers update when parameters are not aligned - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16110](https://github.com/BabylonJS/Babylon.js/pull/16110))
+
+### Materials
+
+- add vertex color morph target - by [kmatzen](https://github.com/kmatzen) ([#16179](https://github.com/BabylonJS/Babylon.js/pull/16179))
+
+### Serializers
+
+- Account for scaling in AdjustOffsetForRotationCenter - by [alexchuber](https://github.com/alexchuber) ([#16199](https://github.com/BabylonJS/Babylon.js/pull/16199))
+- add vertex color morph target - by [kmatzen](https://github.com/kmatzen) ([#16179](https://github.com/BabylonJS/Babylon.js/pull/16179))
+
+### Viewer
+
+- Viewer: enable WebGPU by default (conditionally) - by [ryantrem](https://github.com/ryantrem) ([#16189](https://github.com/BabylonJS/Babylon.js/pull/16189))
+- Animations, reframeCamera, pick multiple models - by [alexandremottet](https://github.com/alexandremottet) ([#16145](https://github.com/BabylonJS/Babylon.js/pull/16145))
+
 ## 7.49.0
 
 ### Core

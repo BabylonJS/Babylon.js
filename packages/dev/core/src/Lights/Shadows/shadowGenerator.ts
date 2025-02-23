@@ -1596,6 +1596,7 @@ export class ShadowGenerator implements IShadowGenerator {
             let useNormal = false;
             let uv1 = false;
             let uv2 = false;
+            const color = false;
 
             // Normal bias.
             if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -1677,7 +1678,8 @@ export class ShadowGenerator implements IShadowGenerator {
                       useNormal, // useNormalMorph
                       false, // useTangentMorph
                       uv1, // useUVMorph
-                      uv2 // useUV2Morph
+                      uv2, // useUV2Morph
+                      color // useColorMorph
                   )
                 : 0;
 

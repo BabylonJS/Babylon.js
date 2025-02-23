@@ -289,6 +289,7 @@ export class OutlineRenderer implements ISceneComponent {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         // Alpha test
         if (material.needAlphaTestingForMesh(mesh)) {
@@ -346,7 +347,8 @@ export class OutlineRenderer implements ISceneComponent {
                   true, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 

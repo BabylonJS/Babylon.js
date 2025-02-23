@@ -206,7 +206,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
         // Calculate controller drag distance in controller space
-        const originDragDifference = TmpVectors.Vector3[0];
+        const originDragDifference = TmpVectors.Vector3[11];
         ray.origin.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDifference);
         virtualMeshesInfo.lastOriginPosition.copyFrom(ray.origin);
         const localOriginDragDifference = -Vector3.Dot(originDragDifference, ray.direction);
@@ -219,7 +219,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
         // Update the controller position
         virtualMeshesInfo.originMesh.position.copyFrom(ray.origin);
-        const lookAt = TmpVectors.Vector3[0];
+        const lookAt = TmpVectors.Vector3[10];
         ray.origin.addToRef(ray.direction, lookAt);
         virtualMeshesInfo.originMesh.lookAt(lookAt);
 
@@ -242,16 +242,16 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         // Z scaling logic
         if (zDragFactor !== 0) {
             // Camera.getForwardRay modifies TmpVectors.Vector[0-3], so cache it in advance
-            const cameraForwardVec = TmpVectors.Vector3[0];
-            const originDragDirection = TmpVectors.Vector3[1];
+            const cameraForwardVec = TmpVectors.Vector3[10];
+            const originDragDirection = TmpVectors.Vector3[11];
             cameraForwardVec.copyFrom(this._pointerCamera!.getForwardRay().direction);
             virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDirection);
             virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
             const controllerDragDistance = originDragDirection.length();
             originDragDirection.normalize();
 
-            const cameraToDrag = TmpVectors.Vector3[2];
-            const controllerToDrag = TmpVectors.Vector3[3];
+            const cameraToDrag = TmpVectors.Vector3[12];
+            const controllerToDrag = TmpVectors.Vector3[9];
             virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToDrag);
             virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(virtualMeshesInfo.originMesh.position, controllerToDrag);
             const controllerToDragDistance = controllerToDrag.length();
@@ -298,7 +298,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             }
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
             const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near" || (<IPointerEvent>pointerInfo.event).pointerType === "xr";
-
+            const isNearXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near";
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
                     !virtualMeshesInfo.dragging &&
@@ -307,7 +307,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
                     pointerInfo.pickInfo.ray &&
-                    (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
+                    (!isNearXRPointer || pointerInfo.pickInfo.aimTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
                     if ((!this.allowMultiPointer || isXRPointer) && this.currentDraggingPointerIds.length > 0) {
@@ -352,7 +352,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
                     virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
 
-                    if (isXRPointer) {
+                    if (isNearXRPointer) {
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
                     } else {
@@ -416,7 +416,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     }
 
                     this._ownerNode.computeWorldMatrix(true);
-                    if (!isXRPointer) {
+                    if (!isNearXRPointer) {
                         this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
                     } else {
                         this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);

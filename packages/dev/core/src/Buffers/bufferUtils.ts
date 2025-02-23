@@ -1,21 +1,11 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "../types";
 
 /**
  * Union of TypedArrays that can be used for vertex data.
  */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
-
-/**
- * Interface for a constructor of a TypedArray.
- */
-export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
-    new (length: number): T;
-    new (elements: Iterable<number>): T;
-    new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
-    readonly BYTES_PER_ELEMENT: number;
-}
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
@@ -453,4 +443,25 @@ export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number)
         return indices.BYTES_PER_ELEMENT === 4;
     }
     return count >= 65536;
+}
+
+/**
+ * Creates a typed array suitable for GPU buffer operations, as some engines require CPU buffer sizes to be aligned to specific boundaries (e.g., 4 bytes).
+ * The use of non-aligned arrays still works but may result in a performance penalty.
+ * @param type The type of the array. For instance, Float32Array or Uint8Array
+ * @param elementCount The number of elements to store in the array
+ * @returns The aligned typed array
+ */
+export function CreateAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
+    let byteSize = elementCount * type.BYTES_PER_ELEMENT;
+
+    if ((byteSize & 3) === 0) {
+        return new type(elementCount);
+    }
+
+    byteSize = (byteSize + 3) & ~3;
+
+    const backingBuffer = new ArrayBuffer(byteSize);
+
+    return new type(backingBuffer, 0, elementCount);
 }

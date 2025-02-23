@@ -22,6 +22,11 @@ import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import type { Bone } from "core/Bones/bone";
 
 import { setDebugNode } from "../treeNodeDebugger";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
+import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/objectRendererTask";
+import { FrameGraphTAAObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/taaObjectRendererTask";
+import { FrameGraphUtilityLayerRendererTask } from "core/FrameGraph/Tasks/Rendering/utilityLayerRendererTask";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -38,6 +43,7 @@ export class SceneTreeItemComponent extends React.Component<
     { isSelected: boolean; isInPickingMode: boolean; gizmoMode: number; isInWorldCoodinatesMode: boolean }
 > {
     private _gizmoLayerOnPointerObserver: Nullable<Observer<PointerInfo>>;
+    private _gizmoLayerRenderObserver: Nullable<Observer<Scene>>;
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _selectedEntity: any;
@@ -163,6 +169,9 @@ export class SceneTreeItemComponent extends React.Component<
             this._gizmoLayerOnPointerObserver = null;
         }
 
+        scene.onAfterRenderObservable.remove(this._gizmoLayerRenderObserver);
+        this._gizmoLayerRenderObserver = null;
+
         if (this._onSelectionChangeObserver && this.props.onSelectionChangedObservable) {
             this.props.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
@@ -261,6 +270,24 @@ export class SceneTreeItemComponent extends React.Component<
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     }
 
+    findCameraFromFrameGraph(frameGraph: FrameGraph): Nullable<Camera> {
+        const tasks = frameGraph.tasks;
+
+        for (let i = tasks.length - 1; i >= 0; i--) {
+            const task = tasks[i];
+            if (
+                task instanceof FrameGraphObjectRendererTask ||
+                task instanceof FrameGraphGeometryRendererTask ||
+                task instanceof FrameGraphTAAObjectRendererTask ||
+                task instanceof FrameGraphUtilityLayerRendererTask
+            ) {
+                return task.camera;
+            }
+        }
+
+        return null;
+    }
+
     setGizmoMode(mode: number) {
         const scene = this.props.scene;
 
@@ -273,8 +300,33 @@ export class SceneTreeItemComponent extends React.Component<
             this._gizmoLayerOnPointerObserver = null;
         }
 
+        scene.onAfterRenderObservable.remove(this._gizmoLayerRenderObserver);
+        this._gizmoLayerRenderObserver = null;
+
         if (!scene.reservedDataStore.gizmoManager) {
-            scene.reservedDataStore.gizmoManager = new GizmoManager(scene, undefined, new UtilityLayerRenderer(scene), new UtilityLayerRenderer(scene));
+            const manualRender = !!scene.frameGraph;
+            const layer1 = new UtilityLayerRenderer(scene, undefined, manualRender);
+            const layer2 = new UtilityLayerRenderer(scene, undefined, manualRender);
+
+            scene.reservedDataStore.gizmoManager = new GizmoManager(scene, undefined, layer1, layer2);
+
+            if (manualRender) {
+                let camera = this.findCameraFromFrameGraph(scene.frameGraph!);
+
+                if (!camera && scene.cameras.length > 0) {
+                    camera = scene.cameras[0];
+                }
+
+                if (camera) {
+                    layer1.setRenderCamera(camera);
+                    layer2.setRenderCamera(camera);
+                }
+
+                this._gizmoLayerRenderObserver = scene.onAfterRenderObservable.add(() => {
+                    layer1.render();
+                    layer2.render();
+                });
+            }
         }
 
         if (this.props.gizmoCamera) {
