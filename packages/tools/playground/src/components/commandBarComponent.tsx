@@ -184,6 +184,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 defaultValue: false,
                 onCheck: () => {},
             },
+            {
+                label: "Record XR session",
+                tooltip: "Records the actions during the XR session",
+                storeKey: "record-xr-session",
+                defaultValue: false,
+                onCheck: () => {},
+            },
         ];
 
         // Procedural Code Generator Options (build from procedural.json)
