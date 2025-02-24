@@ -363,6 +363,7 @@ export class Geometry implements IGetSetVerticesData {
         vertexBuffer.update(data);
 
         if (kind === VertexBuffer.PositionKind) {
+            this._totalVertices = vertexBuffer._maxVerticesCount;
             this._updateBoundingInfo(updateExtends, data);
         }
         this._notifyUpdate(kind);
