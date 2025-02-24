@@ -457,7 +457,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , clearCoatBumpMapData
             , fragmentInputs.vClearCoatBumpUV
             #if defined(TANGENT) && defined(NORMAL)
-                , vTBN
+                , mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2)
             #else
                 , uniforms.vClearCoatTangentSpaceParams
             #endif
