@@ -433,26 +433,6 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.camera = camera;
     }
 
-    public get textureWidth() {
-        return this._ssrPostProcess.textureWidth;
-    }
-
-    public set textureWidth(width: number) {
-        this._ssrPostProcess.textureWidth = width;
-        this._ssrBlurXPostProcess.textureWidth = width;
-        this._ssrBlurYPostProcess.textureWidth = width;
-    }
-
-    public get textureHeight() {
-        return this._ssrPostProcess.textureHeight;
-    }
-
-    public set textureHeight(height: number) {
-        this._ssrPostProcess.textureHeight = height;
-        this._ssrBlurXPostProcess.textureHeight = height;
-        this._ssrBlurYPostProcess.textureHeight = height;
-    }
-
     public get useScreenspaceDepth() {
         return this._ssrPostProcess.useScreenspaceDepth;
     }

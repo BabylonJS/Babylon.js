@@ -2,7 +2,7 @@
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
-import { TmpVectors, Vector2 } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
 
 /**
  * @internal
@@ -12,7 +12,7 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
 
     public static readonly Uniforms = ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold", "projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ"];
 
-    public static readonly Samplers = ["textureSampler", "depthSampler", "normalSampler", "mainSampler"];
+    public static readonly Samplers = ["textureSampler", "depthSampler", "normalSampler", "mainSampler", "reflectivitySampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {

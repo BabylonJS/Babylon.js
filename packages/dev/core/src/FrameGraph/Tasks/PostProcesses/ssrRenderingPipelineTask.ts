@@ -84,7 +84,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         }
     }
 
-    private readonly _textureType: number;
+    public readonly textureType: number;
+
     private readonly _ssr: FrameGraphSSRTask;
     private readonly _ssrBlurX: FrameGraphSSRBlurTask;
     private readonly _ssrBlurY: FrameGraphSSRBlurTask;
@@ -99,7 +100,7 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
         super(name, frameGraph);
 
-        this._textureType = textureType;
+        this.textureType = textureType;
 
         this.ssr = new ThinSSRRenderingPipeline(name, frameGraph.scene);
 
@@ -110,9 +111,12 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
         this.onTexturesAllocatedObservable.add((context) => {
             this._ssr.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssrBlurX.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssrBlurY.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssrBlurCombiner.onTexturesAllocatedObservable.notifyObservers(context);
+            if (this._ssrBlurX.sourceTexture) {
+                // We should not forward the notification if blur is not enabled (sourceTexture will be undefined in that case)
+                this._ssrBlurX.onTexturesAllocatedObservable.notifyObservers(context);
+                this._ssrBlurY.onTexturesAllocatedObservable.notifyObservers(context);
+                this._ssrBlurCombiner.onTexturesAllocatedObservable.notifyObservers(context);
+            }
         });
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -152,7 +156,7 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
             size: textureSize,
             options: {
                 createMipMaps: false,
-                types: [this._textureType],
+                types: [this.textureType],
                 formats: [Constants.TEXTUREFORMAT_RGBA],
                 samples: 1,
                 useSRGBBuffers: [false],

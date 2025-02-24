@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphRenderPass, Camera, FrameGraphTextureHandle } from "core/index";
+import { Constants } from "core/Engines/constants";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
 
@@ -21,6 +22,12 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinSSRPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinSSRPostProcess(name, frameGraph.scene));
+
+        this.onTexturesAllocatedObservable.add((context) => {
+            context.setTextureSamplingMode(this.normalTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            context.setTextureSamplingMode(this.reflectivityTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -44,8 +51,8 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
 
         pass.addDependencies([this.normalTexture, this.depthTexture, this.reflectivityTexture]);
 
-        this.postProcess.textureWidth = this._outputWidth;
-        this.postProcess.textureHeight = this._outputHeight;
+        this.postProcess.textureWidth = this._sourceWidth;
+        this.postProcess.textureHeight = this._sourceHeight;
 
         return pass;
     }

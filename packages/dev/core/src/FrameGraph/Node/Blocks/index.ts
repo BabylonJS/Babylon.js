@@ -14,6 +14,7 @@ export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
+export * from "./PostProcesses/ssrPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/cullObjectsBlock";
