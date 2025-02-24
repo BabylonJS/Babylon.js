@@ -107,7 +107,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return 0;
     }
 
-    updateValue(value: string, valueToValidate?: string) {
+    validateInput(value: string) {
         if (this.props.disabled) {
             return;
         }
@@ -115,6 +115,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             if (/[^0-9.px%-]/g.test(value)) {
                 return;
             }
+        }
+        this._localChange = true;
+        this.setState({ value: value });
+    }
+
+    updateValue(value: string, valueToValidate?: string) {
+        if (this.props.numbersOnly) {
             if (!value) {
                 value = "0";
             }
@@ -139,7 +146,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             value = numericValue.toString();
         }
 
-        this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
         if (this.props.validator && valueToValidate) {
@@ -147,8 +153,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 value = store;
             }
         }
-
-        this.setState({ value: value });
 
         if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
@@ -214,7 +218,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                     this.props.lockObject.lock = true;
                                 }
                             }}
-                            onChange={(evt) => this.updateValue(evt.target.value)}
+                            onChange={(evt) => this.validateInput(evt.target.value)}
                             onKeyDown={(evt) => {
                                 if (evt.keyCode !== 13) {
                                     return;
@@ -249,7 +253,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                     this.props.lockObject.lock = true;
                                 }
                             }}
-                            onChange={(evt) => this.updateValue(evt.target.value)}
+                            onChange={(evt) => this.validateInput(evt.target.value)}
                             onKeyDown={(evt) => this.onKeyDown(evt)}
                             placeholder={placeholder}
                             type={this.props.numeric ? "number" : "text"}
