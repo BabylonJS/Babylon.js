@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, MeshPredicate, Nullable, Observable } from "core/index";
+import type { Camera, MeshPredicate, Nullable, Observable, Scene } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
-import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -60,6 +59,59 @@ export type HotSpot = ViewerHotSpotQuery & {
     cameraOrbit?: [alpha: number, beta: number, radius: number];
 };
 
+/**
+ * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
+ * The target point is determined based on the camera's forward ray:
+ *   - If an intersection with eligible meshes is detected, the intersection point is used as the target.
+ *   - If no intersection is detected, a fallback target is calculated by projecting
+ *     the distance between the camera and the distance reference point along the camera's forward ray.
+ *
+ * @param scene The scene to use for picking.
+ * @param camera The camera to use for creating the HotSpot.
+ * @param distanceReferencePoint The reference point in world coordinates used to calculate the fallback target distance if no intersection is found.
+ * @param predicate An optional predicate function used to determine eligible meshes for picking.
+ * @returns A HotSpotobject containing the position, normal, and camera orbit parameters (alpha, beta, radius).
+ */
+export async function createHotSpotFromCamera(
+    scene: Scene,
+    camera: Camera,
+    distanceReferencePoint: [x: number, y: number, z: number],
+    predicate?: MeshPredicate
+): Promise<HotSpot> {
+    await import("core/Culling/ray");
+    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+    const camGlobalPos = camera.globalPosition.clone();
+
+    // Target
+    let radius: number = 0.0001; // Just to avoid division by zero
+    const targetPoint = Vector3.Zero();
+    const pickingInfo = scene.pickWithRay(ray, predicate);
+    if (pickingInfo && pickingInfo.hit) {
+        targetPoint.copyFrom(pickingInfo.pickedPoint!);
+    } else {
+        const dsitancePoint = Vector3.FromArray(distanceReferencePoint);
+        const direction = ray.direction.clone();
+        targetPoint.copyFrom(camGlobalPos);
+        radius = Vector3.Distance(camGlobalPos, dsitancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint);
+    }
+
+    const computationVector = Vector3.Zero();
+    camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+    // Radius
+    if (pickingInfo && pickingInfo.hit) {
+        radius = computationVector.length();
+    }
+
+    // Alpha and Beta
+    const alpha = ComputeAlpha(computationVector);
+    const beta = ComputeBeta(computationVector.y, radius);
+
+    const targetArray = targetPoint.asArray();
+    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+}
+
 // Custom events for the HTML3DElement.
 export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
@@ -102,7 +154,6 @@ export interface ViewerElement {
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
     protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
@@ -1144,8 +1195,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
-        if (camera !== this.viewerDetails?.camera) {
-            const hotSpot = await this._cameraToHotSpot(camera);
+        if (camera !== this._viewerDetails?.camera) {
+            const hotSpot = await this._createHotSpotFromCamera(camera);
             if (hotSpot && !signal?.aborted) {
                 this.hotSpots = {
                     ...this.hotSpots,
@@ -1164,10 +1215,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (!this.camerasAsHotSpots) {
             this._camerasAsHotSpotsAbortController?.abort();
             this._camerasAsHotSpotsAbortController = null;
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 
@@ -1347,62 +1398,25 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
-     * The target point is determined based on the camera's forward ray:
-     *   - If an intersection with the main model is found, the first hit point is used as the target.
-     *   - If no intersection is detected, a fallback target is calculated by projecting
-     *     the distance between the camera and the main model's center along the forward ray.
-     *
-     * @param camera The reference camera used to computes alpha, beta, radius and target
-     * @returns A HotSpot, or null if no model found
+     * Creates a world HotSpot from a camera.
+     * @param camera The camera to create a HotSpot from.
+     * @returns A HotSpot created from the camera.
      */
-    private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
+    protected async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
             const targetArray = camera.target.asArray();
             return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
-        await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-        const camGlobalPos = camera.globalPosition.clone();
+        if (this._viewerDetails?.scene) {
+            const scene = this._viewerDetails.scene;
+            const model = this._viewerDetails.model;
 
-        if (this.viewerDetails?.scene) {
-            const scene = this.viewerDetails.scene;
-            const model = this.viewerDetails.model;
-
-            // Target
-            let radius: number = 0.0001; // Just to avoid division by zero
-            const targetPoint = this._tempVectors[0];
+            const selectedAnimation = this.selectedAnimation ?? 0;
+            const worldBounds = model?.getWorldBounds(selectedAnimation);
+            const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
             const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
-            const pickingInfo = scene.pickWithRay(ray, predicate);
-            if (pickingInfo && pickingInfo.hit) {
-                targetPoint.copyFrom(pickingInfo.pickedPoint!);
-            } else {
-                const selectedAnimation = this.selectedAnimation ?? 0;
-                const worldBounds = model?.getWorldBounds(selectedAnimation);
-                const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
-                const modelWorldCenter = this._tempVectors[1].copyFromFloats(...centerArray);
-
-                const direction = this._tempVectors[2].copyFrom(ray.direction);
-                targetPoint.copyFrom(camGlobalPos);
-                radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
-                direction.scaleAndAddToRef(radius, targetPoint);
-            }
-
-            const computationVector = this._tempVectors[3];
-            camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-            // Radius
-            if (pickingInfo && pickingInfo.hit) {
-                radius = computationVector.length();
-            }
-
-            // Alpha and Beta
-            const alpha = ComputeAlpha(computationVector);
-            const beta = ComputeBeta(computationVector.y, radius);
-
-            const targetArray = targetPoint.asArray();
-            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+            return createHotSpotFromCamera(scene, camera, centerArray as [x: number, y: number, z: number], predicate);
         }
 
         return null;
