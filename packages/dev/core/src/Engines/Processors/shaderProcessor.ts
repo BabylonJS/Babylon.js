@@ -8,7 +8,7 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import type { ProcessingOptions } from "./shaderProcessingOptions";
+import type { _IProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
@@ -16,28 +16,28 @@ import type { WebRequest } from "../../Misc/webRequest";
 import type { LoadFileError } from "../../Misc/fileTools";
 import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import type { IFileRequest } from "../../Misc/fileRequest";
-import { _getGlobalDefines } from "../abstractEngine.functions";
+import { _GetGlobalDefines } from "../abstractEngine.functions";
 import type { AbstractEngine } from "../abstractEngine";
 
-const regexSE = /defined\s*?\((.+?)\)/g;
-const regexSERevert = /defined\s*?\[(.+?)\]/g;
+const regexSe = /defined\s*?\((.+?)\)/g;
+const regexSeRevert = /defined\s*?\[(.+?)\]/g;
 const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 const regexShaderDecl = /__decl__/;
 const regexLightX = /light\{X\}.(\w*)/g;
 const regexX = /\{X\}/g;
 const reusableMatches: RegExpMatchArray[] = [];
 
-const _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+const _moveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
 /** @internal */
-export function Initialize(options: ProcessingOptions): void {
+export function Initialize(options: _IProcessingOptions): void {
     if (options.processor && options.processor.initializeShaders) {
         options.processor.initializeShaders(options.processingContext);
     }
 }
 
 /** @internal */
-export function Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: AbstractEngine) {
+export function Process(sourceCode: string, options: _IProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
@@ -51,7 +51,7 @@ export function Process(sourceCode: string, options: ProcessingOptions, callback
 }
 
 /** @internal */
-export function PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: AbstractEngine) {
+export function PreProcess(sourceCode: string, options: _IProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
@@ -65,7 +65,7 @@ export function PreProcess(sourceCode: string, options: ProcessingOptions, callb
 }
 
 /** @internal */
-export function Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string; fragmentCode: string } {
+export function Finalize(vertexCode: string, fragmentCode: string, options: _IProcessingOptions): { vertexCode: string; fragmentCode: string } {
     if (!options.processor || !options.processor.finalizeShaders) {
         return { vertexCode, fragmentCode };
     }
@@ -73,7 +73,7 @@ export function Finalize(vertexCode: string, fragmentCode: string, options: Proc
     return options.processor.finalizeShaders(vertexCode, fragmentCode, options.processingContext);
 }
 
-function _ProcessPrecision(source: string, options: ProcessingOptions): string {
+function _ProcessPrecision(source: string, options: _IProcessingOptions): string {
     if (options.processor?.noPrecision) {
         return source;
     }
@@ -128,7 +128,7 @@ function _ExtractOperation(expression: string) {
 }
 
 function _BuildSubExpression(expression: string): ShaderDefineExpression {
-    expression = expression.replace(regexSE, "defined[$1]");
+    expression = expression.replace(regexSe, "defined[$1]");
 
     const postfix = ShaderDefineExpression.infixToPostfix(expression);
 
@@ -146,11 +146,11 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
             const operator = c == "&&" ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
             if (typeof v1 === "string") {
-                v1 = v1.replace(regexSERevert, "defined($1)");
+                v1 = v1.replace(regexSeRevert, "defined($1)");
             }
 
             if (typeof v2 === "string") {
-                v2 = v2.replace(regexSERevert, "defined($1)");
+                v2 = v2.replace(regexSeRevert, "defined($1)");
             }
 
             operator.leftOperand = typeof v2 === "string" ? _ExtractOperation(v2) : v2;
@@ -163,7 +163,7 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
     let result = stack[stack.length - 1];
 
     if (typeof result === "string") {
-        result = result.replace(regexSERevert, "defined($1)");
+        result = result.replace(regexSeRevert, "defined($1)");
     }
 
     // note: stack.length !== 1 if there was an error in the parsing
@@ -215,7 +215,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
         const line = cursor.currentLine;
 
         if (line.indexOf("#") >= 0) {
-            const matches = _MoveCursorRegex.exec(line);
+            const matches = _moveCursorRegex.exec(line);
 
             if (matches && matches.length) {
                 const keyword = matches[0];
@@ -275,7 +275,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
     return false;
 }
 
-function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
+function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
     const rootNode = new ShaderCodeNode();
     const cursor = new ShaderCodeCursor();
 
@@ -289,7 +289,7 @@ function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: strin
     return rootNode.process(preprocessors, options);
 }
 
-function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
+function _PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
     const defines = options.defines;
     const preprocessors: { [key: string]: string } = {};
 
@@ -305,12 +305,12 @@ function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngi
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";
 
-    _getGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine?.useReverseDepthBuffer, engine?.useExactSrgbConversions);
+    _GetGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine?.useReverseDepthBuffer, engine?.useExactSrgbConversions);
 
     return preprocessors;
 }
 
-function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine?: AbstractEngine): string {
+function _ProcessShaderConversion(sourceCode: string, options: _IProcessingOptions, engine?: AbstractEngine): string {
     let preparedSourceCode = _ProcessPrecision(sourceCode, options);
 
     if (!options.processor) {
@@ -359,7 +359,7 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
     return preparedSourceCode;
 }
 
-function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: AbstractEngine): string {
+function _ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, engine: AbstractEngine): string {
     let preparedSourceCode = sourceCode;
 
     const defines = options.defines;
@@ -397,7 +397,7 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
 }
 
 /** @internal */
-export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
+export function _ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
     reusableMatches.length = 0;
     let match: RegExpMatchArray | null;
     // stay back-compat to the old matchAll syntax
@@ -487,7 +487,7 @@ export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions,
         } else {
             const includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-            _functionContainer.loadFile(includeShaderUrl, (fileContent) => {
+            _FunctionContainer.loadFile(includeShaderUrl, (fileContent) => {
                 options.includesShadersStore[includeFile] = fileContent as string;
                 _ProcessIncludes(parts.join(""), options, callback);
             });
@@ -506,7 +506,7 @@ export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions,
 }
 
 /** @internal */
-export const _functionContainer = {
+export const _FunctionContainer = {
     /**
      * Loads a file from a url
      * @param url url to load

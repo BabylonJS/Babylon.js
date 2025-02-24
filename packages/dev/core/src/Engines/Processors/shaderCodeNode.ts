@@ -1,4 +1,4 @@
-import type { ProcessingOptions } from "./shaderProcessingOptions";
+import type { _IProcessingOptions } from "./shaderProcessingOptions";
 
 const defaultAttributeKeywordName = "attribute";
 const defaultVaryingKeywordName = "varying";
@@ -15,7 +15,7 @@ export class ShaderCodeNode {
         return true;
     }
 
-    process(preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
+    process(preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
         let result = "";
         if (this.line) {
             let value: string = this.line;

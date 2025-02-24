@@ -40,7 +40,7 @@ export function _ConcatenateShader(source: string, defines: Nullable<string>, sh
 /**
  * @internal
  */
-export function _loadFile(
+export function _LoadFile(
     url: string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
     onProgress?: (data: any) => void,
@@ -69,6 +69,7 @@ export function _loadFile(
  * @param renderingCanvas if provided, the canvas' owner document will be returned
  * @returns the host document object
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getHostDocument(renderingCanvas: Nullable<HTMLCanvasElement> = null): Nullable<Document> {
     if (renderingCanvas && renderingCanvas.ownerDocument) {
         return renderingCanvas.ownerDocument;
@@ -78,8 +79,9 @@ export function getHostDocument(renderingCanvas: Nullable<HTMLCanvasElement> = n
 }
 
 /** @internal */
-export function _getGlobalDefines(
+export function _GetGlobalDefines(
     defines?: { [key: string]: string },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     isNDCHalfZRange?: boolean,
     useReverseDepthBuffer?: boolean,
     useExactSrgbConversions?: boolean
@@ -130,6 +132,7 @@ export function _getGlobalDefines(
  * @param copyBuffer if provided, buffer to copy into the destination buffer (either a newly allocated buffer if sizeOrDstBuffer is a number or use sizeOrDstBuffer as the destination buffer otherwise)
  * @returns the allocated buffer or sizeOrDstBuffer if the latter is an ArrayBuffer
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes = false, copyBuffer?: ArrayBuffer): ArrayBufferView {
     switch (type) {
         case Constants.TEXTURETYPE_BYTE: {

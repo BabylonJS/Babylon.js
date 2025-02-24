@@ -19,7 +19,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
@@ -127,6 +127,7 @@ interface IWebGPURenderPassWrapper {
 /**
  * Options to load the associated Glslang library
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GlslangOptions {
     /**
      * Defines an existing instance of Glslang (useful in modules who do not access the global instance).
@@ -145,6 +146,7 @@ export interface GlslangOptions {
 /**
  * Options to create the WebGPU engine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAdapterOptions {
     /**
      * The featureLevel property of the GPURequestAdapterOptions interface
@@ -1210,7 +1212,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<_IShaderProcessingContext> {
         return new WebGPUShaderProcessingContext(shaderLanguage, pureMode);
     }
 
@@ -2037,7 +2039,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+    public createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
         return new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
     }
 
@@ -2060,7 +2062,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public async _preparePipelineContext(
+    public async _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -3069,12 +3071,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this.setDepthFunctionToGreaterOrEqual();
         }
 
-        const clearColorForIntegerRT = tempColor4;
+        const clearColorForIntegerRt = tempColor4;
         if (clearColor) {
-            clearColorForIntegerRT.r = clearColor.r * 255;
-            clearColorForIntegerRT.g = clearColor.g * 255;
-            clearColorForIntegerRT.b = clearColor.b * 255;
-            clearColorForIntegerRT.a = clearColor.a * 255;
+            clearColorForIntegerRt.r = clearColor.r * 255;
+            clearColorForIntegerRt.g = clearColor.g * 255;
+            clearColorForIntegerRt.b = clearColor.b * 255;
+            clearColorForIntegerRt.a = clearColor.a * 255;
         }
 
         const mustClearColor = setClearStates && clearColor;
@@ -3107,7 +3109,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
-                    const isRTInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                    const isRtInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
@@ -3116,7 +3118,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                         depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
-                        clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
+                        clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
@@ -3141,13 +3143,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 const gpuMSAATexture = gpuWrapper.getMSAATexture(0);
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                     depthSlice,
-                    clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
+                    clearValue: mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 });
@@ -3399,7 +3401,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
     public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        const saveCRT = this._currentRenderTarget;
+        const saveCrt = this._currentRenderTarget;
 
         this._currentRenderTarget = null; // to be iso with abstractEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
 
@@ -3407,7 +3409,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             onBeforeUnbind();
         }
 
-        this._currentRenderTarget = saveCRT;
+        this._currentRenderTarget = saveCrt;
 
         this._endCurrentRenderPass();
 

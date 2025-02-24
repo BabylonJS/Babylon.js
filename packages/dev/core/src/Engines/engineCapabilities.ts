@@ -1,6 +1,7 @@
 /**
  * Interface used to describe the capabilities of the engine relatively to the current browser
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface EngineCapabilities {
     /** Maximum textures units per fragment shader */
     maxTexturesImageUnits: number;

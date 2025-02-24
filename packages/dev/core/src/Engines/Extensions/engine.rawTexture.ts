@@ -8,6 +8,7 @@ import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { IsExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a raw texture

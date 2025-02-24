@@ -60,7 +60,7 @@ import {
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
 import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuffers";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
 import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
@@ -737,7 +737,7 @@ export class NativeEngine extends Engine {
         // }
     }
 
-    public override createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+    public override createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
         const isAsync = !!(this._caps.parallelShaderCompile && this._engine.createProgramAsync);
         return new NativePipelineContext(this, isAsync, shaderProcessingContext as Nullable<NativeShaderProcessingContext>);
     }
@@ -753,7 +753,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _preparePipelineContext(
+    public override _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -778,7 +778,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _getShaderProcessingContext(_shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
+    public override _getShaderProcessingContext(_shaderLanguage: ShaderLanguage): Nullable<_IShaderProcessingContext> {
         return new NativeShaderProcessingContext();
     }
 

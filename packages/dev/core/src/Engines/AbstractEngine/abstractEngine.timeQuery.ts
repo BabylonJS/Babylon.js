@@ -3,6 +3,7 @@ import { PerfCounter } from "../../Misc/perfCounter";
 import type { Nullable } from "../../types";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _gpuFrameTime: Nullable<PerfCounter>;

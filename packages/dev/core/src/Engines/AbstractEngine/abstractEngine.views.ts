@@ -29,6 +29,7 @@ export class EngineView {
 }
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _inputElement: Nullable<HTMLElement>;

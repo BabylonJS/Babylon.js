@@ -9,6 +9,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Unbind a list of render target textures from the webGL context

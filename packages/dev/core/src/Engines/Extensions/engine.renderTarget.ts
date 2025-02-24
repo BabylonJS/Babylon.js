@@ -19,6 +19,7 @@ import "../AbstractEngine/abstractEngine.texture";
 export type RenderTargetTextureSize = TextureSize;
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a new render target texture

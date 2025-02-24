@@ -9,6 +9,7 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { DDSInfo } from "core/Misc/dds";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)

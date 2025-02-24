@@ -1,4 +1,4 @@
-import type { ProcessingOptions, ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions, ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import type { Nullable } from "../types";
 import { Material } from "./material";
 import type {
@@ -372,7 +372,7 @@ export class MaterialPluginManager {
             if (!points) {
                 return code;
             }
-            let processorOptions: Nullable<ProcessingOptions> = null;
+            let processorOptions: Nullable<_IProcessingOptions> = null;
             for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {

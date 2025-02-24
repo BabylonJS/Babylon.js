@@ -3,7 +3,7 @@
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 
@@ -15,7 +15,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
 
     protected _nativeProcessingContext: Nullable<NativeShaderProcessingContext>;
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._nativeProcessingContext = processingContext as Nullable<NativeShaderProcessingContext>;
         if (this._nativeProcessingContext) {
             this._nativeProcessingContext.remappedAttributeNames = {};

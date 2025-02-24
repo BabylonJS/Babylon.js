@@ -9,7 +9,7 @@ import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
-import { _functionContainer } from "../Engines/Processors/shaderProcessor";
+import { _FunctionContainer } from "../Engines/Processors/shaderProcessor";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
@@ -819,7 +819,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
 const initSideEffects = () => {
     AbstractEngine._FileToolsLoadImage = LoadImage;
     EngineFunctionContext.loadFile = LoadFile;
-    _functionContainer.loadFile = LoadFile;
+    _FunctionContainer.loadFile = LoadFile;
 };
 
 initSideEffects();

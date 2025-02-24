@@ -131,6 +131,7 @@ export interface ITextMetrics {
 /**
  * Class used to abstract a matrix
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface DOMMatrix {
     /**
      * A Boolean flag whose value is true if the matrix was initialized as a 2D matrix. If false, the matrix is 3D.

@@ -2,7 +2,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
@@ -64,7 +64,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public noPrecision = true;
     public pureMode = false;
 
-    public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
+    public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<_IShaderProcessingContext>) {
         // Convert defines into const
         for (const key in preProcessors) {
             if (key === "__VERSION__") {
@@ -102,7 +102,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return [name, uniformType, length];
     }
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
         this._attributesInputWGSL = [];

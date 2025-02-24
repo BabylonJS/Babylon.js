@@ -10,6 +10,7 @@ import "../../AbstractEngine/abstractEngine.texture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a new render target texture

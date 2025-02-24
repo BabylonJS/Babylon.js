@@ -6,7 +6,7 @@ import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
-import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions, ShaderCustomProcessingFunction, _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
@@ -285,7 +285,7 @@ export class Effect implements IDisposable {
     public _rawFragmentSourceCode: string = "";
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
-    private _processingContext: Nullable<ShaderProcessingContext>;
+    private _processingContext: Nullable<_IShaderProcessingContext>;
 
     private _processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
     private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
@@ -412,7 +412,7 @@ export class Effect implements IDisposable {
     public async _processShaderCodeAsync(
         shaderProcessor: Nullable<IShaderProcessor> = null,
         keepExistingPipelineContext = false,
-        shaderProcessingContext: Nullable<ShaderProcessingContext> = null,
+        shaderProcessingContext: Nullable<_IShaderProcessingContext> = null,
         extraInitializationsAsync?: () => Promise<void>
     ) {
         if (extraInitializationsAsync) {
@@ -421,7 +421,7 @@ export class Effect implements IDisposable {
 
         this._processingContext = shaderProcessingContext || this._engine._getShaderProcessingContext(this._shaderLanguage, false);
 
-        const processorOptions: ProcessingOptions = {
+        const processorOptions: _IProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -840,7 +840,7 @@ export class Effect implements IDisposable {
                     },
                 },
                 this._engine.createPipelineContext.bind(this._engine),
-                this._engine._preparePipelineContext.bind(this._engine),
+                this._engine._preparePipelineContextAsync.bind(this._engine),
                 this._engine._executeWhenRenderingStateIsCompiled.bind(this._engine)
             );
 

@@ -5,6 +5,7 @@ import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a new render target cube wrapper

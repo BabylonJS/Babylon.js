@@ -5,6 +5,7 @@ import type { ImageSource, Nullable } from "../../types";
 import type { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a dynamic texture

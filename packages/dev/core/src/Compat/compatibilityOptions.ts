@@ -7,6 +7,7 @@ export let useOpenGLOrientationForUV = false;
  * Sets whether to use OpenGL convention for UVs
  * @param value the new value
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function setOpenGLOrientationForUV(value: boolean) {
     useOpenGLOrientationForUV = value;
 }

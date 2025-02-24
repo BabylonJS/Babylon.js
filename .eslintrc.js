@@ -1,4 +1,5 @@
-const allowedNonStrictAbbreviations = "HTML|BRDF|GUI|LOD|XR|PBR|IBL|HDR|SSR|SSAO|SMAA|MSAA|FXAA|GPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]";
+const allowedNonStrictAbbreviations =
+    "HTML|BRDF|UI|LOD|XR|PBR|IBL|HDR|SSR|SSAO|SMAA|MSAA|FXAA|GPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM";
 
 const rules = {
     root: true,
@@ -54,8 +55,6 @@ const rules = {
                     {
                         contexts: [
                             'PropertyDefinition:not([accessibility="private"]):not([accessibility="protected"])',
-                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                            // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
                             'MethodDefinition:not([accessibility="private"]):not([accessibility="protected"])',
                         ],
                     },
@@ -65,7 +64,6 @@ const rules = {
                     {
                         contexts: [
                             "TSInterfaceDeclaration",
-                            // "TSMethodSignature",
                             "TSPropertySignature",
                             'PropertyDefinition:not([accessibility="private"]):not([accessibility="protected"])',
                             'ArrowFunctionExpression:not([accessibility="private"]):not([accessibility="protected"])',
@@ -186,10 +184,6 @@ const rules = {
                         format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                         prefix: ["I"],
-                        filter: {
-                            regex: "Window",
-                            match: false,
-                        },
                     },
                     {
                         selector: "class",
@@ -199,7 +193,7 @@ const rules = {
                     // Remove the strictCamelCase (move to simple camelCase) requirement for abbreviations like HTML, GUI, BRDF, etc.
                     {
                         selector: ["memberLike", "variable", "property", "parameter"],
-                        format: ["camelCase"],
+                        format: ["camelCase", "UPPER_CASE"],
                         filter: {
                             // you can expand this regex to add more allowed names
                             regex: allowedNonStrictAbbreviations,
@@ -209,7 +203,7 @@ const rules = {
                     },
                     {
                         selector: ["memberLike", "variable", "property", "class"],
-                        format: ["PascalCase"],
+                        format: ["PascalCase", "UPPER_CASE"],
                         modifiers: ["static"],
                         filter: {
                             // you can expand this regex to add more allowed names
@@ -219,7 +213,7 @@ const rules = {
                         leadingUnderscore: "allow",
                     },
                     {
-                        selector: ["class"],
+                        selector: "class",
                         format: ["PascalCase"],
                         filter: {
                             // you can expand this regex to add more allowed names
@@ -227,6 +221,36 @@ const rules = {
                             match: true,
                         },
                         leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "interface",
+                        format: ["PascalCase"],
+                        prefix: ["I"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "import",
+                        format: ["camelCase", "PascalCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "objectLiteralProperty",
+                        format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
                     },
                 ],
             },

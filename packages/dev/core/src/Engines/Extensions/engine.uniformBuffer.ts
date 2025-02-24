@@ -6,6 +6,7 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 
 declare module "../../Engines/thinEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface ThinEngine {
         /**
          * Create an uniform buffer

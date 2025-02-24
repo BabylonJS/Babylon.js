@@ -7,7 +7,9 @@ import type { Camera } from "../Cameras/camera";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare INSPECTOR namespace for compilation issue
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let INSPECTOR: any;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let BABYLON: any;
 // load the inspector using require, if not present in the global namespace.
 
@@ -165,6 +167,7 @@ export interface IInspectorOptions {
 }
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * @internal

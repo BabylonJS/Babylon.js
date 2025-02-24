@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import type { ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
 
@@ -56,7 +56,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
         return;
     }
 
-    let shaderProcessingContext: Nullable<ShaderProcessingContext> = null;
+    let shaderProcessingContext: Nullable<_IShaderProcessingContext> = null;
 
     for (const kind in vertexBuffers) {
         const currentVertexBuffer = vertexBuffers[kind];

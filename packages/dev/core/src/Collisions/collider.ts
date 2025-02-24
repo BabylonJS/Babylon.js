@@ -3,7 +3,7 @@ import { Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Plane } from "../Maths/math.plane";
 
-const intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
+const intersectBoxAaSphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
     if (boxMin.x > sphereCenter.x + sphereRadius) {
         return false;
     }
@@ -201,7 +201,7 @@ export class Collider {
             return false;
         }
 
-        if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max)) {
+        if (!intersectBoxAaSphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max)) {
             return false;
         }
 

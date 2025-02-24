@@ -1,4 +1,5 @@
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface EngineFeatures {
     /** Force using Bitmap when Bitmap or HTMLImageElement can be used */
     forceBitmapOverHTMLImageElement: boolean;

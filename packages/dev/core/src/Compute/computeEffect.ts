@@ -4,7 +4,7 @@ import { Observable } from "../Misc/observable";
 import type { IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Finalize, Initialize, PreProcess } from "../Engines/Processors/shaderProcessor";
-import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
@@ -165,7 +165,7 @@ export class ComputeEffect {
             computeSource = baseName.compute || baseName;
         }
 
-        const processorOptions: ProcessingOptions = {
+        const processorOptions: _IProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: undefined,
             isFragment: false,

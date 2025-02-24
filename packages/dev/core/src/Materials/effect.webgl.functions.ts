@@ -4,8 +4,8 @@ import { _processShaderCode, createAndPreparePipelineContext } from "./effect.fu
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _getGlobalDefines } from "core/Engines/abstractEngine.functions";
-import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { _GetGlobalDefines } from "core/Engines/abstractEngine.functions";
+import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
 import { _retryWithInterval } from "core/Misc/timingTools";
@@ -23,7 +23,7 @@ export async function generatePipelineContext(
     options: IPipelineGenerationOptions,
     context: WebGL2RenderingContext | WebGLRenderingContext,
     createPipelineContextInjection: typeof AbstractEngine.prototype.createPipelineContext = createPipelineContext.bind(null, context),
-    _preparePipelineContextInjection: typeof AbstractEngine.prototype._preparePipelineContext = _preparePipelineContext
+    _preparePipelineContextInjection: typeof AbstractEngine.prototype._preparePipelineContextAsync = _preparePipelineContext
 ): Promise<IPipelineContext> {
     // make sure the state object exists
     getStateObject(context);
@@ -47,11 +47,11 @@ export async function generatePipelineContext(
     const shaderDef: any = options.shaderNameOrContent;
     const vertex = shaderDef.vertex || shaderDef.vertexSource || shaderDef;
     const fragment = shaderDef.fragment || shaderDef.fragmentSource || shaderDef;
-    const globalDefines = _getGlobalDefines()?.split("\n") || [];
+    const globalDefines = _GetGlobalDefines()?.split("\n") || [];
     const defines = [...(options.defines || []), ...(options.addGlobalDefines ? globalDefines : [])];
     const key = options.key?.replace(/\r/g, "").replace(/\n/g, "|") || vertex + "+" + fragment + "@" + defines.join("|");
     // defaults, extended with optionally provided options
-    const processorOptions: ProcessingOptions = {
+    const processorOptions: _IProcessingOptions = {
         defines,
         indexParameters: undefined,
         isFragment: false,

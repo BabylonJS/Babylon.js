@@ -2,7 +2,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { ShaderLanguage } from "../../Materials/shaderLanguage";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxGroups = 4;
 const _maxBindingsPerGroup = 1 << 16;
@@ -56,7 +56,7 @@ export interface WebGPUBindGroupLayoutEntryInfo {
 /**
  * @internal
  */
-export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
+export class WebGPUShaderProcessingContext implements _IShaderProcessingContext {
     /** @internal */
     public static _SimplifiedKnownBindings = true; // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
     // if false, see _KnownUBOs for the known groups/bindings used

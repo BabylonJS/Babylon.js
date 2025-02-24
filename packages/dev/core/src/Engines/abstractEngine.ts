@@ -21,7 +21,7 @@ import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import type { IFileRequest } from "../Misc/fileRequest";
 import type { Texture } from "../Materials/Textures/texture";
 import type { LoadFileError } from "../Misc/fileTools";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
@@ -49,7 +49,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
-import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
+import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 
@@ -94,6 +94,7 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
 }
 
 /** Interface defining initialization parameters for AbstractEngine class */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface AbstractEngineOptions {
     /**
      * Defines if the engine should no exceed a specified device ratio
@@ -164,6 +165,7 @@ export interface AbstractEngineOptions {
 /**
  * Information about the current host
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface HostInformation {
     /**
      * Defines if the current host is a mobile
@@ -383,7 +385,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _preparePipelineContext(
+    public abstract _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -1716,7 +1718,7 @@ export abstract class AbstractEngine {
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public abstract createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext;
+    public abstract createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext;
 
     /**
      * Inline functions in shader code that are marked to be inlined
@@ -1775,7 +1777,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext>;
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<_IShaderProcessingContext>;
 
     /**
      * Gets host document
@@ -2366,11 +2368,11 @@ export abstract class AbstractEngine {
 
         // Function to check if running on mobile device
         this._checkForMobile = () => {
-            const currentUA = navigator.userAgent;
+            const currentUa = navigator.userAgent;
             this.hostInformation.isMobile =
-                currentUA.indexOf("Mobile") !== -1 ||
+                currentUa.indexOf("Mobile") !== -1 ||
                 // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
+                (currentUa.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
         };
 
         // Set initial isMobile value
@@ -2561,7 +2563,7 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
-        const request = _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        const request = _LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add(() => {
             const index = this._activeRequests.indexOf(request);

@@ -13,6 +13,7 @@ import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
 import type { DataBuffer } from "../../../Buffers/dataBuffer";
 
 declare module "../../webgpuEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface WebGPUEngine {
         /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;

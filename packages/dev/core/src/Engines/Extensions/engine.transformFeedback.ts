@@ -7,6 +7,7 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 export var _forceTransformFeedbackToBundle = true;
 
 declare module "../../Engines/engine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Engine {
         /**
          * Creates a webGL transform feedback object

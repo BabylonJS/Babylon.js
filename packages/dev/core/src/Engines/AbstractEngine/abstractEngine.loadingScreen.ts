@@ -3,6 +3,7 @@ import type { ILoadingScreen } from "../../Loading/loadingScreen";
 import { AbstractEngine } from "../abstractEngine";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Display the loading screen

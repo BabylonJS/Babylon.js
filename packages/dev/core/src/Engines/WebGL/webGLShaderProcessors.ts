@@ -1,7 +1,7 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 /** @internal */
 export class WebGLShaderProcessor implements IShaderProcessor {
@@ -11,7 +11,7 @@ export class WebGLShaderProcessor implements IShaderProcessor {
         code: string,
         defines: string[],
         isFragment: boolean,
-        processingContext: Nullable<ShaderProcessingContext>,
+        processingContext: Nullable<_IShaderProcessingContext>,
         parameters: { [key: string]: number | string | boolean | undefined }
     ) {
         // Remove extensions

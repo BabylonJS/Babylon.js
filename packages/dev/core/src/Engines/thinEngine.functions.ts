@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { _loadFile } from "./abstractEngine.functions";
+import type { _LoadFile } from "./abstractEngine.functions";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
 /**
@@ -18,7 +19,7 @@ export interface IThinEngineStateObject {
     _createShaderProgramInjection?: typeof _createShaderProgram;
     createRawShaderProgramInjection?: typeof createRawShaderProgram;
     createShaderProgramInjection?: typeof createShaderProgram;
-    loadFileInjection?: typeof _loadFile;
+    loadFileInjection?: typeof _LoadFile;
     cachedPipelines: { [name: string]: IPipelineContext };
 }
 /**
@@ -148,7 +149,7 @@ export function createShaderProgram(
  * @param _shaderProcessingContext defines the shader processing context used during the processing if available
  * @returns the new pipeline
  */
-export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
     const stateObject = getStateObject(context);
     if (stateObject.parallelShaderCompile && !stateObject.disableParallelShaderCompile) {

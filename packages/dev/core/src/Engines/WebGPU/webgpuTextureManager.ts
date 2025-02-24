@@ -34,7 +34,7 @@ import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import type { ProcessingOptions } from "../Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "core/Materials";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
 import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
@@ -373,7 +373,7 @@ export class WebGPUTextureManager {
                 let vertexCode = shadersForPipelineType[type].vertex;
                 let fragmentCode = shadersForPipelineType[type].fragment;
 
-                const processorOptions: ProcessingOptions = {
+                const processorOptions: _IProcessingOptions = {
                     defines: defines.split("\n"),
                     indexParameters: null,
                     isFragment: false,

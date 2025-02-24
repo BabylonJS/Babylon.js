@@ -1,4 +1,4 @@
-import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions, ShaderCustomProcessingFunction, _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -10,7 +10,7 @@ import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
-import { _loadFile } from "core/Engines/abstractEngine.functions";
+import { _LoadFile } from "core/Engines/abstractEngine.functions";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
@@ -51,7 +51,7 @@ export interface IPipelineGenerationOptions {
     /**
      * extend the processing options when running code processing
      */
-    extendedProcessingOptions?: Partial<ProcessingOptions>;
+    extendedProcessingOptions?: Partial<_IProcessingOptions>;
 
     /**
      * extend the pipeline generation options
@@ -74,7 +74,7 @@ export interface IPipelineGenerationOptions {
  */
 export interface ICreateAndPreparePipelineContextOptions {
     parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
-    shaderProcessingContext: Nullable<ShaderProcessingContext>;
+    shaderProcessingContext: Nullable<_IShaderProcessingContext>;
     existingPipelineContext?: Nullable<IPipelineContext>;
     name?: string;
     rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
@@ -117,7 +117,7 @@ export function resetCachedPipeline(pipeline: IPipelineContext): void {
 
 /** @internal */
 export function _processShaderCode(
-    processorOptions: ProcessingOptions,
+    processorOptions: _IProcessingOptions,
     baseName: any,
     processFinalCode?: Nullable<ShaderCustomProcessingFunction>,
     onFinalCodeReady?: (vertexCode: string, fragmentCode: string) => void,
@@ -214,7 +214,7 @@ export function _processShaderCode(
     );
 }
 
-function _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _loadFile) {
+function _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _LoadFile) {
     if (typeof HTMLElement !== "undefined") {
         // DOM element ?
         if (shader instanceof HTMLElement) {
@@ -257,7 +257,7 @@ function _loadShader(shader: any, key: string, optionalKey: string, callback: (d
     } else {
         shaderUrl = ShaderStore.GetShadersRepository(shaderLanguage) + shader;
     }
-    _loadFileInjection = _loadFileInjection || _loadFile;
+    _loadFileInjection = _loadFileInjection || _LoadFile;
     if (!_loadFileInjection) {
         // we got to this point and loadFile was not injected - throw an error
         throw new Error("loadFileInjection is not defined");
@@ -290,7 +290,7 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
 export const createAndPreparePipelineContext = (
     options: ICreateAndPreparePipelineContextOptions,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
-    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContextAsync,
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ): IPipelineContext => {
     try {
