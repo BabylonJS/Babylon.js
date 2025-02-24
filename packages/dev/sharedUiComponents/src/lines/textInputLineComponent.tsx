@@ -183,14 +183,19 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     onKeyDown(event: React.KeyboardEvent) {
-        if (!this.props.disabled && this.props.arrows) {
-            if (event.key === "ArrowUp") {
-                this.incrementValue(1);
-                event.preventDefault();
+        if (!this.props.disabled) {
+            if (event.key === "Enter") {
+                this.updateValue(this.state.value);
             }
-            if (event.key === "ArrowDown") {
-                this.incrementValue(-1);
-                event.preventDefault();
+            if (this.props.arrows) {
+                if (event.key === "ArrowUp") {
+                    this.incrementValue(1);
+                    event.preventDefault();
+                }
+                if (event.key === "ArrowDown") {
+                    this.incrementValue(-1);
+                    event.preventDefault();
+                }
             }
         }
     }
