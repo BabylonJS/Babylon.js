@@ -572,7 +572,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._pointA.addToRef(this._localAxis, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
         } else {
-            if (this._scene.activeCamera){
+            if (this._scene.activeCamera) {
                 this._scene.activeCamera.getForwardRay().direction.normalizeToRef(this._localAxis);
             }
             this._dragPlane.position.copyFrom(this._pointA);
