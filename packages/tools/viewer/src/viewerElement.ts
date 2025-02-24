@@ -72,7 +72,7 @@ export type HotSpot = ViewerHotSpotQuery & {
  * @param predicate An optional predicate function used to determine eligible meshes for picking.
  * @returns A HotSpotobject containing the position, normal, and camera orbit parameters (alpha, beta, radius).
  */
-export async function createHotSpotFromCamera(
+export async function CreateHotSpotFromCamera(
     scene: Scene,
     camera: Camera,
     distanceReferencePoint: [x: number, y: number, z: number],
@@ -1416,7 +1416,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             const worldBounds = model?.getWorldBounds(selectedAnimation);
             const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
             const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
-            return createHotSpotFromCamera(scene, camera, centerArray as [x: number, y: number, z: number], predicate);
+            return CreateHotSpotFromCamera(scene, camera, centerArray as [x: number, y: number, z: number], predicate);
         }
 
         return null;
