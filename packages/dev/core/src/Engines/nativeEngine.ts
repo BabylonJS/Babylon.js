@@ -28,7 +28,7 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from "./Native/nativeShaderProcessors";
 import type { IMaterialContext } from "./IMaterialContext";
 import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, IImage } from "./ICanvas";
+import type { ICanvas, IImage, IPath2D } from "./ICanvas";
 import type { IStencilState } from "../States/IStencilState";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
@@ -2606,6 +2606,19 @@ export class NativeEngine extends Engine {
         }
         const image = new _native.Image();
         return image;
+    }
+
+    /**
+     * Create a 2D path to use with canvas
+     * @returns IPath2D interface
+     * @param d SVG path string
+     */
+    public override createCanvasPath2D(d?: string): IPath2D {
+        if (!_native.Canvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const path2d = new _native.Path2D(d);
+        return path2d;
     }
 
     /**
