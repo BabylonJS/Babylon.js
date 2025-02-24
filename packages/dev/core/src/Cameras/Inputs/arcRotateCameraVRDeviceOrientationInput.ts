@@ -6,6 +6,7 @@ import { Tools } from "../../Misc/tools";
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/arcRotateCameraInputsManager" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface ArcRotateCameraInputsManager {
         /**
          * Add orientation input support to the input manager.

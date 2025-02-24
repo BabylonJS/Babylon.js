@@ -162,6 +162,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public applyYInversionOnUpdate = true;
 
     /**

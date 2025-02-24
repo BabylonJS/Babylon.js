@@ -9,7 +9,7 @@ import { Viewport } from "../../Maths/math.viewport";
 /**
  * @internal
  */
-export function setVRRigMode(camera: Camera, rigParams: any) {
+export function _SetVrRigMode(camera: Camera, rigParams: any) {
     const metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
 
     camera._rigCameras[0]._cameraRigParams.vrMetrics = metrics;

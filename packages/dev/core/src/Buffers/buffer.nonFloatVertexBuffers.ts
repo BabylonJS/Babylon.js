@@ -26,7 +26,7 @@ const vertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
  * @param type Type to check
  * @returns True if it is a signed type
  */
-function isSignedType(type: number): boolean {
+function IsSignedType(type: number): boolean {
     switch (type) {
         case VertexBuffer.BYTE:
         case VertexBuffer.SHORT:
@@ -78,7 +78,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
             pipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
             if (currentVertexBufferType !== VertexBuffer.FLOAT) {
                 shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] = VertexBuffer.DeduceStride(kind);
-                if (isSignedType(currentVertexBufferType)) {
+                if (IsSignedType(currentVertexBufferType)) {
                     shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] *= -1;
                 }
             }

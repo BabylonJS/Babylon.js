@@ -6,7 +6,7 @@ import { StereoscopicInterlacePostProcessI } from "../../PostProcesses/stereosco
 /**
  * @internal
  */
-export function setStereoscopicRigMode(camera: Camera): void {
+export function _SetStereoscopicRigMode(camera: Camera): void {
     const isStereoscopicHoriz =
         camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     const isCrossEye = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;

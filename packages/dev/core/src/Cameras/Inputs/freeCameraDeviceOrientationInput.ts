@@ -9,6 +9,7 @@ import { Observable } from "../../Misc/observable";
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/freeCameraInputsManager" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface FreeCameraInputsManager {
         /**
          * @internal

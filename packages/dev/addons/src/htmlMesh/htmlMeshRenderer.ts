@@ -36,12 +36,12 @@ const renderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFu
 
         // Use property check instead of instanceof since it is less expensive and
         // this will be called many times per frame
-        const meshAIsHtmlMesh = (meshA as any)["isHtmlMesh"];
-        const meshBIsHtmlMesh = (meshB as any)["isHtmlMesh"];
-        if (meshAIsHtmlMesh) {
-            return meshBIsHtmlMesh ? (meshA.absolutePosition.z <= meshB.absolutePosition.z ? 1 : -1) : -1;
+        const meshIsHtmlMeshA = (meshA as any)["isHtmlMesh"];
+        const meshIsHtmlMeshB = (meshB as any)["isHtmlMesh"];
+        if (meshIsHtmlMeshA) {
+            return meshIsHtmlMeshB ? (meshA.absolutePosition.z <= meshB.absolutePosition.z ? 1 : -1) : -1;
         } else {
-            return meshBIsHtmlMesh ? 1 : defaultRenderOrder(subMeshA, subMeshB);
+            return meshIsHtmlMeshB ? 1 : defaultRenderOrder(subMeshA, subMeshB);
         }
     };
 };
@@ -297,7 +297,7 @@ export class HtmlMeshRenderer {
     }
 
     // prettier-ignore
-    protected _getCameraCSSMatrix(matrix: Matrix): string {
+    protected _getCameraCssMatrix(matrix: Matrix): string {
         const elements = matrix.m;
         return `matrix3d(${
             this._epsilon( elements[0] )
@@ -338,7 +338,7 @@ export class HtmlMeshRenderer {
     // This also handles conversion from BJS left handed coords
     // to CSS right handed coords
     // prettier-ignore
-    protected _getHtmlContentCSSMatrix(matrix: Matrix, useRightHandedSystem: boolean): string {
+    protected _getHtmlContentCssMatrix(matrix: Matrix, useRightHandedSystem: boolean): string {
         const elements = matrix.m;
         // In a right handed coordinate system, the elements 11 to 14 have to change their direction
         const direction = useRightHandedSystem ? -1 : 1;
@@ -463,7 +463,7 @@ export class HtmlMeshRenderer {
         // Get the transformation matrix for the html mesh
         const scaledAndTranslatedObjectMatrix = this._getTransformationMatrix(htmlMesh, useRightHandedSystem);
 
-        let style = `translate(-50%, -50%) ${this._getHtmlContentCSSMatrix(scaledAndTranslatedObjectMatrix, useRightHandedSystem)}`;
+        let style = `translate(-50%, -50%) ${this._getHtmlContentCssMatrix(scaledAndTranslatedObjectMatrix, useRightHandedSystem)}`;
         // In a right handed system, screens are on the wrong side of the mesh, so we have to rotate by Math.PI which results in the matrix3d seen below
         style += `${useRightHandedSystem ? "matrix3d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)" : ""}`;
 
@@ -562,7 +562,7 @@ export class HtmlMeshRenderer {
 
         Matrix.FromArrayToRef(cameraMatrixWorldAsArray, 0, cameraMatrixWorld);
 
-        const cameraCSSMatrix = this._getCameraCSSMatrix(cameraMatrixWorld);
+        const cameraCSSMatrix = this._getCameraCssMatrix(cameraMatrixWorld);
         const style = cameraCSSMatrix;
 
         if (this._cache.cameraData.style !== style) {

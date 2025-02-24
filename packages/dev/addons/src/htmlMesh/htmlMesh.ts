@@ -261,7 +261,7 @@ export class HtmlMesh extends Mesh {
         // otherwise hide it
         this._element!.style.display = enabled ? "" : "none";
         // Capture the content z index
-        this._setElementZIndex(this.position.z * -10000);
+        this._setElementzIndex(this.position.z * -10000);
         super.setEnabled(enabled);
     }
 
@@ -312,7 +312,7 @@ export class HtmlMesh extends Mesh {
         this.material.freeze();
     }
 
-    protected _setElementZIndex(zIndex: number) {
+    protected _setElementzIndex(zIndex: number) {
         if (this._element) {
             this._element!.style.zIndex = `${zIndex}`;
         }

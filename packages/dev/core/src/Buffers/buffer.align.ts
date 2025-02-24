@@ -10,6 +10,7 @@ const isLittleEndian = (() => {
 })();
 
 declare module "./buffer" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface VertexBuffer {
         /**
          * Gets the effective byte stride, that is the byte stride of the buffer that is actually sent to the GPU.

@@ -37,6 +37,7 @@ import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 /**
  * Options to modify the vr teleportation behavior.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface VRTeleportationOptions {
     /**
      * The name of the mesh which should be used as the teleportation floor. (default: null)
@@ -67,6 +68,7 @@ export interface VRTeleportationOptions {
 /**
  * Options to modify the vr experience helper's behavior.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface VRExperienceHelperOptions {
     /**
      * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
@@ -1374,7 +1376,7 @@ export class VRExperienceHelper {
 
         this._postProcessMove.animations = [];
 
-        const animationPP = new Animation("animationPP", "vignetteWeight", 90, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animationPp = new Animation("animationPP", "vignetteWeight", 90, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         const vignetteWeightKeys = [];
         vignetteWeightKeys.push({
@@ -1390,11 +1392,11 @@ export class VRExperienceHelper {
             value: 0,
         });
 
-        animationPP.setKeys(vignetteWeightKeys);
-        animationPP.setEasingFunction(this._circleEase);
-        this._postProcessMove.animations.push(animationPP);
+        animationPp.setKeys(vignetteWeightKeys);
+        animationPp.setEasingFunction(this._circleEase);
+        this._postProcessMove.animations.push(animationPp);
 
-        const animationPP2 = new Animation("animationPP2", "vignetteStretch", 90, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animationPp2 = new Animation("animationPP2", "vignetteStretch", 90, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         const vignetteStretchKeys = [];
         vignetteStretchKeys.push({
@@ -1410,9 +1412,9 @@ export class VRExperienceHelper {
             value: 0,
         });
 
-        animationPP2.setKeys(vignetteStretchKeys);
-        animationPP2.setEasingFunction(this._circleEase);
-        this._postProcessMove.animations.push(animationPP2);
+        animationPp2.setKeys(vignetteStretchKeys);
+        animationPp2.setEasingFunction(this._circleEase);
+        this._postProcessMove.animations.push(animationPp2);
 
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
@@ -1455,21 +1457,21 @@ export class VRExperienceHelper {
         this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
 
         // Animations FPS
-        const FPS = 90;
+        const fps = 90;
         let speedRatio, lastFrame;
         if (this._teleportationMode == VRExperienceHelper.TELEPORTATIONMODE_CONSTANTSPEED) {
-            lastFrame = FPS;
+            lastFrame = fps;
             const dist = Vector3.Distance(this.currentVRCamera.position, this._workingVector);
             speedRatio = this._teleportationSpeed / dist;
         } else {
             // teleportationMode is TELEPORTATIONMODE_CONSTANTTIME
-            lastFrame = Math.round((this._teleportationTime * FPS) / 1000);
+            lastFrame = Math.round((this._teleportationTime * fps) / 1000);
             speedRatio = 1;
         }
 
         // Create animation from the camera's position to the new location
         this.currentVRCamera.animations = [];
-        const animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", FPS, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
         const animationCameraTeleportationKeys = [
             {
                 frame: 0,
@@ -1490,7 +1492,7 @@ export class VRExperienceHelper {
         // Calculate the mid frame for vignette animations
         const midFrame = Math.round(lastFrame / 2);
 
-        const animationPP = new Animation("animationPP", "vignetteWeight", FPS, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animationPp = new Animation("animationPP", "vignetteWeight", fps, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         const vignetteWeightKeys = [];
         vignetteWeightKeys.push({
@@ -1506,10 +1508,10 @@ export class VRExperienceHelper {
             value: 0,
         });
 
-        animationPP.setKeys(vignetteWeightKeys);
-        this._postProcessMove.animations.push(animationPP);
+        animationPp.setKeys(vignetteWeightKeys);
+        this._postProcessMove.animations.push(animationPp);
 
-        const animationPP2 = new Animation("animationPP2", "vignetteStretch", FPS, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animationPp2 = new Animation("animationPP2", "vignetteStretch", fps, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         const vignetteStretchKeys = [];
         vignetteStretchKeys.push({
@@ -1525,8 +1527,8 @@ export class VRExperienceHelper {
             value: 0,
         });
 
-        animationPP2.setKeys(vignetteStretchKeys);
-        this._postProcessMove.animations.push(animationPP2);
+        animationPp2.setKeys(vignetteStretchKeys);
+        this._postProcessMove.animations.push(animationPp2);
 
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;

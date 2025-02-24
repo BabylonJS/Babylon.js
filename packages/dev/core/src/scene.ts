@@ -3247,8 +3247,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param uniqueId defines the material's unique id
      * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the material or null if none found.
+     * @deprecated Please use getMaterialByUniqueId instead.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getMaterialByUniqueID(uniqueId: number, allowMultiMaterials: boolean = false): Nullable<Material> {
+        return this.getMaterialByUniqueId(uniqueId, allowMultiMaterials);
+    }
+
+    /**
+     * Get a material using its unique id
+     * @param uniqueId defines the material's unique id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
+    public getMaterialByUniqueId(uniqueId: number, allowMultiMaterials: boolean = false): Nullable<Material> {
         return this._getMaterial(allowMultiMaterials, (m) => m.uniqueId === uniqueId);
     }
 
@@ -5901,6 +5913,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the new active camera or null if none found.
      * @deprecated Please use setActiveCameraById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     setActiveCameraByID(id: string): Nullable<Camera> {
         return this.setActiveCameraById(id);
     }
@@ -5910,6 +5923,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the material or null if none found.
      * @deprecated Please use getMaterialById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getMaterialByID(id: string): Nullable<Material> {
         return this.getMaterialById(id);
     }
@@ -5919,6 +5933,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the last material with the given id or null if none found.
      * @deprecated Please use getLastMaterialById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLastMaterialByID(id: string): Nullable<Material> {
         return this.getLastMaterialById(id);
     }
@@ -5929,6 +5944,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the texture or null if none found.
      * @deprecated Please use getTextureByUniqueId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
         return this.getTextureByUniqueId(uniqueId);
     }
@@ -5938,6 +5954,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the camera or null if not found
      * @deprecated Please use getCameraById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getCameraByID(id: string): Nullable<Camera> {
         return this.getCameraById(id);
     }
@@ -5947,6 +5964,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the camera or null if not found
      * @deprecated Please use getCameraByUniqueId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getCameraByUniqueID(uniqueId: number): Nullable<Camera> {
         return this.getCameraByUniqueId(uniqueId);
     }
@@ -5956,6 +5974,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the bone or null if not found
      * @deprecated Please use getBoneById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getBoneByID(id: string): Nullable<Bone> {
         return this.getBoneById(id);
     }
@@ -5965,6 +5984,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the light or null if none found.
      * @deprecated Please use getLightById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLightByID(id: string): Nullable<Light> {
         return this.getLightById(id);
     }
@@ -5974,6 +5994,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the light or null if none found.
      * @deprecated Please use getLightByUniqueId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLightByUniqueID(uniqueId: number): Nullable<Light> {
         return this.getLightByUniqueId(uniqueId);
     }
@@ -5983,6 +6004,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the corresponding system or null if none found
      * @deprecated Please use getParticleSystemById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getParticleSystemByID(id: string): Nullable<IParticleSystem> {
         return this.getParticleSystemById(id);
     }
@@ -5992,6 +6014,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the geometry or null if none found.
      * @deprecated Please use getGeometryById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getGeometryByID(id: string): Nullable<Geometry> {
         return this.getGeometryById(id);
     }
@@ -6001,6 +6024,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the mesh found or null if not found at all
      * @deprecated Please use getMeshById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getMeshByID(id: string): Nullable<AbstractMesh> {
         return this.getMeshById(id);
     }
@@ -6010,6 +6034,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found mesh or null if not found at all.
      * @deprecated Please use getMeshByUniqueId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh> {
         return this.getMeshByUniqueId(uniqueId);
     }
@@ -6019,6 +6044,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found mesh or null if not found at all.
      * @deprecated Please use getLastMeshById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLastMeshByID(id: string): Nullable<AbstractMesh> {
         return this.getLastMeshById(id);
     }
@@ -6028,6 +6054,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns a list of meshes
      * @deprecated Please use getMeshesById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getMeshesByID(id: string): Array<AbstractMesh> {
         return this.getMeshesById(id);
     }
@@ -6037,6 +6064,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found transform node or null if not found at all.
      * @deprecated Please use getTransformNodeById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getTransformNodeByID(id: string): Nullable<TransformNode> {
         return this.getTransformNodeById(id);
     }
@@ -6046,6 +6074,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found transform node or null if not found at all.
      * @deprecated Please use getTransformNodeByUniqueId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode> {
         return this.getTransformNodeByUniqueId(uniqueId);
     }
@@ -6055,6 +6084,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns a list of transform nodes
      * @deprecated Please use getTransformNodesById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getTransformNodesByID(id: string): Array<TransformNode> {
         return this.getTransformNodesById(id);
     }
@@ -6064,6 +6094,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found node or null if not found at all
      * @deprecated Please use getNodeById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getNodeByID(id: string): Nullable<Node> {
         return this.getNodeById(id);
     }
@@ -6073,6 +6104,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found node or null if not found at all
      * @deprecated Please use getLastEntryById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLastEntryByID(id: string): Nullable<Node> {
         return this.getLastEntryById(id);
     }
@@ -6082,6 +6114,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the found skeleton or null if not found at all.
      * @deprecated Please use getLastSkeletonById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     getLastSkeletonByID(id: string): Nullable<Skeleton> {
         return this.getLastSkeletonById(id);
     }

@@ -1,3 +1,5 @@
+const allowedNonStrictAbbreviations = "HTML|BRDF|GUI|LOD|XR|PBR|IBL|HDR|SSR|SSAO|SMAA|MSAA|FXAA|GPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]";
+
 const rules = {
     root: true,
     parser: "@typescript-eslint/parser",
@@ -27,6 +29,15 @@ const rules = {
                 "@typescript-eslint/no-unnecessary-type-arguments": "error",
                 "@typescript-eslint/prefer-nullish-coalescing": "error",
                 "@typescript-eslint/prefer-optional-chain": "error",
+                "@typescript-eslint/naming-convention": [
+                    "error",
+                    {
+                        selector: "variable",
+                        types: ["boolean"],
+                        format: ["PascalCase"],
+                        prefix: ["is", "should", "has", "can"],
+                    },
+                ],
             },
             parser: "@typescript-eslint/parser",
             parserOptions: {
@@ -73,96 +84,148 @@ const rules = {
                     "error",
                     {
                         selector: "default",
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                     },
                     {
                         selector: "import",
-                        format: ["camelCase", "PascalCase"],
+                        format: ["strictCamelCase", "StrictPascalCase"],
                     },
                     {
                         selector: "variable",
-                        format: ["camelCase", "UPPER_CASE", "snake_case"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "parameter",
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "objectLiteralProperty",
-                        format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        format: ["strictCamelCase", "snake_case", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "enumMember",
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                     },
+                    // public static members of classes, including constants
                     {
                         selector: "memberLike",
                         modifiers: ["public", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
+                    // private static members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["private", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "require",
                     },
+                    // protected static members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["protected", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "require",
                     },
+                    // public instance members of classes, including constants
                     {
                         selector: "memberLike",
                         modifiers: ["public"],
-                        format: ["camelCase", "UPPER_CASE"],
+                        format: ["strictCamelCase", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
+                    // private instance members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["private"],
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "require",
                     },
+                    // protected instance members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["protected"],
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "require",
                     },
+                    // async suffix
                     {
-                        selector: "typeLike",
-                        format: ["PascalCase"],
+                        selector: "memberLike",
+                        modifiers: ["async"],
+                        suffix: ["Async"],
+                        format: ["strictCamelCase", "StrictPascalCase"],
+                        leadingUnderscore: "allow",
                     },
                     {
+                        selector: "typeLike", // class, interface, enum, type alias
+                        format: ["StrictPascalCase"],
+                    },
+                    // exported variables and functions, module-level
+                    {
                         selector: "variable",
-                        modifiers: ["const", "global"],
-                        format: ["PascalCase", "camelCase"],
+                        modifiers: ["const", "global", "exported"],
+                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "function",
-                        format: ["PascalCase", "camelCase"],
+                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "function",
                         modifiers: ["exported", "global"],
-                        format: ["PascalCase", "camelCase"],
+                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "interface",
-                        format: ["PascalCase"],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
+                        prefix: ["I"],
+                        filter: {
+                            regex: "Window",
+                            match: false,
+                        },
                     },
                     {
                         selector: "class",
+                        format: ["StrictPascalCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    // Remove the strictCamelCase (move to simple camelCase) requirement for abbreviations like HTML, GUI, BRDF, etc.
+                    {
+                        selector: ["memberLike", "variable", "property", "parameter"],
+                        format: ["camelCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: ["memberLike", "variable", "property", "class"],
                         format: ["PascalCase"],
+                        modifiers: ["static"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: ["class"],
+                        format: ["PascalCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
                         leadingUnderscore: "allow",
                     },
                 ],

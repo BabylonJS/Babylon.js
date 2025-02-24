@@ -49,11 +49,13 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Get or set the currentDraggingPointerId
      * @deprecated Please use currentDraggingPointerId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;
     }
-    public set currentDraggingPointerID(currentDraggingPointerID: number) {
-        this.currentDraggingPointerId = currentDraggingPointerID;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public set currentDraggingPointerID(currentDraggingPointerId: number) {
+        this.currentDraggingPointerId = currentDraggingPointerId;
     }
     /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
