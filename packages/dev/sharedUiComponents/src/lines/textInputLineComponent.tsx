@@ -28,15 +28,22 @@ export interface ITextInputLineComponentProps {
     placeholder?: string;
     unit?: React.ReactNode;
     validator?: (value: string) => boolean;
+    onValidateChangeFailed?: (invalidValue: string) => void;
     multilines?: boolean;
     throttlePropertyChangedNotification?: boolean;
     throttlePropertyChangedNotificationDelay?: number;
     disabled?: boolean;
 }
 
+interface ITextInputLineComponentState {
+    input: string;
+    dragging: boolean;
+    inputValid: boolean;
+}
+
 let throttleTimerId = -1;
 
-export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
+export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, ITextInputLineComponentState> {
     private _localChange = false;
 
     constructor(props: ITextInputLineComponentProps) {
@@ -45,26 +52,22 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const emptyValue = this.props.numeric ? "0" : "";
 
         this.state = {
-            value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || emptyValue,
+            input: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || emptyValue,
             dragging: false,
+            inputValid: true,
         };
     }
 
     override componentWillUnmount() {
+        this.updateValue(undefined, false);
         if (this.props.lockObject) {
             this.props.lockObject.lock = false;
         }
     }
 
-    override shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string; dragging: boolean }) {
+    override shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: ITextInputLineComponentState) {
         if (this._localChange) {
             this._localChange = false;
-            return true;
-        }
-
-        const newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName!];
-        if (newValue !== nextState.value) {
-            nextState.value = newValue || "";
             return true;
         }
 
@@ -107,20 +110,26 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return 0;
     }
 
-    validateInput(value: string) {
+    updateInput(input: string) {
         if (this.props.disabled) {
             return;
         }
         if (this.props.numbersOnly) {
-            if (/[^0-9.px%-]/g.test(value)) {
+            if (/[^0-9.px%-]/g.test(input)) {
                 return;
             }
         }
+
         this._localChange = true;
-        this.setState({ value: value });
+        this.setState({
+            input,
+            inputValid: this.props.validator ? this.props.validator(input) : true,
+        });
     }
 
-    updateValue(value: string, valueToValidate?: string) {
+    updateValue(adjustedInput?: string, updateState: boolean = true) {
+        let value = adjustedInput ?? this.state.input;
+
         if (this.props.numbersOnly) {
             if (!value) {
                 value = "0";
@@ -148,10 +157,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
-        if (this.props.validator && valueToValidate) {
-            if (this.props.validator(valueToValidate) == false) {
-                value = store;
-            }
+        if (updateState) {
+            this._localChange = true;
+            this.setState({ input: value });
+        }
+
+        if (this.props.validator && this.props.validator(value) == false && this.props.onValidateChangeFailed) {
+            this.props.onValidateChangeFailed(value);
+            return;
         }
 
         if (this.props.propertyName && !this.props.delayInput) {
@@ -178,14 +191,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             this.props.arrowsIncrement(amount);
             return;
         }
-        const currentValue = this.getCurrentNumericValue(this.state.value);
+        const currentValue = this.getCurrentNumericValue(this.state.input);
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
     onKeyDown(event: React.KeyboardEvent) {
         if (!this.props.disabled) {
             if (event.key === "Enter") {
-                this.updateValue(this.state.value);
+                this.updateValue();
             }
             if (this.props.arrows) {
                 if (event.key === "ArrowUp") {
@@ -201,8 +214,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     override render() {
-        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
-        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
+        const value = this.state.input === conflictingValuesPlaceholder ? "" : this.state.input;
+        const placeholder = this.state.input === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         return (
@@ -217,21 +230,16 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     <>
                         <textarea
                             className={this.props.disabled ? "disabled" : ""}
-                            value={this.state.value}
+                            style={this.state.inputValid ? {} : { background: "lightpink" }}
+                            value={this.state.input}
                             onFocus={() => {
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = true;
                                 }
                             }}
-                            onChange={(evt) => this.validateInput(evt.target.value)}
-                            onKeyDown={(evt) => {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                this.updateValue(this.state.value);
-                            }}
+                            onChange={(evt) => this.updateInput(evt.target.value)}
                             onBlur={(evt) => {
-                                this.updateValue(evt.target.value, evt.target.value);
+                                this.updateValue();
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = false;
                                 }
@@ -246,19 +254,20 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     >
                         <input
                             className={this.props.disabled ? "disabled" : ""}
+                            style={this.state.inputValid ? {} : { background: "lightpink" }}
                             value={value}
                             onBlur={(evt) => {
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = false;
                                 }
-                                this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
+                                this.updateValue();
                             }}
                             onFocus={() => {
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = true;
                                 }
                             }}
-                            onChange={(evt) => this.validateInput(evt.target.value)}
+                            onChange={(evt) => this.updateInput(evt.target.value)}
                             onKeyDown={(evt) => this.onKeyDown(evt)}
                             placeholder={placeholder}
                             type={this.props.numeric ? "number" : "text"}
