@@ -185,26 +185,6 @@ function computeModelsBoundingInfos(models: Model[]): Nullable<ViewerBoundingInf
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
 
-async function whenCubeTextureLoaded(cubeTexture: CubeTexture) {
-    if (!cubeTexture.isReady()) {
-        await new Promise<void>((resolve, reject) => {
-            const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
-                successObserver.remove();
-                errorObserver.remove();
-                resolve();
-            });
-
-            const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                if (texture === cubeTexture) {
-                    successObserver.remove();
-                    errorObserver.remove();
-                    reject(new Error("Failed to load environment texture."));
-                }
-            });
-        });
-    }
-}
-
 export type ViewerDetails = {
     /**
      * Provides access to the Scene managed by the Viewer.
@@ -271,6 +251,17 @@ export type EnvironmentOptions = Partial<
         skybox: boolean;
     }>
 >;
+
+export type LoadEnvironmentOptions = EnvironmentOptions &
+    Partial<
+        Readonly<{
+            /**
+             * Specifies the extension of the environment texture to load.
+             * This must be specified when the extension cannot be determined from the url.
+             */
+            extension: string;
+        }>
+    >;
 
 const defaultLoadEnvironmentOptions = { lighting: true, skybox: true } as const satisfies EnvironmentOptions;
 
@@ -1064,8 +1055,7 @@ export class Viewer implements IDisposable {
                 group.start(true, this.animationSpeed);
                 group.pause();
             });
-            // TODO: Add a loading option to this protected function to suppress adding the model to the scene.
-            // assetContainer.addAllToScene();
+            assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
             let selectedAnimation = -1;
@@ -1168,36 +1158,14 @@ export class Viewer implements IDisposable {
             this._activeModel?.dispose();
             this._activeModelBacking = null;
             this.selectedAnimation = -1;
-            if (!this._reflectionTexture && this._scene.environmentTexture) {
-                this._scene.environmentTexture.dispose();
-                this._scene.environmentTexture = null;
-            }
 
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
 
-                await this._loadEnvironmentLock.lockAsync(async () => {
-                    throwIfAborted(abortSignal, abortController.signal);
-                    const hasPBRMaterials = model.assetContainer.materials.some((material) => material instanceof PBRMaterial);
-                    if (hasPBRMaterials && !this._scene.environmentTexture) {
-                        this._snapshotHelper.disableSnapshotRendering();
-                        try {
-                            const { default: defaultEnvironmentUrl } = await import("./defaultEnvironment");
-                            const cubeTexture = CubeTexture.CreateFromPrefilteredData(defaultEnvironmentUrl, this._scene, ".env");
-                            this._scene.environmentTexture = cubeTexture;
-                            await whenCubeTextureLoaded(cubeTexture);
-                        } finally {
-                            this._snapshotHelper.enableSnapshotRendering();
-                            this._markSceneMutated();
-                        }
-                    }
-                });
-
-                this._snapshotHelper.disableSnapshotRendering();
-                model.assetContainer.addAllToScene();
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
+                if (!this._scene.environmentTexture && model.assetContainer.materials.some((material) => material instanceof PBRMaterial)) {
+                    await this.resetEnvironment({ lighting: true }, abortController.signal);
+                }
             }
         });
     }
@@ -1210,20 +1178,27 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
-     * Unloads the current environment if one is loaded.
+     * Resets the environment to its default state.
      * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, options, abortSignal);
+        let url: Nullable<string> = null;
+        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            url = (await import("./defaultEnvironment")).default;
+            const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
+            options = loadOptions;
+        }
+
+        await this._updateEnvironment(url, options, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         options = options ?? defaultLoadEnvironmentOptions;
@@ -1266,7 +1241,7 @@ export class Viewer implements IDisposable {
 
             try {
                 if (url) {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
@@ -1284,7 +1259,21 @@ export class Viewer implements IDisposable {
                         this._updateAutoClear();
                     }
 
-                    await whenCubeTextureLoaded(cubeTexture);
+                    await new Promise<void>((resolve, reject) => {
+                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
+                            successObserver.remove();
+                            errorObserver.remove();
+                            resolve();
+                        });
+
+                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                            if (texture === cubeTexture) {
+                                successObserver.remove();
+                                errorObserver.remove();
+                                reject(new Error("Failed to load environment texture."));
+                            }
+                        });
+                    });
                 }
 
                 this._updateLight();
@@ -1588,7 +1577,7 @@ export class Viewer implements IDisposable {
             shouldHaveDefaultLight = false;
         } else {
             const hasModelProvidedLights = this._activeModel.assetContainer.lights.length > 0;
-            const hasImageBasedLighting = !!this._scene.environmentTexture;
+            const hasImageBasedLighting = !!this._reflectionTexture;
             const hasMaterials = this._activeModel.assetContainer.materials.length > 0;
             const hasNonPBRMaterials = this._activeModel.assetContainer.materials.some((material) => !(material instanceof PBRMaterial));
 
