@@ -27,8 +27,8 @@ export interface ITextInputLineComponentProps {
     max?: number;
     placeholder?: string;
     unit?: React.ReactNode;
-    validator?: (value: string) => boolean;
-    onValidateChangeFailed?: (invalidValue: string) => void;
+    validator?: (input: string) => boolean;
+    onValidateChangeFailed?: (invalidInput: string) => void;
     multilines?: boolean;
     throttlePropertyChangedNotification?: boolean;
     throttlePropertyChangedNotificationDelay?: number;
@@ -218,6 +218,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const placeholder = this.state.input === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
+        const style = { background: this.state.inputValid ? undefined : "lightpink" };
         return (
             <div className={className}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -230,7 +231,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     <>
                         <textarea
                             className={this.props.disabled ? "disabled" : ""}
-                            style={this.state.inputValid ? {} : { background: "lightpink" }}
+                            style={style}
                             value={this.state.input}
                             onFocus={() => {
                                 if (this.props.lockObject) {
@@ -254,7 +255,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     >
                         <input
                             className={this.props.disabled ? "disabled" : ""}
-                            style={this.state.inputValid ? {} : { background: "lightpink" }}
+                            style={style}
                             value={value}
                             onBlur={(evt) => {
                                 if (this.props.lockObject) {
