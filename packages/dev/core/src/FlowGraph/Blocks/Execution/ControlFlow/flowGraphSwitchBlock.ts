@@ -6,6 +6,8 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import type { FlowGraphNumber } from "core/FlowGraph/utils";
+import { getNumericValue, isNumeric } from "core/FlowGraph/utils";
 /**
  * Configuration for a switch block.
  */
@@ -19,7 +21,7 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
 /**
  * A block that executes a branch based on a selection.
  */
-export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
+export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphExecutionBlock {
     /**
      * Input connection: The value of the selection.
      */
@@ -50,8 +52,13 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const selectionValue = this.selection.getValue(context);
+        let outputFlow: FlowGraphSignalConnection | undefined;
+        if (isNumeric(selectionValue)) {
+            outputFlow = this._getOutputFlowForCase(getNumericValue(selectionValue) as T);
+        } else {
+            outputFlow = this._getOutputFlowForCase(selectionValue);
+        }
 
-        const outputFlow = this._getOutputFlowForCase(selectionValue);
         if (outputFlow) {
             outputFlow._activateSignal(context);
         } else {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity_Declaration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
+import type { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
 import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
@@ -140,7 +140,7 @@ export interface IGLTFToFlowGraphMapping {
      * @param globalGLTF the global glTF object
      * @returns true if validated, false if not.
      */
-    validation?: (gltfBlock: IKHRInteractivity_Node, globalGLTF?: IGLTF) => boolean;
+    validation?: (gltfBlock: IKHRInteractivity_Node, interactivityGraph: IKHRInteractivity_Graph, globalGLTF?: IGLTF) => boolean;
 
     /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
@@ -292,7 +292,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
-        validation(gltfBlock, globalGLTF) {
+        validation(gltfBlock, interactivityGraph) {
             if (!gltfBlock.configuration) {
                 Logger.Error("Receive event should have a configuration object");
                 return false;
@@ -307,7 +307,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 Logger.Error("Event id should be a number");
                 return false;
             }
-            const event: InteractivityEvent = globalGLTF?.extensions?.KHR_interactivity?.events[eventId];
+            const event = interactivityGraph.events?.[eventId];
             if (!event) {
                 Logger.Error(`Event with id ${eventId} not found`);
                 return false;
@@ -747,7 +747,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.BitwiseNot],
         inputs: {
             values: {
-                a: { name: "input" },
+                a: { name: "a" },
             },
         },
         outputs: {
@@ -989,15 +989,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             }
             return true;
         },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
-            // process the input flows and add them to the inFlow array
-            // take all input flows and convert their names correctly to "in_$1"
-            const serializedObject = serializedObjects[0];
-            serializedObject.signalInputs.forEach((input) => {
-                input.name = "in_" + input.name;
-            });
-            return serializedObjects;
-        },
+        // extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
+        //     // process the input flows and add them to the inFlow array
+        //     // take all input flows and convert their names correctly to "in_$1"
+        //     const serializedObject = serializedObjects[0];
+        //     serializedObject.signalInputs.forEach((input) => {
+        //         input.name = "in_" + input.name;
+        //     });
+        //     return serializedObjects;
+        // },
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],

@@ -128,7 +128,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         },
         {
             input: "object",
-            output: "meshUnderPointer",
+            output: "meshOutOfPointer",
             inputBlockIndex: 2,
             outputBlockIndex: 0,
             isVariable: true,
