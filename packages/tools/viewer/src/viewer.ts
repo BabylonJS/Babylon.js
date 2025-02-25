@@ -143,7 +143,7 @@ async function createCubeTexture(url: string, scene: Scene, extension?: string) 
         if (extension === ".hdr") {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
-            return () => new HDRCubeTexture(url, scene, 128, false, true, false, true);
+            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         } else {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
