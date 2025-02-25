@@ -127,10 +127,10 @@ export class FlowGraph {
         this._coordinator = params.coordinator;
 
         this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
-            const order = this._getContextualOrder(event.type);
-            for (const block of order) {
-                // iterate contexts
-                for (const context of this._executionContexts) {
+            for (const context of this._executionContexts) {
+                const order = this._getContextualOrder(event.type, context);
+                for (const block of order) {
+                    // iterate contexts
                     if (!block._executeEvent(context, event.payload)) {
                         break;
                     }
@@ -227,7 +227,7 @@ export class FlowGraph {
     private _startPendingEvents() {
         for (const context of this._executionContexts) {
             for (const type in this._eventBlocks) {
-                const order = this._getContextualOrder(type as FlowGraphEventType);
+                const order = this._getContextualOrder(type as FlowGraphEventType, context);
                 for (const block of order) {
                     block._startPendingTasks(context);
                 }
@@ -235,18 +235,18 @@ export class FlowGraph {
         }
     }
 
-    private _getContextualOrder(type: FlowGraphEventType): FlowGraphEventBlock[] {
+    private _getContextualOrder(type: FlowGraphEventType, context: FlowGraphContext): FlowGraphEventBlock[] {
         const order = this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
 
         if (type === FlowGraphEventType.MeshPick) {
             const meshPickOrder = [] as FlowGraphEventBlock[];
             for (const block1 of order) {
                 // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
-                const mesh1 = (block1 as FlowGraphMeshPickEventBlock).targetMesh;
+                const mesh1 = (block1 as FlowGraphMeshPickEventBlock).asset.getValue(context);
                 let i = 0;
                 for (; i < order.length; i++) {
                     const block2 = order[i];
-                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock).targetMesh;
+                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock).asset.getValue(context);
                     if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
                         break;
                     }
