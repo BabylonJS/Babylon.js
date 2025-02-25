@@ -137,7 +137,7 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-async function createCubeTexture(url: string, extension: string | undefined, scene: Scene) {
+async function createCubeTexture(url: string, scene: Scene, extension?: string) {
     extension = extension ?? GetExtensionFromUrl(url);
     const instantiateTexture = await (async () => {
         if (extension === ".hdr") {
@@ -1293,7 +1293,7 @@ export class Viewer implements IDisposable {
 
             try {
                 if (url) {
-                    const cubeTexture = await createCubeTexture(url, options.extension, this._scene);
+                    const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
