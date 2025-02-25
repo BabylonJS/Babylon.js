@@ -259,6 +259,17 @@ export type EnvironmentOptions = Partial<
     }>
 >;
 
+export type LoadEnvironmentOptions = EnvironmentOptions &
+    Partial<
+        Readonly<{
+            /**
+             * Specifies the extension of the environment texture to load.
+             * This must be specified when the extension cannot be determined from the url.
+             */
+            extension: string;
+        }>
+    >;
+
 const defaultLoadEnvironmentOptions = {
     lighting: true,
     skybox: true,
@@ -1177,6 +1188,11 @@ export class Viewer implements IDisposable {
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
             }
         });
+
+        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
+        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            await this.resetEnvironment({ lighting: true }, abortSignal);
+        }
     }
 
     /**
@@ -1187,20 +1203,28 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
-     * Unloads the current environment if one is loaded.
+     * Resets the environment to its default state.
      * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, options, abortSignal);
+        let url: Nullable<string> = null;
+        // When there are PBR materials, the default environment should be used for lighting.
+        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            url = (await import("./defaultEnvironment")).default;
+            const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
+            options = loadOptions;
+        }
+
+        await this._updateEnvironment(url, options, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         options = options ?? defaultLoadEnvironmentOptions;
@@ -1243,7 +1267,7 @@ export class Viewer implements IDisposable {
 
             try {
                 if (url) {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
