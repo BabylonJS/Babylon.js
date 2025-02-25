@@ -172,14 +172,7 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
     const size = max.subtract(min);
     const center = min.add(size.scale(0.5));
 
-    return {
-        extents: {
-            min: min.asArray(),
-            max: max.asArray(),
-        },
-        size: size.asArray(),
-        center: center.asArray(),
-    };
+    return { extents: { min: min.asArray(), max: max.asArray() }, size: size.asArray(), center: center.asArray() };
 }
 
 /**
@@ -190,6 +183,26 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
 function computeModelsBoundingInfos(models: Model[]): Nullable<ViewerBoundingInfo> {
     const maxExtents = computeModelsMaxExtents(models);
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
+}
+
+async function whenCubeTextureLoaded(cubeTexture: CubeTexture) {
+    if (!cubeTexture.isReady()) {
+        await new Promise<void>((resolve, reject) => {
+            const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
+                successObserver.remove();
+                errorObserver.remove();
+                resolve();
+            });
+
+            const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                if (texture === cubeTexture) {
+                    successObserver.remove();
+                    errorObserver.remove();
+                    reject(new Error("Failed to load environment texture."));
+                }
+            });
+        });
+    }
 }
 
 export type ViewerDetails = {
@@ -259,10 +272,7 @@ export type EnvironmentOptions = Partial<
     }>
 >;
 
-const defaultLoadEnvironmentOptions = {
-    lighting: true,
-    skybox: true,
-} as const satisfies EnvironmentOptions;
+const defaultLoadEnvironmentOptions = { lighting: true, skybox: true } as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -382,10 +392,7 @@ export type Model = IDisposable & {
     makeActive(options?: ActivateModelOptions): void;
 };
 
-type ModelInternal = Model & {
-    _animationPlaying(): boolean;
-    _shouldRender(): boolean;
-};
+type ModelInternal = Model & { _animationPlaying(): boolean; _shouldRender(): boolean };
 
 /**
  * @experimental
@@ -595,9 +602,7 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.postProcessing = {
-            toneMapping: "neutral",
-        };
+        this.postProcessing = { toneMapping: "neutral" };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -653,12 +658,7 @@ export class Viewer implements IDisposable {
      * Get the current environment configuration.
      */
     public get environmentConfig(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this._reflectionsIntensity,
-            blur: this._skyboxBlur,
-            rotation: this._reflectionsRotation,
-            visible: this._skyboxVisible,
-        };
+        return { intensity: this._reflectionsIntensity, blur: this._skyboxBlur, rotation: this._reflectionsRotation, visible: this._skyboxVisible };
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
@@ -770,11 +770,7 @@ export class Viewer implements IDisposable {
                 break;
         }
 
-        return {
-            toneMapping,
-            contrast: this._contrast,
-            exposure: this._exposure,
-        };
+        return { toneMapping, contrast: this._contrast, exposure: this._exposure };
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
@@ -1068,7 +1064,8 @@ export class Viewer implements IDisposable {
                 group.start(true, this.animationSpeed);
                 group.pause();
             });
-            assetContainer.addAllToScene();
+            // TODO: Add a loading option to this protected function to suppress adding the model to the scene.
+            // assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
             let selectedAnimation = -1;
@@ -1171,10 +1168,36 @@ export class Viewer implements IDisposable {
             this._activeModel?.dispose();
             this._activeModelBacking = null;
             this.selectedAnimation = -1;
+            if (!this._reflectionTexture && this._scene.environmentTexture) {
+                this._scene.environmentTexture.dispose();
+                this._scene.environmentTexture = null;
+            }
 
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+
+                await this._loadEnvironmentLock.lockAsync(async () => {
+                    throwIfAborted(abortSignal, abortController.signal);
+                    const hasPBRMaterials = model.assetContainer.materials.some((material) => material instanceof PBRMaterial);
+                    if (hasPBRMaterials && !this._scene.environmentTexture) {
+                        this._snapshotHelper.disableSnapshotRendering();
+                        try {
+                            const { default: defaultEnvironmentUrl } = await import("./defaultEnvironment");
+                            const cubeTexture = CubeTexture.CreateFromPrefilteredData(defaultEnvironmentUrl, this._scene, ".env");
+                            this._scene.environmentTexture = cubeTexture;
+                            await whenCubeTextureLoaded(cubeTexture);
+                        } finally {
+                            this._snapshotHelper.enableSnapshotRendering();
+                            this._markSceneMutated();
+                        }
+                    }
+                });
+
+                this._snapshotHelper.disableSnapshotRendering();
+                model.assetContainer.addAllToScene();
+                this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }
@@ -1261,21 +1284,7 @@ export class Viewer implements IDisposable {
                         this._updateAutoClear();
                     }
 
-                    await new Promise<void>((resolve, reject) => {
-                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
-                            successObserver.remove();
-                            errorObserver.remove();
-                            resolve();
-                        });
-
-                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                            if (texture === cubeTexture) {
-                                successObserver.remove();
-                                errorObserver.remove();
-                                reject(new Error("Failed to load environment texture."));
-                            }
-                        });
-                    });
+                    await whenCubeTextureLoaded(cubeTexture);
                 }
 
                 this._updateLight();
@@ -1579,7 +1588,7 @@ export class Viewer implements IDisposable {
             shouldHaveDefaultLight = false;
         } else {
             const hasModelProvidedLights = this._activeModel.assetContainer.lights.length > 0;
-            const hasImageBasedLighting = !!this._reflectionTexture;
+            const hasImageBasedLighting = !!this._scene.environmentTexture;
             const hasMaterials = this._activeModel.assetContainer.materials.length > 0;
             const hasNonPBRMaterials = this._activeModel.assetContainer.materials.some((material) => !(material instanceof PBRMaterial));
 
