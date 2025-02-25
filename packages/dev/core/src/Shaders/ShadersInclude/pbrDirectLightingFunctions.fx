@@ -67,7 +67,8 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
             }
 
         float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
-        return (diffuseTerm * transmittanceNdotL + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
+        // Note: we use a Lambert BRDF for the transmitted term.
+        return (transmittanceNdotL / PI + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
     }
 #endif
 
