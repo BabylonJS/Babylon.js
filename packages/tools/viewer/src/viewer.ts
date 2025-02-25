@@ -1162,12 +1162,13 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-
-                if (!this._scene.environmentTexture && model.assetContainer.materials.some((material) => material instanceof PBRMaterial)) {
-                    await this.resetEnvironment({ lighting: true }, abortController.signal);
-                }
             }
         });
+
+        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
+        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            await this.resetEnvironment({ lighting: true }, abortSignal);
+        }
     }
 
     /**
@@ -1189,6 +1190,7 @@ export class Viewer implements IDisposable {
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         let url: Nullable<string> = null;
+        // When there are PBR materials, the default environment should be used for lighting.
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
             url = (await import("./defaultEnvironment")).default;
             const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
