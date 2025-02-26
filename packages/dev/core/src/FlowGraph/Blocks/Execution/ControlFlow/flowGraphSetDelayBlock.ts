@@ -52,7 +52,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
             this.error.payload = { message: "Max parallel delays reached" };
             return this.error._activateSignal(context);
         }
-        // global - "This value MUST be unique across all previous activations of all flow/setDelay nodes of the graph."
+        // get the last global delay index
         const lastDelayIndex: number = context._getGlobalContextVariable("lastDelayIndex", -1);
 
         // these are block-specific and not global

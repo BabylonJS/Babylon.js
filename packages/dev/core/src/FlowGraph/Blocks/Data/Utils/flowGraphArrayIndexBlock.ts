@@ -8,6 +8,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import type { FlowGraphNumber } from "core/FlowGraph/utils";
 import { getNumericValue } from "core/FlowGraph/utils";
+import type { Nullable } from "core/types";
 
 /**
  * This simple Util block takes an array as input and selects a single element from it.
@@ -26,7 +27,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
     /**
      * Output connection: The selected element.
      */
-    public readonly value: FlowGraphDataConnection<T>;
+    public readonly value: FlowGraphDataConnection<Nullable<T>>;
 
     /**
      * Construct a FlowGraphArrayIndexBlock.
@@ -48,6 +49,8 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
         const index = getNumericValue(this.index.getValue(context));
         if (array && index >= 0 && index < array.length) {
             this.value.setValue(array[index], context);
+        } else {
+            this.value.setValue(null, context);
         }
     }
 

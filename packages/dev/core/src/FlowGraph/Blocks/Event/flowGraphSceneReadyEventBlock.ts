@@ -4,7 +4,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
- * @experimental
  * Block that triggers when a scene is ready.
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
