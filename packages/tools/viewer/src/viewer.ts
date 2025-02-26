@@ -1423,11 +1423,7 @@ export class Viewer implements IDisposable {
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            if (!assetContainer) {
-                return false;
-            }
-
-            const mesh = assetContainer.meshes[query.meshIndex];
+            const mesh = assetContainer?.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
