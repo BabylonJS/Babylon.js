@@ -454,8 +454,9 @@ export interface ICanvasRenderingContext {
 
     /**
      * Strokes the current sub-paths with the current stroke style.
+     * @param path Optional Path2D.
      */
-    stroke(): void;
+    stroke(path?: IPath2D): void;
 
     /**
      * Fills the current sub-paths with the current fill style.
