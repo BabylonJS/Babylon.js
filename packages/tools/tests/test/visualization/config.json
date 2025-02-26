@@ -2514,6 +2514,12 @@
             "title": "Hide Loading Screen",
             "playgroundId": "#EQP888#8",
             "referenceImage": "Hide-Loading-Screen.png"
+        },
+        {
+            "title": "Flow Graph multiple contexts",
+            "playgroundId": "#FQWPBI#11",
+            "referenceImage": "Flow-Graph-multiple-contexts.png",
+            "renderCount": 30
         }
     ]
 }
