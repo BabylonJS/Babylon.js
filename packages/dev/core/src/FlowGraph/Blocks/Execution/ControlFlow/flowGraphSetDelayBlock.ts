@@ -18,7 +18,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
      */
     public static MaxParallelDelayCount = 100;
     /**
-     * Input connection: If activated the delayed activations set by this block will be canceled.
+     * Input signal: If activated the delayed activations set by this block will be canceled.
      */
     public readonly cancel: FlowGraphSignalConnection;
 
@@ -42,12 +42,14 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         const duration = this.duration.getValue(context);
         if (duration < 0 || isNaN(duration) || !isFinite(duration)) {
+            this.error.payload = { message: "Invalid duration" };
             return this.error._activateSignal(context);
         }
 
         // active delays are global to the context
         const activeDelays: number = context._getGlobalContextVariable("activeDelays", 0);
         if (activeDelays >= FlowGraphSetDelayBlock.MaxParallelDelayCount) {
+            this.error.payload = { message: "Max parallel delays reached" };
             return this.error._activateSignal(context);
         }
         // global - "This value MUST be unique across all previous activations of all flow/setDelay nodes of the graph."

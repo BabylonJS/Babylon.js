@@ -19,7 +19,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
      */
     public readonly reset: FlowGraphSignalConnection;
     /**
-     * Output connection: The time remaining before the throttle is done, in ms.
+     * Output connection: The time remaining before the throttle is triggering again, in seconds.
      */
     public readonly lastRemainingTime: FlowGraphDataConnection<number>;
 

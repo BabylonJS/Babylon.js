@@ -25,7 +25,7 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
     /**
      * Input connection: The value of the selection.
      */
-    public readonly selection: FlowGraphDataConnection<T>;
+    public readonly case: FlowGraphDataConnection<T>;
 
     /**
      * The default case to execute if no other case is found.
@@ -42,7 +42,7 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
     ) {
         super(config);
 
-        this.selection = this.registerDataInput("selection", RichTypeAny);
+        this.case = this.registerDataInput("case", RichTypeAny);
 
         // iterate the set not using for of
         (this.config.cases || []).forEach((caseValue) => {
@@ -51,7 +51,7 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
-        const selectionValue = this.selection.getValue(context);
+        const selectionValue = this.case.getValue(context);
         let outputFlow: FlowGraphSignalConnection | undefined;
         if (isNumeric(selectionValue)) {
             outputFlow = this._getOutputFlowForCase(getNumericValue(selectionValue) as T);

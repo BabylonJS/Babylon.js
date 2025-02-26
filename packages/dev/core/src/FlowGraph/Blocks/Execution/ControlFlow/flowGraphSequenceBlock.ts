@@ -10,9 +10,9 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
  */
 export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The number of output flows.
+     * The number of output signals. Defaults to 1.
      */
-    numberOutputFlows?: number;
+    outputSignalCount?: number;
 }
 
 /**
@@ -22,7 +22,7 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     /**
      * The output flows.
      */
-    public outFlows: FlowGraphSignalConnection[];
+    public executionSignals: FlowGraphSignalConnection[] = [];
 
     constructor(
         /**
@@ -31,32 +31,31 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
         public override config: IFlowGraphSequenceBlockConfiguration
     ) {
         super(config);
-        this.outFlows = [];
-        this.setNumberOfOutputFlows(this.config.numberOutputFlows);
+        this.setNumberOfOutputSignals(this.config.outputSignalCount);
     }
 
     public _execute(context: FlowGraphContext) {
-        for (let i = 0; i < this.outFlows.length; i++) {
-            this.outFlows[i]._activateSignal(context);
+        for (let i = 0; i < this.executionSignals.length; i++) {
+            this.executionSignals[i]._activateSignal(context);
         }
     }
 
     /**
      * Sets the block's output flows. Would usually be passed from the constructor but can be changed afterwards.
-     * @param numberOutputFlows the number of output flows
+     * @param outputSignalCount the number of output flows
      */
-    public setNumberOfOutputFlows(numberOutputFlows: number = 1) {
+    public setNumberOfOutputSignals(outputSignalCount: number = 1) {
         // check the size of the outFlow Array, see if it is not larger than needed
-        while (this.outFlows.length > numberOutputFlows) {
-            const flow = this.outFlows.pop();
+        while (this.executionSignals.length > outputSignalCount) {
+            const flow = this.executionSignals.pop();
             if (flow) {
                 flow.disconnectFromAll();
                 this._unregisterSignalOutput(flow.name);
             }
         }
 
-        while (this.outFlows.length < numberOutputFlows) {
-            this.outFlows.push(this._registerSignalOutput(`out_${this.outFlows.length}`));
+        while (this.executionSignals.length < outputSignalCount) {
+            this.executionSignals.push(this._registerSignalOutput(`out_${this.executionSignals.length}`));
         }
     }
 

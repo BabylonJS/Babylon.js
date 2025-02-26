@@ -12,9 +12,9 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
  */
 export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The number of output flows.
+     * The number of output signals. Required.
      */
-    numberOutputFlows: number;
+    outputSignalCount: number;
     /**
      * If the block should pick a random output flow from the ones that haven't been executed. Default to false.
      */
@@ -34,9 +34,9 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
      */
     public readonly reset: FlowGraphSignalConnection;
     /**
-     * Output connections: The output flows.
+     * Output connections: The output signals.
      */
-    public readonly outFlows: FlowGraphSignalConnection[] = [];
+    public readonly outputSignals: FlowGraphSignalConnection[] = [];
     /**
      * Output connection: The index of the current output flow.
      */
@@ -51,7 +51,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.lastIndex = this.registerDataOutput("lastIndex", RichTypeFlowGraphInteger, new FlowGraphInteger(-1));
-        this.setNumberOfOutputFlows(config?.numberOutputFlows);
+        this.setNumberOfOutputSignals(config?.outputSignalCount);
     }
 
     private _getNextIndex(indexesUsed: boolean[]): number {
@@ -72,21 +72,21 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     }
 
     /**
-     * Sets the block's output flows. Would usually be passed from the constructor but can be changed afterwards.
-     * @param numberOutputFlows the number of output flows
+     * Sets the block's output signals. Would usually be passed from the constructor but can be changed afterwards.
+     * @param numberOutputSignals the number of output flows
      */
-    public setNumberOfOutputFlows(numberOutputFlows: number = 1) {
+    public setNumberOfOutputSignals(numberOutputSignals: number = 1) {
         // check the size of the outFlow Array, see if it is not larger than needed
-        while (this.outFlows.length > numberOutputFlows) {
-            const flow = this.outFlows.pop();
+        while (this.outputSignals.length > numberOutputSignals) {
+            const flow = this.outputSignals.pop();
             if (flow) {
                 flow.disconnectFromAll();
                 this._unregisterSignalOutput(flow.name);
             }
         }
 
-        while (this.outFlows.length < numberOutputFlows) {
-            this.outFlows.push(this._registerSignalOutput(`out_${this.outFlows.length}`));
+        while (this.outputSignals.length < numberOutputSignals) {
+            this.outputSignals.push(this._registerSignalOutput(`out_${this.outputSignals.length}`));
         }
     }
 
@@ -96,7 +96,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
             context._setExecutionVariable(
                 this,
                 "indexesUsed",
-                this.outFlows.map(() => false)
+                this.outputSignals.map(() => false)
             );
         }
 
@@ -111,7 +111,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
             this.lastIndex.setValue(new FlowGraphInteger(nextIndex), context);
             indexesUsed[nextIndex] = true;
             context._setExecutionVariable(this, "indexesUsed", indexesUsed);
-            this.outFlows[nextIndex]._activateSignal(context);
+            this.outputSignals[nextIndex]._activateSignal(context);
         }
     }
 
@@ -128,7 +128,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
      */
     public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        serializationObject.config.numberOutputFlows = this.config.numberOutputFlows;
+        serializationObject.config.outputSignalCount = this.config.outputSignalCount;
         serializationObject.config.isRandom = this.config.isRandom;
         serializationObject.config.loop = this.config.isLoop;
         serializationObject.config.startIndex = this.config.startIndex;

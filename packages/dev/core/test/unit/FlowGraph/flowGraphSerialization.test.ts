@@ -118,11 +118,11 @@ describe("Flow Graph Serialization", () => {
         expect((parsed as FlowGraphExecutionBlock).signalOutputs.length).toEqual(block.signalOutputs.length);
 
         // Serialize a block with configuration
-        const multiGateBlock = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, name: "MultiGate" });
+        const multiGateBlock = new FlowGraphMultiGateBlock({ outputSignalCount: 3, name: "MultiGate" });
         const serialized2: any = {};
         multiGateBlock.serialize(serialized2);
         const parsed2 = ParseFlowGraphBlockWithClassType(serialized2, { scene }, FlowGraphMultiGateBlock) as any;
-        expect(parsed2.outFlows.length).toEqual(3);
+        expect(parsed2.outputSignals.length).toEqual(3);
     });
 
     it("Serializes and parses a context", () => {

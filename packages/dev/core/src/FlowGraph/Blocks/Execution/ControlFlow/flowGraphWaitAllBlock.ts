@@ -11,10 +11,10 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
  */
 export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The number of input flows. There will always be at least one input flow.
+     * The number of input signals. There will always be at least one input flow.
      * glTF interactivity has a max of 64 input flows.
      */
-    inputFlows: number;
+    inputSignalCount: number;
 }
 
 /**
@@ -36,7 +36,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
      */
     public remainingInputs: FlowGraphDataConnection<number>;
     /**
-     * Input connection: The 2nd to nth input flows (the first is named onStart)
+     * An array of input signals
      */
     public readonly inFlows: FlowGraphSignalConnection[] = [];
     private _cachedActivationState: boolean[] = [];
@@ -51,9 +51,9 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
 
         this.reset = this._registerSignalInput("reset");
         this.completed = this._registerSignalOutput("completed");
-        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputFlows || 0);
+        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputSignalCount || 0);
         // The first inFlow is the default input signal all execution blocks have
-        for (let i = 0; i < this.config.inputFlows; i++) {
+        for (let i = 0; i < this.config.inputSignalCount; i++) {
             this.inFlows.push(this._registerSignalInput(`in_${i}`));
         }
         // no need for in
@@ -64,7 +64,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         const activationState = this._cachedActivationState;
         activationState.length = 0;
         if (!context._hasExecutionVariable(this, "activationState")) {
-            for (let i = 0; i < this.config.inputFlows; i++) {
+            for (let i = 0; i < this.config.inputSignalCount; i++) {
                 activationState.push(false);
             }
         } else {
@@ -79,7 +79,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const activationState = this._getCurrentActivationState(context);
         if (callingSignal === this.reset) {
-            for (let i = 0; i < this.config.inputFlows; i++) {
+            for (let i = 0; i < this.config.inputSignalCount; i++) {
                 activationState[i] = false;
             }
         } else {
@@ -94,7 +94,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
 
         if (!activationState.includes(false)) {
             this.completed._activateSignal(context);
-            for (let i = 0; i < this.config.inputFlows; i++) {
+            for (let i = 0; i < this.config.inputSignalCount; i++) {
                 activationState[i] = false;
             }
         } else {
@@ -115,7 +115,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
      */
     public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        serializationObject.config.inputFlows = this.config.inputFlows;
+        serializationObject.config.inputFlows = this.config.inputSignalCount;
     }
 }
 RegisterClass(FlowGraphBlockNames.WaitAll, FlowGraphWaitAllBlock);

@@ -8,6 +8,16 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
+ * Configuration for the flip flop block.
+ */
+export interface IFlowGraphFlipFlopBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The starting value of the flip flop switch
+     */
+    startValue?: boolean;
+}
+
+/**
  * This block flip flops between two outputs.
  */
 export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
@@ -22,22 +32,22 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
     /**
      * Output connection: If the variable is on.
      */
-    public readonly isOn: FlowGraphDataConnection<boolean>;
+    public readonly value: FlowGraphDataConnection<boolean>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(config?: IFlowGraphFlipFlopBlockConfiguration) {
         super(config);
 
         this.onOn = this._registerSignalOutput("onOn");
         this.onOff = this._registerSignalOutput("onOff");
-        this.isOn = this.registerDataOutput("isOn", RichTypeBoolean);
+        this.value = this.registerDataOutput("value", RichTypeBoolean);
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
-        let value = context._getExecutionVariable(this, "value", false);
+        let value = context._getExecutionVariable(this, "value", typeof this.config?.startValue === "boolean" ? !this.config.startValue : false);
 
         value = !value;
         context._setExecutionVariable(this, "value", value);
-        this.isOn.setValue(value, context);
+        this.value.setValue(value, context);
         if (value) {
             this.onOn._activateSignal(context);
         } else {

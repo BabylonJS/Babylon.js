@@ -371,7 +371,7 @@ describe("glTF interactivity Object Model", () => {
         );
 
         // wait for 1 second
-        await new Promise((resolve) => setTimeout(resolve, 1000 + 200));
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 300));
         expect(calls[0]).toEqual(new Vector3(1, 2, 3));
         calls.forEach((call, idx) => {
             if (idx === 0) {

@@ -22,7 +22,7 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
         this.delayIndex = this.registerDataInput("delayIndex", RichTypeNumber);
     }
 
-    public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
+    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const delayIndex = this.delayIndex.getValue(context);
         if (delayIndex <= 0 || isNaN(delayIndex) || !isFinite(delayIndex)) {
             return this.error._activateSignal(context);

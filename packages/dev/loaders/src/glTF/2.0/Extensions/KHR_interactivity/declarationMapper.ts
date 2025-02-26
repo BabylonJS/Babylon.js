@@ -856,7 +856,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
-            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length;
+            serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows || []).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -876,6 +876,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
             cases: { name: "cases", inOptions: true, defaultValue: [] },
+        },
+        inputs: {
+            values: {
+                selection: { name: "case" },
+            },
         },
         validation(gltfBlock) {
             if (gltfBlock.configuration && gltfBlock.configuration.cases) {
@@ -962,7 +967,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             }
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
-            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -972,7 +977,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
-            inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true, defaultValue: 0 },
+            inputFlows: { name: "inputSignalCount", gltfType: "number", inOptions: true, defaultValue: 0 },
         },
         inputs: {
             flows: {

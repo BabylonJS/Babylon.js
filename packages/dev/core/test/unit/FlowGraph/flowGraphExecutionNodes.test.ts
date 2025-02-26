@@ -122,18 +122,18 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, isLoop: true });
+        const multiGate = new FlowGraphMultiGateBlock({ outputSignalCount: 3, isLoop: true });
         sceneReady.done.connectTo(multiGate.in);
 
         const customFunction1 = new FlowGraphConsoleLogBlock();
         customFunction1.message.setValue("custom1", flowGraphContext);
-        multiGate.outFlows[0].connectTo(customFunction1.in);
+        multiGate.outputSignals[0].connectTo(customFunction1.in);
         const customFunction2 = new FlowGraphConsoleLogBlock();
         customFunction2.message.setValue("custom2", flowGraphContext);
-        multiGate.outFlows[1].connectTo(customFunction2.in);
+        multiGate.outputSignals[1].connectTo(customFunction2.in);
         const customFunction3 = new FlowGraphConsoleLogBlock();
         customFunction3.message.setValue("custom3", flowGraphContext);
-        multiGate.outFlows[2].connectTo(customFunction3.in);
+        multiGate.outputSignals[2].connectTo(customFunction3.in);
 
         flowGraph.start();
 
@@ -157,7 +157,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
         sceneReady.done.connectTo(switchBlock.in);
-        switchBlock.selection.setValue(2, flowGraphContext);
+        switchBlock.case.setValue(2, flowGraphContext);
 
         const customFunctionBlock1 = new FlowGraphConsoleLogBlock();
         customFunctionBlock1.message.setValue("custom1", flowGraphContext);
@@ -173,7 +173,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom2");
 
-        switchBlock.selection.setValue(3, flowGraphContext);
+        switchBlock.case.setValue(3, flowGraphContext);
         sceneReady.done._activateSignal(flowGraphContext);
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom3");
     });
