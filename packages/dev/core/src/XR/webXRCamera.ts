@@ -403,7 +403,14 @@ export class WebXRCamera extends FreeCamera {
                     w: this._referenceQuaternion.w,
                 }
             );
-            this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
+            let isIwerEmulator = false;
+            // @ts-expect-error - augment Window interface
+            if (window && window.xrDevice){
+                isIwerEmulator = true;
+            }
+            const offsetMatrix = isIwerEmulator ? transform.matrix : transform;
+            // @ts-expect-error - IWER doesn't accept an XRRigidTransform object but a mat4 (gl-matrix)
+            this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(offsetMatrix);
         }
     }
 }

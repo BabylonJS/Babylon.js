@@ -98,6 +98,7 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import type { WebXRDefaultExperience } from "./XR";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -211,6 +212,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /** @internal */
     public _blockEntityCollection = false;
+
+    /** @internal */
+    public _webXRDefaultExperience: Nullable<WebXRDefaultExperience> = null;
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
