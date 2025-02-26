@@ -219,11 +219,11 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
         case FlowGraphBlockNames.GetProperty:
             return async () => (await import("./Data/flowGraphGetPropertyBlock")).FlowGraphGetPropertyBlock;
         case FlowGraphBlockNames.SetProperty:
-            return async () => (await import("./Data/flowGraphSetPropertyBlock")).FlowGraphSetPropertyBlock;
+            return async () => (await import("./Execution/flowGraphSetPropertyBlock")).FlowGraphSetPropertyBlock;
         case FlowGraphBlockNames.GetVariable:
             return async () => (await import("./Data/flowGraphGetVariableBlock")).FlowGraphGetVariableBlock;
         case FlowGraphBlockNames.SetVariable:
-            return async () => (await import("./Data/flowGraphSetVariableBlock")).FlowGraphSetVariableBlock;
+            return async () => (await import("./Execution/flowGraphSetVariableBlock")).FlowGraphSetVariableBlock;
         case FlowGraphBlockNames.JsonPointerParser:
             return async () => (await import("./Data/Transformers/flowGraphJsonPointerParserBlock")).FlowGraphJsonPointerParserBlock;
         case FlowGraphBlockNames.LeadingZeros:
