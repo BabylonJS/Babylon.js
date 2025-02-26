@@ -4,7 +4,7 @@ import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ICanvas, IImage } from "./ICanvas";
+import type { ICanvas, IImage, IPath2D } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -1471,6 +1471,15 @@ export abstract class AbstractEngine {
      */
     public createCanvasImage(): IImage {
         return document.createElement("img");
+    }
+
+    /**
+     * Create a 2D path to use with canvas
+     * @returns IPath2D interface
+     * @param d SVG path string
+     */
+    public createCanvasPath2D(d?: string): IPath2D {
+        return new Path2D(d);
     }
 
     /**

@@ -3,7 +3,7 @@ import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
-import type { ICanvas, IImage } from "../ICanvas";
+import type { ICanvas, IImage, IPath2D } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
 
 export type NativeTexture = NativeData;
@@ -378,6 +378,12 @@ interface INativeImageConstructor {
 }
 
 /** @internal */
+interface INativePath2DConstructor {
+    prototype: IPath2D;
+    new (d?: string): IPath2D;
+}
+
+/** @internal */
 interface IDeviceInputSystemConstructor {
     prototype: IDeviceInputSystem;
     new (
@@ -414,6 +420,7 @@ export interface INative {
     Camera: INativeCameraConstructor;
     Canvas: INativeCanvasConstructor;
     Image: INativeImageConstructor;
+    Path2D: INativePath2DConstructor;
     XMLHttpRequest: any; // TODO: how to do this?
     DeviceInputSystem: IDeviceInputSystemConstructor;
     NativeDataStream: INativeDataStreamConstructor;
