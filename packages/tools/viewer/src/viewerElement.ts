@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, MeshPredicate, Nullable, Observable, Scene } from "core/index";
+import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -60,40 +60,37 @@ export type HotSpot = ViewerHotSpotQuery & {
 };
 
 /**
- * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
- * The target point is determined based on the camera's forward ray:
- *   - If an intersection with eligible meshes is detected, the intersection point is used as the target.
- *   - If no intersection is detected, a fallback target is calculated by projecting
- *     the distance between the camera and the distance reference point along the camera's forward ray.
+ * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
  *
- * @param scene The scene to use for picking.
- * @param camera The camera to use for creating the HotSpot.
- * @param distanceReferencePoint The reference point in world coordinates used to calculate the fallback target distance if no intersection is found.
- * @param predicate An optional predicate function used to determine eligible meshes for picking.
- * @returns A HotSpotobject containing the position, normal, and camera orbit parameters (alpha, beta, radius).
+ * The target point is determined using the camera's forward ray:
+ *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
+ *   - If no intersection is found, a fallback target is calculated by projecting the distance
+ *     between the camera and the model's center along the camera's forward direction.
+ *
+ * @param model The reference model used to determine the target point.
+ * @param camera The camera from which the HotSpot is generated.
+ * @returns A HotSpot object.
  */
-export async function CreateHotSpotFromCamera(
-    scene: Scene,
-    camera: Camera,
-    distanceReferencePoint: [x: number, y: number, z: number],
-    predicate?: MeshPredicate
-): Promise<HotSpot> {
+export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
     await import("core/Culling/ray");
+    const scene = model.assetContainer.scene;
     const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
     const camGlobalPos = camera.globalPosition.clone();
 
     // Target
     let radius: number = 0.0001; // Just to avoid division by zero
     const targetPoint = Vector3.Zero();
-    const pickingInfo = scene.pickWithRay(ray, predicate);
+    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
     if (pickingInfo && pickingInfo.hit) {
-        targetPoint.copyFrom(pickingInfo.pickedPoint!);
+        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
     } else {
-        const dsitancePoint = Vector3.FromArray(distanceReferencePoint);
+        const worldBounds = model.getWorldBounds();
+        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
+        const distancePoint = Vector3.FromArray(centerArray);
         const direction = ray.direction.clone();
         targetPoint.copyFrom(camGlobalPos);
-        radius = Vector3.Distance(camGlobalPos, dsitancePoint);
-        direction.scaleAndAddToRef(radius, targetPoint);
+        radius = Vector3.Distance(camGlobalPos, distancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
     }
 
     const computationVector = Vector3.Zero();
@@ -1402,21 +1399,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @param camera The camera to create a HotSpot from.
      * @returns A HotSpot created from the camera.
      */
-    protected async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
+    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
             const targetArray = camera.target.asArray();
             return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
-        if (this._viewerDetails?.scene) {
-            const scene = this._viewerDetails.scene;
-            const model = this._viewerDetails.model;
-
-            const selectedAnimation = this.selectedAnimation ?? 0;
-            const worldBounds = model?.getWorldBounds(selectedAnimation);
-            const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
-            const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
-            return CreateHotSpotFromCamera(scene, camera, centerArray as [x: number, y: number, z: number], predicate);
+        if (this._viewerDetails?.model) {
+            return CreateHotSpotFromCamera(this._viewerDetails.model, camera);
         }
 
         return null;

@@ -364,10 +364,10 @@ export type Model = IDisposable & {
     /**
      * Compute and return the world bounds of the model.
      * The minimum and maximum extents, the size and the center.
-     * @param animationIndex The index of the animation group to consider when computing the bounding info.
+     * @param animationIndex The index of the animation group to use for computation. If omitted, the current selected animation is used.
      * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
      */
-    getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+    getWorldBounds(animationIndex?: number): Nullable<ViewerBoundingInfo>;
 
     /**
      * Resets the computed world bounds of the model.
@@ -1106,7 +1106,7 @@ export class Viewer implements IDisposable {
 
                     this._snapshotHelper.enableSnapshotRendering();
                 },
-                getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
+                getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
                         worldBounds = computeModelsBoundingInfos([model]);
