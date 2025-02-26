@@ -11,21 +11,21 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
  */
 export class FlowGraphFunctionReferenceBlock extends FlowGraphBlock {
     /**
-     * The function name.
+     * Input: The function name.
      */
     public readonly functionName: FlowGraphDataConnection<string>;
     /**
-     * The object to get the function from.
+     * Input: The object to get the function from.
      * This can be a constructed class or a collection of stand-alone functions.
      */
     public readonly object: FlowGraphDataConnection<any>;
     /**
-     * The context to call the function with.
+     * Input: The context to call the function with.
      * This is optional. If not provided, the function will be bound to null.
      */
     public readonly context: FlowGraphDataConnection<any>;
     /**
-     * The function referenced by functionName from the object, bound to the context.
+     * Output: The function referenced by functionName from the object, bound to the context.
      */
     public readonly output: FlowGraphDataConnection<Function>;
 

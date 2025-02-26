@@ -3,6 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import type { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import { getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -26,14 +27,14 @@ export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlo
     /**
      * The name of the property that will be interpolated.
      */
-    propertyName?: string;
+    propertyName?: string | string[];
 
     /**
      * The type of the animation to create.
      * Default is ANIMATIONTYPE_FLOAT
-     * This cannot be changed after set, so make sure to pass the right value.
+     * This cannot be changed after construction, so make sure to pass the right value.
      */
-    animationType?: number | string;
+    animationType?: number | FlowGraphTypes;
 }
 
 /**
@@ -100,12 +101,12 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
                 : getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
 
         const numberOfKeyFrames = config?.keyFramesCount ?? 1;
-        const duration = this.registerDataInput(`duration-0`, RichTypeNumber, 0);
-        const value = this.registerDataInput(`value-0`, type);
+        const duration = this.registerDataInput(`duration_0`, RichTypeNumber, 0);
+        const value = this.registerDataInput(`value_0`, type);
         this.keyFrames.push({ duration, value });
         for (let i = 1; i < numberOfKeyFrames + 1; i++) {
-            const duration = this.registerDataInput(`duration-${i}`, RichTypeNumber, i === numberOfKeyFrames ? config.duration : undefined);
-            const value = this.registerDataInput(`value-${i}`, type);
+            const duration = this.registerDataInput(`duration_${i}`, RichTypeNumber, i === numberOfKeyFrames ? config.duration : undefined);
+            const value = this.registerDataInput(`value_${i}`, type);
             this.keyFrames.push({ duration, value });
         }
         this.initialValue = this.keyFrames[0].value;

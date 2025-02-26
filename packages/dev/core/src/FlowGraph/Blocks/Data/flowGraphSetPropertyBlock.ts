@@ -75,6 +75,7 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
                 this._setPropertyValue(target, this.propertyName.getValue(context), value);
             }
         } catch (e) {
+            this.error.payload = e;
             this.error._activateSignal(context);
         }
         this.out._activateSignal(context);

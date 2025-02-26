@@ -1094,8 +1094,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             values: {
-                value: { name: "value-1" },
-                duration: { name: "duration-1", gltfType: "number" },
+                value: { name: "value_1" },
+                duration: { name: "duration_1", gltfType: "number" },
                 p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
                 p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
@@ -1133,7 +1133,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 isVariable: true,
             },
             {
-                input: "value-0",
+                input: "value_0",
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 4,
@@ -1271,9 +1271,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             values: {
-                value: { name: "value-1" },
+                value: { name: "value_1" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
-                duration: { name: "duration-1", gltfType: "number" /*, inOptions: true */ },
+                duration: { name: "duration_1", gltfType: "number" /*, inOptions: true */ },
                 p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.Easing },
                 p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.Easing },
             },
@@ -1325,7 +1325,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 isVariable: true,
             },
             {
-                input: "value-0",
+                input: "value_0",
                 output: "value",
                 inputBlockIndex: 0,
                 outputBlockIndex: 1,

@@ -70,10 +70,12 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         // check the values
         if (!animationToStopValue) {
             Logger.Warn("No animation group provided to stop.");
+            this.error.payload = { message: "No animation group provided to stop." };
             this.error._activateSignal(context);
         }
         if (isNaN(stopTime)) {
             Logger.Warn("Invalid stop time provided.");
+            this.error.payload = { message: "Invalid stop time provided." };
             this.error._activateSignal(context);
         }
         if (stopTime > 0) {

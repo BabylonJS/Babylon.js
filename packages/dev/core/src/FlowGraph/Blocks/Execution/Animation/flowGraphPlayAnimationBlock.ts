@@ -91,7 +91,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {
-            this.error.payload = "No animation group or animation provided";
+            this.error.payload = { message: "No animation group or animation provided" };
             this.error._activateSignal(context);
             return;
         } else {
@@ -105,6 +105,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
                 if (!target) {
+                    this.error.payload = { message: "No target object provided" };
                     this.error._activateSignal(context);
                     return;
                 }
