@@ -1,6 +1,9 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
-finalDiffuse *= surfaceAlbedo.rgb;
+#if !defined(SS_TRANSLUCENCY)
+    // When translucency is enabled, the final diffuse term is computed in the computeDiffuseAndTransmittedLighting function, we should not multiply it by the albedo here.
+    finalDiffuse *= surfaceAlbedo.rgb;
+#endif
 finalDiffuse = max(finalDiffuse, vec3f(0.0));
 finalDiffuse *= uniforms.vLightingIntensity.x;
 

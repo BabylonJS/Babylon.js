@@ -85,7 +85,7 @@
             #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
             #elif defined(SS_TRANSLUCENCY)
-                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance, subSurfaceOut.translucencyIntensity, surfaceAlbedo.rgb);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
             #endif

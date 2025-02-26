@@ -54,18 +54,21 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 }
 
 #ifdef SS_TRANSLUCENCY
-    vec3 computeDiffuseAndTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance) {
+    vec3 computeDiffuseAndTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance, float transmittanceIntensity, vec3 surfaceAlbedo) {
+        vec3 transmittanceNdotL = vec3(0.);
         float NdotL = absEps(info.NdotLUnclamped);
+        if (info.NdotLUnclamped < 0.0) {
+            // Use wrap lighting to simulate SSS.
+            float wrapNdotL = computeWrappedDiffuseNdotL(NdotL, 0.02);
 
-        // Use wrap lighting to simulate SSS.
-        float wrapNdotL = computeWrappedDiffuseNdotL(NdotL, 0.02);
-
-        // Remap transmittance from tr to 1. if ndotl is negative.
-        float trAdapt = step(0., info.NdotLUnclamped);
-        vec3 transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
+            // Remap transmittance from tr to 1. if ndotl is negative.
+            float trAdapt = step(0., info.NdotLUnclamped);
+            transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
+            }
 
         float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
-        return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
+        // Note: we use a Lambert BRDF for the transmitted term.
+        return (transmittanceNdotL / PI + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
     }
 #endif
 
