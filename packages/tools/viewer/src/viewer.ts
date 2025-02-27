@@ -1522,7 +1522,9 @@ export class Viewer implements IDisposable {
                 // and then render the scene once.
                 this._engine.performanceMonitor.disable();
                 this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+                this._engine.beginFrame();
                 this._scene.render();
+                this._engine.endFrame();
             };
 
             const render = () => {
