@@ -2,17 +2,13 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "target": "ESNext",
         "outDir": "./dist",
-        "rootDir": "../../",
+        "rootDir": "./src",
+        "target": "ESNext",
         "module": "ESNext",
         "moduleResolution": "Node",
         "paths": {
-            "core/*": ["dev/core/src/*"],
-            "loaders/*": ["dev/loaders/src/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
-            "viewer/*": ["tools/viewer/src/*"],
-            "viewer": ["tools/viewer/src/index"]
+            "viewer": ["tools/viewer/dist/tsbuild/index"]
         }
     },
 
@@ -25,6 +21,9 @@
         },
         {
             "path": "../../dev/sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../../tools/viewer/tsconfig.build.json"
         }
     ],
 
