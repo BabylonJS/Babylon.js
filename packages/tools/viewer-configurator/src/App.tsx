@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
 interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
     class?: string;
@@ -17,6 +19,14 @@ declare global {
     }
 }
 
+export function SharedUiTest() {
+    return (
+        <LineContainerComponent title="GENERAL">
+            <TextInputLineComponent label="Name" value={"3"} />
+        </LineContainerComponent>
+    );
+}
+
 export function App() {
     const [viewerLoaded, setViewerLoaded] = useState(false);
 
@@ -26,5 +36,16 @@ export function App() {
         });
     }, []);
 
-    return <div>{viewerLoaded ? <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer> : <p>Loading...</p>}</div>;
+    return (
+        <div>
+            {viewerLoaded ? (
+                <div>
+                    <SharedUiTest />
+                    <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+                </div>
+            ) : (
+                <p>Loading...</p>
+            )}
+        </div>
+    );
 }

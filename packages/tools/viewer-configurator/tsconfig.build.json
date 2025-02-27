@@ -6,6 +6,10 @@
         "rootDir": "./src",
         "moduleResolution": "Node",
         "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "viewer/*": ["tools/viewer/dist/*"],
             "viewer": ["tools/viewer/dist/tsbuild/index"]
         }
     },
