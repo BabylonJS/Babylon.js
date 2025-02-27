@@ -265,6 +265,10 @@ export class CSG2 implements IDisposable {
                 multiMaterial.subMaterials = materials;
                 output.material = multiMaterial;
             } else {
+                if (output.subMeshes.length > 1) {
+                    // Remove the submeshes as they are not needed
+                    output._createGlobalSubMesh(true);
+                }
                 output.material = materials[0];
             }
         }

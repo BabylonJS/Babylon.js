@@ -655,9 +655,11 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
-                this._copyMipMaps();
-                this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
-                this._voxelizationInProgress = false;
+                this._copyMipEffectWrapper.effect.whenCompiledAsync().then(() => {
+                    this._copyMipMaps();
+                    this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
+                    this._voxelizationInProgress = false;
+                });
             }
         }
     }
