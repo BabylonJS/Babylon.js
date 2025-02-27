@@ -279,7 +279,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             }
             const event: InteractivityEvent = parser.arrays.events[eventId];
             const serializedObject = serializedObjects[0];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.eventId = event.eventId;
             serializedObject.config.eventData = event.eventData;
             return serializedObjects;
@@ -302,7 +302,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 Logger.Error("Receive event should have a single configuration object, the event itself");
                 return false;
             }
-            const eventId = eventConfiguration.value[0] as number;
+            const eventId = eventConfiguration.value[0];
             if (typeof eventId !== "number") {
                 Logger.Error("Event id should be a number");
                 return false;
@@ -321,13 +321,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
-            const eventId = eventConfiguration.value[0] as number;
+            const eventId = eventConfiguration.value[0];
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
             }
             const event: InteractivityEvent = parser.arrays.events[eventId];
             const serializedObject = serializedObjects[0];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.eventId = event.eventId;
             serializedObject.config.eventData = event.eventData;
             return serializedObjects;
@@ -855,7 +855,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Sequence],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows || []).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
@@ -966,7 +966,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("MultiGate should have a single configuration object, the number of output flows");
             }
             const serializedObject = serializedObjects[0];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
@@ -1147,12 +1147,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
 
             // variable/get configuration
             const serializedGetVariable = serializedObjects[4];
-            serializedGetVariable.config = serializedGetVariable.config || {};
-            serializedGetVariable.config.variable = serializedGetVariable.config.variable || {};
+            serializedGetVariable.config ||= {};
+            serializedGetVariable.config.variable ||= {};
             serializedGetVariable.config.variable.value = parser.getVariableName(propertyIndex);
 
             // get the control points from the easing block
-            serializedObjects[3].config = serializedObjects[3].config || {};
+            serializedObjects[3].config ||= {};
 
             return serializedObjects;
         },
@@ -1194,7 +1194,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
-                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 }
             });
@@ -1245,7 +1245,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
-                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 }
             });
@@ -1325,10 +1325,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
-                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
-                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config ||= {};
                     Object.keys(gltfBlock.values || []).forEach((key) => {
                         const value = gltfBlock.values?.[key];
                         if (key === "value" && value) {
@@ -1379,7 +1379,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.glTF = globalGLTF;
             return serializedObjects;
         },
@@ -1415,7 +1415,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.glTF = globalGLTF;
             return serializedObjects;
         },
@@ -1453,7 +1453,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
+            serializedObject.config ||= {};
             serializedObject.config.glTF = globalGLTF;
             return serializedObjects;
         },
