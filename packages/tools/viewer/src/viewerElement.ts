@@ -153,7 +153,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
-    protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
+    protected constructor(
+        private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass,
+        private readonly _options: CanvasViewerOptions = {}
+    ) {
         super();
     }
 
@@ -1235,13 +1238,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
-                    const viewer = await this._createViewer(canvas, {
-                        engine: this.engine,
-                        autoSuspendRendering: !this.renderWhenIdle,
-                        onInitialized: (details) => {
-                            detailsDeferred.resolve(details);
-                        },
-                    });
+                    const viewer = await this._createViewer(
+                        canvas,
+                        Object.assign(
+                            {
+                                engine: this.engine,
+                                autoSuspendRendering: !this.renderWhenIdle,
+                                onInitialized: (details) => {
+                                    detailsDeferred.resolve(details);
+                                },
+                            } satisfies CanvasViewerOptions,
+                            this._options
+                        )
+                    );
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1420,8 +1429,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 export class HTML3DElement extends ViewerElement {
     /**
      * Creates a new HTML3DElement.
+     * @param options The options to use for the viewer. This is optional, and is only used when programmatically creating a viewer element.
      */
-    public constructor() {
-        super(Viewer);
+    public constructor(options?: CanvasViewerOptions) {
+        super(Viewer, options);
     }
+}
+
+/**
+ * Creates a custom HTML element that creates an HTML3DElement with the specified name and configuration.
+ * @param elementName The name of the custom element.
+ * @param options The options to use for the viewer.
+ */
+export function ConfigureCustomViewerElement(elementName: string, options: CanvasViewerOptions) {
+    customElements.define(
+        elementName,
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        class extends HTML3DElement {
+            public constructor() {
+                super(options);
+            }
+        }
+    );
 }
