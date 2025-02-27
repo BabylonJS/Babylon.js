@@ -40,6 +40,7 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
+import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
@@ -172,14 +173,7 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
     const size = max.subtract(min);
     const center = min.add(size.scale(0.5));
 
-    return {
-        extents: {
-            min: min.asArray(),
-            max: max.asArray(),
-        },
-        size: size.asArray(),
-        center: center.asArray(),
-    };
+    return { extents: { min: min.asArray(), max: max.asArray() }, size: size.asArray(), center: center.asArray() };
 }
 
 /**
@@ -229,21 +223,19 @@ export type ViewerDetails = {
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
-export type ViewerOptions = Partial<
-    Readonly<{
-        /**
-         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-         */
-        onInitialized: (details: Readonly<ViewerDetails>) => void;
+export type ViewerOptions = Partial<{
+    /**
+     * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+     */
+    onInitialized: (details: Readonly<ViewerDetails>) => void;
 
-        /**
-         * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
-         * This can reduce resource CPU/GPU pressure when the scene is static.
-         * Enabled by default.
-         */
-        autoSuspendRendering: boolean;
-    }>
->;
+    /**
+     * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
+     * This can reduce resource CPU/GPU pressure when the scene is static.
+     * Enabled by default.
+     */
+    autoSuspendRendering: boolean;
+}>;
 
 export type EnvironmentOptions = Partial<
     Readonly<{
@@ -270,10 +262,7 @@ export type LoadEnvironmentOptions = EnvironmentOptions &
         }>
     >;
 
-const defaultLoadEnvironmentOptions = {
-    lighting: true,
-    skybox: true,
-} as const satisfies EnvironmentOptions;
+const defaultLoadEnvironmentOptions = { lighting: true, skybox: true } as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -393,10 +382,7 @@ export type Model = IDisposable & {
     makeActive(options?: ActivateModelOptions): void;
 };
 
-type ModelInternal = Model & {
-    _animationPlaying(): boolean;
-    _shouldRender(): boolean;
-};
+type ModelInternal = Model & { _animationPlaying(): boolean; _shouldRender(): boolean };
 
 /**
  * @experimental
@@ -483,6 +469,9 @@ export class Viewer implements IDisposable {
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
+    protected readonly _sceneOptimizer: SceneOptimizer;
+
+    private readonly _defaultHardwareScalingLevel: number;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
@@ -528,9 +517,16 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
+        this._defaultHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
+
+            // Configure the scene optimizer.
+            const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
+            const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
+            sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
+            this._sceneOptimizer = new SceneOptimizer(scene, sceneOptimizerOptions);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -606,9 +602,7 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.postProcessing = {
-            toneMapping: "neutral",
-        };
+        this.postProcessing = { toneMapping: "neutral" };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -664,12 +658,7 @@ export class Viewer implements IDisposable {
      * Get the current environment configuration.
      */
     public get environmentConfig(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this._reflectionsIntensity,
-            blur: this._skyboxBlur,
-            rotation: this._reflectionsRotation,
-            visible: this._skyboxVisible,
-        };
+        return { intensity: this._reflectionsIntensity, blur: this._skyboxBlur, rotation: this._reflectionsRotation, visible: this._skyboxVisible };
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
@@ -781,11 +770,7 @@ export class Viewer implements IDisposable {
                 break;
         }
 
-        return {
-            toneMapping,
-            contrast: this._contrast,
-            exposure: this._exposure,
-        };
+        return { toneMapping, contrast: this._contrast, exposure: this._exposure };
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
@@ -1193,6 +1178,8 @@ export class Viewer implements IDisposable {
         if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
+
+        this._resetSceneOptimizations();
     }
 
     /**
@@ -1414,11 +1401,8 @@ export class Viewer implements IDisposable {
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
 
-        const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
-        const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
-
-        const viewportWidth = this._camera.viewport.width * renderWidth;
-        const viewportHeight = this._camera.viewport.height * renderHeight;
+        const viewportWidth = this._camera.viewport.width * this._engine.getRenderWidth() * this._engine.getHardwareScalingLevel();
+        const viewportHeight = this._camera.viewport.height * this._engine.getRenderHeight() * this._engine.getHardwareScalingLevel();
         const scene = this._scene;
 
         Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
@@ -1490,6 +1474,7 @@ export class Viewer implements IDisposable {
                     if (!renderedLastFrame) {
                         if (renderedLastFrame !== null) {
                             this._log("Viewer Resumed Rendering");
+                            this._sceneOptimizer.start();
                         }
                         renderedLastFrame = true;
                     }
@@ -1512,6 +1497,7 @@ export class Viewer implements IDisposable {
                         this._log("Viewer Suspended Rendering");
                         renderedLastFrame = false;
                         renderedReadyFrame = false;
+                        this._sceneOptimizer.stop();
                     }
                 }
             };
@@ -1649,6 +1635,11 @@ export class Viewer implements IDisposable {
         }
 
         return null;
+    }
+
+    protected _resetSceneOptimizations() {
+        this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+        this._sceneOptimizer.start();
     }
 
     protected _log(message: string) {
