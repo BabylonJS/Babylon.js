@@ -2,7 +2,7 @@ import { Animation } from "core/Animations/animation";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { INode } from "./glTFLoaderInterfaces";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import { setInterpolationForKey } from "./Extensions/objectModelMapping";
+import { SetInterpolationForKey } from "./Extensions/objectModelMapping";
 
 /** @internal */
 export type GetValueFn = (target: any, source: Float32Array, offset: number, scale: number) => any;
@@ -90,7 +90,7 @@ export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
     }
 }
 
-setInterpolationForKey("/nodes/{}/translation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "position", getVector3, () => 3)]);
-setInterpolationForKey("/nodes/{}/rotation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion, () => 4)]);
-setInterpolationForKey("/nodes/{}/scale", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "scaling", getVector3, () => 3)]);
-setInterpolationForKey("/nodes/{}/weights", [new WeightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)]);
+SetInterpolationForKey("/nodes/{}/translation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "position", getVector3, () => 3)]);
+SetInterpolationForKey("/nodes/{}/rotation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion, () => 4)]);
+SetInterpolationForKey("/nodes/{}/scale", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "scaling", getVector3, () => 3)]);
+SetInterpolationForKey("/nodes/{}/weights", [new WeightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)]);

@@ -6,7 +6,7 @@ import { ArcRotateCamera } from "core/Cameras";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
-import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
 import { FlowGraphAction } from "core/FlowGraph/flowGraphLogger";
 
@@ -16,7 +16,7 @@ describe("interactivity type nodes", () => {
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
     const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
     let mockGltf: any;
-    const pathConverter = getPathToObjectConverter(mockGltf);
+    const pathConverter = GetPathToObjectConverter(mockGltf);
 
     async function generateSimpleNodeGraph(
         declarations: IKHRInteractivity_Declaration[],

@@ -9,7 +9,7 @@ import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
 import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { getPathToObjectConverter } from "./objectModelMapping";
+import { GetPathToObjectConverter } from "./objectModelMapping";
 import "./KHR_animation_pointer.data";
 
 const NAME = "KHR_animation_pointer";
@@ -44,7 +44,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        this._pathToObjectConverter = getPathToObjectConverter(this._loader.gltf);
+        this._pathToObjectConverter = GetPathToObjectConverter(this._loader.gltf);
     }
 
     /**

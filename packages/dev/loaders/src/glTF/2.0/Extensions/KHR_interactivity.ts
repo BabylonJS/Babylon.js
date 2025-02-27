@@ -6,7 +6,7 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import { addObjectAccessorToKey, getPathToObjectConverter } from "./objectModelMapping";
+import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
@@ -48,7 +48,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = getPathToObjectConverter(this._loader.gltf);
+        this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
         _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
 
@@ -96,7 +96,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     // Note - all of those are read-only, as per the specs!
 
     // active camera rotation
-    addObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/rotation", {
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/rotation", {
         get: () => {
             if (!scene.activeCamera) {
                 return new Quaternion(NaN, NaN, NaN, NaN);
@@ -107,7 +107,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
         getTarget: () => scene.activeCamera,
     });
     // activeCamera position
-    addObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/position", {
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/position", {
         get: () => {
             if (!scene.activeCamera) {
                 return new Vector3(NaN, NaN, NaN);
@@ -119,7 +119,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     });
 
     // /animations/{} pointers:
-    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
+    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
         get: (animation: IAnimation) => {
             return animation._babylonAnimationGroup?.isPlaying ?? false;
         },
@@ -128,7 +128,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
             return animation._babylonAnimationGroup;
         },
     });
-    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
+    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
         get: (animation: IAnimation) => {
             return (animation._babylonAnimationGroup?.from ?? 0) / 60; // fixed factor for duration-to-frames conversion
         },
@@ -137,7 +137,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
             return animation._babylonAnimationGroup;
         },
     });
-    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
+    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
         get: (animation: IAnimation) => {
             return (animation._babylonAnimationGroup?.to ?? 0) / 60; // fixed factor for duration-to-frames conversion
         },
@@ -147,7 +147,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
         },
     });
     // playhead
-    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
+    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
         get: (animation: IAnimation) => {
             return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
         },
@@ -157,7 +157,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
         },
     });
     //virtualPlayhead - TODO, do we support this property in our animations? getCurrentFrame  is the only method we have for this.
-    addObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
+    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
         get: (animation: IAnimation) => {
             return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
         },

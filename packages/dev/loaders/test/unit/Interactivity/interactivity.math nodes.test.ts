@@ -9,7 +9,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
-import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
 const typesAndLengths: {
     [key: string]: number;
@@ -32,7 +32,7 @@ describe("Interactivity math nodes", () => {
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
     const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
     let mockGltf: any;
-    const pathConverter = getPathToObjectConverter(mockGltf);
+    const pathConverter = GetPathToObjectConverter(mockGltf);
 
     async function generateSimpleNodeGraph(
         declarations: IKHRInteractivity_Declaration[],

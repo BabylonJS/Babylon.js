@@ -51,7 +51,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     toBlock?: FlowGraphBlockNames;
 
     /**
-     * Used in configuration values. If defined, this will be the default value, if no value is provided/
+     * Used in configuration values. If defined, this will be the default value, if no value is provided.
      */
     defaultValue?: O;
 }
@@ -133,14 +133,14 @@ export interface IGLTFToFlowGraphMapping {
      * This optional function will allow to validate the node, according to the glTF specs.
      * For example, if a node has a configuration object, it must be present and correct.
      * This is a basic node-based validation.
-     * This functions is expected to return false and log the error if the node is not valid.
+     * This function is expected to return false and log the error if the node is not valid.
      * Note that this function can also modify the node, if needed.
      *
      * @param gltfBlock the glTF node to validate
-     * @param globalGLTF the global glTF object
+     * @param glTFObject the glTF object
      * @returns true if validated, false if not.
      */
-    validation?: (gltfBlock: IKHRInteractivity_Node, interactivityGraph: IKHRInteractivity_Graph, globalGLTF?: IGLTF) => boolean;
+    validation?: (gltfBlock: IKHRInteractivity_Node, interactivityGraph: IKHRInteractivity_Graph, glTFObject?: IGLTF) => boolean;
 
     /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
@@ -180,11 +180,11 @@ export function getMappingForDeclaration(declaration: IKHRInteractivity_Declarat
             };
             if (declaration.inputValueSockets) {
                 inputs.values = {};
-                Object.keys(declaration.inputValueSockets).forEach((key) => {
-                    inputs.values![key] = {
+                for (const key in declaration.inputValueSockets) {
+                    inputs.values[key] = {
                         name: key,
                     };
-                });
+                }
             }
             if (declaration.outputValueSockets) {
                 outputs.values = {};
@@ -212,7 +212,7 @@ export function getMappingForDeclaration(declaration: IKHRInteractivity_Declarat
  * @param mapping The mapping object. See documentation or examples below.
  */
 export function addNewInteractivityFlowGraphMapping(key: string, extension: string, mapping: IGLTFToFlowGraphMapping) {
-    gltfExtensionsToFlowGraphMapping[extension] = gltfExtensionsToFlowGraphMapping[extension] || {};
+    gltfExtensionsToFlowGraphMapping[extension] ||= {};
     gltfExtensionsToFlowGraphMapping[extension][key] = mapping;
 }
 
@@ -267,13 +267,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
-            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
             if (declaration.op !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
-            const eventId = eventConfiguration.value[0] as number;
+            const eventId = eventConfiguration.value[0];
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
             }
@@ -315,7 +315,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return true;
         },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
-            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
             if (declaration.op !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
@@ -994,21 +994,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             }
             return true;
         },
-        // extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
-        //     // process the input flows and add them to the inFlow array
-        //     // take all input flows and convert their names correctly to "in_$1"
-        //     const serializedObject = serializedObjects[0];
-        //     serializedObject.signalInputs.forEach((input) => {
-        //         input.name = "in_" + input.name;
-        //     });
-        //     return serializedObjects;
-        // },
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -1086,7 +1076,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                     if (value[0] === true) {
                         return [FlowGraphTypes.Quaternion];
                     } else {
-                        // TODO - should we return undefined or the default value?
                         return [undefined];
                     }
                 },

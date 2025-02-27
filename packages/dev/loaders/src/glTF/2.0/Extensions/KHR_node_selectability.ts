@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import type { INode } from "../glTFLoaderInterfaces";
-import { addObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessorToKey } from "./objectModelMapping";
 
 const NAME = "KHR_node_selectability";
 
@@ -90,7 +90,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
 });
 
 // object model extension for selectable
-addObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable", {
+AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.isPickable !== undefined) {
@@ -135,7 +135,6 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
             if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
-                // TODO - this works on load, but will not work if a pointer changes the value in real time
                 node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
                     mesh.isPickable = false;
                 });

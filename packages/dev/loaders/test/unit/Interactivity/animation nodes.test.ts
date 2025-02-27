@@ -9,7 +9,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import "loaders/glTF/2.0/Extensions/KHR_interactivity";
-import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Animation } from "core/Animations/animation";
@@ -46,7 +46,7 @@ describe("Interactivity/animation nodes", () => {
             variables,
         };
 
-        const pathConverter = getPathToObjectConverter(mockGltf);
+        const pathConverter = GetPathToObjectConverter(mockGltf);
         const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });

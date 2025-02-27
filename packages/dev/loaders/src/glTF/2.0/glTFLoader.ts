@@ -78,7 +78,7 @@ import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
-import { getMappingForKey } from "./Extensions/objectModelMapping";
+import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 
@@ -1704,19 +1704,19 @@ export class GLTFLoader implements IGLTFLoader {
         let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
-                properties = getMappingForKey("/nodes/{}/translation")?.interpolation!;
+                properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.ROTATION: {
-                properties = getMappingForKey("/nodes/{}/rotation")?.interpolation!;
+                properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.SCALE: {
-                properties = getMappingForKey("/nodes/{}/scale")?.interpolation!;
+                properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.WEIGHTS: {
-                properties = getMappingForKey("/nodes/{}/weights")?.interpolation!;
+                properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
                 break;
             }
             default: {

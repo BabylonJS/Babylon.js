@@ -9,14 +9,14 @@ import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
-import { getPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
     let mockGltf: any;
-    const pathConverter = getPathToObjectConverter(mockGltf);
+    const pathConverter = GetPathToObjectConverter(mockGltf);
 
     beforeEach(() => {
         engine = new NullEngine();
@@ -70,7 +70,7 @@ describe("Babylon Interactivity", () => {
         const i2fg = new InteractivityGraphToFlowGraphParser(worldPointerExample, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = getPathToObjectConverter(gltf);
+        const pathConverter = GetPathToObjectConverter(gltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();

@@ -3,7 +3,7 @@ import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { INode } from "../glTFLoaderInterfaces";
-import { addObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessorToKey } from "./objectModelMapping";
 
 const NAME = "KHR_node_visibility";
 
@@ -19,7 +19,7 @@ declare module "../../glTFFileLoader" {
 }
 
 // object model extension for visibility
-addObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
+AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.isVisible !== undefined) {

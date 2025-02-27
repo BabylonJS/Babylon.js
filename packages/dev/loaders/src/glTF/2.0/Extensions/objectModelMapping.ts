@@ -15,14 +15,22 @@ import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interf
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import type { AnimationGroup } from "core/Animations/animationGroup";
+import type { Mesh } from "core/Meshes/mesh";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
     nodes: IGLTFObjectModelTreeNodesObject;
     materials: IGLTFObjectModelTreeMaterialsObject;
     extensions: IGLTFObjectModelTreeExtensionsObject;
-    animations: {};
-    meshes: {};
+    animations: {
+        length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
+        __array__: {};
+    };
+    meshes: {
+        length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
+        __array__: {};
+    };
 }
 
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
@@ -365,30 +373,20 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
 
 const animationsTree = {
     length: {
-        get: (animations: IAnimation[]) => {
-            return animations.length;
-        },
-        getObject(animations: IAnimation[]) {
-            return animations;
-        },
-        getPropertyName(_animations: IAnimation[]) {
-            return "length";
-        },
+        type: "number",
+        get: (animations: IAnimation[]) => animations.length,
+        getTarget: (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!),
+        getPropertyName: [() => "length"],
     },
     __array__: {},
 };
 
 const meshesTree = {
     length: {
-        get: (meshes: IMesh[]) => {
-            return meshes.length;
-        },
-        getObject(meshes: IMesh[]) {
-            return meshes;
-        },
-        getPropertyName(_meshes: IMesh[]) {
-            return "length";
-        },
+        type: "number",
+        get: (meshes: IMesh[]) => meshes.length,
+        getTarget: (meshes: IMesh[]) => meshes.map((mesh) => mesh.primitives[0]._instanceData?.babylonSourceMesh),
+        getPropertyName: [() => "length"],
     },
     __array__: {},
 };
@@ -496,98 +494,98 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
         __target__: true,
         emissiveFactor: {
             type: "Color3",
-            get: (material, index?, payload?) => getMaterial(material, index, payload).emissiveColor,
-            set: (value: Color3, material, index?, payload?) => getMaterial(material, index, payload).emissiveColor.copyFrom(value),
-            getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+            get: (material, index?, payload?) => _GetMaterial(material, index, payload).emissiveColor,
+            set: (value: Color3, material, index?, payload?) => _GetMaterial(material, index, payload).emissiveColor.copyFrom(value),
+            getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
             getPropertyName: [() => "emissiveColor"],
         },
         emissiveTexture: {
             extensions: {
-                KHR_texture_transform: generateTextureMap("emissiveTexture"),
+                KHR_texture_transform: _GenerateTextureMap("emissiveTexture"),
             },
         },
         normalTexture: {
             scale: {
                 type: "number",
-                get: (material, index?, payload?) => getTexture(material, payload, "bumpTexture")?.level,
+                get: (material, index?, payload?) => _GetTexture(material, payload, "bumpTexture")?.level,
                 set: (value: number, material, index?, payload?) => {
-                    const texture = getTexture(material, payload, "bumpTexture");
+                    const texture = _GetTexture(material, payload, "bumpTexture");
                     if (texture) {
                         texture.level = value;
                     }
                 },
-                getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                 getPropertyName: [() => "level"],
             },
             extensions: {
-                KHR_texture_transform: generateTextureMap("bumpTexture"),
+                KHR_texture_transform: _GenerateTextureMap("bumpTexture"),
             },
         },
         occlusionTexture: {
             strength: {
                 type: "number",
-                get: (material, index?, payload?) => getMaterial(material, index, payload).ambientTextureStrength,
+                get: (material, index?, payload?) => _GetMaterial(material, index, payload).ambientTextureStrength,
                 set: (value: number, material, index?, payload?) => {
-                    const mat = getMaterial(material, index, payload);
+                    const mat = _GetMaterial(material, index, payload);
                     if (mat) {
                         mat.ambientTextureStrength = value;
                     }
                 },
-                getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                 getPropertyName: [() => "ambientTextureStrength"],
             },
             extensions: {
-                KHR_texture_transform: generateTextureMap("ambientTexture"),
+                KHR_texture_transform: _GenerateTextureMap("ambientTexture"),
             },
         },
         pbrMetallicRoughness: {
             baseColorFactor: {
                 type: "Color4",
                 get: (material, index?, payload?) => {
-                    const mat = getMaterial(material, index, payload);
+                    const mat = _GetMaterial(material, index, payload);
                     return Color4.FromColor3(mat.albedoColor, mat.alpha);
                 },
                 set: (value: Color4, material, index?, payload?) => {
-                    const mat = getMaterial(material, index, payload);
+                    const mat = _GetMaterial(material, index, payload);
                     mat.albedoColor.set(value.r, value.g, value.b);
                     mat.alpha = value.a;
                 },
-                getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                 // This is correct on the animation level, but incorrect as a single property of a type Color4
                 getPropertyName: [() => "albedoColor", () => "alpha"],
             },
             baseColorTexture: {
                 extensions: {
-                    KHR_texture_transform: generateTextureMap("albedoTexture"),
+                    KHR_texture_transform: _GenerateTextureMap("albedoTexture"),
                 },
             },
             metallicFactor: {
                 type: "number",
-                get: (material, index?, payload?) => getMaterial(material, index, payload).metallic,
+                get: (material, index?, payload?) => _GetMaterial(material, index, payload).metallic,
                 set: (value, material, index?, payload?) => {
-                    const mat = getMaterial(material, index, payload);
+                    const mat = _GetMaterial(material, index, payload);
                     if (mat) {
                         mat.metallic = value;
                     }
                 },
-                getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                 getPropertyName: [() => "metallic"],
             },
             roughnessFactor: {
                 type: "number",
-                get: (material, index?, payload?) => getMaterial(material, index, payload).roughness,
+                get: (material, index?, payload?) => _GetMaterial(material, index, payload).roughness,
                 set: (value, material, index?, payload?) => {
-                    const mat = getMaterial(material, index, payload);
+                    const mat = _GetMaterial(material, index, payload);
                     if (mat) {
                         mat.roughness = value;
                     }
                 },
-                getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                 getPropertyName: [() => "roughness"],
             },
             metallicRoughnessTexture: {
                 extensions: {
-                    KHR_texture_transform: generateTextureMap("metallicTexture"),
+                    KHR_texture_transform: _GenerateTextureMap("metallicTexture"),
                 },
             },
         },
@@ -595,239 +593,239 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_anisotropy: {
                 anisotropyStrength: {
                     type: "number",
-                    get: (material, index?, payload?) => getMaterial(material, index, payload).anisotropy.intensity,
+                    get: (material, index?, payload?) => _GetMaterial(material, index, payload).anisotropy.intensity,
                     set: (value: number, material, index?, payload?) => {
-                        getMaterial(material, index, payload).anisotropy.intensity = value;
+                        _GetMaterial(material, index, payload).anisotropy.intensity = value;
                     },
-                    getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                    getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.intensity"],
                 },
                 anisotropyRotation: {
                     type: "number",
-                    get: (material, index?, payload?) => getMaterial(material, index, payload).anisotropy.angle,
+                    get: (material, index?, payload?) => _GetMaterial(material, index, payload).anisotropy.angle,
                     set: (value: number, material, index?, payload?) => {
-                        getMaterial(material, index, payload).anisotropy.angle = value;
+                        _GetMaterial(material, index, payload).anisotropy.angle = value;
                     },
-                    getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                    getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.angle"],
                 },
                 anisotropyTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("anisotropy", "texture"),
+                        KHR_texture_transform: _GenerateTextureMap("anisotropy", "texture"),
                     },
                 },
             },
             KHR_materials_clearcoat: {
                 clearcoatFactor: {
                     type: "number",
-                    get: (material, index?, payload?) => getMaterial(material, index, payload).clearCoat.intensity,
+                    get: (material, index?, payload?) => _GetMaterial(material, index, payload).clearCoat.intensity,
                     set: (value, material, index?, payload?) => {
-                        getMaterial(material, index, payload).clearCoat.intensity = value;
+                        _GetMaterial(material, index, payload).clearCoat.intensity = value;
                     },
-                    getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                    getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.intensity"],
                 },
                 clearcoatRoughnessFactor: {
                     type: "number",
-                    get: (material, index?, payload?) => getMaterial(material, index, payload).clearCoat.roughness,
+                    get: (material, index?, payload?) => _GetMaterial(material, index, payload).clearCoat.roughness,
                     set: (value, material, index?, payload?) => {
-                        getMaterial(material, index, payload).clearCoat.roughness = value;
+                        _GetMaterial(material, index, payload).clearCoat.roughness = value;
                     },
-                    getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                    getTarget: (material, index?, payload?) => _GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.roughness"],
                 },
                 clearcoatTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("clearCoat", "texture"),
+                        KHR_texture_transform: _GenerateTextureMap("clearCoat", "texture"),
                     },
                 },
                 clearcoatNormalTexture: {
                     scale: {
                         type: "number",
-                        get: (material, index, payload) => getMaterial(material, index, payload).clearCoat.bumpTexture?.level,
-                        getTarget: getMaterial,
-                        set: (value, material, index, payload) => (getMaterial(material, index, payload).clearCoat.bumpTexture!.level = value),
+                        get: (material, index, payload) => _GetMaterial(material, index, payload).clearCoat.bumpTexture?.level,
+                        getTarget: _GetMaterial,
+                        set: (value, material, index, payload) => (_GetMaterial(material, index, payload).clearCoat.bumpTexture!.level = value),
                     },
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("clearCoat", "bumpTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("clearCoat", "bumpTexture"),
                     },
                 },
                 clearcoatRoughnessTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("clearCoat", "textureRoughness"),
+                        KHR_texture_transform: _GenerateTextureMap("clearCoat", "textureRoughness"),
                     },
                 },
             },
             KHR_materials_dispersion: {
                 dispersion: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.dispersion,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.dispersion = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.dispersion,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).subSurface.dispersion = value),
                 },
             },
             KHR_materials_emissive_strength: {
                 emissiveStrength: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).emissiveIntensity,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).emissiveIntensity = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).emissiveIntensity,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).emissiveIntensity = value),
                 },
             },
             KHR_materials_ior: {
                 ior: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).indexOfRefraction,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).indexOfRefraction = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).indexOfRefraction,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).indexOfRefraction = value),
                 },
             },
             KHR_materials_iridescence: {
                 iridescenceFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).iridescence.intensity,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).iridescence.intensity = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).iridescence.intensity,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).iridescence.intensity = value),
                 },
                 iridescenceIor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).iridescence.indexOfRefraction,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).iridescence.indexOfRefraction = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).iridescence.indexOfRefraction,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).iridescence.indexOfRefraction = value),
                 },
                 iridescenceTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("iridescence", "texture"),
+                        KHR_texture_transform: _GenerateTextureMap("iridescence", "texture"),
                     },
                 },
                 iridescenceThicknessMaximum: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).iridescence.maximumThickness,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).iridescence.maximumThickness = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).iridescence.maximumThickness,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).iridescence.maximumThickness = value),
                 },
                 iridescenceThicknessMinimum: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).iridescence.minimumThickness,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).iridescence.minimumThickness = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).iridescence.minimumThickness,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).iridescence.minimumThickness = value),
                 },
                 iridescenceThicknessTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("iridescence", "thicknessTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("iridescence", "thicknessTexture"),
                     },
                 },
             },
             KHR_materials_sheen: {
                 sheenColorFactor: {
                     type: "Color3",
-                    get: (material, index, payload) => getMaterial(material, index, payload).sheen.color,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => getMaterial(material, index, payload).sheen.color.copyFrom(value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).sheen.color,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => _GetMaterial(material, index, payload).sheen.color.copyFrom(value),
                 },
                 sheenColorTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("sheen", "texture"),
+                        KHR_texture_transform: _GenerateTextureMap("sheen", "texture"),
                     },
                 },
                 sheenRoughnessFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).sheen.intensity,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).sheen.intensity = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).sheen.intensity,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).sheen.intensity = value),
                 },
                 sheenRoughnessTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("sheen", "thicknessTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("sheen", "thicknessTexture"),
                     },
                 },
             },
             KHR_materials_specular: {
                 specularFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).metallicF0Factor,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).metallicF0Factor = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).metallicF0Factor,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).metallicF0Factor = value),
                     getPropertyName: [() => "metallicF0Factor"],
                 },
                 specularColorFactor: {
                     type: "Color3",
-                    get: (material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).metallicReflectanceColor,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => _GetMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value),
                     getPropertyName: [() => "metallicReflectanceColor"],
                 },
                 specularTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("metallicReflectanceTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("metallicReflectanceTexture"),
                     },
                 },
                 specularColorTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("reflectanceTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("reflectanceTexture"),
                     },
                 },
             },
             KHR_materials_transmission: {
                 transmissionFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.refractionIntensity,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.refractionIntensity = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.refractionIntensity,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).subSurface.refractionIntensity = value),
                     getPropertyName: [() => "subSurface.refractionIntensity"],
                 },
                 transmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("subSurface", "refractionIntensityTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("subSurface", "refractionIntensityTexture"),
                     },
                 },
             },
             KHR_materials_diffuse_transmission: {
                 diffuseTransmissionFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.translucencyIntensity,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.translucencyIntensity = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.translucencyIntensity,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).subSurface.translucencyIntensity = value),
                 },
                 diffuseTransmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("subSurface", "translucencyIntensityTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("subSurface", "translucencyIntensityTexture"),
                     },
                 },
                 diffuseTransmissionColorFactor: {
                     type: "Color3",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.translucencyColor,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => value && getMaterial(material, index, payload).subSurface.translucencyColor?.copyFrom(value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.translucencyColor,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => value && _GetMaterial(material, index, payload).subSurface.translucencyColor?.copyFrom(value),
                 },
                 diffuseTransmissionColorTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("subSurface", "translucencyColorTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("subSurface", "translucencyColorTexture"),
                     },
                 },
             },
             KHR_materials_volume: {
                 attenuationColor: {
                     type: "Color3",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.tintColor,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => getMaterial(material, index, payload).subSurface.tintColor.copyFrom(value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.tintColor,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => _GetMaterial(material, index, payload).subSurface.tintColor.copyFrom(value),
                 },
                 attenuationDistance: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.tintColorAtDistance,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.tintColorAtDistance = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.tintColorAtDistance,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).subSurface.tintColorAtDistance = value),
                 },
                 thicknessFactor: {
                     type: "number",
-                    get: (material, index, payload) => getMaterial(material, index, payload).subSurface.maximumThickness,
-                    getTarget: getMaterial,
-                    set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.maximumThickness = value),
+                    get: (material, index, payload) => _GetMaterial(material, index, payload).subSurface.maximumThickness,
+                    getTarget: _GetMaterial,
+                    set: (value, material, index, payload) => (_GetMaterial(material, index, payload).subSurface.maximumThickness = value),
                 },
                 thicknessTexture: {
                     extensions: {
-                        KHR_texture_transform: generateTextureMap("subSurface", "thicknessTexture"),
+                        KHR_texture_transform: _GenerateTextureMap("subSurface", "thicknessTexture"),
                     },
                 },
             },
@@ -934,47 +932,47 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
     },
 };
 
-function getTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
-    const babylonMaterial = getMaterial(material, payload);
+function _GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
+    const babylonMaterial = _GetMaterial(material, payload);
     return textureInObject ? babylonMaterial[textureType][textureInObject] : babylonMaterial[textureType];
 }
-function getMaterial(material: IMaterial, _index?: number, payload?: any) {
+function _GetMaterial(material: IMaterial, _index?: number, payload?: any) {
     return material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial;
 }
-function generateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
+function _GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
     return {
         offset: {
             componentsCount: 2,
             // assuming two independent values for u and v, and NOT a Vector2
             type: "Vector2",
             get: (material, _index?, payload?) => {
-                const texture = getTexture(material, payload, textureType, textureInObject);
+                const texture = _GetTexture(material, payload, textureType, textureInObject);
                 return new Vector2(texture?.uOffset, texture?.vOffset);
             },
-            getTarget: getMaterial,
+            getTarget: _GetMaterial,
             set: (value, material, _index?, payload?) => {
-                const texture = getTexture(material, payload, textureType, textureInObject);
+                const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uOffset = value.x), (texture.vOffset = value.y);
             },
             getPropertyName: [() => `${textureType}.${textureInObject}.uOffset`, () => `${textureType}.${textureInObject}.vOffset`],
         },
         rotation: {
             type: "number",
-            get: (material, _index?, payload?) => getTexture(material, payload, textureType, textureInObject)?.wAng,
-            getTarget: getMaterial,
-            set: (value, material, _index?, payload?) => (getTexture(material, payload, textureType, textureInObject).wAng = value),
+            get: (material, _index?, payload?) => _GetTexture(material, payload, textureType, textureInObject)?.wAng,
+            getTarget: _GetMaterial,
+            set: (value, material, _index?, payload?) => (_GetTexture(material, payload, textureType, textureInObject).wAng = value),
             getPropertyName: [() => `${textureType}.${textureInObject}.wAng`],
         },
         scale: {
             componentsCount: 2,
             type: "Vector2",
             get: (material, _index?, payload?) => {
-                const texture = getTexture(material, payload, textureType, textureInObject);
+                const texture = _GetTexture(material, payload, textureType, textureInObject);
                 return new Vector2(texture?.uScale, texture?.vScale);
             },
-            getTarget: getMaterial,
+            getTarget: _GetMaterial,
             set: (value, material, index?, payload?) => {
-                const texture = getTexture(material, payload, textureType, textureInObject);
+                const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uScale = value.x), (texture.vScale = value.y);
             },
             getPropertyName: [() => `${textureType}.${textureInObject}.uScale`, () => `${textureType}.${textureInObject}.vScale`],
@@ -996,7 +994,7 @@ const objectModelMapping: IGLTFObjectModelTree = {
  * @param gltf the glTF tree to use
  * @returns a path-to-object converter for the given glTF tree
  */
-export function getPathToObjectConverter(gltf: IGLTF) {
+export function GetPathToObjectConverter(gltf: IGLTF) {
     return new GLTFPathToObjectConverter(gltf, objectModelMapping);
 }
 
@@ -1006,7 +1004,7 @@ export function getPathToObjectConverter(gltf: IGLTF) {
  * @param key the key to get the mapping for, for example /materials/\{\}/emissiveFactor
  * @returns an object accessor for the given key, or undefined if the key is not found
  */
-export function getMappingForKey(key: string): IObjectAccessor | undefined {
+export function GetMappingForKey(key: string): IObjectAccessor | undefined {
     // replace every `{}` in key with __array__ to match the object model
     const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
     let current = objectModelMapping as any;
@@ -1029,7 +1027,7 @@ export function getMappingForKey(key: string): IObjectAccessor | undefined {
  * @param key the key to set, for example /materials/\{\}/emissiveFactor
  * @param interpolation the interpolation elements array
  */
-export function setInterpolationForKey(key: string, interpolation?: IInterpolationPropertyInfo[]): void {
+export function SetInterpolationForKey(key: string, interpolation?: IInterpolationPropertyInfo[]): void {
     // replace every `{}` in key with __array__ to match the object model
     const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
     let current = objectModelMapping as any;
@@ -1052,7 +1050,7 @@ export function setInterpolationForKey(key: string, interpolation?: IInterpolati
  * @param key the key to add the object accessor at. For example /cameras/\{\}/perspective/aspectRatio
  * @param accessor the object accessor to add
  */
-export function addObjectAccessorToKey<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any>(
+export function AddObjectAccessorToKey<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any>(
     key: string,
     accessor: IObjectAccessor<GLTFTargetType, BabylonTargetType, BabylonValueType>
 ): void {
