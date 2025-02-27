@@ -1,6 +1,7 @@
-(async () => {
-    await import("viewer");
-    const container = document.createElement("div");
-    container.innerHTML = `<babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>`;
-    document.body.appendChild(container);
-})();
+import * as ReactDOM from "react-dom";
+import { App } from "./App";
+
+const root = document.createElement("div");
+document.body.appendChild(root);
+
+ReactDOM.render(<App />, root);

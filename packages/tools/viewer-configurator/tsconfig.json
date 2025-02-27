@@ -2,6 +2,8 @@
     "extends": "../../../tsconfig.json",
 
     "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
         "paths": {
             "viewer": ["tools/viewer/src/index"]
         }

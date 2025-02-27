@@ -1,11 +1,9 @@
 {
-    "extends": "../../../tsconfig.build.json",
+    "extends": ["../../../tsconfig.build.json", "./tsconfig.json"],
 
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "target": "ESNext",
-        "module": "ESNext",
         "moduleResolution": "Node",
         "paths": {
             "viewer": ["tools/viewer/dist/tsbuild/index"]
