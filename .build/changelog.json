@@ -1,6 +1,259 @@
 {
-    "fromTag": "7.49.0",
+    "fromTag": "7.50.0",
     "changelog": {
+        "7.51.0": [
+            {
+                "pr": "16207",
+                "title": "Viewer extract CreateHotSpotFromCamera as a utility function",
+                "description": "- Exposed CreateHotSpotFromCamera as a module-level helper function.\r\n- This change allows React-like apps to manage the `hotspots` attribute directly without using `cameras-as-hotspots`.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16214",
+                "title": "PBR: Fix calculation of transmittance",
+                "description": "Draft only at the time, for discussion. \r\nOnce we agree, I will make the changes in the WGSL shaders.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage3.png"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16222",
+                "title": "Avoid exception during shader compilation context loss",
+                "description": "Enhance error handling to prevent exceptions when the rendering context is lost during shader compilation.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16217",
+                "title": "TextInputLineComponent input handling",
+                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16219",
+                "title": "IBL Shadows - Don't copy mips until effect is compiled",
+                "description": "In the latest code, I'm hitting an error in the IBL shadows code because the effect is being used before it's compiled.\r\nhttps://playground.babylonjs.com/#8R5SSE#536\r\n\r\nThis change should fix the issue.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16218",
+                "title": "Viewer: add support for hdr environments",
+                "description": "When loading an environment from a .hdr file, we need to use `HDRCubeMap` rather than `CubeMap`. To enable this:\r\n1. Add a helper function for getting the file extension from a url.\r\n1. Viewer tries to determine the extension from the environment url.\r\n1. If the extension is `.hdr`, we use `HDRCubeMap` instead of `CubeMap`.\r\n1. In either case, the necessary cube map texture module is dynamically imported.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/urlTools.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16215",
+                "title": "Fix empty runOriginalID for CSG2 toMesh",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16216",
+                "title": "Viewer: automatic default env for IBL when PBR materials are present",
+                "description": "In this change, I am embedding a default environment as a base64 encoded data uri. When resetting the environment, if there is no env texture for IBL and there are PBR materials in the scene, we now use this default env. It is loaded via a dynamic import, so the user won't pay the cost if they provide their own environment.\r\n\r\nI checked the size of the gzipped js file with the base64 default env vs. the gzipped size of the env itself, and the difference was actually negligible (60kb for base64, 59kb for the env file), so I think this is a good approach to avoid external dependencies on CDNs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/defaultEnvironment.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16212",
+                "title": "Fix Geometry update with smaller buffer",
+                "description": "Repro: https://www.babylonjs-playground.com/#KZ1C5A",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16203",
+                "title": "Fix projection bug when dragging in default (viewport) plane",
+                "description": "Forum discussion here: [Mesh drifts towards camera in default PointerDragBehavior axis mode](https://forum.babylonjs.com/t/mesh-drifts-towards-camera-in-default-pointerdragbehavior-axis-mode/56720/1)\r\n\r\nThe issue is that in the default mode (when no custom drag axis or plane normal is provided), the drag plane was being aligned by making it \"look at\" the camera's position. This meant that instead of being parallel to the camera’s clip (screen) plane, the drag plane always faced the camera. Because perspective cameras cause rays to converge, dragging objects off-center led to an inconsistent intersection between the pointer ray and the drag plane—resulting in the mesh drifting toward the camera.\r\n\r\nThis PR just explicitly aligns the drag plane with the camera’s forward direction (i.e., parallel to the view plane) rather than having it face the camera's position.",
+                "author": {
+                    "name": "Propolisa",
+                    "url": "https://github.com/Propolisa"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16209",
+                "title": "Add automatic adjustment for renderScale based on hardware scaling",
+                "description": "Introduce a feature that automatically adjusts the renderScale according to the engine's hardware scaling level, enhancing rendering consistency across different hardware configurations.\n\nSee https://forum.babylonjs.com/t/gui-and-sethardwarescalinglevel/56216?u=raananw\n\nPlayground to test with: #3Q8PCL#296 \n - pointerdown will set the hardware scaling to a random value, GUI expected to always be the same size",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16210",
+                "title": "Prevent duplicate notifications for removed anchors in WebXRAnchorSystem",
+                "description": "Implement a mechanism to track removed anchors, preventing duplicate notifications when anchors are removed from the session. This change introduces an internal flag to indicate if an anchor has already been removed.\n\nFixes the issue presented here - https://forum.babylonjs.com/t/anchorsystem-anchor-remove-causes-crash-on-android/51672?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16208",
+                "title": "WebGPU: Fix crash when using clear coat bump",
+                "description": "See https://forum.babylonjs.com/t/anisotropybarnlamp-glb-gives-an-error-in-webgpu-mode/56734\r\n\r\nIt crashed when the mesh had normals + tangents defined.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16206",
+                "title": "Update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16205",
+                "title": "fix: update loading screen text when loader is currently shown",
+                "description": "When the loading screen is already displayed and visible, it's important to consider that the loading text is no longer the same as `this._loadingTextDiv`. Instead, a new instance of it is created by cloning the entire parent `loadingDiv` (line 197). So, for each canvas, this new instance should be updated.\r\n\r\nForum link: https://forum.babylonjs.com/t/engine-loadinguitext-broken/56741.",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/loadingScreen.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16202",
+                "title": "Add support for subdivide modifier for NGE and VertexData",
+                "description": "\r\nhttps://github.com/user-attachments/assets/12d0c795-3af2-4b4b-9aaa-e29f448f5c44\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/subdivideBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.subdivide.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "geometry",
+                    "nge"
+                ]
+            }
+        ],
         "7.50.0": [
             {
                 "pr": "16200",
