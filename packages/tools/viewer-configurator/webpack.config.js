@@ -71,7 +71,8 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx" /*, ".scss", "*.svg"*/],
             alias: {
                 core: path.resolve(basePathForDev, "core", outputDirectoryForAliases),
-                viewer: path.resolve(basePathForTools, "viewer", outputDirectoryForAliases),
+                // viewer: path.resolve(basePathForTools, "viewer", outputDirectoryForAliases),
+                loaders: path.resolve(basePathForDev, "loaders", outputDirectoryForAliases),
                 "shared-ui-components": path.resolve(basePathForDev, "sharedUiComponents", outputDirectoryForAliases),
             },
             /**

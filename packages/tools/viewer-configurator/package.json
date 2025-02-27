@@ -14,6 +14,9 @@
         "serve:dev": "webpack serve --env mode=development --env watch=all",
         "clean": "rimraf dist && rimraf *.tsbuildinfo"
     },
+    "dependencies": {
+        "@babylonjs/viewer": "^7.48.1"
+    },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
