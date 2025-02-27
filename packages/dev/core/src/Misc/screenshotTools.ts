@@ -232,6 +232,7 @@ export function CreateScreenshotWithResizeAsync(
  * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
+ * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: AbstractEngine,
@@ -246,7 +247,18 @@ export function CreateScreenshotUsingRenderTarget(
     enableStencilBuffer = false,
     useLayerMask = true,
     quality?: number,
-    customizeTexture?: (texture: RenderTargetTexture) => void
+    customizeTexture?: (texture: RenderTargetTexture) => void,
+    customDumpData?: (
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        successCallback?: (data: string | ArrayBuffer) => void,
+        mimeType?: string,
+        fileName?: string,
+        invertY?: boolean,
+        toArrayBuffer?: boolean,
+        quality?: number
+    ) => void
 ): void {
     const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
@@ -312,6 +324,8 @@ export function CreateScreenshotUsingRenderTarget(
     texture.forceLayerMaskCheck = useLayerMask;
     customizeTexture?.(texture);
 
+    const dumpDataFunc = customDumpData || DumpData;
+
     const renderWhenReady = () => {
         _retryWithInterval(
             () => texture.isReadyForRendering() && camera.isReady(true),
@@ -319,7 +333,7 @@ export function CreateScreenshotUsingRenderTarget(
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                            DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                            dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
@@ -327,7 +341,17 @@ export function CreateScreenshotUsingRenderTarget(
                         importPromise.then(() =>
                             ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
                                 engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                    DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                                    dumpDataFunc(
+                                        finalWidth,
+                                        finalHeight,
+                                        data,
+                                        successCallback as (data: string | ArrayBuffer) => void,
+                                        mimeType,
+                                        fileName,
+                                        true,
+                                        undefined,
+                                        quality
+                                    );
                                     texture.dispose();
                                 });
                             })
@@ -349,6 +373,9 @@ export function CreateScreenshotUsingRenderTarget(
                 camera.outputRenderTarget = texture;
                 scene.spritesEnabled = renderSprites;
 
+                const currentMeshList = scene.meshes;
+                scene.meshes = texture.renderList || scene.meshes;
+
                 // render the scene on the RTT
                 try {
                     scene.render();
@@ -358,6 +385,7 @@ export function CreateScreenshotUsingRenderTarget(
                     scene.activeCameras = originalCameras;
                     camera.outputRenderTarget = originalOutputRenderTarget;
                     scene.spritesEnabled = originalSpritesEnabled;
+                    scene.meshes = currentMeshList;
 
                     engine.getRenderWidth = originalGetRenderWidth;
                     engine.getRenderHeight = originalGetRenderHeight;
@@ -430,6 +458,7 @@ export function CreateScreenshotUsingRenderTarget(
  * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
+ * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -445,7 +474,18 @@ export function CreateScreenshotUsingRenderTargetAsync(
     enableStencilBuffer = false,
     useLayerMask = true,
     quality?: number,
-    customizeTexture?: (texture: RenderTargetTexture) => void
+    customizeTexture?: (texture: RenderTargetTexture) => void,
+    customDumpData?: (
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        successCallback?: (data: string | ArrayBuffer) => void,
+        mimeType?: string,
+        fileName?: string,
+        invertY?: boolean,
+        toArrayBuffer?: boolean,
+        quality?: number
+    ) => void
 ): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
@@ -467,7 +507,8 @@ export function CreateScreenshotUsingRenderTargetAsync(
             enableStencilBuffer,
             useLayerMask,
             quality,
-            customizeTexture
+            customizeTexture,
+            customDumpData
         );
     });
 }

@@ -1,20 +1,591 @@
 {
-    "fromTag": "7.48.3",
+    "fromTag": "7.50.0",
     "changelog": {
-        "7.48.3": [
+        "7.51.0": [
             {
-                "pr": "16159",
-                "title": "NativeEngine captureGPUFrameTime + getGPUFrameTimeCounter",
-                "description": "This change overrides `startTimeQuery` and `endTimeQuery` in `NativeEngine` such that `captureGPUFrameTime` and `getGPUFrameTimeCounter` work. They do so by calling the new `populateFrameStats` function on the native side of `NativeEngine`.\r\nCorresponding BN change: https://github.com/BabylonJS/BabylonNative/pull/1458",
+                "pr": "16207",
+                "title": "Viewer extract CreateHotSpotFromCamera as a utility function",
+                "description": "- Exposed CreateHotSpotFromCamera as a module-level helper function.\r\n- This change allows React-like apps to manage the `hotspots` attribute directly without using `cameras-as-hotspots`.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16214",
+                "title": "PBR: Fix calculation of transmittance",
+                "description": "Draft only at the time, for discussion. \r\nOnce we agree, I will make the changes in the WGSL shaders.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage3.png"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16222",
+                "title": "Avoid exception during shader compilation context loss",
+                "description": "Enhance error handling to prevent exceptions when the rendering context is lost during shader compilation.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16217",
+                "title": "TextInputLineComponent input handling",
+                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16219",
+                "title": "IBL Shadows - Don't copy mips until effect is compiled",
+                "description": "In the latest code, I'm hitting an error in the IBL shadows code because the effect is being used before it's compiled.\r\nhttps://playground.babylonjs.com/#8R5SSE#536\r\n\r\nThis change should fix the issue.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16218",
+                "title": "Viewer: add support for hdr environments",
+                "description": "When loading an environment from a .hdr file, we need to use `HDRCubeMap` rather than `CubeMap`. To enable this:\r\n1. Add a helper function for getting the file extension from a url.\r\n1. Viewer tries to determine the extension from the environment url.\r\n1. If the extension is `.hdr`, we use `HDRCubeMap` instead of `CubeMap`.\r\n1. In either case, the necessary cube map texture module is dynamically imported.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/urlTools.ts",
+                    "packages/tools/viewer/src/viewer.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "16215",
+                "title": "Fix empty runOriginalID for CSG2 toMesh",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16216",
+                "title": "Viewer: automatic default env for IBL when PBR materials are present",
+                "description": "In this change, I am embedding a default environment as a base64 encoded data uri. When resetting the environment, if there is no env texture for IBL and there are PBR materials in the scene, we now use this default env. It is loaded via a dynamic import, so the user won't pay the cost if they provide their own environment.\r\n\r\nI checked the size of the gzipped js file with the base64 default env vs. the gzipped size of the env itself, and the difference was actually negligible (60kb for base64, 59kb for the env file), so I think this is a good approach to avoid external dependencies on CDNs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/defaultEnvironment.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16212",
+                "title": "Fix Geometry update with smaller buffer",
+                "description": "Repro: https://www.babylonjs-playground.com/#KZ1C5A",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16203",
+                "title": "Fix projection bug when dragging in default (viewport) plane",
+                "description": "Forum discussion here: [Mesh drifts towards camera in default PointerDragBehavior axis mode](https://forum.babylonjs.com/t/mesh-drifts-towards-camera-in-default-pointerdragbehavior-axis-mode/56720/1)\r\n\r\nThe issue is that in the default mode (when no custom drag axis or plane normal is provided), the drag plane was being aligned by making it \"look at\" the camera's position. This meant that instead of being parallel to the camera’s clip (screen) plane, the drag plane always faced the camera. Because perspective cameras cause rays to converge, dragging objects off-center led to an inconsistent intersection between the pointer ray and the drag plane—resulting in the mesh drifting toward the camera.\r\n\r\nThis PR just explicitly aligns the drag plane with the camera’s forward direction (i.e., parallel to the view plane) rather than having it face the camera's position.",
+                "author": {
+                    "name": "Propolisa",
+                    "url": "https://github.com/Propolisa"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16209",
+                "title": "Add automatic adjustment for renderScale based on hardware scaling",
+                "description": "Introduce a feature that automatically adjusts the renderScale according to the engine's hardware scaling level, enhancing rendering consistency across different hardware configurations.\n\nSee https://forum.babylonjs.com/t/gui-and-sethardwarescalinglevel/56216?u=raananw\n\nPlayground to test with: #3Q8PCL#296 \n - pointerdown will set the hardware scaling to a random value, GUI expected to always be the same size",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16210",
+                "title": "Prevent duplicate notifications for removed anchors in WebXRAnchorSystem",
+                "description": "Implement a mechanism to track removed anchors, preventing duplicate notifications when anchors are removed from the session. This change introduces an internal flag to indicate if an anchor has already been removed.\n\nFixes the issue presented here - https://forum.babylonjs.com/t/anchorsystem-anchor-remove-causes-crash-on-android/51672?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16208",
+                "title": "WebGPU: Fix crash when using clear coat bump",
+                "description": "See https://forum.babylonjs.com/t/anisotropybarnlamp-glb-gives-an-error-in-webgpu-mode/56734\r\n\r\nIt crashed when the mesh had normals + tangents defined.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16206",
+                "title": "Update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16205",
+                "title": "fix: update loading screen text when loader is currently shown",
+                "description": "When the loading screen is already displayed and visible, it's important to consider that the loading text is no longer the same as `this._loadingTextDiv`. Instead, a new instance of it is created by cloning the entire parent `loadingDiv` (line 197). So, for each canvas, this new instance should be updated.\r\n\r\nForum link: https://forum.babylonjs.com/t/engine-loadinguitext-broken/56741.",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/loadingScreen.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16202",
+                "title": "Add support for subdivide modifier for NGE and VertexData",
+                "description": "\r\nhttps://github.com/user-attachments/assets/12d0c795-3af2-4b4b-9aaa-e29f448f5c44\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/subdivideBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.subdivide.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "geometry",
+                    "nge"
+                ]
+            }
+        ],
+        "7.50.0": [
+            {
+                "pr": "16200",
+                "title": "Prevent multiple instances of Manifold from being created",
+                "description": "Fixes the following error when trying to create many `BooleanGeometryBlocks` concurrently. \r\n\r\n```\r\nmanifold.js:8 wasm streaming compile failed: RangeError: WebAssembly.instantiate(): Out of memory: Cannot allocate Wasm memory for new instance\r\n```",
+                "author": {
+                    "name": "klibertowski",
+                    "url": "https://github.com/klibertowski"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16199",
+                "title": "Account for scaling in AdjustOffsetForRotationCenter",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/16181 and https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425 for more info.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16198",
+                "title": "Add offset to instantiate nodes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16196",
+                "title": "Set SPZ Niantic Sample as reference",
+                "description": "Coordinate system used for SPZ makes Niantic samples upside down.\r\nThis PR makes SDK samples to display correctly as it uses the same coordinate system.\r\n\r\nAn option is to change your conversion code (PLY->SPZ) to flip Y,Z components of positions and orientation.\r\nOr, use the new plugin option to do the work at runtime.\r\n\r\nHere is an example to do the flipping when your SPZ do not use same coord system as Niantic and your scenes appear upside down:\r\n```\r\nBABYLON.LoadAssetContainerAsync(\"https://raw.githubusercontent.com/CedricGuillemet/dump/master/racoonfamily.spz\", scene, {\r\n    pluginOptions:{\r\n        splat:{\r\n           flipY: true\r\n        }\r\n    }\r\n});\r\n```",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatLoadingOptions.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16195",
+                "title": "Enhance XR pointer handling and drag behavior improvements",
+                "description": "Introduce aim and grip transforms for XR pointers, improve ray length handling, and refactor drag behavior to utilize correct TmpVectors indices for better performance and accuracy.\n\nAddressing https://forum.babylonjs.com/t/holographicslate-slate-gizmo-seems-to-be-broken-in-oculus-quest-2/34060/5?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts",
+                    "packages/dev/core/src/Rendering/utilityLayerRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16197",
+                "title": "Add Flag for bakeCurrentTransformIntoVertices",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/16192\r\nPer this issue.\r\n\r\nIll be doing the doc updates as well asap.\r\n\r\nMy linter did not like the missing JS doc stuff.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16194",
+                "title": "Fix script error when no mesh is in the scene for camera framing behavior",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16193",
+                "title": "Engine: Move the CreateAlignedTypedArray function from engine to bufferUtils",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16189",
+                "title": "Viewer: enable WebGPU by default (conditionally)",
+                "description": "When the browser supports WebGPU, and when the browser is a chromium browser (the only browser with production ready WebGPU support that we have deeply tested), WebGPU is enabled by default. This improves performance of the Viewer in scenarios where there are many meshes/nodes since we also use snapshot rendering mode (WebGPU render bundles).\r\n\r\nWe did recently discover a bug where there are rendering artifacts when WebGPU is used on Intel-based Macs if we don't explicitly clear between frames (even if we render an opaque color to every pixel). So for now, we will always auto clear, even when it should not be necessary. There is a comment in the code linking to the chromium bug.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16190",
+                "title": "NME: Fix global worldPos and worldNormal not declared in \"Generate only fragment code\" mode",
+                "description": "See https://forum.babylonjs.com/t/bug-in-node-material-editor/56587\r\n\r\ncc @deltakosh, because this PR also rollbacks the changes from #15434.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16191",
+                "title": "NME: Add support for velocity to prepass output block",
+                "description": "See https://forum.babylonjs.com/t/any-way-to-change-velocity-in-node-material-global-velocity-texture/56591",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16187",
+                "title": "Screenshot tool: Use the right mesh list",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16188",
+                "title": "Fix Inspector metadata update",
+                "description": "Fixes #16176\r\n\r\nPreviously the code was determining whether the selected node has changed (and the metadata should be updated) based on the node's `id`. `id` is not unique, so if two nodes have the same `id`, the metadata would not be updated when the selection changes between them. We could use `uniqueId`, but I don't see any reason we don't just compare the actual mesh object reference, so this is what I've done in this PR. As far as I can tell things are working as expected with this change.\r\n\r\nCC @j-te since it looks like you implemented this (almost two years ago!).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16145",
+                "title": "Animations, reframeCamera, pick multiple models",
+                "description": "Add support for multiple models for :\r\n- `animations`\r\n-  `_reframeCamera` with option to use a subset of models\r\n- `_pick`",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16185",
+                "title": "FrameGraph: add support for utility layer renderers",
+                "description": "This allows using gizmos in a frame graph.\r\n\r\nThe PR also makes using gizmos from the inspector work when a frame graph is used at scene level (that is, when `scene.frameGraph` is set).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/utilityLayerRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Rendering/utilityLayerRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/FrameGraph/renderGraphGUIBlock.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16186",
+                "title": "GreasedLine screen space vertex shaders",
+                "description": "https://forum.babylonjs.com/t/visual-glitch-when-crossing-a-greasedline/56538\r\n\r\n#FJRQ8N#171\r\n#FJRQ8N#172",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersGLSL.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterialShadersWGSL.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16179",
+                "title": "add vertex color morph target",
+                "description": "Any interest in having a morph target for vertex color?  There are some glTF viewers out there that will actually display animated point clouds if you add morph targets for POSITION and COLOR_0.  Two that I found are gestaltar and https://gltf-viewer.donmccurdy.com/.  Looks like babylon.js doesn't wire in color as a morph target, so I grepped through the code and put it in.\r\n\r\n**Test plan**\r\nI only tried it with a test glb with animated point clouds defined as morph targets.  I'm not sure how to correctly test all of this.",
+                "author": {
+                    "name": "kmatzen",
+                    "url": "https://github.com/kmatzen"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/Shaders/background.vertex.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/boundingInfo.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/color.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/materials/src/cell/cell.vertex.fx",
+                    "packages/dev/materials/src/fire/fire.vertex.fx",
+                    "packages/dev/materials/src/fur/fur.vertex.fx",
+                    "packages/dev/materials/src/gradient/gradient.vertex.fx",
+                    "packages/dev/materials/src/lava/lava.vertex.fx",
+                    "packages/dev/materials/src/mix/mix.vertex.fx",
+                    "packages/dev/materials/src/simple/simple.vertex.fx",
+                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
+                    "packages/dev/materials/src/water/water.vertex.fx",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMorphTargetsUtilities.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16110",
+                "title": "WebGPU: Fix GPU buffers update when parameters are not aligned",
+                "description": "See https://forum.babylonjs.com/t/webgpu-writebuffer-overwrites-with-zeros-in-special-cases/56159/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
             }
         ],
         "7.49.0": [
@@ -376,6 +947,22 @@
                     "rendering engine",
                     "WebGPU"
                 ]
+            }
+        ],
+        "7.48.3": [
+            {
+                "pr": "16159",
+                "title": "NativeEngine captureGPUFrameTime + getGPUFrameTimeCounter",
+                "description": "This change overrides `startTimeQuery` and `endTimeQuery` in `NativeEngine` such that `captureGPUFrameTime` and `getGPUFrameTimeCounter` work. They do so by calling the new `populateFrameStats` function on the native side of `NativeEngine`.\r\nCorresponding BN change: https://github.com/BabylonJS/BabylonNative/pull/1458",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
             }
         ],
         "7.48.2": [

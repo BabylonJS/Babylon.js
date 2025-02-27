@@ -19,6 +19,12 @@ import { Vector3 } from "core/Maths/math.vector";
 let Manifold: any;
 
 /**
+ * Promise to wait for the manifold library to be ready
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let ManifoldPromise: Promise<{ Manifold: any; Mesh: any }>;
+
+/**
  * Manifold mesh
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -259,6 +265,10 @@ export class CSG2 implements IDisposable {
                 multiMaterial.subMaterials = materials;
                 output.material = multiMaterial;
             } else {
+                if (output.subMeshes.length > 1) {
+                    // Remove the submeshes as they are not needed
+                    output._createGlobalSubMesh(true);
+                }
                 output.material = materials[0];
             }
         }
@@ -459,11 +469,20 @@ export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
         ...options,
     };
 
+    if (Manifold) {
+        return; // Already initialized
+    }
+
+    if (ManifoldPromise) {
+        await ManifoldPromise;
+        return;
+    }
+
     if (localOptions.manifoldInstance) {
         Manifold = localOptions.manifoldInstance;
         ManifoldMesh = localOptions.manifoldMeshInstance;
     } else {
-        const result = await _LoadScriptModuleAsync(
+        ManifoldPromise = _LoadScriptModuleAsync(
             `
             import Module from '${localOptions.manifoldUrl}/manifold.js';
             const wasm = await Module();
@@ -473,6 +492,7 @@ export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
         `
         );
 
+        const result = await ManifoldPromise;
         Manifold = result.Manifold;
         ManifoldMesh = result.Mesh;
     }

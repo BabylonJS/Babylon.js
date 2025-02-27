@@ -78,6 +78,7 @@ import { LatticeBlock } from "core/Meshes/Node/Blocks/Set/latticeBlock";
 import { AggregatorBlock } from "core/Meshes/Node/Blocks/Set/aggregatorBlock";
 import { CleanGeometryBlock } from "core/Meshes/Node/Blocks/cleanGeometryBlock";
 import { PointListBlock } from "core/Meshes/Node/Blocks/Sources/pointListBlock";
+import { SubdivideBlock } from "core/Meshes/Node/Blocks/subdivideBlock";
 
 /**
  * Static class for BlockTools
@@ -85,6 +86,8 @@ import { PointListBlock } from "core/Meshes/Node/Blocks/Sources/pointListBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "SubdivideBlock":
+                return new SubdivideBlock("Subdivide");
             case "PointListBlock":
                 return new PointListBlock("Point List");
             case "CleanGeometryBlock":
