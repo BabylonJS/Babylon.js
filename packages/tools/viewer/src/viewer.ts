@@ -510,6 +510,8 @@ export class Viewer implements IDisposable {
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
 
     private readonly _defaultHardwareScalingLevel: number;
+    private _lastHardwareScalingLevel: number;
+    private _renderedLastFrame: Nullable<boolean> = null;
     private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
@@ -556,7 +558,7 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
-        this._defaultHardwareScalingLevel = this._engine.getHardwareScalingLevel();
+        this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
@@ -1498,8 +1500,31 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
-            let renderedLastFrame: Nullable<boolean> = null;
             let renderedReadyFrame = false;
+
+            const onRenderingResumed = () => {
+                this._log("Viewer Resumed Rendering");
+                // Resume rendering with the hardware scaling level from prior to suspending.
+                this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
+                this._engine.performanceMonitor.enable();
+                this._startSceneOptimizer();
+            };
+
+            const onRenderingSuspended = () => {
+                this._log("Viewer Suspended Rendering");
+                this._renderedLastFrame = false;
+                renderedReadyFrame = false;
+                // Take note of the current hardware scaling level for when rendering is resumed.
+                this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
+                this._stopSceneOptimizer();
+                // We want a high quality render right before suspending, so set the hardware scaling level back to the default,
+                // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
+                // and then render the scene once.
+                this._engine.performanceMonitor.disable();
+                this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+                this._scene.render();
+            };
+
             const render = () => {
                 // First check if we have indicators that we should render.
                 let shouldRender = this._shouldRender;
@@ -1509,18 +1534,17 @@ export class Viewer implements IDisposable {
                 // a bunch of the same work that happens when we actually render a frame, so we don't want to check
                 // this unless we know we are in a state where there were mutations and now we are waiting for a frame
                 // to render after the scene is ready.
-                if (!shouldRender && renderedLastFrame && !renderedReadyFrame) {
+                if (!shouldRender && this._renderedLastFrame && !renderedReadyFrame) {
                     renderedReadyFrame = this._scene.isReady(true);
                     shouldRender = true;
                 }
 
                 if (shouldRender) {
-                    if (!renderedLastFrame) {
-                        if (renderedLastFrame !== null) {
-                            this._log("Viewer Resumed Rendering");
-                            this._startSceneOptimizer();
+                    if (!this._renderedLastFrame) {
+                        if (this._renderedLastFrame !== null) {
+                            onRenderingResumed();
                         }
-                        renderedLastFrame = true;
+                        this._renderedLastFrame = true;
                     }
 
                     this._sceneMutated = false;
@@ -1537,11 +1561,8 @@ export class Viewer implements IDisposable {
                 } else {
                     this._camera.update();
 
-                    if (renderedLastFrame) {
-                        this._log("Viewer Suspended Rendering");
-                        renderedLastFrame = false;
-                        renderedReadyFrame = false;
-                        this._stopSceneOptimizer();
+                    if (this._renderedLastFrame) {
+                        onRenderingSuspended();
                     }
                 }
             };
@@ -1556,8 +1577,8 @@ export class Viewer implements IDisposable {
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
 
-                        if (renderedLastFrame) {
-                            this._log("Viewer Suspended Rendering");
+                        if (this._renderedLastFrame) {
+                            onRenderingSuspended();
                         }
                     }
                 },
