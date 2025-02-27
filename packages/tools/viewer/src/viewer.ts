@@ -4,8 +4,11 @@ import type {
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
+    BaseTexture,
     Camera,
+    CubeTexture,
     FramingBehavior,
+    HDRCubeTexture,
     HotSpotQuery,
     IDisposable,
     IMeshDataCache,
@@ -26,7 +29,6 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
@@ -42,6 +44,7 @@ import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
@@ -135,7 +138,30 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-function createSkybox(scene: Scene, camera: Camera, reflectionTexture: CubeTexture, blur: number): Mesh {
+async function createCubeTexture(url: string, scene: Scene, extension?: string) {
+    extension = extension ?? GetExtensionFromUrl(url);
+    const instantiateTexture = await (async () => {
+        if (extension === ".hdr") {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
+            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
+        } else {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
+            return () => new CubeTexture(url, scene, null, false, null, null, null, undefined, true, extension, true);
+        }
+    })();
+
+    const originalUseDelayedTextureLoading = scene.useDelayedTextureLoading;
+    try {
+        scene.useDelayedTextureLoading = false;
+        return instantiateTexture();
+    } finally {
+        scene.useDelayedTextureLoading = originalUseDelayedTextureLoading;
+    }
+}
+
+function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
@@ -364,10 +390,10 @@ export type Model = IDisposable & {
     /**
      * Compute and return the world bounds of the model.
      * The minimum and maximum extents, the size and the center.
-     * @param animationIndex The index of the animation group to consider when computing the bounding info.
+     * @param animationIndex The index of the animation group to use for computation. If omitted, the current selected animation is used.
      * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
      */
-    getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+    getWorldBounds(animationIndex?: number): Nullable<ViewerBoundingInfo>;
 
     /**
      * Resets the computed world bounds of the model.
@@ -484,8 +510,8 @@ export class Viewer implements IDisposable {
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _skyboxVisible: boolean = true;
-    private _skyboxTexture: Nullable<CubeTexture> = null;
-    private _reflectionTexture: Nullable<CubeTexture> = null;
+    private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
+    private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity: number = 1;
     private _reflectionsRotation: number = 0;
     private _light: Nullable<HemisphericLight> = null;
@@ -1096,7 +1122,7 @@ export class Viewer implements IDisposable {
 
                     this._snapshotHelper.enableSnapshotRendering();
                 },
-                getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
+                getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
                         worldBounds = computeModelsBoundingInfos([model]);
@@ -1248,7 +1274,7 @@ export class Viewer implements IDisposable {
 
             try {
                 if (url) {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene, options.extension);
+                    const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
@@ -1267,7 +1293,7 @@ export class Viewer implements IDisposable {
                     }
 
                     await new Promise<void>((resolve, reject) => {
-                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
+                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
                             resolve();
