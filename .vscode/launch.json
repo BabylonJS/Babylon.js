@@ -103,17 +103,6 @@
         },
         {
             /*
-            Viewer configurator development - meant for development of the playground
-            It doesn't set any source code watchers!
-            */
-            "type": "chrome",
-            "request": "launch",
-            "name": "Viewer Configurator development (Chrome)",
-            "url": "http://localhost:3003",
-            "preLaunchTask": "Viewer Configurator Serve (Dev)"
-        },
-        {
-            /*
             Launch the playground to be use to test changes in dev packages
             */
             "type": "msedge",
@@ -511,16 +500,27 @@
         {
             "type": "msedge",
             "request": "launch",
-            "name": "Viewer (Web) (Edge)",
+            "name": "Viewer Test App (Web) (Edge)",
             "url": "http://localhost:1342/packages/tools/viewer/test/apps/web/index.html",
-            "preLaunchTask": "Viewer (Web)"
+            "preLaunchTask": "Viewer Test App (Web)"
         },
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Viewer (Web) (Chrome)",
+            "name": "Viewer Test App (Web) (Chrome)",
             "url": "http://localhost:1342/packages/tools/viewer/test/apps/web/index.html",
-            "preLaunchTask": "Viewer (Web)"
+            "preLaunchTask": "Viewer Test App (Web)"
+        },
+        {
+            /*
+            Viewer configurator development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "chrome",
+            "request": "launch",
+            "name": "Viewer Configurator development (Chrome)",
+            "url": "http://localhost:3003",
+            "preLaunchTask": "Viewer Configurator Serve (Dev)"
         }
     ],
     "inputs": [
