@@ -2,10 +2,6 @@
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
-const outputDirectoryForAliases = "dist"; // TODO: Errors using "src" here
-const basePathForDev = path.resolve(__dirname, "../../", "dev");
-const basePathForTools = path.resolve(__dirname, "../../", "tools");
-
 module.exports = (env) => {
     const commonConfig = {
         entry: "./src/index.tsx",
@@ -25,10 +21,10 @@ module.exports = (env) => {
         resolve: {
             extensions: [".js", ".ts", ".tsx"],
             alias: {
-                core: path.resolve(basePathForDev, "core", outputDirectoryForAliases),
-                viewer: path.resolve(basePathForTools, "viewer", outputDirectoryForAliases, "tsbuild"),
-                loaders: path.resolve(basePathForDev, "loaders", outputDirectoryForAliases),
-                "shared-ui-components": path.resolve(basePathForDev, "sharedUiComponents", outputDirectoryForAliases),
+                core: path.resolve("../../dev/core/dist"),
+                loaders: path.resolve("../../dev/loaders/dist"), // "src" results in unknown babylonjs-gltf2interface
+                viewer: path.resolve("../../tools/viewer/dist/tsbuild"), // "src" results in runtime viewer error
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
 
