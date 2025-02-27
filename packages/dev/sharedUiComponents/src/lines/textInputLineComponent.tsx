@@ -71,6 +71,12 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
+        const newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName!];
+        if (newValue !== nextState.input) {
+            nextState.input = newValue || "";
+            return true;
+        }
+
         if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit) {
             return true;
         }
