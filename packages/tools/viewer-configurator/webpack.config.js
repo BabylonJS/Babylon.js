@@ -1,9 +1,8 @@
-// const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
 module.exports = (env) => {
-    const commonConfig = {
+    return {
         entry: "./src/index.tsx",
 
         ...webpackTools.commonDevWebpackConfiguration(
@@ -46,5 +45,4 @@ module.exports = (env) => {
             usedExports: true,
         },
     };
-    return commonConfig;
 };
