@@ -151,7 +151,6 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
         return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
-            const object = accessorContainer.info.getTarget?.(accessorContainer.object);
             // make sure keys are of the right type (in case of float3 color/vector)
             const type = accessorContainer.info.type;
             if (type.startsWith("Color")) {
@@ -175,7 +174,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                         };
                     });
                 }
-                const animationData = info.buildAnimations(object, name, 60, newKeys);
+                const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
                 animationData.forEach((animation) => {
                     if (easingFunction) {
                         animation.babylonAnimation.setEasingFunction(easingFunction);

@@ -55,18 +55,13 @@ class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
 
 class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: IMaterial | Material, name: string, fps: number, keys: any[]) {
+    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[]) {
         const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
-        if ((target as IMaterial)._data) {
-            const targetAsIMaterial = target as IMaterial;
-            for (const fillMode in targetAsIMaterial._data!) {
-                babylonAnimations.push({
-                    babylonAnimatable: targetAsIMaterial._data![fillMode].babylonMaterial,
-                    babylonAnimation: this._buildAnimation(name, fps, keys),
-                });
-            }
-        } else {
-            babylonAnimations.push({ babylonAnimatable: target as Material, babylonAnimation: this._buildAnimation(name, fps, keys) });
+        for (const fillMode in target._data!) {
+            babylonAnimations.push({
+                babylonAnimatable: target._data![fillMode].babylonMaterial,
+                babylonAnimation: this._buildAnimation(name, fps, keys),
+            });
         }
         return babylonAnimations;
     }
