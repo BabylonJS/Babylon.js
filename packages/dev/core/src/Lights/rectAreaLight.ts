@@ -9,6 +9,7 @@ import { AreaLight } from "./areaLight";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Texture } from "../Materials/Textures/texture";
+import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);
@@ -40,6 +41,11 @@ export class RectAreaLight extends AreaLight {
         }
 
         this._emissionTextureTexture = value;
+
+        if (this._emissionTextureTexture) {
+            this._emissionTextureTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            this._emissionTextureTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        }
 
         if (this._emissionTextureTexture && RectAreaLight._IsTexture(this._emissionTextureTexture)) {
             this._emissionTextureTexture.onLoadObservable.addOnce(() => {
