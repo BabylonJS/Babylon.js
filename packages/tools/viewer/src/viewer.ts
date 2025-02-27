@@ -199,7 +199,14 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
     const size = max.subtract(min);
     const center = min.add(size.scale(0.5));
 
-    return { extents: { min: min.asArray(), max: max.asArray() }, size: size.asArray(), center: center.asArray() };
+    return {
+        extents: {
+            min: min.asArray(),
+            max: max.asArray(),
+        },
+        size: size.asArray(),
+        center: center.asArray(),
+    };
 }
 
 /**
@@ -288,7 +295,10 @@ export type LoadEnvironmentOptions = EnvironmentOptions &
         }>
     >;
 
-const defaultLoadEnvironmentOptions = { lighting: true, skybox: true } as const satisfies EnvironmentOptions;
+const defaultLoadEnvironmentOptions = {
+    lighting: true,
+    skybox: true,
+} as const satisfies EnvironmentOptions;
 
 export type ViewerHotSpotQuery =
     | ({
@@ -408,7 +418,10 @@ export type Model = IDisposable & {
     makeActive(options?: ActivateModelOptions): void;
 };
 
-type ModelInternal = Model & { _animationPlaying(): boolean; _shouldRender(): boolean };
+type ModelInternal = Model & {
+    _animationPlaying(): boolean;
+    _shouldRender(): boolean;
+};
 
 /**
  * @experimental
@@ -622,7 +635,9 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.postProcessing = { toneMapping: "neutral" };
+        this.postProcessing = {
+            toneMapping: "neutral",
+        };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -678,7 +693,12 @@ export class Viewer implements IDisposable {
      * Get the current environment configuration.
      */
     public get environmentConfig(): Readonly<EnvironmentParams> {
-        return { intensity: this._reflectionsIntensity, blur: this._skyboxBlur, rotation: this._reflectionsRotation, visible: this._skyboxVisible };
+        return {
+            intensity: this._reflectionsIntensity,
+            blur: this._skyboxBlur,
+            rotation: this._reflectionsRotation,
+            visible: this._skyboxVisible,
+        };
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
@@ -790,7 +810,11 @@ export class Viewer implements IDisposable {
                 break;
         }
 
-        return { toneMapping, contrast: this._contrast, exposure: this._exposure };
+        return {
+            toneMapping,
+            contrast: this._contrast,
+            exposure: this._exposure,
+        };
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
