@@ -1,0 +1,22 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "target": "ESNext",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "sourceMap": true,
+        "declaration": true,
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "paths": {
+            "core/*": ["dev/core/src/*"],
+            "loaders/*": ["dev/loaders/src/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
+            "viewer/*": ["tools/viewer/src/*"]
+        },
+        "skipLibCheck": true // Add this line to skip checking of declaration files
+    }
+
+    // "include": ["./src/**/*"]
+}

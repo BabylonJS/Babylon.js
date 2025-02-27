@@ -103,6 +103,17 @@
         },
         {
             /*
+            Viewer configurator development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "chrome",
+            "request": "launch",
+            "name": "Viewer Configurator development (Chrome)",
+            "url": "http://localhost:3003",
+            "preLaunchTask": "Viewer Configurator Serve (Dev)"
+        },
+        {
+            /*
             Launch the playground to be use to test changes in dev packages
             */
             "type": "msedge",
