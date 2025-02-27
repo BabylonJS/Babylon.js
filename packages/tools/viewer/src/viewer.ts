@@ -469,9 +469,9 @@ export class Viewer implements IDisposable {
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
-    protected readonly _sceneOptimizer: SceneOptimizer;
 
     private readonly _defaultHardwareScalingLevel: number;
+    private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
@@ -521,12 +521,6 @@ export class Viewer implements IDisposable {
         this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
-
-            // Configure the scene optimizer.
-            const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
-            const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
-            sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
-            this._sceneOptimizer = new SceneOptimizer(scene, sceneOptimizerOptions);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -1179,7 +1173,7 @@ export class Viewer implements IDisposable {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
-        this._resetSceneOptimizations();
+        this._startSceneOptimizer(true);
     }
 
     /**
@@ -1474,7 +1468,7 @@ export class Viewer implements IDisposable {
                     if (!renderedLastFrame) {
                         if (renderedLastFrame !== null) {
                             this._log("Viewer Resumed Rendering");
-                            this._sceneOptimizer.start();
+                            this._startSceneOptimizer();
                         }
                         renderedLastFrame = true;
                     }
@@ -1497,7 +1491,7 @@ export class Viewer implements IDisposable {
                         this._log("Viewer Suspended Rendering");
                         renderedLastFrame = false;
                         renderedReadyFrame = false;
-                        this._sceneOptimizer.stop();
+                        this._stopSceneOptimizer();
                     }
                 }
             };
@@ -1637,9 +1631,24 @@ export class Viewer implements IDisposable {
         return null;
     }
 
-    protected _resetSceneOptimizations() {
-        this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+    protected _startSceneOptimizer(reset = false) {
+        this._stopSceneOptimizer();
+
+        if (reset) {
+            this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+        }
+
+        const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
+        const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
+        sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
+        this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
+
         this._sceneOptimizer.start();
+    }
+
+    protected _stopSceneOptimizer() {
+        this._sceneOptimizer?.dispose();
+        this._sceneOptimizer = null;
     }
 
     protected _log(message: string) {
