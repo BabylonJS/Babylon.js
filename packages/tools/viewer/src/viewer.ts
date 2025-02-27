@@ -1418,16 +1418,12 @@ export class Viewer implements IDisposable {
     }
 
     protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        if (!assetContainer) {
-            return false;
-        }
-
         const worldNormal = this._tempVectors[2];
         const worldPos = this._tempVectors[1];
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            const mesh = assetContainer.meshes[query.meshIndex];
+            const mesh = assetContainer?.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
