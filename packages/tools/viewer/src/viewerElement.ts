@@ -759,7 +759,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
             }
@@ -787,7 +787,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraTarget should be defined as 'x y z'");
             }
