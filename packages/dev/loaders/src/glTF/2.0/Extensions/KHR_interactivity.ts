@@ -7,7 +7,6 @@ import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
-import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
