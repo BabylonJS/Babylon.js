@@ -796,20 +796,19 @@ export class Viewer implements IDisposable {
      * The post processing configuration.
      */
     public get postProcessing(): PostProcessing {
-        let toneMapping: ToneMapping;
-        switch (this._toneMappingType) {
-            case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                toneMapping = "standard";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                toneMapping = "aces";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                toneMapping = "neutral";
-                break;
-            default:
-                toneMapping = "none";
-                break;
+        let toneMapping: ToneMapping = "none";
+        if (this._toneMappingEnabled) {
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
+                    toneMapping = "standard";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    toneMapping = "aces";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                    toneMapping = "neutral";
+                    break;
+            }
         }
 
         return {
