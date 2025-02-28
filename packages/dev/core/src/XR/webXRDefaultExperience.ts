@@ -166,6 +166,7 @@ export class WebXRDefaultExperience {
         return WebXRExperienceHelper.CreateAsync(scene)
             .then((xrHelper) => {
                 result.baseExperience = xrHelper;
+                scene._webXRDefaultExperience = result;
 
                 if (options.ignoreNativeCameraTransformation) {
                     result.baseExperience.camera.compensateOnFirstFrame = false;

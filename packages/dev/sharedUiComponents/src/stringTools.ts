@@ -81,10 +81,11 @@ export class StringTools {
      * @param document
      * @param content defines the string to download locally as a file
      * @param filename
+     * @param type MIME type for binary content
      */
-    public static DownloadAsFile(document: HTMLDocument, content: string, filename: string) {
+    public static DownloadAsFile(document: HTMLDocument, content: string, filename: string, type: string = "application/octet-stream") {
         const blob = new Blob([content], {
-            type: "application/octet-stream",
+            type,
         });
 
         this._SaveAs(blob, filename, document);

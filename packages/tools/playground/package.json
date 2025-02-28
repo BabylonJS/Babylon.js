@@ -13,6 +13,7 @@
         "clean": "rimraf dist"
     },
     "devDependencies": {
+        "iwer": "2.0.1",
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
         "@svgr/webpack": "^7.0.0",
