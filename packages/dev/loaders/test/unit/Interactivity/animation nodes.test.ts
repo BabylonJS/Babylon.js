@@ -47,7 +47,11 @@ describe("Interactivity/animation nodes", () => {
         };
 
         const pathConverter = GetPathToObjectConverter(mockGltf);
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf, {
+            parent: {
+                targetFps: 60,
+            },
+        } as unknown as any);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });

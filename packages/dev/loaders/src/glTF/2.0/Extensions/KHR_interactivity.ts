@@ -50,7 +50,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         this.enabled = this._loader.isExtensionUsed(NAME);
         this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
-        _loader.parent.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
+        _loader._skipStartAnimationStep = true;
 
         // Update object model with new pointers
 

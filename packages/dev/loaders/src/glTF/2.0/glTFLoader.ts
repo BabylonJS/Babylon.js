@@ -201,6 +201,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** @internal */
     public _allMaterialsDirtyRequired = false;
 
+    /** @internal */
+    public _skipStartAnimationStep = false;
+
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
     private _disposed = false;
@@ -464,8 +467,9 @@ export class GLTFLoader implements IGLTFLoader {
 
                     this._extensionsOnReady();
                     this._parent._setState(GLTFLoaderState.READY);
-
-                    this._startAnimations();
+                    if (!this._skipStartAnimationStep) {
+                        this._startAnimations();
+                    }
 
                     return resultFunc();
                 });

@@ -1,6 +1,6 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
-import { loggerExample, mathExample, customEventExample, worldPointerExample, doNExample, intMathExample, matrixMathExample } from "./testData";
+import { loggerExample, mathExample, worldPointerExample, doNExample, intMathExample } from "./testData";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -17,6 +17,11 @@ describe("Babylon Interactivity", () => {
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
     let mockGltf: any;
     const pathConverter = GetPathToObjectConverter(mockGltf);
+    const mockLoader = {
+        parent: {
+            targetFps: 60,
+        },
+    } as unknown as any;
 
     beforeEach(() => {
         engine = new NullEngine();
@@ -26,7 +31,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should load a basic graph", async () => {
-        const i2fg = new InteractivityGraphToFlowGraphParser(loggerExample, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(loggerExample, mockGltf, mockLoader);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
@@ -37,7 +42,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should load a math graph", async () => {
-        const i2fg = new InteractivityGraphToFlowGraphParser(mathExample, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(mathExample, mockGltf, mockLoader);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
@@ -48,7 +53,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should do integer math operations", async () => {
-        const i2fg = new InteractivityGraphToFlowGraphParser(intMathExample, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(intMathExample, mockGltf, mockLoader);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
@@ -67,7 +72,7 @@ describe("Babylon Interactivity", () => {
                 },
             ],
         };
-        const i2fg = new InteractivityGraphToFlowGraphParser(worldPointerExample, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(worldPointerExample, mockGltf, mockLoader);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const pathConverter = GetPathToObjectConverter(gltf);
@@ -80,7 +85,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should execute an event N times with doN", async () => {
-        const i2fg = new InteractivityGraphToFlowGraphParser(doNExample, mockGltf);
+        const i2fg = new InteractivityGraphToFlowGraphParser(doNExample, mockGltf, mockLoader);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
