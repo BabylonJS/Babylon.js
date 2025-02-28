@@ -217,7 +217,18 @@ export function addNewInteractivityFlowGraphMapping(key: string, extension: stri
 }
 
 const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: IGLTFToFlowGraphMapping } } = {
+    /**
+     * This is the BABYLON extension for glTF interactivity.
+     * It defines babylon-specific blocks and operations.
+     */
     BABYLON: {
+        /**
+         * flow/log is a flow node that logs input to the console.
+         * It has "in" and "out" flows, and takes a message as input.
+         * The message can be any type of value.
+         * The message is logged to the console when the "in" flow is triggered.
+         * The "out" flow is triggered when the message is logged.
+         */
         "flow/log": {
             blocks: [FlowGraphBlockNames.ConsoleLog],
             inputs: {

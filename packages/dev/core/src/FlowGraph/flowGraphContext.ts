@@ -119,6 +119,9 @@ export class FlowGraphContext {
      */
     public logger: Nullable<FlowGraphLogger>;
 
+    /**
+     * Enable logging on this context
+     */
     public get enableLogging() {
         return this._enableLogging;
     }
@@ -398,6 +401,14 @@ export class FlowGraphContext {
      */
     public get configuration() {
         return this._configuration;
+    }
+
+    /**
+     * Check if there are any pending blocks in this context
+     * @returns true if there are pending blocks
+     */
+    public get hasPendingBlocks() {
+        return this._pendingBlocks.length > 0;
     }
 
     /**

@@ -2,7 +2,6 @@ import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphExecutionBlockWithOutSignal } from "./flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
-import type { PointerInfo } from "core/Events/pointerEvents";
 
 /**
  * An async execution block can start tasks that will be executed asynchronously.
@@ -40,10 +39,6 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      * @param context the context in which it is running
      */
     public _executeOnTick(_context: FlowGraphContext): void {}
-
-    public _executeOnPicked(_context: FlowGraphContext, _pickedInfo: PointerInfo): boolean {
-        return true;
-    }
 
     /**
      * @internal
