@@ -1,23 +1,28 @@
-:local .VerticalContainer {
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
+.VerticalContainer {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 
     .HeaderContainer {
-        max-height: 10vh;
-    }
-
-    :local .HeaderContainer {
+        height: 3vh;
+        color: white;
+        background: #333333;
+        font-size: 16px;
         display: flex;
         flex-direction: row;
+        justify-content: flex-start;
         align-items: center;
+        padding: 0.5em;
+        gap: 1em;
 
         img {
             height: 100%;
+            width: auto;
         }
     }
 
     .HorizontalContainer {
-        max-height: 90vh;
+        flex: 1; // Take up remaining space
+        min-height: 0; // Prevents flex child from overflowing
     }
 }

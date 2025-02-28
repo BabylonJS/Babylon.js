@@ -1,7 +1,5 @@
 import type { FunctionComponent } from "react";
 import type { ViewerElement } from "viewer";
-
-import * as styles from "./viewer.module.scss";
 import { useEffect, useState } from "react";
 
 interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
@@ -30,9 +28,9 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: Viewer
         });
     }, []);
 
-    return (
-        <div className={styles["ViewerContainer"]}>
-            {viewerLoaded ? <babylon-viewer ref={props.onViewerCreated} source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer> : <p>Loading...</p>};
-        </div>
+    return viewerLoaded ? (
+        <babylon-viewer style={{ width: "100%", height: "100%" }} ref={props.onViewerCreated} source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+    ) : (
+        <p>Loading...</p>
     );
 };
