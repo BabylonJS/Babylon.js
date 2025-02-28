@@ -217,20 +217,12 @@ export function addNewInteractivityFlowGraphMapping(key: string, extension: stri
 }
 
 const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: IGLTFToFlowGraphMapping } } = {
-    BABYLON_Logging: {
-        "babylon/log": {
+    BABYLON: {
+        "flow/log": {
             blocks: [FlowGraphBlockNames.ConsoleLog],
             inputs: {
-                flows: {
-                    // in: { name: "in" },
-                },
                 values: {
                     message: { name: "message" },
-                },
-            },
-            outputs: {
-                flows: {
-                    // out: { name: "out" },
                 },
             },
         },
