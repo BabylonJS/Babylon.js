@@ -53,6 +53,7 @@ export class StateManager {
     createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
 
     private _isRebuildQueued: boolean;
+
     queueRebuildCommand() {
         if (this._isRebuildQueued) {
             return;
@@ -62,7 +63,6 @@ export class StateManager {
 
         setTimeout(() => {
             this.onRebuildRequiredObservable.notifyObservers();
-            this.onUpdateRequiredObservable.notifyObservers(null);
             this._isRebuildQueued = false;
         }, 1);
     }

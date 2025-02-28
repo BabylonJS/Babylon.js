@@ -212,10 +212,11 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         // Alpha test
         if (material) {
-            const needAlphaTesting = material.needAlphaTesting();
+            const needAlphaTesting = material.needAlphaTestingForMesh(mesh);
             if (needAlphaTesting) {
                 defines.push("#define ALPHATEST");
             }
@@ -267,7 +268,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                   false, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 
@@ -466,7 +468,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     // Alpha test
-                    if (material.needAlphaTesting()) {
+                    if (material.needAlphaTestingForMesh(effectiveMesh)) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {

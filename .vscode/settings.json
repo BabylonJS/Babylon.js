@@ -1,5 +1,5 @@
 {
-    "cSpell.words": ["babylonjs"],
+    "cSpell.words": ["babylonjs", "Pickable"],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": false,

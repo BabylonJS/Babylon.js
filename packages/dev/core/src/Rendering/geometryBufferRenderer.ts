@@ -556,11 +556,12 @@ export class GeometryBufferRenderer {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         if (material) {
             let needUv = false;
             // Alpha test
-            if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
+            if (material.needAlphaTestingForMesh(mesh) && material.getAlphaTestTexture()) {
                 defines.push("#define ALPHATEST");
                 defines.push(`#define ALPHATEST_UV${material.getAlphaTestTexture().coordinatesIndex + 1}`);
                 needUv = true;
@@ -792,7 +793,8 @@ export class GeometryBufferRenderer {
                   true, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 
@@ -1099,7 +1101,7 @@ export class GeometryBufferRenderer {
                 material._preBind(drawWrapper, sideOrientation);
 
                 // Alpha test
-                if (material.needAlphaTesting()) {
+                if (material.needAlphaTestingForMesh(effectiveMesh)) {
                     const alphaTexture = material.getAlphaTestTexture();
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);

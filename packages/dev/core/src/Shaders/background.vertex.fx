@@ -143,7 +143,7 @@ void main(void) {
 
     // Vertex color
 #ifdef VERTEXCOLOR
-    vColor = color;
+    vColor = colorUpdated;
 #endif
 
     // Point size

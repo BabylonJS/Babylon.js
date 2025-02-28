@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable, TypedArray } from "core/types";
+import type { IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -80,7 +80,6 @@ import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtensio
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
-import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
 
 export { GLTFFileLoader };
 
@@ -1290,6 +1289,30 @@ export class GLTFLoader implements IGLTFLoader {
             });
 
             babylonMorphTarget.setUV2s(uvs);
+        });
+
+        loadAttribute("COLOR_0", VertexBuffer.ColorKind, (babylonVertexBuffer, data) => {
+            let colors = null;
+            const componentSize = babylonVertexBuffer.getSize();
+            if (componentSize === 3) {
+                colors = new Float32Array((data.length / 3) * 4);
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    const pixid = Math.floor(index / 3);
+                    const channel = index % 3;
+                    colors[4 * pixid + channel] = data[3 * pixid + channel] + value;
+                });
+                for (let i = 0; i < data.length / 3; ++i) {
+                    colors[4 * i + 3] = 1;
+                }
+            } else if (componentSize === 4) {
+                colors = new Float32Array(data.length);
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    colors[index] = data[index] + value;
+                });
+            } else {
+                throw new Error(`${context}: Invalid number of components (${componentSize}) for COLOR_0 attribute`);
+            }
+            babylonMorphTarget.setColors(colors);
         });
 
         return Promise.all(promises).then(() => {});

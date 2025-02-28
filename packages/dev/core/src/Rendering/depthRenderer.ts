@@ -284,7 +284,7 @@ export class DepthRenderer {
 
                 if (!renderingMaterial) {
                     // Alpha test
-                    if (material.needAlphaTesting()) {
+                    if (material.needAlphaTestingForMesh(effectiveMesh)) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {
@@ -405,9 +405,10 @@ export class DepthRenderer {
 
         let uv1 = false;
         let uv2 = false;
+        const color = false;
 
         // Alpha test
-        if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
+        if (material.needAlphaTestingForMesh(mesh) && material.getAlphaTestTexture()) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
@@ -456,7 +457,8 @@ export class DepthRenderer {
                   false, // useNormalMorph
                   false, // useTangentMorph
                   uv1, // useUVMorph
-                  uv2 // useUV2Morph
+                  uv2, // useUV2Morph
+                  color // useColorMorph
               )
             : 0;
 

@@ -1,15 +1,11 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, Nullable, TypedArray } from "../types";
+import type { DataArray, FloatArray, IndicesArray, TypedArray, TypedArrayConstructor } from "../types";
 
+/**
+ * Union of TypedArrays that can be used for vertex data.
+ */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
-
-export interface TypedArrayConstructor<T extends TypedArray = TypedArray> {
-    new (length: number): T;
-    new (elements: Iterable<number>): T;
-    new (buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
-    readonly BYTES_PER_ELEMENT: number;
-}
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
@@ -434,17 +430,43 @@ export function CopyFloatData(
 }
 
 /**
- * Utility function to determine if an IndicesArray is an Uint32Array.
- * @param indices The IndicesArray to check. If null, count is used instead.
- * @param count The number of indices
+ * Utility function to determine if an IndicesArray is an Uint32Array. If indices is an Array, determines whether at least one index is 32 bits.
+ * @param indices The IndicesArray to check.
+ * @param count The number of indices. Only used if indices is an Array.
+ * @param start The offset to start at (default: 0). Only used if indices is an Array.
+ * @param offset The offset to substract from the indices before testing (default: 0). Only used if indices is an Array.
  * @returns True if the indices use 32 bits
  */
-export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
-    if (indices) {
-        if (indices instanceof Array) {
-            return indices.some((value) => value >= 65536);
+export function AreIndices32Bits(indices: IndicesArray, count: number, start = 0, offset = 0): boolean {
+    if (Array.isArray(indices)) {
+        for (let index = 0; index < count; index++) {
+            if (indices[start + index] - offset > 65535) {
+                return true;
+            }
         }
-        return indices.BYTES_PER_ELEMENT === 4;
+        return false;
     }
-    return count >= 65536;
+
+    return indices.BYTES_PER_ELEMENT === 4;
+}
+
+/**
+ * Creates a typed array suitable for GPU buffer operations, as some engines require CPU buffer sizes to be aligned to specific boundaries (e.g., 4 bytes).
+ * The use of non-aligned arrays still works but may result in a performance penalty.
+ * @param type The type of the array. For instance, Float32Array or Uint8Array
+ * @param elementCount The number of elements to store in the array
+ * @returns The aligned typed array
+ */
+export function CreateAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
+    let byteSize = elementCount * type.BYTES_PER_ELEMENT;
+
+    if ((byteSize & 3) === 0) {
+        return new type(elementCount);
+    }
+
+    byteSize = (byteSize + 3) & ~3;
+
+    const backingBuffer = new ArrayBuffer(byteSize);
+
+    return new type(backingBuffer, 0, elementCount);
 }

@@ -4412,14 +4412,19 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
     }
 
+    /** @internal */
+    public _useCurrentFrameBuffer = false;
+
     private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
-        if (camera && camera._multiviewTexture) {
-            camera._multiviewTexture._bindFrameBuffer();
-        } else if (camera && camera.outputRenderTarget) {
-            camera.outputRenderTarget._bindFrameBuffer();
-        } else {
-            if (!this._engine._currentFrameBufferIsDefaultFrameBuffer()) {
-                this._engine.restoreDefaultFramebuffer();
+        if (!this._useCurrentFrameBuffer) {
+            if (camera && camera._multiviewTexture) {
+                camera._multiviewTexture._bindFrameBuffer();
+            } else if (camera && camera.outputRenderTarget) {
+                camera.outputRenderTarget._bindFrameBuffer();
+            } else {
+                if (!this._engine._currentFrameBufferIsDefaultFrameBuffer()) {
+                    this._engine.restoreDefaultFramebuffer();
+                }
             }
         }
         if (clear) {

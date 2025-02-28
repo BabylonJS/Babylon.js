@@ -76,9 +76,7 @@
         <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
             <babylon-viewer
-                engine="WebGPU"
                 source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-                environment="../../../../../public/@babylonjs/viewer/assets/photoStudio.env"
                 animation-speed="1.5"
                 selected-animation="1"
                 camera-orbit="auto auto auto"
@@ -135,12 +133,15 @@
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div class="button-container">
+            <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
             <button onclick="onToggleEngine()">Toggle Engine</button>
             <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+            <button onClick="onSuspendRendering()">Suspend Rendering</button>
+            <button onClick="onResumeRendering()">Resume Rendering</button>
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <div>
                 <span>Environment Intensity</span>
@@ -234,6 +235,46 @@
                 drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
             };
 
+            globalThis.onOpenFile = async () => {
+                // This doesn't work on mobile browsers :/
+                // const [fileHandle] = await window.showOpenFilePicker();
+                // const file = await fileHandle.getFile();
+
+                const input = document.createElement("input");
+                input.type = "file";
+
+                // See https://stackoverflow.com/questions/47664777/javascript-file-input-onchange-not-working-ios-safari-only
+                Object.assign(input.style, {
+                    position: "fixed",
+                    //display: 'none',
+                    top: "-100000px",
+                    left: "-100000px",
+                });
+                document.body.appendChild(input);
+
+                const file = await new Promise((resolve) => {
+                    const getFileFromInput = () => {
+                        input.removeEventListener("change", getFileFromInput);
+                        input.removeEventListener("cancel", getFileFromInput);
+
+                        if (input.files && input.files.length > 0) {
+                            resolve(input.files[0]);
+                        } else {
+                            resolve(null);
+                        }
+                    };
+
+                    input.addEventListener("change", getFileFromInput, { once: true });
+                    input.addEventListener("cancel", getFileFromInput, { once: true });
+
+                    input.click();
+                });
+
+                if (file) {
+                    await viewerDetails.viewer.loadModel(file);
+                }
+            };
+
             globalThis.onToggleDOM = () => {
                 const viewerContainer = document.getElementById("viewerContainer");
                 isViewerConnected ? viewerContainer.removeChild(viewerElement) : viewerContainer.appendChild(viewerElement);
@@ -280,6 +321,15 @@
                 const bottomContent = document.getElementById("moreLowerPageContent");
                 bottomContent.style.display = isBottomContentVisible ? "none" : "block";
                 isBottomContentVisible = !isBottomContentVisible;
+            };
+
+            const suspensions = [];
+            globalThis.onSuspendRendering = () => {
+                suspensions.push(viewerElement.viewerDetails.suspendRendering());
+            };
+
+            globalThis.onResumeRendering = () => {
+                suspensions.pop()?.dispose();
             };
 
             globalThis.onMarkSceneMutated = () => {

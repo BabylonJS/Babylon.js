@@ -1,10 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, MeshPredicate, Nullable, Observable } from "core/index";
+import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
-import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -60,6 +59,56 @@ export type HotSpot = ViewerHotSpotQuery & {
     cameraOrbit?: [alpha: number, beta: number, radius: number];
 };
 
+/**
+ * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
+ *
+ * The target point is determined using the camera's forward ray:
+ *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
+ *   - If no intersection is found, a fallback target is calculated by projecting the distance
+ *     between the camera and the model's center along the camera's forward direction.
+ *
+ * @param model The reference model used to determine the target point.
+ * @param camera The camera from which the HotSpot is generated.
+ * @returns A HotSpot object.
+ */
+export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
+    await import("core/Culling/ray");
+    const scene = model.assetContainer.scene;
+    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+    const camGlobalPos = camera.globalPosition.clone();
+
+    // Target
+    let radius: number = 0.0001; // Just to avoid division by zero
+    const targetPoint = Vector3.Zero();
+    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
+    if (pickingInfo && pickingInfo.hit) {
+        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
+    } else {
+        const worldBounds = model.getWorldBounds();
+        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
+        const distancePoint = Vector3.FromArray(centerArray);
+        const direction = ray.direction.clone();
+        targetPoint.copyFrom(camGlobalPos);
+        radius = Vector3.Distance(camGlobalPos, distancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
+    }
+
+    const computationVector = Vector3.Zero();
+    camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+    // Radius
+    if (pickingInfo && pickingInfo.hit) {
+        radius = computationVector.length();
+    }
+
+    // Alpha and Beta
+    const alpha = ComputeAlpha(computationVector);
+    const beta = ComputeBeta(computationVector.y, radius);
+
+    const targetArray = targetPoint.asArray();
+    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+}
+
 // Custom events for the HTML3DElement.
 export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
@@ -77,16 +126,37 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
     selectedmaterialvariantchange: Event;
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
+export interface ViewerElement {
+    addEventListener<K extends keyof ViewerElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+
+    removeEventListener<K extends keyof ViewerElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
+        options?: boolean | EventListenerOptions
+    ): void;
+
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
 /**
  * Base class for the viewer custom element.
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
-    protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
+    protected constructor(
+        private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass,
+        private readonly _options: CanvasViewerOptions = {}
+    ) {
         super();
     }
 
@@ -689,7 +759,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
             }
@@ -717,7 +787,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraTarget should be defined as 'x y z'");
             }
@@ -751,7 +821,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     public hotSpots: Record<string, HotSpot> = {};
 
-    private get _hasHotSpots(): boolean {
+    protected get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
     }
 
@@ -768,7 +838,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return this._animations;
     }
 
-    private get _hasAnimations(): boolean {
+    protected get _hasAnimations(): boolean {
         return this._animations.length > 0;
     }
 
@@ -889,12 +959,25 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
+        return html`
+            <div class="full-size">
+                <div id="canvasContainer" class="full-size"></div>
+                ${this._renderOverlay()}
+            </div>
+        `;
+    }
+
+    /**
+     * Renders the progress bar.
+     * @returns The template result for the progress bar.
+     */
+    protected _renderProgressBar(): TemplateResult {
         const showProgressBar = this.loadingProgress !== false;
         // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
         const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
         const isIndeterminate = this.loadingProgress === true;
 
-        const progressBar = html`
+        return html`
             <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
                 <div
                     class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
@@ -902,8 +985,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 ></div>
             </div>
         `;
+    }
 
-        // Setup the list of toolbar controls.
+    /**
+     * Renders the toolbar.
+     * @returns The template result for the toolbar.
+     */
+    protected _renderToolbar(): TemplateResult {
         let toolbarControls: TemplateResult[] = [];
         if (this._viewerDetails?.model != null) {
             // If the model has animations, add animation controls.
@@ -994,48 +1082,42 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             }, new Array<TemplateResult>());
         }
 
-        // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
-        return html`
-            <div class="full-size">
-                <div id="canvasContainer" class="full-size"></div>
-                <slot class="full-size children-slot"></slot>
-                <slot name="progress-bar"> ${progressBar}</slot>
-                ${toolbarControls.length === 0
-                    ? ""
-                    : html`
-                          <slot name="tool-bar">
-                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>
-                          </slot>
-                      `}
-            </div>
-        `;
+        if (toolbarControls.length > 0) {
+            return html` <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">${toolbarControls}</div>`;
+        } else {
+            return html``;
+        }
     }
 
-    // eslint-disable-next-line babylonjs/available
-    override addEventListener<K extends keyof ViewerElementEventMap>(
-        type: K,
-        listener: (this: HTMLElement, ev: ViewerElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions
-    ): void;
-    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
-        super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
+    /**
+     * Renders UI elements that overlay the viewer.
+     * Override this method to provide additional rendering for the component.
+     * @returns TemplateResult The rendered template result.
+     */
+    protected _renderOverlay(): TemplateResult {
+        // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
+        return html`
+            <slot class="full-size children-slot"></slot>
+            <slot name="progress-bar">${this._renderProgressBar()}</slot>
+            <slot name="tool-bar">${this._renderToolbar()}</slot>
+        `;
     }
 
     protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
-    private _onSelectedAnimationChanged(event: Event) {
+    protected _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
     }
 
-    private _onAnimationSpeedChanged(event: Event) {
+    protected _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.animationSpeed = Number(selectElement.value);
     }
 
-    private _onAnimationTimelineChanged(event: Event) {
+    protected _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
@@ -1045,7 +1127,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onAnimationTimelinePointerDown(event: Event) {
+    protected _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
@@ -1053,12 +1135,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private _onMaterialVariantChanged(event: Event) {
+    protected _onMaterialVariantChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedMaterialVariant = selectElement.value;
     }
 
-    private _onHotSpotsChanged(event: Event) {
+    protected _onHotSpotsChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         const hotSpotName = selectElement.value;
         // We don't actually want a selected value, this is just a one time trigger.
@@ -1113,8 +1195,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
-        if (camera !== this.viewerDetails?.camera) {
-            const hotSpot = await this._cameraToHotSpot(camera);
+        if (camera !== this._viewerDetails?.camera) {
+            const hotSpot = await this._createHotSpotFromCamera(camera);
             if (hotSpot && !signal?.aborted) {
                 this.hotSpots = {
                     ...this.hotSpots,
@@ -1133,10 +1215,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (!this.camerasAsHotSpots) {
             this._camerasAsHotSpotsAbortController?.abort();
             this._camerasAsHotSpotsAbortController = null;
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 
@@ -1156,13 +1238,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
-                    const viewer = await this._createViewer(canvas, {
-                        engine: this.engine,
-                        autoSuspendRendering: !this.renderWhenIdle,
-                        onInitialized: (details) => {
-                            detailsDeferred.resolve(details);
-                        },
-                    });
+                    const viewer = await this._createViewer(
+                        canvas,
+                        Object.assign(
+                            {
+                                engine: this.engine,
+                                autoSuspendRendering: !this.renderWhenIdle,
+                                onInitialized: (details) => {
+                                    detailsDeferred.resolve(details);
+                                },
+                            } satisfies CanvasViewerOptions,
+                            this._options
+                        )
+                    );
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1316,62 +1404,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
-     * The target point is determined based on the camera's forward ray:
-     *   - If an intersection with the main model is found, the first hit point is used as the target.
-     *   - If no intersection is detected, a fallback target is calculated by projecting
-     *     the distance between the camera and the main model's center along the forward ray.
-     *
-     * @param camera The reference camera used to computes alpha, beta, radius and target
-     * @returns A HotSpot, or null if no model found
+     * Creates a world HotSpot from a camera.
+     * @param camera The camera to create a HotSpot from.
+     * @returns A HotSpot created from the camera.
      */
-    private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
+    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
             const targetArray = camera.target.asArray();
             return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
-        await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-        const camGlobalPos = camera.globalPosition.clone();
-
-        if (this.viewerDetails?.scene) {
-            const scene = this.viewerDetails.scene;
-            const model = this.viewerDetails.model;
-
-            // Target
-            let radius: number = 0.0001; // Just to avoid division by zero
-            const targetPoint = this._tempVectors[0];
-            const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
-            const pickingInfo = scene.pickWithRay(ray, predicate);
-            if (pickingInfo && pickingInfo.hit) {
-                targetPoint.copyFrom(pickingInfo.pickedPoint!);
-            } else {
-                const selectedAnimation = this.selectedAnimation ?? 0;
-                const worldBounds = model?.getWorldBounds(selectedAnimation);
-                const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
-                const modelWorldCenter = this._tempVectors[1].copyFromFloats(...centerArray);
-
-                const direction = this._tempVectors[2].copyFrom(ray.direction);
-                targetPoint.copyFrom(camGlobalPos);
-                radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
-                direction.scaleAndAddToRef(radius, targetPoint);
-            }
-
-            const computationVector = this._tempVectors[3];
-            camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-            // Radius
-            if (pickingInfo && pickingInfo.hit) {
-                radius = computationVector.length();
-            }
-
-            // Alpha and Beta
-            const alpha = ComputeAlpha(computationVector);
-            const beta = ComputeBeta(computationVector.y, radius);
-
-            const targetArray = targetPoint.asArray();
-            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+        if (this._viewerDetails?.model) {
+            return CreateHotSpotFromCamera(this._viewerDetails.model, camera);
         }
 
         return null;
@@ -1385,8 +1429,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 export class HTML3DElement extends ViewerElement {
     /**
      * Creates a new HTML3DElement.
+     * @param options The options to use for the viewer. This is optional, and is only used when programmatically creating a viewer element.
      */
-    public constructor() {
-        super(Viewer);
+    public constructor(options?: CanvasViewerOptions) {
+        super(Viewer, options);
     }
+}
+
+/**
+ * Creates a custom HTML element that creates an HTML3DElement with the specified name and configuration.
+ * @param elementName The name of the custom element.
+ * @param options The options to use for the viewer.
+ */
+export function ConfigureCustomViewerElement(elementName: string, options: CanvasViewerOptions) {
+    customElements.define(
+        elementName,
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        class extends HTML3DElement {
+            public constructor() {
+                super(options);
+            }
+        }
+    );
 }

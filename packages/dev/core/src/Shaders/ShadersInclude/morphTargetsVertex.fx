@@ -37,6 +37,13 @@
 			#ifdef MORPHTARGETS_UV2
 				uv2Updated += (readVector3FromRawSampler(i, vertexID).xy - uv2) * morphTargetInfluences[i];
 			#endif
+			#ifdef MORPHTARGETTEXTURE_HASUV2S
+				vertexID += 1.0;
+			#endif
+
+			#ifdef MORPHTARGETS_COLOR
+				colorUpdated += (readVector4FromRawSampler(i, vertexID) - color) * morphTargetInfluences[i];
+			#endif
 		}
 		#endif
 	#else
@@ -58,6 +65,10 @@
 
 		#ifdef MORPHTARGETS_UV2
 		uv2Updated += (uv2_{X} - uv2) * morphTargetInfluences[{X}];
+		#endif
+
+		#ifdef MORPHTARGETS_COLOR
+		colorUpdated += (color{X} - color) * morphTargetInfluences[{X}];
 		#endif
 	#endif
 #endif

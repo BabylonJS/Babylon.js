@@ -6,7 +6,7 @@ import type { BufferManager } from "./bufferManager";
 import { NormalizeTangent } from "./glTFUtilities";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
 /**
@@ -133,6 +133,50 @@ export function BuildMorphTargetBuffers(
             result.attributes["TANGENT"] = accessors.length - 1;
         } else {
             Tools.Warn(`Morph target tangents for mesh ${mesh.name} were not exported. Mesh does not have tangents vertex data`);
+        }
+    }
+
+    if (morphTarget.hasColors) {
+        const morphColors = morphTarget.getColors()!;
+        const originalColors = mesh.getVerticesData(VertexBuffer.ColorKind, undefined, undefined, true);
+
+        const buffer = mesh.getVertexBuffer(VertexBuffer.ColorKind, true);
+
+        if (originalColors && buffer) {
+            const componentSize = buffer.getSize();
+
+            vertexCount = originalColors.length / componentSize;
+            const colorData = new Float32Array(vertexCount * componentSize);
+            vertexStart = 0;
+            for (let i = vertexStart; i < vertexCount; ++i) {
+                if (componentSize === 3) {
+                    const originalColor = Vector3.FromArray(originalColors, i * componentSize);
+                    const morphColor = Vector3.FromArray(morphColors, i * componentSize);
+
+                    morphColor.subtractToRef(originalColor, difference);
+                    colorData[i * 3] = difference.x;
+                    colorData[i * 3 + 1] = difference.y;
+                    colorData[i * 3 + 2] = difference.z;
+                } else if (componentSize === 4) {
+                    const difference4 = new Vector4();
+                    const originalColor = Vector4.FromArray(originalColors, i * componentSize);
+                    const morphColor = Vector4.FromArray(morphColors, i * componentSize);
+
+                    morphColor.subtractToRef(originalColor, difference4);
+                    colorData[i * 4] = difference4.x;
+                    colorData[i * 4 + 1] = difference4.y;
+                    colorData[i * 4 + 2] = difference4.z;
+                    colorData[i * 4 + 3] = difference4.w;
+                } else {
+                    Tools.Warn(`Unsupported number of components for color attribute: ${componentSize}`);
+                }
+            }
+            const bufferView = bufferManager.createBufferView(colorData, floatSize * componentSize);
+            const accessor = bufferManager.createAccessor(bufferView, componentSize === 3 ? AccessorType.VEC3 : AccessorType.VEC4, AccessorComponentType.FLOAT, vertexCount, 0);
+            accessors.push(accessor);
+            result.attributes["COLOR_0"] = accessors.length - 1;
+        } else {
+            Tools.Warn(`Morph target colors for mesh ${mesh.name} were not exported. Mesh does not have colors vertex data`);
         }
     }
 
