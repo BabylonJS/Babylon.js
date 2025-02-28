@@ -1,4 +1,5 @@
 import type { FunctionComponent } from "react";
+import type { ViewerElement } from "viewer";
 
 import * as styles from "./viewer.module.scss";
 import { useEffect, useState } from "react";
@@ -20,7 +21,7 @@ declare global {
     }
 }
 
-export const Viewer: FunctionComponent = () => {
+export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: ViewerElement) => void }> = (props) => {
     const [viewerLoaded, setViewerLoaded] = useState(false);
 
     useEffect(() => {
@@ -31,7 +32,7 @@ export const Viewer: FunctionComponent = () => {
 
     return (
         <div className={styles["ViewerContainer"]}>
-            {viewerLoaded ? <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer> : <p>Loading...</p>};
+            {viewerLoaded ? <babylon-viewer ref={props.onViewerCreated} source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer> : <p>Loading...</p>};
         </div>
     );
 };
