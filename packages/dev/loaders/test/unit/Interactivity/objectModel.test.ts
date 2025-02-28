@@ -96,7 +96,7 @@ describe("glTF interactivity Object Model", () => {
 
         await generateSimpleNodeGraph(
             mockGltf,
-            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 1,
@@ -137,7 +137,7 @@ describe("glTF interactivity Object Model", () => {
 
         await generateSimpleNodeGraph(
             mockGltf,
-            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 1,
@@ -172,7 +172,7 @@ describe("glTF interactivity Object Model", () => {
                     KHR_interactivity: {},
                 },
             },
-            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 1,
@@ -209,7 +209,7 @@ describe("glTF interactivity Object Model", () => {
                     KHR_interactivity: {},
                 },
             },
-            [{ op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 1,
@@ -251,7 +251,7 @@ describe("glTF interactivity Object Model", () => {
 
         await generateSimpleNodeGraph(
             mockGltf,
-            [{ op: "pointer/set" }, { op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "pointer/set" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -310,7 +310,7 @@ describe("glTF interactivity Object Model", () => {
 
         await generateSimpleNodeGraph(
             mockGltf,
-            [{ op: "pointer/interpolate" }, { op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "event/onTick" }],
+            [{ op: "pointer/interpolate" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }, { op: "event/onTick" }],
             [
                 {
                     declaration: 0,

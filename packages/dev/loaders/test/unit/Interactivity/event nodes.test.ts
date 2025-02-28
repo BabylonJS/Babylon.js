@@ -110,7 +110,7 @@ describe("Interactivity event nodes", () => {
 
     it("should send an event with id", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "event/send" }, { op: "event/receive" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],
 
             [
                 {
@@ -159,7 +159,7 @@ describe("Interactivity event nodes", () => {
 
     it("should send and receive an event with event data - default values", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "event/send" }, { op: "event/receive" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],
 
             [
                 {
@@ -218,7 +218,7 @@ describe("Interactivity event nodes", () => {
 
     it("should send and receive an event with event data - overwrite default values", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "event/send" }, { op: "event/receive" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],
 
             [
                 {

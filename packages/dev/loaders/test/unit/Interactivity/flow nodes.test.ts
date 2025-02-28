@@ -73,7 +73,7 @@ describe("Flow Nodes", () => {
 
     test("flow/sequence with proper IDs", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/sequence" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/sequence" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -129,7 +129,7 @@ describe("Flow Nodes", () => {
 
     test("flow/sequence with numbered IDs", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/sequence" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/sequence" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -186,7 +186,7 @@ describe("Flow Nodes", () => {
     // flow/branch
     test("flow/branch with true", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/branch" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/branch" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -235,7 +235,7 @@ describe("Flow Nodes", () => {
 
     test("flow/branch with false", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/branch" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/branch" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -286,7 +286,7 @@ describe("Flow Nodes", () => {
     test("flow/switch with existing selection", async () => {
         const selection = 1;
         await generateSimpleNodeGraph(
-            [{ op: "flow/switch" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/switch" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -392,7 +392,7 @@ describe("Flow Nodes", () => {
 
     test("flow/switch with default selection", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/switch" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/switch" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -499,7 +499,7 @@ describe("Flow Nodes", () => {
     // incorrect flow/switch
     test("flow/switch with floats as case(s)", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/switch" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/switch" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -544,7 +544,7 @@ describe("Flow Nodes", () => {
     test("flow/setDelay with predefined delay", async () => {
         const duration = 1; // in seconds
         await generateSimpleNodeGraph(
-            [{ op: "flow/setDelay" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/setDelay" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -584,7 +584,7 @@ describe("Flow Nodes", () => {
     // flowDelay with NaN as duration - should activate the error signal
     test("flow/setDelay with NaN as duration", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "flow/setDelay" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/setDelay" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -636,7 +636,7 @@ describe("Flow Nodes", () => {
         const duration = 1; // in seconds
         // sequence triggers two delays - the 2nd cancels the first
         await generateSimpleNodeGraph(
-            [{ op: "flow/setDelay" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [{ op: "flow/setDelay" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }],
             [
                 {
                     declaration: 2,
@@ -702,7 +702,7 @@ describe("Flow Nodes", () => {
     // variable/get and variable/set - set a variable and then get it. testing the out flow as well.
     test("variable/get and variable/set", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "variable/set" }, { op: "variable/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "variable/set" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 {
                     declaration: 0,
@@ -752,7 +752,7 @@ describe("Flow Nodes", () => {
     test("variable/interpolate with float", async () => {
         // linear interpolation from 1 to 5 in 1 second
         await generateSimpleNodeGraph(
-            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "event/onTick" }, { op: "variable/get" }],
+            [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }, { op: "event/onTick" }, { op: "variable/get" }],
             [
                 {
                     declaration: 0,
@@ -826,7 +826,7 @@ describe("Flow Nodes", () => {
     test("variable/interpolate with float - colliding, cancel 1st", async () => {
         // linear interpolation from 1 to 5 in 1 second
         await generateSimpleNodeGraph(
-            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "variable/get" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }, { op: "variable/get" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
             [
                 {
                     declaration: 3,
@@ -945,7 +945,7 @@ describe("Flow Nodes", () => {
     // variable/interpolate with a vector3 and easing function
     test("variable/interpolate with vector3 and easing function", async () => {
         await generateSimpleNodeGraph(
-            [{ op: "variable/interpolate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "event/onTick" }, { op: "variable/get" }],
+            [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }, { op: "event/onTick" }, { op: "variable/get" }],
             [
                 {
                     declaration: 0,
@@ -1036,7 +1036,7 @@ describe("Flow Nodes", () => {
     test("flow/while", async () => {
         // a while loop that increments an integer (setting a variable). condition is using math/gt
         await generateSimpleNodeGraph(
-            [{ op: "flow/while" }, { op: "math/lt" }, { op: "variable/set" }, { op: "variable/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "math/add" }],
+            [{ op: "flow/while" }, { op: "math/lt" }, { op: "variable/set" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }, { op: "math/add" }],
             [
                 // for while. loop body will go to a variable set node
                 {
@@ -1134,7 +1134,7 @@ describe("Flow Nodes", () => {
     test("flow/for", async () => {
         // a for loop that increments an integer (setting a variable). condition is using math/gt
         await generateSimpleNodeGraph(
-            [{ op: "flow/for" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            [{ op: "flow/for" }, { op: "flow/log", extension: "BABYLON" }],
             [
                 // for loop
                 {
@@ -1193,7 +1193,7 @@ describe("Flow Nodes", () => {
     test("flow/doN", async () => {
         // a for loop that increments an integer (setting a variable). condition is using math/gt
         await generateSimpleNodeGraph(
-            [{ op: "flow/doN" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [{ op: "flow/doN" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }],
             [
                 // doN loop
                 {
@@ -1249,7 +1249,7 @@ describe("Flow Nodes", () => {
     test("flow/multiGate", async () => {
         // a multiGate that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
-            [{ op: "flow/multiGate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [{ op: "flow/multiGate" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }],
             [
                 // multiGate
                 {
@@ -1315,7 +1315,7 @@ describe("Flow Nodes", () => {
     test("flow/multiGate with random", async () => {
         // a multiGate that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
-            [{ op: "flow/multiGate" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [{ op: "flow/multiGate" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }],
             [
                 // multiGate
                 {
@@ -1389,7 +1389,7 @@ describe("Flow Nodes", () => {
     test("flow/waitAll - standard", async () => {
         // a waitAll that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
-            [{ op: "flow/waitAll" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [{ op: "flow/waitAll" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
             [
                 // sequence node - go to logging in AND the doN loop
                 {
@@ -1501,7 +1501,7 @@ describe("Flow Nodes", () => {
     test("flow/throttle", async () => {
         // a throttle that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
-            [{ op: "flow/throttle" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
+            [{ op: "flow/throttle" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
             [
                 // sequence node - go to logging in AND the doN loop
                 {
@@ -1672,7 +1672,7 @@ describe("Flow Nodes", () => {
     test("flow/cancelDelay", async () => {
         // a cancelDelay that will trigger the logging node 3 times
         await generateSimpleNodeGraph(
-            [{ op: "flow/setDelay" }, { op: "flow/cancelDelay" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "flow/sequence" }],
+            [{ op: "flow/setDelay" }, { op: "flow/cancelDelay" }, { op: "flow/log", extension: "BABYLON" }, { op: "flow/sequence" }],
             [
                 // sequence node - go to logging in AND the doN loop
                 {

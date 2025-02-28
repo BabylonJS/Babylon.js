@@ -26,7 +26,7 @@ describe("interactivity type nodes", () => {
         socketValueForOutput: string = "value"
     ) {
         const ig = {
-            declarations: [...declarations, { op: "event/onStart" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+            declarations: [...declarations, { op: "event/onStart" }, { op: "flow/log", extension: "BABYLON" }],
             types,
             nodes: [
                 ...nodes,

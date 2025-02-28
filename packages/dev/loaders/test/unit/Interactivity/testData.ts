@@ -1,7 +1,7 @@
 import { IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 
 export const loggerExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "babylon/log", extension: "BABYLON_Logging" }, { op: "math/add" }],
+    declarations: [{ op: "event/onStart" }, { op: "flow/log", extension: "BABYLON" }, { op: "math/add" }],
     nodes: [
         {
             declaration: 0,
@@ -39,7 +39,7 @@ export const loggerExample: IKHRInteractivity_Graph = {
 };
 
 export const mathExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "math/dot" }, { op: "math/mul" }, { op: "math/sub" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onStart" }, { op: "math/dot" }, { op: "math/mul" }, { op: "math/sub" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             // was type: "event/onStart"
@@ -84,7 +84,7 @@ export const mathExample: IKHRInteractivity_Graph = {
 };
 
 export const intMathExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "math/div" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onStart" }, { op: "math/div" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             declaration: 0,
@@ -110,7 +110,7 @@ export const intMathExample: IKHRInteractivity_Graph = {
 };
 
 export const matrixMathExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "math/matmul" }, { op: "math/transpose" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onStart" }, { op: "math/matmul" }, { op: "math/transpose" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             declaration: 0,
@@ -142,7 +142,7 @@ export const matrixMathExample: IKHRInteractivity_Graph = {
 };
 
 export const customEventExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "event/send" }, { op: "event/receive" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onStart" }, { op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             declaration: 0,
@@ -188,7 +188,7 @@ export const customEventExample: IKHRInteractivity_Graph = {
 };
 
 export const worldPointerExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "pointer/get" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             declaration: 0,
@@ -230,7 +230,7 @@ export const worldPointerExample: IKHRInteractivity_Graph = {
 };
 
 export const doNExample: IKHRInteractivity_Graph = {
-    declarations: [{ op: "event/onTick" }, { op: "flow/doN" }, { op: "babylon/log", extension: "BABYLON_Logging" }],
+    declarations: [{ op: "event/onTick" }, { op: "flow/doN" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
             // was type: "event/onTick"
