@@ -1,0 +1,23 @@
+:local .VerticalContainer {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+
+    .HeaderContainer {
+        max-height: 10vh;
+    }
+
+    :local .HeaderContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        img {
+            height: 100%;
+        }
+    }
+
+    .HorizontalContainer {
+        max-height: 90vh;
+    }
+}
