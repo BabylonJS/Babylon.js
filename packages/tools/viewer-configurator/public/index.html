@@ -3,20 +3,23 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Viewer Local Development</title>
+        <title>Babylon Viewer Configurator</title>
 
         <style>
             html,
-            body {
+            body,
+            #root {
                 height: 100vh;
                 width: 100vw;
                 padding: 0;
                 margin: 0;
+                overflow: hidden;
             }
         </style>
     </head>
 
-    <body>     
+    <body>
+        <div id="root"></div>
         <script type="module" src="index.js"></script>
     </body>
 </html>

@@ -1,3 +1,5 @@
+import type { FunctionComponent } from "react";
+
 import * as styles from "./App.module.scss";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -5,7 +7,7 @@ import { Splitter } from "shared-ui-components/split/splitter";
 import { Viewer } from "./components/babylonViewer/viewer";
 import { Configurator } from "./components/configurator/configurator";
 
-export function App() {
+export const App: FunctionComponent = () => {
     return (
         <SplitContainer className={styles["VerticalContainer"]} direction={SplitDirection.Vertical}>
             <div className={styles["HeaderContainer"]}>
@@ -22,4 +24,4 @@ export function App() {
             </SplitContainer>
         </SplitContainer>
     );
-}
+};
