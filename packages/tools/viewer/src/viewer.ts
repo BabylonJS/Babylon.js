@@ -1224,6 +1224,7 @@ export class Viewer implements IDisposable {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
+        this._markSceneMutated();
         this._startSceneOptimizer(true);
     }
 
