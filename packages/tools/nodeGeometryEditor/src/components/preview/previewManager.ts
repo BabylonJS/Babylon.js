@@ -52,7 +52,7 @@ export class PreviewManager {
     private _matVertexColor: StandardMaterial;
     private _matNormals: NormalMaterial;
     private _axis: AxesViewer;
-    private _toDelete: Nullable<Mesh>;
+    private _toDelete: Array<Mesh> = [];
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeGeometry = globalState.nodeGeometry;
@@ -274,7 +274,9 @@ export class PreviewManager {
 
     private _prepareScene() {
         // Update
-        this._toDelete = this._mesh;
+        if (this._mesh) {
+            this._toDelete.push(this._mesh);
+        }
         this._updatePreview();
 
         // Animations
@@ -349,9 +351,9 @@ export class PreviewManager {
                 this._updateStandardMaterial();
                 this._setMaterial();
                 this._mesh.useVertexColors = true;
-                this._mesh.onAfterRenderObservable.addOnce(() => {
-                    this._toDelete?.dispose();
-                    this._toDelete = null;
+                this._mesh.onMeshReadyObservable.addOnce(() => {
+                    this._toDelete.forEach((m) => m.dispose());
+                    this._toDelete.length = 0;
                 });
             }
 
