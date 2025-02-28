@@ -1602,7 +1602,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer {
         let is32Bits = true;
-        let view: ArrayBufferView;
+        let view: ArrayBufferView | undefined;
 
         if (indices instanceof Uint32Array || indices instanceof Int32Array) {
             view = indices;
@@ -1610,9 +1610,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = indices;
             is32Bits = false;
         } else {
-            if (indices.length > 65535) {
-                view = new Uint32Array(indices);
-            } else {
+            for (let index = 0; index < indices.length; index++) {
+                if (indices[index] > 65535) {
+                    view = new Uint32Array(indices);
+                    break;
+                }
+            }
+
+            if (!view) {
                 view = new Uint16Array(indices);
                 is32Bits = false;
             }
