@@ -1146,6 +1146,7 @@ export class Viewer implements IDisposable {
                     }
 
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 },
                 getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
@@ -1224,7 +1225,6 @@ export class Viewer implements IDisposable {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
-        this._markSceneMutated();
         this._startSceneOptimizer(true);
     }
 
