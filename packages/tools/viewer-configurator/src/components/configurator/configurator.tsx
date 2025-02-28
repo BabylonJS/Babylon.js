@@ -25,6 +25,7 @@ import { Color4 } from "core/Maths/math.color";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
 import { useObservableState } from "../../hooks/observableHooks";
+import { LoadModel, PickModel } from "../../modelLoader";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
@@ -50,6 +51,25 @@ function useConfiguration<DataType>(defaultValue: DataType) {
 export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerElement, viewerDetails, viewer } = props;
     const lockObject = useMemo(() => new LockObject(), []);
+
+    useEffect(() => {
+        const onDragOver = (event: DragEvent) => event.preventDefault();
+        const onDrop = async (event: DragEvent) => {
+            const files = event.dataTransfer?.files;
+            if (files) {
+                event.preventDefault();
+                await LoadModel(viewerElement, files);
+            }
+        };
+
+        viewerElement.addEventListener("dragover", onDragOver);
+        viewerElement.addEventListener("drop", onDrop);
+
+        return () => {
+            viewerElement.removeEventListener("dragover", onDragOver);
+            viewerElement.removeEventListener("drop", onDrop);
+        };
+    }, [viewerElement]);
 
     const originalSkyboxBlur = useMemo(() => viewer?.environmentConfig.blur, [viewer]);
     const originalClearColor = useMemo(() => viewerDetails?.scene.clearColor, [viewerDetails]);
@@ -353,8 +373,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onLoadModelClick = useCallback(() => {
-        // TODO
-        //modelLoaderService.pickModel();
+        (async () => {
+            try {
+                await PickModel(viewerElement);
+            } catch (error: unknown) {
+                if ("message" in (error as Error)) {
+                    alert(error);
+                }
+            }
+        })();
     }, []);
 
     const onModelUrlKeyDown = useCallback(
@@ -675,6 +702,21 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     return (
         <div className={styles["ConfiguratorContainer"]}>
+            <div>
+                <LineContainerComponent title="HTML SNIPPET">
+                    <TextInputLineComponent multilines={true} value={htmlSnippet} disabled />
+                    <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
+                    <ButtonLineComponent label="Revert" onClick={onRevertAllClick} />
+                    <ButtonLineComponent label="Copy" onClick={copyToClipboard} />
+                </LineContainerComponent>
+            </div>
+            <div>
+                <LineContainerComponent title="MODEL">
+                    <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
+                    <ButtonLineComponent label="Load Url" onClick={onModelUrlBlur} />
+                    <ButtonLineComponent label="Load File" onClick={onLoadModelClick} />
+                </LineContainerComponent>
+            </div>
             <LineContainerComponent title="SECTION 1">
                 <TextInputLineComponent label="Text Input, single" value="Value" />
                 <TextInputLineComponent label="Text Input, multiline" multilines={true} value="Value" />
