@@ -9,6 +9,7 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import type { GLTFLoader } from "../../glTFLoader";
 
 export interface InteractivityEvent {
     eventId: string;
@@ -47,7 +48,8 @@ export class InteractivityGraphToFlowGraphParser {
 
     constructor(
         private _interactivityGraph: IKHRInteractivity_Graph,
-        private _gltf: IGLTF
+        private _gltf: IGLTF,
+        public _loader: GLTFLoader
     ) {
         // start with types
         this._parseTypes();

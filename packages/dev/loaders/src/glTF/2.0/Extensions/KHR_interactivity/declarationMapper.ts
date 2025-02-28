@@ -1343,8 +1343,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
+                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
+                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
             },
         },
         outputs: {
@@ -1418,7 +1418,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[]) => [time[0] * 60] },
+                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
             },
         },
         outputs: {
