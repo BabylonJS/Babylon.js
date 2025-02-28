@@ -1,479 +1,270 @@
-export const loggerExample = {
+import { IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
+
+export const loggerExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "flow/log", extension: "BABYLON" }, { op: "math/add" }],
     nodes: [
         {
-            type: "lifecycle/onStart",
-            flows: [
-                {
-                    id: "out",
+            declaration: 0,
+            flows: {
+                out: {
                     node: 2,
                     socket: "in",
                 },
-            ],
+            },
         },
         {
-            type: "math/add",
-            values: [
-                {
-                    id: "a",
+            declaration: 2,
+            values: {
+                a: {
                     value: [1, 2, 3, 4],
                     type: 0,
                 },
-                {
-                    id: "b",
+                b: {
                     value: [1, 2, 3, 4],
                     type: 0,
                 },
-            ],
+            },
         },
         {
-            type: "log",
-            values: [
-                {
-                    id: "message",
+            declaration: 1,
+            values: {
+                message: {
                     node: 1,
                     socket: "value",
                 },
-            ],
+            },
         },
     ],
     types: [{ signature: "float4" }],
 };
 
-export const mathExample = {
+export const mathExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "math/dot" }, { op: "math/mul" }, { op: "math/sub" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
-            type: "lifecycle/onStart",
-            values: [],
-            configuration: [],
-            flows: [
-                {
-                    id: "out",
-                    node: 4,
-                    socket: "in",
-                },
-            ],
+            // was type: "event/onStart"
+            declaration: 0,
+            flows: {
+                out: { node: 4, socket: "in" },
+            },
         },
         {
-            type: "math/dot",
-            values: [
-                {
-                    id: "a",
-                    value: [10, 10, 10],
-                    type: 4,
-                },
-                {
-                    id: "b",
-                    value: [1, 2, 3],
-                    type: 4,
-                },
-            ],
-            configuration: [],
-            flows: [],
+            // was type: "math/dot"
+            declaration: 1,
+            values: {
+                a: { value: [10, 10, 10], type: 4 },
+                b: { value: [1, 2, 3], type: 4 },
+            },
         },
         {
-            type: "math/mul",
-            values: [
-                {
-                    id: "b",
-                    value: 2,
-                    type: 2,
-                },
-                {
-                    id: "a",
-                    node: 1,
-                    socket: "value",
-                },
-            ],
-            configuration: [],
-            flows: [],
+            // was type: "math/mul"
+            declaration: 2,
+            values: {
+                b: { value: [2], type: 2 },
+                a: { node: 1, socket: "value" },
+            },
         },
         {
-            type: "math/sub",
-            values: [
-                {
-                    id: "b",
-                    value: 78,
-                    type: 2,
-                },
-                {
-                    id: "a",
-                    node: 2,
-                    socket: "value",
-                },
-            ],
-            configuration: [],
-            flows: [],
+            // was type: "math/sub"
+            declaration: 3,
+            values: {
+                b: { value: [78], type: 2 },
+                a: { node: 2, socket: "value" },
+            },
         },
         {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 3,
-                    socket: "value",
-                },
-            ],
-            configuration: [],
-            flows: [],
+            // was type: "babylon/log"
+            declaration: 4,
+            values: {
+                message: { node: 3, socket: "value" },
+            },
+        },
+    ],
+    types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "float2" }, { signature: "float3" }],
+};
+
+export const intMathExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "math/div" }, { op: "flow/log", extension: "BABYLON" }],
+    nodes: [
+        {
+            declaration: 0,
+            flows: {
+                out: { node: 2, socket: "in" },
+            },
+        },
+        {
+            declaration: 1,
+            values: {
+                a: { value: [3], type: 0 },
+                b: { value: [2], type: 0 },
+            },
+        },
+        {
+            declaration: 2,
+            values: {
+                message: { node: 1, socket: "value" },
+            },
+        },
+    ],
+    types: [{ signature: "int" }],
+};
+
+export const matrixMathExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "math/matmul" }, { op: "math/transpose" }, { op: "flow/log", extension: "BABYLON" }],
+    nodes: [
+        {
+            declaration: 0,
+            flows: {
+                out: { node: 3, socket: "in" },
+            },
+        },
+        {
+            declaration: 1,
+            values: {
+                a: { value: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1], type: 0 },
+                b: { value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], type: 0 },
+            },
+        },
+        {
+            declaration: 2,
+            values: {
+                a: { node: 1, socket: "value" },
+            },
+        },
+        {
+            declaration: 3,
+            values: {
+                message: { node: 2, socket: "value" },
+            },
+        },
+    ],
+    types: [{ signature: "float4x4" }],
+};
+
+export const customEventExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],
+    nodes: [
+        {
+            declaration: 0,
+            flows: {
+                out: { node: 1, socket: "in" },
+            },
+        },
+        {
+            declaration: 1,
+            configuration: {
+                event: { value: [0] },
+            },
+            values: {
+                float3ToSend: { value: [1.0, 2.0, 3.0], type: 3 },
+            },
+        },
+        {
+            declaration: 2,
+            configuration: {
+                event: { value: [0] },
+            },
+            flows: {
+                out: { node: 3, socket: "in" },
+            },
+        },
+        {
+            declaration: 3,
+            values: {
+                message: { node: 2, socket: "float3ToSend" },
+            },
         },
     ],
     variables: [],
-    customEvents: [],
-    types: [
-        {
-            signature: "bool",
-        },
-        {
-            signature: "int",
-        },
-        {
-            signature: "float",
-        },
-        {
-            signature: "float2",
-        },
-        {
-            signature: "float3",
-        },
-    ],
-};
-
-export const intMathExample = {
-    nodes: [
-        {
-            type: "lifecycle/onStart",
-            flows: [
-                {
-                    id: "out",
-                    node: 2,
-                    socket: "in",
-                },
-            ],
-        },
-        {
-            type: "math/div",
-            values: [
-                {
-                    id: "a",
-                    value: 3,
-                    type: 0,
-                },
-                {
-                    id: "b",
-                    value: 2,
-                    type: 0,
-                },
-            ],
-        },
-        {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 1,
-                    socket: "value",
-                },
-            ],
-        },
-    ],
-    types: [
-        {
-            signature: "int",
-        },
-    ],
-};
-
-export const matrixMathExample = {
-    nodes: [
-        {
-            type: "lifecycle/onStart",
-            flows: [
-                {
-                    id: "out",
-                    node: 3,
-                    socket: "in",
-                },
-            ],
-        },
-        {
-            type: "math/matmul",
-            values: [
-                {
-                    id: "a",
-                    value: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-                    type: 0,
-                },
-                {
-                    id: "b",
-                    value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                    type: 0,
-                },
-            ],
-        },
-        {
-            type: "math/transpose",
-            values: [
-                {
-                    id: "a",
-                    node: 1,
-                    socket: "value",
-                },
-            ],
-        },
-        {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 2,
-                    socket: "value",
-                },
-            ],
-        },
-    ],
-    types: [
-        {
-            signature: "float4x4",
-        },
-    ],
-};
-
-export const customEventExample = {
-    nodes: [
-        {
-            type: "lifecycle/onStart",
-            flows: [
-                {
-                    id: "out",
-                    node: 1,
-                    socket: "in",
-                },
-            ],
-        },
-        {
-            type: "customEvent/send",
-            configuration: [
-                {
-                    id: "customEvent",
-                    value: 0,
-                },
-            ],
-            values: [
-                {
-                    id: "float3ToSend",
-                    value: [1.0, 2.0, 3.0],
-                    type: 3,
-                },
-            ],
-        },
-        {
-            type: "customEvent/receive",
-            configuration: [
-                {
-                    id: "customEvent",
-                    value: 0,
-                },
-            ],
-            flows: [
-                {
-                    id: "out",
-                    node: 3,
-                    socket: "in",
-                },
-            ],
-        },
-        {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 2,
-                    socket: "float3ToSend",
-                },
-            ],
-        },
-    ],
-    variables: [],
-    customEvents: [
+    events: [
         {
             id: "logTwo",
-            values: [
-                {
-                    id: "float3ToSend",
-                    type: 3,
-                    description: "",
-                },
-            ],
+            values: {
+                float3ToSend: { type: 3, value: [0, 0, 0] },
+            },
         },
     ],
-    types: [
-        {
-            signature: "bool",
-        },
-        {
-            signature: "int",
-        },
-        {
-            signature: "float",
-        },
-        {
-            signature: "float3",
-        },
-    ],
+    types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "float3" }],
 };
 
-export const worldPointerExample = {
+export const worldPointerExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
-            type: "lifecycle/onStart",
-            values: [],
-            configuration: [],
-            flows: [
-                {
-                    id: "out",
-                    node: 1,
-                    socket: "in",
-                },
-            ],
+            declaration: 0,
+            flows: {
+                out: { node: 1, socket: "in" },
+            },
         },
         {
-            type: "world/set",
-            values: [
-                {
-                    id: "a",
-                    value: [1, 1, 1],
-                    type: 4,
-                },
-            ],
-            configuration: [
-                {
-                    id: "path",
-                    value: "/nodes/0/translation",
-                },
-            ],
-            flows: [
-                {
-                    id: "out",
-                    node: 3,
-                    socket: "in",
-                },
-            ],
+            declaration: 1,
+            configuration: {
+                pointer: { value: ["/nodes/0/translation"] },
+            },
+            values: {
+                value: { value: [1, 1, 1], type: 4 },
+            },
+            flows: {
+                out: { node: 3, socket: "in" },
+            },
         },
         {
-            type: "world/get",
-            values: [
-                {
-                    id: "nodeIndex",
-                    value: 0,
-                    type: 1,
-                },
-            ],
-            configuration: [
-                {
-                    id: "path",
-                    value: "/nodes/{nodeIndex}/translation",
-                },
-            ],
-            flows: [],
+            declaration: 2,
+            configuration: {
+                pointer: { value: ["/nodes/{nodeIndex}/translation"] },
+            },
+            values: {
+                nodeIndex: { value: [0], type: 1 },
+            },
         },
         {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 2,
-                    socket: "value",
-                },
-            ],
+            declaration: 3,
+            values: {
+                message: { node: 2, socket: "value" },
+            },
         },
     ],
     variables: [],
-    customEvents: [],
-    types: [
-        {
-            signature: "bool",
-        },
-        {
-            signature: "int",
-        },
-        {
-            signature: "float",
-        },
-        {
-            signature: "float2",
-        },
-        {
-            signature: "float3",
-        },
-    ],
+    events: [],
+    types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "float2" }, { signature: "float3" }],
 };
 
-export const doNExample = {
+export const doNExample: IKHRInteractivity_Graph = {
+    declarations: [{ op: "event/onTick" }, { op: "flow/doN" }, { op: "flow/log", extension: "BABYLON" }],
     nodes: [
         {
-            type: "lifecycle/onTick",
-            values: [],
-            configuration: [],
-            flows: [
-                {
-                    id: "out",
-                    node: 1,
-                    socket: "in",
-                },
-            ],
+            // was type: "event/onTick"
+            declaration: 0,
+            flows: {
+                out: { node: 1, socket: "in" },
+            },
+            values: {},
+            configuration: {},
         },
         {
-            type: "flow/doN",
-            values: [
-                {
-                    id: "n",
-                    value: 5,
-                    type: 1,
-                },
-            ],
-            configuration: [
-                {
-                    id: "startCount",
-                    value: 0,
-                },
-            ],
-            flows: [
-                {
-                    id: "out",
-                    node: 2,
-                    socket: "in",
-                },
-            ],
+            // was type: "flow/doN"
+            declaration: 1,
+            flows: {
+                out: { node: 2, socket: "in" },
+            },
+            values: {
+                n: { value: [5], type: 1 },
+            },
+            configuration: {
+                startCount: { value: [0] },
+            },
         },
         {
-            type: "log",
-            values: [
-                {
-                    id: "message",
-                    node: 1,
-                    socket: "value",
-                },
-            ],
-            flows: [],
+            // was type: "babylon/log"
+            declaration: 2,
+            flows: {},
+            values: {
+                message: { node: 1, socket: "currentCount" },
+            },
+            configuration: {},
         },
     ],
     variables: [],
-    customEvents: [],
-    types: [
-        {
-            signature: "bool",
-        },
-        {
-            signature: "int",
-        },
-        {
-            signature: "float",
-        },
-        {
-            signature: "float2",
-        },
-        {
-            signature: "float3",
-        },
-    ],
+    events: [],
+    types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "float2" }, { signature: "float3" }],
 };

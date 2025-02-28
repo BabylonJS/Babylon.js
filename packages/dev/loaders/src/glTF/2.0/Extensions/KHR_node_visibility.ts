@@ -2,6 +2,8 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { INode } from "../glTFLoaderInterfaces";
+import { AddObjectAccessorToKey } from "./objectModelMapping";
 
 const NAME = "KHR_node_visibility";
 
@@ -15,6 +17,31 @@ declare module "../../glTFFileLoader" {
         ["KHR_node_visibility"]: {};
     }
 }
+
+// object model extension for visibility
+AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
+    get: (node: INode) => {
+        const tn = node._babylonTransformNode as any;
+        if (tn && tn.isVisible !== undefined) {
+            return tn.isVisible;
+        }
+        return true;
+    },
+    set: (value: boolean, node: INode) => {
+        node._primitiveBabylonMeshes?.forEach((mesh) => {
+            mesh.inheritVisibility = true;
+        });
+        if (node._babylonTransformNode) {
+            (node._babylonTransformNode as AbstractMesh).isVisible = value;
+        }
+        node._primitiveBabylonMeshes?.forEach((mesh) => {
+            mesh.isVisible = value;
+        });
+    },
+    getTarget: (node: INode) => node._babylonTransformNode,
+    getPropertyName: [() => "isVisible"],
+    type: "boolean",
+});
 
 /**
  * Loader extension for KHR_node_visibility
