@@ -1,3 +1,5 @@
+import type { FunctionComponent } from "react";
+
 import * as styles from "./configurator.module.scss";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -6,7 +8,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 // import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
-export function Configurator() {
+export const Configurator: FunctionComponent = () => {
     return (
         <div className={styles["ConfiguratorContainer"]}>
             <LineContainerComponent title="SECTION 1">
@@ -26,4 +28,4 @@ export function Configurator() {
             </LineContainerComponent>
         </div>
     );
-}
+};
