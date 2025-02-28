@@ -128,7 +128,7 @@ export type PostProcessing = {
  * @param value The value to check.
  * @returns True if the value is a valid tone mapping option, otherwise false.
  */
-export function isToneMapping(value: string): value is ToneMapping {
+export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
 }
 

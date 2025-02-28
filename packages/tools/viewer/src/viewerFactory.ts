@@ -15,7 +15,7 @@ const defaultCanvasViewerOptions: CanvasViewerOptions = { antialias: true, adapt
  * Chooses a default engine for the current browser environment.
  * @returns The default engine to use.
  */
-export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
+export function GetDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
     // First check for WebGPU support.
     if ("gpu" in navigator) {
         // For now, only use WebGPU with chromium-based browsers.
@@ -37,7 +37,7 @@ export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
  * @param options The options to use when creating the Viewer and binding it to the specified canvas.
  * @returns A Viewer instance that is bound to the specified canvas.
  */
-export function createViewerForCanvas<DerivedViewer extends Viewer>(
+export function CreateViewerForCanvas<DerivedViewer extends Viewer>(
     canvas: HTMLCanvasElement,
     options: CanvasViewerOptions & {
         /**
@@ -46,12 +46,12 @@ export function createViewerForCanvas<DerivedViewer extends Viewer>(
         viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => DerivedViewer;
     }
 ): Promise<DerivedViewer>;
-export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer>;
+export function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer>;
 
 /**
  * @internal
  */
-export async function createViewerForCanvas(
+export async function CreateViewerForCanvas(
     canvas: HTMLCanvasElement,
     options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
@@ -60,7 +60,7 @@ export async function createViewerForCanvas(
 
     // Create an engine instance.
     let engine: AbstractEngine;
-    switch (options.engine ?? getDefaultEngine()) {
+    switch (options.engine ?? GetDefaultEngine()) {
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { Engine } = await import("core/Engines/engine");
