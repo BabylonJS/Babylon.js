@@ -2,11 +2,10 @@ import { Observable } from "core/Misc/observable";
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import { defaultValueParseFunction } from "./serialization";
 import type { IObjectAccessor } from "./typeDefinitions";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
- * @experimental
  * Parameters used to create a flow graph engine.
  */
 export interface IFlowGraphCoordinatorConfiguration {
@@ -17,7 +16,6 @@ export interface IFlowGraphCoordinatorConfiguration {
 }
 
 /**
- * @experimental
  * Parameters used to parse a flow graph coordinator.
  */
 export interface FlowGraphCoordinatorParseOptions {
@@ -27,7 +25,7 @@ export interface FlowGraphCoordinatorParseOptions {
      * @param serializationObject the serialization object where the property is located
      * @param scene the scene that the block is being parsed in
      */
-    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
     /**
      * The path converter to use to convert the path to an object accessor.
      */
@@ -40,6 +38,8 @@ export interface FlowGraphCoordinatorParseOptions {
 /**
  * This class holds all of the existing flow graphs and is responsible for creating new ones.
  * It also handles starting/stopping multiple graphs and communication between them through an Event Coordinator
+ * This is the entry point for the flow graph system.
+ * @experimental This class is still in development and is subject to change.
  */
 export class FlowGraphCoordinator {
     /**
@@ -127,21 +127,6 @@ export class FlowGraphCoordinator {
     }
 
     /**
-     * Parses a serialized coordinator.
-     * @param serializedObject the object to parse
-     * @param options the options to use when parsing
-     * @returns the parsed coordinator
-     */
-    public static Parse(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
-        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-        const coordinator = new FlowGraphCoordinator({ scene: options.scene });
-        serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
-            FlowGraph.Parse(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
-        });
-        return coordinator;
-    }
-
-    /**
      * Gets the list of flow graphs
      */
     public get flowGraphs() {
@@ -156,7 +141,8 @@ export class FlowGraphCoordinator {
     public getCustomEventObservable(id: string): Observable<any> {
         let observable = this._customEventsMap.get(id);
         if (!observable) {
-            observable = new Observable<any>();
+            // receive event is initialized before scene start, so no need to notify if triggered. but possible!
+            observable = new Observable<any>(/*undefined, true*/);
             this._customEventsMap.set(id, observable);
         }
         return observable;
