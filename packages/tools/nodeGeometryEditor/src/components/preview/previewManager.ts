@@ -353,7 +353,7 @@ export class PreviewManager {
                 this._mesh.useVertexColors = true;
                 this._mesh.onMeshReadyObservable.addOnce(() => {
                     this._toDelete.forEach((m) => m.dispose());
-                    this._toDelete = [];
+                    this._toDelete.length = 0;
                 });
             }
 
