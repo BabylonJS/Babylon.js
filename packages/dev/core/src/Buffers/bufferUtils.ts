@@ -430,19 +430,22 @@ export function CopyFloatData(
 }
 
 /**
- * Utility function to determine if an IndicesArray is an Uint32Array.
- * @param indices The IndicesArray to check. If null, count is used instead.
- * @param count The number of indices
+ * Utility function used to determine whether an IndicesArray is a Uint32Array, or in the case of an Array, whether it contains 32-bit indices.
+ * @param indices The IndicesArray to check.
+ * @param count The number of indices. Only used if indices is an Array.
  * @returns True if the indices use 32 bits
  */
-export function AreIndices32Bits(indices: Nullable<IndicesArray>, count: number): boolean {
-    if (indices) {
-        if (indices instanceof Array) {
-            return indices.some((value) => value >= 65536);
+export function AreIndices32Bits(indices: IndicesArray, count: number): boolean {
+    if (indices instanceof Array) {
+        for (let index = 0; index < count; index++) {
+            if (indices[index] > 65535) {
+                return true;
+            }
         }
-        return indices.BYTES_PER_ELEMENT === 4;
+
+        return false;
     }
-    return count >= 65536;
+    return indices.BYTES_PER_ELEMENT === 4;
 }
 
 /**
