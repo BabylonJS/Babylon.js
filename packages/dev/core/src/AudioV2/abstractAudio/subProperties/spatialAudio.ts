@@ -1,5 +1,6 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { AbstractMesh, TransformNode } from "../../../Meshes";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import type { SpatialAudioAttachmentType } from "../spatialAttachers/spatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
