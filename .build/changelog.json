@@ -1,6 +1,146 @@
 {
-    "fromTag": "7.50.0",
+    "fromTag": "7.51.0",
     "changelog": {
+        "7.51.1": [
+            {
+                "pr": "16232",
+                "title": "Better preview update for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16229",
+                "title": "PBR: Fix refraction transmittance",
+                "description": "This will fix the problem with iridescence for some models.\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16223",
+                "title": "Viewer: adaptToDeviceRatio",
+                "description": "This change enables `adaptToDeviceRatio` by default at the `Viewer` layer, and also uses `SceneOptimizer` + `HardwareScalingOptimization` to dynamically reduce resolution as necessary if we aren't hitting target frame rate. This is not currently configurable, but I think this is a net improvement since previously it was always locked in at the bottom of the dynamic range introduced with this change. If we get asks from users, we can make this more configurable.\r\n\r\nSome notes on this change:\r\n- Previously it was possible for `HardwareScalingOptimization` to go beyond the specified `maximumScale`, so I made a small fix for this.\r\n- Whenever a model is loaded, we reset hardware scaling back to its original value and then let `SceneOptimzer` re-run.\r\n- Since the scene doesn't render continuously (e.g. we suspend scene rendering when nothing is changing), we also stop/start the scene optimizer when scene rendering suspends/resumes.\r\n- We now take into account the hardware scaling level when computing the screen space coordinates of hotspot annotations (so the value is in css pixels, which is what we want for laying out html elements).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16217",
+                "title": "TextInputLineComponent input handling",
+                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16228",
+                "title": "Revert \"TextInputLineComponent input handling\"",
+                "description": "Reverts BabylonJS/Babylon.js#16217",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16227",
+                "title": "Fix is32Bits detection in geometry setIndexBuffer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16225",
+                "title": "CC Acceleration/max acceleration exposed",
+                "description": "Follow up https://forum.babylonjs.com/t/physicscharactercontroller-drift-friction-ignored/56822\r\n\r\nPG : http://playground.babylonjs.com/#K3IU33#4\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "16220",
+                "title": "Viewer: Make assetContainer optional for _getHotSpotToRef function",
+                "description": "Moved the condition on the `assetContainer` in the `surface` hot spot case to allow calling this function with a nullable `assetContainer` for `world` hot spots in a multi-model scenario.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16224",
+                "title": "Screenshots: Add a customDumpData function parameter to CreateScreenshotUsingRenderTarget",
+                "description": "See https://forum.babylonjs.com/t/memory-leak-in-screenshots/37178/29",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            }
+        ],
         "7.51.0": [
             {
                 "pr": "16207",
