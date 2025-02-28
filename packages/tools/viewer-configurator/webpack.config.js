@@ -18,7 +18,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".js", ".ts", ".tsx"],
+            extensions: [".js", ".ts", ".tsx", ".scss"],
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"), // "src" results in unknown babylonjs-gltf2interface
