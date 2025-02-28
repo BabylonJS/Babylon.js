@@ -2853,7 +2853,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, texture.width, texture.height);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);

@@ -893,7 +893,7 @@ async function _UploadLevelsAsync(
         }
         for (let i = imageData.length; i < mipmapsCount; i++) {
             for (let face = 0; face < 6; face++) {
-                engine._uploadArrayBufferViewToTexture(texture, data!, face, i);
+                engine._uploadArrayBufferViewToTexture(cubeRtt?.texture || texture, data!, face, i);
             }
         }
     }
