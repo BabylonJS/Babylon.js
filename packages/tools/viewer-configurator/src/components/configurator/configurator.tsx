@@ -17,6 +17,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -501,13 +502,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 }
             }
 
-            setClearColor(clearColor);
+            setClearColor((previous) => {
+                if (previous.equals(clearColor)) {
+                    return previous;
+                }
+                return clearColor;
+            });
         },
         [setClearColor]
     );
 
     useEffect(() => {
-        viewerElement.clearColor = new Color4(clearColor.r / 255, clearColor.g / 255, clearColor.b / 255, clearColor.a);
+        viewerElement.clearColor = clearColor;
     }, [viewerElement, clearColor]);
 
     const onToneMappingChange = useCallback(
@@ -715,6 +721,37 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                     <ButtonLineComponent label="Load Url" onClick={onModelUrlBlur} />
                     <ButtonLineComponent label="Load File" onClick={onLoadModelClick} />
+                </LineContainerComponent>
+                <LineContainerComponent title="ENVIRONMENT">
+                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
+                    <TextInputLineComponent
+                        placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
+                        value={environmentLightingUrl}
+                        onChange={onEnvironmentLightingUrlChange}
+                    />
+                    <ButtonLineComponent label="Load Url" isDisabled={isEnvironmentLightingUrlValid} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                    <ButtonLineComponent label="Reset" isDisabled={isEnvironmentLightingUrlDefault} onClick={onEnvironmentLightingResetClick} />
+                    {!syncEnvironment && (
+                        <>
+                            <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
+                            <ButtonLineComponent label="Load Url" isDisabled={isEnvironmentSkyboxUrlValid} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                            <ButtonLineComponent label="Reset" isDisabled={isEnvironmentSkyboxUrlDefault} onClick={onEnvironmentSkyboxResetClick} />
+                        </>
+                    )}
+                    {hasSkybox && (
+                        <SliderLineComponent
+                            label="Skybox Blur"
+                            directValue={skyboxBlur}
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            decimalCount={2}
+                            target={viewerDetails.scene}
+                            onChange={onSkyboxBlurChange}
+                            lockObject={lockObject}
+                        />
+                    )}
+                    {!hasSkybox && <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />}
                 </LineContainerComponent>
             </div>
             <LineContainerComponent title="SECTION 1">

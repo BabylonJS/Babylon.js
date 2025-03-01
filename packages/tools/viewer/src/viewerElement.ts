@@ -620,8 +620,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return { lighting: this.environmentLighting, skybox: this.environmentSkybox };
     }
     public set environment(url: string) {
-        this.environmentLighting = url;
-        this.environmentSkybox = url;
+        this.environmentLighting = url || null;
+        this.environmentSkybox = url || null;
     }
 
     /**

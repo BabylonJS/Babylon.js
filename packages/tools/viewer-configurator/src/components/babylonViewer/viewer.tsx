@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
     class?: string;
+    engine?: "WebGL" | "WebGPU";
     source?: string;
     environment?: string;
 }
@@ -29,7 +30,12 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: Viewer
     }, []);
 
     return viewerLoaded ? (
-        <babylon-viewer style={{ width: "100%", height: "100%" }} ref={props.onViewerCreated} source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+        <babylon-viewer
+            style={{ width: "100%", height: "100%" }}
+            ref={props.onViewerCreated}
+            engine="WebGL"
+            source="https://playground.babylonjs.com/scenes/BoomBox.glb"
+        ></babylon-viewer>
     ) : (
         <p>Loading...</p>
     );

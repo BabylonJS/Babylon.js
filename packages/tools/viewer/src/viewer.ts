@@ -1239,15 +1239,16 @@ export class Viewer implements IDisposable {
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        let url: Nullable<string> = null;
+        const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
-            url = (await import("./defaultEnvironment")).default;
-            const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
-            options = loadOptions;
+            const url = (await import("./defaultEnvironment")).default;
+            promises.push(this._updateEnvironment(url, { ...options, extension: ".env", skybox: false }, abortSignal));
+            options = { ...options, lighting: false };
         }
 
-        await this._updateEnvironment(url, options, abortSignal);
+        promises.push(this._updateEnvironment(undefined, options, abortSignal));
+        await Promise.all(promises);
     }
 
     private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
