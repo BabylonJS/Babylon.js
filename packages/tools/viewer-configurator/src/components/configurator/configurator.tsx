@@ -2,7 +2,7 @@ import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { Color3, Nullable, Vector3 } from "core/index";
+import type { Color3, IInspectableOptions, Nullable, Vector3 } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { useCallback, useEffect, useMemo, useState, type FunctionComponent } from "react";
@@ -17,6 +17,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -29,8 +30,17 @@ import { LoadModel, PickModel } from "../../modelLoader";
 
 import { useEventfulState } from "../../hooks/observableHooks";
 import deleteIcon from "shared-ui-components/imgs/deleteGridElementDark.svg";
+import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
+import adtIcon from "shared-ui-components/imgs/adtIcon.svg";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
+
+const toneMappingOptions: IInspectableOptions[] = [
+    { label: "Standard", value: "standard" },
+    { label: "None", value: "none" },
+    { label: "Aces", value: "aces" },
+    { label: "Neutral", value: "neutral" },
+];
 
 function createDefaultAnnotation(hotSpotName: string) {
     return `
@@ -516,9 +526,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [viewerElement, clearColor]);
 
     const onToneMappingChange = useCallback(
-        (event?: unknown, data?: { optionValue: string | undefined; optionText: string | undefined }) => {
+        (value?: string | number) => {
             setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, toneMapping: (data?.optionValue as PostProcessing["toneMapping"]) ?? originalToneMapping };
+                return { ...postProcessingState, toneMapping: (value as PostProcessing["toneMapping"]) ?? originalToneMapping };
             });
         },
         [setPostProcessingState]
@@ -727,8 +737,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                         </div>
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onModelUrlBlur} />
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onLoadModelClick} />
+                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
+                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
@@ -771,6 +781,50 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     {!hasSkybox && <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />}
                 </LineContainerComponent>
             </div>
+            <LineContainerComponent title="POST PROCESSING">
+                <div className="FlexLine">
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <OptionsLine
+                            label="Tone Mapping"
+                            valuesAreStrings={true}
+                            options={toneMappingOptions}
+                            target={postProcessingState}
+                            propertyName={"toneMapping"}
+                            noDirectUpdate={true}
+                            onSelect={onToneMappingChange}
+                        />
+                    </div>
+                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onToneMappingChange()} />
+                </div>
+                <div className="FlexLine">
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <SliderLineComponent
+                            label="Contrast"
+                            directValue={postProcessingState.contrast}
+                            minimum={0}
+                            maximum={5}
+                            step={0.05}
+                            lockObject={lockObject}
+                            onChange={onContrastChange}
+                        />
+                    </div>
+                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onContrastChange()} />
+                </div>
+                <div className="FlexLine">
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <SliderLineComponent
+                            label="Exposure"
+                            directValue={postProcessingState.exposure}
+                            minimum={0}
+                            maximum={5}
+                            step={0.05}
+                            lockObject={lockObject}
+                            onChange={onExposureChange}
+                        />
+                    </div>
+                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onExposureChange()} />
+                </div>
+            </LineContainerComponent>
             <LineContainerComponent title="WIP COMPONENTS">
                 {/** Checkbox WIP */}
                 <div className="FlexLine">
@@ -788,7 +842,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                 </div>
                 {/** Slider WIP*/}
-                <SliderLineComponent label="Slider" minimum={0} maximum={1} step={0.05} decimalCount={0} target={viewerDetails.scene} lockObject={new LockObject()} />
+                <SliderLineComponent label="Slider" minimum={0} maximum={5} step={0.05} decimalCount={0} target={viewerDetails.scene} lockObject={new LockObject()} />
             </LineContainerComponent>
         </div>
     );
