@@ -27,7 +27,7 @@
         text-align: center;
     }
 
-    // Overriding web defaults for input and textarea
+    // Overriding web defaults for input. At root because many components use it.
     input {
         padding: $line-padding-left;
         border: 0;
@@ -36,20 +36,29 @@
         width: 100%;
         font: inherit; // Forms don't inherit the font-family by default
     }
-    textarea {
-        padding: $line-padding-left;
-        width: 100%;
-        height: 100%;
-        resize: none;
-        border-radius: 3px;
-        box-sizing: border-box;
-        width: 100%;
-        font: inherit;
-    }
 
-    // Overriding multiline version of BJS TextInputLineComponent
+    // Overriding multiline version of BJS TextInputLineComponent. Is bespoke, so fine to do like this.
     .textInputArea {
-        height: 4 * $line-height; // Since bespoke, height is specific to HTML snippet input
+        height: 4 * $line-height;
+
+        textarea {
+            padding: $line-padding-left;
+            width: 100%;
+            height: 100%;
+            resize: none;
+            border-radius: 3px;
+            box-sizing: border-box;
+            width: 100%;
+            font: inherit;
+        }
+
+        textarea:disabled {
+            opacity: 1;
+            color: black;
+            background: white;
+            cursor: text;
+            border: inherit;
+        }
     }
 
     // Overriding BJS ButtonLineComponent

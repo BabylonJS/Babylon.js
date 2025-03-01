@@ -709,7 +709,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <LineContainerComponent title="HTML SNIPPET">
                         <div className="FlexLine" style={{ height: "auto" }}>
                             <div className="FlexItem" style={{ flex: 1 }}>
-                                <TextInputLineComponent multilines={true} value={htmlSnippet} />
+                                <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
                                 <div className="FlexLine" style={{ paddingLeft: 0, paddingRight: 0, paddingBottom: 0 }}>
                                     <div className="FlexItem" style={{ flex: 5 }}>
                                         <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
