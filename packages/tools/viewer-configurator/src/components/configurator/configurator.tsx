@@ -1,10 +1,9 @@
+import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
 import type { Color3, Nullable, Vector3 } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
-
-import * as styles from "./configurator.module.scss";
 
 import { useCallback, useEffect, useMemo, useState, type FunctionComponent } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -26,6 +25,9 @@ import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
+
+import { useEventfulState } from "../../hooks/observableHooks";
+import deleteIcon from "shared-ui-components/imgs/deleteGridElementDark.svg";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
@@ -701,37 +703,63 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     ]);
 
     return (
-        <div className={styles["ConfiguratorContainer"]}>
-            <div>
-                <LineContainerComponent title="HTML SNIPPET">
-                    <TextInputLineComponent multilines={true} value={htmlSnippet} disabled />
-                    <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
-                    <ButtonLineComponent label="Revert" onClick={onRevertAllClick} />
-                    <ButtonLineComponent label="Copy" onClick={copyToClipboard} />
-                </LineContainerComponent>
-            </div>
-            <div>
-                <LineContainerComponent title="MODEL">
-                    <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
-                    <ButtonLineComponent label="Load Url" onClick={onModelUrlBlur} />
-                    <ButtonLineComponent label="Load File" onClick={onLoadModelClick} />
-                </LineContainerComponent>
-            </div>
-            <LineContainerComponent title="SECTION 1">
-                <TextInputLineComponent label="Text Input, single" value="Value" />
-                <TextInputLineComponent label="Text Input, multiline" multilines={true} value="Value" />
-                <ButtonLineComponent label="Button" onClick={() => {}} />
-            </LineContainerComponent>
-            <LineContainerComponent title="SECTION 2">
-                <CheckBoxLineComponent
-                    label="Checkbox"
-                    isSelected={() => {
-                        return true;
-                    }}
-                    onSelect={(value: boolean) => {}}
-                />
-                <SliderLineComponent label="Slider" minimum={0} maximum={1} step={0.05} decimalCount={2} target={viewerDetails.scene} lockObject={lockObject} />
-            </LineContainerComponent>
-        </div>
+        <>
+            {viewerElement && viewerDetails && (
+                <div className={"ConfiguratorContainer"}>
+                    <LineContainerComponent title="HTML SNIPPET">
+                        <div className="FlexLine" style={{ height: "auto" }}>
+                            <div className="FlexItem" style={{ flex: 1 }}>
+                                <TextInputLineComponent multilines={true} value={htmlSnippet} />
+                                <div className="FlexLine" style={{ paddingLeft: 0, paddingRight: 0, paddingBottom: 0 }}>
+                                    <div className="FlexItem" style={{ flex: 5 }}>
+                                        <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
+                                    </div>
+                                    <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
+                                        <img className="ImageButton" src={deleteIcon} onClick={onRevertAllClick} />
+                                    </div>
+                                    <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
+                                        <img className="ImageButton" src={deleteIcon} onClick={copyToClipboard} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </LineContainerComponent>
+                    <div>
+                        <LineContainerComponent title="MODEL">
+                            {/* <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
+                            <ButtonLineComponent label="Load Url" onClick={onModelUrlBlur} />
+                            <ButtonLineComponent label="Load File" onClick={onLoadModelClick} /> */}
+                            <div className="FlexLine">
+                                <div className="FlexItem" style={{ flex: 5 }}>
+                                    <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
+                                </div>
+                                <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
+                                    <img className="ImageButton" src={deleteIcon} onClick={onLoadModelClick} />
+                                </div>
+                            </div>
+                        </LineContainerComponent>
+                    </div>
+                    <LineContainerComponent title="WIP COMPONENTS">
+                        {/** Checkbox WIP */}
+                        <div className="FlexLine">
+                            <div className="FlexItem" style={{ flex: 5 }}>
+                                <CheckBoxLineComponent
+                                    label="Checkbox"
+                                    isSelected={() => {
+                                        return true;
+                                    }}
+                                    onSelect={(value: boolean) => {}}
+                                />
+                            </div>
+                            <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
+                                <img className="ImageButton" src={deleteIcon} />
+                            </div>
+                        </div>
+                        {/** Slider WIP*/}
+                        <SliderLineComponent label="Slider" minimum={0} maximum={1} step={0.05} decimalCount={0} target={viewerDetails.scene} lockObject={new LockObject()} />
+                    </LineContainerComponent>
+                </div>
+            )}
+        </>
     );
 };
