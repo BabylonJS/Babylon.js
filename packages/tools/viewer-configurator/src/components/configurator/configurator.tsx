@@ -366,14 +366,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [setModelUrl]
     );
 
-    const onModelUrlBlur = useCallback(
-        (event?: React.FocusEvent<HTMLInputElement>) => {
-            if (isModelUrlValid) {
-                viewerElement.source = modelUrl;
-            }
-        },
-        [viewerElement, isModelUrlValid, modelUrl]
-    );
+    const onModelUrlBlur = useCallback(() => {
+        if (isModelUrlValid) {
+            viewerElement.source = modelUrl;
+        }
+    }, [viewerElement, isModelUrlValid, modelUrl]);
 
     const onLoadModelClick = useCallback(() => {
         (async () => {
@@ -726,30 +723,36 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             </LineContainerComponent>
             <div>
                 <LineContainerComponent title="MODEL">
-                    {/* <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
-                            <ButtonLineComponent label="Load Url" onClick={onModelUrlBlur} />
-                            <ButtonLineComponent label="Load File" onClick={onLoadModelClick} /> */}
                     <div className="FlexLine">
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                         </div>
+                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onModelUrlBlur} />
                         <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onLoadModelClick} />
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
                     <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
-                    <TextInputLineComponent
-                        placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                        value={environmentLightingUrl}
-                        onChange={onEnvironmentLightingUrlChange}
-                    />
-                    <ButtonLineComponent label="Load Url" isDisabled={isEnvironmentLightingUrlValid} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                    <ButtonLineComponent label="Reset" isDisabled={isEnvironmentLightingUrlDefault} onClick={onEnvironmentLightingResetClick} />
+                    <div className="FlexLine">
+                        <div className="FlexItem" style={{ flex: 5 }}>
+                            <TextInputLineComponent
+                                placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
+                                value={environmentLightingUrl}
+                                onChange={onEnvironmentLightingUrlChange}
+                            />
+                        </div>
+                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentLightingResetClick} />
+                    </div>
                     {!syncEnvironment && (
                         <>
-                            <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
-                            <ButtonLineComponent label="Load Url" isDisabled={isEnvironmentSkyboxUrlValid} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <ButtonLineComponent label="Reset" isDisabled={isEnvironmentSkyboxUrlDefault} onClick={onEnvironmentSkyboxResetClick} />
+                            <div className="FlexLine">
+                                <div className="FlexItem" style={{ flex: 5 }}>
+                                    <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
+                                </div>
+                                <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                                <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
+                            </div>
                         </>
                     )}
                     {hasSkybox && (
