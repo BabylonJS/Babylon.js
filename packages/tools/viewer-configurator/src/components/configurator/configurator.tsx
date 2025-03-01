@@ -714,12 +714,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     <div className="FlexItem" style={{ flex: 5 }}>
                                         <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
                                     </div>
-                                    <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
-                                        <img className="ImageButton" src={deleteIcon} onClick={onRevertAllClick} />
-                                    </div>
-                                    <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
-                                        <img className="ImageButton" src={deleteIcon} onClick={copyToClipboard} />
-                                    </div>
+                                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onRevertAllClick} />
+                                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={copyToClipboard} />
                                 </div>
                             </div>
                         </div>
@@ -733,9 +729,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 <div className="FlexItem" style={{ flex: 5 }}>
                                     <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                                 </div>
-                                <div className="FlexItem" style={{ alignSelf: "flex-end" }}>
-                                    <img className="ImageButton" src={deleteIcon} onClick={onLoadModelClick} />
-                                </div>
+                                <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onLoadModelClick} />
                             </div>
                         </LineContainerComponent>
                     </div>
