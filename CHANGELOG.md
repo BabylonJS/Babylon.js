@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.51.2
+
+### Core
+
+- Flow Graph and glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16201](https://github.com/BabylonJS/Babylon.js/pull/16201))
+- Core Engine: Misc fixes related to index buffer management - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16235](https://github.com/BabylonJS/Babylon.js/pull/16235))
+
+### Serializers
+
+- Core Engine: Misc fixes related to index buffer management - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16235](https://github.com/BabylonJS/Babylon.js/pull/16235))
+
+### Viewer
+
+- Reset model error - by [alexandremottet](https://github.com/alexandremottet) ([#16234](https://github.com/BabylonJS/Babylon.js/pull/16234))
+
 ## 7.51.1
 
 ### Core
