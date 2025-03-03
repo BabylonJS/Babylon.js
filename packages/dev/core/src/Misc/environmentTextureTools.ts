@@ -872,6 +872,8 @@ async function _UploadLevelsAsync(
         }
     }
 
+    await Promise.all(promises);
+
     // Fill remaining mipmaps with black textures.
     if (imageData.length < mipmapsCount) {
         let data: ArrayBufferView;
@@ -897,8 +899,6 @@ async function _UploadLevelsAsync(
             }
         }
     }
-
-    await Promise.all(promises);
 
     // Release temp RTT.
     if (cubeRtt) {
