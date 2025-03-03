@@ -144,7 +144,7 @@
 
     // TextInputLineComponent override, multiline. Is bespoke, so fine to do like this.
     .textInputArea {
-        height: 4 * $line-height;
+        height: 8 * $line-height;
 
         textarea {
             padding: $line-padding-sides;
