@@ -35,6 +35,12 @@ export interface ISpatialAudioOptions {
     spatialConeOuterVolume: number;
     /**
      * The algorithm to use to reduce the volume of the audio source as it moves away from the listener. Defaults to "inverse".
+     *
+     * Possible values are:
+     * - `"linear"`: The volume is reduced linearly as the source moves away from the listener.
+     * - `"inverse"`: The volume is reduced inversely as the source moves away from the listener.
+     * - `"exponential"`: The volume is reduced exponentially as the source moves away from the listener.
+     *
      * @see {@link spatialMaxDistance}
      * @see {@link spatialReferenceDistance}
      * @see {@link spatialRolloffFactor}
@@ -62,6 +68,10 @@ export interface ISpatialAudioOptions {
      * The spatial panning model. Defaults to "equalpower".
      * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
      * - "HRTF" requires more CPU but is more realistic for listeners with headphones or speakers close to the ears.
+     *
+     * Possible values are:
+     * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
+     * - `"HRTF"`:Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
      */
     spatialPanningModel: "equalpower" | "HRTF";
     /**
@@ -137,9 +147,15 @@ export abstract class AbstractSpatialAudio {
 
     /**
      * The algorithm to use to reduce the volume of the audio source as it moves away from the listener. Defaults to "inverse".
-     * @see {@link maxDistance}
-     * @see {@link referenceDistance}
-     * @see {@link rolloffFactor}
+     *
+     * Possible values are:
+     * - `"linear"`: The volume is reduced linearly as the source moves away from the listener.
+     * - `"inverse"`: The volume is reduced inversely as the source moves away from the listener.
+     * - `"exponential"`: The volume is reduced exponentially as the source moves away from the listener.
+     *
+     * @see {@link spatialMaxDistance}
+     * @see {@link spatialReferenceDistance}
+     * @see {@link spatialRolloffFactor}
      */
     public abstract distanceModel: "linear" | "inverse" | "exponential";
 
@@ -154,6 +170,10 @@ export abstract class AbstractSpatialAudio {
      * The spatial panning model. Defaults to "equalpower".
      * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
      * - "HRTF" requires more CPU but is more realistic for listeners with headphones or speakers close to the ears.
+     *
+     * Possible values are:
+     * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
+     * - `"HRTF"`:Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
      */
     public abstract panningModel: "equalpower" | "HRTF";
 
