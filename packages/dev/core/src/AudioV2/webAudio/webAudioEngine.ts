@@ -95,8 +95,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public async init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
-        this._resumeOnInteraction = options.resumeOnInteraction ?? true;
-        this._resumeOnPause = options.resumeOnPause ?? true;
+        this._resumeOnInteraction = options.resumeOnInteraction || true;
+        this._resumeOnPause = options.resumeOnPause || true;
         this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
 
         document.addEventListener("click", this._onUserGesture);
