@@ -4584,6 +4584,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
         if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this.getSceneUniformBuffer().unbindEffect();
             this.finalizeSceneUbo();
         }
         this._renderingManager.render(null, null, true, true);
