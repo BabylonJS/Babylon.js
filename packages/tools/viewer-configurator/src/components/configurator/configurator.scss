@@ -1,10 +1,12 @@
 .ConfiguratorContainer {
-    $line-height: 30px;
-    $line-padding-sides: 5px;
-    $line-padding-top-bottom: 10px;
-    $line-content-gap: 0.8rem;
+    $line-height: 25px;
+    $line-padding-left: 3px;
+    $line-padding-right: 5px;
+    $line-padding-top-bottom: 7px;
+    $line-padding: $line-padding-top-bottom $line-padding-right $line-padding-top-bottom $line-padding-left;
+    $line-button-gap: 0rem;
     $line-content-spacing: "space-between";
-    $border-radius: 5px;
+    $border-radius: 0px;
     color: white;
     background: #333333;
     grid-row: 1;
@@ -23,7 +25,6 @@
 
     // Input: prevent default styling
     input {
-        padding: $line-padding-sides;
         border: 0;
         border-radius: $border-radius;
         box-sizing: border-box;
@@ -35,10 +36,7 @@
     // Hack: since the svgs are dark, use inverted colors
     .ImageButton {
         border-radius: $border-radius;
-        background: rgb(221, 221, 221);
-        outline: 1px solid rgb(204, 133, 72);
         filter: invert(1);
-        outline-offset: -1px;
         opacity: 0.9;
 
         &:hover {
@@ -64,11 +62,11 @@
         // to help align
         .paneList > * {
             height: $line-height;
-            padding: $line-padding-top-bottom $line-padding-sides;
+            padding: $line-padding;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: $line-content-gap;
+            gap: $line-button-gap;
             justify-content: $line-content-spacing;
         }
 
@@ -147,7 +145,7 @@
         height: 8 * $line-height;
 
         textarea {
-            padding: $line-padding-sides;
+            padding: $line-padding;
             width: 100%;
             height: 100%;
             resize: none;
@@ -206,11 +204,12 @@
 
     // SliderLine override
     .sliderLine {
-        align-self: center;
         display: flex;
         flex-direction: row;
         justify-content: $line-content-spacing;
-        gap: $line-content-gap;
+        gap: $line-button-gap;
+        height: $line-height;
+        align-items: center;
 
         .label {
             flex: 1;
@@ -219,8 +218,11 @@
         }
 
         .slider {
-            align-content: center;
             flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
 
             .range {
                 -webkit-appearance: none;
@@ -273,7 +275,7 @@
         display: flex;
         flex-direction: row;
         justify-content: $line-content-spacing;
-        gap: $line-content-gap;
+        gap: $line-button-gap;
 
         .label {
             flex: 1;
@@ -310,21 +312,21 @@
         display: flex;
         flex-direction: row;
         justify-content: "space-between";
-        gap: $line-content-gap;
+        gap: $line-button-gap;
         width: 100%;
 
         .label {
-            flex: 5;
+            flex: 1;
             align-self: center;
             text-align: left;
         }
 
         .checkBox {
-            flex: 1;
+            $toggle-width: 35px;
+            flex: 0 0 $toggle-width; // Fixed width
             align-content: center;
 
-            $toggle-height: $line-height * 0.8;
-            $toggle-width: 100%;
+            $toggle-height: $line-height * 0.6;
             $thumb-size: calc($toggle-height * 0.8);
             $thumb-left-unchecked: ($toggle-width * 0.05);
             $thumb-left-checked: calc($toggle-width - $thumb-size - $thumb-left-unchecked);
