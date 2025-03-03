@@ -214,12 +214,18 @@ const HotSpotEntry: FunctionComponent<{
 
     return (
         <div ref={rootDivRef} style={{ ...dndStyle, borderWidth: 0 }} {...dndAttributes}>
-            <FontAwesomeIcon icon={faGripVertical} {...dndListeners} />
+            <div title="Drag to reorder" {...dndListeners}>
+                <FontAwesomeIcon icon={faGripVertical} />
+            </div>
             <div className="FlexItem" style={{ flex: 5 }}>
                 <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
             </div>
-            <FontAwesomeIcon icon={faBullseye} onClick={onHotspotPickClick}></FontAwesomeIcon>
-            <FontAwesomeIcon icon={faCamera} onClick={onCameraSnapshotClick}></FontAwesomeIcon>
+            <div onClick={onHotspotPickClick} title="Pick from model">
+                <FontAwesomeIcon icon={faBullseye} />
+            </div>
+            <div onClick={onCameraSnapshotClick} title="Snapshot current camera state">
+                <FontAwesomeIcon icon={faCamera} />
+            </div>
             <img title="Delete Hot Spot" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onHotspotDeleteClick} />
         </div>
     );
@@ -1147,7 +1153,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
                     </div>
-                    <div className="expand hoverIcon" onClick={onAddHotspotClick} title="Add Hot Spot">
+                    <div onClick={onAddHotspotClick} title="Add Hot Spot">
                         <FontAwesomeIcon icon={faPlus} />
                     </div>
                 </div>
