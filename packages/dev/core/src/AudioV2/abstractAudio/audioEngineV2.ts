@@ -86,7 +86,11 @@ export abstract class AudioEngineV2 {
     public abstract readonly mainOut: AbstractAudioNode;
 
     /**
-     * The current state of the audio engine.
+     * The current state of the audio engine. Possible values are:
+     * - `closed`: The audio engine has been closed.
+     * - `interrupted`: The audio engine has been interrupted and is not running.
+     * - `running`: The audio engine is running normally.
+     * - `suspended`: The audio engine is suspended and is not running.
      */
     public abstract readonly state: AudioEngineV2State;
 
