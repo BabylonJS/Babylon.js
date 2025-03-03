@@ -840,6 +840,18 @@ export function GetRegisteredSceneLoaderPluginMetadata(): DeepImmutable<
     ).map(([name, extensions]) => ({ name, extensions }));
 }
 
+/**
+ * Import meshes into a scene
+ * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+ * @param scene the instance of BABYLON.Scene to append to
+ * @param options an object that configures aspects of how the scene is loaded
+ * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+ */
+export function ImportMeshAsync(source: SceneSource, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult> {
+    const { meshNames, rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
+    return importMeshAsyncCore(meshNames, rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+}
+
 async function importMeshAsync(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
