@@ -737,8 +737,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                         </div>
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
+                        <img title="Load from model url" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
+                        <img title="Load local model" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
@@ -753,16 +753,34 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 onChange={onEnvironmentLightingUrlChange}
                             />
                         </div>
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                        <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentLightingResetClick} />
+                        <img
+                            title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                            className="FlexItem ImageButton"
+                            style={{ alignSelf: "flex-end" }}
+                            src={checkboxIcon}
+                            onClick={() => setNeedsEnvironmentUpdate(true)}
+                        />
+                        <img
+                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                            className="FlexItem ImageButton"
+                            style={{ alignSelf: "flex-end" }}
+                            src={deleteIcon}
+                            onClick={onEnvironmentLightingResetClick}
+                        />
                     </div>
                     {!syncEnvironment && (
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
                             </div>
-                            <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
+                            <img
+                                title="Load skybox url"
+                                className="FlexItem ImageButton"
+                                style={{ alignSelf: "flex-end" }}
+                                src={checkboxIcon}
+                                onClick={() => setNeedsEnvironmentUpdate(true)}
+                            />
+                            <img title="Reset skybox" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
                         </div>
                     )}
                     {hasSkybox && (
@@ -780,10 +798,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     lockObject={lockObject}
                                 />
                             </div>
-                            <img className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onSkyboxBlurChange()} />
+                            <img
+                                title="Reset skybox blur"
+                                className="FlexItem ImageButton"
+                                style={{ alignSelf: "flex-end" }}
+                                src={deleteIcon}
+                                onClick={() => onSkyboxBlurChange()}
+                            />
                         </div>
                     )}
-                    {!hasSkybox && (
+                    {!hasSkybox && ( // TODO: Clear color format
                         <div style={{ height: "auto", textAlign: "center" }}>
                             <div>
                                 <p style={{ margin: 0 }}>Clearcolor</p>
@@ -806,7 +830,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onToneMappingChange()} />
+                    <img title="Reset tone mapping" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onToneMappingChange()} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -820,7 +844,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onContrastChange}
                         />
                     </div>
-                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onContrastChange()} />
+                    <img title="Reset contrast" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onContrastChange()} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -834,7 +858,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onExposureChange}
                         />
                     </div>
-                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onExposureChange()} />
+                    <img title="Reset exposure" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onExposureChange()} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
@@ -875,7 +899,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitSpeedChange}
                                 />
                             </div>
-                            <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onAutoOrbitSpeedChange()} />
+                            <img
+                                title="Reset auto orbit speed"
+                                className="ImageButton FlexItem"
+                                style={{ alignSelf: "flex-end" }}
+                                src={deleteIcon}
+                                onClick={() => onAutoOrbitSpeedChange()}
+                            />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
@@ -889,11 +919,59 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitDelayChange}
                                 />
                             </div>
-                            <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onAutoOrbitDelayChange()} />
+                            <img
+                                title="Reset auto orbit delay"
+                                className="ImageButton FlexItem"
+                                style={{ alignSelf: "flex-end" }}
+                                src={deleteIcon}
+                                onClick={() => onAutoOrbitDelayChange()}
+                            />
                         </div>
                     </>
                 )}
             </LineContainerComponent>
+            {hasAnimations && (
+                <LineContainerComponent title="ANIMATION">
+                    <div>
+                        <div className="FlexItem" style={{ flex: 5 }}>
+                            <ButtonLineComponent label="Use Current Selections" onClick={onAnimationSnapshotClick} isDisabled={!hasAnimations} />
+                        </div>
+                        <img
+                            title="Revert animation state to snippet"
+                            className="ImageButton FlexItem"
+                            style={{ alignSelf: "flex-end", cursor: !canRevertAnimationState ? "not-allowed" : undefined }}
+                            src={deleteIcon}
+                            onClick={onAnimationRevertClick}
+                        />
+                        <img
+                            title="Reset animation state attributes"
+                            className="ImageButton FlexItem"
+                            style={{ alignSelf: "flex-end", cursor: isAnimationStateDefault ? "not-allowed" : undefined }}
+                            src={deleteIcon}
+                            onClick={onAnimationResetClick}
+                        />
+                    </div>
+                    <div>
+                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={onAnimationAutoPlayChanged} />
+                    </div>
+                </LineContainerComponent>
+            )}
+            {hasMaterialVariants && (
+                <LineContainerComponent title="MATERIAL VARIANTS">
+                    <div>
+                        <div className="FlexItem" style={{ flex: 5 }}>
+                            <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
+                        </div>
+                        <img
+                            title="Reset material variant attribute"
+                            className="ImageButton FlexItem"
+                            style={{ alignSelf: "flex-end" }}
+                            src={deleteIcon}
+                            onClick={onMaterialVariantsResetClick}
+                        />
+                    </div>
+                </LineContainerComponent>
+            )}
         </div>
     );
 };
