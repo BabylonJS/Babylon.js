@@ -87,6 +87,111 @@ export interface IImage {
 }
 
 /**
+ * Class used to abstract a 2D path to use with the canvas and its context
+ */
+export interface IPath2D {
+    /**
+     * Adds a path to the current path.
+     * @param path A Path2D path to add.
+     * @param transform A DOMMatrix to be used as the transformation matrix for the path that is added.
+     */
+    addPath(path: IPath2D, transform?: DOMMatrix): void;
+
+    /**
+     * Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start.
+     * If the shape has already been closed or has only one point, this function does nothing.
+     */
+    closePath(): void;
+
+    /**
+     * Moves the starting point of a new sub-path to the (x, y) coordinates.
+     * @param x The x-axis (horizontal) coordinate of the point.
+     * @param y The y-axis (vertical) coordinate of the point.
+     */
+    moveTo(x: number, y: number): void;
+
+    /**
+     * Connects the last point in the current sub-path to the specified (x, y) coordinates with a straight line.
+     * @param x The x-axis coordinate of the line's end point.
+     * @param y The y-axis coordinate of the line's end point.
+     */
+    lineTo(x: number, y: number): void;
+
+    /**
+     * Adds a cubic Bézier curve to the current path.
+     * @param cp1x The x-axis coordinate of the first control point.
+     * @param cp1x The x-axis coordinate of the first control point.
+     * @param cp2y The y-axis coordinate of the second control point.
+     * @param cp2y The y-axis coordinate of the second control point.
+     * @param x The x-axis coordinate of the end point.
+     * @param y The y-axis coordinate of the end point.
+     */
+    bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+
+    /**
+     * Adds a quadratic Bézier curve to the current path.
+     * @param cpx The x-axis coordinate of the control point.
+     * @param cpy The y-axis coordinate of the control point.
+     * @param x The x-axis coordinate of the end point.
+     * @param y The y-axis coordinate of the end point.
+     */
+    quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
+
+    /**
+     * Adds a circular arc to the current path.
+     * @param x The horizontal coordinate of the arc's center.
+     * @param y The vertical coordinate of the arc's center.
+     * @param radius The arc's radius. Must be positive.
+     * @param startAngle The angle at which the arc starts in radians, measured from the positive x-axis.
+     * @param endAngle The angle at which the arc ends in radians, measured from the positive x-axis.
+     * @param anticlockwise An optional Boolean. If true, draws the arc counter-clockwise between the start and end angles. The default is false (clockwise).
+     */
+    arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
+
+    /**
+     * Adds a circular arc to the current sub-path, using the given control points and radius.
+     * @param x1 The x-axis coordinate of the first control point.
+     * @param y1 The y-axis coordinate of the first control point.
+     * @param x2 The x-axis coordinate of the second control point.
+     * @param y2 The y-axis coordinate of the second control point.
+     * @param radius The arc's radius. Must be non-negative.
+     */
+    arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
+
+    /**
+     * Creates an elliptical arc centered at (x, y) with the radii radiusX and radiusY. The path starts at startAngle and ends at endAngle, and travels in the direction given by counterclockwise.
+     * @param x The x-axis (horizontal) coordinate of the ellipse's center.
+     * @param y The y-axis (vertical) coordinate of the ellipse's center.
+     * @param radiusX The ellipse's major-axis radius. Must be non-negative.
+     * @param radiusY The ellipse's minor-axis radius. Must be non-negative.
+     * @param rotation The rotation of the ellipse, expressed in radians.
+     * @param startAngle The eccentric angle at which the ellipse starts, measured clockwise from the positive x-axis and expressed in radians.
+     * @param endAngle The eccentric angle at which the ellipse ends, measured clockwise from the positive x-axis and expressed in radians.
+     * @param counterclockwise An optional boolean value which, if true, draws the ellipse counterclockwise (anticlockwise). The default value is false (clockwise).
+     */
+    ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
+
+    /**
+     * Creates a path for a rectangle at position (x, y) with a size that is determined by width and height.
+     * @param x The x-axis coordinate of the rectangle's starting point.
+     * @param y The y-axis coordinate of the rectangle's starting point.
+     * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+     * @param height The rectangle's height. Positive values are down, and negative are up.
+     */
+    rect(x: number, y: number, width: number, height: number): void;
+
+    /**
+     * Adds a rounded rectangle to the current path.
+     * @param x The x-axis coordinate of the rectangle's starting point, in pixels.
+     * @param y The y-axis coordinate of the rectangle's starting point, in pixels.
+     * @param width The rectangle's width. Positive values are to the right, and negative to the left.
+     * @param height The rectangle's height. Positive values are down, and negative are up.
+     * @param radii A number specifying the radii of the circular arc to be used for the corners of the rectangle. The number and order of the radii function in the same way as the border-radius CSS property when width and height are positive:
+     */
+    roundRect(x: number, y: number, width: number, height: number, radii: number): void;
+}
+
+/**
  * Class used to abstract a canvas gradient
  */
 export interface ICanvasGradient {
@@ -427,8 +532,9 @@ export interface ICanvasRenderingContext {
 
     /**
      * Strokes the current sub-paths with the current stroke style.
+     * @param path Optional Path2D.
      */
-    stroke(): void;
+    stroke(path?: IPath2D): void;
 
     /**
      * Fills the current sub-paths with the current fill style.
