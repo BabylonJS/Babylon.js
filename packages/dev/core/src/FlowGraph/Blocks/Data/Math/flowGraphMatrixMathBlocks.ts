@@ -157,6 +157,9 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
             // check matrix last column components should be 0,0,0,1
             if (matrix.m[3] !== 0 || matrix.m[7] !== 0 || matrix.m[11] !== 0 || matrix.m[15] !== 1) {
                 this.isValid.setValue(false, context);
+                this.position.setValue(Vector3.Zero(), context);
+                this.rotationQuaternion.setValue(Quaternion.Identity(), context);
+                this.scaling.setValue(Vector3.One(), context);
                 return;
             }
             // make the checks for validity
