@@ -6,11 +6,12 @@ import { TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+
 /**
- * @experimental
  * This blocks transforms a vector from one coordinate system to another.
  */
-export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
+export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {
     /**
      * Input connection: The source coordinate system.
      */
@@ -67,7 +68,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return "FGCoordinateTransformBlock";
+        return FlowGraphBlockNames.TransformCoordinatesSystem;
     }
 }
-RegisterClass("FGCoordinateTransformBlock", FlowGraphCoordinateTransformBlock);
+RegisterClass(FlowGraphBlockNames.TransformCoordinatesSystem, FlowGraphTransformCoordinatesSystemBlock);

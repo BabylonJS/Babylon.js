@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "7.50.0",
+    "version": "7.51.2",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
