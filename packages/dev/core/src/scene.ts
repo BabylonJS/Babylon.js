@@ -2354,6 +2354,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        // Effect layers
+        if (this.effectLayers) {
+            for (const effectLayer of this.effectLayers) {
+                if (!effectLayer.isLayerReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
         // Effects
         if (!engine.areAllEffectsReady()) {
             isReady = false;
