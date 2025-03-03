@@ -1,6 +1,6 @@
 import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot } from "viewer/index";
+import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
 import type { Color3, IInspectableOptions, Nullable, Vector3 } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FunctionCompone
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBullseye, faCamera, faGripVertical, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -22,9 +24,12 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color4 } from "core/Maths/math.color";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
+import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
+
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
@@ -35,12 +40,16 @@ import adtIcon from "shared-ui-components/imgs/adtIcon.svg";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
-const toneMappingOptions: IInspectableOptions[] = [
+const toneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
     { label: "Aces", value: "aces" },
     { label: "Neutral", value: "neutral" },
-];
+] as const satisfies IInspectableOptions[] & { label: string; value: ToneMapping }[];
+
+const hotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
+
+const hotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
 function createDefaultAnnotation(hotSpotName: string) {
     return `
@@ -60,6 +69,167 @@ function useConfiguration<DataType>(defaultValue: DataType) {
     }, [defaultValue]);
     return [value, setValue, resetValue, isDefaultValue] as const;
 }
+
+const HotSpotEntry: FunctionComponent<{
+    id: string;
+    hotspots: HotSpotInfo[];
+    setHotspots: React.Dispatch<React.SetStateAction<HotSpotInfo[]>>;
+    viewerElement: ViewerElement;
+}> = ({ id, hotspots, setHotspots, viewerElement }) => {
+    const index = useMemo(() => {
+        return hotspots.findIndex((hotspot) => hotspot.id === id);
+    }, [id, hotspots]);
+
+    const hotspot = useMemo<HotSpotInfo | undefined>(() => {
+        return hotspots[index];
+    }, [index, hotspots]);
+
+    const { attributes: dndAttributes, listeners: dndListeners, setNodeRef: setDndRefNode, transform: dndTransform, transition: dndTransition } = useSortable({ id });
+
+    const dndStyle = useMemo(() => {
+        return {
+            transform: CSS.Transform.toString(dndTransform),
+            transition: dndTransition,
+        };
+    }, [dndTransform, dndTransition]);
+
+    const rootDivRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (rootDivRef.current) {
+            setDndRefNode(rootDivRef.current);
+            rootDivRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+
+        if (inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, []);
+
+    const [isPicking, setIsPicking] = useState(false);
+    const [hasPicked, setHasPicked] = useState(false);
+
+    const onHotspotDeleteClick = useCallback(() => {
+        if (index >= 0) {
+            setHotspots((hotspots) => {
+                const newHotspots = [...hotspots];
+                newHotspots.splice(index, 1);
+                return newHotspots;
+            });
+        }
+    }, [index, setHotspots]);
+
+    const onHotspotPickClick = useCallback(() => {
+        if (viewerElement.viewerDetails?.model && hotspot) {
+            const originalCursor = getComputedStyle(viewerElement).cursor;
+            viewerElement.style.cursor = "crosshair";
+            const { scene, model, viewer } = viewerElement.viewerDetails;
+
+            const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor)];
+
+            const cleanup = () => {
+                cleanupActions.forEach((action) => action());
+            };
+
+            const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
+                if (pointerInfo.type === PointerEventTypes.POINTERTAP) {
+                    if (viewerElement.viewerDetails) {
+                        const pickInfo = await viewerElement.viewerDetails.pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                        if (pickInfo?.pickedMesh) {
+                            if (hotspot.data.type === "surface") {
+                                hotspot.data.meshIndex = model.assetContainer.meshes.indexOf(pickInfo.pickedMesh);
+                                const hotspotQuery = CreateHotSpotQueryForPickingInfo(pickInfo);
+                                if (hotspotQuery) {
+                                    hotspot.data.pointIndex = hotspotQuery.pointIndex;
+                                    hotspot.data.barycentric = hotspotQuery.barycentric;
+                                }
+                            }
+
+                            setHotspots((hotspots) => {
+                                return [...hotspots];
+                            });
+
+                            if (pickInfo.hit && pickInfo.pickedPoint) {
+                                const camera = viewerElement.viewerDetails.camera;
+                                const distance = pickInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                                // Immediately reset the target and the radius based on the distance to the picked point.
+                                // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                                camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                                camera.radius = distance;
+                                viewerElement.focusHotSpot(hotspot.name);
+                            }
+
+                            setHasPicked(true);
+
+                            cleanup();
+                        }
+                    }
+                }
+            });
+            cleanupActions.push(() => scene.onPointerObservable.remove(pointerObserver));
+
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === "Escape") {
+                    cleanup();
+                }
+            };
+            document.addEventListener("keydown", handleKeyDown);
+            cleanupActions.push(() => document.removeEventListener("keydown", handleKeyDown));
+
+            const modelChangedObserver = viewer.onModelChanged.addOnce(() => {
+                cleanup();
+            });
+            cleanupActions.push(() => viewer.onModelChanged.remove(modelChangedObserver));
+
+            setIsPicking(true);
+        }
+    }, [hotspot, setHotspots]);
+
+    const onCameraSnapshotClick = useCallback(() => {
+        if (hotspot) {
+            const camera = viewerElement.viewerDetails?.camera;
+            if (camera) {
+                hotspot.data.cameraOrbit = [camera.alpha, camera.beta, camera.radius];
+                setHotspots((hotspots) => {
+                    return [...hotspots];
+                });
+            }
+        }
+    }, [hotspot, setHotspots]);
+
+    const onHotSpotNameChange = useCallback(
+        (value: string) => {
+            if (hotspot) {
+                setHotspots((hotspots) => {
+                    hotspots = [...hotspots];
+                    hotspots[index] = { ...hotspot, name: value };
+                    return hotspots;
+                });
+            }
+        },
+        [index, hotspot]
+    );
+
+    return (
+        <div ref={rootDivRef} style={{ ...dndStyle, borderWidth: 0 }} {...dndAttributes}>
+            <div title="Drag to reorder" {...dndListeners}>
+                <FontAwesomeIcon icon={faGripVertical} />
+            </div>
+            <div className="FlexItem" style={{ flex: 5 }}>
+                <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
+            </div>
+            <div onClick={onHotspotPickClick} title="Pick from model">
+                <FontAwesomeIcon icon={faBullseye} />
+            </div>
+            <div onClick={onCameraSnapshotClick} title="Snapshot current camera state">
+                <FontAwesomeIcon icon={faCamera} />
+            </div>
+            <img title="Delete Hot Spot" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onHotspotDeleteClick} />
+        </div>
+    );
+};
 
 export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerElement, viewerDetails, viewer } = props;
@@ -115,6 +285,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const [cameraState, setCameraState] = useState<Readonly<{ alpha: number; beta: number; radius: number; target: Vector3 }>>();
     const isCameraStateDefault = useMemo(() => cameraState == null, [cameraState]);
     const [canRevertCameraState, setCanRevertCameraState] = useState(false);
+
     useEffect(() => {
         const disposeActions: (() => void)[] = [];
         setCanRevertCameraState(false);
@@ -133,11 +304,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
         return () => disposeActions.forEach((dispose) => dispose());
     }, [viewerDetails, cameraState]);
+
     const [postProcessingState, setPostProcessingState] = useState<Readonly<PostProcessing>>({
         toneMapping: originalToneMapping,
         contrast: originalContrast,
         exposure: originalExposure,
     });
+
     const isPostProcessingDefaultState = useMemo(() => {
         return {
             toneMapping: postProcessingState.toneMapping === originalToneMapping,
@@ -145,10 +318,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             exposure: postProcessingState.exposure === originalExposure,
         };
     }, [postProcessingState]);
+
     const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
     const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
     const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
     const [canRevertAnimationState, setCanRevertAnimationState] = useState(false);
+
     useEffect(() => {
         const disposeActions: (() => void)[] = [];
         setCanRevertAnimationState(false);
@@ -167,6 +342,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
         return () => disposeActions.forEach((dispose) => dispose());
     }, [viewer, animationState]);
+
     const [animationAutoPlay, setAnimationAutoPlay] = useState(false);
     const [selectedMaterialVariant, setSelectedMaterialVariant] = useState<string>();
 
@@ -983,6 +1159,23 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                 </LineContainerComponent>
             )}
+            <LineContainerComponent title="HOT SPOTS">
+                <div>
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
+                    </div>
+                    <div onClick={onAddHotspotClick} title="Add Hot Spot">
+                        <FontAwesomeIcon icon={faPlus} />
+                    </div>
+                </div>
+                <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
+                    <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
+                        {hotspots.map((hotspot) => (
+                            <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            </LineContainerComponent>
         </div>
     );
 };
