@@ -5,7 +5,7 @@ import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOr
 import type { Color3, IInspectableOptions, Nullable, Vector3 } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
-import { useCallback, useEffect, useMemo, useState, type FunctionComponent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,7 +16,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
@@ -715,6 +715,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onMaterialVariantsResetClick,
     ]);
 
+    const clearColorWrapper = { clearColor };
+
     return (
         <div className="ConfiguratorContainer">
             <LineContainerComponent title="HTML SNIPPET">
@@ -808,11 +810,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                     )}
                     {!hasSkybox && ( // TODO: Clear color format
-                        <div style={{ height: "auto", textAlign: "center" }}>
-                            <div>
-                                <p style={{ margin: 0 }}>Clearcolor</p>
-                                <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />
-                            </div>
+                        // <div style={{ height: "auto", textAlign: "center" }}>
+                        //     <div>
+                        //         <p style={{ margin: 0 }}>Clearcolor</p>
+                        //         <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />
+                        //     </div>
+                        // </div>
+                        <div style={{ height: "auto" }}>
+                            <Color3LineComponent
+                                label="Clear color"
+                                target={clearColorWrapper}
+                                propertyName="clearColor"
+                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                                lockObject={lockObject}
+                            />
                         </div>
                     )}
                 </LineContainerComponent>

@@ -4,8 +4,8 @@
     $line-padding-right: 5px;
     $line-padding-top-bottom: 7px;
     $line-padding: $line-padding-top-bottom $line-padding-right $line-padding-top-bottom $line-padding-left;
-    $line-button-gap: 0rem;
-    $line-content-spacing: "space-between";
+    $line-button-gap: 0.5rem;
+    $line-content-spacing: space-around;
     $border-radius: 0px;
     color: white;
     background: #333333;
@@ -308,7 +308,9 @@
 
     // CheckBoxLine override
     .checkBoxLine {
-        align-self: center;
+        $toggle-width: 35px;
+        $toggle-height: $line-height * 0.6;
+
         display: flex;
         flex-direction: row;
         justify-content: "space-between";
@@ -317,16 +319,13 @@
 
         .label {
             flex: 1;
-            align-self: center;
             text-align: left;
         }
 
         .checkBox {
-            $toggle-width: 35px;
             flex: 0 0 $toggle-width; // Fixed width
             align-content: center;
 
-            $toggle-height: $line-height * 0.6;
             $thumb-size: calc($toggle-height * 0.8);
             $thumb-left-unchecked: ($toggle-width * 0.05);
             $thumb-left-checked: calc($toggle-width - $thumb-size - $thumb-left-unchecked);
@@ -386,83 +385,89 @@
     }
 
     // Color3Line override
-    // .color3Line {
-    //     padding-left: $line-padding-sides;
-    //     display: grid;
+    .color3Line {
+        $color-box-width: 40px;
+        $color-box-height: $line-height * 0.95;
+        $expand-button-size: 14px;
 
-    //     .firstLine {
-    //         height: 30px;
-    //         display: grid;
-    //         grid-template-columns: 1fr auto 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: $line-button-gap;
 
-    //         .label {
-    //             grid-column: 1;
-    //             display: flex;
-    //             align-items: center;
-    //         }
+        .firstLine {
+            width: 100%;
+            align-self: center;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: $line-button-gap;
 
-    //         .textInputLine {
-    //             display: none;
-    //         }
+            .label {
+                flex: 1;
+                text-align: left;
+            }
 
-    //         .color3 {
-    //             grid-column: 2;
-    //             width: 50px;
+            .color3 {
+                flex: 0 0 $color-box-width;
+                height: $color-box-height;
+                align-content: center;
 
-    //             display: flex;
-    //             align-items: center;
+                .color-picker {
+                    .color-rect {
+                        $border-size: 2px;
+                        border: $border-size white solid;
+                        cursor: pointer;
+                        height: calc($color-box-height - 2 * $border-size);
+                    }
 
-    //             input {
-    //                 margin-right: 5px;
-    //             }
-    //         }
+                    .color-picker-cover {
+                        position: fixed;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: 0px;
+                        z-index: 100;
+                    }
 
-    //         .expand {
-    //             grid-column: 3;
-    //             display: grid;
-    //             align-items: center;
-    //             justify-items: center;
-    //             cursor: pointer;
-    //         }
+                    .color-picker-float {
+                        position: absolute;
+                    }
+                }
+            }
 
-    //         .copy {
-    //             grid-column: 4;
-    //             display: grid;
-    //             align-items: center;
-    //             justify-items: center;
-    //             cursor: pointer;
-    //             img {
-    //                 height: 100%;
-    //             }
-    //         }
-    //     }
+            .expand {
+                flex: 0 0 $expand-button-size;
+            }
 
-    //     .secondLine {
-    //         display: grid;
-    //         padding-right: 5px;
-    //         border-left: 1px solid rgb(51, 122, 183);
+            .copy {
+                display: none;
+            }
+        }
 
-    //         .numeric {
-    //             display: grid;
-    //             grid-template-columns: 1fr auto;
-    //         }
+        .secondLine {
+            display: flex;
+            flex-direction: column;
+            gap: 2px; //$line-button-gap;
+            border-left: 1px solid rgb(51, 122, 183);
 
-    //         .numeric-label {
-    //             text-align: right;
-    //             grid-column: 1;
-    //             display: flex;
-    //             align-items: center;
-    //             justify-self: right;
-    //             margin-right: 10px;
-    //         }
+            .numeric {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-end;
+                gap: 0.5rem;
 
-    //         .numeric-value {
-    //             width: 120px;
-    //             grid-column: 2;
-    //             display: flex;
-    //             align-items: center;
-    //             border: 1px solid rgb(51, 122, 183);
-    //         }
-    //     }
-    // }
+                .numeric-label {
+                    flex: 3;
+                    text-align: right;
+                    align-items: center;
+                    justify-self: right;
+                }
+
+                .numeric-input {
+                    flex: 2;
+                }
+            }
+        }
+    }
 }
