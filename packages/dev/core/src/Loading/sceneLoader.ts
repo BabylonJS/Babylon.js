@@ -802,7 +802,7 @@ export function RegisterSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoa
 
 /**
  * Adds a new plugin to the list of registered plugins
- * @deprecated Please use `RegisterSceneLoaderPlugin` instead.
+ * @deprecated Please use {@link RegisterSceneLoaderPlugin} instead.
  * @param plugin defines the plugin to add
  */
 export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
@@ -1046,7 +1046,7 @@ export function LoadSceneAsync(source: SceneSource, engine: AbstractEngine, opti
 
 /**
  * Load a scene
- * @deprecated Please use `LoadSceneAsync` instead.
+ * @deprecated Please use {@link LoadSceneAsync} instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param engine is the instance of BABYLON.Engine to use to create the scene
  * @param options an object that configures aspects of how the scene is loaded
@@ -1206,7 +1206,7 @@ export async function AppendSceneAsync(source: SceneSource, scene: Scene, option
 
 /**
  * Append a scene
- * @deprecated Please use `AppendSceneAsync` instead.
+ * @deprecated Please use {@link AppendSceneAsync} instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
@@ -1365,7 +1365,7 @@ export function LoadAssetContainerAsync(source: SceneSource, scene: Scene, optio
 
 /**
  * Load a scene into an asset container
- * @deprecated Please use `LoadAssetContainerAsync` instead.
+ * @deprecated Please use {@link LoadAssetContainerAsync} instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
@@ -1501,7 +1501,7 @@ export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, o
 
 /**
  * Import animations from a file into a scene
- * @deprecated Please use `ImportAnimationsAsync` instead.
+ * @deprecated Please use {@link ImportAnimationsAsync} instead.
  * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
@@ -1553,7 +1553,8 @@ function importAnimationsSharedAsync(
 /**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
- * @deprecated The module level functions (such as LoadAssetContainerAsync) are more efficient for bundler tree shaking and allow plugin options to be passed through. Future improvements to scene loading will primarily be in the module level functions. The SceneLoader class will remain available, but it will be beneficial to prefer the module level functions.
+ * @deprecated The module level functions are more efficient for bundler tree shaking and allow plugin options to be passed through. Future improvements to scene loading will primarily be in the module level functions. The SceneLoader class will remain available, but it will be beneficial to prefer the module level functions.
+ * @see {@link ImportMeshAsync}, {@link LoadSceneAsync}, {@link AppendSceneAsync}, {@link ImportAnimationsAsync}, {@link LoadAssetContainerAsync}
  */
 export class SceneLoader {
     /**
@@ -1677,7 +1678,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @deprecated Please use ImportMeshAsync instead
+     * @deprecated Please use the module level {@link ImportMeshAsync} instead
      */
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
@@ -1705,6 +1706,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file
      * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+     * @deprecated Please use the module level {@link ImportMeshAsync} instead
      */
     public static ImportMeshAsync(
         meshNames: string | readonly string[] | null | undefined,
@@ -1728,7 +1730,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @deprecated Please use LoadAsync instead
+     * @deprecated Please use the module level {@link LoadSceneAsync} instead
      */
     public static Load(
         rootUrl: string,
@@ -1754,6 +1756,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
      * @returns The loaded scene
+     * @deprecated Please use the module level {@link LoadSceneAsync} instead
      */
     public static LoadAsync(
         rootUrl: string,
@@ -1776,7 +1779,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @deprecated Please use AppendAsync instead
+     * @deprecated Please use the module level {@link AppendSceneAsync} instead
      */
     public static Append(
         rootUrl: string,
@@ -1802,6 +1805,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
      * @returns The given scene
+     * @deprecated Please use the module level {@link AppendSceneAsync} instead
      */
     public static AppendAsync(
         rootUrl: string,
@@ -1824,7 +1828,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @deprecated Please use LoadAssetContainerAsync instead
+     * @deprecated Please use the module level {@link LoadAssetContainerAsync} instead
      */
     public static LoadAssetContainer(
         rootUrl: string,
@@ -1850,6 +1854,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
      * @returns The loaded asset container
+     * @deprecated Please use the module level {@link LoadAssetContainerAsync} instead
      */
     public static LoadAssetContainerAsync(
         rootUrl: string,
@@ -1875,7 +1880,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @deprecated Please use ImportAnimationsAsync instead
+     * @deprecated Please use the module level {@link ImportAnimationsAsync} instead
      */
     public static ImportAnimations(
         rootUrl: string,
@@ -1919,6 +1924,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
      * @returns the updated scene with imported animations
+     * @deprecated Please use the module level {@link ImportAnimationsAsync} instead
      */
     public static ImportAnimationsAsync(
         rootUrl: string,
