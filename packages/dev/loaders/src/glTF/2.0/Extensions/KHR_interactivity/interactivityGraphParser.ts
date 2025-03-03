@@ -141,6 +141,7 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
                 case FlowGraphTypes.Vector4:
                 case FlowGraphTypes.Matrix2D:
+                case FlowGraphTypes.Quaternion:
                     value.fill(NaN, 0, 4);
                     break;
                 case FlowGraphTypes.Matrix:

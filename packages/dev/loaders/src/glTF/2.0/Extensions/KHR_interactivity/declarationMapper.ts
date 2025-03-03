@@ -565,6 +565,45 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
     "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
     "math/matmul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
+    "math/matCompose": {
+        blocks: [FlowGraphBlockNames.MatrixCompose],
+        inputs: {
+            values: {
+                translation: { name: "position", gltfType: "float3" },
+                rotation: { name: "rotationQuaternion", gltfType: "float4" },
+                scale: { name: "scaling", gltfType: "float3" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
+            // configure it to work the way glTF specifies
+            const d = serializedObjects[0].dataInputs.find((input) => input.name === "rotationQuaternion");
+            if (!d) {
+                throw new Error("Rotation quaternion input not found");
+            }
+            context._connectionValues[d.uniqueId].type = FlowGraphTypes.Quaternion;
+            return serializedObjects;
+        },
+    },
+    "math/matDecompose": {
+        blocks: [FlowGraphBlockNames.MatrixDecompose],
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                translation: { name: "position" },
+                rotation: { name: "rotationQuaternion" },
+                scale: { name: "scaling" },
+            },
+        },
+    },
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
         inputs: {
