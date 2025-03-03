@@ -15,8 +15,8 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
-import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
+import { IsToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
+import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
@@ -146,6 +146,7 @@ export interface ViewerElement {
 }
 
 /**
+ * @experimental
  * Base class for the viewer custom element.
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
@@ -153,6 +154,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
+    /**
+     * @experimental
+     * Creates an instance of a ViewerElement subclass.
+     * @param _viewerClass The Viewer subclass to use when creating the Viewer instance.
+     * @param _options The options to use when creating the Viewer and binding it to the specified canvas.
+     */
     protected constructor(
         private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass,
         private readonly _options: CanvasViewerOptions = {}
@@ -586,10 +593,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (value === "WebGL" || value === "WebGPU") {
                 return value;
             }
-            return getDefaultEngine();
+            return GetDefaultEngine();
         },
     })
-    public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
+    public engine: NonNullable<CanvasViewerOptions["engine"]> = GetDefaultEngine();
 
     /**
      * When true, the scene will be rendered even if no scene state has changed.
@@ -688,7 +695,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({
         attribute: "tone-mapping",
         converter: (value: string | null): ToneMapping => {
-            if (!value || !isToneMapping(value)) {
+            if (!value || !IsToneMapping(value)) {
                 return "neutral";
             }
             return value;
@@ -821,6 +828,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     public hotSpots: Record<string, HotSpot> = {};
 
+    /**
+     * @experimental
+     * True if the viewer has any hotspots.
+     */
     protected get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
     }
@@ -838,6 +849,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return this._animations;
     }
 
+    /**
+     * @experimental
+     * True if the loaded model has any animations.
+     */
     protected get _hasAnimations(): boolean {
         return this._animations.length > 0;
     }
@@ -968,6 +983,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders the progress bar.
      * @returns The template result for the progress bar.
      */
@@ -988,6 +1004,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders the toolbar.
      * @returns The template result for the toolbar.
      */
@@ -1090,6 +1107,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders UI elements that overlay the viewer.
      * Override this method to provide additional rendering for the component.
      * @returns TemplateResult The rendered template result.
@@ -1103,20 +1121,41 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         `;
     }
 
+    /**
+     * @experimental
+     * Dispatches a custom event.
+     * @param type The type of the event.
+     * @param event A function that creates the event.
+     */
     protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
+    /**
+     * @experimental
+     * Handles changes to the selected animation.
+     * @param event The change event.
+     */
     protected _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
     }
 
+    /**
+     * @experimental
+     * Handles changes to the animation speed.
+     * @param event The change event.
+     */
     protected _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.animationSpeed = Number(selectElement.value);
     }
 
+    /**
+     * @experimental
+     * Handles changes to the animation timeline.
+     * @param event The change event.
+     */
     protected _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
@@ -1127,6 +1166,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
+    /**
+     * @experimental
+     * Handles pointer down events on the animation timeline.
+     * @param event The pointer down event.
+     */
     protected _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
@@ -1135,11 +1179,21 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
+    /**
+     * @experimental
+     * Handles changes to the selected material variant.
+     * @param event The change event.
+     */
     protected _onMaterialVariantChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedMaterialVariant = selectElement.value;
     }
 
+    /**
+     * @experimental
+     * Handles changes to the hot spot list.
+     * @param event The change event.
+     */
     protected _onHotSpotsChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         const hotSpotName = selectElement.value;
@@ -1328,8 +1382,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         });
     }
 
+    /**
+     * @experimental
+     * Creates a viewer for the specified canvas.
+     * @param canvas The canvas to create the viewer for.
+     * @param options The options to use for the viewer.
+     * @returns The created viewer.
+     */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return createViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {
