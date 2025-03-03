@@ -1501,6 +1501,173 @@ describe("Interactivity math nodes", () => {
         expect(resultArray).toEqual(expected);
     });
 
+    test("math/matCompose", async () => {
+        const randomPosition = Array.from({ length: 3 }, () => Math.random());
+        const randomRotation = Array.from({ length: 4 }, () => Math.random());
+        const randomScale = Array.from({ length: 3 }, () => Math.random());
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matCompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        translation: {
+                            type: 0,
+                            value: randomPosition,
+                        },
+                        rotation: {
+                            type: 1,
+                            value: randomRotation,
+                        },
+                        scale: {
+                            type: 0,
+                            value: randomScale,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float3" }, { signature: "float4" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        logItem!.payload.value.asArray().forEach((v: number) => expect(v).not.toBeNaN());
+    });
+
+    test("math/matDecompose - output translation", async () => {
+        const randomMatrix = Array.from({ length: 16 }, () => Math.random());
+        // make sure last row is 0,0,0,1
+        randomMatrix[3] = 0;
+        randomMatrix[7] = 0;
+        randomMatrix[11] = 0;
+        randomMatrix[15] = 1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomMatrix,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4x4" }],
+            0,
+            "translation"
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        logItem!.payload.value.asArray().forEach((v: number) => expect(v).not.toBeNaN());
+    });
+
+    test("math/matDecompose - output rotation", async () => {
+        const randomMatrix = Array.from({ length: 16 }, () => Math.random());
+        // make sure last row is 0,0,0,1
+        randomMatrix[3] = 0;
+        randomMatrix[7] = 0;
+        randomMatrix[11] = 0;
+        randomMatrix[15] = 1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomMatrix,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4x4" }],
+            0,
+            "rotation"
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // make sure nothing is NaN
+        logItem!.payload.value.asArray().forEach((v: number) => expect(v).not.toBeNaN());
+    });
+
+    test("math/matDecompose - output scaling", async () => {
+        const randomMatrix = Array.from({ length: 16 }, () => Math.random());
+        // make sure last row is 0,0,0,1
+        randomMatrix[3] = 0;
+        randomMatrix[7] = 0;
+        randomMatrix[11] = 0;
+        randomMatrix[15] = 1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomMatrix,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4x4" }],
+            0,
+            "scaling"
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        logItem!.payload.value.asArray().forEach((v: number) => expect(v).not.toBeNaN());
+    });
+
+    test("math/matDecompose - output isValid should be false - matrix incorrect", async () => {
+        const randomMatrix = Array.from({ length: 16 }, () => 1);
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomMatrix,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4x4" }],
+            0,
+            "isValid"
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem?.payload.value).toBe(false);
+    });
+
+    test("math/matDecompose - output isValid should be false - scaling incorrect", async () => {
+        const randomMatrix = Array.from({ length: 16 }, () => 0);
+        randomMatrix[15] = 1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomMatrix,
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4x4" }],
+            0,
+            "isValid"
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem?.payload.value).toBe(false);
+    });
+
     // TODO reintroduce these tests after a bit of research
 
     // it("should use math/combine2x2 correctly", async () => {

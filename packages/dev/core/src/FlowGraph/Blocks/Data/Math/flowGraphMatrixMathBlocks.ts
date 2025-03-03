@@ -2,7 +2,15 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeMatrix, RichTypeNumber, RichTypeQuaternion, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import {
+    FlowGraphTypes,
+    getRichTypeByFlowGraphType,
+    RichTypeBoolean,
+    RichTypeMatrix,
+    RichTypeNumber,
+    RichTypeQuaternion,
+    RichTypeVector3,
+} from "core/FlowGraph/flowGraphRichTypes";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -118,12 +126,18 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
      */
     public readonly scaling: FlowGraphDataConnection<Vector3>;
 
+    /**
+     * Is the matrix valid
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
+
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.input = this.registerDataInput("input", RichTypeMatrix);
         this.position = this.registerDataOutput("position", RichTypeVector3);
         this.rotationQuaternion = this.registerDataOutput("rotationQuaternion", RichTypeQuaternion);
         this.scaling = this.registerDataOutput("scaling", RichTypeVector3);
+        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean, false);
     }
 
     public override _updateOutputs(context: FlowGraphContext) {
@@ -140,7 +154,14 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
             const position = cachedPosition || new Vector3();
             const rotation = cachedRotation || new Quaternion();
             const scaling = cachedScaling || new Vector3();
-            matrix.decompose(scaling, rotation, position);
+            // check matrix last column components should be 0,0,0,1
+            if (matrix.m[3] !== 0 || matrix.m[7] !== 0 || matrix.m[11] !== 0 || matrix.m[15] !== 1) {
+                this.isValid.setValue(false, context);
+                return;
+            }
+            // make the checks for validity
+            const valid = matrix.decompose(scaling, rotation, position);
+            this.isValid.setValue(valid, context);
             this.position.setValue(position, context);
             this.rotationQuaternion.setValue(rotation, context);
             this.scaling.setValue(scaling, context);
@@ -177,24 +198,24 @@ export class FlowGraphMatrixComposeBlock extends FlowGraphBlock {
     /**
      * The output of this block
      */
-    public readonly output: FlowGraphDataConnection<Matrix>;
+    public readonly value: FlowGraphDataConnection<Matrix>;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.position = this.registerDataInput("position", RichTypeVector3);
         this.rotationQuaternion = this.registerDataInput("rotationQuaternion", RichTypeQuaternion);
         this.scaling = this.registerDataInput("scaling", RichTypeVector3);
-        this.output = this.registerDataOutput("output", RichTypeMatrix);
+        this.value = this.registerDataOutput("value", RichTypeMatrix);
     }
 
     public override _updateOutputs(context: FlowGraphContext) {
         const cachedExecutionId = context._getExecutionVariable(this, "executionId", -1);
         const cachedMatrix = context._getExecutionVariable(this, "cachedMatrix", null);
         if (cachedExecutionId === context.executionId && cachedMatrix) {
-            this.output.setValue(cachedMatrix, context);
+            this.value.setValue(cachedMatrix, context);
         } else {
             const matrix = Matrix.Compose(this.scaling.getValue(context), this.rotationQuaternion.getValue(context), this.position.getValue(context));
-            this.output.setValue(matrix, context);
+            this.value.setValue(matrix, context);
             context._setExecutionVariable(this, "cachedMatrix", matrix);
             context._setExecutionVariable(this, "executionId", context.executionId);
         }
