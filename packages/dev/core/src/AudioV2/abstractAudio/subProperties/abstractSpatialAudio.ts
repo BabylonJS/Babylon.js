@@ -11,7 +11,7 @@ export const _SpatialAudioDefaults = {
     referenceDistance: 1,
     rolloffFactor: 1,
     rotation: Vector3.Zero(),
-    rotationQuaternion: Quaternion.FromEulerVector(Vector3.Zero()),
+    rotationQuaternion: new Quaternion(),
 };
 
 /**
