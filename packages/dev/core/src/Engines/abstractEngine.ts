@@ -4,7 +4,7 @@ import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ICanvas, IImage } from "./ICanvas";
+import type { ICanvas, IImage, IPath2D } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -1474,6 +1474,15 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * Create a 2D path to use with canvas
+     * @returns IPath2D interface
+     * @param d SVG path string
+     */
+    public createCanvasPath2D(d?: string): IPath2D {
+        return new Path2D(d);
+    }
+
+    /**
      * Returns a string describing the current engine
      */
     public get description(): string {
@@ -1861,14 +1870,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.51.0";
+        return "babylonjs@7.51.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.51.0";
+        return "7.51.2";
     }
 
     /**

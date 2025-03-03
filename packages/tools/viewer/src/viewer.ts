@@ -128,7 +128,7 @@ export type PostProcessing = {
  * @param value The value to check.
  * @returns True if the value is a valid tone mapping option, otherwise false.
  */
-export function isToneMapping(value: string): value is ToneMapping {
+export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
 }
 
@@ -796,20 +796,19 @@ export class Viewer implements IDisposable {
      * The post processing configuration.
      */
     public get postProcessing(): PostProcessing {
-        let toneMapping: ToneMapping;
-        switch (this._toneMappingType) {
-            case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                toneMapping = "standard";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                toneMapping = "aces";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                toneMapping = "neutral";
-                break;
-            default:
-                toneMapping = "none";
-                break;
+        let toneMapping: ToneMapping = "none";
+        if (this._toneMappingEnabled) {
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
+                    toneMapping = "standard";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    toneMapping = "aces";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                    toneMapping = "neutral";
+                    break;
+            }
         }
 
         return {
@@ -1147,6 +1146,7 @@ export class Viewer implements IDisposable {
                     }
 
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 },
                 getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
