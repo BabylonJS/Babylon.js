@@ -985,23 +985,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             />
                         </div>
                     )}
-                    {!hasSkybox && ( // TODO: Clear color format
-                        // <div style={{ height: "auto", textAlign: "center" }}>
-                        //     <div>
-                        //         <p style={{ margin: 0 }}>Clearcolor</p>
-                        //         <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />
-                        //     </div>
-                        // </div>
-                        <div style={{ height: "auto" }}>
-                            <Color3LineComponent
-                                label="Clear color"
-                                target={clearColorWrapper}
-                                propertyName="clearColor"
-                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
-                                lockObject={lockObject}
-                            />
-                        </div>
-                    )}
+                    <div style={{ height: "auto" }}>
+                        <Color3LineComponent
+                            label="Clear color"
+                            target={clearColorWrapper}
+                            propertyName="clearColor"
+                            onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                            lockObject={lockObject}
+                        />
+                    </div>
                 </LineContainerComponent>
             </div>
             <LineContainerComponent title="POST PROCESSING">
