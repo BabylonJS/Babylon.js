@@ -5,7 +5,6 @@ import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
 const TmpMatrix = Matrix.Zero();
-const TmpQuaternion = Quaternion.Zero();
 const TmpVector = Vector3.Zero();
 
 function d2r(degrees: number): number {
@@ -23,10 +22,10 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
-    private _position = Vector3.Zero();
+    private _position = _SpatialAudioDefaults.position.clone();
     private _rotation: Vector3 = _SpatialAudioDefaults.rotation.clone();
-    private _rotationDirty = false;
     private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
+    private _webAudioRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
     /** @internal */
     public readonly node: PannerNode;
@@ -130,16 +129,13 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public get rotation(): Vector3 {
-        if (this._rotationDirty) {
-            this._rotationQuaternion.toEulerAnglesToRef(this._rotation);
-            this._rotationDirty = false;
-        }
-
         return this._rotation;
     }
 
     public set rotation(value: Vector3) {
-        this.rotationQuaternion = Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TmpQuaternion);
+        this._rotation.copyFrom(value);
+        Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, this._webAudioRotationQuaternion);
+        this._updateRotation();
     }
 
     /** @internal */
@@ -149,14 +145,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set rotationQuaternion(value: Quaternion) {
         this._rotationQuaternion.copyFrom(value);
-        this._rotationDirty = true;
-
-        Matrix.FromQuaternionToRef(value, TmpMatrix);
-        Vector3.TransformNormalToRef(Vector3.Right(), TmpMatrix, TmpVector);
-
-        this.node.orientationX.value = TmpVector.x;
-        this.node.orientationY.value = TmpVector.y;
-        this.node.orientationZ.value = TmpVector.z;
+        this._webAudioRotationQuaternion.copyFrom(value);
+        this._updateRotation();
     }
 
     /** @internal */
@@ -201,5 +191,14 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     /** @internal */
     public getClassName(): string {
         return "_SpatialWebAudioSubNode";
+    }
+
+    private _updateRotation(): void {
+        Matrix.FromQuaternionToRef(this._webAudioRotationQuaternion, TmpMatrix);
+        Vector3.TransformNormalToRef(Vector3.Right(), TmpMatrix, TmpVector);
+
+        this.node.orientationX.value = TmpVector.x;
+        this.node.orientationY.value = TmpVector.y;
+        this.node.orientationZ.value = TmpVector.z;
     }
 }
