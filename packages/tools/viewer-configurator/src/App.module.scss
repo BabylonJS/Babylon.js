@@ -1,28 +1,3 @@
 .VerticalContainer {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-
-    .HeaderContainer {
-        height: 3vh;
-        color: white;
-        background: #333333;
-        font-size: 16px;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 0.5em;
-        gap: 1em;
-
-        img {
-            height: 100%;
-            width: auto;
-        }
-    }
-
-    .HorizontalContainer {
-        flex: 1; // Take up remaining space
-        min-height: 0; // Prevents flex child from overflowing
-    }
+    height: 100%;
 }

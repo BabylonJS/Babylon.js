@@ -16,16 +16,10 @@ export const App: FunctionComponent = () => {
     const viewer = useMemo(() => viewerDetails?.viewer, [viewerDetails]);
 
     return (
-        <div className={styles["VerticalContainer"]}>
-            <div className={styles["HeaderContainer"]}>
-                <img src="https://cdn.jsdelivr.net/gh/BabylonJS/Brand-Toolkit/babylonjs_identity/fullColor/babylonjs_identity_color_dark.svg" />
-                <div>Viewer Configurator</div>
-            </div>
-            <SplitContainer className={styles["HorizontalContainer"]} direction={SplitDirection.Horizontal}>
-                <Viewer onViewerCreated={setViewerElement} />
-                <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
-                <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>
-            </SplitContainer>
-        </div>
+        <SplitContainer className={styles["VerticalContainer"]} direction={SplitDirection.Horizontal}>
+            <Viewer onViewerCreated={setViewerElement} />
+            <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+            <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>
+        </SplitContainer>
     );
 };
