@@ -2,28 +2,12 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { IAudioBusOptions } from "../abstractAudio/audioBus";
 import { AudioBus } from "../abstractAudio/audioBus";
-import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioUtils";
-
-/**
- * Creates a new audio bus.
- * @param name - The name of the audio bus.
- * @param options - The options to use when creating the audio bus.
- * @param engine - The audio engine.
- * @returns A promise that resolves with the created audio bus.
- */
-export async function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
-    const bus = new _WebAudioBus(name, _GetWebAudioEngine(engine), options);
-    await bus.init(options);
-
-    return bus;
-}
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {

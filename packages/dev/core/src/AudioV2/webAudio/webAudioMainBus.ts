@@ -1,26 +1,10 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IMainAudioBusOptions } from "../abstractAudio/mainAudioBus";
 import { MainAudioBus } from "../abstractAudio/mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subNodes/webAudioBaseSubGraph";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioUtils";
-
-/**
- * Creates a new main audio bus.
- * @param name - The name of the main audio bus.
- * @param options - The options to use when creating the main audio bus.
- * @param engine - The audio engine.
- * @returns A promise that resolves with the created main audio bus.
- */
-export async function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
-    const bus = new _WebAudioMainBus(name, _GetWebAudioEngine(engine));
-    await bus.init(options);
-
-    return bus;
-}
 
 /** @internal */
 export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode {

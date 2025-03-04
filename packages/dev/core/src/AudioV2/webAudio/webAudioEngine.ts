@@ -1,16 +1,18 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import type { MainAudioBus } from "../abstractAudio/mainAudioBus";
+import type { IMainAudioBusOptions, MainAudioBus } from "../abstractAudio/mainAudioBus";
+import type { IStaticSoundOptions, StaticSound } from "../abstractAudio/staticSound";
+import type { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
-import { CreateMainAudioBusAsync } from "./webAudioMainBus";
-import type { _WebAudioMainOut } from "./webAudioMainOut";
-import { _CreateMainAudioOutAsync } from "./webAudioMainOut";
+import { _WebAudioMainOut } from "./webAudioMainOut";
 
 /**
  * Options for creating a v2 audio engine that uses the WebAudio API.
@@ -155,6 +157,63 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public async createBusAsync(name: string, options: Partial<IAudioBusOptions> = {}): Promise<AudioBus> {
+        const module = await import("./webAudioBus");
+
+        const bus = new module._WebAudioBus(name, this, options);
+        await bus.init(options);
+
+        return bus;
+    }
+
+    /** @internal */
+    public async createMainBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}): Promise<MainAudioBus> {
+        const module = await import("./webAudioMainBus");
+
+        const bus = new module._WebAudioMainBus(name, this);
+        await bus.init(options);
+
+        return bus;
+    }
+
+    /** @internal */
+    public async createSoundAsync(
+        name: string,
+        source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
+        options: Partial<IStaticSoundOptions> = {}
+    ): Promise<StaticSound> {
+        const module = await import("./webAudioStaticSound");
+
+        const sound = new module._WebAudioStaticSound(name, this, options);
+        await sound.init(source, options);
+
+        return sound;
+    }
+
+    /** @internal */
+    public async createSoundBufferAsync(
+        source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
+        options: Partial<IStaticSoundOptions> = {}
+    ): Promise<StaticSoundBuffer> {
+        const module = await import("./webAudioStaticSound");
+
+        const soundBuffer = new module._WebAudioStaticSoundBuffer(this);
+        await soundBuffer.init(source, options);
+
+        return soundBuffer;
+    }
+
+    /** @internal */
+    public async createStreamingSoundAsync(name: string, source: HTMLMediaElement | string | string[], options: Partial<IStreamingSoundOptions> = {}): Promise<StreamingSound> {
+        const module = await import("./webAudioStreamingSound");
+
+        const sound = new module._WebAudioStreamingSound(name, this, options);
+        await sound.init(source, options);
+
+        return sound;
+    }
+
+    /** @internal */
     public override dispose(): void {
         super.dispose();
 
@@ -238,10 +297,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _initAudioContext: () => Promise<void> = async () => {
         this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
-        this._mainOut = await _CreateMainAudioOutAsync(this);
+        this._mainOut = new _WebAudioMainOut(this);
         this._mainOut.volume = this._volume;
 
-        await CreateMainAudioBusAsync("default", this);
+        await this.createMainBusAsync("default");
     };
 
     private _onAudioContextStateChange = () => {

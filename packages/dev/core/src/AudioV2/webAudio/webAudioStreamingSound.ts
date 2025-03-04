@@ -3,7 +3,6 @@ import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";
-import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
@@ -15,37 +14,11 @@ import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubG
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
-import { _GetWebAudioEngine } from "./webAudioUtils";
 
 type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
-/**
- * Creates a new streaming sound.
- * @param name - The name of the sound.
- * @param source - The source of the sound.
- * @param options - The options for the streaming sound.
- * @param engine - The audio engine.
- * @returns A promise that resolves to the created streaming sound.
- */
-export async function CreateStreamingSoundAsync(
-    name: string,
-    source: HTMLMediaElement | string | string[],
-    options: Partial<IStreamingSoundOptions> = {},
-    engine: Nullable<AudioEngineV2> = null
-): Promise<StreamingSound> {
-    const sound = new _WebAudioStreamingSound(name, _GetWebAudioEngine(engine), options);
-
-    try {
-        await sound.init(source, options);
-    } catch (e) {
-        Logger.Error(`Failed to create streaming sound ${name}`);
-    }
-
-    return sound;
-}
-
 /** @internal */
-class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
+export class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
     private _spatial: Nullable<_SpatialAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
