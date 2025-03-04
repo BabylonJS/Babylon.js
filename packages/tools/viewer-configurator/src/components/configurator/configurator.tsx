@@ -269,7 +269,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
 
-    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/shoe_variants.glb");
+    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/ufo.glb");
     const [syncEnvironment, setSyncEnvironment] = useState(true);
     const [environmentLightingUrl, setEnvironmentLightingUrl, , isEnvironmentLightingUrlDefault] = useConfiguration("");
     const [environmentSkyboxUrl, setEnvironmentSkyboxUrl, , isEnvironmentSkyboxUrlDefault] = useConfiguration("");
@@ -975,7 +975,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
                             </div>
                             <FontAwesomeIconButton title="Load skybox url" className="FlexItem" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <FontAwesomeIconButton title="Reset skybox" className="FlexItem" icon={faTrashCan} onClick={onEnvironmentSkyboxResetClick} />
+                            <FontAwesomeIconButton
+                                title="Reset skybox"
+                                className="FlexItem"
+                                icon={faTrashCan}
+                                disabled={isEnvironmentSkyboxUrlDefault}
+                                onClick={onEnvironmentSkyboxResetClick}
+                            />
                         </div>
                     )}
                     {hasSkybox && (
@@ -993,7 +999,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     lockObject={lockObject}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} onClick={resetSkyboxBlur} />
+                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={isSkyboxBlurDefault} onClick={resetSkyboxBlur} />
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
