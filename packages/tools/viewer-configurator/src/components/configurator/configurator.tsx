@@ -11,7 +11,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faGripVertical, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -35,9 +35,7 @@ import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
 import { useEventfulState } from "../../hooks/observableHooks";
-import deleteIcon from "shared-ui-components/imgs/deleteGridElementDark.svg";
-import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
-import adtIcon from "shared-ui-components/imgs/adtIcon.svg";
+import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
@@ -227,7 +225,7 @@ const HotSpotEntry: FunctionComponent<{
             <div onClick={onCameraSnapshotClick} title="Snapshot current camera state">
                 <FontAwesomeIcon icon={faCamera} />
             </div>
-            <img title="Delete Hot Spot" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onHotspotDeleteClick} />
+            <FontAwesomeIconButton title="Delete Hot Spot" className="FlexItem" icon={faTrashCan} onClick={onHotspotDeleteClick} />
         </div>
     );
 };
@@ -912,8 +910,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
                         </div>
-                        <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onRevertAllClick} />
-                        <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={copyToClipboard} />
+                        <FontAwesomeIconButton className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} />
+                        <FontAwesomeIconButton className="FlexItem" icon={faTrashCan} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
             </div>
@@ -923,8 +921,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                         </div>
-                        <img title="Load from model url" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
-                        <img title="Load local model" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
+                        <FontAwesomeIconButton title="Load from model url" className="FlexItem" icon={faCheck} onClick={() => onModelUrlBlur()} />
+                        <FontAwesomeIconButton title="Load local model" className="FlexItem" icon={faUpload} onClick={onLoadModelClick} />
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
@@ -939,34 +937,23 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 onChange={onEnvironmentLightingUrlChange}
                             />
                         </div>
-                        <img
+                        <FontAwesomeIconButton
                             title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                            className="FlexItem ImageButton"
-                            style={{ alignSelf: "flex-end" }}
-                            src={checkboxIcon}
+                            className="FlexItem "
+                            icon={faCheck}
                             onClick={() => setNeedsEnvironmentUpdate(true)}
                         />
-                        <img
-                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                            className="FlexItem ImageButton"
-                            style={{ alignSelf: "flex-end" }}
-                            src={deleteIcon}
-                            onClick={onEnvironmentLightingResetClick}
-                        />
+                        <div title={syncEnvironment ? "Reset environment" : "Reset lighting"} className="FlexItem" onClick={onEnvironmentLightingResetClick}>
+                            <FontAwesomeIcon icon={faTrashCan} />
+                        </div>
                     </div>
                     {!syncEnvironment && (
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
                             </div>
-                            <img
-                                title="Load skybox url"
-                                className="FlexItem ImageButton"
-                                style={{ alignSelf: "flex-end" }}
-                                src={checkboxIcon}
-                                onClick={() => setNeedsEnvironmentUpdate(true)}
-                            />
-                            <img title="Reset skybox" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
+                            <FontAwesomeIconButton title="Load skybox url" className="FlexItem" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                            <FontAwesomeIconButton title="Reset skybox" className="FlexItem" icon={faTrashCan} onClick={onEnvironmentSkyboxResetClick} />
                         </div>
                     )}
                     {hasSkybox && (
@@ -984,13 +971,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     lockObject={lockObject}
                                 />
                             </div>
-                            <img
-                                title="Reset skybox blur"
-                                className="FlexItem ImageButton"
-                                style={{ alignSelf: "flex-end" }}
-                                src={deleteIcon}
-                                onClick={() => onSkyboxBlurChange()}
-                            />
+                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} onClick={() => onSkyboxBlurChange()} />
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
@@ -1017,7 +998,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <img title="Reset tone mapping" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onToneMappingChange()} />
+                    <FontAwesomeIconButton title="Reset tone mapping" className="FlexItem" icon={faTrashCan} onClick={() => onToneMappingChange()} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -1031,7 +1012,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onContrastChange}
                         />
                     </div>
-                    <img title="Reset contrast" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onContrastChange()} />
+                    <FontAwesomeIconButton title="Reset contrast" className="FlexItem" icon={faTrashCan} onClick={() => onContrastChange()} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -1045,7 +1026,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onExposureChange}
                         />
                     </div>
-                    <img title="Reset exposure" className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onExposureChange()} />
+                    <FontAwesomeIconButton title="Reset exposure" className="FlexItem" icon={faTrashCan} onClick={() => onExposureChange()} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
@@ -1053,18 +1034,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <ButtonLineComponent label="Use Current Pose" onClick={onCameraSnapshotClick} />
                     </div>
-                    <img
+                    <FontAwesomeIconButton
                         title="Revert camera pose to snippet"
-                        className="ImageButton FlexItem"
-                        style={{ alignSelf: "flex-end", cursor: !canRevertCameraState ? "not-allowed" : undefined }}
-                        src={deleteIcon}
+                        className="FlexItem"
+                        disabled={!canRevertCameraState}
+                        icon={faRotateLeft}
                         onClick={onCameraRevertClick}
                     />
-                    <img
+                    <FontAwesomeIconButton
                         title="Reset camera pose attributes"
-                        className="ImageButton FlexItem"
-                        style={{ alignSelf: "flex-end", cursor: isCameraStateDefault ? "not-allowed" : undefined }}
-                        src={deleteIcon}
+                        className="FlexItem"
+                        disabled={isCameraStateDefault}
+                        icon={faTrashCan}
                         onClick={onCameraResetClick}
                     />
                 </div>
@@ -1086,13 +1067,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitSpeedChange}
                                 />
                             </div>
-                            <img
-                                title="Reset auto orbit speed"
-                                className="ImageButton FlexItem"
-                                style={{ alignSelf: "flex-end" }}
-                                src={deleteIcon}
-                                onClick={() => onAutoOrbitSpeedChange()}
-                            />
+                            <FontAwesomeIconButton title="Reset auto orbit speed" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitSpeedChange()} />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
@@ -1106,13 +1081,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitDelayChange}
                                 />
                             </div>
-                            <img
-                                title="Reset auto orbit delay"
-                                className="ImageButton FlexItem"
-                                style={{ alignSelf: "flex-end" }}
-                                src={deleteIcon}
-                                onClick={() => onAutoOrbitDelayChange()}
-                            />
+                            <FontAwesomeIconButton title="Reset auto orbit delay" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitDelayChange()} />
                         </div>
                     </>
                 )}
@@ -1123,18 +1092,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Use Current Selections" onClick={onAnimationSnapshotClick} isDisabled={!hasAnimations} />
                         </div>
-                        <img
+                        <FontAwesomeIconButton
                             title="Revert animation state to snippet"
-                            className="ImageButton FlexItem"
-                            style={{ alignSelf: "flex-end", cursor: !canRevertAnimationState ? "not-allowed" : undefined }}
-                            src={deleteIcon}
+                            className="FlexItem"
+                            disabled={!canRevertAnimationState}
+                            icon={faRotateLeft}
                             onClick={onAnimationRevertClick}
                         />
-                        <img
+                        <FontAwesomeIconButton
                             title="Reset animation state attributes"
-                            className="ImageButton FlexItem"
-                            style={{ alignSelf: "flex-end", cursor: isAnimationStateDefault ? "not-allowed" : undefined }}
-                            src={deleteIcon}
+                            className="FlexItem"
+                            disabled={isAnimationStateDefault}
+                            icon={faTrashCan}
                             onClick={onAnimationResetClick}
                         />
                     </div>
@@ -1149,13 +1118,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
                         </div>
-                        <img
-                            title="Reset material variant attribute"
-                            className="ImageButton FlexItem"
-                            style={{ alignSelf: "flex-end" }}
-                            src={deleteIcon}
-                            onClick={onMaterialVariantsResetClick}
-                        />
+                        <FontAwesomeIconButton title="Reset material variant attribute" className="FlexItem" icon={faTrashCan} onClick={onMaterialVariantsResetClick} />
                     </div>
                 </LineContainerComponent>
             )}
