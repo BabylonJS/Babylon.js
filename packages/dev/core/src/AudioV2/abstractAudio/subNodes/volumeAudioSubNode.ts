@@ -6,8 +6,8 @@ import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 
 /** @internal */
 export const _VolumeAudioDefaults = {
-    volume: 1,
-};
+    volume: 1 as number,
+} as const;
 
 /**
  * Volume options.

@@ -1,18 +1,18 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 
 export const _SpatialAudioDefaults = {
-    coneInnerAngle: 6.28318530718,
-    coneOuterAngle: 6.28318530718,
-    coneOuterVolume: 0,
+    coneInnerAngle: 6.28318530718 as number,
+    coneOuterAngle: 6.28318530718 as number,
+    coneOuterVolume: 0 as number,
     distanceModel: "inverse" as DistanceModelType,
-    maxDistance: 10000,
+    maxDistance: 10000 as number,
     panningModel: "equalpower" as PanningModelType,
     position: Vector3.Zero(),
-    referenceDistance: 1,
-    rolloffFactor: 1,
+    referenceDistance: 1 as number,
+    rolloffFactor: 1 as number,
     rotation: Vector3.Zero(),
     rotationQuaternion: new Quaternion(),
-};
+} as const;
 
 /**
  * Options for spatial audio.

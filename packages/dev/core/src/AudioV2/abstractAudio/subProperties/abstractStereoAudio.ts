@@ -1,6 +1,6 @@
 export const _StereoAudioDefaults = {
-    pan: 0,
-};
+    pan: 0 as number,
+} as const;
 
 /** */
 export interface IStereoAudioOptions {
