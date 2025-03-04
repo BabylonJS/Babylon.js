@@ -956,13 +956,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                         <FontAwesomeIconButton
                             title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                            className="FlexItem "
+                            className="FlexItem"
                             icon={faCheck}
+                            disabled={!isEnvironmentLightingUrlValid}
                             onClick={() => setNeedsEnvironmentUpdate(true)}
                         />
-                        <div title={syncEnvironment ? "Reset environment" : "Reset lighting"} className="FlexItem" onClick={onEnvironmentLightingResetClick}>
-                            <FontAwesomeIcon icon={faTrashCan} />
-                        </div>
+                        <FontAwesomeIconButton
+                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                            className="FlexItem"
+                            icon={faTrashCan}
+                            disabled={isEnvironmentLightingUrlDefault}
+                            onClick={onEnvironmentLightingResetClick}
+                        />
                     </div>
                     {!syncEnvironment && (
                         <div>
@@ -1015,7 +1020,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <FontAwesomeIconButton title="Reset tone mapping" className="FlexItem" icon={faTrashCan} onClick={() => onToneMappingChange()} />
+                    <FontAwesomeIconButton
+                        title="Reset tone mapping"
+                        className="FlexItem"
+                        icon={faTrashCan}
+                        disabled={isPostProcessingDefaultState.toneMapping}
+                        onClick={() => onToneMappingChange()}
+                    />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -1029,7 +1040,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onContrastChange}
                         />
                     </div>
-                    <FontAwesomeIconButton title="Reset contrast" className="FlexItem" icon={faTrashCan} onClick={() => onContrastChange()} />
+                    <FontAwesomeIconButton
+                        title="Reset contrast"
+                        className="FlexItem"
+                        icon={faTrashCan}
+                        disabled={isPostProcessingDefaultState.contrast}
+                        onClick={() => onContrastChange()}
+                    />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -1043,7 +1060,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onChange={onExposureChange}
                         />
                     </div>
-                    <FontAwesomeIconButton title="Reset exposure" className="FlexItem" icon={faTrashCan} onClick={() => onExposureChange()} />
+                    <FontAwesomeIconButton
+                        title="Reset exposure"
+                        className="FlexItem"
+                        icon={faTrashCan}
+                        disabled={isPostProcessingDefaultState.exposure}
+                        onClick={() => onExposureChange()}
+                    />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
