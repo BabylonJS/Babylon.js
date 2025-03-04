@@ -531,7 +531,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             return "";
         }
         const annotations = hotspots
-            .map((hotspot) => `  <babylon-viewer-annotation hotSpot="${hotspot.name}">${createDefaultAnnotation(hotspot.name)}  </babylon-viewer-annotation>`)
+            .map((hotspot) => `  <babylon-viewer-annotation hotSpot="${hotspot.name}">${createDefaultAnnotation(hotspot.name)}\n  </babylon-viewer-annotation>`)
             .join("\n");
         return `\n  <!-- Annotations are optional HTML child elements that track hot spots. -->\n${annotations}`;
     }, [hotspots]);
