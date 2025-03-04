@@ -269,7 +269,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
 
-    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/ufo.glb");
+    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
     const [syncEnvironment, setSyncEnvironment] = useState(true);
     const [environmentLightingUrl, setEnvironmentLightingUrl, , isEnvironmentLightingUrlDefault] = useConfiguration("");
     const [environmentSkyboxUrl, setEnvironmentSkyboxUrl, , isEnvironmentSkyboxUrlDefault] = useConfiguration("");
@@ -940,7 +940,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
                     <div style={{ height: "auto" }}>
-                        <MessageLineComponent text="The same environment can easily be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
+                        <MessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
                     </div>
                     <div>
                         <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
@@ -1076,6 +1076,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
+                <div style={{ height: "auto" }}>
+                    <MessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
+                </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <ButtonLineComponent label="Use Current Pose" onClick={onCameraSnapshotClick} />
@@ -1134,6 +1137,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             </LineContainerComponent>
             {hasAnimations && (
                 <LineContainerComponent title="ANIMATION">
+                    <div style={{ height: "auto" }}>
+                        <MessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
+                    </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Use Current Selections" onClick={onAnimationSnapshotClick} isDisabled={!hasAnimations} />
@@ -1160,6 +1166,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             )}
             {hasMaterialVariants && (
                 <LineContainerComponent title="MATERIAL VARIANTS">
+                    <div style={{ height: "auto" }}>
+                        <MessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
+                    </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
@@ -1183,7 +1192,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             )}
             <LineContainerComponent title="HOT SPOTS">
                 <div style={{ height: "auto" }}>
-                    <MessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. Hot spots can also optionally specify a camera orbit around the hotspot point. After the hotspot point has been established, orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot." />
+                    <MessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
