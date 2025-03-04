@@ -932,6 +932,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <TextInputLineComponent
+                                key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
                                 placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
                                 value={environmentLightingUrl}
                                 onChange={onEnvironmentLightingUrlChange}
