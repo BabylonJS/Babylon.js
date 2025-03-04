@@ -932,7 +932,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                const asMesh = babylonMesh as Mesh;
+                if (!asMesh.isAnInstance && asMesh.geometry && asMesh.geometry.useBoundingInfoFromGeometry) {
                     // simply apply the world matrices to the bounding info - the extends are already ok
                     babylonMesh._updateBoundingInfo();
                 } else {
