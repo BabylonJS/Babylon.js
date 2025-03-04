@@ -7,11 +7,12 @@ import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuff
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
-import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
 import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
+import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioUtils";
@@ -58,7 +59,7 @@ export async function CreateSoundBufferAsync(
 /** @internal */
 class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: _WebAudioStaticSoundBuffer;
-    private _spatial: Nullable<_SpatialAudio> = null;
+    private _spatial: Nullable<_SpatialWebAudio> = null;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStaticSoundStoredOptions;
@@ -72,7 +73,7 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions>) {
-        super(name, engine);
+        super(name, engine, options);
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -132,7 +133,7 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate));
     }
 
     /** @internal */
@@ -144,7 +145,9 @@ class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     public override dispose(): void {
         super.dispose();
 
+        this._spatial?.dispose();
         this._spatial = null;
+
         this._stereo = null;
 
         this._subGraph.dispose();

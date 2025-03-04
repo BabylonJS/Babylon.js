@@ -60,7 +60,7 @@ export abstract class _AbstractAudioSubGraph {
     /**
      * Gets a previously created sub node.
      * @param name - The name of the sub node
-     * @returns The named sub node, or `null` if has not been created, yet
+     * @returns The named sub node, or `null` if it has not been created, yet
      * @internal
      * */
     public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {

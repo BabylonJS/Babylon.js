@@ -19,6 +19,10 @@ export const _SpatialAudioDefaults = {
  */
 export interface ISpatialAudioOptions {
     /**
+     * Whether to automatically update the spatial properties of the audio node. Defaults to `true`.
+     */
+    spatialAutoUpdate: boolean;
+    /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
      * - When the listener is inside the cone inner angle, the volume is at its maximum.
      */
@@ -107,6 +111,7 @@ export interface ISpatialAudioOptions {
 export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>): boolean {
     return (
         options.spatialEnabled ||
+        options.spatialAutoUpdate !== undefined ||
         options.spatialConeInnerAngle !== undefined ||
         options.spatialConeOuterAngle !== undefined ||
         options.spatialConeOuterVolume !== undefined ||
@@ -205,4 +210,9 @@ export abstract class AbstractSpatialAudio {
      * The spatial rotation quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Updates the position and rotation properties.
+     */
+    public abstract update(): void;
 }

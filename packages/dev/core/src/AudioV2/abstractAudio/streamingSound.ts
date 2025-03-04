@@ -46,8 +46,8 @@ export abstract class StreamingSound extends AbstractSound {
 
     protected abstract override readonly _options: IStreamingSoundStoredOptions;
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine);
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions>) {
+        super(name, engine, options);
     }
 
     /**

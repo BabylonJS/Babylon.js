@@ -3,9 +3,10 @@ import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { IAudioBusOptions } from "../abstractAudio/audioBus";
 import { AudioBus } from "../abstractAudio/audioBus";
 import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
-import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
+import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioUtils";
@@ -18,7 +19,7 @@ import { _GetWebAudioEngine } from "./webAudioUtils";
  * @returns A promise that resolves with the created audio bus.
  */
 export async function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
-    const bus = new _WebAudioBus(name, _GetWebAudioEngine(engine));
+    const bus = new _WebAudioBus(name, _GetWebAudioEngine(engine), options);
     await bus.init(options);
 
     return bus;
@@ -38,8 +39,8 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public readonly audioContext: AudioContext;
 
     /** @internal */
-    public constructor(name: string, engine: _WebAudioEngine) {
-        super(name, engine);
+    public constructor(name: string, engine: _WebAudioEngine, options: Partial<IAudioBusOptions>) {
+        super(name, engine, options);
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
 
@@ -82,7 +83,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate));
     }
 
     /** @internal */

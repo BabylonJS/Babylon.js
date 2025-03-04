@@ -7,11 +7,12 @@ import type { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
-import { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl } from "../audioUtils";
 import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
+import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
 import { _GetWebAudioEngine } from "./webAudioUtils";
@@ -62,7 +63,7 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
-        super(name, engine);
+        super(name, engine, options);
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -118,7 +119,7 @@ class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNo
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialAudio(this._subGraph));
+        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate));
     }
 
     /** @internal */
