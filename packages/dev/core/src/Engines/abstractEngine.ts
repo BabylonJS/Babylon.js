@@ -1899,6 +1899,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the audio context specified in engine initialization options
+     * @deprecated please use AudioEngineV2 instead
      * @returns an Audio Context
      */
     public getAudioContext(): Nullable<AudioContext> {
@@ -1907,6 +1908,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the audio destination specified in engine initialization options
+     * @deprecated please use AudioEngineV2 instead
      * @returns an audio destination node
      */
     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
@@ -2718,6 +2720,7 @@ export abstract class AbstractEngine {
     /**
      * Gets the audio engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+     * @deprecated please use AudioEngineV2 instead
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -2726,6 +2729,7 @@ export abstract class AbstractEngine {
     /**
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+     * @deprecated please use AudioEngineV2 instead
      */
     public static AudioEngineFactory: (
         hostElement: Nullable<HTMLElement>,
