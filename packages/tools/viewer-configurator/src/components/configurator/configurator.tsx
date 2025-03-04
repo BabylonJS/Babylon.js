@@ -907,92 +907,84 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={copyToClipboard} />
                 </div>
             </LineContainerComponent>
-            <div>
-                <LineContainerComponent title="MODEL">
+            <LineContainerComponent title="MODEL">
+                <div>
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
+                    </div>
+                    <img title="Load from model url" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
+                    <img title="Load local model" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
+                </div>
+            </LineContainerComponent>
+            <LineContainerComponent title="ENVIRONMENT">
+                <div>
+                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
+                </div>
+                <div>
+                    <div className="FlexItem" style={{ flex: 5 }}>
+                        <TextInputLineComponent
+                            placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
+                            value={environmentLightingUrl}
+                            onChange={onEnvironmentLightingUrlChange}
+                        />
+                    </div>
+                    <img
+                        title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                        className="FlexItem ImageButton"
+                        style={{ alignSelf: "flex-end" }}
+                        src={checkboxIcon}
+                        onClick={() => setNeedsEnvironmentUpdate(true)}
+                    />
+                    <img
+                        title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                        className="FlexItem ImageButton"
+                        style={{ alignSelf: "flex-end" }}
+                        src={deleteIcon}
+                        onClick={onEnvironmentLightingResetClick}
+                    />
+                </div>
+                {!syncEnvironment && (
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
-                        </div>
-                        <img title="Load from model url" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={checkboxIcon} onClick={() => onModelUrlBlur()} />
-                        <img title="Load local model" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={adtIcon} onClick={onLoadModelClick} />
-                    </div>
-                </LineContainerComponent>
-                <LineContainerComponent title="ENVIRONMENT">
-                    <div>
-                        <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
-                    </div>
-                    <div>
-                        <div className="FlexItem" style={{ flex: 5 }}>
-                            <TextInputLineComponent
-                                placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                                value={environmentLightingUrl}
-                                onChange={onEnvironmentLightingUrlChange}
-                            />
+                            <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
                         </div>
                         <img
-                            title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                            title="Load skybox url"
                             className="FlexItem ImageButton"
                             style={{ alignSelf: "flex-end" }}
                             src={checkboxIcon}
                             onClick={() => setNeedsEnvironmentUpdate(true)}
                         />
-                        <img
-                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                            className="FlexItem ImageButton"
-                            style={{ alignSelf: "flex-end" }}
-                            src={deleteIcon}
-                            onClick={onEnvironmentLightingResetClick}
-                        />
+                        <img title="Reset skybox" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
                     </div>
-                    {!syncEnvironment && (
-                        <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
-                                <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
-                            </div>
-                            <img
-                                title="Load skybox url"
-                                className="FlexItem ImageButton"
-                                style={{ alignSelf: "flex-end" }}
-                                src={checkboxIcon}
-                                onClick={() => setNeedsEnvironmentUpdate(true)}
-                            />
-                            <img title="Reset skybox" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onEnvironmentSkyboxResetClick} />
-                        </div>
-                    )}
-                    {hasSkybox && (
-                        <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
-                                <SliderLineComponent
-                                    label="Skybox Blur"
-                                    directValue={skyboxBlur}
-                                    minimum={0}
-                                    maximum={1}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={onSkyboxBlurChange}
-                                    lockObject={lockObject}
-                                />
-                            </div>
-                            <img
-                                title="Reset skybox blur"
-                                className="FlexItem ImageButton"
-                                style={{ alignSelf: "flex-end" }}
-                                src={deleteIcon}
-                                onClick={() => onSkyboxBlurChange()}
+                )}
+                {hasSkybox && (
+                    <div>
+                        <div className="FlexItem" style={{ flex: 5 }}>
+                            <SliderLineComponent
+                                label="Skybox Blur"
+                                directValue={skyboxBlur}
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                decimalCount={2}
+                                target={viewerDetails.scene}
+                                onChange={onSkyboxBlurChange}
+                                lockObject={lockObject}
                             />
                         </div>
-                    )}
-                    {!hasSkybox && ( // TODO: Clear color format
-                        <div style={{ height: "auto", textAlign: "center" }}>
-                            <div>
-                                <p style={{ margin: 0 }}>Clearcolor</p>
-                                <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />
-                            </div>
+                        <img title="Reset skybox blur" className="FlexItem ImageButton" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={() => onSkyboxBlurChange()} />
+                    </div>
+                )}
+                {!hasSkybox && ( // TODO: Clear color format
+                    <div style={{ height: "auto", textAlign: "center" }}>
+                        <div>
+                            <p style={{ margin: 0 }}>Clearcolor</p>
+                            <ColorPicker color={clearColor} onColorChanged={onClearColorChange} lockObject={lockObject} />
                         </div>
-                    )}
-                </LineContainerComponent>
-            </div>
+                    </div>
+                )}
+            </LineContainerComponent>
             <LineContainerComponent title="POST PROCESSING">
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
