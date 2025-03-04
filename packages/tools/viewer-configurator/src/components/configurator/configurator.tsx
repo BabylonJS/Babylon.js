@@ -939,9 +939,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
-                    {/* <div>
+                    <div style={{ height: "auto" }}>
                         <MessageLineComponent text="The same environment can easily be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
-                    </div> */}
+                    </div>
                     <div>
                         <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
                     </div>
@@ -1182,9 +1182,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </LineContainerComponent>
             )}
             <LineContainerComponent title="HOT SPOTS">
-                {/* <div>
+                <div style={{ height: "auto" }}>
                     <MessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. Hot spots can also optionally specify a camera orbit around the hotspot point. After the hotspot point has been established, orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot." />
-                </div> */}
+                </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />

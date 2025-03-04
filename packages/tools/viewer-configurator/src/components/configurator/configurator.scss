@@ -73,6 +73,14 @@
         cursor: not-allowed;
     }
 
+    // MessageLine override
+    .messageLine {
+        text-align: center;
+        font-size: 12px;
+        font-style: italic;
+        opacity: 0.6;
+    }
+
     // LineContainer override
     .paneContainer {
         margin-top: 3px;
