@@ -5,10 +5,12 @@
 export interface IAudioEngineOptions {
     /**
      * Specifies an existing Audio Context for the audio engine
+     * @deprecated Please use AudioEngineV2 instead
      */
     audioContext?: AudioContext;
     /**
      * Specifies a destination node for the audio engine
+     * @deprecated Please use AudioEngineV2 instead
      */
     audioDestination?: AudioDestinationNode | MediaStreamAudioDestinationNode;
 }
