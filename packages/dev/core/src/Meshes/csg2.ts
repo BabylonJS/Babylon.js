@@ -102,8 +102,8 @@ interface IManifoldVertexComponent {
  * https://manifoldcad.org/
  * Use this class to perform fast boolean operations on meshes
  * #IW43EB#15 - basic operations
- * #JUKXQD#6104 - skull vs box
- * #JUKXQD#6111 - skull vs vertex data
+ * #JUKXQD#6218 - skull vs box
+ * #JUKXQD#6219 - skull vs vertex data
  */
 export class CSG2 implements IDisposable {
     private _manifold: any;
