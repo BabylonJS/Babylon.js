@@ -553,7 +553,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Come up with a new orthographic camera for the shadow caster
             Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
 
-            // Z extents of the current cascade, in view coordinate system
+            // Z extents of the current cascade, in cascade view coordinate system
             let viewMinZ = 0,
                 viewMaxZ = tmpv1.z;
 
