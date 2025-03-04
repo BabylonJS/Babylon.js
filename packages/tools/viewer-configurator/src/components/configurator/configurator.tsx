@@ -923,8 +923,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
                         </div>
-                        <FontAwesomeIconButton className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} disabled={!canRevertAll} />
-                        <FontAwesomeIconButton className="FlexItem" icon={faCopy} onClick={copyToClipboard} />
+                        <FontAwesomeIconButton title="Revert all state to snippet" className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} disabled={!canRevertAll} />
+                        <FontAwesomeIconButton title="Copy html to clipboard" className="FlexItem" icon={faCopy} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
             </div>
