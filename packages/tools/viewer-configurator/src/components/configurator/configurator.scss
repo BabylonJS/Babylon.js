@@ -6,9 +6,10 @@
     $line-padding: $line-padding-top-bottom $line-padding-right $line-padding-top-bottom $line-padding-left;
     $line-button-gap: 0.5rem;
     $line-content-spacing: space-around;
+    $primary-background: #333333;
     $border-radius: 0px;
     color: white;
-    background: #333333;
+    background: $primary-background;
     grid-row: 1;
     grid-column: 1;
     overflow-y: auto;
@@ -16,6 +17,13 @@
     width: 100%;
     box-sizing: border-box;
     line-height: $line-height;
+
+    .Sticky {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: $primary-background;
+    }
 
     .Header {
         height: auto;

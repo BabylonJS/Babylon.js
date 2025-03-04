@@ -896,24 +896,26 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     return (
         <div className="ConfiguratorContainer">
-            <div className="Header">
-                <img className="Logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                <div className="Title">VIEWER CONFIGURATOR</div>
+            <div className="Sticky">
+                <div className="Header">
+                    <img className="Logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                    <div className="Title">VIEWER CONFIGURATOR</div>
+                </div>
+                <LineContainerComponent title="HTML SNIPPET">
+                    <div style={{ height: "auto", borderBottom: "0px" }}>
+                        <div className="FlexItem" style={{ flex: 1 }}>
+                            <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
+                        </div>
+                    </div>
+                    <div style={{ paddingTop: "0px" }}>
+                        <div className="FlexItem" style={{ flex: 5 }}>
+                            <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
+                        </div>
+                        <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onRevertAllClick} />
+                        <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={copyToClipboard} />
+                    </div>
+                </LineContainerComponent>
             </div>
-            <LineContainerComponent title="HTML SNIPPET">
-                <div style={{ height: "auto", borderBottom: "0px" }}>
-                    <div className="FlexItem" style={{ flex: 1 }}>
-                        <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
-                    </div>
-                </div>
-                <div style={{ paddingTop: "0px" }}>
-                    <div className="FlexItem" style={{ flex: 5 }}>
-                        <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
-                    </div>
-                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={onRevertAllClick} />
-                    <img className="ImageButton FlexItem" style={{ alignSelf: "flex-end" }} src={deleteIcon} onClick={copyToClipboard} />
-                </div>
-            </LineContainerComponent>
             <div>
                 <LineContainerComponent title="MODEL">
                     <div>
