@@ -11,7 +11,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faCopy, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -924,7 +924,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
                         </div>
                         <FontAwesomeIconButton className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} disabled={!canRevertAll} />
-                        <FontAwesomeIconButton className="FlexItem" icon={faTrashCan} onClick={copyToClipboard} />
+                        <FontAwesomeIconButton className="FlexItem" icon={faCopy} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
             </div>
