@@ -585,12 +585,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                     viewMaxZ = Math.min(viewMaxZ, castersViewMaxZ);
 
                     // Thanks to depth clamping, casters won't be Z clipped even if they fall outside the [-1,1] range, so we can move the near plane to 0 if castersViewMinZ < 0.
-                    // We will generate negative Z values in the shadow map, but that's okay, except in PCSS case where we need the actual distance between the currently shader pixel and the occluder: that's why we don't use depth clamping in PCSS case.
+                    // We will generate negative Z values in the shadow map, but that's okay (they will be clamped to the 0..1 range anyway), except in PCSS case
+                    // where we need the actual distance between the currently shader pixel and the occluder: that's why we don't use depth clamping in PCSS case.
                     viewMinZ = Math.max(viewMinZ, castersViewMinZ);
 
                     // If all the casters are behind the near plane of the cascade, minZ = 0 due to the previous line, and maxZ < 0 at this point.
                     // We need to make sure that maxZ > minZ, so in this case we set maxZ a little higher than minZ. As we are using depth clamping, the casters won't be Z clipped, so we just need to make sure that we have a valid Z range for the cascade.
-                    // As above, this will generate negative Z values in the shadow map, but that's okay.
                     // Having a 0 range is not ok, due to undefined behavior in the calculation in this case.
                     viewMaxZ = Math.max(viewMinZ + 1.0, viewMaxZ);
                 }
