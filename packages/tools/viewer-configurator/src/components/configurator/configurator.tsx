@@ -867,6 +867,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
         onSkyboxBlurChange();
+        onClearColorChange();
         onToneMappingChange();
         onContrastChange();
         onExposureChange();
