@@ -11,7 +11,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -971,7 +971,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     lockObject={lockObject}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} onClick={() => onSkyboxBlurChange()} />
+                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} onClick={resetSkyboxBlur} />
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
@@ -1128,7 +1128,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
                     </div>
                     <div onClick={onAddHotspotClick} title="Add Hot Spot">
-                        <FontAwesomeIcon icon={faPlus} />
+                        <FontAwesomeIcon icon={faSquarePlus} />
                     </div>
                 </div>
                 <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>

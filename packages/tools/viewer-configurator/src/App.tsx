@@ -18,7 +18,7 @@ export const App: FunctionComponent = () => {
     return (
         <SplitContainer className={styles["VerticalContainer"]} direction={SplitDirection.Horizontal}>
             <Viewer onViewerCreated={setViewerElement} />
-            <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+            <Splitter size={8} minSize={300} initialSize={400} maxSize={600} controlledSide={ControlledSize.Second} />
             <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>
         </SplitContainer>
     );
