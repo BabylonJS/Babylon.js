@@ -21,6 +21,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -268,7 +269,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
 
-    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/ufo.glb");
+    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/shoe_variants.glb");
     const [syncEnvironment, setSyncEnvironment] = useState(true);
     const [environmentLightingUrl, setEnvironmentLightingUrl, , isEnvironmentLightingUrlDefault] = useConfiguration("");
     const [environmentSkyboxUrl, setEnvironmentSkyboxUrl, , isEnvironmentSkyboxUrlDefault] = useConfiguration("");
@@ -289,7 +290,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         const disposeActions: (() => void)[] = [];
         setCanRevertCameraState(false);
         if (cameraState) {
-            setCanRevertCameraState(false);
             const observer = viewerDetails.camera.onViewMatrixChangedObservable.add(() => {
                 // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
                 setCanRevertCameraState(
@@ -327,8 +327,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         const disposeActions: (() => void)[] = [];
         setCanRevertAnimationState(false);
         if (animationState) {
-            setCanRevertAnimationState(false);
-
             const updateCanResetAnimationState = () => {
                 setCanRevertAnimationState(animationState.animationSpeed !== viewer.animationSpeed || animationState.selectedAnimation !== viewer.selectedAnimation);
             };
@@ -343,7 +341,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [viewer, animationState]);
 
     const [animationAutoPlay, setAnimationAutoPlay] = useState(false);
-    const [selectedMaterialVariant, setSelectedMaterialVariant] = useState<string>();
+    const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
+    const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
+
+    useEffect(() => {
+        setCanRevertSelectedMaterialVariant(false);
+        if (selectedMaterialVariant) {
+            const observer = viewer.onSelectedMaterialVariantChanged.add(() => {
+                setCanRevertSelectedMaterialVariant(viewer.selectedMaterialVariant !== selectedMaterialVariant);
+            });
+            return () => observer.remove();
+        }
+    }, [viewerDetails, selectedMaterialVariant]);
 
     const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
 
@@ -463,7 +472,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             }
         }
 
-        if (hasMaterialVariants && selectedMaterialVariant != null) {
+        if (hasMaterialVariants && selectedMaterialVariant) {
             attributes.push(`material-variant="${selectedMaterialVariant}"`);
         }
 
@@ -801,12 +810,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, []);
 
     const onMaterialVariantsSnapshotClick = useCallback(() => {
-        setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? undefined);
+        setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
     }, [viewer]);
 
-    const onMaterialVariantsResetClick = useCallback(() => {
-        setSelectedMaterialVariant(undefined);
-    }, []);
+    const onMaterialVariantsRevertClick = useCallback(() => {
+        viewer.selectedMaterialVariant = selectedMaterialVariant;
+    }, [viewer, selectedMaterialVariant]);
 
     useEffect(() => {
         animationAutoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
@@ -855,12 +864,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         navigator.clipboard.writeText(htmlSnippet);
     }, [htmlSnippet]);
 
-    const canRevertAll = useMemo(() => canRevertAnimationState || canRevertCameraState, [canRevertAnimationState, canRevertCameraState]);
+    const canRevertAll = useMemo(
+        () => canRevertAnimationState || canRevertCameraState || canRevertSelectedMaterialVariant,
+        [canRevertAnimationState, canRevertCameraState, canRevertSelectedMaterialVariant]
+    );
 
     const onRevertAllClick = useCallback(() => {
         onAnimationRevertClick();
         onCameraRevertClick();
-    }, [onCameraRevertClick, onAnimationRevertClick]);
+        onMaterialVariantsRevertClick();
+    }, [onCameraRevertClick, onAnimationRevertClick, onMaterialVariantsRevertClick]);
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
@@ -875,7 +888,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onAutoOrbitDelayChange();
         onAnimationResetClick();
         onAnimationAutoPlayChanged();
-        onMaterialVariantsResetClick();
+        resetSelectedMaterialVariant();
         setHotspots([]);
     }, [
         onSyncEnvironmentChanged,
@@ -888,7 +901,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onAutoOrbitDelayChange,
         onAnimationResetClick,
         onAnimationAutoPlayChanged,
-        onMaterialVariantsResetClick,
+        resetSelectedMaterialVariant,
     ]);
 
     const clearColorWrapper = { clearColor };
@@ -910,7 +923,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
                         </div>
-                        <FontAwesomeIconButton className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} />
+                        <FontAwesomeIconButton className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} disabled={!canRevertAll} />
                         <FontAwesomeIconButton className="FlexItem" icon={faTrashCan} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
@@ -926,6 +939,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
+                    {/* <div>
+                        <MessageLineComponent text="The same environment can easily be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
+                    </div> */}
                     <div>
                         <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
                     </div>
@@ -1119,11 +1135,27 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div className="FlexItem" style={{ flex: 5 }}>
                             <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
                         </div>
-                        <FontAwesomeIconButton title="Reset material variant attribute" className="FlexItem" icon={faTrashCan} onClick={onMaterialVariantsResetClick} />
+                        <FontAwesomeIconButton
+                            title="Revert selected material variant to snippet"
+                            className="FlexItem"
+                            disabled={!canRevertSelectedMaterialVariant}
+                            icon={faRotateLeft}
+                            onClick={onMaterialVariantsRevertClick}
+                        />
+                        <FontAwesomeIconButton
+                            title="Reset material variant attribute"
+                            className="FlexItem"
+                            icon={faTrashCan}
+                            onClick={resetSelectedMaterialVariant}
+                            disabled={isSelectedMaterialVariantDefault}
+                        />
                     </div>
                 </LineContainerComponent>
             )}
             <LineContainerComponent title="HOT SPOTS">
+                {/* <div>
+                    <MessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. Hot spots can also optionally specify a camera orbit around the hotspot point. After the hotspot point has been established, orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot." />
+                </div> */}
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
