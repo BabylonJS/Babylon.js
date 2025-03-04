@@ -30,6 +30,7 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
+import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -261,6 +262,11 @@ export type ViewerOptions = Partial<{
      * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
      */
     onInitialized: (details: Readonly<ViewerDetails>) => void;
+
+    /**
+     * The default clear color of the scene.
+     */
+    clearColor: [r: number, g: number, b: number, a?: number];
 
     /**
      * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
@@ -562,6 +568,7 @@ export class Viewer implements IDisposable {
         this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
+            scene.clearColor = options?.clearColor ? new Color4(...options.clearColor) : new Color4(0, 0, 0, 0);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
