@@ -1,4 +1,5 @@
 import "./configurator.scss";
+import * as styles from "../../App.module.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
@@ -895,6 +896,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     return (
         <div className="ConfiguratorContainer">
+            <div className="Header">
+                <img className="Logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                <div className="Title">VIEWER CONFIGURATOR</div>
+            </div>
             <LineContainerComponent title="HTML SNIPPET">
                 <div style={{ height: "auto", borderBottom: "0px" }}>
                     <div className="FlexItem" style={{ flex: 1 }}>

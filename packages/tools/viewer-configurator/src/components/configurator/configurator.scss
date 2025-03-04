@@ -12,9 +12,33 @@
     grid-row: 1;
     grid-column: 1;
     overflow-y: auto;
-    height: 100%;
+    height: 100vh;
     width: 100%;
     box-sizing: border-box;
+    line-height: $line-height;
+
+    .Header {
+        height: auto;
+        background: #222;
+        line-height: 16px;
+        font-size: 16px;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+
+        .Title {
+            flex: 1;
+            padding: $line-padding;
+            text-align: center;
+        }
+
+        .Logo {
+            padding: 1px;
+            width: 30px;
+            height: 30px;
+        }
+    }
 
     // Wrapper to help with row flex for lines
     .FlexItem {
