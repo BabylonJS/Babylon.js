@@ -4,6 +4,9 @@ import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./a
 /** @internal */
 export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener {
     /** @internal */
+    public dispose(): void {}
+
+    /** @internal */
     public setOptions(options: Partial<ISpatialAudioListenerOptions>): void {
         if (options.listenerPosition !== undefined) {
             this.position = options.listenerPosition.clone();

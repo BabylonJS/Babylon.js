@@ -47,8 +47,14 @@ export abstract class AudioEngineV2 {
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    protected constructor() {
+    protected _listenerAutoUpdate: boolean = true;
+
+    protected constructor(options: Partial<IAudioEngineV2Options>) {
         Instances.push(this);
+
+        if (typeof options.listenerAutoUpdate === "boolean") {
+            this._listenerAutoUpdate = options.listenerAutoUpdate;
+        }
     }
 
     /**

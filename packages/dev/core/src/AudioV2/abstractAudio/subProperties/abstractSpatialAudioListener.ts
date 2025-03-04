@@ -11,6 +11,10 @@ export const _SpatialAudioListenerDefaults = {
  */
 export interface ISpatialAudioListenerOptions {
     /**
+     * Whether to automatically update the position and rotation of the listener. Defaults to `true`.
+     */
+    listenerAutoUpdate: boolean;
+    /**
      * Set to `true` to enable the listener. Defaults to `false`.
      */
     listenerEnabled: boolean;
@@ -56,4 +60,9 @@ export abstract class AbstractSpatialAudioListener {
      * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Updates the position and rotation properties.
+     */
+    public abstract update(): void;
 }

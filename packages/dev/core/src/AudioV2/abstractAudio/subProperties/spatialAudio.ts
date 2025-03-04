@@ -1,5 +1,4 @@
-import type { Vector3 } from "../../../Maths/math.vector";
-import { Quaternion } from "../../../Maths/math.vector";
+import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty, type _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
@@ -111,7 +110,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     public set rotation(value: Vector3) {
         this._rotation = value;
-        this._updateRotationQuaternion();
+        this._updateRotation();
     }
 
     /** @internal */
@@ -121,13 +120,15 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     public set rotationQuaternion(value: Quaternion) {
         this._rotationQuaternion = value;
-        this._updateRotationQuaternion();
+        this._updateRotation();
     }
 
     /** @internal */
     public update(): void {
-        this._updatePosition();
-        this._updateRotationQuaternion();
+        const subNode = _GetSpatialAudioSubNode(this._subGraph);
+
+        this._updatePosition(subNode);
+        this._updateRotation(subNode);
     }
 
     private _updatePosition(subNode: Nullable<_SpatialAudioSubNode> = null): void {
@@ -145,7 +146,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
         }
     }
 
-    private _updateRotationQuaternion(subNode: Nullable<_SpatialAudioSubNode> = null): void {
+    private _updateRotation(subNode: Nullable<_SpatialAudioSubNode> = null): void {
         if (!subNode) {
             subNode = _GetSpatialAudioSubNode(this._subGraph);
 
@@ -154,19 +155,10 @@ export class _SpatialAudio extends AbstractSpatialAudio {
             }
         }
 
-        if (this._rotation._isDirty) {
-            Quaternion.FromEulerAnglesToRef(this._rotation.x, this._rotation.y, this._rotation.z, this._rotationQuaternion);
-
-            this._rotation._isDirty = false;
-        }
-
-        if (this._rotationQuaternion._isDirty) {
+        if (!subNode.rotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
             subNode.rotationQuaternion = this._rotationQuaternion;
-
-            this._rotationQuaternion.toEulerAnglesToRef(this._rotation);
-
-            this._rotationQuaternion._isDirty = false;
-            this._rotation._isDirty = false;
+        } else if (!subNode.rotation.equalsWithEpsilon(this._rotation)) {
+            subNode.rotation = this._rotation;
         }
     }
 }

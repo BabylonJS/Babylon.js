@@ -87,7 +87,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
-        super();
+        super(options);
 
         this._volume = options.volume ?? 1;
         this.audioContext = options.audioContext ?? new AudioContext();
@@ -104,7 +104,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         await this._initAudioContext();
 
         if (_HasSpatialAudioListenerOptions(options)) {
-            this._listener = _CreateSpatialAudioListener(this);
+            this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate);
             this._listener.setOptions(options);
         }
 
@@ -128,7 +128,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get listener(): AbstractSpatialAudioListener {
-        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this));
+        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate));
     }
 
     /** @internal */
@@ -158,6 +158,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public override dispose(): void {
         super.dispose();
 
+        this._listener?.dispose();
         this._listener = null;
 
         if (this.audioContext.state !== "closed") {

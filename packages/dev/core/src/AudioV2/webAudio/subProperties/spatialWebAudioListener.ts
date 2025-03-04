@@ -3,12 +3,12 @@ import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatial
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TmpMatrix = Matrix.Zero();
-const TmpQuaternion = Quaternion.Zero();
+const TmpQuaternion = new Quaternion();
 const TmpVector = Vector3.Zero();
 
 /** @internal */
-export function _CreateSpatialAudioListener(engine: _WebAudioEngine): _SpatialAudioListener {
-    return new _SpatialWebAudioListener(engine);
+export function _CreateSpatialAudioListener(engine: _WebAudioEngine, autoUpdate: boolean): _SpatialAudioListener {
+    return new _SpatialWebAudioListener(engine, autoUpdate);
 }
 
 /**
@@ -18,16 +18,36 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine): _SpatialAu
  */
 class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _audioContext: AudioContext;
+    private _autoUpdate: boolean = false;
+    private _lastPosition: Vector3 = Vector3.Zero();
+    private _lastRotation: Vector3 = Vector3.Zero();
+    private _lastRotationQuaternion: Quaternion = new Quaternion();
     private _position: Vector3 = Vector3.Zero();
     private _rotation: Vector3 = Vector3.Zero();
-    private _rotationDirty = false;
-    private _rotationQuaternion: Quaternion = Quaternion.FromEulerVector(this._rotation);
+    private _rotationQuaternion: Quaternion = new Quaternion();
 
     /** @internal */
-    public constructor(engine: _WebAudioEngine) {
+    public constructor(engine: _WebAudioEngine, autoUpdate: boolean) {
         super();
 
         this._audioContext = engine.audioContext;
+
+        if (!autoUpdate) {
+            return;
+        }
+
+        this._autoUpdate = true;
+
+        const update = () => {
+            if (!this._autoUpdate) {
+                return;
+            }
+
+            this.update();
+            requestAnimationFrame(update);
+        };
+
+        requestAnimationFrame(update);
     }
 
     /** @internal */
@@ -36,26 +56,18 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     }
 
     public set position(value: Vector3) {
-        this._position.copyFrom(value);
-
-        const listener = this._audioContext.listener;
-        listener.positionX.value = value.x;
-        listener.positionY.value = value.y;
-        listener.positionZ.value = value.z;
+        this._position = value;
+        this._updatePosition();
     }
 
     /** @internal */
     public get rotation(): Vector3 {
-        if (this._rotationDirty) {
-            this._rotationQuaternion.toEulerAnglesToRef(this._rotation);
-            this._rotationDirty = false;
-        }
-
         return this._rotation;
     }
 
     public set rotation(value: Vector3) {
-        this.rotationQuaternion = Quaternion.FromEulerAnglesToRef(value.x, value.y, value.z, TmpQuaternion);
+        this._rotation = value;
+        this._updateRotation();
     }
 
     /** @internal */
@@ -64,10 +76,48 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     }
 
     public set rotationQuaternion(value: Quaternion) {
-        this._rotationQuaternion.copyFrom(value);
-        this._rotationDirty = true;
+        this._rotationQuaternion = value;
+        this._updateRotation();
+    }
 
-        Matrix.FromQuaternionToRef(value, TmpMatrix);
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._autoUpdate = false;
+    }
+
+    /** @internal */
+    public update(): void {
+        this._updatePosition();
+        this._updateRotation();
+    }
+
+    private _updatePosition(): void {
+        if (this._lastPosition.equalsWithEpsilon(this._position)) {
+            return;
+        }
+
+        const listener = this._audioContext.listener;
+        listener.positionX.value = this._position.x;
+        listener.positionY.value = this._position.y;
+        listener.positionZ.value = this._position.z;
+
+        this._lastPosition.copyFrom(this._position);
+    }
+
+    private _updateRotation(): void {
+        if (!this._lastRotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
+            TmpQuaternion.copyFrom(this._rotationQuaternion);
+            this._lastRotationQuaternion.copyFrom(this._rotationQuaternion);
+        } else if (!this._lastRotation.equalsWithEpsilon(this._rotation)) {
+            Quaternion.FromEulerAnglesToRef(this._rotation.x, this._rotation.y, this._rotation.z, TmpQuaternion);
+            this._lastRotation.copyFrom(this._rotation);
+        } else {
+            return;
+        }
+
+        Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
         const listener = this._audioContext.listener;
 
         Vector3.TransformNormalToRef(Vector3.Forward(), TmpMatrix, TmpVector);
