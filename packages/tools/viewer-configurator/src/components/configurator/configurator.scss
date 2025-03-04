@@ -440,6 +440,8 @@
                 align-content: center;
 
                 .color-picker {
+                    background: white;
+
                     .color-rect {
                         $border-size: 2px;
                         border: $border-size white solid;

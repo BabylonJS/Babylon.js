@@ -19,7 +19,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
@@ -975,7 +975,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
-                        <Color3LineComponent
+                        <Color4LineComponent
                             label="Clear color"
                             target={clearColorWrapper}
                             propertyName="clearColor"
