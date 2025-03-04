@@ -1,5 +1,5 @@
 .ConfiguratorContainer {
-    $line-height: 25px;
+    $line-height: 22px;
     $line-padding-left: 3px;
     $line-padding-right: 5px;
     $line-padding-top-bottom: 5px;
@@ -57,10 +57,9 @@
 
     // Input: prevent default styling
     input {
-        border: 0;
-        border-radius: $border-radius;
         box-sizing: border-box;
         width: 100%;
+        height: 100%;
         font: inherit; // Forms don't inherit the font-family by default
     }
 
@@ -174,6 +173,14 @@
         }
     }
 
+    .textInputLine {
+        height: 100%;
+
+        .value {
+            height: 100%;
+        }
+    }
+
     // TextInputLineComponent override, multiline. Is bespoke, so fine to do like this.
     .textInputArea {
         height: 8 * $line-height;
@@ -197,17 +204,6 @@
             background: white;
             cursor: text;
             border: inherit;
-        }
-    }
-
-    // TextInputLineComponent override, single line
-    .textInputLine {
-        height: 100%;
-        .value {
-            height: 100%;
-            input {
-                height: 100%;
-            }
         }
     }
 
