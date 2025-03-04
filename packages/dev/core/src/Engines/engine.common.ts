@@ -69,10 +69,6 @@ export function _CommonInit(commonEngine: AbstractEngine, canvas: HTMLCanvasElem
         _DisableTouchAction(canvas);
     }
 
-    // Create Audio Engine if needed.
-    if (!AbstractEngine.audioEngine && creationOptions.audioEngine && AbstractEngine.AudioEngineFactory) {
-        AbstractEngine.audioEngine = AbstractEngine.AudioEngineFactory(commonEngine.getRenderingCanvas(), commonEngine.getAudioContext(), commonEngine.getAudioDestination());
-    }
     if (IsDocumentAvailable()) {
         // Fullscreen
         commonEngine._onFullscreenChange = () => {

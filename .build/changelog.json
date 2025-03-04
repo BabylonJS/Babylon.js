@@ -1,6 +1,482 @@
 {
-    "fromTag": "7.50.0",
+    "fromTag": "7.51.2",
     "changelog": {
+        "7.51.3": [
+            {
+                "pr": "16237",
+                "title": "Fix USDZ export of instances",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16246",
+                "title": "Add clear color to ViewerOptions",
+                "description": "See https://forum.babylonjs.com/t/viewer-v2-render-considerations/56024/11",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16245",
+                "title": "Import mesh async module function",
+                "description": "When I first introduced the module level scene loader functions, the PR included `ImportMeshAsync`, but based on PR feedback, I ended up [removing it ](https://github.com/BabylonJS/Babylon.js/pull/15396/commits/09da6fad4e4692d7b8424b6d753fd54bd8060063#diff-361d36aa4cdaac48339ea6d2b5cc5c9e0525b0854f758be87e2c1697ea55319cL866-L877) before merging. The thought was that `LoadAssetContainerAsync` offered a superset of the functionality. However, we've heard from the community multiple times in the forum that this is causing some confusion and frustration (https://forum.babylonjs.com/t/sceneloader-and-gltf-options/52853/2, https://forum.babylonjs.com/t/update-the-pg-of-the-documentation-demos-for-sceneloader-importmesh-append/56815/3, and at least one more that I can't find right now).\r\n\r\nI'm also improving the doc comments to further help people discover the module level functions.\r\n\r\nAs such, I'm adding this function back, and will add associated docs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16241",
+                "title": "Add matrix composition and decomposition in glTF interactivity",
+                "description": "Introduce functionality for matrix composition and decomposition, enhancing the interactivity capabilities within the glTF framework. This includes new data connections and validation checks for matrix integrity.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivity.math nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16242",
+                "title": "IBL Shadows : Fix compile error for unit PBRMaterial",
+                "description": "The IBL shadow's material plugin doesn't handle an unlit PBRMaterial. ",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16244",
+                "title": "Material: Fix scene ubo still bound to material effect after material is unbound",
+                "description": "Supersedes #16240 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16243",
+                "title": "Effect layers: Fix effect layers readiness check",
+                "description": "Fixes https://forum.babylonjs.com/t/defaultrenderingpipeline-glow-layer-support-in-babylon-native/46969",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16240",
+                "title": "WebGPU: Fix crash in fast snapshot rendering mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16236",
+                "title": "Viewer: PascalCase functions and @experimental protected API",
+                "description": "1. Switch the exported functions to PascalCase to match the rest of the Babylon API. Only one function is actually part of the public API.\r\n2. Mark the protected APIs as experimental for now. Also add some doc comments.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16221",
+                "title": "Native: Canvas Path2D",
+                "description": "Adds Path2D https://developer.mozilla.org/en-US/docs/Web/API/Path2D\r\nThis calls to BabylonNative as implemented in https://github.com/BabylonJS/BabylonNative/pull/1469",
+                "author": {
+                    "name": "Pheo",
+                    "url": "https://github.com/Pheo"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16238",
+                "title": "WebGPU: Fix crash when processing a env cube",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            }
+        ],
+        "7.51.2": [
+            {
+                "pr": "16239",
+                "title": "Fix a problem when the user is fast enough to generate many models be…",
+                "description": "…fore each frame",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16234",
+                "title": "Reset model error",
+                "description": "Fix the first issue when the scene was not marked as mutated when `resetModel` was called.\r\nThere is still an issue in WebGPU :\r\n\r\n```\r\nUncaught TypeError: Cannot read properties of undefined (reading 'Scene')\r\n    at WebGPUDrawContext.setBuffer (webgpuDrawContext.ts:84:60)\r\n    at WebGPUEngine.bindUniformBufferBase (webgpuEngine.ts:1843:34)\r\n    at Effect.bindUniformBuffer (effect.ts:1027:22)\r\n    at UniformBuffer.bindUniformBuffer (uniformBuffer.ts:1148:33)\r\n    at UniformBuffer.update (uniformBuffer.ts:649:14)\r\n    at Scene.finalizeSceneUbo (scene.ts:1168:13)\r\n    at Scene._renderForCamera (scene.ts:4587:18)\r\n    at Scene._processSubCameras (scene.ts:4620:18)\r\n    at Scene.render (scene.ts:5015:22)\r\n    at render (viewer.ts:1549:33)\r\n```\r\n\r\nProbably just a top level issue but I'm not sure I have the technical level if it is WebGPU related. ",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16201",
+                "title": "Flow Graph and glTF interactivity",
+                "description": "This PR contains major changes to the flow graph architecture, introduces new blocks, and fully implements the current version of glTF interactivity.\r\n\r\nThis PR also includes a full implementation of KHR_node_hoverability, KHR_node_selectability, and KHR_node_visibility, including the Object model changes and the blocks needed to use them.\r\n\r\nIn parallel to that I will be working on fully documenting how to use this, and more importantly, how to create new blocks and how to implement new mappings for glTF interactivity.\r\n\r\nIf there are any questions please contact me directly. \r\nFlow Graph is kept as experimental (though the flag was removed from most classes).\r\n\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/flowGraphLogicBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathCombineExtractBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVectorMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphTypeToTypeBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphArrayIndexBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphCodeExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphContextBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphFunctionReferenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphIndexOfBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetAssetBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphTernaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphTransformCoordinatesSystemBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphPointerOutEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphPointerOverEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphBezierCurveEasingBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphEasingBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCancelDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockFactory.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockNames.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/index.ts",
+                    "packages/dev/core/src/FlowGraph/CustomTypes/flowGraphInteger.ts",
+                    "packages/dev/core/src/FlowGraph/CustomTypes/flowGraphMatrix.ts",
+                    "packages/dev/core/src/FlowGraph/CustomTypes/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAssetsContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContextLogger.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventType.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlockWithOutSignal.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphLogger.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverter.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverterComponent.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSceneEventCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/src/FlowGraph/typeDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/utils.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/ObjectModel/objectModelInterfaces.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16235",
+                "title": "Core Engine: Misc fixes related to index buffer management",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
+        "7.51.1": [
+            {
+                "pr": "16232",
+                "title": "Better preview update for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16229",
+                "title": "PBR: Fix refraction transmittance",
+                "description": "This will fix the problem with iridescence for some models.\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16223",
+                "title": "Viewer: adaptToDeviceRatio",
+                "description": "This change enables `adaptToDeviceRatio` by default at the `Viewer` layer, and also uses `SceneOptimizer` + `HardwareScalingOptimization` to dynamically reduce resolution as necessary if we aren't hitting target frame rate. This is not currently configurable, but I think this is a net improvement since previously it was always locked in at the bottom of the dynamic range introduced with this change. If we get asks from users, we can make this more configurable.\r\n\r\nSome notes on this change:\r\n- Previously it was possible for `HardwareScalingOptimization` to go beyond the specified `maximumScale`, so I made a small fix for this.\r\n- Whenever a model is loaded, we reset hardware scaling back to its original value and then let `SceneOptimzer` re-run.\r\n- Since the scene doesn't render continuously (e.g. we suspend scene rendering when nothing is changing), we also stop/start the scene optimizer when scene rendering suspends/resumes.\r\n- We now take into account the hardware scaling level when computing the screen space coordinates of hotspot annotations (so the value is in css pixels, which is what we want for laying out html elements).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16217",
+                "title": "TextInputLineComponent input handling",
+                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16228",
+                "title": "Revert \"TextInputLineComponent input handling\"",
+                "description": "Reverts BabylonJS/Babylon.js#16217",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16227",
+                "title": "Fix is32Bits detection in geometry setIndexBuffer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16225",
+                "title": "CC Acceleration/max acceleration exposed",
+                "description": "Follow up https://forum.babylonjs.com/t/physicscharactercontroller-drift-friction-ignored/56822\r\n\r\nPG : http://playground.babylonjs.com/#K3IU33#4\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "16220",
+                "title": "Viewer: Make assetContainer optional for _getHotSpotToRef function",
+                "description": "Moved the condition on the `assetContainer` in the `surface` hot spot case to allow calling this function with a nullable `assetContainer` for `world` hot spots in a multi-model scenario.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16224",
+                "title": "Screenshots: Add a customDumpData function parameter to CreateScreenshotUsingRenderTarget",
+                "description": "See https://forum.babylonjs.com/t/memory-leak-in-screenshots/37178/29",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            }
+        ],
         "7.51.0": [
             {
                 "pr": "16207",

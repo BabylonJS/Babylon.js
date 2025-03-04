@@ -37,7 +37,8 @@ void main(void) {
   vec2 uv =
       vec2((offsetX + vUV.x) * widthScale, (offsetY + vUV.y) * heightScale);
   vec3 backgroundColour = texture2D(textureSampler, vUV).rgb;
-
+  int cdfxWidth = textureSize(cdfx, 0).x;
+  int cdfyHeight = textureSize(cdfy, 0).y;
   const float iblStart = 1.0 - cdfyVSize;
   const float pdfStart = 1.0 - 2.0 * cdfyVSize;
   const float cdfyStart = 1.0 - 3.0 * cdfyVSize;
@@ -76,11 +77,11 @@ void main(void) {
   } else if (uv.y > pdfStart) {
     colour += pdfColour;
   } else if (uv.y > cdfyStart && uv.x < 0.5) {
-    colour.r += 0.003 * cdfyColour;
+    colour.r += cdfyColour / float(cdfyHeight);
   } else if (uv.y > cdfyStart && uv.x > 0.5) {
     colour.r += icdfyColour;
   } else if (uv.y > cdfxStart) {
-    colour.r += 0.00003 * cdfxColour;
+    colour.r += cdfxColour / float(cdfxWidth);
   } else if (uv.y > icdfxStart) {
     colour.r += icdfxColour;
   }

@@ -1283,6 +1283,7 @@ export class GLTFExporter {
 
     private _exportIndices(
         indices: Nullable<IndicesArray>,
+        is32Bits: boolean,
         start: number,
         count: number,
         offset: number,
@@ -1291,7 +1292,6 @@ export class GLTFExporter {
         state: ExporterState,
         primitive: IMeshPrimitive
     ): void {
-        const is32Bits = AreIndices32Bits(indices, count);
         let indicesToExport = indices;
 
         primitive.mode = GetPrimitiveMode(fillMode);
@@ -1339,7 +1339,7 @@ export class GLTFExporter {
         if (indicesToExport) {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedArray(indicesToExport, start, count, is32Bits);
+                const bytes = IndicesArrayToTypedArray(indicesToExport, 0, count, is32Bits);
                 const bufferView = this._bufferManager.createBufferView(bytes);
 
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
@@ -1488,7 +1488,17 @@ export class GLTFExporter {
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
 
-                this._exportIndices(indices, subMesh.indexStart, subMesh.indexCount, -subMesh.verticesStart, fillMode, sideOrientation, state, primitive);
+                this._exportIndices(
+                    indices,
+                    indices ? AreIndices32Bits(indices, subMesh.indexCount, subMesh.indexStart, subMesh.verticesStart) : subMesh.verticesCount > 65535,
+                    indices ? subMesh.indexStart : subMesh.verticesStart,
+                    indices ? subMesh.indexCount : subMesh.verticesCount,
+                    -subMesh.verticesStart,
+                    fillMode,
+                    sideOrientation,
+                    state,
+                    primitive
+                );
 
                 // Vertex buffers
                 for (const vertexBuffer of Object.values(vertexBuffers)) {

@@ -4,5 +4,5 @@ export type { HotSpot, ViewerElementEventMap } from "./viewerElement";
 
 export { Viewer, ViewerHotSpotResult } from "./viewer";
 export { HTML3DElement, ViewerElement, CreateHotSpotFromCamera } from "./viewerElement";
-export { createViewerForCanvas } from "./viewerFactory";
+export { CreateViewerForCanvas as createViewerForCanvas } from "./viewerFactory";
 export { HTML3DAnnotationElement } from "./viewerAnnotationElement";
