@@ -1,123 +1,30 @@
 {
-    "fromTag": "7.51.1",
+    "fromTag": "7.51.2",
     "changelog": {
-        "7.51.1": [
+        "7.51.3": [
             {
-                "pr": "16232",
-                "title": "Better preview update for NGE",
+                "pr": "16237",
+                "title": "Fix USDZ export of instances",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
                 ],
                 "tags": [
-                    "nge"
+                    "bug"
                 ]
             },
             {
-                "pr": "16229",
-                "title": "PBR: Fix refraction transmittance",
-                "description": "This will fix the problem with iridescence for some models.\r\n\r\n",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx"
-                ],
-                "tags": [
-                    "bug",
-                    "materials",
-                    "breaking change"
-                ]
-            },
-            {
-                "pr": "16223",
-                "title": "Viewer: adaptToDeviceRatio",
-                "description": "This change enables `adaptToDeviceRatio` by default at the `Viewer` layer, and also uses `SceneOptimizer` + `HardwareScalingOptimization` to dynamically reduce resolution as necessary if we aren't hitting target frame rate. This is not currently configurable, but I think this is a net improvement since previously it was always locked in at the bottom of the dynamic range introduced with this change. If we get asks from users, we can make this more configurable.\r\n\r\nSome notes on this change:\r\n- Previously it was possible for `HardwareScalingOptimization` to go beyond the specified `maximumScale`, so I made a small fix for this.\r\n- Whenever a model is loaded, we reset hardware scaling back to its original value and then let `SceneOptimzer` re-run.\r\n- Since the scene doesn't render continuously (e.g. we suspend scene rendering when nothing is changing), we also stop/start the scene optimizer when scene rendering suspends/resumes.\r\n- We now take into account the hardware scaling level when computing the screen space coordinates of hotspot annotations (so the value is in css pixels, which is what we want for laying out html elements).",
+                "pr": "16246",
+                "title": "Add clear color to ViewerOptions",
+                "description": "See https://forum.babylonjs.com/t/viewer-v2-render-considerations/56024/11",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
-                    "packages/tools/viewer/src/viewer.ts",
-                    "packages/tools/viewer/src/viewerElement.ts",
-                    "packages/tools/viewer/src/viewerFactory.ts",
-                    "packages/tools/viewer/test/apps/web/index.html"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16217",
-                "title": "TextInputLineComponent input handling",
-                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16228",
-                "title": "Revert \"TextInputLineComponent input handling\"",
-                "description": "Reverts BabylonJS/Babylon.js#16217",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16227",
-                "title": "Fix is32Bits detection in geometry setIndexBuffer",
-                "description": null,
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/geometry.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "16225",
-                "title": "CC Acceleration/max acceleration exposed",
-                "description": "Follow up https://forum.babylonjs.com/t/physicscharactercontroller-drift-friction-ignored/56822\r\n\r\nPG : http://playground.babylonjs.com/#K3IU33#4\r\n\r\n",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Physics/v2/characterController.ts"
-                ],
-                "tags": [
-                    "physics"
-                ]
-            },
-            {
-                "pr": "16220",
-                "title": "Viewer: Make assetContainer optional for _getHotSpotToRef function",
-                "description": "Moved the condition on the `assetContainer` in the `surface` hot spot case to allow calling this function with a nullable `assetContainer` for `world` hot spots in a multi-model scenario.",
-                "author": {
-                    "name": "cournoll",
-                    "url": "https://github.com/cournoll"
                 },
                 "files": [
                     "packages/tools/viewer/src/viewer.ts"
@@ -125,19 +32,145 @@
                 "tags": []
             },
             {
-                "pr": "16224",
-                "title": "Screenshots: Add a customDumpData function parameter to CreateScreenshotUsingRenderTarget",
-                "description": "See https://forum.babylonjs.com/t/memory-leak-in-screenshots/37178/29",
+                "pr": "16245",
+                "title": "Import mesh async module function",
+                "description": "When I first introduced the module level scene loader functions, the PR included `ImportMeshAsync`, but based on PR feedback, I ended up [removing it ](https://github.com/BabylonJS/Babylon.js/pull/15396/commits/09da6fad4e4692d7b8424b6d753fd54bd8060063#diff-361d36aa4cdaac48339ea6d2b5cc5c9e0525b0854f758be87e2c1697ea55319cL866-L877) before merging. The thought was that `LoadAssetContainerAsync` offered a superset of the functionality. However, we've heard from the community multiple times in the forum that this is causing some confusion and frustration (https://forum.babylonjs.com/t/sceneloader-and-gltf-options/52853/2, https://forum.babylonjs.com/t/update-the-pg-of-the-documentation-demos-for-sceneloader-importmesh-append/56815/3, and at least one more that I can't find right now).\r\n\r\nI'm also improving the doc comments to further help people discover the module level functions.\r\n\r\nAs such, I'm adding this function back, and will add associated docs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16241",
+                "title": "Add matrix composition and decomposition in glTF interactivity",
+                "description": "Introduce functionality for matrix composition and decomposition, enhancing the interactivity capabilities within the glTF framework. This includes new data connections and validation checks for matrix integrity.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivity.math nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16242",
+                "title": "IBL Shadows : Fix compile error for unit PBRMaterial",
+                "description": "The IBL shadow's material plugin doesn't handle an unlit PBRMaterial. ",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16244",
+                "title": "Material: Fix scene ubo still bound to material effect after material is unbound",
+                "description": "Supersedes #16240 ",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/scene.ts"
                 ],
                 "tags": [
-                    "enhancement",
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16243",
+                "title": "Effect layers: Fix effect layers readiness check",
+                "description": "Fixes https://forum.babylonjs.com/t/defaultrenderingpipeline-glow-layer-support-in-babylon-native/46969",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
                     "rendering engine"
+                ]
+            },
+            {
+                "pr": "16240",
+                "title": "WebGPU: Fix crash in fast snapshot rendering mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16236",
+                "title": "Viewer: PascalCase functions and @experimental protected API",
+                "description": "1. Switch the exported functions to PascalCase to match the rest of the Babylon API. Only one function is actually part of the public API.\r\n2. Mark the protected APIs as experimental for now. Also add some doc comments.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16221",
+                "title": "Native: Canvas Path2D",
+                "description": "Adds Path2D https://developer.mozilla.org/en-US/docs/Web/API/Path2D\r\nThis calls to BabylonNative as implemented in https://github.com/BabylonJS/BabylonNative/pull/1469",
+                "author": {
+                    "name": "Pheo",
+                    "url": "https://github.com/Pheo"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16238",
+                "title": "WebGPU: Fix crash when processing a env cube",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
                 ]
             }
         ],
@@ -300,6 +333,146 @@
                 ],
                 "tags": [
                     "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
+        "7.51.1": [
+            {
+                "pr": "16232",
+                "title": "Better preview update for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16229",
+                "title": "PBR: Fix refraction transmittance",
+                "description": "This will fix the problem with iridescence for some models.\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16223",
+                "title": "Viewer: adaptToDeviceRatio",
+                "description": "This change enables `adaptToDeviceRatio` by default at the `Viewer` layer, and also uses `SceneOptimizer` + `HardwareScalingOptimization` to dynamically reduce resolution as necessary if we aren't hitting target frame rate. This is not currently configurable, but I think this is a net improvement since previously it was always locked in at the bottom of the dynamic range introduced with this change. If we get asks from users, we can make this more configurable.\r\n\r\nSome notes on this change:\r\n- Previously it was possible for `HardwareScalingOptimization` to go beyond the specified `maximumScale`, so I made a small fix for this.\r\n- Whenever a model is loaded, we reset hardware scaling back to its original value and then let `SceneOptimzer` re-run.\r\n- Since the scene doesn't render continuously (e.g. we suspend scene rendering when nothing is changing), we also stop/start the scene optimizer when scene rendering suspends/resumes.\r\n- We now take into account the hardware scaling level when computing the screen space coordinates of hotspot annotations (so the value is in css pixels, which is what we want for laying out html elements).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16217",
+                "title": "TextInputLineComponent input handling",
+                "description": "Property updates were happening with each keystroke, resulting in errors while user was still typing for certain use cases.\r\n\r\n* Restrict property update only to when: “Enter” pressed (single-line), arrows pressed, on lost focus, or on exit (new)\r\n    * No more property updates every keystroke\r\n    * No more property updates after “Enter” pressed for multiline inputs\r\n* Restrict re-formatting to only when property updates\r\n* Continue to check for certain illegal inputs per keystroke\r\n* Allow user to keep editing invalid inputs\r\n    * Add red highlight when input invalid\r\n* onValidateChangeFailed parameter to separate error messages from input validation",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16228",
+                "title": "Revert \"TextInputLineComponent input handling\"",
+                "description": "Reverts BabylonJS/Babylon.js#16217",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16227",
+                "title": "Fix is32Bits detection in geometry setIndexBuffer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16225",
+                "title": "CC Acceleration/max acceleration exposed",
+                "description": "Follow up https://forum.babylonjs.com/t/physicscharactercontroller-drift-friction-ignored/56822\r\n\r\nPG : http://playground.babylonjs.com/#K3IU33#4\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "16220",
+                "title": "Viewer: Make assetContainer optional for _getHotSpotToRef function",
+                "description": "Moved the condition on the `assetContainer` in the `surface` hot spot case to allow calling this function with a nullable `assetContainer` for `world` hot spots in a multi-model scenario.",
+                "author": {
+                    "name": "cournoll",
+                    "url": "https://github.com/cournoll"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16224",
+                "title": "Screenshots: Add a customDumpData function parameter to CreateScreenshotUsingRenderTarget",
+                "description": "See https://forum.babylonjs.com/t/memory-leak-in-screenshots/37178/29",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
                     "rendering engine"
                 ]
             }

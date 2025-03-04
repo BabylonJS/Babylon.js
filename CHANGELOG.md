@@ -1,5 +1,29 @@
 # Changelog
 
+## 7.51.3
+
+### Core
+
+- Fix USDZ export of instances - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16237](https://github.com/BabylonJS/Babylon.js/pull/16237))
+- Import mesh async module function - by [ryantrem](https://github.com/ryantrem) ([#16245](https://github.com/BabylonJS/Babylon.js/pull/16245))
+- Add matrix composition and decomposition in glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16241](https://github.com/BabylonJS/Babylon.js/pull/16241))
+- IBL Shadows : Fix compile error for unit PBRMaterial - by [MiiBond](https://github.com/MiiBond) ([#16242](https://github.com/BabylonJS/Babylon.js/pull/16242))
+- Material: Fix scene ubo still bound to material effect after material is unbound - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16244](https://github.com/BabylonJS/Babylon.js/pull/16244))
+- Effect layers: Fix effect layers readiness check - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16243](https://github.com/BabylonJS/Babylon.js/pull/16243))
+- WebGPU: Fix crash in fast snapshot rendering mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16240](https://github.com/BabylonJS/Babylon.js/pull/16240))
+- Native: Canvas Path2D - by [Pheo](https://github.com/Pheo) ([#16221](https://github.com/BabylonJS/Babylon.js/pull/16221))
+- WebGPU: Fix crash when processing a env cube - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16238](https://github.com/BabylonJS/Babylon.js/pull/16238))
+
+### Loaders
+
+- Fix USDZ export of instances - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16237](https://github.com/BabylonJS/Babylon.js/pull/16237))
+- Add matrix composition and decomposition in glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16241](https://github.com/BabylonJS/Babylon.js/pull/16241))
+
+### Viewer
+
+- Add clear color to ViewerOptions - by [ryantrem](https://github.com/ryantrem) ([#16246](https://github.com/BabylonJS/Babylon.js/pull/16246))
+- Viewer: PascalCase functions and @experimental protected API - by [ryantrem](https://github.com/ryantrem) ([#16236](https://github.com/BabylonJS/Babylon.js/pull/16236))
+
 ## 7.51.2
 
 ### Core
