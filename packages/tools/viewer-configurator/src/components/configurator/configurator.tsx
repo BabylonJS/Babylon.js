@@ -1,9 +1,8 @@
 import "./configurator.scss";
-import * as styles from "../../App.module.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping, Model } from "viewer/index";
+import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, HotSpot, ToneMapping } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { Color3, IInspectableOptions, Nullable, Observable } from "core/index";
+import type { IInspectableOptions, Nullable, Observable } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -11,7 +10,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faCopy, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faCopy, faGripVertical, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -27,7 +26,6 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { Color4 } from "core/Maths/math.color";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
@@ -35,7 +33,6 @@ import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSp
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
-import { useEventfulState } from "../../hooks/observableHooks";
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
@@ -59,19 +56,6 @@ function createDefaultAnnotation(hotSpotName: string) {
       </svg>
       <span style="color: black; background: white; border-radius: 6px; padding: 0px 3px; transform: translate(0%, -50%)">${hotSpotName}</span>
     </div>`;
-}
-
-function useConfiguration<DataType>(defaultValue: DataType) {
-    const [value, setValue] = useState(defaultValue);
-    const isDefaultValue = useMemo(() => value === defaultValue, [value, defaultValue]);
-    const resetValue = useCallback(() => {
-        setValue(defaultValue);
-    }, [defaultValue]);
-    return [value, setValue, resetValue, isDefaultValue] as const;
-}
-
-function compareArrays<T>(left: T[], right: T[]) {
-    return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function useConfiguration2<T>(
