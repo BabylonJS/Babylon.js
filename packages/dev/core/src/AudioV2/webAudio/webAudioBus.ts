@@ -67,7 +67,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate));
+        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime));
     }
 
     /** @internal */

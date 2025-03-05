@@ -31,12 +31,17 @@ export abstract class AudioBus extends AbstractAudioBus {
     private _outBus: Nullable<PrimaryAudioBus> = null;
 
     protected _spatialAutoUpdate: boolean = true;
+    protected _spatialMinUpdateTime: number = 0;
 
     protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAudioBusOptions>) {
         super(name, engine);
 
         if (typeof options.spatialAutoUpdate === "boolean") {
             this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
         }
     }
 

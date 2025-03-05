@@ -106,8 +106,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         await this._initAudioContext();
 
         if (_HasSpatialAudioListenerOptions(options)) {
-            this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate);
-            this._listener.setOptions(options);
+            this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime);
+            await this._listener.setOptions(options);
         }
 
         this._resolveIsReadyPromise();
@@ -130,7 +130,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get listener(): AbstractSpatialAudioListener {
-        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate));
+        return this._listener ?? (this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime));
     }
 
     /** @internal */

@@ -1,0 +1,165 @@
+import type { Camera } from "../../../Cameras/camera";
+import type { AbstractMesh, TransformNode } from "../../../Meshes";
+import type { Nullable } from "../../../types";
+import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import { _CreateSpatialAudioCameraAttacherAsync } from "../spatialAttachers/spatialAudioCameraAttacher";
+import { _CreateSpatialAudioMeshAttacherAsync } from "../spatialAttachers/spatialAudioMeshAttacher";
+import { _CreateSpatialAudioTransformNodeAttacherAsync } from "../spatialAttachers/spatialAudioTransformNodeAttacher";
+
+export const _SpatialAudioAttachedEntity = {
+    CAMERA: "Camera",
+    MESH: "Mesh",
+    TRANSFORM_NODE: "TransformNode",
+} as const;
+
+export const enum SpatialAudioAttachmentType {
+    POSITION = 1,
+    ROTATION = 2,
+    POSITION_AND_ROTATION = 3,
+}
+
+/**
+ * Provides a common interface for attaching an audio listener or source to a specific entity, ensuring only one entity
+ * is attached at a time.
+ * @internal
+ */
+export class _SpatialAudioAttacherComponent {
+    private _attachedEntity: Nullable<AbstractMesh | Camera | TransformNode> = null;
+    private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
+    private _isReadyPromise: Nullable<Promise<void>> = null;
+
+    /**
+     * The type of attachment to use; position, rotation, or both.
+     */
+    public attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.POSITION_AND_ROTATION;
+
+    /** @internal */
+    public readonly _spatialAudioNode: ISpatialAudioNode;
+
+    /**
+     * Creates a new ExclusiveSpatialAudioAttacher.
+     * @param spatialAudioNode - The spatial audio node to attach to
+     */
+    public constructor(spatialAudioNode: ISpatialAudioNode) {
+        this._spatialAudioNode = spatialAudioNode;
+    }
+
+    /**
+     * The scene that the audio listener or source is attached to, or null if the audio listener or source is not
+     * attached to a scene.
+     */
+    public get attachedCamera(): Nullable<Camera> {
+        return this._attacher?.getClassName() === _SpatialAudioAttachedEntity.CAMERA ? (this._attachedEntity as Camera) : null;
+    }
+
+    public set attachedCamera(value: Nullable<Camera>) {
+        if (this.attachedCamera === value) {
+            return;
+        }
+
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.CAMERA);
+    }
+
+    /**
+     * The mesh that the audio listener or source is attached to, or null if the audio listener or source is not
+     * attached to a mesh.
+     */
+    public get attachedMesh(): Nullable<AbstractMesh> {
+        return this._attacher?.getClassName() === _SpatialAudioAttachedEntity.MESH ? (this._attachedEntity as AbstractMesh) : null;
+    }
+
+    public set attachedMesh(value: Nullable<AbstractMesh>) {
+        if (this.attachedMesh === value) {
+            return;
+        }
+
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.MESH);
+    }
+
+    /**
+     * The transform node that the audio listener or source is attached to, or null if the audio listener or source is
+     * not attached to a transform node.
+     */
+    public get attachedTransformNode(): Nullable<TransformNode> {
+        return this._attacher?.getClassName() === _SpatialAudioAttachedEntity.TRANSFORM_NODE ? (this._attachedEntity as TransformNode) : null;
+    }
+
+    public set attachedTransformNode(value: Nullable<TransformNode>) {
+        if (this.attachedTransformNode === value) {
+            return;
+        }
+
+        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.TRANSFORM_NODE);
+    }
+
+    /**
+     * Returns `true` if the audio listener or source is attached to an entity; otherwise returns `false`.
+     */
+    public get isAttached(): boolean {
+        return this._attacher !== null;
+    }
+
+    /**
+     * Returns `true` if the audio listener or source is attached to an entity's position; otherwise returns `false`.
+     */
+    public get isAttachedToPosition(): boolean {
+        return this._attacher !== null && (this.attachmentType & SpatialAudioAttachmentType.POSITION) === SpatialAudioAttachmentType.POSITION;
+    }
+
+    /**
+     * Returns `true` if the audio listener or source is attached to an entity's rotation; otherwise returns `false`.
+     */
+    public get isAttachedToRotation(): boolean {
+        return this._attacher !== null && (this.attachmentType & SpatialAudioAttachmentType.ROTATION) === SpatialAudioAttachmentType.ROTATION;
+    }
+
+    /**
+     * A promise that resolves when the attacher is ready.
+     */
+    public get isReadyPromise(): Promise<void> {
+        return this._isReadyPromise ?? Promise.resolve();
+    }
+
+    /**
+     * Detaches the attached entity.
+     */
+    public detach() {
+        this._attacher?.dispose();
+        this._attacher = null;
+    }
+
+    /**
+     * Releases associated resources.
+     */
+    public dispose() {
+        this.detach();
+    }
+
+    /**
+     * Updates the audio listener or source.
+     */
+    public update() {
+        this._attacher?.update(true);
+    }
+
+    private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
+        switch (attacherClassName) {
+            case _SpatialAudioAttachedEntity.CAMERA:
+                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this) : null;
+            case _SpatialAudioAttachedEntity.MESH:
+                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this) : null;
+            case _SpatialAudioAttachedEntity.TRANSFORM_NODE:
+                return this._attachedEntity ? _CreateSpatialAudioTransformNodeAttacherAsync(this) : null;
+        }
+        return null;
+    }
+
+    private async _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): Promise<void> {
+        this.detach();
+
+        this._attachedEntity = entity;
+        this._attacher = await this._createAttacher(attacherClassName);
+
+        return;
+    }
+}
