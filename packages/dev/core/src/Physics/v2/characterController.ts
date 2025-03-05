@@ -253,6 +253,17 @@ export class PhysicsCharacterController {
      * default 1e38
      */
     public characterStrength = 1e38;
+
+    /**
+     * Acceleration factor. A value of 1 means reaching max velocity immediately
+     */
+    public acceleration = 0.05;
+
+    /**
+     * maximum acceleration in world space coordinate
+     */
+    public maxAcceleration = 50;
+
     /**
      * character mass
      * default 0
@@ -1517,16 +1528,15 @@ export class PhysicsCharacterController {
         const diff = this._tmpVecs[5];
         desiredVelocitySF.subtractToRef(relative, diff);
 
-        // Clamp it by maxVelocityDelta and limit it by gain.
+        // Clamp it by maxAcceleration and limit it by gain.
         {
             const lenSq = diff.lengthSquared();
-            const gain = 0.05;
-            const maxVelocityDelta = 50.0 * deltaTime;
+            const maxVelocityDelta = this.maxAcceleration * deltaTime;
             let tmp: number;
-            if (lenSq * gain * gain > maxVelocityDelta * maxVelocityDelta) {
+            if (lenSq * this.acceleration * this.acceleration > maxVelocityDelta * maxVelocityDelta) {
                 tmp = maxVelocityDelta / Math.sqrt(lenSq);
             } else {
-                tmp = gain;
+                tmp = this.acceleration;
             }
             diff.scaleInPlace(tmp);
         }

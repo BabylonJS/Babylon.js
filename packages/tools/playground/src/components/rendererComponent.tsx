@@ -3,7 +3,7 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, EngineStore, WebGPUEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine } from "@dev/core";
 
 import type { Nullable, Scene } from "@dev/core";
 
@@ -134,6 +134,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             while (EngineStore.Instances.length) {
                 EngineStore.Instances[0].dispose();
             }
+            let audioEngine;
+            while ((audioEngine = LastCreatedAudioEngine())) {
+                audioEngine.dispose();
+            }
         } catch (ex) {
             // just ignore
         }
@@ -213,6 +217,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 havokInit = "globalThis.HK = await HavokPhysics();";
             }
 
+            let audioInit = "";
+            if (code.includes("BABYLON.Sound")) {
+                audioInit =
+                    "BABYLON.AbstractEngine.audioEngine = BABYLON.AbstractEngine.AudioEngineFactory(window.engine.getRenderingCanvas(), window.engine.getAudioContext(), window.engine.getAudioDestination());";
+            }
+
             const babylonToolkit =
                 !this._babylonToolkitWasLoaded &&
                 (code.includes("BABYLON.Toolkit.SceneManager.InitializePlayground") ||
@@ -274,7 +284,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         }
                     }
 
-                    window.engine = await asyncEngineCreation();`;
+                    window.engine = await asyncEngineCreation();
+                    
+                    ${audioInit}`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {

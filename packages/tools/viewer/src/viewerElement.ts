@@ -1,10 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, MeshPredicate, Nullable, Observable } from "core/index";
+import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
-import { BuildTuple } from "core/Misc/arrayTools";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -16,8 +15,8 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { isToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
-import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
+import { IsToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
+import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
@@ -60,6 +59,56 @@ export type HotSpot = ViewerHotSpotQuery & {
     cameraOrbit?: [alpha: number, beta: number, radius: number];
 };
 
+/**
+ * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
+ *
+ * The target point is determined using the camera's forward ray:
+ *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
+ *   - If no intersection is found, a fallback target is calculated by projecting the distance
+ *     between the camera and the model's center along the camera's forward direction.
+ *
+ * @param model The reference model used to determine the target point.
+ * @param camera The camera from which the HotSpot is generated.
+ * @returns A HotSpot object.
+ */
+export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
+    await import("core/Culling/ray");
+    const scene = model.assetContainer.scene;
+    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+    const camGlobalPos = camera.globalPosition.clone();
+
+    // Target
+    let radius: number = 0.0001; // Just to avoid division by zero
+    const targetPoint = Vector3.Zero();
+    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
+    if (pickingInfo && pickingInfo.hit) {
+        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
+    } else {
+        const worldBounds = model.getWorldBounds();
+        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
+        const distancePoint = Vector3.FromArray(centerArray);
+        const direction = ray.direction.clone();
+        targetPoint.copyFrom(camGlobalPos);
+        radius = Vector3.Distance(camGlobalPos, distancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
+    }
+
+    const computationVector = Vector3.Zero();
+    camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+    // Radius
+    if (pickingInfo && pickingInfo.hit) {
+        radius = computationVector.length();
+    }
+
+    // Alpha and Beta
+    const alpha = ComputeAlpha(computationVector);
+    const beta = ComputeBeta(computationVector.y, radius);
+
+    const targetArray = targetPoint.asArray();
+    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+}
+
 // Custom events for the HTML3DElement.
 export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
@@ -97,15 +146,24 @@ export interface ViewerElement {
 }
 
 /**
+ * @experimental
  * Base class for the viewer custom element.
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
-    protected constructor(private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass) {
+    /**
+     * @experimental
+     * Creates an instance of a ViewerElement subclass.
+     * @param _viewerClass The Viewer subclass to use when creating the Viewer instance.
+     * @param _options The options to use when creating the Viewer and binding it to the specified canvas.
+     */
+    protected constructor(
+        private readonly _viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => ViewerClass,
+        private readonly _options: CanvasViewerOptions = {}
+    ) {
         super();
     }
 
@@ -535,10 +593,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (value === "WebGL" || value === "WebGPU") {
                 return value;
             }
-            return getDefaultEngine();
+            return GetDefaultEngine();
         },
     })
-    public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
+    public engine: NonNullable<CanvasViewerOptions["engine"]> = GetDefaultEngine();
 
     /**
      * When true, the scene will be rendered even if no scene state has changed.
@@ -637,7 +695,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({
         attribute: "tone-mapping",
         converter: (value: string | null): ToneMapping => {
-            if (!value || !isToneMapping(value)) {
+            if (!value || !IsToneMapping(value)) {
                 return "neutral";
             }
             return value;
@@ -708,7 +766,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
             }
@@ -736,7 +794,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 return null;
             }
 
-            const array = value.split(/\s+/);
+            const array = value.trim().split(/\s+/);
             if (array.length !== 3) {
                 throw new Error("cameraTarget should be defined as 'x y z'");
             }
@@ -770,6 +828,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     })
     public hotSpots: Record<string, HotSpot> = {};
 
+    /**
+     * @experimental
+     * True if the viewer has any hotspots.
+     */
     protected get _hasHotSpots(): boolean {
         return Object.keys(this.hotSpots).length > 0;
     }
@@ -787,6 +849,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         return this._animations;
     }
 
+    /**
+     * @experimental
+     * True if the loaded model has any animations.
+     */
     protected get _hasAnimations(): boolean {
         return this._animations.length > 0;
     }
@@ -917,6 +983,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders the progress bar.
      * @returns The template result for the progress bar.
      */
@@ -937,6 +1004,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders the toolbar.
      * @returns The template result for the toolbar.
      */
@@ -1039,6 +1107,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * @experimental
      * Renders UI elements that overlay the viewer.
      * Override this method to provide additional rendering for the component.
      * @returns TemplateResult The rendered template result.
@@ -1052,20 +1121,41 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         `;
     }
 
+    /**
+     * @experimental
+     * Dispatches a custom event.
+     * @param type The type of the event.
+     * @param event A function that creates the event.
+     */
     protected _dispatchCustomEvent<TEvent extends keyof ViewerElementEventMap>(type: TEvent, event: (type: TEvent) => ViewerElementEventMap[TEvent]) {
         this.dispatchEvent(event(type));
     }
 
+    /**
+     * @experimental
+     * Handles changes to the selected animation.
+     * @param event The change event.
+     */
     protected _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
     }
 
+    /**
+     * @experimental
+     * Handles changes to the animation speed.
+     * @param event The change event.
+     */
     protected _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.animationSpeed = Number(selectElement.value);
     }
 
+    /**
+     * @experimental
+     * Handles changes to the animation timeline.
+     * @param event The change event.
+     */
     protected _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
@@ -1076,6 +1166,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
+    /**
+     * @experimental
+     * Handles pointer down events on the animation timeline.
+     * @param event The pointer down event.
+     */
     protected _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
@@ -1084,11 +1179,21 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
+    /**
+     * @experimental
+     * Handles changes to the selected material variant.
+     * @param event The change event.
+     */
     protected _onMaterialVariantChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedMaterialVariant = selectElement.value;
     }
 
+    /**
+     * @experimental
+     * Handles changes to the hot spot list.
+     * @param event The change event.
+     */
     protected _onHotSpotsChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         const hotSpotName = selectElement.value;
@@ -1144,8 +1249,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
-        if (camera !== this.viewerDetails?.camera) {
-            const hotSpot = await this._cameraToHotSpot(camera);
+        if (camera !== this._viewerDetails?.camera) {
+            const hotSpot = await this._createHotSpotFromCamera(camera);
             if (hotSpot && !signal?.aborted) {
                 this.hotSpots = {
                     ...this.hotSpots,
@@ -1164,10 +1269,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (!this.camerasAsHotSpots) {
             this._camerasAsHotSpotsAbortController?.abort();
             this._camerasAsHotSpotsAbortController = null;
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this.viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 
@@ -1187,13 +1292,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
-                    const viewer = await this._createViewer(canvas, {
-                        engine: this.engine,
-                        autoSuspendRendering: !this.renderWhenIdle,
-                        onInitialized: (details) => {
-                            detailsDeferred.resolve(details);
-                        },
-                    });
+                    const viewer = await this._createViewer(
+                        canvas,
+                        Object.assign(
+                            {
+                                engine: this.engine,
+                                autoSuspendRendering: !this.renderWhenIdle,
+                                onInitialized: (details) => {
+                                    detailsDeferred.resolve(details);
+                                },
+                            } satisfies CanvasViewerOptions,
+                            this._options
+                        )
+                    );
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1271,8 +1382,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         });
     }
 
+    /**
+     * @experimental
+     * Creates a viewer for the specified canvas.
+     * @param canvas The canvas to create the viewer for.
+     * @param options The options to use for the viewer.
+     * @returns The created viewer.
+     */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return createViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {
@@ -1347,62 +1465,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * Calculates the alpha, beta, and radius along with the target point to create a HotSpot from a camera.
-     * The target point is determined based on the camera's forward ray:
-     *   - If an intersection with the main model is found, the first hit point is used as the target.
-     *   - If no intersection is detected, a fallback target is calculated by projecting
-     *     the distance between the camera and the main model's center along the forward ray.
-     *
-     * @param camera The reference camera used to computes alpha, beta, radius and target
-     * @returns A HotSpot, or null if no model found
+     * Creates a world HotSpot from a camera.
+     * @param camera The camera to create a HotSpot from.
+     * @returns A HotSpot created from the camera.
      */
-    private async _cameraToHotSpot(camera: Camera): Promise<Nullable<HotSpot>> {
+    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
         if (camera instanceof ArcRotateCamera) {
             const targetArray = camera.target.asArray();
             return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
         }
 
-        await import("core/Culling/ray");
-        const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-        const camGlobalPos = camera.globalPosition.clone();
-
-        if (this.viewerDetails?.scene) {
-            const scene = this.viewerDetails.scene;
-            const model = this.viewerDetails.model;
-
-            // Target
-            let radius: number = 0.0001; // Just to avoid division by zero
-            const targetPoint = this._tempVectors[0];
-            const predicate: MeshPredicate | undefined = model ? (mesh) => model.assetContainer.meshes.includes(mesh) : undefined;
-            const pickingInfo = scene.pickWithRay(ray, predicate);
-            if (pickingInfo && pickingInfo.hit) {
-                targetPoint.copyFrom(pickingInfo.pickedPoint!);
-            } else {
-                const selectedAnimation = this.selectedAnimation ?? 0;
-                const worldBounds = model?.getWorldBounds(selectedAnimation);
-                const centerArray = worldBounds ? worldBounds.center : ([0, 0, 0] as [number, number, number]);
-                const modelWorldCenter = this._tempVectors[1].copyFromFloats(...centerArray);
-
-                const direction = this._tempVectors[2].copyFrom(ray.direction);
-                targetPoint.copyFrom(camGlobalPos);
-                radius = Vector3.Distance(camGlobalPos, modelWorldCenter);
-                direction.scaleAndAddToRef(radius, targetPoint);
-            }
-
-            const computationVector = this._tempVectors[3];
-            camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-            // Radius
-            if (pickingInfo && pickingInfo.hit) {
-                radius = computationVector.length();
-            }
-
-            // Alpha and Beta
-            const alpha = ComputeAlpha(computationVector);
-            const beta = ComputeBeta(computationVector.y, radius);
-
-            const targetArray = targetPoint.asArray();
-            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+        if (this._viewerDetails?.model) {
+            return CreateHotSpotFromCamera(this._viewerDetails.model, camera);
         }
 
         return null;
@@ -1416,8 +1490,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 export class HTML3DElement extends ViewerElement {
     /**
      * Creates a new HTML3DElement.
+     * @param options The options to use for the viewer. This is optional, and is only used when programmatically creating a viewer element.
      */
-    public constructor() {
-        super(Viewer);
+    public constructor(options?: CanvasViewerOptions) {
+        super(Viewer, options);
     }
+}
+
+/**
+ * Creates a custom HTML element that creates an HTML3DElement with the specified name and configuration.
+ * @param elementName The name of the custom element.
+ * @param options The options to use for the viewer.
+ */
+export function ConfigureCustomViewerElement(elementName: string, options: CanvasViewerOptions) {
+    customElements.define(
+        elementName,
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        class extends HTML3DElement {
+            public constructor() {
+                super(options);
+            }
+        }
+    );
 }

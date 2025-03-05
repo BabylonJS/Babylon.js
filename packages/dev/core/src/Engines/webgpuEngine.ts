@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
 import { ThinWebGPUEngine } from "./thinWebGPUEngine";
-import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray, TypedArrayConstructor, TypedArray } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
@@ -1561,20 +1561,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     //                              Vertex/Index/Storage Buffers
     //------------------------------------------------------------------------------
 
-    public createAlignedTypedArray<T extends TypedArray>(type: TypedArrayConstructor<T>, elementCount: number): T {
-        let byteSize = elementCount * type.BYTES_PER_ELEMENT;
-
-        if ((byteSize & 3) === 0) {
-            return new type(elementCount);
-        }
-
-        byteSize = (byteSize + 3) & ~3;
-
-        const backingBuffer = new ArrayBuffer(byteSize);
-
-        return new type(backingBuffer, 0, elementCount);
-    }
-
     /**
      * Creates a vertex buffer
      * @param data the data or the size for the vertex buffer
@@ -1616,7 +1602,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer {
         let is32Bits = true;
-        let view: ArrayBufferView;
+        let view: ArrayBufferView | undefined;
 
         if (indices instanceof Uint32Array || indices instanceof Int32Array) {
             view = indices;
@@ -1624,9 +1610,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = indices;
             is32Bits = false;
         } else {
-            if (indices.length > 65535) {
-                view = new Uint32Array(indices);
-            } else {
+            for (let index = 0; index < indices.length; index++) {
+                if (indices[index] > 65535) {
+                    view = new Uint32Array(indices);
+                    break;
+                }
+            }
+
+            if (!view) {
                 view = new Uint16Array(indices);
                 is32Bits = false;
             }

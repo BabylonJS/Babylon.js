@@ -56,16 +56,49 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * @internal
  **/
 export class _CreationDataStorage {
+    /**
+     *
+     */
     public closePath?: boolean;
+    /**
+     *
+     */
     public closeArray?: boolean;
+    /**
+     *
+     */
     public idx: number[];
+    /**
+     *
+     */
     public dashSize: number;
+    /**
+     *
+     */
     public gapSize: number;
+    /**
+     *
+     */
     public path3D: Path3D;
+    /**
+     *
+     */
     public pathArray: Vector3[][];
+    /**
+     *
+     */
     public arc: number;
+    /**
+     *
+     */
     public radius: number;
+    /**
+     *
+     */
     public cap: number;
+    /**
+     *
+     */
     public tessellation: number;
 }
 
@@ -97,9 +130,21 @@ class _InstanceDataStorage {
  * @internal
  **/
 export class _InstancesBatch {
+    /**
+     *
+     */
     public mustReturn = false;
+    /**
+     *
+     */
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
+    /**
+     *
+     */
     public renderSelf: boolean[] = [];
+    /**
+     *
+     */
     public hardwareInstancedRendering: boolean[] = [];
 }
 
@@ -1852,13 +1897,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param indexBuffer Defines the index buffer to use for this mesh
      * @param totalVertices Defines the total number of vertices used by the buffer
      * @param totalIndices Defines the total number of indices in the index buffer
+     * @param is32Bits Defines if the indices are 32 bits. If null (default), the value is guessed from the number of vertices
      */
-    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number, is32Bits: Nullable<boolean> = null): void {
         let geometry = this._geometry;
         if (!geometry) {
             geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
         }
-        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices, is32Bits);
     }
 
     /**
@@ -3026,9 +3072,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @param forceUnique indicates whether to force the mesh geometry to be unique
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true, forceUnique: boolean = false): Mesh {
+        if (forceUnique) {
+            this.makeGeometryUnique();
+        }
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
         this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;

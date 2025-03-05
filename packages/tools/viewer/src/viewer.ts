@@ -4,8 +4,11 @@ import type {
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
+    BaseTexture,
     Camera,
+    CubeTexture,
     FramingBehavior,
+    HDRCubeTexture,
     HotSpotQuery,
     IDisposable,
     IMeshDataCache,
@@ -26,8 +29,8 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
+import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -40,7 +43,9 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
+import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
@@ -124,7 +129,7 @@ export type PostProcessing = {
  * @param value The value to check.
  * @returns True if the value is a valid tone mapping option, otherwise false.
  */
-export function isToneMapping(value: string): value is ToneMapping {
+export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
 }
 
@@ -134,7 +139,30 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-function createSkybox(scene: Scene, camera: Camera, reflectionTexture: CubeTexture, blur: number): Mesh {
+async function createCubeTexture(url: string, scene: Scene, extension?: string) {
+    extension = extension ?? GetExtensionFromUrl(url);
+    const instantiateTexture = await (async () => {
+        if (extension === ".hdr") {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
+            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
+        } else {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
+            return () => new CubeTexture(url, scene, null, false, null, null, null, undefined, true, extension, true);
+        }
+    })();
+
+    const originalUseDelayedTextureLoading = scene.useDelayedTextureLoading;
+    try {
+        scene.useDelayedTextureLoading = false;
+        return instantiateTexture();
+    } finally {
+        scene.useDelayedTextureLoading = originalUseDelayedTextureLoading;
+    }
+}
+
+function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
@@ -229,21 +257,24 @@ export type ViewerDetails = {
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
-export type ViewerOptions = Partial<
-    Readonly<{
-        /**
-         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-         */
-        onInitialized: (details: Readonly<ViewerDetails>) => void;
+export type ViewerOptions = Partial<{
+    /**
+     * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+     */
+    onInitialized: (details: Readonly<ViewerDetails>) => void;
 
-        /**
-         * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
-         * This can reduce resource CPU/GPU pressure when the scene is static.
-         * Enabled by default.
-         */
-        autoSuspendRendering: boolean;
-    }>
->;
+    /**
+     * The default clear color of the scene.
+     */
+    clearColor: [r: number, g: number, b: number, a?: number];
+
+    /**
+     * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
+     * This can reduce resource CPU/GPU pressure when the scene is static.
+     * Enabled by default.
+     */
+    autoSuspendRendering: boolean;
+}>;
 
 export type EnvironmentOptions = Partial<
     Readonly<{
@@ -258,6 +289,17 @@ export type EnvironmentOptions = Partial<
         skybox: boolean;
     }>
 >;
+
+export type LoadEnvironmentOptions = EnvironmentOptions &
+    Partial<
+        Readonly<{
+            /**
+             * Specifies the extension of the environment texture to load.
+             * This must be specified when the extension cannot be determined from the url.
+             */
+            extension: string;
+        }>
+    >;
 
 const defaultLoadEnvironmentOptions = {
     lighting: true,
@@ -364,10 +406,10 @@ export type Model = IDisposable & {
     /**
      * Compute and return the world bounds of the model.
      * The minimum and maximum extents, the size and the center.
-     * @param animationIndex The index of the animation group to consider when computing the bounding info.
+     * @param animationIndex The index of the animation group to use for computation. If omitted, the current selected animation is used.
      * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
      */
-    getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+    getWorldBounds(animationIndex?: number): Nullable<ViewerBoundingInfo>;
 
     /**
      * Resets the computed world bounds of the model.
@@ -473,6 +515,11 @@ export class Viewer implements IDisposable {
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
 
+    private readonly _defaultHardwareScalingLevel: number;
+    private _lastHardwareScalingLevel: number;
+    private _renderedLastFrame: Nullable<boolean> = null;
+    private _sceneOptimizer: Nullable<SceneOptimizer> = null;
+
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _autoRotationBehavior: AutoRotationBehavior;
@@ -484,8 +531,8 @@ export class Viewer implements IDisposable {
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _skyboxVisible: boolean = true;
-    private _skyboxTexture: Nullable<CubeTexture> = null;
-    private _reflectionTexture: Nullable<CubeTexture> = null;
+    private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
+    private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity: number = 1;
     private _reflectionsRotation: number = 0;
     private _light: Nullable<HemisphericLight> = null;
@@ -517,9 +564,11 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
+        this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
+            scene.clearColor = options?.clearColor ? new Color4(...options.clearColor) : new Color4(0, 0, 0, 0);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -742,7 +791,11 @@ export class Viewer implements IDisposable {
     }
 
     private _updateAutoClear() {
-        this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
+        // NOTE: Not clearing (even when every pixel is rendered with an opaque color) results in rendering
+        //       artifacts in Chromium browsers on Intel-based Macs (see https://issues.chromium.org/issues/396612322).
+        //       The performance impact of clearing when not necessary is very small, so for now just always auto clear.
+        //this._scene.autoClear = !this._skybox || !this._skybox.isEnabled() || !this._skyboxVisible;
+        this._scene.autoClear = true;
         this._markSceneMutated();
     }
 
@@ -750,20 +803,19 @@ export class Viewer implements IDisposable {
      * The post processing configuration.
      */
     public get postProcessing(): PostProcessing {
-        let toneMapping: ToneMapping;
-        switch (this._toneMappingType) {
-            case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                toneMapping = "standard";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                toneMapping = "aces";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                toneMapping = "neutral";
-                break;
-            default:
-                toneMapping = "none";
-                break;
+        let toneMapping: ToneMapping = "none";
+        if (this._toneMappingEnabled) {
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
+                    toneMapping = "standard";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    toneMapping = "aces";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                    toneMapping = "neutral";
+                    break;
+            }
         }
 
         return {
@@ -1101,8 +1153,9 @@ export class Viewer implements IDisposable {
                     }
 
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 },
-                getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
+                getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
                         worldBounds = computeModelsBoundingInfos([model]);
@@ -1173,6 +1226,13 @@ export class Viewer implements IDisposable {
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
             }
         });
+
+        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
+        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            await this.resetEnvironment({ lighting: true }, abortSignal);
+        }
+
+        this._startSceneOptimizer(true);
     }
 
     /**
@@ -1183,20 +1243,28 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
-     * Unloads the current environment if one is loaded.
+     * Resets the environment to its default state.
      * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, options, abortSignal);
+        let url: Nullable<string> = null;
+        // When there are PBR materials, the default environment should be used for lighting.
+        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            url = (await import("./defaultEnvironment")).default;
+            const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
+            options = loadOptions;
+        }
+
+        await this._updateEnvironment(url, options, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         options = options ?? defaultLoadEnvironmentOptions;
@@ -1239,7 +1307,7 @@ export class Viewer implements IDisposable {
 
             try {
                 if (url) {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
+                    const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
@@ -1258,7 +1326,7 @@ export class Viewer implements IDisposable {
                     }
 
                     await new Promise<void>((resolve, reject) => {
-                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
+                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
                             resolve();
@@ -1364,16 +1432,12 @@ export class Viewer implements IDisposable {
     }
 
     protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        if (!assetContainer) {
-            return false;
-        }
-
         const worldNormal = this._tempVectors[2];
         const worldPos = this._tempVectors[1];
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            const mesh = assetContainer.meshes[query.meshIndex];
+            const mesh = assetContainer?.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
@@ -1386,11 +1450,8 @@ export class Viewer implements IDisposable {
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
 
-        const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
-        const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
-
-        const viewportWidth = this._camera.viewport.width * renderWidth;
-        const viewportHeight = this._camera.viewport.height * renderHeight;
+        const viewportWidth = this._camera.viewport.width * this._engine.getRenderWidth() * this._engine.getHardwareScalingLevel();
+        const viewportHeight = this._camera.viewport.height * this._engine.getRenderHeight() * this._engine.getHardwareScalingLevel();
         const scene = this._scene;
 
         Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
@@ -1442,8 +1503,33 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
-            let renderedLastFrame: Nullable<boolean> = null;
             let renderedReadyFrame = false;
+
+            const onRenderingResumed = () => {
+                this._log("Viewer Resumed Rendering");
+                // Resume rendering with the hardware scaling level from prior to suspending.
+                this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
+                this._engine.performanceMonitor.enable();
+                this._startSceneOptimizer();
+            };
+
+            const onRenderingSuspended = () => {
+                this._log("Viewer Suspended Rendering");
+                this._renderedLastFrame = false;
+                renderedReadyFrame = false;
+                // Take note of the current hardware scaling level for when rendering is resumed.
+                this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
+                this._stopSceneOptimizer();
+                // We want a high quality render right before suspending, so set the hardware scaling level back to the default,
+                // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
+                // and then render the scene once.
+                this._engine.performanceMonitor.disable();
+                this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+                this._engine.beginFrame();
+                this._scene.render();
+                this._engine.endFrame();
+            };
+
             const render = () => {
                 // First check if we have indicators that we should render.
                 let shouldRender = this._shouldRender;
@@ -1453,17 +1539,17 @@ export class Viewer implements IDisposable {
                 // a bunch of the same work that happens when we actually render a frame, so we don't want to check
                 // this unless we know we are in a state where there were mutations and now we are waiting for a frame
                 // to render after the scene is ready.
-                if (!shouldRender && renderedLastFrame && !renderedReadyFrame) {
+                if (!shouldRender && this._renderedLastFrame && !renderedReadyFrame) {
                     renderedReadyFrame = this._scene.isReady(true);
                     shouldRender = true;
                 }
 
                 if (shouldRender) {
-                    if (!renderedLastFrame) {
-                        if (renderedLastFrame !== null) {
-                            this._log("Viewer Resumed Rendering");
+                    if (!this._renderedLastFrame) {
+                        if (this._renderedLastFrame !== null) {
+                            onRenderingResumed();
                         }
-                        renderedLastFrame = true;
+                        this._renderedLastFrame = true;
                     }
 
                     this._sceneMutated = false;
@@ -1480,10 +1566,8 @@ export class Viewer implements IDisposable {
                 } else {
                     this._camera.update();
 
-                    if (renderedLastFrame) {
-                        this._log("Viewer Suspended Rendering");
-                        renderedLastFrame = false;
-                        renderedReadyFrame = false;
+                    if (this._renderedLastFrame) {
+                        onRenderingSuspended();
                     }
                 }
             };
@@ -1498,8 +1582,8 @@ export class Viewer implements IDisposable {
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
 
-                        if (renderedLastFrame) {
-                            this._log("Viewer Suspended Rendering");
+                        if (this._renderedLastFrame) {
+                            onRenderingSuspended();
                         }
                     }
                 },
@@ -1621,6 +1705,26 @@ export class Viewer implements IDisposable {
         }
 
         return null;
+    }
+
+    protected _startSceneOptimizer(reset = false) {
+        this._stopSceneOptimizer();
+
+        if (reset) {
+            this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+        }
+
+        const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
+        const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
+        sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
+        this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
+
+        this._sceneOptimizer.start();
+    }
+
+    protected _stopSceneOptimizer() {
+        this._sceneOptimizer?.dispose();
+        this._sceneOptimizer = null;
     }
 
     protected _log(message: string) {
