@@ -20,6 +20,8 @@ type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 /** @internal */
 export class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
     private _spatial: Nullable<_SpatialAudio> = null;
+    private readonly _spatialAutoUpdate: boolean = true;
+    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStreamingSoundStoredOptions;
@@ -36,7 +38,15 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
-        super(name, engine, options);
+        super(name, engine);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
 
         this._options = {
             autoplay: options.autoplay ?? false,

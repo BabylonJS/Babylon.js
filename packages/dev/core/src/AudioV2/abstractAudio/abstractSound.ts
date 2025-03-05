@@ -69,8 +69,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected _instances: ReadonlySet<_AbstractSoundInstance> = this._privateInstances;
     protected abstract readonly _options: IAbstractSoundStoredOptions;
-    protected readonly _spatialAutoUpdate: boolean = true;
-    protected readonly _spatialMinUpdateTime: number = 0;
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
     /**
@@ -78,16 +76,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      */
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAbstractSoundOptions>) {
+    protected constructor(name: string, engine: AudioEngineV2) {
         super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
-
-        if (typeof options.spatialAutoUpdate === "boolean") {
-            this._spatialAutoUpdate = options.spatialAutoUpdate;
-        }
-
-        if (typeof options.spatialMinUpdateTime === "number") {
-            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
-        }
     }
 
     /**

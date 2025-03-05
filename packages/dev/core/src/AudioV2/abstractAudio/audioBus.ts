@@ -30,19 +30,8 @@ export interface IAudioBusOptions extends ISpatialAudioOptions, IStereoAudioOpti
 export abstract class AudioBus extends AbstractAudioBus {
     private _outBus: Nullable<PrimaryAudioBus> = null;
 
-    protected readonly _spatialAutoUpdate: boolean = true;
-    protected readonly _spatialMinUpdateTime: number = 0;
-
-    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAudioBusOptions>) {
+    protected constructor(name: string, engine: AudioEngineV2) {
         super(name, engine);
-
-        if (typeof options.spatialAutoUpdate === "boolean") {
-            this._spatialAutoUpdate = options.spatialAutoUpdate;
-        }
-
-        if (typeof options.spatialMinUpdateTime === "number") {
-            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
-        }
     }
 
     /**

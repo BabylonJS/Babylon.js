@@ -21,6 +21,8 @@ type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | str
 export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: _WebAudioStaticSoundBuffer;
     private _spatial: Nullable<_SpatialWebAudio> = null;
+    private readonly _spatialAutoUpdate: boolean = true;
+    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStaticSoundStoredOptions;
@@ -34,7 +36,15 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions>) {
-        super(name, engine, options);
+        super(name, engine);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
 
         this._options = {
             autoplay: options.autoplay ?? false,

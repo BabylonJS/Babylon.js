@@ -70,7 +70,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
     private _resumePromise: Nullable<Promise<void>> = null;
-    private _validFormats = new Set<string>();
+    private readonly _listenerAutoUpdate: boolean = true;
+    private readonly _listenerMinUpdateTime: number = 0;
+    private readonly _validFormats = new Set<string>();
     private _volume = 1;
 
     /** @internal */
@@ -89,7 +91,15 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
-        super(options);
+        super();
+
+        if (typeof options.listenerAutoUpdate === "boolean") {
+            this._listenerAutoUpdate = options.listenerAutoUpdate;
+        }
+
+        if (typeof options.listenerMinUpdateTime === "number") {
+            this._listenerMinUpdateTime = options.listenerMinUpdateTime;
+        }
 
         this._volume = options.volume ?? 1;
         this.audioContext = options.audioContext ?? new AudioContext();
