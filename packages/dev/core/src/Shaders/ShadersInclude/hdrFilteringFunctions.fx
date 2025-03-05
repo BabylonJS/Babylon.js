@@ -184,7 +184,7 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
+        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 inputV
         #ifdef IBL_CDF_FILTERING
         , sampler2D icdfSampler
         #endif
@@ -218,6 +218,10 @@
                     T.y = textureLod(icdfSampler, vec2(T.x, Xi.y), 0.0).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
+                    vec3 H = (n + Ls) * 0.5;
+                    float NoH = dot(n, H);
+                    float NoV = dot(n, inputV);
+                    float VoH = dot(inputV, H);
                 #else
                     vec3 Ls = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
@@ -242,7 +246,13 @@
 
                     #ifdef IBL_CDF_FILTERING
                         vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(1.0) / vec3(pdf) * c;
-                        result += NoL * light;
+                        vec3 diffuseRoughnessTerm = vec3(1.0);
+                        #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                            diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+                            diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV) * PI;
+                        #endif
+                        result += NoL * diffuseRoughnessTerm * light;
                     #else
                         result += c;
                     #endif

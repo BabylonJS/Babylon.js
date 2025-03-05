@@ -306,10 +306,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , uniforms.vReflectionFilteringInfo
+                , viewDirectionW
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
                     , icdfSamplerSampler
                 #endif
+                , diffuseRoughness
             #endif
             );
         #else
