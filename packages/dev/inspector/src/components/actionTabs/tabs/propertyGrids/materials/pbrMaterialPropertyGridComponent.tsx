@@ -263,6 +263,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
         ];
 
+        const baseDiffuseRoughnessModelOptions = [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+        ];
+
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
         material.sheen.roughness = material.sheen.roughness ?? (material.sheen as any)._saveRoughness ?? 0;
 
@@ -366,6 +372,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         label="Roughness"
                         target={material}
                         propertyName="roughness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Base Diffuse Roughness"
+                        target={material}
+                        propertyName="baseDiffuseRoughness"
                         minimum={0}
                         maximum={1}
                         step={0.01}
@@ -1247,6 +1263,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         options={realTimeFilteringQualityOptions}
                         target={material}
                         propertyName="realTimeFilteringQuality"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Base Diffuse Roughness Model"
+                        options={baseDiffuseRoughnessModelOptions}
+                        target={material}
+                        propertyName="baseDiffuseRoughnessModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
