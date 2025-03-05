@@ -10,7 +10,16 @@ import { TmpVectors } from "../Maths/math.vector";
 export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "screenSpaceReflection2BlurCombiner";
 
-    public static readonly Uniforms = ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold", "projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ"];
+    public static readonly Uniforms = [
+        "strength",
+        "reflectionSpecularFalloffExponent",
+        "reflectivityThreshold",
+        "projection",
+        "invProjectionMatrix",
+        "nearPlaneZ",
+        "farPlaneZ",
+        "view",
+    ];
 
     public static readonly Samplers = ["textureSampler", "depthSampler", "normalSampler", "mainSampler", "reflectivitySampler"];
 
@@ -138,6 +147,36 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         }
     }
 
+    private _normalsAreInWorldSpace = false;
+
+    public get normalsAreInWorldSpace() {
+        return this._normalsAreInWorldSpace;
+    }
+
+    public set normalsAreInWorldSpace(value: boolean) {
+        if (this._normalsAreInWorldSpace === value) {
+            return;
+        }
+
+        this._normalsAreInWorldSpace = value;
+        this._updateEffectDefines();
+    }
+
+    private _normalsAreUnsigned = false;
+
+    public get normalsAreUnsigned() {
+        return this._normalsAreUnsigned;
+    }
+
+    public set normalsAreUnsigned(value: boolean) {
+        if (this._normalsAreUnsigned === value) {
+            return;
+        }
+
+        this._normalsAreUnsigned = value;
+        this._updateEffectDefines();
+    }
+
     public override bind() {
         super.bind();
 
@@ -154,6 +193,7 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
 
             effect.setMatrix("projection", projectionMatrix);
             effect.setMatrix("invProjectionMatrix", TmpVectors.Matrix[0]);
+            effect.setMatrix("view", this.camera.getViewMatrix());
 
             if (this.useScreenspaceDepth) {
                 effect.setFloat("nearPlaneZ", this.camera.minZ);
@@ -178,10 +218,16 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
             defines += "#define SSR_BLEND_WITH_FRESNEL\n";
         }
         if (this._useScreenspaceDepth) {
-            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH";
+            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH\n";
         }
         if (this._reflectivityThreshold === 0) {
-            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
+            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST\n";
+        }
+        if (this._normalsAreInWorldSpace) {
+            defines += "#define SSR_NORMAL_IS_IN_WORLDSPACE\n";
+        }
+        if (this._normalsAreUnsigned) {
+            defines += "#define SSR_DECODE_NORMAL\n";
         }
 
         this.updateEffect(defines);

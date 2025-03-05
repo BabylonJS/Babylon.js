@@ -1180,12 +1180,17 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             uniformNames.push("projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ");
             samplerNames.push("depthSampler", "normalSampler");
+
+            if (this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace) {
+                defines += "#define SSR_NORMAL_IS_IN_WORLDSPACE\n";
+                uniformNames.push("view");
+            }
         }
         if (this._useScreenspaceDepth) {
-            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH";
+            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH\n";
         }
         if (this._reflectivityThreshold === 0) {
-            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
+            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST\n";
         }
 
         this._blurCombinerPostProcess = new PostProcess(
@@ -1282,6 +1287,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
                     effect.setMatrix("projection", projectionMatrix);
                     effect.setMatrix("invProjectionMatrix", TmpVectors.Matrix[0]);
+                    effect.setMatrix("view", camera.getViewMatrix());
                 }
             }
         });

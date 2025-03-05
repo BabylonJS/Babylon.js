@@ -448,6 +448,7 @@ export class ThinSSRRenderingPipeline {
 
     public set normalsAreInWorldSpace(normalsAreInWorldSpace: boolean) {
         this._ssrPostProcess.normalsAreInWorldSpace = normalsAreInWorldSpace;
+        this._ssrBlurCombinerPostProcess.normalsAreInWorldSpace = normalsAreInWorldSpace;
     }
 
     public get normalsAreUnsigned() {
@@ -456,6 +457,7 @@ export class ThinSSRRenderingPipeline {
 
     public set normalsAreUnsigned(normalsAreUnsigned: boolean) {
         this._ssrPostProcess.normalsAreUnsigned = normalsAreUnsigned;
+        this._ssrBlurCombinerPostProcess.normalsAreUnsigned = normalsAreUnsigned;
     }
 
     public isReady(): boolean {
