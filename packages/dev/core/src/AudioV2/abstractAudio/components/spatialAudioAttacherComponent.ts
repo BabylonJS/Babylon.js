@@ -134,7 +134,7 @@ export class _SpatialAudioAttacherComponent {
      * Updates the audio listener or source.
      */
     public update() {
-        this._attacher?.update(true);
+        this._attacher?.update();
     }
 
     private _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): void {
