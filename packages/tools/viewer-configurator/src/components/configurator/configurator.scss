@@ -16,7 +16,6 @@
     height: 100vh;
     width: 100%;
     box-sizing: border-box;
-    line-height: $line-height;
 
     .Sticky {
         position: sticky;
@@ -211,14 +210,12 @@
     .buttonLine {
         button {
             background: #222222;
-            outline: 1px solid rgb(51, 122, 183);
-            outline-offset: -1px;
+            border: 1px solid rgb(51, 122, 183);
             border-radius: $border-radius;
             color: white;
-            padding: 4px 5px;
+            padding: 3px;
             opacity: 0.9;
             width: 100%;
-            box-sizing: border-box;
         }
         button:hover {
             opacity: 1;
