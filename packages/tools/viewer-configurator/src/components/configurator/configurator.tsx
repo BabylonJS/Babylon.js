@@ -254,20 +254,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const originalSkyboxBlur = useMemo(() => viewer?.environmentConfig.blur, [viewer]);
-    const originalClearColor = useMemo(() => viewerDetails?.scene.clearColor, [viewerDetails]);
-    const originalToneMapping = useMemo(() => viewer?.postProcessing.toneMapping, [viewer]);
-    const originalContrast = useMemo(() => viewer?.postProcessing.contrast, [viewer]);
-    const originalExposure = useMemo(() => viewer?.postProcessing.exposure, [viewer]);
+    const originalSkyboxBlur = useMemo(() => viewer.environmentConfig.blur, [viewer]);
+    const originalClearColor = useMemo(() => viewerDetails.scene.clearColor, [viewerDetails]);
+    const originalToneMapping = useMemo(() => viewer.postProcessing.toneMapping, [viewer]);
+    const originalContrast = useMemo(() => viewer.postProcessing.contrast, [viewer]);
+    const originalExposure = useMemo(() => viewer.postProcessing.exposure, [viewer]);
     // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-    //const originalAutoOrbit = useMemo(() => viewer?.cameraAutoOrbit.enabled, [viewer]);
+    //const originalAutoOrbit = useMemo(() => viewer.cameraAutoOrbit.enabled, [viewer]);
     const originalAutoOrbit = false;
-    const originalAutoOrbitSpeed = useMemo(() => viewer?.cameraAutoOrbit.speed, [viewer]);
-    const originalAutoOrbitDelay = useMemo(() => viewer?.cameraAutoOrbit.delay, [viewer]);
+    const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
+    const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
 
-    const model = useObservableState(() => viewerDetails?.model, viewer?.onModelChanged);
-    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
-    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
+    const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged);
+    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
+    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
 
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
     const [syncEnvironment, setSyncEnvironment] = useState(true);
