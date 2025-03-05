@@ -504,18 +504,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerElement]
     );
 
-    // const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
-    // const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
-
-    // useEffect(() => {
-    //     setCanRevertSelectedMaterialVariant(false);
-    //     if (selectedMaterialVariant) {
-    //         const observer = viewer.onSelectedMaterialVariantChanged.add(() => {
-    //             setCanRevertSelectedMaterialVariant(viewer.selectedMaterialVariant !== selectedMaterialVariant);
-    //         });
-    //         return () => observer.remove();
-    //     }
-    // }, [viewerDetails, selectedMaterialVariant]);
     const [
         canRevertSelectedMaterialVariant,
         canResetSelectedMaterialVariant,
@@ -870,14 +858,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         },
         [updateToneMapping]
     );
-
-    // const onMaterialVariantsSnapshotClick = useCallback(() => {
-    //     setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
-    // }, [viewer]);
-
-    // const onMaterialVariantsRevertClick = useCallback(() => {
-    //     viewer.selectedMaterialVariant = selectedMaterialVariant;
-    // }, [viewer, selectedMaterialVariant]);
 
     const onAddHotspotClick = useCallback(() => {
         setHotspots((hotspots) => {
