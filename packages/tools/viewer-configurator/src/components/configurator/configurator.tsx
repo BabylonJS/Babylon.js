@@ -842,17 +842,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [setNeedsEnvironmentUpdate, setSyncEnvironment]
     );
 
-    const onSkyboxBlurChange = useCallback(
-        (value: number) => {
-            updateSkyboxBlur(value);
-        },
-        [updateSkyboxBlur]
-    );
-
-    useEffect(() => {
-        viewerElement.skyboxBlur = skyboxBlur;
-    }, [viewerElement, skyboxBlur]);
-
     const onToneMappingChange = useCallback(
         (value: string | number) => {
             updateToneMapping(value as PostProcessing["toneMapping"]);
@@ -1044,7 +1033,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     step={0.01}
                                     decimalCount={2}
                                     target={viewerDetails.scene}
-                                    onChange={onSkyboxBlurChange}
+                                    onChange={updateSkyboxBlur}
                                     lockObject={lockObject}
                                 />
                             </div>
