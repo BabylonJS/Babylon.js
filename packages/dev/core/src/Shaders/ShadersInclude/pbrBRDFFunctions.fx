@@ -429,6 +429,41 @@ float diffuseBRDF_Burley(float NdotL, float NdotV, float VdotH, float roughness)
     return fresnel / PI;
 }
 
+const float constant1_FON = 0.5f - 2.0f / (3.0f * PI);
+const float constant2_FON = 2.0f / 3.0f - 28.0f / (15.0f * PI);
+
+// Fujii Oren-Nayar (FON) directional albedo (approximate).
+float E_FON_approx(float mu, float roughness)
+{
+    float sigma = roughness; // FON sigma prime
+    float mucomp = 1.0f - mu;
+    float mucomp2 = mucomp * mucomp;
+    const mat2 Gcoeffs = mat2(0.0571085289f, -0.332181442f,
+                               0.491881867f, 0.0714429953f);
+    float GoverPi = dot(Gcoeffs * vec2(mucomp, mucomp2), vec2(1.0f, mucomp2));
+    return (1.0f + sigma * GoverPi) / (1.0f + constant1_FON * sigma);
+}
+
+vec3 diffuseBRDF_EON(vec3 rho, float roughness, float NdotL, float NdotV)
+{
+    float sigma = roughness;                            // FON sigma prime
+    float mu_i = NdotL;                            // input angle cos
+    float mu_o = NdotV;                            // output angle cos
+    float s = NdotL - mu_i * mu_o;    // QON s term
+    float sovertF = s > 0.0f ? s / max(mu_i, mu_o) : s; // FON s/t
+    float AF = 1.0f / (1.0f + constant1_FON * sigma);   // FON A coeff.
+    vec3 f_ss = (rho * RECIPROCAL_PI) * AF * (1.0f + sigma * sovertF); // single-scatter
+    float EFo = E_FON_approx(mu_o, sigma);      // FON wo albedo (approx)
+    float EFi = E_FON_approx(mu_i, sigma);      // FON wi albedo (approx)
+    float avgEF = AF * (1.0f + constant2_FON * sigma);  // avg. albedo
+    vec3 rho_ms = (rho * rho) * avgEF / (vec3(1.0f) - rho * (1.0f - avgEF));
+    const float eps = 1.0e-7f;
+    vec3 f_ms = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0f - EFo) // multi-scatter lobe
+                                 * max(eps, 1.0f - EFi)
+                                 / max(eps, 1.0f - avgEF);
+    return f_ss + f_ms;
+}
+
 #ifdef SS_TRANSLUCENCY
     // Pixar diffusion profile
     // http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf

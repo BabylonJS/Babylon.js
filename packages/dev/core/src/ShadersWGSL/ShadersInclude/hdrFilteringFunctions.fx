@@ -157,7 +157,7 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
+        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, inputV: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
