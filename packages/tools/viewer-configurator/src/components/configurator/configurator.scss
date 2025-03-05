@@ -1,5 +1,5 @@
 .ConfiguratorContainer {
-    $line-height: 25px;
+    $line-height: 22px;
     $line-padding-left: 3px;
     $line-padding-right: 5px;
     $line-padding-top-bottom: 5px;
@@ -16,7 +16,6 @@
     height: 100vh;
     width: 100%;
     box-sizing: border-box;
-    line-height: $line-height;
 
     .Sticky {
         position: sticky;
@@ -57,16 +56,15 @@
 
     // Input: prevent default styling
     input {
-        border: 0;
-        border-radius: $border-radius;
         box-sizing: border-box;
         width: 100%;
+        height: 100%;
         font: inherit; // Forms don't inherit the font-family by default
     }
 
     // Styling for FontAwesome icons
     .faIconButton {
-        height: 60%;
+        height: $line-height - 4px;
     }
     .faIconButton.disabled {
         opacity: 0.5;
@@ -174,6 +172,14 @@
         }
     }
 
+    .textInputLine {
+        height: 100%;
+
+        .value {
+            height: 100%;
+        }
+    }
+
     // TextInputLineComponent override, multiline. Is bespoke, so fine to do like this.
     .textInputArea {
         height: 8 * $line-height;
@@ -200,29 +206,16 @@
         }
     }
 
-    // TextInputLineComponent override, single line
-    .textInputLine {
-        height: 100%;
-        .value {
-            height: 100%;
-            input {
-                height: 100%;
-            }
-        }
-    }
-
     // ButtonLineComponent override
     .buttonLine {
         button {
             background: #222222;
-            outline: 1px solid rgb(51, 122, 183);
-            outline-offset: -1px;
+            border: 1px solid rgb(51, 122, 183);
             border-radius: $border-radius;
             color: white;
-            padding: 4px 5px;
+            padding: 3px;
             opacity: 0.9;
             width: 100%;
-            box-sizing: border-box;
         }
         button:hover {
             opacity: 1;

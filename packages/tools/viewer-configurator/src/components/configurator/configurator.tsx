@@ -291,7 +291,7 @@ const HotSpotEntry: FunctionComponent<{
 
 export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerElement, viewerDetails, viewer } = props;
-    const model = useObservableState(() => viewerDetails?.model, viewer?.onModelChanged, viewer?.onModelError);
+    const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged, viewer.onModelError);
     const lockObject = useMemo(() => new LockObject(), []);
 
     useEffect(() => {
@@ -313,19 +313,19 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const originalSkyboxBlur = useMemo(() => viewer?.environmentConfig.blur, [viewer]);
-    const originalClearColor = useMemo(() => viewerDetails?.scene.clearColor, [viewerDetails]);
-    const originalToneMapping = useMemo(() => viewer?.postProcessing.toneMapping, [viewer]);
-    const originalContrast = useMemo(() => viewer?.postProcessing.contrast, [viewer]);
-    const originalExposure = useMemo(() => viewer?.postProcessing.exposure, [viewer]);
+    const originalSkyboxBlur = useMemo(() => viewer.environmentConfig.blur, [viewer]);
+    const originalClearColor = useMemo(() => viewerDetails.scene.clearColor, [viewerDetails]);
+    const originalToneMapping = useMemo(() => viewer.postProcessing.toneMapping, [viewer]);
+    const originalContrast = useMemo(() => viewer.postProcessing.contrast, [viewer]);
+    const originalExposure = useMemo(() => viewer.postProcessing.exposure, [viewer]);
     // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-    //const originalAutoOrbit = useMemo(() => viewer?.cameraAutoOrbit.enabled, [viewer]);
+    //const originalAutoOrbit = useMemo(() => viewer.cameraAutoOrbit.enabled, [viewer]);
     const originalAutoOrbit = false;
-    const originalAutoOrbitSpeed = useMemo(() => viewer?.cameraAutoOrbit.speed, [viewer]);
-    const originalAutoOrbitDelay = useMemo(() => viewer?.cameraAutoOrbit.delay, [viewer]);
+    const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
+    const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
 
-    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
-    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
+    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
+    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
 
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
     const [syncEnvironment, setSyncEnvironment] = useState(true);
@@ -339,7 +339,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return !!environmentSkyboxUrl;
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
     const [skyboxBlur, setSkyboxBlur, resetSkyboxBlur, isSkyboxBlurDefault] = useConfiguration(originalSkyboxBlur);
-    const [clearColor, setClearColor] = useState(originalClearColor);
+    const [clearColor, setClearColor, resetClearColor, isClearColorDefault] = useConfiguration(originalClearColor);
 
     const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration2(
         undefined,
@@ -389,6 +389,14 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [postProcessingState]);
 
     const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
+    const isAutoOrbitDefaultState = useMemo(() => {
+        return {
+            enabled: autoOrbitState.enabled === originalAutoOrbit,
+            speed: autoOrbitState.speed === originalAutoOrbitSpeed,
+            delay: autoOrbitState.delay === originalAutoOrbitDelay,
+        };
+    }, [autoOrbitState]);
+
     const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
     const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
     const [canRevertAnimationState, setCanRevertAnimationState] = useState(false);
@@ -495,7 +503,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 attributes.push(`skybox-blur="${skyboxBlur}"`);
             }
         } else {
-            if (!clearColor.equals(originalClearColor)) {
+            if (!isClearColorDefault) {
                 attributes.push(`clear-color="${clearColor.toHexString()}"`);
             }
         }
@@ -1040,7 +1048,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     )}
                     {hasSkybox && (
                         <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
+                            <div className="FlexItem" style={{ flex: 1 }}>
                                 <SliderLineComponent
                                     label="Skybox Blur"
                                     directValue={skyboxBlur}
@@ -1057,12 +1065,22 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
-                        <Color4LineComponent
-                            label="Clear color"
-                            target={clearColorWrapper}
-                            propertyName="clearColor"
-                            onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
-                            lockObject={lockObject}
+                        <div className="FlexItem" style={{ flex: 1 }}>
+                            <Color4LineComponent
+                                label="Clear color"
+                                target={clearColorWrapper}
+                                propertyName="clearColor"
+                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                                lockObject={lockObject}
+                            />
+                        </div>
+                        <FontAwesomeIconButton
+                            title="Reset clear color"
+                            className="FlexItem"
+                            style={{ alignSelf: "flex-start", marginTop: "2px" }}
+                            icon={faTrashCan}
+                            disabled={isClearColorDefault}
+                            onClick={resetClearColor}
                         />
                     </div>
                 </LineContainerComponent>
@@ -1158,7 +1176,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitSpeedChange}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit speed" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitSpeedChange()} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit speed"
+                                className="FlexItem"
+                                disabled={isAutoOrbitDefaultState.speed}
+                                icon={faTrashCan}
+                                onClick={() => onAutoOrbitSpeedChange()}
+                            />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
@@ -1172,7 +1196,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitDelayChange}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit delay" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitDelayChange()} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit delay"
+                                className="FlexItem"
+                                disabled={isAutoOrbitDefaultState.delay}
+                                icon={faTrashCan}
+                                onClick={() => onAutoOrbitDelayChange()}
+                            />
                         </div>
                     </>
                 )}
