@@ -4,7 +4,7 @@ import { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherCo
 
 /** @internal */
 export abstract class _AbstractSpatialAudioAttacher {
-    private _attacherComponent: _SpatialAudioAttacherComponent;
+    private readonly _attacherComponent: _SpatialAudioAttacherComponent;
 
     protected abstract _attachedPosition: Vector3;
     protected abstract _attachedRotationQuaternion: Quaternion;
