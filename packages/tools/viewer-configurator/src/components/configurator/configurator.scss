@@ -65,7 +65,7 @@
 
     // Styling for FontAwesome icons
     .faIconButton {
-        height: 60%;
+        height: $line-height - 4px;
     }
     .faIconButton.disabled {
         opacity: 0.5;

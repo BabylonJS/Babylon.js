@@ -281,7 +281,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return !!environmentSkyboxUrl;
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
     const [skyboxBlur, setSkyboxBlur, resetSkyboxBlur, isSkyboxBlurDefault] = useConfiguration(originalSkyboxBlur);
-    const [clearColor, setClearColor] = useState(originalClearColor);
+    const [clearColor, setClearColor, resetClearColor, isClearColorDefault] = useConfiguration(originalClearColor);
     const [cameraState, setCameraState] = useState<Readonly<{ alpha: number; beta: number; radius: number; target: Vector3 }>>();
     const isCameraStateDefault = useMemo(() => cameraState == null, [cameraState]);
     const [canRevertCameraState, setCanRevertCameraState] = useState(false);
@@ -425,7 +425,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 attributes.push(`skybox-blur="${skyboxBlur}"`);
             }
         } else {
-            if (!clearColor.equals(originalClearColor)) {
+            if (!isClearColorDefault) {
                 attributes.push(`clear-color="${clearColor.toHexString()}"`);
             }
         }
@@ -986,7 +986,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     )}
                     {hasSkybox && (
                         <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
+                            <div className="FlexItem" style={{ flex: 1 }}>
                                 <SliderLineComponent
                                     label="Skybox Blur"
                                     directValue={skyboxBlur}
@@ -1003,12 +1003,22 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
-                        <Color4LineComponent
-                            label="Clear color"
-                            target={clearColorWrapper}
-                            propertyName="clearColor"
-                            onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
-                            lockObject={lockObject}
+                        <div className="FlexItem" style={{ flex: 1 }}>
+                            <Color4LineComponent
+                                label="Clear color"
+                                target={clearColorWrapper}
+                                propertyName="clearColor"
+                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                                lockObject={lockObject}
+                            />
+                        </div>
+                        <FontAwesomeIconButton
+                            title="Reset clear color"
+                            className="FlexItem"
+                            style={{ alignSelf: "flex-start", marginTop: "2px" }}
+                            icon={faTrashCan}
+                            disabled={isClearColorDefault}
+                            onClick={resetClearColor}
                         />
                     </div>
                 </LineContainerComponent>
