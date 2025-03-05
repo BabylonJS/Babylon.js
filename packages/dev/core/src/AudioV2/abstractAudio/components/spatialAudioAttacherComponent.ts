@@ -1,10 +1,12 @@
 import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
-import type { _AbstractSpatialAudioAttacher, ISpatialAudioNode } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import type { _AbstractSpatialAudioAttacher } from "../spatialAttachers/abstractSpatialAudioAttacher";
 import { _CreateSpatialAudioCameraAttacherAsync } from "../spatialAttachers/spatialAudioCameraAttacher";
 import { _CreateSpatialAudioMeshAttacherAsync } from "../spatialAttachers/spatialAudioMeshAttacher";
 import { _CreateSpatialAudioTransformNodeAttacherAsync } from "../spatialAttachers/spatialAudioTransformNodeAttacher";
+import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import type { _SpatialAudioListener } from "../subProperties/spatialAudioListener";
 
 export const _SpatialAudioAttachedEntity = {
     CAMERA: "Camera",
@@ -34,13 +36,13 @@ export class _SpatialAudioAttacherComponent {
     public attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.POSITION_AND_ROTATION;
 
     /** @internal */
-    public readonly _spatialAudioNode: ISpatialAudioNode;
+    public readonly _spatialAudioNode: _SpatialAudioSubNode | _SpatialAudioListener;
 
     /**
      * Creates a new ExclusiveSpatialAudioAttacher.
      * @param spatialAudioNode - The spatial audio node to attach to
      */
-    public constructor(spatialAudioNode: ISpatialAudioNode) {
+    public constructor(spatialAudioNode: _SpatialAudioSubNode | _SpatialAudioListener) {
         this._spatialAudioNode = spatialAudioNode;
     }
 

@@ -4,8 +4,6 @@ import type { Nullable } from "../../../types";
 import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 
-const TempQuaternion = Quaternion.Identity();
-
 /**
  * NB: This function is async so it can use a dynamic import in the future if needed.
  * @internal
@@ -16,6 +14,8 @@ export async function _CreateSpatialAudioTransformNodeAttacherAsync(attacherComp
 
 /** @internal */
 export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAttacher {
+    private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);
+
     protected _transformNode: Nullable<TransformNode> = null;
 
     /** @internal */
@@ -44,13 +44,8 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     }
 
     protected get _attachedRotationQuaternion(): Quaternion {
-        if (!this._transformNode) {
-            TempQuaternion.copyFromFloats(0, 0, 0, 1);
-            return TempQuaternion;
-        }
-
-        this._transformNode.getWorldMatrix().decompose(undefined, TempQuaternion, undefined);
-        return TempQuaternion;
+        this._transformNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
+        return this._rotationQuaternion;
     }
 
     /** @internal */

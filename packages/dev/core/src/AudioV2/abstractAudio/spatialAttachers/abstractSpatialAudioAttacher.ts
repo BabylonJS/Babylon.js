@@ -3,14 +3,6 @@ import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioA
 import { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
 
 /** @internal */
-export interface ISpatialAudioNode {
-    /** @internal */
-    position: Vector3;
-    /** @internal */
-    rotationQuaternion: Quaternion;
-}
-
-/** @internal */
 export abstract class _AbstractSpatialAudioAttacher {
     private _attacherComponent: _SpatialAudioAttacherComponent;
 

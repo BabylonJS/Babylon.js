@@ -1,10 +1,10 @@
 import type { Camera } from "../../../Cameras/camera";
-import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 
-const TempQuaternion = Quaternion.Identity();
+const TempMatrix = new Matrix();
 
 /**
  * NB: This function is async so it can use a dynamic import in the future if needed.
@@ -16,6 +16,8 @@ export async function _CreateSpatialAudioCameraAttacherAsync(attacherComponent: 
 
 /** @internal */
 export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
+    private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);
+
     protected _camera: Nullable<Camera> = null;
 
     /** @internal */
@@ -44,14 +46,8 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     }
 
     protected get _attachedRotationQuaternion(): Quaternion {
-        if (!this._camera) {
-            TempQuaternion.copyFromFloats(0, 0, 0, 1);
-            return TempQuaternion;
-        }
-
-        // TODO: Use view matrix.
-        this._camera.getWorldMatrix().decompose(undefined, TempQuaternion, undefined);
-        return TempQuaternion;
+        this._camera?.getViewMatrix().invertToRef(TempMatrix).decompose(undefined, this._rotationQuaternion, undefined);
+        return this._rotationQuaternion;
     }
 
     /** @internal */
