@@ -1042,28 +1042,21 @@ export class Geometry implements IGetSetVerticesData {
         let stopChecking = false;
         let kind;
         for (kind in this._vertexBuffers) {
-            // using slice() to make a copy of the array and not just reference it
-            const data = this.getVerticesData(kind);
+            this.copyVerticesData(kind, vertexData as any);
 
-            if (data) {
-                if (data instanceof Float32Array) {
-                    vertexData.set(new Float32Array(<Float32Array>data), kind);
-                } else {
-                    vertexData.set((<number[]>data).slice(0), kind);
-                }
-                if (!stopChecking) {
-                    const vb = this.getVertexBuffer(kind);
+            if (!stopChecking) {
+                const vb = this.getVertexBuffer(kind);
 
-                    if (vb) {
-                        updatable = vb.isUpdatable();
-                        stopChecking = !updatable;
-                    }
+                if (vb) {
+                    updatable = vb.isUpdatable();
+                    stopChecking = !updatable;
                 }
             }
         }
 
         const geometry = new Geometry(id, this._scene, vertexData, updatable);
 
+        geometry._totalVertices = this._totalVertices;
         geometry.delayLoadState = this.delayLoadState;
         geometry.delayLoadingFile = this.delayLoadingFile;
         geometry._delayLoadingFunction = this._delayLoadingFunction;
