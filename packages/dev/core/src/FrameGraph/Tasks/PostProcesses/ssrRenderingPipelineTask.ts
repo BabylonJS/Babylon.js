@@ -21,10 +21,19 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
      */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
+    /**
+     * The normal texture used by the SSR effect.
+     */
     public normalTexture: FrameGraphTextureHandle;
 
+    /**
+     * The depth texture used by the SSR effect.
+     */
     public depthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The reflectivity texture used by the SSR effect
+     */
     public reflectivityTexture: FrameGraphTextureHandle;
 
     private _camera: Camera;
@@ -84,6 +93,10 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         }
     }
 
+    /**
+     * The texture type used by the different post processes created by SSR.
+     * It's a read-only property. If you want to change it, you must recreate the task and pass the appropriate texture type to the constructor.
+     */
     public readonly textureType: number;
 
     private readonly _ssr: FrameGraphSSRTask;
@@ -111,8 +124,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
         this.onTexturesAllocatedObservable.add((context) => {
             this._ssr.onTexturesAllocatedObservable.notifyObservers(context);
-            if (this._ssrBlurX.sourceTexture) {
-                // We should not forward the notification if blur is not enabled (sourceTexture will be undefined in that case)
+            // We should not forward the notification if blur is not enabled
+            if (this.ssr.blurDispersionStrength !== 0) {
                 this._ssrBlurX.onTexturesAllocatedObservable.notifyObservers(context);
                 this._ssrBlurY.onTexturesAllocatedObservable.notifyObservers(context);
                 this._ssrBlurCombiner.onTexturesAllocatedObservable.notifyObservers(context);

@@ -46,14 +46,58 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     private _createTask(textureType: number) {
-        const sourceSamplingMode = this._frameGraphTask.sourceSamplingMode;
-        const maxDistance = this._frameGraphTask.ssr.maxDistance;
+        const sourceSamplingMode = this.sourceSamplingMode;
+        const maxDistance = this.maxDistance;
+        const step = this.step;
+        const thickness = this.thickness;
+        const strength = this.strength;
+        const reflectionSpecularFalloffExponent = this.reflectionSpecularFalloffExponent;
+        const maxSteps = this.maxSteps;
+        const roughnessFactor = this.roughnessFactor;
+        const selfCollisionNumSkip = this.selfCollisionNumSkip;
+        const reflectivityThreshold = this.reflectivityThreshold;
+        const ssrDownsample = this.ssrDownsample;
+        const blurDispersionStrength = this.blurDispersionStrength;
+        const blurDownsample = this.blurDownsample;
+        const enableSmoothReflections = this.enableSmoothReflections;
+        const attenuateScreenBorders = this.attenuateScreenBorders;
+        const attenuateIntersectionDistance = this.attenuateIntersectionDistance;
+        const attenuateIntersectionIterations = this.attenuateIntersectionIterations;
+        const attenuateFacingCamera = this.attenuateFacingCamera;
+        const attenuateBackfaceReflection = this.attenuateBackfaceReflection;
+        const clipToFrustum = this.clipToFrustum;
+        const useFresnel = this.useFresnel;
+        const inputTextureColorIsInGammaSpace = this.inputTextureColorIsInGammaSpace;
+        const generateOutputInGammaSpace = this.generateOutputInGammaSpace;
+        const debug = this.debug;
 
         this._frameGraphTask.dispose();
-
         this._frameGraphTask = new FrameGraphSSRRenderingPipelineTask(this.name, this._frameGraph, textureType);
-        this._frameGraphTask.sourceSamplingMode = sourceSamplingMode;
-        this._frameGraphTask.ssr.maxDistance = maxDistance;
+
+        this.sourceSamplingMode = sourceSamplingMode;
+        this.maxDistance = maxDistance;
+        this.step = step;
+        this.thickness = thickness;
+        this.strength = strength;
+        this.reflectionSpecularFalloffExponent = reflectionSpecularFalloffExponent;
+        this.maxSteps = maxSteps;
+        this.roughnessFactor = roughnessFactor;
+        this.selfCollisionNumSkip = selfCollisionNumSkip;
+        this.reflectivityThreshold = reflectivityThreshold;
+        this.ssrDownsample = ssrDownsample;
+        this.blurDispersionStrength = blurDispersionStrength;
+        this.blurDownsample = blurDownsample;
+        this.enableSmoothReflections = enableSmoothReflections;
+        this.attenuateScreenBorders = attenuateScreenBorders;
+        this.attenuateIntersectionDistance = attenuateIntersectionDistance;
+        this.attenuateIntersectionIterations = attenuateIntersectionIterations;
+        this.attenuateFacingCamera = attenuateFacingCamera;
+        this.attenuateBackfaceReflection = attenuateBackfaceReflection;
+        this.clipToFrustum = clipToFrustum;
+        this.useFresnel = useFresnel;
+        this.inputTextureColorIsInGammaSpace = inputTextureColorIsInGammaSpace;
+        this.generateOutputInGammaSpace = generateOutputInGammaSpace;
+        this.debug = debug;
 
         this._additionalConstructionParameters = [textureType];
     }
