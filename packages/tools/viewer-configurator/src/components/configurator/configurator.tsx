@@ -303,6 +303,35 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
 
+    useEffect(() => {
+        viewerElement.source = modelUrl;
+
+        const onModelChange = (event: CustomEvent<Nullable<string | File | unknown>>) => {
+            const source = event.detail;
+            let sourceUrl = "";
+            if (source) {
+                if (typeof source === "string") {
+                    sourceUrl = source;
+                } else if (source instanceof File) {
+                    sourceUrl = source.name;
+                }
+            }
+            setModelUrl(sourceUrl);
+        };
+
+        const onModelError = () => {
+            setModelUrl("");
+        };
+
+        viewerElement.addEventListener("modelchange", onModelChange);
+        viewerElement.addEventListener("modelerror", onModelError);
+
+        return () => {
+            viewerElement.removeEventListener("modelchange", onModelChange);
+            viewerElement.removeEventListener("modelerror", onModelError);
+        };
+    }, [viewerElement]);
+
     const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration(
         "",
         () => viewerElement.environment.lighting ?? "",
@@ -347,6 +376,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewerDetails.scene.onClearColorChangedObservable],
         [viewerDetails.scene]
     );
+    const clearColorWrapper = useMemo(() => {
+        return { clearColor };
+    }, [clearColor]);
 
     const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration(
         undefined,
@@ -513,42 +545,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
 
-    const dndSensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
-
-    useEffect(() => {
-        viewerElement.source = modelUrl;
-
-        const onModelChange = (event: CustomEvent<Nullable<string | File | unknown>>) => {
-            const source = event.detail;
-            let sourceUrl = "";
-            if (source) {
-                if (typeof source === "string") {
-                    sourceUrl = source;
-                } else if (source instanceof File) {
-                    sourceUrl = source.name;
-                }
-            }
-            setModelUrl(sourceUrl);
-        };
-
-        const onModelError = () => {
-            setModelUrl("");
-        };
-
-        viewerElement.addEventListener("modelchange", onModelChange);
-        viewerElement.addEventListener("modelerror", onModelError);
-
-        return () => {
-            viewerElement.removeEventListener("modelchange", onModelChange);
-            viewerElement.removeEventListener("modelerror", onModelError);
-        };
-    }, [viewerElement]);
-
     useEffect(() => {
         setHotspots([]);
     }, [model]);
@@ -559,6 +555,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             return hotspots;
         }, {});
     }, [viewerElement, hotspots]);
+
+    const dndSensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
@@ -927,8 +930,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetAnimationAutoPlay,
         resetSelectedMaterialVariant,
     ]);
-
-    const clearColorWrapper = { clearColor };
 
     return (
         <div className="ConfiguratorContainer">
