@@ -325,10 +325,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
     const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
 
-    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
-    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
-
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
+
     const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration2(
         "",
         () => viewerElement.environment.lighting ?? "",
@@ -407,19 +405,35 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const [postProcessingState, setPostProcessingState] = useState<Readonly<PostProcessing>>({
-        toneMapping: originalToneMapping,
-        contrast: originalContrast,
-        exposure: originalExposure,
-    });
+    const [canRevertToneMapping, canResetToneMapping, revertToneMapping, resetToneMapping, updateToneMapping, snapshotToneMapping, toneMapping] = useConfiguration2(
+        viewer.postProcessing.toneMapping,
+        () => viewer.postProcessing.toneMapping,
+        (toneMapping) => (viewer.postProcessing = { toneMapping }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+    const toneMappingWrapper = useMemo(() => {
+        return { toneMapping };
+    }, [toneMapping]);
 
-    const isPostProcessingDefaultState = useMemo(() => {
-        return {
-            toneMapping: postProcessingState.toneMapping === originalToneMapping,
-            contrast: postProcessingState.contrast === originalContrast,
-            exposure: postProcessingState.exposure === originalExposure,
-        };
-    }, [postProcessingState]);
+    const [canRevertContrast, canResetContrast, revertContrast, resetContrast, updateContrast, snapshotContrast, contrast] = useConfiguration2(
+        viewer.postProcessing.contrast,
+        () => viewer.postProcessing.contrast,
+        (contrast) => (viewer.postProcessing = { contrast }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+
+    const [canRevertExposure, canResetExposure, revertExposure, resetExposure, updateExposure, snapshotExposure, exposure] = useConfiguration2(
+        viewer.postProcessing.exposure,
+        () => viewer.postProcessing.exposure,
+        (exposure) => (viewer.postProcessing = { exposure }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
 
     const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
     const isAutoOrbitDefaultState = useMemo(() => {
@@ -514,6 +528,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }, {});
     }, [viewerElement, hotspots]);
 
+    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
+    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
+
     const attributes = useMemo(() => {
         const attributes: string[] = [`source="${modelUrl || "[model url]"}"`];
 
@@ -541,16 +558,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             }
         }
 
-        if (postProcessingState.toneMapping !== originalToneMapping) {
-            attributes.push(`tone-mapping="${postProcessingState.toneMapping}"`);
+        if (canResetToneMapping) {
+            attributes.push(`tone-mapping="${toneMapping}"`);
         }
 
-        if (postProcessingState.contrast !== originalContrast) {
-            attributes.push(`contrast="${postProcessingState.contrast.toFixed(1)}"`);
+        if (canResetContrast) {
+            attributes.push(`contrast="${contrast.toFixed(1)}"`);
         }
 
-        if (postProcessingState.exposure !== originalExposure) {
-            attributes.push(`exposure="${postProcessingState.exposure.toFixed(1)}"`);
+        if (canResetExposure) {
+            attributes.push(`exposure="${exposure.toFixed(1)}"`);
         }
 
         if (cameraState) {
@@ -633,7 +650,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         hasSkybox,
         skyboxBlur,
         clearColor,
-        postProcessingState,
+        toneMapping,
+        contrast,
+        exposure,
         cameraState,
         autoOrbitState,
         hasAnimations,
@@ -796,35 +815,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [viewerElement, skyboxBlur]);
 
     const onToneMappingChange = useCallback(
-        (value?: string | number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, toneMapping: (value as PostProcessing["toneMapping"]) ?? originalToneMapping };
-            });
+        (value: string | number) => {
+            updateToneMapping(value as PostProcessing["toneMapping"]);
         },
-        [setPostProcessingState]
+        [updateToneMapping]
     );
-
-    const onContrastChange = useCallback(
-        (value?: number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, contrast: value ?? originalContrast };
-            });
-        },
-        [setPostProcessingState]
-    );
-
-    const onExposureChange = useCallback(
-        (value?: number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, exposure: value ?? originalExposure };
-            });
-        },
-        [setPostProcessingState]
-    );
-
-    useEffect(() => {
-        viewer.postProcessing = postProcessingState;
-    }, [viewer, postProcessingState]);
 
     const onAutoOrbitChanged = useCallback(
         (value?: boolean) => {
@@ -949,9 +944,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onSyncEnvironmentChanged();
         resetSkyboxBlur();
         resetClearColor();
-        onToneMappingChange();
-        onContrastChange();
-        onExposureChange();
+        resetToneMapping();
+        resetContrast();
+        resetExposure();
         resetCamera();
         onAutoOrbitChanged();
         onAutoOrbitSpeedChange();
@@ -964,9 +959,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onSyncEnvironmentChanged,
         resetSkyboxBlur,
         resetClearColor,
-        onToneMappingChange,
-        onContrastChange,
-        onExposureChange,
+        resetToneMapping,
+        resetContrast,
+        resetExposure,
         resetCamera,
         onAutoOrbitChanged,
         onAutoOrbitSpeedChange,
@@ -1102,59 +1097,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             label="Tone Mapping"
                             valuesAreStrings={true}
                             options={toneMappingOptions}
-                            target={postProcessingState}
+                            target={toneMappingWrapper}
                             propertyName={"toneMapping"}
                             noDirectUpdate={true}
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset tone mapping"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.toneMapping}
-                        onClick={() => onToneMappingChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset tone mapping" className="FlexItem" icon={faTrashCan} disabled={!canResetToneMapping} onClick={resetToneMapping} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <SliderLineComponent
-                            label="Contrast"
-                            directValue={postProcessingState.contrast}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={onContrastChange}
-                        />
+                        <SliderLineComponent label="Contrast" directValue={contrast} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateContrast} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset contrast"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.contrast}
-                        onClick={() => onContrastChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset contrast" className="FlexItem" icon={faTrashCan} disabled={!canResetContrast} onClick={resetContrast} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <SliderLineComponent
-                            label="Exposure"
-                            directValue={postProcessingState.exposure}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={onExposureChange}
-                        />
+                        <SliderLineComponent label="Exposure" directValue={exposure} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateExposure} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset exposure"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.exposure}
-                        onClick={() => onExposureChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset exposure" className="FlexItem" icon={faTrashCan} disabled={!canResetExposure} onClick={resetExposure} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
