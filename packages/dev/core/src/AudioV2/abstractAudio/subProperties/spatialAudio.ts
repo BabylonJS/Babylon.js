@@ -1,11 +1,15 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { AbstractMesh, TransformNode } from "../../../Meshes";
 import type { Nullable } from "../../../types";
+import { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
-import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty, type _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import { AudioSubNode } from "../subNodes/audioSubNode";
+import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
-export class _SpatialAudio extends AbstractSpatialAudio {
+export abstract class _SpatialAudio extends AbstractSpatialAudio {
     private _position: Vector3 = _SpatialAudioDefaults.position.clone();
     private _rotation: Vector3 = _SpatialAudioDefaults.rotation.clone();
     private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
@@ -14,7 +18,35 @@ export class _SpatialAudio extends AbstractSpatialAudio {
     /** @internal */
     public constructor(subGraph: _AbstractAudioSubGraph) {
         super();
+
         this._subGraph = subGraph;
+    }
+
+    /** @internal */
+    public get attachedMesh(): Nullable<AbstractMesh> {
+        return _GetSpatialAudioProperty(this._subGraph, "attachedMesh");
+    }
+
+    public set attachedMesh(value: Nullable<AbstractMesh>) {
+        _SetSpatialAudioProperty(this._subGraph, "attachedMesh", value);
+    }
+
+    /** @internal */
+    public get attachedTransformNode(): Nullable<TransformNode> {
+        return _GetSpatialAudioProperty(this._subGraph, "attachedTransformNode");
+    }
+
+    public set attachedTransformNode(value: Nullable<TransformNode>) {
+        _SetSpatialAudioProperty(this._subGraph, "attachedTransformNode", value);
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return _GetSpatialAudioProperty(this._subGraph, "attachmentType");
+    }
+
+    public set attachmentType(value: SpatialAudioAttachmentType) {
+        _SetSpatialAudioProperty(this._subGraph, "attachmentType", value);
     }
 
     /** @internal */
@@ -28,7 +60,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "coneOuterAngle") ?? _SpatialAudioDefaults.coneOuterAngle;
+        return _GetSpatialAudioProperty(this._subGraph, "coneOuterAngle");
     }
 
     public set coneOuterAngle(value: number) {
@@ -37,7 +69,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get coneOuterVolume(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "coneOuterVolume") ?? _SpatialAudioDefaults.coneOuterVolume;
+        return _GetSpatialAudioProperty(this._subGraph, "coneOuterVolume");
     }
 
     public set coneOuterVolume(value: number) {
@@ -46,11 +78,16 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get distanceModel(): DistanceModelType {
-        return _GetSpatialAudioProperty(this._subGraph, "distanceModel") ?? _SpatialAudioDefaults.distanceModel;
+        return _GetSpatialAudioProperty(this._subGraph, "distanceModel");
     }
 
     public set distanceModel(value: DistanceModelType) {
         _SetSpatialAudioProperty(this._subGraph, "distanceModel", value);
+    }
+
+    /** @internal */
+    public get isAttached(): boolean {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.isAttached ?? false;
     }
 
     /** @internal */
@@ -68,7 +105,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get panningModel(): PanningModelType {
-        return _GetSpatialAudioProperty(this._subGraph, "panningModel") ?? _SpatialAudioDefaults.panningModel;
+        return _GetSpatialAudioProperty(this._subGraph, "panningModel");
     }
 
     public set panningModel(value: PanningModelType) {
@@ -87,7 +124,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get referenceDistance(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "referenceDistance") ?? _SpatialAudioDefaults.referenceDistance;
+        return _GetSpatialAudioProperty(this._subGraph, "referenceDistance");
     }
 
     public set referenceDistance(value: number) {
@@ -96,7 +133,7 @@ export class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get rolloffFactor(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "rolloffFactor") ?? _SpatialAudioDefaults.rolloffFactor;
+        return _GetSpatialAudioProperty(this._subGraph, "rolloffFactor");
     }
 
     public set rolloffFactor(value: number) {
@@ -123,12 +160,31 @@ export class _SpatialAudio extends AbstractSpatialAudio {
         this._updateRotation();
     }
 
+    /**
+     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     */
+    public detach(): void {
+        _GetSpatialAudioSubNode(this._subGraph)?.detach();
+    }
+
     /** @internal */
     public update(): void {
         const subNode = _GetSpatialAudioSubNode(this._subGraph);
 
-        this._updatePosition(subNode);
-        this._updateRotation(subNode);
+        if (!subNode) {
+            return;
+        }
+
+        if (subNode.isAttached) {
+            subNode.updateAttached();
+        } else {
+            if (subNode.attachmentType & SpatialAudioAttachmentType.POSITION) {
+                this._updatePosition(subNode);
+            }
+            if (subNode.attachmentType & SpatialAudioAttachmentType.ROTATION) {
+                this._updateRotation(subNode);
+            }
+        }
     }
 
     private _updatePosition(subNode: Nullable<_SpatialAudioSubNode> = null): void {

@@ -1,5 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { SpatialAudioAttachmentType } from "../../abstractAudio/components/spatialAudioAttacherComponent";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
+import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TmpMatrix = Matrix.Zero();
@@ -7,8 +9,8 @@ const TmpQuaternion = new Quaternion();
 const TmpVector = Vector3.Zero();
 
 /** @internal */
-export function _CreateSpatialAudioListener(engine: _WebAudioEngine, autoUpdate: boolean): _SpatialAudioListener {
-    return new _SpatialWebAudioListener(engine, autoUpdate);
+export function _CreateSpatialAudioListener(engine: _WebAudioEngine, autoUpdate: boolean, minUpdateTime: number): _SpatialAudioListener {
+    return new _SpatialWebAudioListener(engine, autoUpdate, minUpdateTime);
 }
 
 /**
@@ -18,36 +20,30 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine, autoUpdate:
  */
 class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _audioContext: AudioContext;
-    private _autoUpdate: boolean = false;
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
     private _position: Vector3 = Vector3.Zero();
     private _rotation: Vector3 = Vector3.Zero();
     private _rotationQuaternion: Quaternion = new Quaternion();
+    private _updaterComponent: _SpatialWebAudioUpdaterComponent;
 
     /** @internal */
-    public constructor(engine: _WebAudioEngine, autoUpdate: boolean) {
+    public constructor(engine: _WebAudioEngine, autoUpdate: boolean, minUpdateTime: number) {
         super();
 
         this._audioContext = engine.audioContext;
+        this._updaterComponent = new _SpatialWebAudioUpdaterComponent(this, autoUpdate, minUpdateTime);
+    }
 
-        if (!autoUpdate) {
-            return;
-        }
+    /** @internal */
+    public get minUpdateTime(): number {
+        return this._updaterComponent.minUpdateTime;
+    }
 
-        this._autoUpdate = true;
-
-        const update = () => {
-            if (!this._autoUpdate) {
-                return;
-            }
-
-            this.update();
-            requestAnimationFrame(update);
-        };
-
-        requestAnimationFrame(update);
+    /** @internal */
+    public set minUpdateTime(value: number) {
+        this._updaterComponent.minUpdateTime = value;
     }
 
     /** @internal */
@@ -84,13 +80,22 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     public override dispose(): void {
         super.dispose();
 
-        this._autoUpdate = false;
+        this._updaterComponent.dispose();
+        this._updaterComponent = null!;
     }
 
     /** @internal */
     public update(): void {
-        this._updatePosition();
-        this._updateRotation();
+        if (this.isAttached) {
+            this._attacherComponent.update();
+        } else {
+            if (this.attachmentType & SpatialAudioAttachmentType.POSITION) {
+                this._updatePosition();
+            }
+            if (this.attachmentType & SpatialAudioAttachmentType.ROTATION) {
+                this._updateRotation();
+            }
+        }
     }
 
     private _updatePosition(): void {
