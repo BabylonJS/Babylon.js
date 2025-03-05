@@ -317,14 +317,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const originalToneMapping = useMemo(() => viewer.postProcessing.toneMapping, [viewer]);
-    const originalContrast = useMemo(() => viewer.postProcessing.contrast, [viewer]);
-    const originalExposure = useMemo(() => viewer.postProcessing.exposure, [viewer]);
-    // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-    const originalAutoOrbit = false;
-    const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
-    const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
-
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
 
     const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration2(
@@ -357,7 +349,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration2(
         viewer.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
-        (skyboxBlur) => (viewer.environmentConfig = { blur: skyboxBlur }),
+        (blur) => (viewer.environmentConfig = { blur }),
         undefined,
         [viewer.onEnvironmentConfigurationChanged],
         [viewer]
@@ -435,14 +427,35 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
-    const isAutoOrbitDefaultState = useMemo(() => {
-        return {
-            enabled: autoOrbitState.enabled === originalAutoOrbit,
-            speed: autoOrbitState.speed === originalAutoOrbitSpeed,
-            delay: autoOrbitState.delay === originalAutoOrbitDelay,
-        };
-    }, [autoOrbitState]);
+    const [canRevertAutoOrbit, canResetAutoOrbit, revertAutoOrbit, resetAutoOrbit, updateAutoOrbit, snapshotAutoOrbit, autoOrbit] = useConfiguration2(
+        // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
+        false,
+        () => viewer.cameraAutoOrbit.enabled,
+        (enabled) => (viewer.cameraAutoOrbit = { enabled }),
+        undefined,
+        [viewer.onCameraAutoOrbitChanged],
+        [viewer]
+    );
+
+    const [canRevertAutoOrbitSpeed, canResetAutoOrbitSpeed, revertAutoOrbitSpeed, resetAutoOrbitSpeed, updateAutoOrbitSpeed, snapshotAutoOrbitSpeed, autoOrbitSpeed] =
+        useConfiguration2(
+            viewer.cameraAutoOrbit.speed,
+            () => viewer.cameraAutoOrbit.speed,
+            (speed) => (viewer.cameraAutoOrbit = { speed }),
+            undefined,
+            [viewer.onCameraAutoOrbitChanged],
+            [viewer]
+        );
+
+    const [canRevertAutoOrbitDelay, canResetAutoOrbitDelay, revertAutoOrbitDelay, resetAutoOrbitDelay, updateAutoOrbitDelay, snapshotAutoOrbitDelay, autoOrbitDelay] =
+        useConfiguration2(
+            viewer.cameraAutoOrbit.delay,
+            () => viewer.cameraAutoOrbit.delay,
+            (delay) => (viewer.cameraAutoOrbit = { delay }),
+            undefined,
+            [viewer.onCameraAutoOrbitChanged],
+            [viewer]
+        );
 
     const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
     const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
@@ -576,16 +589,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             attributes.push(`camera-target="${target.x.toFixed(3)} ${target.y.toFixed(3)} ${target.z.toFixed(3)}"`);
         }
 
-        if (autoOrbitState.enabled !== originalAutoOrbit) {
+        if (canResetAutoOrbit) {
             attributes.push(`camera-auto-orbit`);
         }
 
-        if (autoOrbitState.enabled && autoOrbitState.speed !== originalAutoOrbitSpeed) {
-            attributes.push(`camera-auto-orbit-speed="${autoOrbitState.speed.toFixed(3)}"`);
+        if (canResetAutoOrbitSpeed) {
+            attributes.push(`camera-auto-orbit-speed="${autoOrbitSpeed.toFixed(3)}"`);
         }
 
-        if (autoOrbitState.enabled && autoOrbitState.delay !== originalAutoOrbitDelay) {
-            attributes.push(`camera-auto-orbit-delay="${autoOrbitState.delay.toFixed(0)}"`);
+        if (canResetAutoOrbitDelay) {
+            attributes.push(`camera-auto-orbit-delay="${autoOrbitDelay.toFixed(0)}"`);
         }
 
         if (hasAnimations) {
@@ -654,7 +667,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         contrast,
         exposure,
         cameraState,
-        autoOrbitState,
+        autoOrbit,
+        autoOrbitSpeed,
+        autoOrbitDelay,
         hasAnimations,
         animationState,
         animationAutoPlay,
@@ -821,37 +836,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [updateToneMapping]
     );
 
-    const onAutoOrbitChanged = useCallback(
-        (value?: boolean) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, enabled: value ?? originalAutoOrbit };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    const onAutoOrbitSpeedChange = useCallback(
-        (value?: number) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, speed: value ?? originalAutoOrbitSpeed };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    const onAutoOrbitDelayChange = useCallback(
-        (value?: number) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, delay: value ?? originalAutoOrbitDelay };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    useEffect(() => {
-        viewer.cameraAutoOrbit = autoOrbitState;
-    }, [viewer, autoOrbitState]);
-
     const onAnimationSnapshotClick = useCallback(() => {
         setAnimationState({ animationSpeed: viewer.animationSpeed, selectedAnimation: viewer.selectedAnimation });
     }, [viewer]);
@@ -860,7 +844,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         (value?: boolean) => {
             setAnimationAutoPlay(value ?? false);
         },
-        [setAutoOrbitState]
+        [setAnimationAutoPlay]
     );
 
     const onAnimationRevertClick = useCallback(() => {
@@ -948,9 +932,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetContrast();
         resetExposure();
         resetCamera();
-        onAutoOrbitChanged();
-        onAutoOrbitSpeedChange();
-        onAutoOrbitDelayChange();
+        resetAutoOrbit();
+        resetAutoOrbitSpeed();
+        resetAutoOrbitDelay();
         onAnimationResetClick();
         onAnimationAutoPlayChanged();
         resetSelectedMaterialVariant();
@@ -963,9 +947,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetContrast,
         resetExposure,
         resetCamera,
-        onAutoOrbitChanged,
-        onAutoOrbitSpeedChange,
-        onAutoOrbitDelayChange,
+        resetAutoOrbit,
+        resetAutoOrbitSpeed,
+        resetAutoOrbitDelay,
         onAnimationResetClick,
         onAnimationAutoPlayChanged,
         resetSelectedMaterialVariant,
@@ -1130,49 +1114,49 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <FontAwesomeIconButton title="Reset camera pose attributes" className="FlexItem" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
                 </div>
                 <div>
-                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbitState.enabled} onSelect={onAutoOrbitChanged} />
+                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbit} onSelect={updateAutoOrbit} />
                 </div>
-                {autoOrbitState.enabled && (
+                {autoOrbit && (
                     <>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Speed"
-                                    directValue={autoOrbitState.speed}
+                                    directValue={autoOrbitSpeed}
                                     minimum={0}
                                     maximum={0.524}
                                     step={0.01}
                                     decimalCount={3}
                                     lockObject={lockObject}
-                                    onChange={onAutoOrbitSpeedChange}
+                                    onChange={updateAutoOrbitSpeed}
                                 />
                             </div>
                             <FontAwesomeIconButton
                                 title="Reset auto orbit speed"
                                 className="FlexItem"
-                                disabled={isAutoOrbitDefaultState.speed}
+                                disabled={!canResetAutoOrbitSpeed}
                                 icon={faTrashCan}
-                                onClick={() => onAutoOrbitSpeedChange()}
+                                onClick={resetAutoOrbitSpeed}
                             />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Delay"
-                                    directValue={autoOrbitState.delay}
+                                    directValue={autoOrbitDelay}
                                     minimum={0}
                                     maximum={5000}
                                     step={1}
                                     lockObject={lockObject}
-                                    onChange={onAutoOrbitDelayChange}
+                                    onChange={updateAutoOrbitDelay}
                                 />
                             </div>
                             <FontAwesomeIconButton
                                 title="Reset auto orbit delay"
                                 className="FlexItem"
-                                disabled={isAutoOrbitDefaultState.delay}
+                                disabled={!canResetAutoOrbitDelay}
                                 icon={faTrashCan}
-                                onClick={() => onAutoOrbitDelayChange()}
+                                onClick={resetAutoOrbitDelay}
                             />
                         </div>
                     </>

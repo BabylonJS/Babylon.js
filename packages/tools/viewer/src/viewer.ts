@@ -790,7 +790,7 @@ export class Viewer implements IDisposable {
     /**
      * The post processing configuration.
      */
-    public get postProcessing(): PostProcessing {
+    public get postProcessing(): Readonly<PostProcessing> {
         let toneMapping: ToneMapping;
         switch (this._toneMappingType) {
             case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
