@@ -457,28 +457,53 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             [viewer]
         );
 
-    const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
-    const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
-    const [canRevertAnimationState, setCanRevertAnimationState] = useState(false);
+    const [canRevertAnimationState, canResetAnimationState, revertAnimationState, resetAnimationState, updateAnimationState, snapshotAnimationState, animationState] =
+        useConfiguration2(
+            undefined,
+            () => {
+                return {
+                    animationSpeed: viewer.animationSpeed,
+                    selectedAnimation: viewer.selectedAnimation,
+                };
+            },
+            (animationState) => {
+                if (animationState) {
+                    viewer.animationSpeed = animationState.animationSpeed;
+                    viewer.selectedAnimation = animationState.selectedAnimation;
+                } else {
+                    viewer.animationSpeed = 1;
+                    viewer.selectedAnimation = 0;
+                }
+            },
+            (left, right) => {
+                return (
+                    left == right || (!!left && !!right && WithinEpsilon(left.animationSpeed, right.animationSpeed, Epsilon) && left.selectedAnimation === right.selectedAnimation)
+                );
+            },
+            [viewer.onAnimationSpeedChanged, viewer.onSelectedAnimationChanged],
+            [viewer]
+        );
 
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-        setCanRevertAnimationState(false);
-        if (animationState) {
-            const updateCanResetAnimationState = () => {
-                setCanRevertAnimationState(animationState.animationSpeed !== viewer.animationSpeed || animationState.selectedAnimation !== viewer.selectedAnimation);
-            };
+    const [
+        canRevertAnimationAutoPlay,
+        canResetAnimationAutoPlay,
+        revertAnimationAutoPlay,
+        resetAnimationAutoPlay,
+        updateAnimationAutoPlay,
+        snapshotAnimationAutoPlay,
+        animationAutoPlay,
+    ] = useConfiguration2(
+        false,
+        () => viewerElement.animationAutoPlay,
+        (autoPlay) => {
+            viewerElement.animationAutoPlay = autoPlay;
+            autoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
+        },
+        undefined,
+        [viewer.onIsAnimationPlayingChanged],
+        [viewer, viewerElement]
+    );
 
-            const selectedAnimationObserver = viewer.onSelectedAnimationChanged.add(updateCanResetAnimationState);
-            disposeActions.push(() => selectedAnimationObserver.remove());
-
-            const animationSpeedObserver = viewer.onAnimationSpeedChanged.add(updateCanResetAnimationState);
-            disposeActions.push(() => animationSpeedObserver.remove());
-        }
-        return () => disposeActions.forEach((dispose) => dispose());
-    }, [viewer, animationState]);
-
-    const [animationAutoPlay, setAnimationAutoPlay] = useState(false);
     const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
     const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
 
@@ -602,13 +627,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
 
         if (hasAnimations) {
-            if (animationState) {
-                const { animationSpeed, selectedAnimation } = animationState;
-                attributes.push(`animation-speed="${animationSpeed}"`);
-                attributes.push(`selected-animation="${selectedAnimation}"`);
+            if (animationState && canResetAnimationState) {
+                attributes.push(`selected-animation="${animationState.selectedAnimation}"`);
+                attributes.push(`animation-speed="${animationState.animationSpeed}"`);
             }
 
-            if (animationAutoPlay) {
+            if (canResetAnimationAutoPlay) {
                 attributes.push(`animation-auto-play`);
             }
         }
@@ -836,28 +860,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [updateToneMapping]
     );
 
-    const onAnimationSnapshotClick = useCallback(() => {
-        setAnimationState({ animationSpeed: viewer.animationSpeed, selectedAnimation: viewer.selectedAnimation });
-    }, [viewer]);
-
-    const onAnimationAutoPlayChanged = useCallback(
-        (value?: boolean) => {
-            setAnimationAutoPlay(value ?? false);
-        },
-        [setAnimationAutoPlay]
-    );
-
-    const onAnimationRevertClick = useCallback(() => {
-        if (animationState) {
-            viewer.selectedAnimation = animationState.selectedAnimation;
-            viewer.animationSpeed = animationState.animationSpeed;
-        }
-    }, [viewer, animationState]);
-
-    const onAnimationResetClick = useCallback(() => {
-        setAnimationState(undefined);
-    }, []);
-
     const onMaterialVariantsSnapshotClick = useCallback(() => {
         setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
     }, [viewer]);
@@ -914,15 +916,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [htmlSnippet]);
 
     const canRevertAll = useMemo(
-        () => canRevertAnimationState || canRevertCamera || canRevertSelectedMaterialVariant,
-        [canRevertAnimationState, canRevertCamera, canRevertSelectedMaterialVariant]
+        () => canRevertCamera || canRevertAnimationState || canRevertSelectedMaterialVariant,
+        [canRevertCamera, canRevertAnimationState, canRevertSelectedMaterialVariant]
     );
 
     const onRevertAllClick = useCallback(() => {
-        onAnimationRevertClick();
+        revertAnimationState();
         revertCamera();
         onMaterialVariantsRevertClick();
-    }, [revertCamera, onAnimationRevertClick, onMaterialVariantsRevertClick]);
+    }, [revertAnimationState, revertCamera, onMaterialVariantsRevertClick]);
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
@@ -935,8 +937,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetAutoOrbit();
         resetAutoOrbitSpeed();
         resetAutoOrbitDelay();
-        onAnimationResetClick();
-        onAnimationAutoPlayChanged();
+        resetAnimationState();
+        resetAnimationAutoPlay();
         resetSelectedMaterialVariant();
         setHotspots([]);
     }, [
@@ -950,8 +952,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetAutoOrbit,
         resetAutoOrbitSpeed,
         resetAutoOrbitDelay,
-        onAnimationResetClick,
-        onAnimationAutoPlayChanged,
+        resetAnimationState,
+        resetAnimationAutoPlay,
         resetSelectedMaterialVariant,
     ]);
 
@@ -1169,25 +1171,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Use Current Selections" onClick={onAnimationSnapshotClick} isDisabled={!hasAnimations} />
+                            <ButtonLineComponent label="Use Current Selections" onClick={snapshotAnimationState} isDisabled={!hasAnimations} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert animation state to snippet"
                             className="FlexItem"
                             disabled={!canRevertAnimationState}
                             icon={faRotateLeft}
-                            onClick={onAnimationRevertClick}
+                            onClick={revertAnimationState}
                         />
                         <FontAwesomeIconButton
                             title="Reset animation state attributes"
                             className="FlexItem"
-                            disabled={isAnimationStateDefault}
+                            disabled={!canResetAnimationState}
                             icon={faTrashCan}
-                            onClick={onAnimationResetClick}
+                            onClick={resetAnimationState}
                         />
                     </div>
                     <div>
-                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={onAnimationAutoPlayChanged} />
+                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={updateAnimationAutoPlay} />
                     </div>
                 </LineContainerComponent>
             )}
