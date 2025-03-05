@@ -117,7 +117,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         if (_HasSpatialAudioListenerOptions(options)) {
             this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime);
-            await this._listener.setOptions(options);
+            this._listener.setOptions(options);
         }
 
         this._resolveIsReadyPromise();

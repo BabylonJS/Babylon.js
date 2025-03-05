@@ -3,9 +3,9 @@ import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import type { _AbstractSpatialAudioAttacher } from "../spatialAttachers/abstractSpatialAudioAttacher";
-import { _CreateSpatialAudioCameraAttacherAsync } from "../spatialAttachers/spatialAudioCameraAttacher";
-import { _CreateSpatialAudioMeshAttacherAsync } from "../spatialAttachers/spatialAudioMeshAttacher";
-import { _CreateSpatialAudioTransformNodeAttacherAsync } from "../spatialAttachers/spatialAudioTransformNodeAttacher";
+import { _SpatialAudioCameraAttacher } from "../spatialAttachers/spatialAudioCameraAttacher";
+import { _SpatialAudioMeshAttacher } from "../spatialAttachers/spatialAudioMeshAttacher";
+import { _SpatialAudioTransformNodeAttacher } from "../spatialAttachers/spatialAudioTransformNodeAttacher";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
 import type { _SpatialAudioListener } from "../subProperties/spatialAudioListener";
 
@@ -29,7 +29,6 @@ export const enum SpatialAudioAttachmentType {
 export class _SpatialAudioAttacherComponent {
     private _attachedEntity: Nullable<AbstractMesh | Camera | TransformNode> = null;
     private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
-    private _isReadyPromise: Nullable<Promise<void>> = null;
 
     /**
      * The type of attachment to use; position, rotation, or both.
@@ -60,7 +59,7 @@ export class _SpatialAudioAttacherComponent {
             return;
         }
 
-        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.CAMERA);
+        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.CAMERA);
     }
 
     /**
@@ -76,7 +75,7 @@ export class _SpatialAudioAttacherComponent {
             return;
         }
 
-        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.MESH);
+        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.MESH);
     }
 
     /**
@@ -92,7 +91,7 @@ export class _SpatialAudioAttacherComponent {
             return;
         }
 
-        this._isReadyPromise = this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.TRANSFORM_NODE);
+        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.TRANSFORM_NODE);
     }
 
     /**
@@ -117,13 +116,6 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
-     * A promise that resolves when the attacher is ready.
-     */
-    public get isReadyPromise(): Promise<void> {
-        return this._isReadyPromise ?? Promise.resolve();
-    }
-
-    /**
      * Detaches the attached entity.
      */
     public detach() {
@@ -145,23 +137,29 @@ export class _SpatialAudioAttacherComponent {
         this._attacher?.update(true);
     }
 
-    private _createAttacher(attacherClassName: string): Nullable<Promise<_AbstractSpatialAudioAttacher>> {
-        switch (attacherClassName) {
-            case _SpatialAudioAttachedEntity.CAMERA:
-                return this._attachedEntity ? _CreateSpatialAudioCameraAttacherAsync(this) : null;
-            case _SpatialAudioAttachedEntity.MESH:
-                return this._attachedEntity ? _CreateSpatialAudioMeshAttacherAsync(this) : null;
-            case _SpatialAudioAttachedEntity.TRANSFORM_NODE:
-                return this._attachedEntity ? _CreateSpatialAudioTransformNodeAttacherAsync(this) : null;
-        }
-        return null;
-    }
-
-    private async _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): Promise<void> {
+    private _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): void {
         this.detach();
 
         this._attachedEntity = entity;
-        this._attacher = await this._createAttacher(attacherClassName);
+
+        if (!entity) {
+            this._attacher = null;
+        } else {
+            switch (attacherClassName) {
+                case _SpatialAudioAttachedEntity.CAMERA:
+                    this._attacher = new _SpatialAudioCameraAttacher(this);
+                    break;
+                case _SpatialAudioAttachedEntity.MESH:
+                    this._attacher = new _SpatialAudioMeshAttacher(this);
+                    break;
+                case _SpatialAudioAttachedEntity.TRANSFORM_NODE:
+                    this._attacher = new _SpatialAudioTransformNodeAttacher(this);
+                    break;
+                default:
+                    this._attacher = null;
+                    break;
+            }
+        }
 
         return;
     }

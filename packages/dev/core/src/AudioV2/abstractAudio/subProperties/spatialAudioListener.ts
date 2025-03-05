@@ -83,7 +83,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /** @internal */
-    public async setOptions(options: Partial<ISpatialAudioListenerOptions>): Promise<void> {
+    public setOptions(options: Partial<ISpatialAudioListenerOptions>): void {
         if (options.listenerAttachedCamera !== undefined) {
             this.attachedCamera = options.listenerAttachedCamera;
         } else if (options.listenerAttachedMesh !== undefined) {
@@ -95,8 +95,6 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         if (options.listenerAttachmentType !== undefined) {
             this.attachmentType = options.listenerAttachmentType;
         }
-
-        await this._attacherComponent.isReadyPromise;
 
         if (options.listenerMinUpdateTime !== undefined) {
             this.minUpdateTime = options.listenerMinUpdateTime;

@@ -72,7 +72,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
-    public async setOptions(options: Partial<ISpatialAudioOptions>): Promise<void> {
+    public setOptions(options: Partial<ISpatialAudioOptions>): void {
         this.attachedMesh = options.spatialAttachedMesh ?? null;
         this.attachedTransformNode = options.spatialAttachedTransformNode ?? null;
         this.attachmentType = options.spatialAttachmentType ?? _SpatialAudioDefaults.attachmentType;
@@ -84,8 +84,6 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.panningModel;
         this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.referenceDistance;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.rolloffFactor;
-
-        await this._attacherComponent.isReadyPromise;
 
         if (!this._attacherComponent.isAttachedToPosition && options.spatialPosition !== undefined) {
             this.position = options.spatialPosition;

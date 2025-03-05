@@ -4,14 +4,6 @@ import type { Nullable } from "../../../types";
 import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 
-/**
- * NB: This function is async so it can use a dynamic import in the future if needed.
- * @internal
- * */
-export async function _CreateSpatialAudioTransformNodeAttacherAsync(attacherComponent: _SpatialAudioAttacherComponent): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioTransformNodeAttacher(attacherComponent);
-}
-
 /** @internal */
 export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAttacher {
     private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);

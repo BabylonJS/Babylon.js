@@ -6,14 +6,6 @@ import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 
 const TempMatrix = new Matrix();
 
-/**
- * NB: This function is async so it can use a dynamic import in the future if needed.
- * @internal
- * */
-export async function _CreateSpatialAudioCameraAttacherAsync(attacherComponent: _SpatialAudioAttacherComponent): Promise<_AbstractSpatialAudioAttacher> {
-    return new _SpatialAudioCameraAttacher(attacherComponent);
-}
-
 /** @internal */
 export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);
