@@ -8,7 +8,7 @@ const TempMatrix = new Matrix();
 
 /** @internal */
 export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
-    private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);
+    private readonly _rotationQuaternion = new Quaternion();
 
     protected _camera: Nullable<Camera> = null;
 

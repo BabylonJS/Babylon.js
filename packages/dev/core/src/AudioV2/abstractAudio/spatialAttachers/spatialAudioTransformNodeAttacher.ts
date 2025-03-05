@@ -6,7 +6,7 @@ import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
 
 /** @internal */
 export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAttacher {
-    private readonly _rotationQuaternion = new Quaternion(0, 0, 0, 1);
+    private readonly _rotationQuaternion = new Quaternion();
 
     protected _transformNode: Nullable<TransformNode> = null;
 
