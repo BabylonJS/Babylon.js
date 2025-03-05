@@ -1,4 +1,4 @@
-import type { Camera } from "../../../Cameras";
+import type { Camera } from "../../../Cameras/camera";
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";

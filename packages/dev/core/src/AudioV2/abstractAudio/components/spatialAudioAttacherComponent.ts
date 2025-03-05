@@ -1,5 +1,6 @@
 import type { Camera } from "../../../Cameras/camera";
-import type { AbstractMesh, TransformNode } from "../../../Meshes";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
 import type { _AbstractSpatialAudioAttacher } from "../spatialAttachers/abstractSpatialAudioAttacher";
 import { _CreateSpatialAudioCameraAttacherAsync } from "../spatialAttachers/spatialAudioCameraAttacher";
