@@ -319,6 +319,14 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [postProcessingState]);
 
     const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
+    const isAutoOrbitDefaultState = useMemo(() => {
+        return {
+            enabled: autoOrbitState.enabled === originalAutoOrbit,
+            speed: autoOrbitState.speed === originalAutoOrbitSpeed,
+            delay: autoOrbitState.delay === originalAutoOrbitDelay,
+        };
+    }, [autoOrbitState]);
+
     const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
     const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
     const [canRevertAnimationState, setCanRevertAnimationState] = useState(false);
@@ -1126,7 +1134,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitSpeedChange}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit speed" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitSpeedChange()} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit speed"
+                                className="FlexItem"
+                                disabled={isAutoOrbitDefaultState.speed}
+                                icon={faTrashCan}
+                                onClick={() => onAutoOrbitSpeedChange()}
+                            />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
@@ -1140,7 +1154,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={onAutoOrbitDelayChange}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit delay" className="FlexItem" icon={faTrashCan} onClick={() => onAutoOrbitDelayChange()} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit delay"
+                                className="FlexItem"
+                                disabled={isAutoOrbitDefaultState.delay}
+                                icon={faTrashCan}
+                                onClick={() => onAutoOrbitDelayChange()}
+                            />
                         </div>
                     </>
                 )}
