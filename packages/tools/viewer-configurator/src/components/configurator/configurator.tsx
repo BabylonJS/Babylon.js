@@ -504,18 +504,40 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerElement]
     );
 
-    const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
-    const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
+    // const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
+    // const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
 
-    useEffect(() => {
-        setCanRevertSelectedMaterialVariant(false);
-        if (selectedMaterialVariant) {
-            const observer = viewer.onSelectedMaterialVariantChanged.add(() => {
-                setCanRevertSelectedMaterialVariant(viewer.selectedMaterialVariant !== selectedMaterialVariant);
-            });
-            return () => observer.remove();
-        }
-    }, [viewerDetails, selectedMaterialVariant]);
+    // useEffect(() => {
+    //     setCanRevertSelectedMaterialVariant(false);
+    //     if (selectedMaterialVariant) {
+    //         const observer = viewer.onSelectedMaterialVariantChanged.add(() => {
+    //             setCanRevertSelectedMaterialVariant(viewer.selectedMaterialVariant !== selectedMaterialVariant);
+    //         });
+    //         return () => observer.remove();
+    //     }
+    // }, [viewerDetails, selectedMaterialVariant]);
+    const [
+        canRevertSelectedMaterialVariant,
+        canResetSelectedMaterialVariant,
+        revertSelectedMaterialVariant,
+        resetSelectedMaterialVariant,
+        updateSelectedMaterialVariant,
+        snapshotSelectedMaterialVariant,
+        selectedMaterialVariant,
+    ] = useConfiguration2(
+        "",
+        () => viewer.selectedMaterialVariant,
+        (materialVariant) => {
+            if (materialVariant) {
+                viewer.selectedMaterialVariant = materialVariant;
+            } else {
+                viewer.selectedMaterialVariant = viewer.materialVariants[0];
+            }
+        },
+        undefined,
+        [viewer.onSelectedMaterialVariantChanged],
+        [viewer]
+    );
 
     const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
 
@@ -849,13 +871,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [updateToneMapping]
     );
 
-    const onMaterialVariantsSnapshotClick = useCallback(() => {
-        setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
-    }, [viewer]);
+    // const onMaterialVariantsSnapshotClick = useCallback(() => {
+    //     setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
+    // }, [viewer]);
 
-    const onMaterialVariantsRevertClick = useCallback(() => {
-        viewer.selectedMaterialVariant = selectedMaterialVariant;
-    }, [viewer, selectedMaterialVariant]);
+    // const onMaterialVariantsRevertClick = useCallback(() => {
+    //     viewer.selectedMaterialVariant = selectedMaterialVariant;
+    // }, [viewer, selectedMaterialVariant]);
 
     const onAddHotspotClick = useCallback(() => {
         setHotspots((hotspots) => {
@@ -908,8 +930,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const onRevertAllClick = useCallback(() => {
         revertAnimationState();
         revertCamera();
-        onMaterialVariantsRevertClick();
-    }, [revertAnimationState, revertCamera, onMaterialVariantsRevertClick]);
+        revertSelectedMaterialVariant();
+    }, [revertAnimationState, revertCamera, revertSelectedMaterialVariant]);
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
@@ -1185,21 +1207,21 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
+                            <ButtonLineComponent label="Snapshot Current State" onClick={snapshotSelectedMaterialVariant} isDisabled={!hasMaterialVariants} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert selected material variant to snippet"
                             className="FlexItem"
                             disabled={!canRevertSelectedMaterialVariant}
                             icon={faRotateLeft}
-                            onClick={onMaterialVariantsRevertClick}
+                            onClick={revertSelectedMaterialVariant}
                         />
                         <FontAwesomeIconButton
                             title="Reset material variant attribute"
                             className="FlexItem"
                             icon={faTrashCan}
+                            disabled={!canResetSelectedMaterialVariant}
                             onClick={resetSelectedMaterialVariant}
-                            disabled={isSelectedMaterialVariantDefault}
                         />
                     </div>
                 </LineContainerComponent>
