@@ -1,9 +1,9 @@
 import "./configurator.scss";
 import * as styles from "../../App.module.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping } from "viewer/index";
+import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping, Model } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { Color3, IInspectableOptions, Nullable, Vector3 } from "core/index";
+import type { Color3, IInspectableOptions, Nullable, Observable } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -68,6 +68,64 @@ function useConfiguration<DataType>(defaultValue: DataType) {
         setValue(defaultValue);
     }, [defaultValue]);
     return [value, setValue, resetValue, isDefaultValue] as const;
+}
+
+function compareArrays<T>(left: T[], right: T[]) {
+    return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function useConfiguration2<T>(
+    defaultState: T,
+    get: () => T,
+    set: (data: T) => void,
+    equals: (left: T, right: T) => boolean = (left, right) => left === right,
+    observables: Observable<any>[] = [],
+    dependencies?: unknown[]
+) {
+    const memoSet = useCallback(set, dependencies ?? []);
+    const memoGet = useCallback(get, dependencies ?? []);
+    const memoEquals = useCallback(equals, []);
+    const [configuredState, setConfiguredState] = useState(defaultState);
+    const liveState = useObservableState(memoGet, ...observables);
+    const [isConfigured, setIsConfigured] = useState(false);
+
+    useEffect(() => {
+        memoSet(configuredState);
+    }, [configuredState, memoSet]);
+
+    const canRevert = useMemo(() => {
+        return isConfigured && !memoEquals(liveState, configuredState);
+    }, [isConfigured, liveState, configuredState, memoEquals]);
+
+    const canReset = useMemo(() => {
+        return isConfigured && !memoEquals(defaultState, configuredState);
+    }, [isConfigured, defaultState, configuredState, memoEquals]);
+
+    const revert = useCallback(() => {
+        memoSet(configuredState);
+    }, [configuredState, memoSet]);
+
+    const reset = useCallback(() => {
+        setConfiguredState(defaultState);
+        setIsConfigured(false);
+    }, [defaultState]);
+
+    const update = useCallback(
+        (data: T) => {
+            if (!memoEquals(data, configuredState)) {
+                setConfiguredState(data);
+                setIsConfigured(true);
+            }
+        },
+        [setConfiguredState, memoEquals]
+    );
+
+    const snapshot = useCallback(() => {
+        setConfiguredState(liveState);
+        setIsConfigured(true);
+    }, [liveState]);
+
+    return [canRevert, canReset, revert, reset, update, snapshot, configuredState] as const;
 }
 
 const HotSpotEntry: FunctionComponent<{
@@ -233,6 +291,7 @@ const HotSpotEntry: FunctionComponent<{
 
 export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerElement, viewerDetails, viewer } = props;
+    const model = useObservableState(() => viewerDetails?.model, viewer?.onModelChanged, viewer?.onModelError);
     const lockObject = useMemo(() => new LockObject(), []);
 
     useEffect(() => {
@@ -265,7 +324,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const originalAutoOrbitSpeed = useMemo(() => viewer?.cameraAutoOrbit.speed, [viewer]);
     const originalAutoOrbitDelay = useMemo(() => viewer?.cameraAutoOrbit.delay, [viewer]);
 
-    const model = useObservableState(() => viewerDetails?.model, viewer?.onModelChanged);
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer?.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer?.materialVariants]);
 
@@ -282,27 +340,39 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
     const [skyboxBlur, setSkyboxBlur, resetSkyboxBlur, isSkyboxBlurDefault] = useConfiguration(originalSkyboxBlur);
     const [clearColor, setClearColor] = useState(originalClearColor);
-    const [cameraState, setCameraState] = useState<Readonly<{ alpha: number; beta: number; radius: number; target: Vector3 }>>();
-    const isCameraStateDefault = useMemo(() => cameraState == null, [cameraState]);
-    const [canRevertCameraState, setCanRevertCameraState] = useState(false);
 
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-        setCanRevertCameraState(false);
-        if (cameraState) {
-            const observer = viewerDetails.camera.onViewMatrixChangedObservable.add(() => {
-                // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
-                setCanRevertCameraState(
-                    !WithinEpsilon(viewerDetails.camera.alpha, cameraState.alpha, Epsilon * 10) ||
-                        !WithinEpsilon(viewerDetails.camera.beta, cameraState.beta, Epsilon * 10) ||
-                        !WithinEpsilon(viewerDetails.camera.radius, cameraState.radius, Epsilon) ||
-                        !viewerDetails.camera.target.equalsWithEpsilon(cameraState.target, Epsilon)
-                );
-            });
-            disposeActions.push(() => observer.remove());
-        }
-        return () => disposeActions.forEach((dispose) => dispose());
-    }, [viewerDetails, cameraState]);
+    const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration2(
+        undefined,
+        () => {
+            return {
+                alpha: viewerDetails.camera.alpha,
+                beta: viewerDetails.camera.beta,
+                radius: viewerDetails.camera.radius,
+                target: viewerDetails.camera.target.clone(),
+            };
+        },
+        (cameraState) => {
+            if (cameraState) {
+                viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
+            } else {
+                viewer.resetCamera();
+            }
+        },
+        (left, right) => {
+            return (
+                left == right ||
+                (!!left &&
+                    !!right &&
+                    // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
+                    WithinEpsilon(left.alpha, right.alpha, Epsilon * 10) &&
+                    WithinEpsilon(left.beta, right.beta, Epsilon * 10) &&
+                    WithinEpsilon(left.radius, right.radius, Epsilon) &&
+                    left.target.equalsWithEpsilon(right.target, Epsilon))
+            );
+        },
+        [viewerDetails.camera.onViewMatrixChangedObservable],
+        [viewer, viewerDetails.camera, model]
+    );
 
     const [postProcessingState, setPostProcessingState] = useState<Readonly<PostProcessing>>({
         toneMapping: originalToneMapping,
@@ -740,22 +810,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         viewer.postProcessing = postProcessingState;
     }, [viewer, postProcessingState]);
 
-    const onCameraSnapshotClick = useCallback(() => {
-        const { alpha, beta, radius, target } = viewerDetails.camera;
-        setCameraState({ alpha, beta, radius, target });
-    }, [viewerDetails]);
-
-    const onCameraRevertClick = useCallback(() => {
-        if (cameraState) {
-            viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
-            setCanRevertCameraState(false);
-        }
-    }, [viewerDetails, cameraState]);
-
-    const onCameraResetClick = useCallback(() => {
-        setCameraState(undefined);
-    }, []);
-
     const onAutoOrbitChanged = useCallback(
         (value?: boolean) => {
             setAutoOrbitState((autoOrbitState) => {
@@ -865,15 +919,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [htmlSnippet]);
 
     const canRevertAll = useMemo(
-        () => canRevertAnimationState || canRevertCameraState || canRevertSelectedMaterialVariant,
-        [canRevertAnimationState, canRevertCameraState, canRevertSelectedMaterialVariant]
+        () => canRevertAnimationState || canRevertCamera || canRevertSelectedMaterialVariant,
+        [canRevertAnimationState, canRevertCamera, canRevertSelectedMaterialVariant]
     );
 
     const onRevertAllClick = useCallback(() => {
         onAnimationRevertClick();
-        onCameraRevertClick();
+        revertCamera();
         onMaterialVariantsRevertClick();
-    }, [onCameraRevertClick, onAnimationRevertClick, onMaterialVariantsRevertClick]);
+    }, [revertCamera, onAnimationRevertClick, onMaterialVariantsRevertClick]);
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
@@ -882,7 +936,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onToneMappingChange();
         onContrastChange();
         onExposureChange();
-        onCameraResetClick();
+        resetCamera();
         onAutoOrbitChanged();
         onAutoOrbitSpeedChange();
         onAutoOrbitDelayChange();
@@ -895,7 +949,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         onToneMappingChange,
         onContrastChange,
         onExposureChange,
-        onCameraResetClick,
+        resetCamera,
         onAutoOrbitChanged,
         onAutoOrbitSpeedChange,
         onAutoOrbitDelayChange,
@@ -1081,22 +1135,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <ButtonLineComponent label="Use Current Pose" onClick={onCameraSnapshotClick} />
+                        <ButtonLineComponent label="Use Current Pose" onClick={snapshotCamera} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Revert camera pose to snippet"
-                        className="FlexItem"
-                        disabled={!canRevertCameraState}
-                        icon={faRotateLeft}
-                        onClick={onCameraRevertClick}
-                    />
-                    <FontAwesomeIconButton
-                        title="Reset camera pose attributes"
-                        className="FlexItem"
-                        disabled={isCameraStateDefault}
-                        icon={faTrashCan}
-                        onClick={onCameraResetClick}
-                    />
+                    <FontAwesomeIconButton title="Revert camera pose to snippet" className="FlexItem" disabled={!canRevertCamera} icon={faRotateLeft} onClick={revertCamera} />
+                    <FontAwesomeIconButton title="Reset camera pose attributes" className="FlexItem" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
                 </div>
                 <div>
                     <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbitState.enabled} onSelect={onAutoOrbitChanged} />

@@ -10,6 +10,7 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
             "viewer/*": ["tools/viewer/src/*"],
             "viewer": ["tools/viewer/src/index"]
-        }
+        },
+        "strict": true
     }
 }
