@@ -868,10 +868,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         viewer.selectedMaterialVariant = selectedMaterialVariant;
     }, [viewer, selectedMaterialVariant]);
 
-    useEffect(() => {
-        animationAutoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
-    }, [viewer, animationAutoPlay]);
-
     const onAddHotspotClick = useCallback(() => {
         setHotspots((hotspots) => {
             return [
