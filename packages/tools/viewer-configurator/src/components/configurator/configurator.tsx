@@ -368,6 +368,26 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
+    const [canRevertSkyboxIntensity, canResetSkyboxIntensity, revertSkyboxIntensity, resetSkyboxIntensity, updateSkyboxIntensity, snapshotSkyboxIntensity, skyboxIntensity] =
+        useConfiguration(
+            viewer.environmentConfig.intensity,
+            () => viewer.environmentConfig.intensity,
+            (intensity) => (viewer.environmentConfig = { intensity }),
+            undefined,
+            [viewer.onEnvironmentConfigurationChanged],
+            [viewer]
+        );
+
+    const [canRevertSkyboxRotation, canResetSkyboxRotation, revertSkyboxRotation, resetSkyboxRotation, updateSkyboxRotation, snapshotSkyboxRotation, skyboxRotation] =
+        useConfiguration(
+            viewer.environmentConfig.rotation,
+            () => viewer.environmentConfig.rotation,
+            (rotation) => (viewer.environmentConfig = { rotation }),
+            undefined,
+            [viewer.onEnvironmentConfigurationChanged],
+            [viewer]
+        );
+
     const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration(
         viewerDetails.scene.clearColor,
         () => viewerDetails.scene.clearColor,
@@ -587,6 +607,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             if (canResetSkyboxBlur) {
                 attributes.push(`skybox-blur="${skyboxBlur}"`);
             }
+            if (canResetSkyboxIntensity) {
+                attributes.push(`skybox-intensity="${skyboxIntensity}"`);
+            }
+            if (canResetSkyboxRotation) {
+                attributes.push(`skybox-rotation="${skyboxRotation}"`);
+            }
         } else {
             if (canResetClearColor) {
                 attributes.push(`clear-color="${clearColor.toHexString()}"`);
@@ -683,6 +709,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         environmentSkyboxUrl,
         hasSkybox,
         skyboxBlur,
+        skyboxIntensity,
+        skyboxRotation,
         clearColor,
         toneMapping,
         contrast,
@@ -903,6 +931,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
         resetSkyboxBlur();
+        resetSkyboxIntensity();
+        resetSkyboxRotation();
         resetClearColor();
         resetToneMapping();
         resetContrast();
@@ -918,6 +948,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [
         onSyncEnvironmentChanged,
         resetSkyboxBlur,
+        resetSkyboxIntensity,
+        resetSkyboxRotation,
         resetClearColor,
         resetToneMapping,
         resetContrast,
@@ -1010,22 +1042,68 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                     )}
                     {hasSkybox && (
-                        <div>
-                            <div className="FlexItem" style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Skybox Blur"
-                                    directValue={skyboxBlur}
-                                    minimum={0}
-                                    maximum={1}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={updateSkyboxBlur}
-                                    lockObject={lockObject}
+                        <>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Blur"
+                                        directValue={skyboxBlur}
+                                        minimum={0}
+                                        maximum={1}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxBlur}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
+                            </div>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Intensity"
+                                        directValue={skyboxIntensity}
+                                        minimum={0}
+                                        maximum={5}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxIntensity}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton
+                                    title="Reset skybox intensity"
+                                    className="FlexItem"
+                                    icon={faTrashCan}
+                                    disabled={!canResetSkyboxIntensity}
+                                    onClick={resetSkyboxIntensity}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
-                        </div>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Rotation"
+                                        directValue={skyboxRotation}
+                                        minimum={0}
+                                        maximum={2 * Math.PI}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxRotation}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton
+                                    title="Reset skybox rotation"
+                                    className="FlexItem"
+                                    icon={faTrashCan}
+                                    disabled={!canResetSkyboxRotation}
+                                    onClick={resetSkyboxRotation}
+                                />
+                            </div>
+                        </>
                     )}
                     <div style={{ height: "auto" }}>
                         <div className="FlexItem" style={{ flex: 1 }}>
