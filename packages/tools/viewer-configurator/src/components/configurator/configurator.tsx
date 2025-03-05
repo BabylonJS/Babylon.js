@@ -77,13 +77,13 @@ function compareArrays<T>(left: T[], right: T[]) {
 function useConfiguration2<T>(
     defaultState: T,
     get: () => T,
-    set: (data: T) => void,
+    set: ((data: T) => void) | undefined,
     equals: (left: T, right: T) => boolean = (left, right) => left === right,
     observables: Observable<any>[] = [],
     dependencies?: unknown[]
 ) {
-    const memoDefaultState = useMemo(() => defaultState, []);
-    const memoSet = useCallback(set, dependencies ?? []);
+    const memoDefaultState = useMemo(() => defaultState, dependencies ?? []);
+    const memoSet = useCallback(set ?? (() => {}), dependencies ?? []);
     const memoGet = useCallback(get, dependencies ?? []);
     const memoEquals = useCallback(equals, []);
     const [configuredState, setConfiguredState] = useState(memoDefaultState);
@@ -91,7 +91,7 @@ function useConfiguration2<T>(
     const [isConfigured, setIsConfigured] = useState(false);
 
     useEffect(() => {
-        memoSet(configuredState);
+        memoSet?.(configuredState);
     }, [configuredState, memoSet]);
 
     const canRevert = useMemo(() => {
@@ -103,7 +103,7 @@ function useConfiguration2<T>(
     }, [isConfigured, memoDefaultState, configuredState, memoEquals]);
 
     const revert = useCallback(() => {
-        memoSet(configuredState);
+        memoSet?.(configuredState);
     }, [configuredState, memoSet]);
 
     const reset = useCallback(() => {
@@ -329,16 +329,33 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
 
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
+    const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration2(
+        "",
+        () => viewerElement.environment.lighting ?? "",
+        undefined,
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
+    const [canREvertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration2(
+        "",
+        () => viewerElement.environment.skybox ?? "",
+        () => {},
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
+
     const [syncEnvironment, setSyncEnvironment] = useState(true);
-    const [environmentLightingUrl, setEnvironmentLightingUrl, , isEnvironmentLightingUrlDefault] = useConfiguration("");
-    const [environmentSkyboxUrl, setEnvironmentSkyboxUrl, , isEnvironmentSkyboxUrlDefault] = useConfiguration("");
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
+
     const hasSkybox = useMemo(() => {
         if (syncEnvironment) {
             return !!environmentLightingUrl;
         }
         return !!environmentSkyboxUrl;
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
+
     const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration2(
         viewer.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
@@ -687,9 +704,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const onEnvironmentLightingUrlChange = useCallback(
         (value: string) => {
-            setEnvironmentLightingUrl(value);
+            updateLightingUrl(value);
         },
-        [setEnvironmentLightingUrl]
+        [updateLightingUrl]
     );
 
     const isEnvironmentSkyboxUrlValid = useMemo(() => {
@@ -698,9 +715,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const onEnvironmentSkyboxUrlChange = useCallback(
         (value: string) => {
-            setEnvironmentSkyboxUrl(value);
+            updateSkyboxUrl(value);
         },
-        [setEnvironmentSkyboxUrl]
+        [updateSkyboxUrl]
     );
 
     useEffect(() => {
@@ -741,9 +758,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentLightingResetClick = useCallback(() => {
-        setEnvironmentLightingUrl("");
+        updateLightingUrl("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, setEnvironmentLightingUrl]);
+    }, [setNeedsEnvironmentUpdate, updateLightingUrl]);
 
     const onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -755,9 +772,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentSkyboxResetClick = useCallback(() => {
-        setEnvironmentSkyboxUrl("");
+        updateSkyboxUrl("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, setEnvironmentSkyboxUrl]);
+    }, [setNeedsEnvironmentUpdate, updateSkyboxUrl]);
 
     const onSyncEnvironmentChanged = useCallback(
         (value?: boolean) => {
@@ -1020,7 +1037,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             title={syncEnvironment ? "Reset environment" : "Reset lighting"}
                             className="FlexItem"
                             icon={faTrashCan}
-                            disabled={isEnvironmentLightingUrlDefault}
+                            disabled={!canResetLightingUrl}
                             onClick={onEnvironmentLightingResetClick}
                         />
                     </div>
@@ -1034,7 +1051,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 title="Reset skybox"
                                 className="FlexItem"
                                 icon={faTrashCan}
-                                disabled={isEnvironmentSkyboxUrlDefault}
+                                disabled={!canResetSkyboxUrl}
                                 onClick={onEnvironmentSkyboxResetClick}
                             />
                         </div>
