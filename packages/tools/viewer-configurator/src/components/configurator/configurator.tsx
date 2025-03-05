@@ -82,10 +82,11 @@ function useConfiguration2<T>(
     observables: Observable<any>[] = [],
     dependencies?: unknown[]
 ) {
+    const memoDefaultState = useMemo(() => defaultState, []);
     const memoSet = useCallback(set, dependencies ?? []);
     const memoGet = useCallback(get, dependencies ?? []);
     const memoEquals = useCallback(equals, []);
-    const [configuredState, setConfiguredState] = useState(defaultState);
+    const [configuredState, setConfiguredState] = useState(memoDefaultState);
     const liveState = useObservableState(memoGet, ...observables);
     const [isConfigured, setIsConfigured] = useState(false);
 
@@ -98,26 +99,29 @@ function useConfiguration2<T>(
     }, [isConfigured, liveState, configuredState, memoEquals]);
 
     const canReset = useMemo(() => {
-        return isConfigured && !memoEquals(defaultState, configuredState);
-    }, [isConfigured, defaultState, configuredState, memoEquals]);
+        return isConfigured && !memoEquals(memoDefaultState, configuredState);
+    }, [isConfigured, memoDefaultState, configuredState, memoEquals]);
 
     const revert = useCallback(() => {
         memoSet(configuredState);
     }, [configuredState, memoSet]);
 
     const reset = useCallback(() => {
-        setConfiguredState(defaultState);
+        setConfiguredState(memoDefaultState);
         setIsConfigured(false);
-    }, [defaultState]);
+    }, [memoDefaultState]);
 
     const update = useCallback(
         (data: T) => {
-            if (!memoEquals(data, configuredState)) {
-                setConfiguredState(data);
+            setConfiguredState((previous) => {
+                if (memoEquals(previous, data)) {
+                    return previous;
+                }
                 setIsConfigured(true);
-            }
+                return data;
+            });
         },
-        [setConfiguredState, memoEquals]
+        [memoEquals]
     );
 
     const snapshot = useCallback(() => {
@@ -313,13 +317,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const originalSkyboxBlur = useMemo(() => viewer.environmentConfig.blur, [viewer]);
-    const originalClearColor = useMemo(() => viewerDetails.scene.clearColor, [viewerDetails]);
     const originalToneMapping = useMemo(() => viewer.postProcessing.toneMapping, [viewer]);
     const originalContrast = useMemo(() => viewer.postProcessing.contrast, [viewer]);
     const originalExposure = useMemo(() => viewer.postProcessing.exposure, [viewer]);
     // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-    //const originalAutoOrbit = useMemo(() => viewer.cameraAutoOrbit.enabled, [viewer]);
     const originalAutoOrbit = false;
     const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
     const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
@@ -338,8 +339,23 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
         return !!environmentSkyboxUrl;
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
-    const [skyboxBlur, setSkyboxBlur, resetSkyboxBlur, isSkyboxBlurDefault] = useConfiguration(originalSkyboxBlur);
-    const [clearColor, setClearColor, resetClearColor, isClearColorDefault] = useConfiguration(originalClearColor);
+    const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration2(
+        viewer.environmentConfig.blur,
+        () => viewer.environmentConfig.blur,
+        (skyboxBlur) => (viewer.environmentConfig = { blur: skyboxBlur }),
+        undefined,
+        [viewer.onEnvironmentConfigurationChanged],
+        [viewer]
+    );
+
+    const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration2(
+        viewerDetails.scene.clearColor,
+        () => viewerDetails.scene.clearColor,
+        (color) => (viewerDetails.scene.clearColor = color),
+        (left, right) => left.equals(right),
+        [viewerDetails.scene.onClearColorChangedObservable],
+        [viewerDetails.scene]
+    );
 
     const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration2(
         undefined,
@@ -499,11 +515,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
 
         if (hasSkybox) {
-            if (!isSkyboxBlurDefault) {
+            if (canResetSkyboxBlur) {
                 attributes.push(`skybox-blur="${skyboxBlur}"`);
             }
         } else {
-            if (!isClearColorDefault) {
+            if (canResetClearColor) {
                 attributes.push(`clear-color="${clearColor.toHexString()}"`);
             }
         }
@@ -752,40 +768,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onSkyboxBlurChange = useCallback(
-        (value?: number) => {
-            setSkyboxBlur(value ?? originalSkyboxBlur);
+        (value: number) => {
+            updateSkyboxBlur(value);
         },
-        [setSkyboxBlur]
+        [updateSkyboxBlur]
     );
 
     useEffect(() => {
         viewerElement.skyboxBlur = skyboxBlur;
     }, [viewerElement, skyboxBlur]);
-
-    const onClearColorChange = useCallback(
-        (color?: Color3 | Color4) => {
-            let clearColor = originalClearColor;
-            if (color) {
-                if ("a" in color) {
-                    clearColor = color;
-                } else {
-                    clearColor = Color4.FromColor3(color);
-                }
-            }
-
-            setClearColor((previous) => {
-                if (previous.equals(clearColor)) {
-                    return previous;
-                }
-                return clearColor;
-            });
-        },
-        [setClearColor]
-    );
-
-    useEffect(() => {
-        viewerElement.clearColor = clearColor;
-    }, [viewerElement, clearColor]);
 
     const onToneMappingChange = useCallback(
         (value?: string | number) => {
@@ -939,8 +930,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
-        onSkyboxBlurChange();
-        onClearColorChange();
+        resetSkyboxBlur();
+        resetClearColor();
         onToneMappingChange();
         onContrastChange();
         onExposureChange();
@@ -954,6 +945,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         setHotspots([]);
     }, [
         onSyncEnvironmentChanged,
+        resetSkyboxBlur,
+        resetClearColor,
         onToneMappingChange,
         onContrastChange,
         onExposureChange,
@@ -1061,7 +1054,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     lockObject={lockObject}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={isSkyboxBlurDefault} onClick={resetSkyboxBlur} />
+                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
                         </div>
                     )}
                     <div style={{ height: "auto" }}>
@@ -1070,7 +1063,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 label="Clear color"
                                 target={clearColorWrapper}
                                 propertyName="clearColor"
-                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                                onChange={() => updateClearColor(clearColorWrapper.clearColor)}
                                 lockObject={lockObject}
                             />
                         </div>
@@ -1079,7 +1072,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             className="FlexItem"
                             style={{ alignSelf: "flex-start", marginTop: "2px" }}
                             icon={faTrashCan}
-                            disabled={isClearColorDefault}
+                            disabled={!canResetClearColor}
                             onClick={resetClearColor}
                         />
                     </div>
