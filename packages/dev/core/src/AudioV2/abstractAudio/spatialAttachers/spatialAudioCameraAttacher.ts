@@ -46,6 +46,7 @@ export class _SpatialAudioCameraAttacher extends _AbstractSpatialAudioAttacher {
     }
 
     protected get _attachedRotationQuaternion(): Quaternion {
+        // Use view matrix instead of world matrix because not all cameras use world matrix.
         this._camera?.getViewMatrix().invertToRef(TempMatrix).decompose(undefined, this._rotationQuaternion, undefined);
         return this._rotationQuaternion;
     }
