@@ -17,6 +17,7 @@ struct preLightingInfo
     NdotL: f32,
     VdotH: f32,
     roughness: f32,
+    diffuseRoughness: f32,
 
     #ifdef IRIDESCENCE
         iridescenceIntensity: f32

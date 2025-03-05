@@ -272,6 +272,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
+     * Base Diffuse Roughness Model
+     */
+    @editableInPropertyPage("Diffuse Roughness Model", PropertyTypeForEdition.List, "RENDERING", {
+        notifiers: { update: true },
+        options: [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+        ],
+    })
+    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT;
+
+    /**
      * Defines if the material uses energy conservation.
      */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
@@ -760,6 +773,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
         } else {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
+        }
+
+        if (this.baseDiffuseRoughnessModel === Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY) {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_BURLEY", 1, true);
+        } else if (this.baseDiffuseRoughnessModel === Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR) {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_OPENPBR", 1, true);
+        } else {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_LAMBERT", 1, true);
         }
 
         // Advanced

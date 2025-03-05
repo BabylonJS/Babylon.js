@@ -317,9 +317,11 @@ void main(void) {
             #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
+                , viewDirectionW
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
                 #endif
+                , diffuseRoughness
             #endif
             );
         #else

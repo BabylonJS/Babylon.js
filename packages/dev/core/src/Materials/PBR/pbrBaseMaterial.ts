@@ -81,7 +81,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-
+    public BASE_DIFFUSE_ROUGHNESS_MODEL = 0;
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -817,6 +817,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public set realTimeFilteringQuality(n: number) {
         this._realTimeFilteringQuality = n;
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT;
+    /**
+     * Defines the base diffuse roughness model of the material.
+     */
+    public get baseDiffuseRoughnessModel(): number {
+        return this._baseDiffuseRoughnessModel;
+    }
+    public set baseDiffuseRoughnessModel(v: number) {
+        this._baseDiffuseRoughnessModel = v;
+        this.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
 
     /**
@@ -1653,6 +1665,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
+        defines.BASE_DIFFUSE_ROUGHNESS_MODEL = this.baseDiffuseRoughnessModel;
 
         // Multiview
         PrepareDefinesForMultiview(scene, defines);
@@ -2365,11 +2378,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 ubo.updateFloat("baseWeight", this._baseWeight);
-                if (this._baseDiffuseRoughness !== null && this._baseDiffuseRoughness !== undefined) {
-                    ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness);
-                } else if (this._roughness !== null && this._roughness !== undefined) {
-                    ubo.updateFloat("baseDiffuseRoughness", this._roughness);
-                }
+                ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness ?? this._roughness ?? 1);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
