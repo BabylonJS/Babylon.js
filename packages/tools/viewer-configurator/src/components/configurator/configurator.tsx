@@ -58,7 +58,7 @@ function createDefaultAnnotation(hotSpotName: string) {
     </div>`;
 }
 
-function useConfiguration2<T>(
+function useConfiguration<T>(
     defaultState: T,
     get: () => T,
     set: ((data: T) => void) | undefined,
@@ -303,7 +303,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
 
-    const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration2(
+    const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration(
         "",
         () => viewerElement.environment.lighting ?? "",
         undefined,
@@ -311,7 +311,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer.onEnvironmentChanged],
         [viewerElement]
     );
-    const [canREvertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration2(
+    const [canREvertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration(
         "",
         () => viewerElement.environment.skybox ?? "",
         () => {},
@@ -330,7 +330,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return !!environmentSkyboxUrl;
     }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
 
-    const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration2(
+    const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration(
         viewer.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
         (blur) => (viewer.environmentConfig = { blur }),
@@ -339,7 +339,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration2(
+    const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration(
         viewerDetails.scene.clearColor,
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
@@ -348,7 +348,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewerDetails.scene]
     );
 
-    const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration2(
+    const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration(
         undefined,
         () => {
             return {
@@ -381,7 +381,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const [canRevertToneMapping, canResetToneMapping, revertToneMapping, resetToneMapping, updateToneMapping, snapshotToneMapping, toneMapping] = useConfiguration2(
+    const [canRevertToneMapping, canResetToneMapping, revertToneMapping, resetToneMapping, updateToneMapping, snapshotToneMapping, toneMapping] = useConfiguration(
         viewer.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
         (toneMapping) => (viewer.postProcessing = { toneMapping }),
@@ -393,7 +393,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return { toneMapping };
     }, [toneMapping]);
 
-    const [canRevertContrast, canResetContrast, revertContrast, resetContrast, updateContrast, snapshotContrast, contrast] = useConfiguration2(
+    const [canRevertContrast, canResetContrast, revertContrast, resetContrast, updateContrast, snapshotContrast, contrast] = useConfiguration(
         viewer.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
         (contrast) => (viewer.postProcessing = { contrast }),
@@ -402,7 +402,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertExposure, canResetExposure, revertExposure, resetExposure, updateExposure, snapshotExposure, exposure] = useConfiguration2(
+    const [canRevertExposure, canResetExposure, revertExposure, resetExposure, updateExposure, snapshotExposure, exposure] = useConfiguration(
         viewer.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
         (exposure) => (viewer.postProcessing = { exposure }),
@@ -411,7 +411,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertAutoOrbit, canResetAutoOrbit, revertAutoOrbit, resetAutoOrbit, updateAutoOrbit, snapshotAutoOrbit, autoOrbit] = useConfiguration2(
+    const [canRevertAutoOrbit, canResetAutoOrbit, revertAutoOrbit, resetAutoOrbit, updateAutoOrbit, snapshotAutoOrbit, autoOrbit] = useConfiguration(
         // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
         false,
         () => viewer.cameraAutoOrbit.enabled,
@@ -422,7 +422,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const [canRevertAutoOrbitSpeed, canResetAutoOrbitSpeed, revertAutoOrbitSpeed, resetAutoOrbitSpeed, updateAutoOrbitSpeed, snapshotAutoOrbitSpeed, autoOrbitSpeed] =
-        useConfiguration2(
+        useConfiguration(
             viewer.cameraAutoOrbit.speed,
             () => viewer.cameraAutoOrbit.speed,
             (speed) => (viewer.cameraAutoOrbit = { speed }),
@@ -432,7 +432,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         );
 
     const [canRevertAutoOrbitDelay, canResetAutoOrbitDelay, revertAutoOrbitDelay, resetAutoOrbitDelay, updateAutoOrbitDelay, snapshotAutoOrbitDelay, autoOrbitDelay] =
-        useConfiguration2(
+        useConfiguration(
             viewer.cameraAutoOrbit.delay,
             () => viewer.cameraAutoOrbit.delay,
             (delay) => (viewer.cameraAutoOrbit = { delay }),
@@ -442,7 +442,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         );
 
     const [canRevertAnimationState, canResetAnimationState, revertAnimationState, resetAnimationState, updateAnimationState, snapshotAnimationState, animationState] =
-        useConfiguration2(
+        useConfiguration(
             undefined,
             () => {
                 return {
@@ -476,7 +476,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         updateAnimationAutoPlay,
         snapshotAnimationAutoPlay,
         animationAutoPlay,
-    ] = useConfiguration2(
+    ] = useConfiguration(
         false,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
@@ -496,7 +496,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         updateSelectedMaterialVariant,
         snapshotSelectedMaterialVariant,
         selectedMaterialVariant,
-    ] = useConfiguration2(
+    ] = useConfiguration(
         "",
         () => viewer.selectedMaterialVariant,
         (materialVariant) => {
