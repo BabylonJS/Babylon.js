@@ -8,6 +8,9 @@
     $line-content-spacing: space-around;
     $primary-background: #333333;
     $border-radius: 0px;
+    $icon-height: $line-height * 0.8;
+    $icon-padding-top-bottom: ($line-height - $icon-height) / 2;
+    $icon-padding: $icon-padding-top-bottom 0px;
     color: white;
     background: $primary-background;
     grid-row: 1;
@@ -62,21 +65,16 @@
         font: inherit; // Forms don't inherit the font-family by default
     }
 
-    // Styling for FontAwesome icons
-    .faIconButton {
-        height: $line-height - 4px;
-    }
-    .faIconButton.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+    // Styling for icons
+    svg {
+        height: $icon-height !important;
+        padding: $icon-padding;
     }
 
-    // MessageLine override
-    .messageLine {
-        text-align: center;
-        font-size: 12px;
-        font-style: italic;
-        opacity: 0.6;
+    // Styling for disabled elements
+    .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     // LineContainer override
@@ -415,7 +413,6 @@
     .color3Line {
         $color-box-width: 40px;
         $color-box-height: $line-height * 0.95;
-        $expand-button-size: 14px;
 
         width: 100%;
         display: flex;
@@ -437,7 +434,6 @@
 
             .color3 {
                 flex: 0 0 $color-box-width;
-                height: $color-box-height;
                 align-content: center;
 
                 .color-picker {
@@ -463,10 +459,6 @@
                         position: absolute;
                     }
                 }
-            }
-
-            .expand {
-                flex: 0 0 $expand-button-size;
             }
 
             .copy {

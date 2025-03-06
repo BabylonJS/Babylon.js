@@ -20,7 +20,6 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -34,6 +33,7 @@ import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
+import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
 
 const defaultModelUrl = "https://cdn.jsdelivr.net/gh/BabylonJS/Assets/meshes/aerobatic_plane.glb";
 
@@ -999,7 +999,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
                     <div style={{ height: "auto" }}>
-                        <MessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
+                        <ExpandableMessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
                     </div>
                     <div>
                         <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
@@ -1120,7 +1120,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <FontAwesomeIconButton
                             title="Reset clear color"
                             className="FlexItem"
-                            style={{ alignSelf: "flex-start", marginTop: "2px" }}
+                            style={{ alignSelf: "flex-start" }}
                             icon={faTrashCan}
                             disabled={!canResetClearColor}
                             onClick={resetClearColor}
@@ -1158,7 +1158,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
                 <div style={{ height: "auto" }}>
-                    <MessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
+                    <ExpandableMessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
@@ -1219,7 +1219,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             {hasAnimations && (
                 <LineContainerComponent title="ANIMATION">
                     <div style={{ height: "auto" }}>
-                        <MessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
+                        <ExpandableMessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
@@ -1248,7 +1248,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             {hasMaterialVariants && (
                 <LineContainerComponent title="MATERIAL VARIANTS">
                     <div style={{ height: "auto" }}>
-                        <MessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
+                        <ExpandableMessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
@@ -1273,7 +1273,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             )}
             <LineContainerComponent title="HOT SPOTS">
                 <div style={{ height: "auto" }}>
-                    <MessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
+                    <ExpandableMessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
