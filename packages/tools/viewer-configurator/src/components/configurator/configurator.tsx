@@ -1,9 +1,8 @@
 import "./configurator.scss";
-import * as styles from "../../App.module.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, CameraAutoOrbit, HotSpot, ToneMapping } from "viewer/index";
+import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, HotSpot, ToneMapping } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { Color3, IInspectableOptions, Nullable, Vector3 } from "core/index";
+import type { IInspectableOptions, Nullable, Observable } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -11,7 +10,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faCopy, faGripVertical, faPlus, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faCopy, faGripVertical, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -26,7 +25,6 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { Color4 } from "core/Maths/math.color";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
@@ -34,7 +32,6 @@ import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSp
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
-import { useEventfulState } from "../../hooks/observableHooks";
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
 
@@ -61,13 +58,62 @@ function createDefaultAnnotation(hotSpotName: string) {
     </div>`;
 }
 
-function useConfiguration<DataType>(defaultValue: DataType) {
-    const [value, setValue] = useState(defaultValue);
-    const isDefaultValue = useMemo(() => value === defaultValue, [value, defaultValue]);
-    const resetValue = useCallback(() => {
-        setValue(defaultValue);
-    }, [defaultValue]);
-    return [value, setValue, resetValue, isDefaultValue] as const;
+function useConfiguration<T>(
+    defaultState: T,
+    get: () => T,
+    set: ((data: T) => void) | undefined,
+    equals: (left: T, right: T) => boolean = (left, right) => left === right,
+    observables: Observable<any>[] = [],
+    dependencies?: unknown[]
+) {
+    const memoDefaultState = useMemo(() => defaultState, dependencies ?? []);
+    const memoSet = useCallback(set ?? (() => {}), dependencies ?? []);
+    const memoGet = useCallback(get, dependencies ?? []);
+    const memoEquals = useCallback(equals, []);
+    const [configuredState, setConfiguredState] = useState(memoDefaultState);
+    const liveState = useObservableState(memoGet, ...observables);
+    const [isConfigured, setIsConfigured] = useState(false);
+
+    useEffect(() => {
+        memoSet?.(configuredState);
+    }, [configuredState, memoSet]);
+
+    const canRevert = useMemo(() => {
+        return isConfigured && !memoEquals(liveState, configuredState);
+    }, [isConfigured, liveState, configuredState, memoEquals]);
+
+    const canReset = useMemo(() => {
+        return isConfigured && !memoEquals(memoDefaultState, configuredState);
+    }, [isConfigured, memoDefaultState, configuredState, memoEquals]);
+
+    const revert = useCallback(() => {
+        memoSet?.(configuredState);
+    }, [configuredState, memoSet]);
+
+    const reset = useCallback(() => {
+        setConfiguredState(memoDefaultState);
+        setIsConfigured(false);
+    }, [memoDefaultState]);
+
+    const update = useCallback(
+        (data: T) => {
+            setConfiguredState((previous) => {
+                if (memoEquals(previous, data)) {
+                    return previous;
+                }
+                setIsConfigured(true);
+                return data;
+            });
+        },
+        [memoEquals]
+    );
+
+    const snapshot = useCallback(() => {
+        setConfiguredState(liveState);
+        setIsConfigured(true);
+    }, [liveState]);
+
+    return [canRevert, canReset, revert, reset, update, snapshot, configuredState] as const;
 }
 
 const HotSpotEntry: FunctionComponent<{
@@ -233,6 +279,7 @@ const HotSpotEntry: FunctionComponent<{
 
 export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerElement, viewerDetails, viewer } = props;
+    const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged, viewer.onModelError);
     const lockObject = useMemo(() => new LockObject(), []);
 
     useEffect(() => {
@@ -254,122 +301,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const originalSkyboxBlur = useMemo(() => viewer.environmentConfig.blur, [viewer]);
-    const originalClearColor = useMemo(() => viewerDetails.scene.clearColor, [viewerDetails]);
-    const originalToneMapping = useMemo(() => viewer.postProcessing.toneMapping, [viewer]);
-    const originalContrast = useMemo(() => viewer.postProcessing.contrast, [viewer]);
-    const originalExposure = useMemo(() => viewer.postProcessing.exposure, [viewer]);
-    // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-    //const originalAutoOrbit = useMemo(() => viewer.cameraAutoOrbit.enabled, [viewer]);
-    const originalAutoOrbit = false;
-    const originalAutoOrbitSpeed = useMemo(() => viewer.cameraAutoOrbit.speed, [viewer]);
-    const originalAutoOrbitDelay = useMemo(() => viewer.cameraAutoOrbit.delay, [viewer]);
-
-    const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged);
-    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
-    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
-
     const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
-    const [syncEnvironment, setSyncEnvironment] = useState(true);
-    const [environmentLightingUrl, setEnvironmentLightingUrl, , isEnvironmentLightingUrlDefault] = useConfiguration("");
-    const [environmentSkyboxUrl, setEnvironmentSkyboxUrl, , isEnvironmentSkyboxUrlDefault] = useConfiguration("");
-    const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
-    const hasSkybox = useMemo(() => {
-        if (syncEnvironment) {
-            return !!environmentLightingUrl;
-        }
-        return !!environmentSkyboxUrl;
-    }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
-    const [skyboxBlur, setSkyboxBlur, resetSkyboxBlur, isSkyboxBlurDefault] = useConfiguration(originalSkyboxBlur);
-    const [clearColor, setClearColor, resetClearColor, isClearColorDefault] = useConfiguration(originalClearColor);
-    const [cameraState, setCameraState] = useState<Readonly<{ alpha: number; beta: number; radius: number; target: Vector3 }>>();
-    const isCameraStateDefault = useMemo(() => cameraState == null, [cameraState]);
-    const [canRevertCameraState, setCanRevertCameraState] = useState(false);
-
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-        setCanRevertCameraState(false);
-        if (cameraState) {
-            const observer = viewerDetails.camera.onViewMatrixChangedObservable.add(() => {
-                // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
-                setCanRevertCameraState(
-                    !WithinEpsilon(viewerDetails.camera.alpha, cameraState.alpha, Epsilon * 10) ||
-                        !WithinEpsilon(viewerDetails.camera.beta, cameraState.beta, Epsilon * 10) ||
-                        !WithinEpsilon(viewerDetails.camera.radius, cameraState.radius, Epsilon) ||
-                        !viewerDetails.camera.target.equalsWithEpsilon(cameraState.target, Epsilon)
-                );
-            });
-            disposeActions.push(() => observer.remove());
-        }
-        return () => disposeActions.forEach((dispose) => dispose());
-    }, [viewerDetails, cameraState]);
-
-    const [postProcessingState, setPostProcessingState] = useState<Readonly<PostProcessing>>({
-        toneMapping: originalToneMapping,
-        contrast: originalContrast,
-        exposure: originalExposure,
-    });
-
-    const isPostProcessingDefaultState = useMemo(() => {
-        return {
-            toneMapping: postProcessingState.toneMapping === originalToneMapping,
-            contrast: postProcessingState.contrast === originalContrast,
-            exposure: postProcessingState.exposure === originalExposure,
-        };
-    }, [postProcessingState]);
-
-    const [autoOrbitState, setAutoOrbitState] = useState<Readonly<CameraAutoOrbit>>({ enabled: originalAutoOrbit, speed: originalAutoOrbitSpeed, delay: originalAutoOrbitDelay });
-    const isAutoOrbitDefaultState = useMemo(() => {
-        return {
-            enabled: autoOrbitState.enabled === originalAutoOrbit,
-            speed: autoOrbitState.speed === originalAutoOrbitSpeed,
-            delay: autoOrbitState.delay === originalAutoOrbitDelay,
-        };
-    }, [autoOrbitState]);
-
-    const [animationState, setAnimationState] = useState<Readonly<{ animationSpeed: number; selectedAnimation: number }>>();
-    const isAnimationStateDefault = useMemo(() => animationState == null, [animationState]);
-    const [canRevertAnimationState, setCanRevertAnimationState] = useState(false);
-
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-        setCanRevertAnimationState(false);
-        if (animationState) {
-            const updateCanResetAnimationState = () => {
-                setCanRevertAnimationState(animationState.animationSpeed !== viewer.animationSpeed || animationState.selectedAnimation !== viewer.selectedAnimation);
-            };
-
-            const selectedAnimationObserver = viewer.onSelectedAnimationChanged.add(updateCanResetAnimationState);
-            disposeActions.push(() => selectedAnimationObserver.remove());
-
-            const animationSpeedObserver = viewer.onAnimationSpeedChanged.add(updateCanResetAnimationState);
-            disposeActions.push(() => animationSpeedObserver.remove());
-        }
-        return () => disposeActions.forEach((dispose) => dispose());
-    }, [viewer, animationState]);
-
-    const [animationAutoPlay, setAnimationAutoPlay] = useState(false);
-    const [selectedMaterialVariant, setSelectedMaterialVariant, resetSelectedMaterialVariant, isSelectedMaterialVariantDefault] = useConfiguration("");
-    const [canRevertSelectedMaterialVariant, setCanRevertSelectedMaterialVariant] = useState(false);
-
-    useEffect(() => {
-        setCanRevertSelectedMaterialVariant(false);
-        if (selectedMaterialVariant) {
-            const observer = viewer.onSelectedMaterialVariantChanged.add(() => {
-                setCanRevertSelectedMaterialVariant(viewer.selectedMaterialVariant !== selectedMaterialVariant);
-            });
-            return () => observer.remove();
-        }
-    }, [viewerDetails, selectedMaterialVariant]);
-
-    const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
-
-    const dndSensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
 
     useEffect(() => {
         viewerElement.source = modelUrl;
@@ -400,6 +332,239 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
+    const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration(
+        "",
+        () => viewerElement.environment.lighting ?? "",
+        undefined,
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
+    const [canREvertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration(
+        "",
+        () => viewerElement.environment.skybox ?? "",
+        () => {},
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
+
+    const [syncEnvironment, setSyncEnvironment] = useState(true);
+    const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
+
+    const hasSkybox = useMemo(() => {
+        if (syncEnvironment) {
+            return !!environmentLightingUrl;
+        }
+        return !!environmentSkyboxUrl;
+    }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
+
+    const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration(
+        viewer.environmentConfig.blur,
+        () => viewer.environmentConfig.blur,
+        (blur) => (viewer.environmentConfig = { blur }),
+        undefined,
+        [viewer.onEnvironmentConfigurationChanged],
+        [viewer]
+    );
+
+    const [canRevertSkyboxIntensity, canResetSkyboxIntensity, revertSkyboxIntensity, resetSkyboxIntensity, updateSkyboxIntensity, snapshotSkyboxIntensity, skyboxIntensity] =
+        useConfiguration(
+            viewer.environmentConfig.intensity,
+            () => viewer.environmentConfig.intensity,
+            (intensity) => (viewer.environmentConfig = { intensity }),
+            undefined,
+            [viewer.onEnvironmentConfigurationChanged],
+            [viewer]
+        );
+
+    const [canRevertSkyboxRotation, canResetSkyboxRotation, revertSkyboxRotation, resetSkyboxRotation, updateSkyboxRotation, snapshotSkyboxRotation, skyboxRotation] =
+        useConfiguration(
+            viewer.environmentConfig.rotation,
+            () => viewer.environmentConfig.rotation,
+            (rotation) => (viewer.environmentConfig = { rotation }),
+            undefined,
+            [viewer.onEnvironmentConfigurationChanged],
+            [viewer]
+        );
+
+    const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration(
+        viewerDetails.scene.clearColor,
+        () => viewerDetails.scene.clearColor,
+        (color) => (viewerDetails.scene.clearColor = color),
+        (left, right) => left.equals(right),
+        [viewerDetails.scene.onClearColorChangedObservable],
+        [viewerDetails.scene]
+    );
+    const clearColorWrapper = useMemo(() => {
+        return { clearColor };
+    }, [clearColor]);
+
+    const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration(
+        undefined,
+        () => {
+            return {
+                alpha: viewerDetails.camera.alpha,
+                beta: viewerDetails.camera.beta,
+                radius: viewerDetails.camera.radius,
+                target: viewerDetails.camera.target.clone(),
+            };
+        },
+        (cameraState) => {
+            if (cameraState) {
+                viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
+            } else {
+                viewer.resetCamera();
+            }
+        },
+        (left, right) => {
+            return (
+                left == right ||
+                (!!left &&
+                    !!right &&
+                    // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
+                    WithinEpsilon(left.alpha, right.alpha, Epsilon * 10) &&
+                    WithinEpsilon(left.beta, right.beta, Epsilon * 10) &&
+                    WithinEpsilon(left.radius, right.radius, Epsilon) &&
+                    left.target.equalsWithEpsilon(right.target, Epsilon))
+            );
+        },
+        [viewerDetails.camera.onViewMatrixChangedObservable],
+        [viewer, viewerDetails.camera, model]
+    );
+
+    const [canRevertToneMapping, canResetToneMapping, revertToneMapping, resetToneMapping, updateToneMapping, snapshotToneMapping, toneMapping] = useConfiguration(
+        viewer.postProcessing.toneMapping,
+        () => viewer.postProcessing.toneMapping,
+        (toneMapping) => (viewer.postProcessing = { toneMapping }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+    const toneMappingWrapper = useMemo(() => {
+        return { toneMapping };
+    }, [toneMapping]);
+
+    const [canRevertContrast, canResetContrast, revertContrast, resetContrast, updateContrast, snapshotContrast, contrast] = useConfiguration(
+        viewer.postProcessing.contrast,
+        () => viewer.postProcessing.contrast,
+        (contrast) => (viewer.postProcessing = { contrast }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+
+    const [canRevertExposure, canResetExposure, revertExposure, resetExposure, updateExposure, snapshotExposure, exposure] = useConfiguration(
+        viewer.postProcessing.exposure,
+        () => viewer.postProcessing.exposure,
+        (exposure) => (viewer.postProcessing = { exposure }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+
+    const [canRevertAutoOrbit, canResetAutoOrbit, revertAutoOrbit, resetAutoOrbit, updateAutoOrbit, snapshotAutoOrbit, autoOrbit] = useConfiguration(
+        // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
+        false,
+        () => viewer.cameraAutoOrbit.enabled,
+        (enabled) => (viewer.cameraAutoOrbit = { enabled }),
+        undefined,
+        [viewer.onCameraAutoOrbitChanged],
+        [viewer]
+    );
+
+    const [canRevertAutoOrbitSpeed, canResetAutoOrbitSpeed, revertAutoOrbitSpeed, resetAutoOrbitSpeed, updateAutoOrbitSpeed, snapshotAutoOrbitSpeed, autoOrbitSpeed] =
+        useConfiguration(
+            viewer.cameraAutoOrbit.speed,
+            () => viewer.cameraAutoOrbit.speed,
+            (speed) => (viewer.cameraAutoOrbit = { speed }),
+            undefined,
+            [viewer.onCameraAutoOrbitChanged],
+            [viewer]
+        );
+
+    const [canRevertAutoOrbitDelay, canResetAutoOrbitDelay, revertAutoOrbitDelay, resetAutoOrbitDelay, updateAutoOrbitDelay, snapshotAutoOrbitDelay, autoOrbitDelay] =
+        useConfiguration(
+            viewer.cameraAutoOrbit.delay,
+            () => viewer.cameraAutoOrbit.delay,
+            (delay) => (viewer.cameraAutoOrbit = { delay }),
+            undefined,
+            [viewer.onCameraAutoOrbitChanged],
+            [viewer]
+        );
+
+    const [canRevertAnimationState, canResetAnimationState, revertAnimationState, resetAnimationState, updateAnimationState, snapshotAnimationState, animationState] =
+        useConfiguration(
+            undefined,
+            () => {
+                return {
+                    animationSpeed: viewer.animationSpeed,
+                    selectedAnimation: viewer.selectedAnimation,
+                };
+            },
+            (animationState) => {
+                if (animationState) {
+                    viewer.animationSpeed = animationState.animationSpeed;
+                    viewer.selectedAnimation = animationState.selectedAnimation;
+                } else {
+                    viewer.animationSpeed = 1;
+                    viewer.selectedAnimation = 0;
+                }
+            },
+            (left, right) => {
+                return (
+                    left == right || (!!left && !!right && WithinEpsilon(left.animationSpeed, right.animationSpeed, Epsilon) && left.selectedAnimation === right.selectedAnimation)
+                );
+            },
+            [viewer.onAnimationSpeedChanged, viewer.onSelectedAnimationChanged],
+            [viewer]
+        );
+
+    const [
+        canRevertAnimationAutoPlay,
+        canResetAnimationAutoPlay,
+        revertAnimationAutoPlay,
+        resetAnimationAutoPlay,
+        updateAnimationAutoPlay,
+        snapshotAnimationAutoPlay,
+        animationAutoPlay,
+    ] = useConfiguration(
+        false,
+        () => viewerElement.animationAutoPlay,
+        (autoPlay) => {
+            viewerElement.animationAutoPlay = autoPlay;
+            autoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
+        },
+        undefined,
+        [viewer.onIsAnimationPlayingChanged],
+        [viewer, viewerElement]
+    );
+
+    const [
+        canRevertSelectedMaterialVariant,
+        canResetSelectedMaterialVariant,
+        revertSelectedMaterialVariant,
+        resetSelectedMaterialVariant,
+        updateSelectedMaterialVariant,
+        snapshotSelectedMaterialVariant,
+        selectedMaterialVariant,
+    ] = useConfiguration(
+        "",
+        () => viewer.selectedMaterialVariant,
+        (materialVariant) => {
+            if (materialVariant) {
+                viewer.selectedMaterialVariant = materialVariant;
+            } else {
+                viewer.selectedMaterialVariant = viewer.materialVariants[0];
+            }
+        },
+        undefined,
+        [viewer.onSelectedMaterialVariantChanged],
+        [viewer]
+    );
+
+    const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
+
     useEffect(() => {
         setHotspots([]);
     }, [model]);
@@ -410,6 +575,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             return hotspots;
         }, {});
     }, [viewerElement, hotspots]);
+
+    const dndSensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
+    const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
 
     const attributes = useMemo(() => {
         const attributes: string[] = [`source="${modelUrl || "[model url]"}"`];
@@ -429,25 +604,31 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }
 
         if (hasSkybox) {
-            if (!isSkyboxBlurDefault) {
+            if (canResetSkyboxBlur) {
                 attributes.push(`skybox-blur="${skyboxBlur}"`);
             }
+            if (canResetSkyboxIntensity) {
+                attributes.push(`skybox-intensity="${skyboxIntensity}"`);
+            }
+            if (canResetSkyboxRotation) {
+                attributes.push(`skybox-rotation="${skyboxRotation}"`);
+            }
         } else {
-            if (!isClearColorDefault) {
+            if (canResetClearColor) {
                 attributes.push(`clear-color="${clearColor.toHexString()}"`);
             }
         }
 
-        if (postProcessingState.toneMapping !== originalToneMapping) {
-            attributes.push(`tone-mapping="${postProcessingState.toneMapping}"`);
+        if (canResetToneMapping) {
+            attributes.push(`tone-mapping="${toneMapping}"`);
         }
 
-        if (postProcessingState.contrast !== originalContrast) {
-            attributes.push(`contrast="${postProcessingState.contrast.toFixed(1)}"`);
+        if (canResetContrast) {
+            attributes.push(`contrast="${contrast.toFixed(1)}"`);
         }
 
-        if (postProcessingState.exposure !== originalExposure) {
-            attributes.push(`exposure="${postProcessingState.exposure.toFixed(1)}"`);
+        if (canResetExposure) {
+            attributes.push(`exposure="${exposure.toFixed(1)}"`);
         }
 
         if (cameraState) {
@@ -456,26 +637,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             attributes.push(`camera-target="${target.x.toFixed(3)} ${target.y.toFixed(3)} ${target.z.toFixed(3)}"`);
         }
 
-        if (autoOrbitState.enabled !== originalAutoOrbit) {
+        if (canResetAutoOrbit) {
             attributes.push(`camera-auto-orbit`);
         }
 
-        if (autoOrbitState.enabled && autoOrbitState.speed !== originalAutoOrbitSpeed) {
-            attributes.push(`camera-auto-orbit-speed="${autoOrbitState.speed.toFixed(3)}"`);
+        if (canResetAutoOrbitSpeed) {
+            attributes.push(`camera-auto-orbit-speed="${autoOrbitSpeed.toFixed(3)}"`);
         }
 
-        if (autoOrbitState.enabled && autoOrbitState.delay !== originalAutoOrbitDelay) {
-            attributes.push(`camera-auto-orbit-delay="${autoOrbitState.delay.toFixed(0)}"`);
+        if (canResetAutoOrbitDelay) {
+            attributes.push(`camera-auto-orbit-delay="${autoOrbitDelay.toFixed(0)}"`);
         }
 
         if (hasAnimations) {
-            if (animationState) {
-                const { animationSpeed, selectedAnimation } = animationState;
-                attributes.push(`animation-speed="${animationSpeed}"`);
-                attributes.push(`selected-animation="${selectedAnimation}"`);
+            if (animationState && canResetAnimationState) {
+                attributes.push(`selected-animation="${animationState.selectedAnimation}"`);
+                attributes.push(`animation-speed="${animationState.animationSpeed}"`);
             }
 
-            if (animationAutoPlay) {
+            if (canResetAnimationAutoPlay) {
                 attributes.push(`animation-auto-play`);
             }
         }
@@ -529,10 +709,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         environmentSkyboxUrl,
         hasSkybox,
         skyboxBlur,
+        skyboxIntensity,
+        skyboxRotation,
         clearColor,
-        postProcessingState,
+        toneMapping,
+        contrast,
+        exposure,
         cameraState,
-        autoOrbitState,
+        autoOrbit,
+        autoOrbitSpeed,
+        autoOrbitDelay,
         hasAnimations,
         animationState,
         animationAutoPlay,
@@ -601,9 +787,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const onEnvironmentLightingUrlChange = useCallback(
         (value: string) => {
-            setEnvironmentLightingUrl(value);
+            updateLightingUrl(value);
         },
-        [setEnvironmentLightingUrl]
+        [updateLightingUrl]
     );
 
     const isEnvironmentSkyboxUrlValid = useMemo(() => {
@@ -612,9 +798,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const onEnvironmentSkyboxUrlChange = useCallback(
         (value: string) => {
-            setEnvironmentSkyboxUrl(value);
+            updateSkyboxUrl(value);
         },
-        [setEnvironmentSkyboxUrl]
+        [updateSkyboxUrl]
     );
 
     useEffect(() => {
@@ -655,9 +841,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentLightingResetClick = useCallback(() => {
-        setEnvironmentLightingUrl("");
+        updateLightingUrl("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, setEnvironmentLightingUrl]);
+    }, [setNeedsEnvironmentUpdate, updateLightingUrl]);
 
     const onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -669,9 +855,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentSkyboxResetClick = useCallback(() => {
-        setEnvironmentSkyboxUrl("");
+        updateSkyboxUrl("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, setEnvironmentSkyboxUrl]);
+    }, [setNeedsEnvironmentUpdate, updateSkyboxUrl]);
 
     const onSyncEnvironmentChanged = useCallback(
         (value?: boolean) => {
@@ -681,153 +867,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [setNeedsEnvironmentUpdate, setSyncEnvironment]
     );
 
-    const onSkyboxBlurChange = useCallback(
-        (value?: number) => {
-            setSkyboxBlur(value ?? originalSkyboxBlur);
-        },
-        [setSkyboxBlur]
-    );
-
-    useEffect(() => {
-        viewerElement.skyboxBlur = skyboxBlur;
-    }, [viewerElement, skyboxBlur]);
-
-    const onClearColorChange = useCallback(
-        (color?: Color3 | Color4) => {
-            let clearColor = originalClearColor;
-            if (color) {
-                if ("a" in color) {
-                    clearColor = color;
-                } else {
-                    clearColor = Color4.FromColor3(color);
-                }
-            }
-
-            setClearColor((previous) => {
-                if (previous.equals(clearColor)) {
-                    return previous;
-                }
-                return clearColor;
-            });
-        },
-        [setClearColor]
-    );
-
-    useEffect(() => {
-        viewerElement.clearColor = clearColor;
-    }, [viewerElement, clearColor]);
-
     const onToneMappingChange = useCallback(
-        (value?: string | number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, toneMapping: (value as PostProcessing["toneMapping"]) ?? originalToneMapping };
-            });
+        (value: string | number) => {
+            updateToneMapping(value as PostProcessing["toneMapping"]);
         },
-        [setPostProcessingState]
+        [updateToneMapping]
     );
-
-    const onContrastChange = useCallback(
-        (value?: number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, contrast: value ?? originalContrast };
-            });
-        },
-        [setPostProcessingState]
-    );
-
-    const onExposureChange = useCallback(
-        (value?: number) => {
-            setPostProcessingState((postProcessingState) => {
-                return { ...postProcessingState, exposure: value ?? originalExposure };
-            });
-        },
-        [setPostProcessingState]
-    );
-
-    useEffect(() => {
-        viewer.postProcessing = postProcessingState;
-    }, [viewer, postProcessingState]);
-
-    const onCameraSnapshotClick = useCallback(() => {
-        const { alpha, beta, radius, target } = viewerDetails.camera;
-        setCameraState({ alpha, beta, radius, target });
-    }, [viewerDetails]);
-
-    const onCameraRevertClick = useCallback(() => {
-        if (cameraState) {
-            viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
-            setCanRevertCameraState(false);
-        }
-    }, [viewerDetails, cameraState]);
-
-    const onCameraResetClick = useCallback(() => {
-        setCameraState(undefined);
-    }, []);
-
-    const onAutoOrbitChanged = useCallback(
-        (value?: boolean) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, enabled: value ?? originalAutoOrbit };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    const onAutoOrbitSpeedChange = useCallback(
-        (value?: number) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, speed: value ?? originalAutoOrbitSpeed };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    const onAutoOrbitDelayChange = useCallback(
-        (value?: number) => {
-            setAutoOrbitState((autoOrbitState) => {
-                return { ...autoOrbitState, delay: value ?? originalAutoOrbitDelay };
-            });
-        },
-        [setAutoOrbitState]
-    );
-
-    useEffect(() => {
-        viewer.cameraAutoOrbit = autoOrbitState;
-    }, [viewer, autoOrbitState]);
-
-    const onAnimationSnapshotClick = useCallback(() => {
-        setAnimationState({ animationSpeed: viewer.animationSpeed, selectedAnimation: viewer.selectedAnimation });
-    }, [viewer]);
-
-    const onAnimationAutoPlayChanged = useCallback(
-        (value?: boolean) => {
-            setAnimationAutoPlay(value ?? false);
-        },
-        [setAutoOrbitState]
-    );
-
-    const onAnimationRevertClick = useCallback(() => {
-        if (animationState) {
-            viewer.selectedAnimation = animationState.selectedAnimation;
-            viewer.animationSpeed = animationState.animationSpeed;
-        }
-    }, [viewer, animationState]);
-
-    const onAnimationResetClick = useCallback(() => {
-        setAnimationState(undefined);
-    }, []);
-
-    const onMaterialVariantsSnapshotClick = useCallback(() => {
-        setSelectedMaterialVariant(viewer.selectedMaterialVariant ?? "");
-    }, [viewer]);
-
-    const onMaterialVariantsRevertClick = useCallback(() => {
-        viewer.selectedMaterialVariant = selectedMaterialVariant;
-    }, [viewer, selectedMaterialVariant]);
-
-    useEffect(() => {
-        animationAutoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
-    }, [viewer, animationAutoPlay]);
 
     const onAddHotspotClick = useCallback(() => {
         setHotspots((hotspots) => {
@@ -873,46 +918,50 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [htmlSnippet]);
 
     const canRevertAll = useMemo(
-        () => canRevertAnimationState || canRevertCameraState || canRevertSelectedMaterialVariant,
-        [canRevertAnimationState, canRevertCameraState, canRevertSelectedMaterialVariant]
+        () => canRevertCamera || canRevertAnimationState || canRevertSelectedMaterialVariant,
+        [canRevertCamera, canRevertAnimationState, canRevertSelectedMaterialVariant]
     );
 
     const onRevertAllClick = useCallback(() => {
-        onAnimationRevertClick();
-        onCameraRevertClick();
-        onMaterialVariantsRevertClick();
-    }, [onCameraRevertClick, onAnimationRevertClick, onMaterialVariantsRevertClick]);
+        revertAnimationState();
+        revertCamera();
+        revertSelectedMaterialVariant();
+    }, [revertAnimationState, revertCamera, revertSelectedMaterialVariant]);
 
     const onResetAllClick = useCallback(() => {
         onSyncEnvironmentChanged();
-        onSkyboxBlurChange();
-        onClearColorChange();
-        onToneMappingChange();
-        onContrastChange();
-        onExposureChange();
-        onCameraResetClick();
-        onAutoOrbitChanged();
-        onAutoOrbitSpeedChange();
-        onAutoOrbitDelayChange();
-        onAnimationResetClick();
-        onAnimationAutoPlayChanged();
+        resetSkyboxBlur();
+        resetSkyboxIntensity();
+        resetSkyboxRotation();
+        resetClearColor();
+        resetToneMapping();
+        resetContrast();
+        resetExposure();
+        resetCamera();
+        resetAutoOrbit();
+        resetAutoOrbitSpeed();
+        resetAutoOrbitDelay();
+        resetAnimationState();
+        resetAnimationAutoPlay();
         resetSelectedMaterialVariant();
         setHotspots([]);
     }, [
         onSyncEnvironmentChanged,
-        onToneMappingChange,
-        onContrastChange,
-        onExposureChange,
-        onCameraResetClick,
-        onAutoOrbitChanged,
-        onAutoOrbitSpeedChange,
-        onAutoOrbitDelayChange,
-        onAnimationResetClick,
-        onAnimationAutoPlayChanged,
+        resetSkyboxBlur,
+        resetSkyboxIntensity,
+        resetSkyboxRotation,
+        resetClearColor,
+        resetToneMapping,
+        resetContrast,
+        resetExposure,
+        resetCamera,
+        resetAutoOrbit,
+        resetAutoOrbitSpeed,
+        resetAutoOrbitDelay,
+        resetAnimationState,
+        resetAnimationAutoPlay,
         resetSelectedMaterialVariant,
     ]);
-
-    const clearColorWrapper = { clearColor };
 
     return (
         <div className="ConfiguratorContainer">
@@ -973,7 +1022,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             title={syncEnvironment ? "Reset environment" : "Reset lighting"}
                             className="FlexItem"
                             icon={faTrashCan}
-                            disabled={isEnvironmentLightingUrlDefault}
+                            disabled={!canResetLightingUrl}
                             onClick={onEnvironmentLightingResetClick}
                         />
                     </div>
@@ -987,28 +1036,74 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 title="Reset skybox"
                                 className="FlexItem"
                                 icon={faTrashCan}
-                                disabled={isEnvironmentSkyboxUrlDefault}
+                                disabled={!canResetSkyboxUrl}
                                 onClick={onEnvironmentSkyboxResetClick}
                             />
                         </div>
                     )}
                     {hasSkybox && (
-                        <div>
-                            <div className="FlexItem" style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Skybox Blur"
-                                    directValue={skyboxBlur}
-                                    minimum={0}
-                                    maximum={1}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={onSkyboxBlurChange}
-                                    lockObject={lockObject}
+                        <>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Blur"
+                                        directValue={skyboxBlur}
+                                        minimum={0}
+                                        maximum={1}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxBlur}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
+                            </div>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Intensity"
+                                        directValue={skyboxIntensity}
+                                        minimum={0}
+                                        maximum={5}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxIntensity}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton
+                                    title="Reset skybox intensity"
+                                    className="FlexItem"
+                                    icon={faTrashCan}
+                                    disabled={!canResetSkyboxIntensity}
+                                    onClick={resetSkyboxIntensity}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={isSkyboxBlurDefault} onClick={resetSkyboxBlur} />
-                        </div>
+                            <div>
+                                <div className="FlexItem" style={{ flex: 1 }}>
+                                    <SliderLineComponent
+                                        label="Skybox Rotation"
+                                        directValue={skyboxRotation}
+                                        minimum={0}
+                                        maximum={2 * Math.PI}
+                                        step={0.01}
+                                        decimalCount={2}
+                                        target={viewerDetails.scene}
+                                        onChange={updateSkyboxRotation}
+                                        lockObject={lockObject}
+                                    />
+                                </div>
+                                <FontAwesomeIconButton
+                                    title="Reset skybox rotation"
+                                    className="FlexItem"
+                                    icon={faTrashCan}
+                                    disabled={!canResetSkyboxRotation}
+                                    onClick={resetSkyboxRotation}
+                                />
+                            </div>
+                        </>
                     )}
                     <div style={{ height: "auto" }}>
                         <div className="FlexItem" style={{ flex: 1 }}>
@@ -1016,7 +1111,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 label="Clear color"
                                 target={clearColorWrapper}
                                 propertyName="clearColor"
-                                onChange={() => onClearColorChange(clearColorWrapper.clearColor)}
+                                onChange={() => updateClearColor(clearColorWrapper.clearColor)}
                                 lockObject={lockObject}
                             />
                         </div>
@@ -1025,7 +1120,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             className="FlexItem"
                             style={{ alignSelf: "flex-start" }}
                             icon={faTrashCan}
-                            disabled={isClearColorDefault}
+                            disabled={!canResetClearColor}
                             onClick={resetClearColor}
                         />
                     </div>
@@ -1038,59 +1133,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             label="Tone Mapping"
                             valuesAreStrings={true}
                             options={toneMappingOptions}
-                            target={postProcessingState}
+                            target={toneMappingWrapper}
                             propertyName={"toneMapping"}
                             noDirectUpdate={true}
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset tone mapping"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.toneMapping}
-                        onClick={() => onToneMappingChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset tone mapping" className="FlexItem" icon={faTrashCan} disabled={!canResetToneMapping} onClick={resetToneMapping} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <SliderLineComponent
-                            label="Contrast"
-                            directValue={postProcessingState.contrast}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={onContrastChange}
-                        />
+                        <SliderLineComponent label="Contrast" directValue={contrast} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateContrast} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset contrast"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.contrast}
-                        onClick={() => onContrastChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset contrast" className="FlexItem" icon={faTrashCan} disabled={!canResetContrast} onClick={resetContrast} />
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <SliderLineComponent
-                            label="Exposure"
-                            directValue={postProcessingState.exposure}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={onExposureChange}
-                        />
+                        <SliderLineComponent label="Exposure" directValue={exposure} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateExposure} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Reset exposure"
-                        className="FlexItem"
-                        icon={faTrashCan}
-                        disabled={isPostProcessingDefaultState.exposure}
-                        onClick={() => onExposureChange()}
-                    />
+                    <FontAwesomeIconButton title="Reset exposure" className="FlexItem" icon={faTrashCan} disabled={!canResetExposure} onClick={resetExposure} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
@@ -1099,67 +1160,55 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
                 <div>
                     <div className="FlexItem" style={{ flex: 5 }}>
-                        <ButtonLineComponent label="Use Current Pose" onClick={onCameraSnapshotClick} />
+                        <ButtonLineComponent label="Use Current Pose" onClick={snapshotCamera} />
                     </div>
-                    <FontAwesomeIconButton
-                        title="Revert camera pose to snippet"
-                        className="FlexItem"
-                        disabled={!canRevertCameraState}
-                        icon={faRotateLeft}
-                        onClick={onCameraRevertClick}
-                    />
-                    <FontAwesomeIconButton
-                        title="Reset camera pose attributes"
-                        className="FlexItem"
-                        disabled={isCameraStateDefault}
-                        icon={faTrashCan}
-                        onClick={onCameraResetClick}
-                    />
+                    <FontAwesomeIconButton title="Revert camera pose to snippet" className="FlexItem" disabled={!canRevertCamera} icon={faRotateLeft} onClick={revertCamera} />
+                    <FontAwesomeIconButton title="Reset camera pose attributes" className="FlexItem" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
                 </div>
                 <div>
-                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbitState.enabled} onSelect={onAutoOrbitChanged} />
+                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbit} onSelect={updateAutoOrbit} />
                 </div>
-                {autoOrbitState.enabled && (
+                {autoOrbit && (
                     <>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Speed"
-                                    directValue={autoOrbitState.speed}
+                                    directValue={autoOrbitSpeed}
                                     minimum={0}
                                     maximum={0.524}
                                     step={0.01}
                                     decimalCount={3}
                                     lockObject={lockObject}
-                                    onChange={onAutoOrbitSpeedChange}
+                                    onChange={updateAutoOrbitSpeed}
                                 />
                             </div>
                             <FontAwesomeIconButton
                                 title="Reset auto orbit speed"
                                 className="FlexItem"
-                                disabled={isAutoOrbitDefaultState.speed}
+                                disabled={!canResetAutoOrbitSpeed}
                                 icon={faTrashCan}
-                                onClick={() => onAutoOrbitSpeedChange()}
+                                onClick={resetAutoOrbitSpeed}
                             />
                         </div>
                         <div>
                             <div className="FlexItem" style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Delay"
-                                    directValue={autoOrbitState.delay}
+                                    directValue={autoOrbitDelay}
                                     minimum={0}
                                     maximum={5000}
                                     step={1}
                                     lockObject={lockObject}
-                                    onChange={onAutoOrbitDelayChange}
+                                    onChange={updateAutoOrbitDelay}
                                 />
                             </div>
                             <FontAwesomeIconButton
                                 title="Reset auto orbit delay"
                                 className="FlexItem"
-                                disabled={isAutoOrbitDefaultState.delay}
+                                disabled={!canResetAutoOrbitDelay}
                                 icon={faTrashCan}
-                                onClick={() => onAutoOrbitDelayChange()}
+                                onClick={resetAutoOrbitDelay}
                             />
                         </div>
                     </>
@@ -1172,25 +1221,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Use Current Selections" onClick={onAnimationSnapshotClick} isDisabled={!hasAnimations} />
+                            <ButtonLineComponent label="Use Current Selections" onClick={snapshotAnimationState} isDisabled={!hasAnimations} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert animation state to snippet"
                             className="FlexItem"
                             disabled={!canRevertAnimationState}
                             icon={faRotateLeft}
-                            onClick={onAnimationRevertClick}
+                            onClick={revertAnimationState}
                         />
                         <FontAwesomeIconButton
                             title="Reset animation state attributes"
                             className="FlexItem"
-                            disabled={isAnimationStateDefault}
+                            disabled={!canResetAnimationState}
                             icon={faTrashCan}
-                            onClick={onAnimationResetClick}
+                            onClick={resetAnimationState}
                         />
                     </div>
                     <div>
-                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={onAnimationAutoPlayChanged} />
+                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={updateAnimationAutoPlay} />
                     </div>
                 </LineContainerComponent>
             )}
@@ -1201,21 +1250,21 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Snapshot Current State" onClick={onMaterialVariantsSnapshotClick} isDisabled={!hasMaterialVariants} />
+                            <ButtonLineComponent label="Snapshot Current State" onClick={snapshotSelectedMaterialVariant} isDisabled={!hasMaterialVariants} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert selected material variant to snippet"
                             className="FlexItem"
                             disabled={!canRevertSelectedMaterialVariant}
                             icon={faRotateLeft}
-                            onClick={onMaterialVariantsRevertClick}
+                            onClick={revertSelectedMaterialVariant}
                         />
                         <FontAwesomeIconButton
                             title="Reset material variant attribute"
                             className="FlexItem"
                             icon={faTrashCan}
+                            disabled={!canResetSelectedMaterialVariant}
                             onClick={resetSelectedMaterialVariant}
-                            disabled={isSelectedMaterialVariantDefault}
                         />
                     </div>
                 </LineContainerComponent>
