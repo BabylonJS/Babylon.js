@@ -985,7 +985,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 <div className="Header">
                     <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div className="title">VIEWER CONFIGURATOR</div>
-                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faFileLines} onClick={() => window.open("https://doc.babylonjs.com/")} />
+                    <FontAwesomeIconButton
+                        className="docs"
+                        title="Documentation"
+                        icon={faFileLines}
+                        onClick={() => window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator")}
+                    />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div style={{ height: "auto", borderBottom: "0px" }}>
