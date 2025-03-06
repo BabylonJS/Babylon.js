@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { ViewerElement } from "viewer/viewerElement";
 
-import * as styles from "./App.module.scss";
+import "./App.scss";
 import { useMemo, useState } from "react";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -16,7 +16,7 @@ export const App: FunctionComponent = () => {
     const viewer = useMemo(() => viewerDetails?.viewer, [viewerDetails]);
 
     return (
-        <SplitContainer className={styles["VerticalContainer"]} direction={SplitDirection.Horizontal}>
+        <SplitContainer className="appContainer" direction={SplitDirection.Horizontal}>
             <Viewer onViewerCreated={setViewerElement} />
             <Splitter size={8} minSize={300} initialSize={400} maxSize={600} controlledSide={ControlledSize.Second} />
             <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>

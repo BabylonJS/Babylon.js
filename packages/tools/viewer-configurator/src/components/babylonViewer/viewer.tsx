@@ -1,3 +1,4 @@
+import "./viewer.scss";
 import type { FunctionComponent } from "react";
 import type { ViewerElement } from "viewer";
 import { useEffect, useState } from "react";
@@ -29,13 +30,5 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: Viewer
         });
     }, []);
 
-    return viewerLoaded ? (
-        <babylon-viewer
-            style={{ width: "100%", height: "100%", background: "repeating-conic-gradient(#e2e2e2 0% 25%, white 0% 50%) 50% / 30px 30px" }}
-            ref={props.onViewerCreated}
-            engine="WebGL"
-        ></babylon-viewer>
-    ) : (
-        <p>Loading...</p>
-    );
+    return viewerLoaded ? <babylon-viewer className="viewerElement" ref={props.onViewerCreated} engine="WebGL"></babylon-viewer> : <div className="loadingDiv">Loading...</div>;
 };
