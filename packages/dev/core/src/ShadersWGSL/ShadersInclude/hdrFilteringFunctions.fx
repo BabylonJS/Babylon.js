@@ -187,11 +187,19 @@
                     T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
                     var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
                     var NoL: f32 = dot(n, Ls);
+                    var H: vec3f = (n + Ls) * 0.5;
+                    var NoH: f32 = dot(n, H);
+                    var NoV: f32 = dot(n, inputV);
+                    var VoH: f32 = dot(inputV, H);
                 #else
                     var Ls: vec3f = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
                     var Ns: vec3f =  vec3f(0., 0., 1.);
                     var NoL: f32 = dot(Ns, Ls);
+                    var H: vec3f = (Ns + Ls) * 0.5;
+                    var NoH: f32 = dot(Ns, H);
+                    // TODO inputV is in world space, we need to convert it to tangent space
+                    var VoH: f32 = dot(inputV, H);
                 #endif
 
                 if (NoL > 0.) {
@@ -211,14 +219,21 @@
                         c = toLinearSpaceVec3(c);
                     #endif
 
+                    var diffuseRoughnessTerm: vec3f = vec3f(1.0);
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                        diffuseRoughnessTerm = diffuseBRDF_EON(surfaceAlbedo, diffuseRoughness, NoL, NoV) * PI;
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                        diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                    #endif
+
                     #ifdef IBL_CDF_FILTERING
                         var light: vec3f = vec3f(0.0);
                         if (pdf > 1e-6) {
                             light = vec3f(1.0) / vec3f(pdf) * c;
                         }
-                        result += NoL * light;
+                        result += NoL * diffuseRoughnessTerm * light;
                     #else
-                        result += c;
+                        result += c * diffuseRoughnessTerm;
                     #endif
                 }
             }

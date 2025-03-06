@@ -819,7 +819,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT;
+    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR;
     /**
      * Defines the base diffuse roughness model of the material.
      */
