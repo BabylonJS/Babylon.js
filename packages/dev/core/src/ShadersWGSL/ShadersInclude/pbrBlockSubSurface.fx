@@ -517,7 +517,7 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                var refractionIrradiance: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo, diffuseRoughness, normalW
+                var refractionIrradiance: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo, diffuseRoughness, normalW, vec3f(1.0)
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
                     , icdfSamplerSampler
