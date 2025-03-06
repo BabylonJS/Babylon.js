@@ -1,7 +1,8 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
-#if !defined(SS_TRANSLUCENCY)
+#if !defined(SS_TRANSLUCENCY) && BASE_DIFFUSE_ROUGHNESS_MODEL != 2
     // When translucency is enabled, the final diffuse term is computed in the computeDiffuseAndTransmittedLighting function, we should not multiply it by the albedo here.
+    // finalDiffuse already includes the surface albedo if using OpenPBR's ORN model.
     finalDiffuse *= surfaceAlbedo.rgb;
 #endif
 finalDiffuse = max(finalDiffuse, vec3f(0.0));

@@ -40,7 +40,10 @@ aggShadow = aggShadow / numLights;
         finalIrradiance += subSurfaceOut.refractionIrradiance;
     #endif
 
+// Irradiance already include the surface albedo if using OpenPBR's ORN model.
+#if BASE_DIFFUSE_ROUGHNESS_MODEL != 2
     finalIrradiance *= surfaceAlbedo.rgb;
+#endif
     finalIrradiance *= uniforms.vLightingIntensity.z;
     finalIrradiance *= aoOut.ambientOcclusionColor;
 #endif
