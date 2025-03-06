@@ -6,6 +6,7 @@ import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuff
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
+import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
@@ -80,6 +81,10 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         await this._subGraph.init(options);
 
+        if (_HasSpatialAudioOptions(options)) {
+            this._initSpatialProperty();
+        }
+
         if (options.autoplay) {
             this.play();
         }
@@ -104,7 +109,10 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime));
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
     }
 
     /** @internal */
@@ -162,6 +170,14 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
         }
 
         return true;
+    }
+
+    private _initSpatialProperty(): _SpatialAudio {
+        if (!this._spatial) {
+            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
+        }
+
+        return this._spatial;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {

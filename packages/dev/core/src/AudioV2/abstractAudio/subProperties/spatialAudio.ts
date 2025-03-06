@@ -11,14 +11,23 @@ import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAu
 
 /** @internal */
 export abstract class _SpatialAudio extends AbstractSpatialAudio {
-    private _position: Vector3 = _SpatialAudioDefaults.position.clone();
-    private _rotation: Vector3 = _SpatialAudioDefaults.rotation.clone();
-    private _rotationQuaternion: Quaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
+    private _position: Vector3;
+    private _rotation: Vector3;
+    private _rotationQuaternion: Quaternion;
     private _subGraph: _AbstractAudioSubGraph;
 
     /** @internal */
     public constructor(subGraph: _AbstractAudioSubGraph) {
         super();
+
+        const subNode = _GetSpatialAudioSubNode(subGraph);
+        if (!subNode) {
+            throw new Error("Sub node not found");
+        }
+
+        this._position = subNode.position.clone();
+        this._rotation = subNode.rotation.clone();
+        this._rotationQuaternion = subNode.rotationQuaternion.clone();
 
         this._subGraph = subGraph;
     }

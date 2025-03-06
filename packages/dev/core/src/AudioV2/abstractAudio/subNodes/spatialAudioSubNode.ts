@@ -85,17 +85,21 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.referenceDistance;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.rolloffFactor;
 
-        if (!this._attacherComponent.isAttachedToPosition && options.spatialPosition !== undefined) {
-            this.position = options.spatialPosition;
+        if (!this._attacherComponent.isAttachedToPosition) {
+            if (options.spatialPosition) {
+                this.position = options.spatialPosition.clone();
+            } else {
+                this.position = _SpatialAudioDefaults.position.clone();
+            }
         }
 
         if (!this._attacherComponent.isAttachedToRotation) {
-            if (options.spatialRotationQuaternion !== undefined) {
-                this.rotationQuaternion = options.spatialRotationQuaternion;
-            } else if (options.spatialRotation !== undefined) {
-                this.rotation = options.spatialRotation;
+            if (options.spatialRotation) {
+                this.rotation = options.spatialRotation.clone();
+            } else if (options.spatialRotationQuaternion) {
+                this.rotationQuaternion = options.spatialRotationQuaternion?.clone();
             } else {
-                this.rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
+                _SpatialAudioDefaults.rotationQuaternion.clone();
             }
         }
     }

@@ -2,6 +2,7 @@ import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { IAudioBusOptions } from "../abstractAudio/audioBus";
 import { AudioBus } from "../abstractAudio/audioBus";
+import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
@@ -52,6 +53,10 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
 
         await this._subGraph.init(options);
 
+        if (_HasSpatialAudioOptions(options)) {
+            this._initSpatialProperty();
+        }
+
         this.engine.addNode(this);
     }
 
@@ -77,7 +82,10 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime));
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
     }
 
     /** @internal */
@@ -88,6 +96,14 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     /** @internal */
     public getClassName(): string {
         return "_WebAudioBus";
+    }
+
+    private _initSpatialProperty(): _SpatialAudio {
+        if (!this._spatial) {
+            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
+        }
+
+        return this._spatial;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {

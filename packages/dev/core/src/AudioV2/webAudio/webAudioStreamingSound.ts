@@ -6,6 +6,7 @@ import type {} from "../abstractAudio/abstractSound";
 import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
+import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl } from "../audioUtils";
@@ -79,6 +80,10 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
         await this._subGraph.init(options);
 
+        if (_HasSpatialAudioOptions(options)) {
+            this._initSpatialProperty();
+        }
+
         if (this.preloadCount) {
             await this.preloadInstances(this.preloadCount);
         }
@@ -102,7 +107,10 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime));
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
     }
 
     /** @internal */
@@ -158,6 +166,14 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         }
 
         return true;
+    }
+
+    private _initSpatialProperty(): _SpatialAudio {
+        if (!this._spatial) {
+            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
+        }
+
+        return this._spatial;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
