@@ -157,7 +157,7 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, inputV: vec3f, surfaceAlbedo: vec3f
+        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, inputV: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
@@ -221,7 +221,7 @@
 
                     var diffuseRoughnessTerm: vec3f = vec3f(1.0);
                     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
-                        diffuseRoughnessTerm = diffuseBRDF_EON(surfaceAlbedo, diffuseRoughness, NoL, NoV) * PI;
+                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV) * PI;
                     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
                         diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif

@@ -75,7 +75,6 @@
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
             preInfo.diffuseRoughness = diffuseRoughness;
-            preInfo.surfaceAlbedo = surfaceAlbedo;
 
             #ifdef IRIDESCENCE
                 preInfo.iridescenceIntensity = iridescenceIntensity;

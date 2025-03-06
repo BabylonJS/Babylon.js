@@ -234,7 +234,6 @@
             , icdfSamplerSampler: sampler
         #endif
         , diffuseRoughness: f32
-        , surfaceAlbedo: vec3f
     #endif
     ) -> reflectionOutParams
     {
@@ -311,7 +310,7 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView, surfaceAlbedo
+                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                         , icdfSamplerSampler
