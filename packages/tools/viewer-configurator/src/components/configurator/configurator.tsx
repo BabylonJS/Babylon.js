@@ -1277,9 +1277,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <div className="FlexItem" style={{ flex: 5 }}>
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
                     </div>
-                    <div onClick={onAddHotspotClick} title="Add Hot Spot">
-                        <FontAwesomeIcon icon={faSquarePlus} />
-                    </div>
+                    <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
                 </div>
                 <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
                     <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>

@@ -53,22 +53,28 @@
     // Wrapper to help with row flex for lines
     .FlexItem {
         height: 100%;
-        align-content: center;
-        text-align: center;
     }
 
-    // Input: prevent default styling
+    // Prevent default styling on inputs
     input {
         box-sizing: border-box;
         width: 100%;
         height: 100%;
         font: inherit; // Forms don't inherit the font-family by default
     }
+    select {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+    }
 
     // Styling for icons
     svg {
-        height: $icon-height !important;
-        padding: $icon-padding;
+        height: $line-height !important;
+        * {
+            transform: scale(0.8);
+            transform-origin: center;
+        }
     }
 
     // Styling for disabled elements
@@ -301,6 +307,7 @@
         flex-direction: row;
         justify-content: $line-content-spacing;
         gap: $line-button-gap;
+        height: 100%;
 
         .label {
             flex: 1;
@@ -309,12 +316,8 @@
         }
 
         .options {
-            align-content: center;
+            height: 100%;
             flex: 1.5;
-
-            select {
-                width: 100%;
-            }
         }
 
         .copy {
@@ -420,6 +423,7 @@
         gap: $line-button-gap;
 
         .firstLine {
+            height: $line-height;
             width: 100%;
             align-self: center;
             display: flex;
