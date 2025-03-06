@@ -322,7 +322,6 @@ void main(void) {
                     , icdfSampler
                 #endif
                 , diffuseRoughness
-                , surfaceAlbedo
             #endif
             );
         #else
