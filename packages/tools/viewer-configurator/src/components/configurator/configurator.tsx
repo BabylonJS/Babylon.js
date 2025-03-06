@@ -351,7 +351,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewerElement]
     );
 
-    const [syncEnvironment, setSyncEnvironment] = useState(true);
+    const [syncEnvironment, setSyncEnvironment] = useState(false);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
 
     const hasSkybox = useMemo(() => {
@@ -784,7 +784,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const isEnvironmentLightingUrlValid = useMemo(() => {
-        return !environmentLightingUrl || URL.canParse(environmentLightingUrl);
+        return !environmentLightingUrl || URL.canParse(environmentLightingUrl) || environmentLightingUrl === "auto";
     }, [environmentLightingUrl]);
 
     const onEnvironmentLightingUrlChange = useCallback(
@@ -862,11 +862,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [setNeedsEnvironmentUpdate, updateSkyboxUrl]);
 
     const onSyncEnvironmentChanged = useCallback(
-        (value?: boolean) => {
-            setSyncEnvironment(value ?? true);
+        (value: boolean = false) => {
+            setSyncEnvironment(value);
             setNeedsEnvironmentUpdate(true);
+
+            if (value && !canResetLightingUrl) {
+                updateLightingUrl("auto");
+                return;
+            }
+
+            if (!value && environmentLightingUrl === "auto") {
+                resetLightingUrl();
+            }
         },
-        [setNeedsEnvironmentUpdate, setSyncEnvironment]
+        [setNeedsEnvironmentUpdate, environmentLightingUrl, canResetLightingUrl, updateLightingUrl, resetLightingUrl, setSyncEnvironment]
     );
 
     const onToneMappingChange = useCallback(
