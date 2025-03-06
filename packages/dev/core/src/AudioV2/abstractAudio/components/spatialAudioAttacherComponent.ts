@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../..//Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { Node } from "../../../node";
 import type { Nullable } from "../../../types";
