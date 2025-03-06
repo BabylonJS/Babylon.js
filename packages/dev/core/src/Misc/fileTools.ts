@@ -196,6 +196,7 @@ export const LoadImageConfiguration: {
  * @param offlineProvider offline provider for caching
  * @param mimeType optional mime type
  * @param imageBitmapOptions
+ * @param engine the engine instance to use
  * @returns the HTMLImageElement of the loaded image
  * @internal
  */
@@ -205,9 +206,9 @@ export const LoadImage = (
     onError: (message?: string, exception?: any) => void,
     offlineProvider: Nullable<IOfflineProvider>,
     mimeType: string = "",
-    imageBitmapOptions?: ImageBitmapOptions
+    imageBitmapOptions?: ImageBitmapOptions,
+    engine = EngineStore.LastCreatedEngine
 ): Nullable<HTMLImageElement> => {
-    const engine = EngineStore.LastCreatedEngine;
     if (typeof HTMLImageElement === "undefined" && !engine?._features.forceBitmapOverHTMLImageElement) {
         onError("LoadImage is only supported in web or BabylonNative environments.");
         return null;
