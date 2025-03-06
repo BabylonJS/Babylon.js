@@ -47,7 +47,7 @@ fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     var diffuseTerm: vec3f = vec3f(1.0 / PI);
     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
         diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
         diffuseTerm = diffuseBRDF_EON(info.surfaceAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV);
     #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
