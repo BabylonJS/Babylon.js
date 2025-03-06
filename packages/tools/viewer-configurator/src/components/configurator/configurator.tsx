@@ -931,6 +931,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [revertAnimationState, revertCamera, revertSelectedMaterialVariant]);
 
     const resetAll = useCallback(() => {
+        resetLightingUrl();
+        resetSkyboxUrl();
         onSyncEnvironmentChanged();
         resetSkyboxBlur();
         resetSkyboxIntensity();
@@ -948,6 +950,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         resetSelectedMaterialVariant();
         setHotspots([]);
     }, [
+        resetLightingUrl,
+        resetSkyboxUrl,
         onSyncEnvironmentChanged,
         resetSkyboxBlur,
         resetSkyboxIntensity,
