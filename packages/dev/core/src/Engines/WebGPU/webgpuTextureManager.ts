@@ -715,8 +715,8 @@ export class WebGPUTextureManager {
                 },
             },
             {
-                width,
-                height,
+                width: rectWidth || width,
+                height: rectHeight || height,
                 depthOrArrayLayers: 1,
             }
         );
@@ -1374,23 +1374,7 @@ export class WebGPUTextureManager {
                     textureExtent.depthOrArrayLayers = layers || 1;
 
                     // apply the preprocessing to this temp texture
-                    this.invertYPreMultiplyAlpha(
-                        srcTexture,
-                        width,
-                        height,
-                        format,
-                        invertY,
-                        premultiplyAlpha,
-                        faceIndex,
-                        mipLevel,
-                        layers || 1,
-                        0,
-                        0,
-                        0,
-                        0,
-                        commandEncoder,
-                        allowGPUOptimization
-                    );
+                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, 0, 1, 0, 0, 0, 0, commandEncoder, allowGPUOptimization);
 
                     // copy the temp texture to the destination texture
                     commandEncoder.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);

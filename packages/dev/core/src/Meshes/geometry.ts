@@ -591,15 +591,20 @@ export class Geometry implements IGetSetVerticesData {
      * @param indexBuffer Defines the index buffer to use for this geometry
      * @param totalVertices Defines the total number of vertices used by the buffer
      * @param totalIndices Defines the total number of indices in the index buffer
+     * @param is32Bits Defines if the indices are 32 bits. If null (default), the value is guessed from the number of vertices
      */
-    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number, is32Bits: Nullable<boolean> = null): void {
         this._indices = [];
         this._indexBufferIsUpdatable = false;
         this._indexBuffer = indexBuffer;
         this._totalVertices = totalVertices;
         this._totalIndices = totalIndices;
 
-        indexBuffer.is32Bits ||= this._totalVertices > 65535;
+        if (is32Bits === null) {
+            indexBuffer.is32Bits = totalVertices > 65535;
+        } else {
+            indexBuffer.is32Bits = is32Bits;
+        }
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
@@ -1037,28 +1042,21 @@ export class Geometry implements IGetSetVerticesData {
         let stopChecking = false;
         let kind;
         for (kind in this._vertexBuffers) {
-            // using slice() to make a copy of the array and not just reference it
-            const data = this.getVerticesData(kind);
+            this.copyVerticesData(kind, vertexData as any);
 
-            if (data) {
-                if (data instanceof Float32Array) {
-                    vertexData.set(new Float32Array(<Float32Array>data), kind);
-                } else {
-                    vertexData.set((<number[]>data).slice(0), kind);
-                }
-                if (!stopChecking) {
-                    const vb = this.getVertexBuffer(kind);
+            if (!stopChecking) {
+                const vb = this.getVertexBuffer(kind);
 
-                    if (vb) {
-                        updatable = vb.isUpdatable();
-                        stopChecking = !updatable;
-                    }
+                if (vb) {
+                    updatable = vb.isUpdatable();
+                    stopChecking = !updatable;
                 }
             }
         }
 
         const geometry = new Geometry(id, this._scene, vertexData, updatable);
 
+        geometry._totalVertices = this._totalVertices;
         geometry.delayLoadState = this.delayLoadState;
         geometry.delayLoadingFile = this.delayLoadingFile;
         geometry._delayLoadingFunction = this._delayLoadingFunction;

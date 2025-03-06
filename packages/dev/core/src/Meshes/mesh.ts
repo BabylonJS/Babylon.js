@@ -1897,13 +1897,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param indexBuffer Defines the index buffer to use for this mesh
      * @param totalVertices Defines the total number of vertices used by the buffer
      * @param totalIndices Defines the total number of indices in the index buffer
+     * @param is32Bits Defines if the indices are 32 bits. If null (default), the value is guessed from the number of vertices
      */
-    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number, is32Bits: Nullable<boolean> = null): void {
         let geometry = this._geometry;
         if (!geometry) {
             geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
         }
-        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices, is32Bits);
     }
 
     /**

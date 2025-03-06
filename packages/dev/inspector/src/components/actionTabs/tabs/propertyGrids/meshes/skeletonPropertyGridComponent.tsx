@@ -226,7 +226,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={skeleton.id} />
+                    <TextLineComponent label="ID" value={skeleton.id} onCopy />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
                     <CheckBoxLineComponent
                         label="Use texture to store matrices"
