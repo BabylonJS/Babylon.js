@@ -35,6 +35,8 @@ import { LoadModel, PickModel } from "../../modelLoader";
 
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
+const defaultModelUrl = "https://cdn.jsdelivr.net/gh/BabylonJS/Assets/meshes/aerobatic_plane.glb";
+
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
 const toneMappingOptions = [
@@ -301,7 +303,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const [modelUrl, setModelUrl] = useState("https://assets.babylonjs.com/meshes/aerobatic_plane.glb");
+    const [modelUrl, setModelUrl] = useState(defaultModelUrl);
 
     useEffect(() => {
         viewerElement.source = modelUrl;
@@ -340,7 +342,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer.onEnvironmentChanged],
         [viewerElement]
     );
-    const [canREvertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration(
+    const [canRevertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration(
         "",
         () => viewerElement.environment.skybox ?? "",
         () => {},
@@ -922,13 +924,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [canRevertCamera, canRevertAnimationState, canRevertSelectedMaterialVariant]
     );
 
-    const onRevertAllClick = useCallback(() => {
+    const revertAll = useCallback(() => {
         revertAnimationState();
         revertCamera();
         revertSelectedMaterialVariant();
     }, [revertAnimationState, revertCamera, revertSelectedMaterialVariant]);
 
-    const onResetAllClick = useCallback(() => {
+    const resetAll = useCallback(() => {
         onSyncEnvironmentChanged();
         resetSkyboxBlur();
         resetSkyboxIntensity();
@@ -978,9 +980,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div style={{ paddingTop: "0px" }}>
                         <div className="FlexItem" style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Reset" onClick={onResetAllClick} />
+                            <ButtonLineComponent label="Reset" onClick={resetAll} />
                         </div>
-                        <FontAwesomeIconButton title="Revert all state to snippet" className="FlexItem" icon={faRotateLeft} onClick={onRevertAllClick} disabled={!canRevertAll} />
+                        <FontAwesomeIconButton title="Revert all state to snippet" className="FlexItem" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
                         <FontAwesomeIconButton title="Copy html to clipboard" className="FlexItem" icon={faCopy} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
