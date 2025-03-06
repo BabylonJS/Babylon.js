@@ -1,13 +1,8 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { TransformNode } from "../../../Meshes/transformNode";
-import type { Nullable } from "../../../types";
-import { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import type { Node } from "../../../node";
+import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioDefaults = {
-    attachedMesh: null as Nullable<AbstractMesh>,
-    attachedTransformNode: null as Nullable<TransformNode>,
-    attachmentType: SpatialAudioAttachmentType.POSITION_AND_ROTATION as SpatialAudioAttachmentType,
     coneInnerAngle: 6.28318530718 as number,
     coneOuterAngle: 6.28318530718 as number,
     coneOuterVolume: 0 as number,
@@ -25,18 +20,6 @@ export const _SpatialAudioDefaults = {
  * Options for spatial audio.
  */
 export interface ISpatialAudioOptions {
-    /**
-     * The mesh the spatialization will use to update its position and rotation. Defaults to `null`.
-     */
-    spatialAttachedMesh: AbstractMesh;
-    /**
-     * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
-     */
-    spatialAttachedTransformNode: TransformNode;
-    /**
-     * The type of attachment to use; position, rotation, or both. Defaults to both.
-     */
-    spatialAttachmentType: SpatialAudioAttachmentType;
     /**
      * Whether to automatically update the spatial properties of the audio node. Defaults to `true`.
      */
@@ -131,9 +114,6 @@ export interface ISpatialAudioOptions {
 export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>): boolean {
     return (
         options.spatialEnabled ||
-        options.spatialAttachedMesh !== undefined ||
-        options.spatialAttachedTransformNode !== undefined ||
-        options.spatialAttachmentType !== undefined ||
         options.spatialAutoUpdate !== undefined ||
         options.spatialConeInnerAngle !== undefined ||
         options.spatialConeOuterAngle !== undefined ||
@@ -156,21 +136,6 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
  * @see {@link AudioEngineV2.listener}
  */
 export abstract class AbstractSpatialAudio {
-    /**
-     * The mesh the spatialization will use to update its position and rotation. Defaults to `null`.
-     */
-    public abstract attachedMesh: Nullable<AbstractMesh>;
-
-    /**
-     * The transform node the spatialization will use to update its position and rotation. Defaults to `null`.
-     */
-    public abstract attachedTransformNode: Nullable<TransformNode>;
-
-    /**
-     * The type of attachment to use; position, rotation, or both. Defaults to both.
-     */
-    public abstract attachmentType: SpatialAudioAttachmentType;
-
     /**
      * The spatial cone inner angle, in radians. Defaults to 2π.
      * - When the listener is inside the cone inner angle, the volume is at its maximum.
@@ -259,6 +224,18 @@ export abstract class AbstractSpatialAudio {
      */
     public abstract rotationQuaternion: Quaternion;
 
+    /**
+     * Attaches the audio source to a scene object.
+     * @param sceneNode The scene node to attach the audio source to.
+     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
+     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     */
+    public abstract attach(sceneNode: Node, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
+
+    /**
+     * Detaches the audio source from the currently attached graphics node.
+     */
+    public abstract detach(): void;
     /**
      * Updates the position and rotation in the audio engine to the current values.
      */

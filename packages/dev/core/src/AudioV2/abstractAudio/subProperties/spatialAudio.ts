@@ -1,8 +1,7 @@
 import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Node } from "../../../node";
 import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
@@ -30,33 +29,6 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         this._rotationQuaternion = subNode.rotationQuaternion.clone();
 
         this._subGraph = subGraph;
-    }
-
-    /** @internal */
-    public get attachedMesh(): Nullable<AbstractMesh> {
-        return _GetSpatialAudioProperty(this._subGraph, "attachedMesh");
-    }
-
-    public set attachedMesh(value: Nullable<AbstractMesh>) {
-        _SetSpatialAudioProperty(this._subGraph, "attachedMesh", value);
-    }
-
-    /** @internal */
-    public get attachedTransformNode(): Nullable<TransformNode> {
-        return _GetSpatialAudioProperty(this._subGraph, "attachedTransformNode");
-    }
-
-    public set attachedTransformNode(value: Nullable<TransformNode>) {
-        _SetSpatialAudioProperty(this._subGraph, "attachedTransformNode", value);
-    }
-
-    /** @internal */
-    public get attachmentType(): SpatialAudioAttachmentType {
-        return _GetSpatialAudioProperty(this._subGraph, "attachmentType");
-    }
-
-    public set attachmentType(value: SpatialAudioAttachmentType) {
-        _SetSpatialAudioProperty(this._subGraph, "attachmentType", value);
     }
 
     /** @internal */
@@ -171,7 +143,17 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     * Attaches the audio source to a scene object.
+     * @param sceneNode The scene node to attach the audio source to.
+     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
+     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     */
+    public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
+        _GetSpatialAudioSubNode(this._subGraph)?.attach(sceneNode, useBoundingBox, attachmentType);
+    }
+
+    /**
+     * Detaches the audio source from the currently attached graphics node.
      */
     public detach(): void {
         _GetSpatialAudioSubNode(this._subGraph)?.detach();

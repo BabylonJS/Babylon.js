@@ -1,9 +1,6 @@
-import type { Camera } from "../../../Cameras/camera";
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { TransformNode } from "../../../Meshes/transformNode";
-import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import type { Node } from "../../../node";
+import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioListenerDefaults = {
     position: Vector3.Zero(),
@@ -15,22 +12,6 @@ export const _SpatialAudioListenerDefaults = {
  * Options for spatial audio.
  */
 export interface ISpatialAudioListenerOptions {
-    /**
-     * The camera the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    listenerAttachedCamera: Camera;
-    /**
-     * The mesh the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    listenerAttachedMesh: AbstractMesh;
-    /**
-     * The transform node the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    listenerAttachedTransformNode: TransformNode;
-    /**
-     * The type of attachment to use; position, rotation, or both. Defaults to both.
-     */
-    listenerAttachmentType: SpatialAudioAttachmentType;
     /**
      * Whether to automatically update the position and rotation of the listener. Defaults to `true`.
      */
@@ -65,10 +46,6 @@ export interface ISpatialAudioListenerOptions {
 export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioListenerOptions>): boolean {
     return (
         options.listenerEnabled ||
-        options.listenerAttachedCamera !== undefined ||
-        options.listenerAttachedMesh !== undefined ||
-        options.listenerAttachedTransformNode !== undefined ||
-        options.listenerAttachmentType !== undefined ||
         options.listenerMinUpdateTime !== undefined ||
         options.listenerPosition !== undefined ||
         options.listenerRotation !== undefined ||
@@ -82,26 +59,6 @@ export function _HasSpatialAudioListenerOptions(options: Partial<ISpatialAudioLi
  * @see {@link AudioEngineV2.listener}
  */
 export abstract class AbstractSpatialAudioListener {
-    /**
-     * The camera the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    public abstract attachedCamera: Nullable<Camera>;
-
-    /**
-     * The mesh the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    public abstract attachedMesh: Nullable<AbstractMesh>;
-
-    /**
-     * The transform node the listener will use to update its position and rotation. Defaults to `null`.
-     */
-    public abstract attachedTransformNode: Nullable<TransformNode>;
-
-    /**
-     * The type of attachment to use; position, rotation, or both. Defaults to both.
-     */
-    public abstract attachmentType: SpatialAudioAttachmentType;
-
     /**
      * Whether the listener is attached to a camera, mesh or transform node.
      */
@@ -127,6 +84,19 @@ export abstract class AbstractSpatialAudioListener {
      * The listener rotation, as a quaternion. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
+
+    /**
+     * Attaches the audio source to a scene object.
+     * @param sceneNode The scene node to attach the audio source to.
+     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
+     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     */
+    public abstract attach(sceneNode: Node, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
+
+    /**
+     * Detaches the audio source from the currently attached graphics node.
+     */
+    public abstract detach(): void;
 
     /**
      * Updates the position and rotation in the audio engine to the current values.

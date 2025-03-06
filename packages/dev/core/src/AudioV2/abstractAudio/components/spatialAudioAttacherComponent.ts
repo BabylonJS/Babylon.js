@@ -1,13 +1,8 @@
-import type { Camera } from "../../../Cameras/camera";
+import { Quaternion, Vector3 } from "../../..//Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Node } from "../../../node";
 import type { Nullable } from "../../../types";
-import type { _AbstractSpatialAudioAttacher } from "../spatialAttachers/abstractSpatialAudioAttacher";
-import { _SpatialAudioAttachedEntity, SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
-import { _SpatialAudioCameraAttacher } from "../spatialAttachers/spatialAudioCameraAttacher";
-import { _SpatialAudioMeshAttacher } from "../spatialAttachers/spatialAudioMeshAttacher";
-import { _SpatialAudioTransformNodeAttacher } from "../spatialAttachers/spatialAudioTransformNodeAttacher";
+import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
 import type { _SpatialAudioListener } from "../subProperties/spatialAudioListener";
 
@@ -17,142 +12,84 @@ import type { _SpatialAudioListener } from "../subProperties/spatialAudioListene
  * @internal
  */
 export class _SpatialAudioAttacherComponent {
-    private _attacher: Nullable<_AbstractSpatialAudioAttacher> = null;
+    /** @internal */
+    private _attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation;
+    private readonly _position = new Vector3();
+    private readonly _rotationQuaternion = new Quaternion();
+    private _sceneNode: Nullable<Node> = null;
+    private readonly _spatialAudioNode: _SpatialAudioSubNode | _SpatialAudioListener;
+    private _useBoundingBox: boolean = false;
 
     /** @internal */
-    public attachedNode: Nullable<Node> = null;
-
-    /**
-     * The type of attachment to use; position, rotation, or both.
-     */
-    public attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.POSITION_AND_ROTATION;
-
-    /** @internal */
-    public readonly _spatialAudioNode: _SpatialAudioSubNode | _SpatialAudioListener;
-
-    /**
-     * Creates a new ExclusiveSpatialAudioAttacher.
-     * @param spatialAudioNode - The spatial audio node to attach to
-     */
     public constructor(spatialAudioNode: _SpatialAudioSubNode | _SpatialAudioListener) {
         this._spatialAudioNode = spatialAudioNode;
-    }
-
-    /**
-     * The scene that the audio listener or source is attached to, or null if the audio listener or source is not
-     * attached to a scene.
-     */
-    public get attachedCamera(): Nullable<Camera> {
-        return this._attacher?.getAttacherType() === _SpatialAudioAttachedEntity.CAMERA ? (this.attachedNode as Camera) : null;
-    }
-
-    public set attachedCamera(value: Nullable<Camera>) {
-        if (this.attachedCamera === value) {
-            return;
-        }
-
-        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.CAMERA);
-    }
-
-    /**
-     * The mesh that the audio listener or source is attached to, or null if the audio listener or source is not
-     * attached to a mesh.
-     */
-    public get attachedMesh(): Nullable<AbstractMesh> {
-        return this._attacher?.getAttacherType() === _SpatialAudioAttachedEntity.MESH ? (this.attachedNode as AbstractMesh) : null;
-    }
-
-    public set attachedMesh(value: Nullable<AbstractMesh>) {
-        if (this.attachedMesh === value) {
-            return;
-        }
-
-        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.MESH);
-    }
-
-    /**
-     * The transform node that the audio listener or source is attached to, or null if the audio listener or source is
-     * not attached to a transform node.
-     */
-    public get attachedTransformNode(): Nullable<TransformNode> {
-        return this._attacher?.getAttacherType() === _SpatialAudioAttachedEntity.TRANSFORM_NODE ? (this.attachedNode as TransformNode) : null;
-    }
-
-    public set attachedTransformNode(value: Nullable<TransformNode>) {
-        if (this.attachedTransformNode === value) {
-            return;
-        }
-
-        this._resetAttachedEntity(value, _SpatialAudioAttachedEntity.TRANSFORM_NODE);
     }
 
     /**
      * Returns `true` if the audio listener or source is attached to an entity; otherwise returns `false`.
      */
     public get isAttached(): boolean {
-        return this._attacher !== null;
+        return this._sceneNode !== null;
     }
 
     /**
-     * Returns `true` if the audio listener or source is attached to an entity's position; otherwise returns `false`.
+     * Attaches a scene object.
+     * @param sceneNode The scene node to attach to.
+     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
+     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public get isAttachedToPosition(): boolean {
-        return this._attacher !== null && (this.attachmentType & SpatialAudioAttachmentType.POSITION) === SpatialAudioAttachmentType.POSITION;
-    }
+    public attach(sceneNode: Node, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+        this.detach();
 
-    /**
-     * Returns `true` if the audio listener or source is attached to an entity's rotation; otherwise returns `false`.
-     */
-    public get isAttachedToRotation(): boolean {
-        return this._attacher !== null && (this.attachmentType & SpatialAudioAttachmentType.ROTATION) === SpatialAudioAttachmentType.ROTATION;
+        this._attachmentType = attachmentType;
+
+        this._sceneNode = sceneNode;
+        this._sceneNode.onDisposeObservable.add(this.dispose);
+
+        this._useBoundingBox = useBoundingBox;
     }
 
     /**
      * Detaches the attached entity.
      */
     public detach() {
-        this._attacher?.dispose();
-        this._attacher = null;
+        this._sceneNode?.onDisposeObservable.removeCallback(this.dispose);
+        this._sceneNode = null;
     }
 
     /**
      * Releases associated resources.
      */
-    public dispose() {
+    public dispose = () => {
         this.detach();
-    }
+    };
 
     /**
      * Updates the audio listener or source.
      */
     public update() {
-        this._attacher?.update();
-    }
+        let rotationDone = false;
 
-    private _resetAttachedEntity(entity: Nullable<AbstractMesh | Camera | TransformNode>, attacherClassName: string): void {
-        this.detach();
-
-        this.attachedNode = entity;
-
-        if (!entity) {
-            this._attacher = null;
-        } else {
-            switch (attacherClassName) {
-                case _SpatialAudioAttachedEntity.CAMERA:
-                    this._attacher = new _SpatialAudioCameraAttacher(this);
-                    break;
-                case _SpatialAudioAttachedEntity.MESH:
-                    this._attacher = new _SpatialAudioMeshAttacher(this);
-                    break;
-                case _SpatialAudioAttachedEntity.TRANSFORM_NODE:
-                    this._attacher = new _SpatialAudioTransformNodeAttacher(this);
-                    break;
-                default:
-                    this._attacher = null;
-                    break;
+        if (this._attachmentType & SpatialAudioAttachmentType.Position) {
+            if (this._useBoundingBox && (this._sceneNode as AbstractMesh).getBoundingInfo) {
+                this._position.copyFrom((this._sceneNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
+            } else if ((this._sceneNode as any).position) {
+                this._position.copyFrom((this._sceneNode as any).position);
+            } else {
+                rotationDone = 0 < (this._attachmentType & SpatialAudioAttachmentType.Rotation);
+                const rotationQuaternion = rotationDone ? this._rotationQuaternion : undefined;
+                this._sceneNode?.getWorldMatrix().decompose(this._position, rotationQuaternion, undefined);
             }
+
+            this._spatialAudioNode.position = this._position;
         }
 
-        return;
+        if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
+            if (!rotationDone) {
+                this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
+            }
+
+            this._spatialAudioNode.rotationQuaternion = this._rotationQuaternion;
+        }
     }
 }
