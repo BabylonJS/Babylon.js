@@ -195,7 +195,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , metallicReflectanceFactors
     #endif
         , uniforms.baseDiffuseRoughness
-    #ifdef BASE_WEIGHT
+    #ifdef BASE_DIFFUSE_ROUGHNESS
         , baseDiffuseRoughnessTexture
         , uniforms.vBaseDiffuseRoughnessInfos
     #endif
@@ -312,6 +312,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     , icdfSamplerSampler
                 #endif
                 , diffuseRoughness
+                , surfaceAlbedo
             #endif
             );
         #else

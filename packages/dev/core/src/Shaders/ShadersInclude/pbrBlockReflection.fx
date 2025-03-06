@@ -207,6 +207,7 @@
             , in sampler2D icdfSampler
         #endif
         , in float diffuseRoughness
+        , in vec3 surfaceAlbedo
     #endif
     )
     {
@@ -285,7 +286,7 @@
                     // This will include V and NdotV as well as the diffuse roughness.
                     // For prefiltering, V=N.
                     // Note that irradianceVector is NOT the same as normalW. It has been rotated into the space of the cubemap.
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView, surfaceAlbedo
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                     #endif

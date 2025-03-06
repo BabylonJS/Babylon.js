@@ -184,7 +184,7 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 inputV
+        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 inputV, vec3 surfaceAlbedo
         #ifdef IBL_CDF_FILTERING
         , sampler2D icdfSampler
         #endif
@@ -227,6 +227,10 @@
                     Ls = normalize(Ls);
                     vec3 Ns = vec3(0., 0., 1.);
                     float NoL = dot(Ns, Ls);
+                    vec3 H = (Ns + Ls) * 0.5;
+                    float NoH = dot(Ns, H);
+                    // TODO inputV is in world space, we need to convert it to tangent space
+                    float VoH = dot(inputV, H);
                 #endif
 
                 if (NoL > 0.) {
@@ -244,17 +248,18 @@
                         c = toLinearSpace(c);
                     #endif
 
+                    vec3 diffuseRoughnessTerm = vec3(1.0);
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                        diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+                        diffuseRoughnessTerm = diffuseBRDF_EON(surfaceAlbedo, diffuseRoughness, NoL, NoV) * PI;
+                    #endif
+
                     #ifdef IBL_CDF_FILTERING
                         vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(1.0) / vec3(pdf) * c;
-                        vec3 diffuseRoughnessTerm = vec3(1.0);
-                        #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
-                            diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
-                        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
-                            diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV) * PI;
-                        #endif
                         result += NoL * diffuseRoughnessTerm * light;
                     #else
-                        result += c;
+                        result += c * diffuseRoughnessTerm;
                     #endif
                 }
             }

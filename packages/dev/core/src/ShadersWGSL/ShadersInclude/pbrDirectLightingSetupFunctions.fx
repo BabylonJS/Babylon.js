@@ -18,6 +18,7 @@ struct preLightingInfo
     VdotH: f32,
     roughness: f32,
     diffuseRoughness: f32,
+    surfaceAlbedo: vec3f,
 
     #ifdef IRIDESCENCE
         iridescenceIntensity: f32
