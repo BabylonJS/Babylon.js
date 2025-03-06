@@ -1,4 +1,5 @@
 import type { Node } from "../../../node";
+import type { Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
@@ -6,7 +7,7 @@ import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./a
 
 /** @internal */
 export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener {
-    protected readonly _attacherComponent: _SpatialAudioAttacherComponent;
+    protected _attacherComponent: Nullable<_SpatialAudioAttacherComponent> = null;
 
     protected constructor() {
         super();
@@ -16,7 +17,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
 
     /** @internal */
     public get isAttached(): boolean {
-        return this._attacherComponent.isAttached;
+        return this._attacherComponent !== null && this._attacherComponent.isAttached;
     }
 
     /**
@@ -26,6 +27,9 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
      * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
     public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
+        if (!this._attacherComponent) {
+            this._attacherComponent = new _SpatialAudioAttacherComponent(this);
+        }
         this._attacherComponent.attach(sceneNode, useBoundingBox, attachmentType);
     }
 
@@ -33,12 +37,13 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
      * Detaches the audio source from the currently attached camera, mesh or transform node.
      */
     public detach(): void {
-        this._attacherComponent.detach();
+        this._attacherComponent?.detach();
     }
 
     /** @internal */
     public dispose(): void {
-        this._attacherComponent.dispose();
+        this._attacherComponent?.dispose();
+        this._attacherComponent = null;
     }
 
     /** @internal */

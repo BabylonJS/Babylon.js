@@ -86,7 +86,7 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     /** @internal */
     public update(): void {
         if (this.isAttached) {
-            this._attacherComponent.update();
+            this._attacherComponent?.update();
         } else {
             this._updatePosition();
             this._updateRotation();

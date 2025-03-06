@@ -38,6 +38,8 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
 
     /** @internal */
     public attach(sceneNode: Node, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+        this.detach();
+
         if (!this._attacherComponent) {
             this._attacherComponent = new _SpatialAudioAttacherComponent(this);
         }
@@ -48,6 +50,14 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     /** @internal */
     public detach(): void {
         this._attacherComponent?.detach();
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._attacherComponent?.dispose();
+        this._attacherComponent = null;
     }
 
     /** @internal */
