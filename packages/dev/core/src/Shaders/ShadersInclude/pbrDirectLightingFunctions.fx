@@ -44,11 +44,11 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
 #endif
 
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
-    float diffuseTerm = 1.0 / PI;
+    vec3 diffuseTerm = vec3(1.0 / PI);
     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
-        diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
+        diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
-        diffuseTerm = diffuseBRDF_EON(vec3(1.0), info.diffuseRoughness, info.NdotL, info.NdotV).x;
+        diffuseTerm = diffuseBRDF_EON(info.surfaceAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV);
     #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
