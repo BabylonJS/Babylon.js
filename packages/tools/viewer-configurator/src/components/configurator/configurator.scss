@@ -443,6 +443,10 @@
                 .color-picker {
                     background: white;
 
+                    .color-rect-background {
+                        background: repeating-conic-gradient(#e2e2e2 0% 25%, white 0% 50%) 50% / 50% 100%;
+                    }
+
                     .color-rect {
                         $border-size: 2px;
                         border: $border-size white solid;

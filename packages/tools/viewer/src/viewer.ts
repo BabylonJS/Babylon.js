@@ -1244,12 +1244,7 @@ export class Viewer implements IDisposable {
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
             const lightingOptions = { ...options, extension: ".env", skybox: false };
             options = { ...options, lighting: false };
-            promises.push(
-                (async () => {
-                    const url = (await import("./defaultEnvironment")).default;
-                    await this._updateEnvironment(url, lightingOptions, abortSignal);
-                })()
-            );
+            promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
         }
 
         promises.push(this._updateEnvironment(undefined, options, abortSignal));
@@ -1258,6 +1253,11 @@ export class Viewer implements IDisposable {
 
     private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
+
+        let urlPromise: Nullable<string | undefined> | Promise<string> = url;
+        if (url && url.trim() === "auto") {
+            urlPromise = (async () => (await import("./defaultEnvironment")).default)();
+        }
 
         options = options ?? defaultLoadEnvironmentOptions;
         if (!options.lighting && !options.skybox) {
@@ -1298,6 +1298,7 @@ export class Viewer implements IDisposable {
             dispose();
 
             try {
+                url = await urlPromise;
                 if (url) {
                     const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
