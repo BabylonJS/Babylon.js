@@ -249,10 +249,10 @@
                     #endif
 
                     vec3 diffuseRoughnessTerm = vec3(1.0);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
-                        diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
-                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
                         diffuseRoughnessTerm = diffuseBRDF_EON(surfaceAlbedo, diffuseRoughness, NoL, NoV) * PI;
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                        diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
 
                     #ifdef IBL_CDF_FILTERING
