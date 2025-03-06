@@ -207,7 +207,6 @@
             , in sampler2D icdfSampler
         #endif
         , in float diffuseRoughness
-        , in vec3 surfaceAlbedo
     #endif
     )
     {
@@ -282,17 +281,14 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    // Add diffuse roughness logic to irradiance() function.
-                    // This will include V and NdotV as well as the diffuse roughness.
-                    // For prefiltering, V=N.
                     // Note that irradianceVector is NOT the same as normalW. It has been rotated into the space of the cubemap.
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView, surfaceAlbedo
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                     #endif
                     );
                 #else
-                    // Add approximation to computeEnvironmentIrradiance that includes diffuse roughness and NdotV
+                    // TODO - Add approximation to computeEnvironmentIrradiance that includes diffuse roughness and NdotV
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
 
