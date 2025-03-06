@@ -1242,7 +1242,7 @@ export class Viewer implements IDisposable {
         const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
-            const lightingOptions = { ...options, extension: ".env", skybox: false };
+            const lightingOptions = { ...options, skybox: false };
             options = { ...options, lighting: false };
             promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
         }
@@ -1256,6 +1256,7 @@ export class Viewer implements IDisposable {
 
         let urlPromise: Nullable<string | undefined> | Promise<string> = url;
         if (url && url.trim() === "auto") {
+            options = { ...options, extension: ".env" };
             urlPromise = (async () => (await import("./defaultEnvironment")).default)();
         }
 
