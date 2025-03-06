@@ -9,7 +9,9 @@ import { Viewer } from "./viewer";
  */
 export type CanvasViewerOptions = ViewerOptions &
     (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
-const defaultCanvasViewerOptions: CanvasViewerOptions = {};
+const defaultCanvasViewerOptions: CanvasViewerOptions = {
+    premultipliedAlpha: false,
+};
 
 /**
  * Chooses a default engine for the current browser environment.
@@ -64,13 +66,13 @@ export async function createViewerForCanvas(
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { Engine } = await import("core/Engines/engine");
-            engine = new Engine(canvas, undefined, options);
+            engine = new Engine(canvas, undefined, finalOptions);
             break;
         }
         case "WebGPU": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
-            const webGPUEngine = new WebGPUEngine(canvas, options);
+            const webGPUEngine = new WebGPUEngine(canvas, finalOptions);
             await webGPUEngine.initAsync();
             engine = webGPUEngine;
             break;
