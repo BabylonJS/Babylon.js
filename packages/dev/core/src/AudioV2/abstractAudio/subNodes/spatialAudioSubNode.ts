@@ -82,12 +82,22 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         } else {
             this.rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
         }
+
+        this.update();
     }
 
     /** @internal */
-    public updateAttached(): void {
-        this._attacherComponent?.update();
+    public update(): void {
+        if (this.isAttached) {
+            this._attacherComponent?.update();
+        } else {
+            this.updatePosition();
+            this.updateRotation();
+        }
     }
+
+    public abstract updatePosition(): void;
+    public abstract updateRotation(): void;
 }
 
 /** @internal */

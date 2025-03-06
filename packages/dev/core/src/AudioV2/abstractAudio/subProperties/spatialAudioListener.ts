@@ -63,5 +63,10 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         } else {
             this.rotationQuaternion = _SpatialAudioListenerDefaults.rotationQuaternion.clone();
         }
+
+        this.update();
     }
+
+    public abstract updatePosition(): void;
+    public abstract updateRotation(): void;
 }

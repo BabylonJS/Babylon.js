@@ -81,7 +81,8 @@ export class _SpatialAudioAttacherComponent {
                 this._sceneNode?.getWorldMatrix().decompose(this._position, rotationQuaternion, undefined);
             }
 
-            this._spatialAudioNode.position = this._position;
+            this._spatialAudioNode.position.copyFrom(this._position);
+            this._spatialAudioNode.updatePosition();
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
@@ -89,7 +90,8 @@ export class _SpatialAudioAttacherComponent {
                 this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
             }
 
-            this._spatialAudioNode.rotationQuaternion = this._rotationQuaternion;
+            this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
+            this._spatialAudioNode.updateRotation();
         }
     }
 }

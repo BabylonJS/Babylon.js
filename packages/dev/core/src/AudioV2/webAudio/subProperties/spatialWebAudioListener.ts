@@ -22,10 +22,14 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
-    private _position: Vector3 = Vector3.Zero();
-    private _rotation: Vector3 = Vector3.Zero();
-    private _rotationQuaternion: Quaternion = new Quaternion();
     private _updaterComponent: _SpatialWebAudioUpdaterComponent;
+
+    /** @internal */
+    public readonly position: Vector3 = Vector3.Zero();
+    /** @internal */
+    public readonly rotation: Vector3 = Vector3.Zero();
+    /** @internal */
+    public readonly rotationQuaternion: Quaternion = new Quaternion();
 
     /** @internal */
     public constructor(engine: _WebAudioEngine, autoUpdate: boolean, minUpdateTime: number) {
@@ -46,36 +50,6 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     }
 
     /** @internal */
-    public get position(): Vector3 {
-        return this._position;
-    }
-
-    public set position(value: Vector3) {
-        this._position = value;
-        this._updatePosition();
-    }
-
-    /** @internal */
-    public get rotation(): Vector3 {
-        return this._rotation;
-    }
-
-    public set rotation(value: Vector3) {
-        this._rotation = value;
-        this._updateRotation();
-    }
-
-    /** @internal */
-    public get rotationQuaternion(): Quaternion {
-        return this._rotationQuaternion;
-    }
-
-    public set rotationQuaternion(value: Quaternion) {
-        this._rotationQuaternion = value;
-        this._updateRotation();
-    }
-
-    /** @internal */
     public override dispose(): void {
         super.dispose();
 
@@ -88,31 +62,33 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         if (this.isAttached) {
             this._attacherComponent?.update();
         } else {
-            this._updatePosition();
-            this._updateRotation();
+            this.updatePosition();
+            this.updateRotation();
         }
     }
 
-    private _updatePosition(): void {
-        if (this._lastPosition.equalsWithEpsilon(this._position)) {
+    /** @internal */
+    public updatePosition(): void {
+        if (this._lastPosition.equalsWithEpsilon(this.position)) {
             return;
         }
 
         const listener = this._audioContext.listener;
-        listener.positionX.value = this._position.x;
-        listener.positionY.value = this._position.y;
-        listener.positionZ.value = this._position.z;
+        listener.positionX.value = this.position.x;
+        listener.positionY.value = this.position.y;
+        listener.positionZ.value = this.position.z;
 
-        this._lastPosition.copyFrom(this._position);
+        this._lastPosition.copyFrom(this.position);
     }
 
-    private _updateRotation(): void {
-        if (!this._lastRotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
-            TmpQuaternion.copyFrom(this._rotationQuaternion);
-            this._lastRotationQuaternion.copyFrom(this._rotationQuaternion);
-        } else if (!this._lastRotation.equalsWithEpsilon(this._rotation)) {
-            Quaternion.FromEulerAnglesToRef(this._rotation.x, this._rotation.y, this._rotation.z, TmpQuaternion);
-            this._lastRotation.copyFrom(this._rotation);
+    /** @internal */
+    public updateRotation(): void {
+        if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
+            TmpQuaternion.copyFrom(this.rotationQuaternion);
+            this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);
+        } else if (!this._lastRotation.equalsWithEpsilon(this.rotation)) {
+            Quaternion.FromEulerAnglesToRef(this.rotation.x, this.rotation.y, this.rotation.z, TmpQuaternion);
+            this._lastRotation.copyFrom(this.rotation);
         } else {
             return;
         }
