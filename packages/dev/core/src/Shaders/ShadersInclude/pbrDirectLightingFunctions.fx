@@ -44,7 +44,7 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     vec3 diffuseTerm = vec3(1.0 / PI);
     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
         diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
         diffuseTerm = diffuseBRDF_EON(info.surfaceAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV);
     #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
@@ -73,7 +73,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float diffuseTerm = 1.0 / PI;
         #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
             diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
-        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 2
+        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
             diffuseTerm = diffuseBRDF_EON(vec3(1.0), info.diffuseRoughness, NdotL, info.NdotV).x;
         #endif
         // Note: we use a Lambert BRDF for the transmitted term.

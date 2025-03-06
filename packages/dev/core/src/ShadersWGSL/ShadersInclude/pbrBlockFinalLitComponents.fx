@@ -41,7 +41,7 @@ aggShadow = aggShadow / numLights;
     #endif
 
 // Irradiance already include the surface albedo if using OpenPBR's ORN model.
-#if BASE_DIFFUSE_ROUGHNESS_MODEL != 2
+#if BASE_DIFFUSE_ROUGHNESS_MODEL != 0
     finalIrradiance *= surfaceAlbedo.rgb;
 #endif
     finalIrradiance *= uniforms.vLightingIntensity.z;
