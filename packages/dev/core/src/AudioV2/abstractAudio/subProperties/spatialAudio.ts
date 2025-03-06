@@ -2,7 +2,7 @@ import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
+import { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";

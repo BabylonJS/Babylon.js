@@ -3,7 +3,7 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
+import type { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
 
 export const _SpatialAudioListenerDefaults = {
     position: Vector3.Zero(),

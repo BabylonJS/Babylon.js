@@ -1,6 +1,7 @@
 import type { Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { Nullable } from "../../../types";
+import { _SpatialAudioAttachedEntity } from "./abstractSpatialAudioAttacher";
 import { _SpatialAudioTransformNodeAttacher } from "./spatialAudioTransformNodeAttacher";
 
 /** @internal */
@@ -17,7 +18,7 @@ export class _SpatialAudioMeshAttacher extends _SpatialAudioTransformNodeAttache
     }
 
     /** @internal */
-    public override getClassName(): string {
-        return "_SpatialAudioMeshAttacher";
+    public override getAttacherType(): string {
+        return _SpatialAudioAttachedEntity.MESH;
     }
 }

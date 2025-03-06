@@ -2,8 +2,8 @@ import type { Camera } from "../../../Cameras/camera";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
+import type { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
 import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
 import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
 

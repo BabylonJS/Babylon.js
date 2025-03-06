@@ -2,7 +2,18 @@ import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Node } from "../../../node";
 import type { Nullable } from "../../../types";
 import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
-import { SpatialAudioAttachmentType } from "../components/spatialAudioAttacherComponent";
+
+export const _SpatialAudioAttachedEntity = {
+    CAMERA: "Camera",
+    MESH: "Mesh",
+    TRANSFORM_NODE: "TransformNode",
+} as const;
+
+export const enum SpatialAudioAttachmentType {
+    POSITION = 1,
+    ROTATION = 2,
+    POSITION_AND_ROTATION = 3,
+}
 
 /** @internal */
 export abstract class _AbstractSpatialAudioAttacher {
@@ -12,8 +23,10 @@ export abstract class _AbstractSpatialAudioAttacher {
     protected _node: Nullable<Node> = null;
     protected readonly _position = new Vector3();
 
-    protected constructor(attacherComponent: _SpatialAudioAttacherComponent) {
+    /** @internal */
+    public constructor(attacherComponent: _SpatialAudioAttacherComponent) {
         this._attacherComponent = attacherComponent;
+        this.node = attacherComponent.attachedNode;
     }
 
     /** @internal */
@@ -48,7 +61,7 @@ export abstract class _AbstractSpatialAudioAttacher {
     };
 
     /** @internal */
-    public abstract getClassName(): string;
+    public abstract getAttacherType(): string;
 
     /** @internal */
     public update(): void {

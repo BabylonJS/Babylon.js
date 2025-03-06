@@ -1,5 +1,5 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
-import { SpatialAudioAttachmentType } from "../../abstractAudio/components/spatialAudioAttacherComponent";
+import { SpatialAudioAttachmentType } from "../../abstractAudio/spatialAttachers/abstractSpatialAudioAttacher";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";

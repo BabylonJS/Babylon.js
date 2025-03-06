@@ -1,18 +1,11 @@
 import type { Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import type { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
-import { _AbstractSpatialAudioAttacher } from "./abstractSpatialAudioAttacher";
+import { _AbstractSpatialAudioAttacher, _SpatialAudioAttachedEntity } from "./abstractSpatialAudioAttacher";
 
 /** @internal */
 export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAttacher {
-    protected override _node: Nullable<TransformNode> = null;
-
-    /** @internal */
-    public constructor(attacherComponent: _SpatialAudioAttacherComponent) {
-        super(attacherComponent);
-        this.node = attacherComponent.attachedTransformNode;
-    }
+    protected override _node: Nullable<TransformNode>;
 
     protected get _attachedPosition(): Vector3 {
         if (this._node) {
@@ -24,7 +17,7 @@ export class _SpatialAudioTransformNodeAttacher extends _AbstractSpatialAudioAtt
     }
 
     /** @internal */
-    public getClassName(): string {
-        return "_SpatialAudioTransformNodeAttacher";
+    public getAttacherType(): string {
+        return _SpatialAudioAttachedEntity.TRANSFORM_NODE;
     }
 }
