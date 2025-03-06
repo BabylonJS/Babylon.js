@@ -2,7 +2,7 @@ import { PrecisionDate } from "../../../Misc/precisionDate";
 
 /** @internal */
 export class _SpatialWebAudioUpdaterComponent {
-    private _autoUpdate = false;
+    private _autoUpdate = true;
     private _lastUpdateTime: number = 0;
 
     /** @internal */
@@ -14,7 +14,6 @@ export class _SpatialWebAudioUpdaterComponent {
             return;
         }
 
-        this._autoUpdate = true;
         this.minUpdateTime = minUpdateTime;
 
         const update = () => {
