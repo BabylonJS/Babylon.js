@@ -23,7 +23,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
      * Attaches the audio source to a scene object.
      * @param sceneNode The scene node to attach the audio source to.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
     public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
         this._attacherComponent.attach(sceneNode, useBoundingBox, attachmentType);
