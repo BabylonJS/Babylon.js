@@ -104,7 +104,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
             this.position = options.listenerPosition.clone();
         }
 
-        if (!this._attacherComponent.isAttachedToRotation && options.listenerRotationQuaternion !== undefined) {
+        if (!this._attacherComponent.isAttachedToRotation && (options.listenerRotationQuaternion !== undefined || options.listenerRotation !== undefined)) {
             if (options.listenerRotationQuaternion !== undefined) {
                 this.rotationQuaternion = options.listenerRotationQuaternion.clone();
             } else if (options.listenerRotation !== undefined) {
