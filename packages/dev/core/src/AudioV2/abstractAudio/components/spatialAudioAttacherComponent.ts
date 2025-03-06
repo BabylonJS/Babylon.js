@@ -68,17 +68,11 @@ export class _SpatialAudioAttacherComponent {
      * Updates the audio listener or source.
      */
     public update() {
-        let rotationDone = false;
-
         if (this._attachmentType & SpatialAudioAttachmentType.Position) {
             if (this._useBoundingBox && (this._sceneNode as AbstractMesh).getBoundingInfo) {
                 this._position.copyFrom((this._sceneNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
-            } else if ((this._sceneNode as any).position) {
-                this._position.copyFrom((this._sceneNode as any).position);
             } else {
-                rotationDone = 0 < (this._attachmentType & SpatialAudioAttachmentType.Rotation);
-                const rotationQuaternion = rotationDone ? this._rotationQuaternion : undefined;
-                this._sceneNode?.getWorldMatrix().decompose(this._position, rotationQuaternion, undefined);
+                this._position.copyFrom((this._sceneNode as any).position);
             }
 
             this._spatialAudioNode.position.copyFrom(this._position);
@@ -86,9 +80,7 @@ export class _SpatialAudioAttacherComponent {
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
-            if (!rotationDone) {
-                this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
-            }
+            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
             this._spatialAudioNode.updateRotation();
