@@ -269,7 +269,7 @@ const HotSpotEntry: FunctionComponent<{
                 <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
             </div>
             <div onClick={onHotspotPickClick} title="Pick from model">
-                <FontAwesomeIcon icon={faBullseye} />
+                <FontAwesomeIcon icon={faBullseye} color={isPicking ? "rgb(51, 122, 183)" : undefined} />
             </div>
             <div onClick={onCameraSnapshotClick} title="Snapshot current camera state">
                 <FontAwesomeIcon icon={faCamera} />

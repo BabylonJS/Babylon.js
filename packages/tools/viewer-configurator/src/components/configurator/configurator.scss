@@ -9,7 +9,7 @@
     $primary-background: #333333;
     $border-radius: 0px;
     $icon-height: $line-height * 0.8;
-    $icon-padding-top-bottom: ($line-height - $icon-height) / 2;
+    $icon-padding-top-bottom: calc(($line-height - $icon-height) / 2);
     $icon-padding: $icon-padding-top-bottom 0px;
     color: white;
     background: $primary-background;
