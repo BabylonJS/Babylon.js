@@ -37,7 +37,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={light.id} />
+                    <TextLineComponent label="ID" value={light.id} onCopy />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"
