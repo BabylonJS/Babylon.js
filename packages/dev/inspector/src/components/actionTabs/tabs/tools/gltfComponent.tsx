@@ -97,7 +97,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps, IGLTFCom
                 <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
                 <TextLineComponent label="Infos" value={issues.numInfos.toString()} />
                 <TextLineComponent label="Hints" value={issues.numHints.toString()} />
-                <TextLineComponent label="More details" value="Click here" onLink={() => this.openValidationDetails()} />
+                <TextLineComponent label="Report Details" value="Open" onLink={() => this.openValidationDetails()} onCopy={() => JSON.stringify(validationResults)} />
             </LineContainerComponent>
         );
     }

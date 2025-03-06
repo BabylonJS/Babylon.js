@@ -503,6 +503,17 @@ $line-padding-left: 2px;
                             color: red;
                         }
                     }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
+                        }
+                    }
                 }
 
                 .gradient-container {
