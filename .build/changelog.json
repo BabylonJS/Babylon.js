@@ -1,6 +1,22 @@
 {
-    "fromTag": "7.51.3",
+    "fromTag": "7.52.0",
     "changelog": {
+        "7.52.1": [
+            {
+                "pr": "16255",
+                "title": "Allow engine instance to be passed to LoadImage",
+                "description": "This is to address https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950\r\n\r\nCurrently when using multiple WebGPUEngine instances, it's quite easy to get into a scenario where creating a texture fails. This is due to a confluence of other issues:\r\n1. `LoadImage` uses `EngineStore.LastEngine` and accesses `engine._features`\r\n2. `EngineStore.LastEngine` is set synchronously when the engine is constructed, but `WebGPUEngine` sets `_features` asynchronously during `initAsync`.\r\n3. We don't have the `strictPropertyInitialization` TS flag enabled, which means it's easy for these kinds of issues to slip through (where `_features` is declared as non-nullable but in fact can be null/undefined).\r\n\r\nTargeted fix is to just allow an engine instance to be passed to `LoadImage`, and doing so in the specific code path that is failing. ",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.52.0": [
             {
                 "pr": "16248",

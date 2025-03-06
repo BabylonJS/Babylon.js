@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.52.1
+
+### Core
+
+- Allow engine instance to be passed to LoadImage - by [ryantrem](https://github.com/ryantrem) ([#16255](https://github.com/BabylonJS/Babylon.js/pull/16255))
+
 ## 7.52.0
 
 ### Core
