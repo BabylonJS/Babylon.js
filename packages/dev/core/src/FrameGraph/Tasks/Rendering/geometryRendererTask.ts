@@ -93,6 +93,24 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
      */
     public samples = 1;
 
+    private _reverseCulling = false;
+
+    /**
+     * Whether to reverse culling (default is false).
+     */
+    public get reverseCulling() {
+        return this._reverseCulling;
+    }
+
+    public set reverseCulling(value: boolean) {
+        this._reverseCulling = value;
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
+        if (configuration) {
+            configuration.reverseCulling = value;
+        }
+    }
+
     /**
      * The list of texture descriptions used by the geometry renderer task.
      */
@@ -440,5 +458,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
             configuration.defines[geometryDescription.defineIndex] = i;
         }
+
+        configuration.reverseCulling = this.reverseCulling;
     }
 }

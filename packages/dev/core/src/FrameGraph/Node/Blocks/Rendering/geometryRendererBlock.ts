@@ -128,6 +128,16 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.samples = value;
     }
 
+    /** Indicates if culling must be reversed */
+    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get reverseCulling() {
+        return this._frameGraphTask.reverseCulling;
+    }
+
+    public set reverseCulling(value: boolean) {
+        this._frameGraphTask.reverseCulling = value;
+    }
+
     // View depth
     @editableInPropertyPage("View depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
@@ -395,6 +405,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
+        codes.push(`${this._codeVariableName}.reverseCulling = ${this.reverseCulling};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
         codes.push(`${this._codeVariableName}.screenDepthFormat = ${this.screenDepthFormat};`);
@@ -423,6 +434,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.samples = this.samples;
+        serializationObject.reverseCulling = this.reverseCulling;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
         serializationObject.screenDepthFormat = this.screenDepthFormat;
@@ -451,6 +463,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.samples = serializationObject.samples;
+        this.reverseCulling = serializationObject.reverseCulling;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
         this.screenDepthFormat = serializationObject.screenDepthFormat;

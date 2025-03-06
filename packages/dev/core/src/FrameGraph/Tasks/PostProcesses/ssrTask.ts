@@ -16,6 +16,8 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
 
     public reflectivityTexture: FrameGraphTextureHandle;
 
+    public backDepthTexture?: FrameGraphTextureHandle;
+
     public camera: Camera;
 
     public override readonly postProcess: ThinSSRPostProcess;
@@ -27,6 +29,9 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
             context.setTextureSamplingMode(this.normalTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             context.setTextureSamplingMode(this.reflectivityTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            if (this.backDepthTexture) {
+                context.setTextureSamplingMode(this.backDepthTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            }
         });
     }
 
@@ -47,6 +52,12 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "normalSampler", this.normalTexture);
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "reflectivitySampler", this.reflectivityTexture);
+            if (this.backDepthTexture) {
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "backDepthSampler", this.backDepthTexture);
+            }
+            if (this.postProcess.enableAutomaticThicknessComputation) {
+                this._postProcessDrawWrapper.effect!.setFloat("backSizeFactor", 1);
+            }
         });
 
         pass.addDependencies([this.normalTexture, this.depthTexture, this.reflectivityTexture]);

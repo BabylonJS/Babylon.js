@@ -5,6 +5,9 @@ import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
 import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProcess";
 import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCombinerPostProcess";
 
+/**
+ * The SSR rendering pipeline is used to generate a reflection based on a flat mirror model.
+ */
 export class ThinSSRRenderingPipeline {
     /** @internal */
     public readonly _ssrPostProcess: ThinSSRPostProcess;
@@ -15,7 +18,21 @@ export class ThinSSRRenderingPipeline {
     /** @internal */
     public readonly _ssrBlurCombinerPostProcess: ThinSSRBlurCombinerPostProcess;
 
+    /**
+     * Gets or sets the name of the rendering pipeline
+     */
     public name: string;
+
+    /**
+     * Gets or sets a boolean indicating if the SSR rendering pipeline is supported
+     */
+    public get isSSRSupported(): boolean {
+        return this._ssrPostProcess.isSSRSupported;
+    }
+
+    public set isSSRSupported(supported: boolean) {
+        this._ssrPostProcess.isSSRSupported = supported;
+    }
 
     /**
      * Gets or sets the maxDistance used to define how far we look for reflection during the ray-marching on the reflected ray (default: 1000).
@@ -134,24 +151,12 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.reflectivityThreshold = threshold;
     }
 
-    private _ssrDownsample = 0;
-
     /**
      * Gets or sets the downsample factor used to reduce the size of the texture used to compute the SSR contribution (default: 0).
      * Use 0 to render the SSR contribution at full resolution, 1 to render at half resolution, 2 to render at 1/3 resolution, etc.
      * Note that it is used only when blurring is enabled (blurDispersionStrength \> 0), because in that mode the SSR contribution is generated in a separate texture.
      */
-    public get ssrDownsample() {
-        return this._ssrDownsample;
-    }
-
-    public set ssrDownsample(downsample: number) {
-        if (downsample === this._ssrDownsample) {
-            return;
-        }
-
-        this._ssrDownsample = downsample;
-    }
+    public ssrDownsample = 0;
 
     /**
      * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
@@ -173,23 +178,11 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurYPostProcess.blurStrength = strength;
     }
 
-    private _blurDownsample = 0;
-
     /**
      * Gets or sets the downsample factor used to reduce the size of the textures used to blur the reflection effect (default: 0).
      * Use 0 to blur at full resolution, 1 to render at half resolution, 2 to render at 1/3 resolution, etc.
      */
-    public get blurDownsample() {
-        return this._blurDownsample;
-    }
-
-    public set blurDownsample(downsample: number) {
-        if (downsample === this._blurDownsample) {
-            return;
-        }
-
-        this._blurDownsample = downsample;
-    }
+    public blurDownsample = 0;
 
     /**
      * Gets or sets whether or not smoothing reflections is enabled (default: false)
@@ -326,47 +319,6 @@ export class ThinSSRRenderingPipeline {
         this._ssrPostProcess.enableAutomaticThicknessComputation = automatic;
     }
 
-    private _backfaceDepthTextureDownsample = 0;
-
-    /**
-     * Gets or sets the downsample factor (default: 0) used to create the backface depth texture - used only if enableAutomaticThicknessComputation = true.
-     * Use 0 to render the depth at full resolution, 1 to render at half resolution, 2 to render at 1/4 resolution, etc.
-     * Note that you will get rendering artefacts when using a value different from 0: it's a tradeoff between image quality and performances.
-     */
-    public get backfaceDepthTextureDownsample() {
-        return this._backfaceDepthTextureDownsample;
-    }
-
-    public set backfaceDepthTextureDownsample(factor: number) {
-        if (this._backfaceDepthTextureDownsample === factor) {
-            return;
-        }
-
-        this._backfaceDepthTextureDownsample = factor;
-    }
-
-    private _backfaceForceDepthWriteTransparentMeshes = true;
-
-    /**
-     * Gets or sets a boolean (default: true) indicating if the depth of transparent meshes should be written to the backface depth texture (when automatic thickness computation is enabled).
-     */
-    public get backfaceForceDepthWriteTransparentMeshes() {
-        return this._backfaceForceDepthWriteTransparentMeshes;
-    }
-
-    public set backfaceForceDepthWriteTransparentMeshes(force: boolean) {
-        if (this._backfaceForceDepthWriteTransparentMeshes === force) {
-            return;
-        }
-
-        this._backfaceForceDepthWriteTransparentMeshes = force;
-
-        // TODO
-        // if (this._depthRenderer) {
-        //     this._depthRenderer.forceDepthWriteTransparentMeshes = force;
-        // }
-    }
-
     /**
      * Gets or sets a boolean defining if the input color texture is in gamma space (default: true)
      * The SSR effect works in linear space, so if the input texture is in gamma space, we must convert the texture to linear space before applying the effect
@@ -424,6 +376,9 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.debug = value;
     }
 
+    /**
+     * Gets or sets the camera to use to render the reflection
+     */
     public get camera() {
         return this._ssrPostProcess.camera;
     }
@@ -433,6 +388,9 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.camera = camera;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the depth buffer stores screen space depth instead of camera view space depth.
+     */
     public get useScreenspaceDepth() {
         return this._ssrPostProcess.useScreenspaceDepth;
     }
@@ -442,6 +400,9 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.useScreenspaceDepth = use;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the normals are in world space (false by default, meaning normals are in camera view space).
+     */
     public get normalsAreInWorldSpace() {
         return this._ssrPostProcess.normalsAreInWorldSpace;
     }
@@ -451,6 +412,9 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.normalsAreInWorldSpace = normalsAreInWorldSpace;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the normals are encoded as unsigned, that is normalUnsigned = normal*0.5+0.5 (false by default).
+     */
     public get normalsAreUnsigned() {
         return this._ssrPostProcess.normalsAreUnsigned;
     }
@@ -460,12 +424,21 @@ export class ThinSSRRenderingPipeline {
         this._ssrBlurCombinerPostProcess.normalsAreUnsigned = normalsAreUnsigned;
     }
 
+    /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns true if all the post processes in the pipeline are ready
+     */
     public isReady(): boolean {
         return this._ssrPostProcess.isReady() && this._ssrBlurXPostProcess.isReady() && this._ssrBlurYPostProcess.isReady() && this._ssrBlurCombinerPostProcess.isReady();
     }
 
     private _scene: Scene;
 
+    /**
+     * Constructor of the SSR rendering pipeline
+     * @param name The rendering pipeline name
+     * @param scene The scene linked to this pipeline
+     */
     constructor(name: string, scene: Scene) {
         this.name = name;
         this._scene = scene;
@@ -478,6 +451,9 @@ export class ThinSSRRenderingPipeline {
         this._ssrPostProcess.useBlur = this._ssrBlurXPostProcess.blurStrength > 0;
     }
 
+    /**
+     * Disposes of the pipeline
+     */
     public dispose(): void {
         this._ssrPostProcess?.dispose();
         this._ssrBlurXPostProcess?.dispose();

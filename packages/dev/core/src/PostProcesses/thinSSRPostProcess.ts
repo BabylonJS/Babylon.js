@@ -54,6 +54,8 @@ export class ThinSSRPostProcess extends EffectWrapper {
         }
     }
 
+    public isSSRSupported = true;
+
     public maxDistance = 1000.0;
 
     public step = 1.0;
@@ -448,9 +450,9 @@ export class ThinSSRPostProcess extends EffectWrapper {
     private _updateEffectDefines() {
         const defines: string[] = [];
 
-        //if (this._geometryBufferRenderer || this._prePassRenderer) {
-        defines.push("#define SSR_SUPPORTED");
-        //}
+        if (this.isSSRSupported) {
+            defines.push("#define SSR_SUPPORTED");
+        }
         if (this._enableSmoothReflections) {
             defines.push("#define SSRAYTRACE_ENABLE_REFINEMENT");
         }

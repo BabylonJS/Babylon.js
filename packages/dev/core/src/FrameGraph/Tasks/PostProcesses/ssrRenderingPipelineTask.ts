@@ -32,6 +32,13 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
     public depthTexture: FrameGraphTextureHandle;
 
     /**
+     * The back depth texture used by the SSR effect (optional).
+     * This is used when automatic thickness computation is enabled.
+     * The back depth texture is the depth texture of the scene rendered for the back side of the objects (that is, front faces are culled).
+     */
+    public backDepthTexture?: FrameGraphTextureHandle;
+
+    /**
      * The reflectivity texture used by the SSR effect
      */
     public reflectivityTexture: FrameGraphTextureHandle;
@@ -157,6 +164,7 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         this._ssr.camera = this.camera;
         this._ssr.normalTexture = this.normalTexture;
         this._ssr.depthTexture = this.depthTexture;
+        this._ssr.backDepthTexture = this.backDepthTexture;
         this._ssr.reflectivityTexture = this.reflectivityTexture;
 
         let ssrTextureHandle: FrameGraphTextureHandle | undefined;
@@ -248,6 +256,7 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         this._ssrBlurX.dispose();
         this._ssrBlurY.dispose();
         this._ssrBlurCombiner.dispose();
+        this.ssr.dispose();
         super.dispose();
     }
 }

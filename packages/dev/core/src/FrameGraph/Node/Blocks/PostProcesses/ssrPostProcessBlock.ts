@@ -1,5 +1,13 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, NodeRenderGraphBuildState, FrameGraphTextureHandle, Camera } from "core/index";
+import type {
+    Scene,
+    FrameGraph,
+    NodeRenderGraphConnectionPoint,
+    NodeRenderGraphBuildState,
+    FrameGraphTextureHandle,
+    Camera,
+    NodeRenderGraphGeometryRendererBlock,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { Constants } from "core/Engines/constants";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
@@ -36,9 +44,11 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerInput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
         this.registerInput("geomReflectivity", NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity);
+        this.registerInput("geomBackDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth, true);
 
         this.geomNormal.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
         this.geomDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
+        this.geomBackDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
 
         this._finalizeInputOutputRegistering();
 
@@ -66,6 +76,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         const attenuateFacingCamera = this.attenuateFacingCamera;
         const attenuateBackfaceReflection = this.attenuateBackfaceReflection;
         const clipToFrustum = this.clipToFrustum;
+        const enableAutomaticThicknessComputation = this.enableAutomaticThicknessComputation;
         const useFresnel = this.useFresnel;
         const inputTextureColorIsInGammaSpace = this.inputTextureColorIsInGammaSpace;
         const generateOutputInGammaSpace = this.generateOutputInGammaSpace;
@@ -95,6 +106,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this.attenuateBackfaceReflection = attenuateBackfaceReflection;
         this.clipToFrustum = clipToFrustum;
         this.useFresnel = useFresnel;
+        this.enableAutomaticThicknessComputation = enableAutomaticThicknessComputation;
         this.inputTextureColorIsInGammaSpace = inputTextureColorIsInGammaSpace;
         this.generateOutputInGammaSpace = generateOutputInGammaSpace;
         this.debug = debug;
@@ -242,6 +254,16 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this._frameGraphTask.ssr.clipToFrustum = value;
     }
 
+    /** Gets or sets a boolean defining if geometry thickness should be computed automatically */
+    @editableInPropertyPage("Automatic thickness computation", PropertyTypeForEdition.Boolean, "SSR")
+    public get enableAutomaticThicknessComputation() {
+        return this._frameGraphTask.ssr.enableAutomaticThicknessComputation;
+    }
+
+    public set enableAutomaticThicknessComputation(value: boolean) {
+        this._frameGraphTask.ssr.enableAutomaticThicknessComputation = value;
+    }
+
     /** Gets or sets a boolean indicating whether the blending between the current color pixel and the reflection color should be done with a Fresnel coefficient */
     @editableInPropertyPage("Use Fresnel", PropertyTypeForEdition.Boolean, "SSR")
     public get useFresnel() {
@@ -378,13 +400,35 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         return this._inputs[5];
     }
 
+    /**
+     * Gets the geometry back depth input component
+     */
+    public get geomBackDepth(): NodeRenderGraphConnectionPoint {
+        return this._inputs[6];
+    }
+
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         this._frameGraphTask.normalTexture = this.geomNormal.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.geomDepth.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.reflectivityTexture = this.geomReflectivity.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.backDepthTexture = this.geomBackDepth.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
+
+        if (this.enableAutomaticThicknessComputation) {
+            if (!this._frameGraphTask.backDepthTexture) {
+                throw new Error(`SSR post process "${this.name}": Automatic thickness computation requires a back depth texture to be connected!`);
+            }
+
+            const ownerBlock = this.geomBackDepth.connectedPoint!.ownerBlock!;
+            if (ownerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
+                const geometryRendererBlock = ownerBlock as NodeRenderGraphGeometryRendererBlock;
+                if (!geometryRendererBlock.reverseCulling) {
+                    throw new Error(`SSR post process "${this.name}": Automatic thickness computation requires the geometry renderer block to have reverse culling enabled!`);
+                }
+            }
+        }
 
         if (this.geomNormal.connectedPoint) {
             if (this.geomNormal.connectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal) {
@@ -415,6 +459,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         codes.push(`${this._codeVariableName}.ssrDownsample = ${this.ssrDownsample};`);
         codes.push(`${this._codeVariableName}.clipToFrustum = ${this.clipToFrustum};`);
         codes.push(`${this._codeVariableName}.useFresnel = ${this.useFresnel};`);
+        codes.push(`${this._codeVariableName}.enableAutomaticThicknessComputation = ${this.enableAutomaticThicknessComputation};`);
         codes.push(`${this._codeVariableName}.blurDispersionStrength = ${this.blurDispersionStrength};`);
         codes.push(`${this._codeVariableName}.blurDownsample = ${this.blurDownsample};`);
         codes.push(`${this._codeVariableName}.attenuateScreenBorders = ${this.attenuateScreenBorders};`);
@@ -443,6 +488,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         serializationObject.ssrDownsample = this.ssrDownsample;
         serializationObject.clipToFrustum = this.clipToFrustum;
         serializationObject.useFresnel = this.useFresnel;
+        serializationObject.enableAutomaticThicknessComputation = this.enableAutomaticThicknessComputation;
         serializationObject.blurDispersionStrength = this.blurDispersionStrength;
         serializationObject.blurDownsample = this.blurDownsample;
         serializationObject.attenuateScreenBorders = this.attenuateScreenBorders;
@@ -471,6 +517,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this.ssrDownsample = serializationObject.ssrDownsample;
         this.clipToFrustum = serializationObject.clipToFrustum;
         this.useFresnel = serializationObject.useFresnel;
+        this.enableAutomaticThicknessComputation = serializationObject.enableAutomaticThicknessComputation;
         this.blurDispersionStrength = serializationObject.blurDispersionStrength;
         this.blurDownsample = serializationObject.blurDownsample;
         this.attenuateScreenBorders = serializationObject.attenuateScreenBorders;
