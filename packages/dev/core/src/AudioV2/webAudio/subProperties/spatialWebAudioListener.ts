@@ -1,5 +1,4 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
-import { SpatialAudioAttachmentType } from "../../abstractAudio/spatialAttachers/abstractSpatialAudioAttacher";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
@@ -89,12 +88,8 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         if (this.isAttached) {
             this._attacherComponent.update();
         } else {
-            if (this.attachmentType & SpatialAudioAttachmentType.POSITION) {
-                this._updatePosition();
-            }
-            if (this.attachmentType & SpatialAudioAttachmentType.ROTATION) {
-                this._updateRotation();
-            }
+            this._updatePosition();
+            this._updateRotation();
         }
     }
 

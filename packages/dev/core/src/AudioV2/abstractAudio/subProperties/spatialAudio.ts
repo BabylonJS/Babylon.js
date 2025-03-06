@@ -2,7 +2,7 @@ import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { Nullable } from "../../../types";
-import { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
+import type { SpatialAudioAttachmentType } from "../spatialAttachers/abstractSpatialAudioAttacher";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
@@ -188,12 +188,8 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         if (subNode.isAttached) {
             subNode.updateAttached();
         } else {
-            if (subNode.attachmentType & SpatialAudioAttachmentType.POSITION) {
-                this._updatePosition(subNode);
-            }
-            if (subNode.attachmentType & SpatialAudioAttachmentType.ROTATION) {
-                this._updateRotation(subNode);
-            }
+            this._updatePosition(subNode);
+            this._updateRotation(subNode);
         }
     }
 
