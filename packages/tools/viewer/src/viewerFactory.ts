@@ -68,13 +68,13 @@ export async function CreateViewerForCanvas(
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { Engine } = await import("core/Engines/engine");
-            engine = new Engine(canvas, undefined, finalOptions);
+            engine = new Engine(canvas, undefined, options);
             break;
         }
         case "WebGPU": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
-            const webGPUEngine = new WebGPUEngine(canvas, finalOptions);
+            const webGPUEngine = new WebGPUEngine(canvas, options);
             await webGPUEngine.initAsync();
             engine = webGPUEngine;
             break;
