@@ -1,6 +1,7 @@
 import * as React from "react";
 import copyIcon from "shared-ui-components/imgs/copy.svg";
 import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
+import { MergeClassNames } from "shared-ui-components/styleHelper";
 
 interface ITextLineComponentProps {
     label?: string;
@@ -55,10 +56,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
 
     override render() {
         return (
-            <div
-                className={this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")}
-                style={this.props.onCopy ? { gridTemplateColumns: "1fr auto 20px 10px" } : undefined}
-            >
+            <div className={MergeClassNames(["textLine", ["underline", this.props.underline], ["additionalClass", this.props.additionalClass], ["icon", this.props.onCopy]])}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 <div className="label" title={this.props.tooltip ?? this.props.label ?? ""}>
                     {this.props.label ?? ""}
