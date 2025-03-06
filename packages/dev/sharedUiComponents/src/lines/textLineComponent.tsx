@@ -56,7 +56,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
 
     override render() {
         return (
-            <div className={MergeClassNames(["textLine", ["underline", this.props.underline], ["additionalClass", this.props.additionalClass], ["icon", this.props.onCopy]])}>
+            <div className={MergeClassNames(["textLine", ["underline", this.props.underline], this.props.additionalClass, ["icon", this.props.onCopy]])}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 <div className="label" title={this.props.tooltip ?? this.props.label ?? ""}>
                     {this.props.label ?? ""}
