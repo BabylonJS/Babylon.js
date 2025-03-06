@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/procedural-textures",
-    "version": "7.51.3",
+    "version": "7.52.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,7 +18,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.51.3",
+        "@babylonjs/core": "^7.52.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/procedural-textures": "^1.0.0"
     },

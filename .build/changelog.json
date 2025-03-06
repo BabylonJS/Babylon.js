@@ -1,6 +1,165 @@
 {
-    "fromTag": "7.51.2",
+    "fromTag": "7.52.0",
     "changelog": {
+        "7.52.1": [
+            {
+                "pr": "16255",
+                "title": "Allow engine instance to be passed to LoadImage",
+                "description": "This is to address https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950\r\n\r\nCurrently when using multiple WebGPUEngine instances, it's quite easy to get into a scenario where creating a texture fails. This is due to a confluence of other issues:\r\n1. `LoadImage` uses `EngineStore.LastEngine` and accesses `engine._features`\r\n2. `EngineStore.LastEngine` is set synchronously when the engine is constructed, but `WebGPUEngine` sets `_features` asynchronously during `initAsync`.\r\n3. We don't have the `strictPropertyInitialization` TS flag enabled, which means it's easy for these kinds of issues to slip through (where `_features` is declared as non-nullable but in fact can be null/undefined).\r\n\r\nTargeted fix is to just allow an engine instance to be passed to `LoadImage`, and doing so in the specific code path that is failing. ",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.52.0": [
+            {
+                "pr": "16248",
+                "title": "Cascaded Shadow Generator: Fix cascade min and max Z calculation",
+                "description": "See https://forum.babylonjs.com/t/serious-self-shadow-using-cascaded-shadow-generator-with-cascadeblendpercentage-in-few-angle/56886/5.\r\n\r\nIt also fixes the artifacts described in #7416, so I reverted that PR, the \"fix\" wasn't one.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowMapFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragment.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "16252",
+                "title": "Fix geometry.copy",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16250",
+                "title": "Restore missing export for glTF exporter",
+                "description": "Extensions register themselves with the GLTF exporter, so they must be included in the index.ts.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16247",
+                "title": "Make prefiltering using CDF default to supersample",
+                "description": "I've noticed an issue with the CDF irradiance filtering when the cube texture size is below 256. The resulting irradiance brightness varies considerably (and usually gets darker) with different resolutions. The issue seems to be that the conversion from equirectangular to cubemap loses some of the bright spots in the original map (or changes the balance of bright pixels to dark ones). This is an especially big problem for mobile devices since the prefiltered cubemap can't seem to be bigger than 64 without causing the WebGL context to be lost.\r\n\r\nThe 'supersample' option when creating an HDRCubeTexture fixes this issue entirely as it compensates for the missing resolution with more samples. For this reason, I think it makes sense to force supersampling when CDF filtering is enabled.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Shaders/iblCdfDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCdfDebug.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16249",
+                "title": "Update playground for audio engine compatibility",
+                "description": "Enhance the playground to support both the new and old audio engine implementations, including deprecation notices for the old audio engine methods.\n\nNow if a playground references the BABYLON.Sound class, the old audioEngine will be initialized. Until then, no audio engine will be created.\n\nA second change is disposing all available NEW audio engines before the playground starts, as disposing the audio engine is independent from the Engine class.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/Interfaces/IAudioEngineOptions.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.common.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "15839",
+                "title": "Add audio engine v2",
+                "description": "This change adds the initial audio engine v2 implementation and introduces the API for sound and streaming sound creation and playback, in addition to audio buses (formerly known as SoundTracks).",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundInstance.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/index.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/mainAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/mainAudioOut.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSoundBuffer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSoundInstance.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSoundInstance.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/audioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/stereoAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/volumeAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractStereoAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/index.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/stereoAudio.ts",
+                    "packages/dev/core/src/AudioV2/audioUtils.ts",
+                    "packages/dev/core/src/AudioV2/index.ts",
+                    "packages/dev/core/src/AudioV2/soundState.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/index.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/stereoWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/volumeWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBaseSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainOut.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts",
+                    "packages/dev/core/src/index.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "new feature"
+                ]
+            }
+        ],
         "7.51.3": [
             {
                 "pr": "16237",

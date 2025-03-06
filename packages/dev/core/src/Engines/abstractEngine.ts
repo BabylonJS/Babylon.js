@@ -1700,7 +1700,8 @@ export abstract class AbstractEngine {
                         onInternalError,
                         scene ? scene.offlineProvider : null,
                         mimeType,
-                        texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                        texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined,
+                        this
                     );
                 }
             } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
@@ -1710,7 +1711,8 @@ export abstract class AbstractEngine {
                     onInternalError,
                     scene ? scene.offlineProvider : null,
                     mimeType,
-                    texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                    texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined,
+                    this
                 );
             } else if (buffer) {
                 onload(buffer);
@@ -1870,14 +1872,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.51.3";
+        return "babylonjs@7.52.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.51.3";
+        return "7.52.1";
     }
 
     /**
@@ -2547,6 +2549,7 @@ export abstract class AbstractEngine {
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
      * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
+     * @param engine the engine instance to use
      * @returns the HTMLImageElement of the loaded image
      * @internal
      */
@@ -2556,7 +2559,8 @@ export abstract class AbstractEngine {
         onError: (message?: string, exception?: any) => void,
         offlineProvider: Nullable<IOfflineProvider>,
         mimeType?: string,
-        imageBitmapOptions?: ImageBitmapOptions
+        imageBitmapOptions?: ImageBitmapOptions,
+        engine?: AbstractEngine
     ): Nullable<HTMLImageElement> {
         throw _WarnImport("FileTools");
     }

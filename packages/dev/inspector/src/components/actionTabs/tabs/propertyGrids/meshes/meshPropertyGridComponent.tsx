@@ -425,7 +425,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={this._getIdForDisplay(mesh.id)} />
+                    <TextLineComponent label="ID" value={this._getIdForDisplay(mesh.id)} onCopy />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"
