@@ -312,7 +312,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     , icdfSamplerSampler
                 #endif
                 , diffuseRoughness
-                , surfaceAlbedo
             #endif
             );
         #else
@@ -373,7 +372,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
+                , uniforms.vReflectionFilteringInfo
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 , seo
@@ -558,7 +557,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     #if defined(REALTIME_FILTERING)
                         , reflectionSampler
                         , reflectionSamplerSampler
-                        , vReflectionFilteringInfo
+                        , uniforms.vReflectionFilteringInfo
                         #ifdef IBL_CDF_FILTERING
                             , icdfSampler
                             , icdfSamplerSampler
