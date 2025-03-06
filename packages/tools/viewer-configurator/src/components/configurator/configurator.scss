@@ -36,17 +36,23 @@
         flex-direction: row;
         justify-content: flex-start;
         align-items: center;
+        padding: 2px 5px;
 
-        .Title {
+        .title {
             flex: 1;
             padding: $line-padding;
             text-align: center;
         }
 
-        .Logo {
+        .logo {
             padding: 1px;
             width: 30px;
             height: 30px;
+        }
+
+        .docs {
+            transform: scale(0.9);
+            transform-origin: center;
         }
     }
 

@@ -11,6 +11,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { CSS } from "@dnd-kit/utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBullseye, faCamera, faCopy, faGripVertical, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import { faFileLines } from "@fortawesome/free-regular-svg-icons";
 
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -982,8 +983,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         <div className="ConfiguratorContainer">
             <div className="Sticky">
                 <div className="Header">
-                    <img className="Logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div className="Title">VIEWER CONFIGURATOR</div>
+                    <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                    <div className="title">VIEWER CONFIGURATOR</div>
+                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faFileLines} onClick={() => window.open("https://doc.babylonjs.com/")} />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div style={{ height: "auto", borderBottom: "0px" }}>
