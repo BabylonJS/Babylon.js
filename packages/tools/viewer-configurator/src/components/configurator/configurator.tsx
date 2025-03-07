@@ -116,7 +116,7 @@ function useConfiguration<T>(
         setIsConfigured(true);
     }, [liveState]);
 
-    return [canRevert, canReset, revert, reset, update, snapshot, configuredState] as const;
+    return { canRevert, canReset, revert, reset, update, snapshot, configuredState } as const;
 }
 
 const HotSpotEntry: FunctionComponent<{
@@ -329,34 +329,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const [canRevertLightingUrl, canResetLightingUrl, revertLightingUrl, resetLightingUrl, updateLightingUrl, snapshotLightingUrl, environmentLightingUrl] = useConfiguration(
-        "",
-        () => viewerElement.environment.lighting ?? "",
-        undefined,
-        undefined,
-        [viewer.onEnvironmentChanged],
-        [viewerElement]
-    );
-    const [canRevertSkyboxUrl, canResetSkyboxUrl, revertSkyboxUrl, resetSkyboxUrl, updateSkyboxUrl, snapshotSkyboxUrl, environmentSkyboxUrl] = useConfiguration(
-        "",
-        () => viewerElement.environment.skybox ?? "",
-        () => {},
-        undefined,
-        [viewer.onEnvironmentChanged],
-        [viewerElement]
-    );
+    const lightingUrlConfig = useConfiguration("", () => viewerElement.environment.lighting ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
+    const skyboxUrlConfig = useConfiguration("", () => viewerElement.environment.skybox ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
 
     const [syncEnvironment, setSyncEnvironment] = useState(false);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
 
     const hasSkybox = useMemo(() => {
         if (syncEnvironment) {
-            return !!environmentLightingUrl;
+            return !!lightingUrlConfig.configuredState;
         }
-        return !!environmentSkyboxUrl;
-    }, [syncEnvironment, environmentLightingUrl, environmentSkyboxUrl]);
+        return !!skyboxUrlConfig.configuredState;
+    }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
-    const [canRevertSkyboxBlur, canResetSkyboxBlur, revertSkyboxBlur, resetSkyboxBlur, updateSkyboxBlur, snapshotSkyboxBlur, skyboxBlur] = useConfiguration(
+    const skyboxBlurConfig = useConfiguration(
         viewer.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
         (blur) => (viewer.environmentConfig = { blur }),
@@ -365,27 +351,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertSkyboxIntensity, canResetSkyboxIntensity, revertSkyboxIntensity, resetSkyboxIntensity, updateSkyboxIntensity, snapshotSkyboxIntensity, skyboxIntensity] =
-        useConfiguration(
-            viewer.environmentConfig.intensity,
-            () => viewer.environmentConfig.intensity,
-            (intensity) => (viewer.environmentConfig = { intensity }),
-            undefined,
-            [viewer.onEnvironmentConfigurationChanged],
-            [viewer]
-        );
+    const skyboxIntensityConfig = useConfiguration(
+        viewer.environmentConfig.intensity,
+        () => viewer.environmentConfig.intensity,
+        (intensity) => (viewer.environmentConfig = { intensity }),
+        undefined,
+        [viewer.onEnvironmentConfigurationChanged],
+        [viewer]
+    );
 
-    const [canRevertSkyboxRotation, canResetSkyboxRotation, revertSkyboxRotation, resetSkyboxRotation, updateSkyboxRotation, snapshotSkyboxRotation, skyboxRotation] =
-        useConfiguration(
-            viewer.environmentConfig.rotation,
-            () => viewer.environmentConfig.rotation,
-            (rotation) => (viewer.environmentConfig = { rotation }),
-            undefined,
-            [viewer.onEnvironmentConfigurationChanged],
-            [viewer]
-        );
+    const skyboxRotationConfig = useConfiguration(
+        viewer.environmentConfig.rotation,
+        () => viewer.environmentConfig.rotation,
+        (rotation) => (viewer.environmentConfig = { rotation }),
+        undefined,
+        [viewer.onEnvironmentConfigurationChanged],
+        [viewer]
+    );
 
-    const [canRevertClearColor, canResetClearColor, revertClearColor, resetClearColor, updateClearColor, snapshotClearColor, clearColor] = useConfiguration(
+    const clearColorConfig = useConfiguration(
         viewerDetails.scene.clearColor,
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
@@ -394,10 +378,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewerDetails.scene]
     );
     const clearColorWrapper = useMemo(() => {
-        return { clearColor };
-    }, [clearColor]);
+        return { clearColor: clearColorConfig.configuredState };
+    }, [clearColorConfig.configuredState]);
 
-    const [canRevertCamera, canResetCamera, revertCamera, resetCamera, updateCamera, snapshotCamera, cameraState] = useConfiguration(
+    const cameraConfig = useConfiguration(
         undefined,
         () => {
             return {
@@ -430,7 +414,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const [canRevertToneMapping, canResetToneMapping, revertToneMapping, resetToneMapping, updateToneMapping, snapshotToneMapping, toneMapping] = useConfiguration(
+    const toneMappingConfig = useConfiguration(
         viewer.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
         (toneMapping) => (viewer.postProcessing = { toneMapping }),
@@ -439,10 +423,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
     const toneMappingWrapper = useMemo(() => {
-        return { toneMapping };
-    }, [toneMapping]);
+        return { toneMapping: toneMappingConfig.configuredState };
+    }, [toneMappingConfig.configuredState]);
 
-    const [canRevertContrast, canResetContrast, revertContrast, resetContrast, updateContrast, snapshotContrast, contrast] = useConfiguration(
+    const contrastConfig = useConfiguration(
         viewer.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
         (contrast) => (viewer.postProcessing = { contrast }),
@@ -451,7 +435,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertExposure, canResetExposure, revertExposure, resetExposure, updateExposure, snapshotExposure, exposure] = useConfiguration(
+    const exposureConfig = useConfiguration(
         viewer.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
         (exposure) => (viewer.postProcessing = { exposure }),
@@ -460,7 +444,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertAutoOrbit, canResetAutoOrbit, revertAutoOrbit, resetAutoOrbit, updateAutoOrbit, snapshotAutoOrbit, autoOrbit] = useConfiguration(
+    const autoOrbitConfig = useConfiguration(
         // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
         false,
         () => viewer.cameraAutoOrbit.enabled,
@@ -470,62 +454,49 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const [canRevertAutoOrbitSpeed, canResetAutoOrbitSpeed, revertAutoOrbitSpeed, resetAutoOrbitSpeed, updateAutoOrbitSpeed, snapshotAutoOrbitSpeed, autoOrbitSpeed] =
-        useConfiguration(
-            viewer.cameraAutoOrbit.speed,
-            () => viewer.cameraAutoOrbit.speed,
-            (speed) => (viewer.cameraAutoOrbit = { speed }),
-            undefined,
-            [viewer.onCameraAutoOrbitChanged],
-            [viewer]
-        );
+    const autoOrbitSpeedConfig = useConfiguration(
+        viewer.cameraAutoOrbit.speed,
+        () => viewer.cameraAutoOrbit.speed,
+        (speed) => (viewer.cameraAutoOrbit = { speed }),
+        undefined,
+        [viewer.onCameraAutoOrbitChanged],
+        [viewer]
+    );
 
-    const [canRevertAutoOrbitDelay, canResetAutoOrbitDelay, revertAutoOrbitDelay, resetAutoOrbitDelay, updateAutoOrbitDelay, snapshotAutoOrbitDelay, autoOrbitDelay] =
-        useConfiguration(
-            viewer.cameraAutoOrbit.delay,
-            () => viewer.cameraAutoOrbit.delay,
-            (delay) => (viewer.cameraAutoOrbit = { delay }),
-            undefined,
-            [viewer.onCameraAutoOrbitChanged],
-            [viewer]
-        );
+    const autoOrbitDelayConfig = useConfiguration(
+        viewer.cameraAutoOrbit.delay,
+        () => viewer.cameraAutoOrbit.delay,
+        (delay) => (viewer.cameraAutoOrbit = { delay }),
+        undefined,
+        [viewer.onCameraAutoOrbitChanged],
+        [viewer]
+    );
 
-    const [canRevertAnimationState, canResetAnimationState, revertAnimationState, resetAnimationState, updateAnimationState, snapshotAnimationState, animationState] =
-        useConfiguration(
-            undefined,
-            () => {
-                return {
-                    animationSpeed: viewer.animationSpeed,
-                    selectedAnimation: viewer.selectedAnimation,
-                };
-            },
-            (animationState) => {
-                if (animationState) {
-                    viewer.animationSpeed = animationState.animationSpeed;
-                    viewer.selectedAnimation = animationState.selectedAnimation;
-                } else {
-                    viewer.animationSpeed = 1;
-                    viewer.selectedAnimation = 0;
-                }
-            },
-            (left, right) => {
-                return (
-                    left == right || (!!left && !!right && WithinEpsilon(left.animationSpeed, right.animationSpeed, Epsilon) && left.selectedAnimation === right.selectedAnimation)
-                );
-            },
-            [viewer.onAnimationSpeedChanged, viewer.onSelectedAnimationChanged],
-            [viewer]
-        );
+    const animationStateConfig = useConfiguration(
+        undefined,
+        () => {
+            return {
+                animationSpeed: viewer.animationSpeed,
+                selectedAnimation: viewer.selectedAnimation,
+            };
+        },
+        (animationState) => {
+            if (animationState) {
+                viewer.animationSpeed = animationState.animationSpeed;
+                viewer.selectedAnimation = animationState.selectedAnimation;
+            } else {
+                viewer.animationSpeed = 1;
+                viewer.selectedAnimation = 0;
+            }
+        },
+        (left, right) => {
+            return left == right || (!!left && !!right && WithinEpsilon(left.animationSpeed, right.animationSpeed, Epsilon) && left.selectedAnimation === right.selectedAnimation);
+        },
+        [viewer.onAnimationSpeedChanged, viewer.onSelectedAnimationChanged],
+        [viewer]
+    );
 
-    const [
-        canRevertAnimationAutoPlay,
-        canResetAnimationAutoPlay,
-        revertAnimationAutoPlay,
-        resetAnimationAutoPlay,
-        updateAnimationAutoPlay,
-        snapshotAnimationAutoPlay,
-        animationAutoPlay,
-    ] = useConfiguration(
+    const animationAutoPlayConfig = useConfiguration(
         false,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
@@ -537,15 +508,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerElement]
     );
 
-    const [
-        canRevertSelectedMaterialVariant,
-        canResetSelectedMaterialVariant,
-        revertSelectedMaterialVariant,
-        resetSelectedMaterialVariant,
-        updateSelectedMaterialVariant,
-        snapshotSelectedMaterialVariant,
-        selectedMaterialVariant,
-    ] = useConfiguration(
+    const selectedMaterialVariantConfig = useConfiguration(
         "",
         () => viewer.selectedMaterialVariant,
         (materialVariant) => {
@@ -587,78 +550,78 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         const attributes: string[] = [`source="${modelUrl || "[model url]"}"`];
 
         if (syncEnvironment) {
-            if (environmentLightingUrl) {
-                attributes.push(`environment="${environmentLightingUrl}"`);
+            if (lightingUrlConfig.configuredState) {
+                attributes.push(`environment="${lightingUrlConfig.configuredState}"`);
             }
         } else {
-            if (environmentLightingUrl) {
-                attributes.push(`environment-lighting="${environmentLightingUrl}"`);
+            if (lightingUrlConfig.configuredState) {
+                attributes.push(`environment-lighting="${lightingUrlConfig.configuredState}"`);
             }
 
-            if (environmentSkyboxUrl) {
-                attributes.push(`environment-skybox="${environmentSkyboxUrl}"`);
+            if (skyboxUrlConfig.configuredState) {
+                attributes.push(`environment-skybox="${skyboxUrlConfig.configuredState}"`);
             }
         }
 
         if (hasSkybox) {
-            if (canResetSkyboxBlur) {
-                attributes.push(`skybox-blur="${skyboxBlur}"`);
+            if (skyboxBlurConfig.canReset) {
+                attributes.push(`skybox-blur="${skyboxBlurConfig.configuredState}"`);
             }
-            if (canResetSkyboxIntensity) {
-                attributes.push(`skybox-intensity="${skyboxIntensity}"`);
+            if (skyboxIntensityConfig.canReset) {
+                attributes.push(`skybox-intensity="${skyboxIntensityConfig.configuredState}"`);
             }
-            if (canResetSkyboxRotation) {
-                attributes.push(`skybox-rotation="${skyboxRotation}"`);
+            if (skyboxRotationConfig.canReset) {
+                attributes.push(`skybox-rotation="${skyboxRotationConfig.configuredState}"`);
             }
         } else {
-            if (canResetClearColor) {
-                attributes.push(`clear-color="${clearColor.toHexString()}"`);
+            if (clearColorConfig.canReset) {
+                attributes.push(`clear-color="${clearColorConfig.configuredState.toHexString()}"`);
             }
         }
 
-        if (canResetToneMapping) {
-            attributes.push(`tone-mapping="${toneMapping}"`);
+        if (toneMappingConfig.canReset) {
+            attributes.push(`tone-mapping="${toneMappingConfig.configuredState}"`);
         }
 
-        if (canResetContrast) {
-            attributes.push(`contrast="${contrast.toFixed(1)}"`);
+        if (contrastConfig.canReset) {
+            attributes.push(`contrast="${contrastConfig.configuredState.toFixed(1)}"`);
         }
 
-        if (canResetExposure) {
-            attributes.push(`exposure="${exposure.toFixed(1)}"`);
+        if (exposureConfig.canReset) {
+            attributes.push(`exposure="${exposureConfig.configuredState.toFixed(1)}"`);
         }
 
-        if (cameraState) {
-            const { alpha, beta, radius, target } = cameraState;
+        if (cameraConfig.configuredState) {
+            const { alpha, beta, radius, target } = cameraConfig.configuredState;
             attributes.push(`camera-orbit="${alpha.toFixed(3)} ${beta.toFixed(3)} ${radius.toFixed(3)}"`);
             attributes.push(`camera-target="${target.x.toFixed(3)} ${target.y.toFixed(3)} ${target.z.toFixed(3)}"`);
         }
 
-        if (canResetAutoOrbit) {
+        if (autoOrbitConfig.canReset) {
             attributes.push(`camera-auto-orbit`);
         }
 
-        if (canResetAutoOrbitSpeed) {
-            attributes.push(`camera-auto-orbit-speed="${autoOrbitSpeed.toFixed(3)}"`);
+        if (autoOrbitSpeedConfig.canReset) {
+            attributes.push(`camera-auto-orbit-speed="${autoOrbitSpeedConfig.configuredState.toFixed(3)}"`);
         }
 
-        if (canResetAutoOrbitDelay) {
-            attributes.push(`camera-auto-orbit-delay="${autoOrbitDelay.toFixed(0)}"`);
+        if (autoOrbitDelayConfig.canReset) {
+            attributes.push(`camera-auto-orbit-delay="${autoOrbitDelayConfig.configuredState.toFixed(0)}"`);
         }
 
         if (hasAnimations) {
-            if (animationState && canResetAnimationState) {
-                attributes.push(`selected-animation="${animationState.selectedAnimation}"`);
-                attributes.push(`animation-speed="${animationState.animationSpeed}"`);
+            if (animationStateConfig.configuredState && animationStateConfig.canReset) {
+                attributes.push(`selected-animation="${animationStateConfig.configuredState.selectedAnimation}"`);
+                attributes.push(`animation-speed="${animationStateConfig.configuredState.animationSpeed}"`);
             }
 
-            if (canResetAnimationAutoPlay) {
+            if (animationAutoPlayConfig.canReset) {
                 attributes.push(`animation-auto-play`);
             }
         }
 
-        if (hasMaterialVariants && selectedMaterialVariant) {
-            attributes.push(`material-variant="${selectedMaterialVariant}"`);
+        if (hasMaterialVariants && selectedMaterialVariantConfig.configuredState) {
+            attributes.push(`material-variant="${selectedMaterialVariantConfig.configuredState}"`);
         }
 
         if (hotspots.length > 0) {
@@ -702,25 +665,25 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [
         modelUrl,
         syncEnvironment,
-        environmentLightingUrl,
-        environmentSkyboxUrl,
+        lightingUrlConfig.configuredState,
+        skyboxUrlConfig.configuredState,
         hasSkybox,
-        skyboxBlur,
-        skyboxIntensity,
-        skyboxRotation,
-        clearColor,
-        toneMapping,
-        contrast,
-        exposure,
-        cameraState,
-        autoOrbit,
-        autoOrbitSpeed,
-        autoOrbitDelay,
+        skyboxBlurConfig.configuredState,
+        skyboxIntensityConfig.configuredState,
+        skyboxRotationConfig.configuredState,
+        clearColorConfig.configuredState,
+        toneMappingConfig.configuredState,
+        contrastConfig.configuredState,
+        exposureConfig.configuredState,
+        cameraConfig.configuredState,
+        autoOrbitConfig.configuredState,
+        autoOrbitSpeedConfig.configuredState,
+        autoOrbitDelayConfig.configuredState,
         hasAnimations,
-        animationState,
-        animationAutoPlay,
+        animationStateConfig.configuredState,
+        animationAutoPlayConfig.configuredState,
         hasMaterialVariants,
-        selectedMaterialVariant,
+        selectedMaterialVariantConfig.configuredState,
         hotspots,
     ]);
 
@@ -779,39 +742,39 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const isEnvironmentLightingUrlValid = useMemo(() => {
-        return !environmentLightingUrl || URL.canParse(environmentLightingUrl) || environmentLightingUrl === "auto";
-    }, [environmentLightingUrl]);
+        return !lightingUrlConfig.configuredState || URL.canParse(lightingUrlConfig.configuredState) || lightingUrlConfig.configuredState === "auto";
+    }, [lightingUrlConfig.configuredState]);
 
     const onEnvironmentLightingUrlChange = useCallback(
         (value: string) => {
-            updateLightingUrl(value);
+            lightingUrlConfig.update(value);
         },
-        [updateLightingUrl]
+        [lightingUrlConfig.update]
     );
 
     const isEnvironmentSkyboxUrlValid = useMemo(() => {
-        return !environmentSkyboxUrl || URL.canParse(environmentSkyboxUrl);
-    }, [environmentSkyboxUrl]);
+        return !skyboxUrlConfig.configuredState || URL.canParse(skyboxUrlConfig.configuredState);
+    }, [skyboxUrlConfig.configuredState]);
 
     const onEnvironmentSkyboxUrlChange = useCallback(
         (value: string) => {
-            updateSkyboxUrl(value);
+            skyboxUrlConfig.update(value);
         },
-        [updateSkyboxUrl]
+        [skyboxUrlConfig.update]
     );
 
     useEffect(() => {
         if (needsEnvironmentUpdate) {
             if (syncEnvironment) {
                 if (isEnvironmentLightingUrlValid) {
-                    viewerElement.environment = environmentLightingUrl;
+                    viewerElement.environment = lightingUrlConfig.configuredState;
                 }
             } else {
                 if (isEnvironmentLightingUrlValid) {
-                    viewerElement.environmentLighting = environmentLightingUrl;
+                    viewerElement.environmentLighting = lightingUrlConfig.configuredState;
                 }
                 if (isEnvironmentSkyboxUrlValid) {
-                    viewerElement.environmentSkybox = environmentSkyboxUrl;
+                    viewerElement.environmentSkybox = skyboxUrlConfig.configuredState;
                 }
             }
 
@@ -823,9 +786,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         setNeedsEnvironmentUpdate,
         syncEnvironment,
         isEnvironmentLightingUrlValid,
-        environmentLightingUrl,
+        lightingUrlConfig.configuredState,
         isEnvironmentSkyboxUrlValid,
-        environmentSkyboxUrl,
+        skyboxBlurConfig.configuredState,
     ]);
 
     const onEnvironmentLightingUrlKeyDown = useCallback(
@@ -838,9 +801,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentLightingResetClick = useCallback(() => {
-        updateLightingUrl("");
+        lightingUrlConfig.update("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, updateLightingUrl]);
+    }, [setNeedsEnvironmentUpdate, lightingUrlConfig.update]);
 
     const onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -852,32 +815,32 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const onEnvironmentSkyboxResetClick = useCallback(() => {
-        updateSkyboxUrl("");
+        skyboxUrlConfig.update("");
         setNeedsEnvironmentUpdate(true);
-    }, [setNeedsEnvironmentUpdate, updateSkyboxUrl]);
+    }, [setNeedsEnvironmentUpdate, skyboxUrlConfig.update]);
 
     const onSyncEnvironmentChanged = useCallback(
         (value: boolean = false) => {
             setSyncEnvironment(value);
             setNeedsEnvironmentUpdate(true);
 
-            if (value && !canResetLightingUrl) {
-                updateLightingUrl("auto");
+            if (value && !lightingUrlConfig.canReset) {
+                lightingUrlConfig.update("auto");
                 return;
             }
 
-            if (!value && environmentLightingUrl === "auto") {
-                resetLightingUrl();
+            if (!value && lightingUrlConfig.configuredState === "auto") {
+                lightingUrlConfig.reset();
             }
         },
-        [setNeedsEnvironmentUpdate, environmentLightingUrl, canResetLightingUrl, updateLightingUrl, resetLightingUrl, setSyncEnvironment]
+        [setNeedsEnvironmentUpdate, lightingUrlConfig.configuredState, lightingUrlConfig.canReset, lightingUrlConfig.update, lightingUrlConfig.reset, setSyncEnvironment]
     );
 
     const onToneMappingChange = useCallback(
         (value: string | number) => {
-            updateToneMapping(value as PostProcessing["toneMapping"]);
+            toneMappingConfig.update(value as PostProcessing["toneMapping"]);
         },
-        [updateToneMapping]
+        [toneMappingConfig.update]
     );
 
     const onAddHotspotClick = useCallback(() => {
@@ -924,53 +887,53 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [htmlSnippet]);
 
     const canRevertAll = useMemo(
-        () => canRevertCamera || canRevertAnimationState || canRevertSelectedMaterialVariant,
-        [canRevertCamera, canRevertAnimationState, canRevertSelectedMaterialVariant]
+        () => cameraConfig.canRevert || animationStateConfig.canRevert || selectedMaterialVariantConfig.canRevert,
+        [cameraConfig.canRevert, animationStateConfig.canRevert, selectedMaterialVariantConfig.canRevert]
     );
 
     const revertAll = useCallback(() => {
-        revertAnimationState();
-        revertCamera();
-        revertSelectedMaterialVariant();
-    }, [revertAnimationState, revertCamera, revertSelectedMaterialVariant]);
+        animationStateConfig.revert();
+        cameraConfig.revert();
+        selectedMaterialVariantConfig.revert();
+    }, [animationStateConfig.revert, cameraConfig.revert, selectedMaterialVariantConfig.revert]);
 
     const resetAll = useCallback(() => {
-        resetLightingUrl();
-        resetSkyboxUrl();
+        lightingUrlConfig.reset();
+        skyboxUrlConfig.reset();
         onSyncEnvironmentChanged();
-        resetSkyboxBlur();
-        resetSkyboxIntensity();
-        resetSkyboxRotation();
-        resetClearColor();
-        resetToneMapping();
-        resetContrast();
-        resetExposure();
-        resetCamera();
-        resetAutoOrbit();
-        resetAutoOrbitSpeed();
-        resetAutoOrbitDelay();
-        resetAnimationState();
-        resetAnimationAutoPlay();
-        resetSelectedMaterialVariant();
+        skyboxBlurConfig.reset();
+        skyboxIntensityConfig.reset();
+        skyboxRotationConfig.reset();
+        clearColorConfig.reset();
+        toneMappingConfig.reset();
+        contrastConfig.reset();
+        exposureConfig.reset();
+        cameraConfig.reset();
+        autoOrbitConfig.reset();
+        autoOrbitSpeedConfig.reset();
+        autoOrbitDelayConfig.reset();
+        animationStateConfig.reset();
+        animationAutoPlayConfig.reset();
+        selectedMaterialVariantConfig.reset();
         setHotspots([]);
     }, [
-        resetLightingUrl,
-        resetSkyboxUrl,
+        lightingUrlConfig.reset,
+        skyboxUrlConfig.reset,
         onSyncEnvironmentChanged,
-        resetSkyboxBlur,
-        resetSkyboxIntensity,
-        resetSkyboxRotation,
-        resetClearColor,
-        resetToneMapping,
-        resetContrast,
-        resetExposure,
-        resetCamera,
-        resetAutoOrbit,
-        resetAutoOrbitSpeed,
-        resetAutoOrbitDelay,
-        resetAnimationState,
-        resetAnimationAutoPlay,
-        resetSelectedMaterialVariant,
+        skyboxBlurConfig.reset,
+        skyboxIntensityConfig.reset,
+        skyboxRotationConfig.reset,
+        clearColorConfig.reset,
+        toneMappingConfig.reset,
+        contrastConfig.reset,
+        exposureConfig.reset,
+        cameraConfig.reset,
+        autoOrbitConfig.reset,
+        autoOrbitSpeedConfig.reset,
+        autoOrbitDelayConfig.reset,
+        animationStateConfig.reset,
+        animationAutoPlayConfig.reset,
+        selectedMaterialVariantConfig.reset,
     ]);
 
     return (
@@ -1023,7 +986,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             <TextInputLineComponent
                                 key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
                                 placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                                value={environmentLightingUrl}
+                                value={lightingUrlConfig.configuredState}
                                 onChange={onEnvironmentLightingUrlChange}
                             />
                         </div>
@@ -1036,17 +999,17 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <FontAwesomeIconButton
                             title={syncEnvironment ? "Reset environment" : "Reset lighting"}
                             icon={faTrashCan}
-                            disabled={!canResetLightingUrl}
+                            disabled={!lightingUrlConfig.canReset}
                             onClick={onEnvironmentLightingResetClick}
                         />
                     </div>
                     {!syncEnvironment && (
                         <div>
                             <div style={{ flex: 5 }}>
-                                <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
+                                <TextInputLineComponent placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
                             </div>
                             <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!canResetSkyboxUrl} onClick={onEnvironmentSkyboxResetClick} />
+                            <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!skyboxUrlConfig.canReset} onClick={onEnvironmentSkyboxResetClick} />
                         </div>
                     )}
                     {hasSkybox && (
@@ -1055,49 +1018,59 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Blur"
-                                        directValue={skyboxBlur}
+                                        directValue={skyboxBlurConfig.configuredState}
                                         minimum={0}
                                         maximum={1}
                                         step={0.01}
                                         decimalCount={2}
                                         target={viewerDetails.scene}
-                                        onChange={updateSkyboxBlur}
+                                        onChange={skyboxBlurConfig.update}
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
+                                <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!skyboxBlurConfig.canReset} onClick={skyboxBlurConfig.reset} />
                             </div>
                             <div>
                                 <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Intensity"
-                                        directValue={skyboxIntensity}
+                                        directValue={skyboxIntensityConfig.configuredState}
                                         minimum={0}
                                         maximum={5}
                                         step={0.01}
                                         decimalCount={2}
                                         target={viewerDetails.scene}
-                                        onChange={updateSkyboxIntensity}
+                                        onChange={skyboxIntensityConfig.update}
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton title="Reset skybox intensity" icon={faTrashCan} disabled={!canResetSkyboxIntensity} onClick={resetSkyboxIntensity} />
+                                <FontAwesomeIconButton
+                                    title="Reset skybox intensity"
+                                    icon={faTrashCan}
+                                    disabled={!skyboxIntensityConfig.canReset}
+                                    onClick={skyboxIntensityConfig.reset}
+                                />
                             </div>
                             <div>
                                 <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Rotation"
-                                        directValue={skyboxRotation}
+                                        directValue={skyboxRotationConfig.configuredState}
                                         minimum={0}
                                         maximum={2 * Math.PI}
                                         step={0.01}
                                         decimalCount={2}
                                         target={viewerDetails.scene}
-                                        onChange={updateSkyboxRotation}
+                                        onChange={skyboxRotationConfig.update}
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton title="Reset skybox rotation" icon={faTrashCan} disabled={!canResetSkyboxRotation} onClick={resetSkyboxRotation} />
+                                <FontAwesomeIconButton
+                                    title="Reset skybox rotation"
+                                    icon={faTrashCan}
+                                    disabled={!skyboxRotationConfig.canReset}
+                                    onClick={skyboxRotationConfig.reset}
+                                />
                             </div>
                         </>
                     )}
@@ -1107,7 +1080,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                 label="Clear color"
                                 target={clearColorWrapper}
                                 propertyName="clearColor"
-                                onChange={() => updateClearColor(clearColorWrapper.clearColor)}
+                                onChange={() => clearColorConfig.update(clearColorWrapper.clearColor)}
                                 lockObject={lockObject}
                             />
                         </div>
@@ -1115,8 +1088,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             title="Reset clear color"
                             style={{ alignSelf: "flex-start" }}
                             icon={faTrashCan}
-                            disabled={!canResetClearColor}
-                            onClick={resetClearColor}
+                            disabled={!clearColorConfig.canReset}
+                            onClick={clearColorConfig.reset}
                         />
                     </div>
                 </LineContainerComponent>
@@ -1134,19 +1107,35 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <FontAwesomeIconButton title="Reset tone mapping" icon={faTrashCan} disabled={!canResetToneMapping} onClick={resetToneMapping} />
+                    <FontAwesomeIconButton title="Reset tone mapping" icon={faTrashCan} disabled={!toneMappingConfig.canReset} onClick={toneMappingConfig.reset} />
                 </div>
                 <div>
                     <div style={{ flex: 5 }}>
-                        <SliderLineComponent label="Contrast" directValue={contrast} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateContrast} />
+                        <SliderLineComponent
+                            label="Contrast"
+                            directValue={contrastConfig.configuredState}
+                            minimum={0}
+                            maximum={5}
+                            step={0.05}
+                            lockObject={lockObject}
+                            onChange={contrastConfig.update}
+                        />
                     </div>
-                    <FontAwesomeIconButton title="Reset contrast" icon={faTrashCan} disabled={!canResetContrast} onClick={resetContrast} />
+                    <FontAwesomeIconButton title="Reset contrast" icon={faTrashCan} disabled={!contrastConfig.canReset} onClick={contrastConfig.reset} />
                 </div>
                 <div>
                     <div style={{ flex: 5 }}>
-                        <SliderLineComponent label="Exposure" directValue={exposure} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateExposure} />
+                        <SliderLineComponent
+                            label="Exposure"
+                            directValue={exposureConfig.configuredState}
+                            minimum={0}
+                            maximum={5}
+                            step={0.05}
+                            lockObject={lockObject}
+                            onChange={exposureConfig.update}
+                        />
                     </div>
-                    <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!canResetExposure} onClick={resetExposure} />
+                    <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
@@ -1155,44 +1144,54 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
                 <div>
                     <div style={{ flex: 5 }}>
-                        <ButtonLineComponent label="Use Current Pose" onClick={snapshotCamera} />
+                        <ButtonLineComponent label="Use Current Pose" onClick={cameraConfig.snapshot} />
                     </div>
-                    <FontAwesomeIconButton title="Revert camera pose to snippet" disabled={!canRevertCamera} icon={faRotateLeft} onClick={revertCamera} />
-                    <FontAwesomeIconButton title="Reset camera pose attributes" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
+                    <FontAwesomeIconButton title="Revert camera pose to snippet" disabled={!cameraConfig.canRevert} icon={faRotateLeft} onClick={cameraConfig.revert} />
+                    <FontAwesomeIconButton title="Reset camera pose attributes" disabled={!cameraConfig.canReset} icon={faTrashCan} onClick={cameraConfig.reset} />
                 </div>
                 <div>
-                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbit} onSelect={updateAutoOrbit} />
+                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbitConfig.configuredState} onSelect={autoOrbitConfig.update} />
                 </div>
-                {autoOrbit && (
+                {autoOrbitConfig.configuredState && (
                     <>
                         <div>
                             <div style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Speed"
-                                    directValue={autoOrbitSpeed}
+                                    directValue={autoOrbitSpeedConfig.configuredState}
                                     minimum={0}
                                     maximum={0.524}
                                     step={0.01}
                                     decimalCount={3}
                                     lockObject={lockObject}
-                                    onChange={updateAutoOrbitSpeed}
+                                    onChange={autoOrbitSpeedConfig.update}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit speed" disabled={!canResetAutoOrbitSpeed} icon={faTrashCan} onClick={resetAutoOrbitSpeed} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit speed"
+                                disabled={!autoOrbitSpeedConfig.canReset}
+                                icon={faTrashCan}
+                                onClick={autoOrbitSpeedConfig.reset}
+                            />
                         </div>
                         <div>
                             <div style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Delay"
-                                    directValue={autoOrbitDelay}
+                                    directValue={autoOrbitDelayConfig.configuredState}
                                     minimum={0}
                                     maximum={5000}
                                     step={1}
                                     lockObject={lockObject}
-                                    onChange={updateAutoOrbitDelay}
+                                    onChange={autoOrbitDelayConfig.update}
                                 />
                             </div>
-                            <FontAwesomeIconButton title="Reset auto orbit delay" disabled={!canResetAutoOrbitDelay} icon={faTrashCan} onClick={resetAutoOrbitDelay} />
+                            <FontAwesomeIconButton
+                                title="Reset auto orbit delay"
+                                disabled={!autoOrbitDelayConfig.canReset}
+                                icon={faTrashCan}
+                                onClick={autoOrbitDelayConfig.reset}
+                            />
                         </div>
                     </>
                 )}
@@ -1204,13 +1203,23 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Use Current Selections" onClick={snapshotAnimationState} isDisabled={!hasAnimations} />
+                            <ButtonLineComponent label="Use Current Selections" onClick={animationStateConfig.snapshot} isDisabled={!hasAnimations} />
                         </div>
-                        <FontAwesomeIconButton title="Revert animation state to snippet" disabled={!canRevertAnimationState} icon={faRotateLeft} onClick={revertAnimationState} />
-                        <FontAwesomeIconButton title="Reset animation state attributes" disabled={!canResetAnimationState} icon={faTrashCan} onClick={resetAnimationState} />
+                        <FontAwesomeIconButton
+                            title="Revert animation state to snippet"
+                            disabled={!animationStateConfig.canRevert}
+                            icon={faRotateLeft}
+                            onClick={animationStateConfig.revert}
+                        />
+                        <FontAwesomeIconButton
+                            title="Reset animation state attributes"
+                            disabled={!animationStateConfig.canReset}
+                            icon={faTrashCan}
+                            onClick={animationStateConfig.reset}
+                        />
                     </div>
                     <div>
-                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={updateAnimationAutoPlay} />
+                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlayConfig.configuredState} onSelect={animationAutoPlayConfig.update} />
                     </div>
                 </LineContainerComponent>
             )}
@@ -1221,19 +1230,19 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     <div>
                         <div style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Snapshot Current State" onClick={snapshotSelectedMaterialVariant} isDisabled={!hasMaterialVariants} />
+                            <ButtonLineComponent label="Snapshot Current State" onClick={selectedMaterialVariantConfig.snapshot} isDisabled={!hasMaterialVariants} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert selected material variant to snippet"
-                            disabled={!canRevertSelectedMaterialVariant}
+                            disabled={!selectedMaterialVariantConfig.canRevert}
                             icon={faRotateLeft}
-                            onClick={revertSelectedMaterialVariant}
+                            onClick={selectedMaterialVariantConfig.revert}
                         />
                         <FontAwesomeIconButton
                             title="Reset material variant attribute"
                             icon={faTrashCan}
-                            disabled={!canResetSelectedMaterialVariant}
-                            onClick={resetSelectedMaterialVariant}
+                            disabled={!selectedMaterialVariantConfig.canReset}
+                            onClick={selectedMaterialVariantConfig.reset}
                         />
                     </div>
                 </LineContainerComponent>
