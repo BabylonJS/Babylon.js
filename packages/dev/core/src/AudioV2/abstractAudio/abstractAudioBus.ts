@@ -55,6 +55,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     public override dispose(): void {
         super.dispose();
 
+        this._analyzer?.dispose();
         this._analyzer = null;
 
         this._subGraph.dispose();

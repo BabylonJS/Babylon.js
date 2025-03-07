@@ -89,6 +89,11 @@ export abstract class AbstractAudioAnalyzer {
     public abstract smoothing: number;
 
     /**
+     * Releases associated resources.
+     */
+    public abstract dispose(): void;
+
+    /**
      * Enables the analyzer
      */
     public abstract enable(): Promise<void>;

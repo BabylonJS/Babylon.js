@@ -99,8 +99,29 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      * */
-    public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
+    public getSubNode<T extends _AbstractAudioSubNode>(name: string): Nullable<T> {
         return (this._subNodes[name] as T) ?? null;
+    }
+
+    /**
+     * Removes a sub node from the sub graph.
+     *
+     * @param subNode - The sub node to remove
+     * @returns A promise that resolves when the sub node is removed
+     *
+     * @internal
+     */
+    public async removeSubNode(subNode: _AbstractAudioSubNode): Promise<void> {
+        await this._createSubNodePromisesResolved();
+
+        const name = subNode.name;
+        if (this._subNodes[name]) {
+            delete this._subNodes[name];
+        }
+
+        delete this._createSubNodePromises[name];
+
+        this._onSubNodesChanged();
     }
 
     protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;

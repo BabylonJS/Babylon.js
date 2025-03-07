@@ -220,7 +220,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this.stop();
 
+        this._analyzer?.dispose();
         this._analyzer = null;
+
         this._newestInstance = null;
         this._outBus = null;
 

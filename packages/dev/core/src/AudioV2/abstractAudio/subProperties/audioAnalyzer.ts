@@ -75,6 +75,15 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     }
 
     /** @internal */
+    public dispose(): void {
+        const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
+        if (subNode) {
+            this._subGraph.removeSubNode(subNode);
+            subNode.dispose();
+        }
+    }
+
+    /** @internal */
     public async enable(): Promise<void> {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
