@@ -157,7 +157,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         }
 
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
-        Vector3.TransformNormalToRef(Vector3.Right(), TmpMatrix, TmpVector);
+        Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
 
         this.node.orientationX.value = TmpVector.x;
         this.node.orientationY.value = TmpVector.y;

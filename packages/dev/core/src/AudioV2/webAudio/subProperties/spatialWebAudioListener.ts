@@ -96,8 +96,8 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
         const listener = this._audioContext.listener;
 
-        // Use `Vector3.Backward()` instead of `Forward()` because the WebAudio API is right-handed.
-        Vector3.TransformNormalToRef(Vector3.Backward(), TmpMatrix, TmpVector);
+        // NB: The WebAudio API is right-handed.
+        Vector3.TransformNormalToRef(Vector3.RightHandedForwardReadOnly, TmpMatrix, TmpVector);
         listener.forwardX.value = TmpVector.x;
         listener.forwardY.value = TmpVector.y;
         listener.forwardZ.value = TmpVector.z;
