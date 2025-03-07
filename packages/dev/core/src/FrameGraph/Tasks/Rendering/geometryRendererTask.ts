@@ -112,6 +112,11 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     }
 
     /**
+     * Indicates if a mesh shouldn't be rendered when its material has depth write disabled (default is true).
+     */
+    public dontRenderWhenMaterialDepthWriteIsDisabled = true;
+
+    /**
      * The list of texture descriptions used by the geometry renderer task.
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
@@ -218,6 +223,14 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         this._renderer = new ObjectRenderer(name, scene, options);
         this._renderer.renderSprites = false;
         this._renderer.renderParticles = false;
+
+        this._renderer.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if (this.dontRenderWhenMaterialDepthWriteIsDisabled && mesh.material && mesh.material.disableDepthWrite) {
+                return !!preWarm;
+            }
+
+            return mesh.isReady(refreshRate === 0);
+        };
 
         this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
             if (!this._renderer.options.doNotChangeAspectRatio) {
