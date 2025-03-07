@@ -6,6 +6,7 @@ import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuff
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
+import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
@@ -21,6 +22,8 @@ type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | str
 export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: _WebAudioStaticSoundBuffer;
     private _spatial: Nullable<_SpatialWebAudio> = null;
+    private readonly _spatialAutoUpdate: boolean = true;
+    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStaticSoundStoredOptions;
@@ -34,7 +37,15 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions>) {
-        super(name, engine, options);
+        super(name, engine);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -70,6 +81,10 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         await this._subGraph.init(options);
 
+        if (_HasSpatialAudioOptions(options)) {
+            this._initSpatialProperty();
+        }
+
         if (options.autoplay) {
             this.play();
         }
@@ -94,7 +109,10 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public override get spatial(): _SpatialAudio {
-        return this._spatial ?? (this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate));
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
     }
 
     /** @internal */
@@ -152,6 +170,14 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
         }
 
         return true;
+    }
+
+    private _initSpatialProperty(): _SpatialAudio {
+        if (!this._spatial) {
+            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
+        }
+
+        return this._spatial;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
