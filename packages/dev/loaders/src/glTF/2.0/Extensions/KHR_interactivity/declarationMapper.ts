@@ -1500,6 +1500,43 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
+    "math/switch": {
+        blocks: [FlowGraphBlockNames.DataSwitch],
+        configuration: {
+            cases: { name: "cases", inOptions: true, defaultValue: [] },
+        },
+        inputs: {
+            values: {
+                selection: { name: "case" },
+            },
+        },
+        validation(gltfBlock) {
+            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
+                const cases = gltfBlock.configuration.cases.value;
+                const onlyIntegers = cases.every((caseValue) => {
+                    // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
+                    return typeof caseValue === "number" && /^\d+$/.test(caseValue.toString());
+                });
+                if (!onlyIntegers) {
+                    gltfBlock.configuration.cases.value = [] as number[];
+                    return true;
+                }
+                // check for duplicates
+                const uniqueCases = new Set(cases);
+                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
+            }
+            return true;
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
+            const serializedObject = serializedObjects[0];
+            serializedObject.signalInputs.forEach((input) => {
+                if (input.name !== "default" && input.name !== "case") {
+                    input.name = "in_" + input.name;
+                }
+            });
+            return serializedObjects;
+        },
+    },
 };
 
 function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {
