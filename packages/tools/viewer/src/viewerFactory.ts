@@ -9,7 +9,10 @@ import { Viewer } from "./viewer";
  */
 export type CanvasViewerOptions = ViewerOptions &
     (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
-const defaultCanvasViewerOptions: CanvasViewerOptions = { antialias: true, adaptToDeviceRatio: true };
+const defaultCanvasViewerOptions: CanvasViewerOptions = {
+    antialias: true,
+    adaptToDeviceRatio: true,
+};
 
 /**
  * Chooses a default engine for the current browser environment.

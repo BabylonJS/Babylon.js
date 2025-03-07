@@ -1,0 +1,16 @@
+{
+    "extends": "../../../tsconfig.json",
+
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "paths": {
+            "core/*": ["dev/core/src/*"],
+            "loaders/*": ["dev/loaders/src/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
+            "viewer/*": ["tools/viewer/src/*"],
+            "viewer": ["tools/viewer/src/index"]
+        },
+        "strict": true
+    }
+}
