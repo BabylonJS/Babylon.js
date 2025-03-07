@@ -65,7 +65,7 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
                     return;
                 }
             }
-            this._inputCases.set(getNumericValue(caseValue), this.registerDataInput(`in_${caseValue}`, RichTypeAny));
+            this._inputCases.set(caseValue, this.registerDataInput(`in_${caseValue}`, RichTypeAny));
         });
     }
 
