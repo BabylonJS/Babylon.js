@@ -335,6 +335,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const [syncEnvironment, setSyncEnvironment] = useState(false);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
 
+    const onEnvironmentUrlSubmit = useCallback(() => {
+        setNeedsEnvironmentUpdate(true);
+    }, [setNeedsEnvironmentUpdate]);
+
     const hasSkybox = useMemo(() => {
         if (syncEnvironment) {
             return !!lightingUrlConfig.configuredState;
@@ -936,18 +940,17 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         selectedMaterialVariantConfig.reset,
     ]);
 
+    const openDocumentation = useCallback(() => {
+        window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator");
+    }, []);
+
     return (
         <div className="configurator">
             <div className="stickyContainer">
                 <div className="configuratorHeader">
                     <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div className="title">VIEWER CONFIGURATOR</div>
-                    <FontAwesomeIconButton
-                        className="docs"
-                        title="Documentation"
-                        icon={faFileLines}
-                        onClick={() => window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator")}
-                    />
+                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faFileLines} onClick={openDocumentation} />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div className="flexColumn">
@@ -991,7 +994,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         title={syncEnvironment ? "Load environment url" : "Load lighting url"}
                         icon={faCheck}
                         disabled={!isEnvironmentLightingUrlValid}
-                        onClick={() => setNeedsEnvironmentUpdate(true)}
+                        onClick={onEnvironmentUrlSubmit}
                     />
                     <FontAwesomeIconButton
                         title={syncEnvironment ? "Reset environment" : "Reset lighting"}
@@ -1005,7 +1008,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div style={{ flex: 1 }}>
                             <TextInputLineComponent placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
                         </div>
-                        <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                        <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={onEnvironmentUrlSubmit} />
                         <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!skyboxUrlConfig.canReset} onClick={onEnvironmentSkyboxResetClick} />
                     </div>
                 )}
