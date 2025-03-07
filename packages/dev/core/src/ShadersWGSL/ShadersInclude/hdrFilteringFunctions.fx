@@ -171,6 +171,7 @@
             tangent = normalize(cross(tangent, n));
             var bitangent: vec3f = cross(n, tangent);
             var tbn: mat3x3f =  mat3x3f(tangent, bitangent, n);
+            var tbnInverse: mat3x3f = transpose(tbn);
             #endif
 
             var maxLevel: f32 = filteringInfo.y;
@@ -199,9 +200,11 @@
                     var NoL: f32 = dot(Ns, Ls);
                     var H: vec3f = (Ns + Ls) * 0.5;
                     var NoH: f32 = dot(Ns, H);
-                    // TODO inputV is in world space, we need to convert it to tangent space
-                    var VoH: f32 = dot(inputV, H);
-                    var LoV: f32 = dot(Ls, inputV);
+                    
+                    var V: vec3f = tbnInverse * inputV;
+                    var NoV: f32 = dot(Ns, V);
+                    var VoH: f32 = dot(V, H);
+                    var LoV: f32 = dot(Ls, V);
                 #endif
 
                 if (NoL > 0.) {
