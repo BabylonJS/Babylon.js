@@ -277,7 +277,7 @@ const HotSpotEntry: FunctionComponent<{
     return (
         <div ref={rootDivRef} className="flexRow" style={{ ...dndStyle }} {...dndAttributes}>
             <FontAwesomeIcon title="Drag to reorder" icon={faGripVertical} {...dndListeners} />
-            <div style={{ flex: 5 }}>
+            <div style={{ flex: 1 }}>
                 <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
             </div>
             <FontAwesomeIconButton title="Pick from model" icon={faBullseye} color={isPicking ? "rgb(51, 122, 183)" : undefined} onClick={onHotspotPickClick} />
@@ -950,9 +950,9 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     ]);
 
     return (
-        <div className="ConfiguratorContainer">
-            <div className="Sticky">
-                <div className="Header">
+        <div className="configurator">
+            <div className="stickyContainer">
+                <div className="configuratorHeader">
                     <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div className="title">VIEWER CONFIGURATOR</div>
                     <FontAwesomeIconButton
@@ -963,153 +963,144 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
-                    <div style={{ height: "auto", borderBottom: "0px" }}>
-                        <div style={{ flex: 1 }}>
-                            <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
+                    <div className="flexColumn">
+                        <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
+                        <div className="flexRow">
+                            <div style={{ flex: 1 }}>
+                                <ButtonLineComponent label="Reset" onClick={resetAll} />
+                            </div>
+                            <FontAwesomeIconButton title="Revert all state to snippet" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
+                            <FontAwesomeIconButton title="Copy html to clipboard" icon={faCopy} onClick={copyToClipboard} />
                         </div>
-                    </div>
-                    <div style={{ paddingTop: "0px" }}>
-                        <div style={{ flex: 5 }}>
-                            <ButtonLineComponent label="Reset" onClick={resetAll} />
-                        </div>
-                        <FontAwesomeIconButton title="Revert all state to snippet" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
-                        <FontAwesomeIconButton title="Copy html to clipboard" icon={faCopy} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
             </div>
-            <div>
-                <LineContainerComponent title="MODEL">
-                    <div>
-                        <div style={{ flex: 5 }}>
-                            <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
-                        </div>
-                        <FontAwesomeIconButton title="Load from model url" icon={faCheck} onClick={onModelUrlBlur} />
-                        <FontAwesomeIconButton title="Load local model" icon={faUpload} onClick={onLoadModelClick} />
+            <LineContainerComponent title="MODEL">
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                     </div>
-                </LineContainerComponent>
-                <LineContainerComponent title="ENVIRONMENT">
-                    <div style={{ height: "auto" }}>
-                        <ExpandableMessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
-                    </div>
-                    <div>
-                        <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
-                    </div>
-                    <div>
-                        <div style={{ flex: 5 }}>
-                            <TextInputLineComponent
-                                key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
-                                placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                                value={lightingUrlConfig.configuredState}
-                                onChange={onEnvironmentLightingUrlChange}
-                            />
-                        </div>
-                        <FontAwesomeIconButton
-                            title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                            icon={faCheck}
-                            disabled={!isEnvironmentLightingUrlValid}
-                            onClick={() => setNeedsEnvironmentUpdate(true)}
-                        />
-                        <FontAwesomeIconButton
-                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                            icon={faTrashCan}
-                            disabled={!lightingUrlConfig.canReset}
-                            onClick={onEnvironmentLightingResetClick}
+                    <FontAwesomeIconButton title="Load from model url" icon={faCheck} onClick={onModelUrlBlur} />
+                    <FontAwesomeIconButton title="Load local model" icon={faUpload} onClick={onLoadModelClick} />
+                </div>
+            </LineContainerComponent>
+            <LineContainerComponent title="ENVIRONMENT">
+                <div style={{ height: "auto" }}>
+                    <ExpandableMessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
+                </div>
+                <div>
+                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
+                </div>
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <TextInputLineComponent
+                            key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
+                            placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
+                            value={lightingUrlConfig.configuredState}
+                            onChange={onEnvironmentLightingUrlChange}
                         />
                     </div>
-                    {!syncEnvironment && (
+                    <FontAwesomeIconButton
+                        title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                        icon={faCheck}
+                        disabled={!isEnvironmentLightingUrlValid}
+                        onClick={() => setNeedsEnvironmentUpdate(true)}
+                    />
+                    <FontAwesomeIconButton
+                        title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                        icon={faTrashCan}
+                        disabled={!lightingUrlConfig.canReset}
+                        onClick={onEnvironmentLightingResetClick}
+                    />
+                </div>
+                {!syncEnvironment && (
+                    <div>
+                        <div style={{ flex: 1 }}>
+                            <TextInputLineComponent placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                        </div>
+                        <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                        <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!skyboxUrlConfig.canReset} onClick={onEnvironmentSkyboxResetClick} />
+                    </div>
+                )}
+                {hasSkybox && (
+                    <>
                         <div>
-                            <div style={{ flex: 5 }}>
-                                <TextInputLineComponent placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                            <div style={{ flex: 1 }}>
+                                <SliderLineComponent
+                                    label="Skybox Blur"
+                                    directValue={skyboxBlurConfig.configuredState}
+                                    minimum={0}
+                                    maximum={1}
+                                    step={0.01}
+                                    decimalCount={2}
+                                    target={viewerDetails.scene}
+                                    onChange={skyboxBlurConfig.update}
+                                    lockObject={lockObject}
+                                />
                             </div>
-                            <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!skyboxUrlConfig.canReset} onClick={onEnvironmentSkyboxResetClick} />
+                            <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!skyboxBlurConfig.canReset} onClick={skyboxBlurConfig.reset} />
                         </div>
-                    )}
-                    {hasSkybox && (
-                        <>
-                            <div>
-                                <div style={{ flex: 1 }}>
-                                    <SliderLineComponent
-                                        label="Skybox Blur"
-                                        directValue={skyboxBlurConfig.configuredState}
-                                        minimum={0}
-                                        maximum={1}
-                                        step={0.01}
-                                        decimalCount={2}
-                                        target={viewerDetails.scene}
-                                        onChange={skyboxBlurConfig.update}
-                                        lockObject={lockObject}
-                                    />
-                                </div>
-                                <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!skyboxBlurConfig.canReset} onClick={skyboxBlurConfig.reset} />
-                            </div>
-                            <div>
-                                <div style={{ flex: 1 }}>
-                                    <SliderLineComponent
-                                        label="Skybox Intensity"
-                                        directValue={skyboxIntensityConfig.configuredState}
-                                        minimum={0}
-                                        maximum={5}
-                                        step={0.01}
-                                        decimalCount={2}
-                                        target={viewerDetails.scene}
-                                        onChange={skyboxIntensityConfig.update}
-                                        lockObject={lockObject}
-                                    />
-                                </div>
-                                <FontAwesomeIconButton
-                                    title="Reset skybox intensity"
-                                    icon={faTrashCan}
-                                    disabled={!skyboxIntensityConfig.canReset}
-                                    onClick={skyboxIntensityConfig.reset}
+                        <div>
+                            <div style={{ flex: 1 }}>
+                                <SliderLineComponent
+                                    label="Skybox Intensity"
+                                    directValue={skyboxIntensityConfig.configuredState}
+                                    minimum={0}
+                                    maximum={5}
+                                    step={0.01}
+                                    decimalCount={2}
+                                    target={viewerDetails.scene}
+                                    onChange={skyboxIntensityConfig.update}
+                                    lockObject={lockObject}
                                 />
                             </div>
-                            <div>
-                                <div style={{ flex: 1 }}>
-                                    <SliderLineComponent
-                                        label="Skybox Rotation"
-                                        directValue={skyboxRotationConfig.configuredState}
-                                        minimum={0}
-                                        maximum={2 * Math.PI}
-                                        step={0.01}
-                                        decimalCount={2}
-                                        target={viewerDetails.scene}
-                                        onChange={skyboxRotationConfig.update}
-                                        lockObject={lockObject}
-                                    />
-                                </div>
-                                <FontAwesomeIconButton
-                                    title="Reset skybox rotation"
-                                    icon={faTrashCan}
-                                    disabled={!skyboxRotationConfig.canReset}
-                                    onClick={skyboxRotationConfig.reset}
-                                />
-                            </div>
-                        </>
-                    )}
-                    <div style={{ height: "auto" }}>
-                        <div style={{ flex: 1 }}>
-                            <Color4LineComponent
-                                label="Clear color"
-                                target={clearColorWrapper}
-                                propertyName="clearColor"
-                                onChange={() => clearColorConfig.update(clearColorWrapper.clearColor)}
-                                lockObject={lockObject}
+                            <FontAwesomeIconButton
+                                title="Reset skybox intensity"
+                                icon={faTrashCan}
+                                disabled={!skyboxIntensityConfig.canReset}
+                                onClick={skyboxIntensityConfig.reset}
                             />
                         </div>
-                        <FontAwesomeIconButton
-                            title="Reset clear color"
-                            style={{ alignSelf: "flex-start" }}
-                            icon={faTrashCan}
-                            disabled={!clearColorConfig.canReset}
-                            onClick={clearColorConfig.reset}
+                        <div>
+                            <div style={{ flex: 1 }}>
+                                <SliderLineComponent
+                                    label="Skybox Rotation"
+                                    directValue={skyboxRotationConfig.configuredState}
+                                    minimum={0}
+                                    maximum={2 * Math.PI}
+                                    step={0.01}
+                                    decimalCount={2}
+                                    target={viewerDetails.scene}
+                                    onChange={skyboxRotationConfig.update}
+                                    lockObject={lockObject}
+                                />
+                            </div>
+                            <FontAwesomeIconButton title="Reset skybox rotation" icon={faTrashCan} disabled={!skyboxRotationConfig.canReset} onClick={skyboxRotationConfig.reset} />
+                        </div>
+                    </>
+                )}
+                <div style={{ height: "auto" }}>
+                    <div style={{ flex: 1 }}>
+                        <Color4LineComponent
+                            label="Clear color"
+                            target={clearColorWrapper}
+                            propertyName="clearColor"
+                            onChange={() => clearColorConfig.update(clearColorWrapper.clearColor)}
+                            lockObject={lockObject}
                         />
                     </div>
-                </LineContainerComponent>
-            </div>
+                    <FontAwesomeIconButton
+                        title="Reset clear color"
+                        style={{ alignSelf: "flex-start" }}
+                        icon={faTrashCan}
+                        disabled={!clearColorConfig.canReset}
+                        onClick={clearColorConfig.reset}
+                    />
+                </div>
+            </LineContainerComponent>
             <LineContainerComponent title="POST PROCESSING">
                 <div>
-                    <div style={{ flex: 5 }}>
+                    <div style={{ flex: 1 }}>
                         <OptionsLine
                             label="Tone Mapping"
                             valuesAreStrings={true}
@@ -1123,7 +1114,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <FontAwesomeIconButton title="Reset tone mapping" icon={faTrashCan} disabled={!toneMappingConfig.canReset} onClick={toneMappingConfig.reset} />
                 </div>
                 <div>
-                    <div style={{ flex: 5 }}>
+                    <div style={{ flex: 1 }}>
                         <SliderLineComponent
                             label="Contrast"
                             directValue={contrastConfig.configuredState}
@@ -1137,7 +1128,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <FontAwesomeIconButton title="Reset contrast" icon={faTrashCan} disabled={!contrastConfig.canReset} onClick={contrastConfig.reset} />
                 </div>
                 <div>
-                    <div style={{ flex: 5 }}>
+                    <div style={{ flex: 1 }}>
                         <SliderLineComponent
                             label="Exposure"
                             directValue={exposureConfig.configuredState}
@@ -1156,7 +1147,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <ExpandableMessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
                 </div>
                 <div>
-                    <div style={{ flex: 5 }}>
+                    <div style={{ flex: 1 }}>
                         <ButtonLineComponent label="Use Current Pose" onClick={cameraConfig.snapshot} />
                     </div>
                     <FontAwesomeIconButton title="Revert camera pose to snippet" disabled={!cameraConfig.canRevert} icon={faRotateLeft} onClick={cameraConfig.revert} />
@@ -1168,7 +1159,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 {autoOrbitConfig.configuredState && (
                     <>
                         <div>
-                            <div style={{ flex: 5 }}>
+                            <div style={{ flex: 1 }}>
                                 <SliderLineComponent
                                     label="Speed"
                                     directValue={autoOrbitSpeedConfig.configuredState}
@@ -1188,7 +1179,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             />
                         </div>
                         <div>
-                            <div style={{ flex: 5 }}>
+                            <div style={{ flex: 1 }}>
                                 <SliderLineComponent
                                     label="Delay"
                                     directValue={autoOrbitDelayConfig.configuredState}
@@ -1215,7 +1206,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <ExpandableMessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
                     </div>
                     <div>
-                        <div style={{ flex: 5 }}>
+                        <div style={{ flex: 1 }}>
                             <ButtonLineComponent label="Use Current Selections" onClick={animationStateConfig.snapshot} isDisabled={!hasAnimations} />
                         </div>
                         <FontAwesomeIconButton
@@ -1242,7 +1233,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <ExpandableMessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
                     </div>
                     <div>
-                        <div style={{ flex: 5 }}>
+                        <div style={{ flex: 1 }}>
                             <ButtonLineComponent label="Snapshot Current State" onClick={selectedMaterialVariantConfig.snapshot} isDisabled={!hasMaterialVariants} />
                         </div>
                         <FontAwesomeIconButton
@@ -1264,13 +1255,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 <div style={{ height: "auto" }}>
                     <ExpandableMessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
                 </div>
-                <div>
-                    <div style={{ flex: 5 }}>
-                        <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
+                <div className="flexColumn">
+                    <div className="flexRow">
+                        <div style={{ flex: 1 }}>
+                            <OptionsLine
+                                label="Hot Spot Type"
+                                valuesAreStrings={true}
+                                options={hotSpotTypeOptions}
+                                target={hotSpotTypeOptions}
+                                propertyName=""
+                                noDirectUpdate={true}
+                            />
+                        </div>
+                        <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
                     </div>
-                    <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
-                </div>
-                <div className="flexColumn" style={{ height: "auto", display: "flex", flexDirection: "column" }}>
                     <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
                         <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
                             {hotspots.map((hotspot) => (
