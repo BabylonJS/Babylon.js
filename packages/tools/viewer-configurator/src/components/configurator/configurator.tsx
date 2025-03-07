@@ -262,20 +262,14 @@ const HotSpotEntry: FunctionComponent<{
     );
 
     return (
-        <div ref={rootDivRef} style={{ ...dndStyle, borderWidth: 0 }} {...dndAttributes}>
-            <div title="Drag to reorder" {...dndListeners}>
-                <FontAwesomeIcon icon={faGripVertical} />
-            </div>
-            <div className="FlexItem" style={{ flex: 5 }}>
+        <div ref={rootDivRef} className="flexRow" style={{ ...dndStyle }} {...dndAttributes}>
+            <FontAwesomeIcon title="Drag to reorder" icon={faGripVertical} {...dndListeners} />
+            <div style={{ flex: 5 }}>
                 <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
             </div>
-            <div onClick={onHotspotPickClick} title="Pick from model">
-                <FontAwesomeIcon icon={faBullseye} color={isPicking ? "rgb(51, 122, 183)" : undefined} />
-            </div>
-            <div onClick={onCameraSnapshotClick} title="Snapshot current camera state">
-                <FontAwesomeIcon icon={faCamera} />
-            </div>
-            <FontAwesomeIconButton title="Delete Hot Spot" className="FlexItem" icon={faTrashCan} onClick={onHotspotDeleteClick} />
+            <FontAwesomeIconButton title="Pick from model" icon={faBullseye} color={isPicking ? "rgb(51, 122, 183)" : undefined} onClick={onHotspotPickClick} />
+            <FontAwesomeIconButton title="Snapshot current camera state" icon={faCamera} onClick={onCameraSnapshotClick} />
+            <FontAwesomeIconButton title="Delete Hot Spot" icon={faTrashCan} onClick={onHotspotDeleteClick} />
         </div>
     );
 };
@@ -994,27 +988,27 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div style={{ height: "auto", borderBottom: "0px" }}>
-                        <div className="FlexItem" style={{ flex: 1 }}>
+                        <div style={{ flex: 1 }}>
                             <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
                         </div>
                     </div>
                     <div style={{ paddingTop: "0px" }}>
-                        <div className="FlexItem" style={{ flex: 5 }}>
+                        <div style={{ flex: 5 }}>
                             <ButtonLineComponent label="Reset" onClick={resetAll} />
                         </div>
-                        <FontAwesomeIconButton title="Revert all state to snippet" className="FlexItem" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
-                        <FontAwesomeIconButton title="Copy html to clipboard" className="FlexItem" icon={faCopy} onClick={copyToClipboard} />
+                        <FontAwesomeIconButton title="Revert all state to snippet" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
+                        <FontAwesomeIconButton title="Copy html to clipboard" icon={faCopy} onClick={copyToClipboard} />
                     </div>
                 </LineContainerComponent>
             </div>
             <div>
                 <LineContainerComponent title="MODEL">
                     <div>
-                        <div className="FlexItem" style={{ flex: 5 }}>
+                        <div style={{ flex: 5 }}>
                             <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
                         </div>
-                        <FontAwesomeIconButton title="Load from model url" className="FlexItem" icon={faCheck} onClick={() => onModelUrlBlur()} />
-                        <FontAwesomeIconButton title="Load local model" className="FlexItem" icon={faUpload} onClick={onLoadModelClick} />
+                        <FontAwesomeIconButton title="Load from model url" icon={faCheck} onClick={onModelUrlBlur} />
+                        <FontAwesomeIconButton title="Load local model" icon={faUpload} onClick={onLoadModelClick} />
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
@@ -1025,7 +1019,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
                     </div>
                     <div>
-                        <div className="FlexItem" style={{ flex: 5 }}>
+                        <div style={{ flex: 5 }}>
                             <TextInputLineComponent
                                 key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
                                 placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
@@ -1035,14 +1029,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                         <FontAwesomeIconButton
                             title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                            className="FlexItem"
                             icon={faCheck}
                             disabled={!isEnvironmentLightingUrlValid}
                             onClick={() => setNeedsEnvironmentUpdate(true)}
                         />
                         <FontAwesomeIconButton
                             title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                            className="FlexItem"
                             icon={faTrashCan}
                             disabled={!canResetLightingUrl}
                             onClick={onEnvironmentLightingResetClick}
@@ -1050,23 +1042,17 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     </div>
                     {!syncEnvironment && (
                         <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
+                            <div style={{ flex: 5 }}>
                                 <TextInputLineComponent placeholder="Skybox url" value={environmentSkyboxUrl} onChange={onEnvironmentSkyboxUrlChange} />
                             </div>
-                            <FontAwesomeIconButton title="Load skybox url" className="FlexItem" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
-                            <FontAwesomeIconButton
-                                title="Reset skybox"
-                                className="FlexItem"
-                                icon={faTrashCan}
-                                disabled={!canResetSkyboxUrl}
-                                onClick={onEnvironmentSkyboxResetClick}
-                            />
+                            <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={() => setNeedsEnvironmentUpdate(true)} />
+                            <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!canResetSkyboxUrl} onClick={onEnvironmentSkyboxResetClick} />
                         </div>
                     )}
                     {hasSkybox && (
                         <>
                             <div>
-                                <div className="FlexItem" style={{ flex: 1 }}>
+                                <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Blur"
                                         directValue={skyboxBlur}
@@ -1079,10 +1065,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton title="Reset skybox blur" className="FlexItem" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
+                                <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!canResetSkyboxBlur} onClick={resetSkyboxBlur} />
                             </div>
                             <div>
-                                <div className="FlexItem" style={{ flex: 1 }}>
+                                <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Intensity"
                                         directValue={skyboxIntensity}
@@ -1095,16 +1081,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton
-                                    title="Reset skybox intensity"
-                                    className="FlexItem"
-                                    icon={faTrashCan}
-                                    disabled={!canResetSkyboxIntensity}
-                                    onClick={resetSkyboxIntensity}
-                                />
+                                <FontAwesomeIconButton title="Reset skybox intensity" icon={faTrashCan} disabled={!canResetSkyboxIntensity} onClick={resetSkyboxIntensity} />
                             </div>
                             <div>
-                                <div className="FlexItem" style={{ flex: 1 }}>
+                                <div style={{ flex: 1 }}>
                                     <SliderLineComponent
                                         label="Skybox Rotation"
                                         directValue={skyboxRotation}
@@ -1117,18 +1097,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                         lockObject={lockObject}
                                     />
                                 </div>
-                                <FontAwesomeIconButton
-                                    title="Reset skybox rotation"
-                                    className="FlexItem"
-                                    icon={faTrashCan}
-                                    disabled={!canResetSkyboxRotation}
-                                    onClick={resetSkyboxRotation}
-                                />
+                                <FontAwesomeIconButton title="Reset skybox rotation" icon={faTrashCan} disabled={!canResetSkyboxRotation} onClick={resetSkyboxRotation} />
                             </div>
                         </>
                     )}
                     <div style={{ height: "auto" }}>
-                        <div className="FlexItem" style={{ flex: 1 }}>
+                        <div style={{ flex: 1 }}>
                             <Color4LineComponent
                                 label="Clear color"
                                 target={clearColorWrapper}
@@ -1139,7 +1113,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         </div>
                         <FontAwesomeIconButton
                             title="Reset clear color"
-                            className="FlexItem"
                             style={{ alignSelf: "flex-start" }}
                             icon={faTrashCan}
                             disabled={!canResetClearColor}
@@ -1150,7 +1123,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             </div>
             <LineContainerComponent title="POST PROCESSING">
                 <div>
-                    <div className="FlexItem" style={{ flex: 5 }}>
+                    <div style={{ flex: 5 }}>
                         <OptionsLine
                             label="Tone Mapping"
                             valuesAreStrings={true}
@@ -1161,19 +1134,19 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             onSelect={onToneMappingChange}
                         />
                     </div>
-                    <FontAwesomeIconButton title="Reset tone mapping" className="FlexItem" icon={faTrashCan} disabled={!canResetToneMapping} onClick={resetToneMapping} />
+                    <FontAwesomeIconButton title="Reset tone mapping" icon={faTrashCan} disabled={!canResetToneMapping} onClick={resetToneMapping} />
                 </div>
                 <div>
-                    <div className="FlexItem" style={{ flex: 5 }}>
+                    <div style={{ flex: 5 }}>
                         <SliderLineComponent label="Contrast" directValue={contrast} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateContrast} />
                     </div>
-                    <FontAwesomeIconButton title="Reset contrast" className="FlexItem" icon={faTrashCan} disabled={!canResetContrast} onClick={resetContrast} />
+                    <FontAwesomeIconButton title="Reset contrast" icon={faTrashCan} disabled={!canResetContrast} onClick={resetContrast} />
                 </div>
                 <div>
-                    <div className="FlexItem" style={{ flex: 5 }}>
+                    <div style={{ flex: 5 }}>
                         <SliderLineComponent label="Exposure" directValue={exposure} minimum={0} maximum={5} step={0.05} lockObject={lockObject} onChange={updateExposure} />
                     </div>
-                    <FontAwesomeIconButton title="Reset exposure" className="FlexItem" icon={faTrashCan} disabled={!canResetExposure} onClick={resetExposure} />
+                    <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!canResetExposure} onClick={resetExposure} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
@@ -1181,11 +1154,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <ExpandableMessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
                 </div>
                 <div>
-                    <div className="FlexItem" style={{ flex: 5 }}>
+                    <div style={{ flex: 5 }}>
                         <ButtonLineComponent label="Use Current Pose" onClick={snapshotCamera} />
                     </div>
-                    <FontAwesomeIconButton title="Revert camera pose to snippet" className="FlexItem" disabled={!canRevertCamera} icon={faRotateLeft} onClick={revertCamera} />
-                    <FontAwesomeIconButton title="Reset camera pose attributes" className="FlexItem" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
+                    <FontAwesomeIconButton title="Revert camera pose to snippet" disabled={!canRevertCamera} icon={faRotateLeft} onClick={revertCamera} />
+                    <FontAwesomeIconButton title="Reset camera pose attributes" disabled={!canResetCamera} icon={faTrashCan} onClick={resetCamera} />
                 </div>
                 <div>
                     <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbit} onSelect={updateAutoOrbit} />
@@ -1193,7 +1166,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 {autoOrbit && (
                     <>
                         <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
+                            <div style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Speed"
                                     directValue={autoOrbitSpeed}
@@ -1205,16 +1178,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={updateAutoOrbitSpeed}
                                 />
                             </div>
-                            <FontAwesomeIconButton
-                                title="Reset auto orbit speed"
-                                className="FlexItem"
-                                disabled={!canResetAutoOrbitSpeed}
-                                icon={faTrashCan}
-                                onClick={resetAutoOrbitSpeed}
-                            />
+                            <FontAwesomeIconButton title="Reset auto orbit speed" disabled={!canResetAutoOrbitSpeed} icon={faTrashCan} onClick={resetAutoOrbitSpeed} />
                         </div>
                         <div>
-                            <div className="FlexItem" style={{ flex: 5 }}>
+                            <div style={{ flex: 5 }}>
                                 <SliderLineComponent
                                     label="Delay"
                                     directValue={autoOrbitDelay}
@@ -1225,13 +1192,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                                     onChange={updateAutoOrbitDelay}
                                 />
                             </div>
-                            <FontAwesomeIconButton
-                                title="Reset auto orbit delay"
-                                className="FlexItem"
-                                disabled={!canResetAutoOrbitDelay}
-                                icon={faTrashCan}
-                                onClick={resetAutoOrbitDelay}
-                            />
+                            <FontAwesomeIconButton title="Reset auto orbit delay" disabled={!canResetAutoOrbitDelay} icon={faTrashCan} onClick={resetAutoOrbitDelay} />
                         </div>
                     </>
                 )}
@@ -1242,23 +1203,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <ExpandableMessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
                     </div>
                     <div>
-                        <div className="FlexItem" style={{ flex: 5 }}>
+                        <div style={{ flex: 5 }}>
                             <ButtonLineComponent label="Use Current Selections" onClick={snapshotAnimationState} isDisabled={!hasAnimations} />
                         </div>
-                        <FontAwesomeIconButton
-                            title="Revert animation state to snippet"
-                            className="FlexItem"
-                            disabled={!canRevertAnimationState}
-                            icon={faRotateLeft}
-                            onClick={revertAnimationState}
-                        />
-                        <FontAwesomeIconButton
-                            title="Reset animation state attributes"
-                            className="FlexItem"
-                            disabled={!canResetAnimationState}
-                            icon={faTrashCan}
-                            onClick={resetAnimationState}
-                        />
+                        <FontAwesomeIconButton title="Revert animation state to snippet" disabled={!canRevertAnimationState} icon={faRotateLeft} onClick={revertAnimationState} />
+                        <FontAwesomeIconButton title="Reset animation state attributes" disabled={!canResetAnimationState} icon={faTrashCan} onClick={resetAnimationState} />
                     </div>
                     <div>
                         <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlay} onSelect={updateAnimationAutoPlay} />
@@ -1271,19 +1220,17 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <ExpandableMessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
                     </div>
                     <div>
-                        <div className="FlexItem" style={{ flex: 5 }}>
+                        <div style={{ flex: 5 }}>
                             <ButtonLineComponent label="Snapshot Current State" onClick={snapshotSelectedMaterialVariant} isDisabled={!hasMaterialVariants} />
                         </div>
                         <FontAwesomeIconButton
                             title="Revert selected material variant to snippet"
-                            className="FlexItem"
                             disabled={!canRevertSelectedMaterialVariant}
                             icon={faRotateLeft}
                             onClick={revertSelectedMaterialVariant}
                         />
                         <FontAwesomeIconButton
                             title="Reset material variant attribute"
-                            className="FlexItem"
                             icon={faTrashCan}
                             disabled={!canResetSelectedMaterialVariant}
                             onClick={resetSelectedMaterialVariant}
@@ -1296,18 +1243,20 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <ExpandableMessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
                 </div>
                 <div>
-                    <div className="FlexItem" style={{ flex: 5 }}>
+                    <div style={{ flex: 5 }}>
                         <OptionsLine label="Hot Spot Type" valuesAreStrings={true} options={hotSpotTypeOptions} target={hotSpotTypeOptions} propertyName="" noDirectUpdate={true} />
                     </div>
                     <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
                 </div>
-                <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
-                    <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
-                        {hotspots.map((hotspot) => (
-                            <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />
-                        ))}
-                    </SortableContext>
-                </DndContext>
+                <div className="flexColumn" style={{ height: "auto", display: "flex", flexDirection: "column" }}>
+                    <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
+                        <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
+                            {hotspots.map((hotspot) => (
+                                <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />
+                            ))}
+                        </SortableContext>
+                    </DndContext>
+                </div>
             </LineContainerComponent>
         </div>
     );

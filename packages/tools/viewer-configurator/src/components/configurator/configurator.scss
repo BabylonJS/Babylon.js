@@ -20,6 +20,39 @@
     width: 100%;
     box-sizing: border-box;
 
+    .commonFlex {
+        display: flex;
+        align-items: center;
+        gap: $line-button-gap;
+        justify-content: $line-content-spacing;
+
+        > * {
+            height: 100%;
+        }
+    }
+
+    .flexRow {
+        @extend .commonFlex;
+        height: $line-height;
+        flex-direction: row;
+
+        > * {
+            height: 100%;
+        }
+    }
+
+    // Bespoke; currently only used for hotspots
+    .flexColumn {
+        @extend .commonFlex;
+        height: auto;
+        padding: $line-padding;
+        flex-direction: column;
+
+        > * {
+            width: 100%;
+        }
+    }
+
     .Sticky {
         position: sticky;
         top: 0;
@@ -54,11 +87,6 @@
             transform: scale(0.9);
             transform-origin: center;
         }
-    }
-
-    // Wrapper to help with row flex for lines
-    .FlexItem {
-        height: 100%;
     }
 
     // Prevent default styling on inputs
@@ -100,16 +128,13 @@
             border-left: 3px solid transparent;
         }
 
-        // Make every direct child of the paneList a flexbox
-        // to help align
         .paneList > * {
-            height: $line-height;
             padding: $line-padding;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: $line-button-gap;
-            justify-content: $line-content-spacing;
+        }
+
+        // Make direct children of LineContainer flex rows by default
+        .paneList > *:not(.flexColumn) {
+            @extend .flexRow;
         }
 
         &:hover {
