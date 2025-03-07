@@ -53,6 +53,7 @@ declare module "../Engines/abstractEngine" {
          * @param onError defines a function to call when the effect creation has failed
          * @param particleSystem the particle system you want to create the effect for
          * @param shaderLanguage defines the shader language to use
+         * @param vertexName defines the vertex base name of the effect (The name of file without .vertex.fx)
          * @returns the new Effect
          */
         createEffectForParticles(
@@ -64,7 +65,8 @@ declare module "../Engines/abstractEngine" {
             onCompiled?: (effect: Effect) => void,
             onError?: (effect: Effect, errors: string) => void,
             particleSystem?: IParticleSystem,
-            shaderLanguage?: ShaderLanguage
+            shaderLanguage?: ShaderLanguage,
+            vertexName?: string
         ): Effect;
     }
 }
@@ -78,7 +80,8 @@ AbstractEngine.prototype.createEffectForParticles = function (
     onCompiled?: (effect: Effect) => void,
     onError?: (effect: Effect, errors: string) => void,
     particleSystem?: IParticleSystem,
-    shaderLanguage = ShaderLanguage.GLSL
+    shaderLanguage = ShaderLanguage.GLSL,
+    vertexName?: string
 ): Effect {
     let attributesNamesOrOptions: Array<string> = [];
     let effectCreationOption: Array<string> = [];
@@ -107,7 +110,7 @@ AbstractEngine.prototype.createEffectForParticles = function (
 
     return this.createEffect(
         {
-            vertex: particleSystem?.vertexShaderName ?? "particles",
+            vertex: vertexName ?? particleSystem?.vertexShaderName ?? "particles",
             fragmentElement: fragmentName,
         },
         attributesNamesOrOptions,
