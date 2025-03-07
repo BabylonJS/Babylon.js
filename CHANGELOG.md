@@ -1,5 +1,40 @@
 # Changelog
 
+## 7.52.2
+
+### Core
+
+- Fix color affectation when dealing with color3 component - by [deltakosh](https://github.com/deltakosh) ([#16259](https://github.com/BabylonJS/Babylon.js/pull/16259))
+- Add spatial audio attach to camera, mesh and transform node capabilities to audio engine v2 - by [docEdub](https://github.com/docEdub) ([#16251](https://github.com/BabylonJS/Babylon.js/pull/16251))
+
+### Inspector
+
+- Inspector gltf validation save - by [j-te](https://github.com/j-te) ([#16254](https://github.com/BabylonJS/Babylon.js/pull/16254))
+
+## 7.52.1
+
+### Core
+
+- Allow engine instance to be passed to LoadImage - by [ryantrem](https://github.com/ryantrem) ([#16255](https://github.com/BabylonJS/Babylon.js/pull/16255))
+
+## 7.52.0
+
+### Core
+
+- Cascaded Shadow Generator: Fix cascade min and max Z calculation - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16248](https://github.com/BabylonJS/Babylon.js/pull/16248))
+- Fix geometry.copy - by [deltakosh](https://github.com/deltakosh) ([#16252](https://github.com/BabylonJS/Babylon.js/pull/16252))
+- Make prefiltering using CDF default to supersample - by [MiiBond](https://github.com/MiiBond) ([#16247](https://github.com/BabylonJS/Babylon.js/pull/16247))
+- Update playground for audio engine compatibility - [_Breaking Change_] by [RaananW](https://github.com/RaananW) ([#16249](https://github.com/BabylonJS/Babylon.js/pull/16249))
+- Add audio engine v2 - [_New Feature_] by [docEdub](https://github.com/docEdub) ([#15839](https://github.com/BabylonJS/Babylon.js/pull/15839))
+
+### Playground
+
+- Update playground for audio engine compatibility - [_Breaking Change_] by [RaananW](https://github.com/RaananW) ([#16249](https://github.com/BabylonJS/Babylon.js/pull/16249))
+
+### Serializers
+
+- Restore missing export for glTF exporter - by [alexchuber](https://github.com/alexchuber) ([#16250](https://github.com/BabylonJS/Babylon.js/pull/16250))
+
 ## 7.51.3
 
 ### Core

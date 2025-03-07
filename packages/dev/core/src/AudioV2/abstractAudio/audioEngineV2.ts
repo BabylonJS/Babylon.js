@@ -51,14 +51,8 @@ export abstract class AudioEngineV2 {
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    protected _listenerAutoUpdate: boolean = true;
-
-    protected constructor(options: Partial<IAudioEngineV2Options>) {
+    protected constructor() {
         Instances.push(this);
-
-        if (typeof options.listenerAutoUpdate === "boolean") {
-            this._listenerAutoUpdate = options.listenerAutoUpdate;
-        }
     }
 
     /**
@@ -110,6 +104,7 @@ export abstract class AudioEngineV2 {
      * The output volume of the audio engine.
      */
     public abstract volume: number;
+
     /**
      * Creates a new audio bus.
      * @param name - The name of the audio bus.

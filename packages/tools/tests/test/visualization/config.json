@@ -1446,7 +1446,7 @@
         },
         {
             "title": "Shadows CSM and LODs",
-            "playgroundId": "#24HWT9#0",
+            "playgroundId": "#24HWT9#15",
             "referenceImage": "shadowscsmandlod.png",
             "excludedEngines": ["webgl1"]
         },

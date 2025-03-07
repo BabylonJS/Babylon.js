@@ -1,34 +1,31 @@
 import type { _AbstractAudioSubGraph } from "../../abstractAudio/subNodes/abstractAudioSubGraph";
 import { _SpatialAudio } from "../../abstractAudio/subProperties/spatialAudio";
+import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
 
 /** @internal */
 export class _SpatialWebAudio extends _SpatialAudio {
-    private _autoUpdate = false;
+    private _updaterComponent: _SpatialWebAudioUpdaterComponent;
 
     /** @internal */
-    public constructor(subGraph: _AbstractAudioSubGraph, autoUpdate: boolean) {
+    public constructor(subGraph: _AbstractAudioSubGraph, autoUpdate: boolean, minUpdateTime: number) {
         super(subGraph);
 
-        if (!autoUpdate) {
-            return;
-        }
+        this._updaterComponent = new _SpatialWebAudioUpdaterComponent(this, autoUpdate, minUpdateTime);
+    }
 
-        this._autoUpdate = true;
+    /** @internal */
+    public get minUpdateTime(): number {
+        return this._updaterComponent.minUpdateTime;
+    }
 
-        const update = () => {
-            if (!this._autoUpdate) {
-                return;
-            }
-
-            this.update();
-            requestAnimationFrame(update);
-        };
-
-        requestAnimationFrame(update);
+    /** @internal */
+    public set minUpdateTime(value: number) {
+        this._updaterComponent.minUpdateTime = value;
     }
 
     /** @internal */
     public dispose(): void {
-        this._autoUpdate = false;
+        this._updaterComponent.dispose();
+        this._updaterComponent = null!;
     }
 }
