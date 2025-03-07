@@ -17,9 +17,15 @@
             "referenceImage": "openpbr_base_weight.png"
         },
         {
-            "title": "OpenPBR Base Diffuse Roughness",
-            "playgroundId": "#MXACV7",
+            "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
+            "playgroundId": "#MXACV7#3",
             "referenceImage": "openpbr_base_diffuse_roughness.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
+            "playgroundId": "#MXACV7#5",
+            "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "NME Glow Manual",
