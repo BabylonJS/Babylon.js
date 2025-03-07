@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FontAwesomeIconButton } from "./FontAwesomeIconButton";
-import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 const TextStyle: React.CSSProperties = {
     alignSelf: "flex-start",
@@ -21,6 +21,8 @@ const TruncatedTextStyle: React.CSSProperties = {
 
 const IconStyle: React.CSSProperties = {
     alignSelf: "flex-start",
+    opacity: 0.6,
+    transform: "scale(0.8)",
 };
 
 export const ExpandableMessageLineComponent: FunctionComponent<{ text: string }> = (props) => {
@@ -29,7 +31,7 @@ export const ExpandableMessageLineComponent: FunctionComponent<{ text: string }>
     const textStyle = useMemo(() => {
         return expanded ? TextStyle : { ...TruncatedTextStyle, ...TextStyle };
     }, [expanded]);
-    const icon = useMemo(() => (expanded ? faMinus : faPlus), [expanded]);
+    const icon = useMemo(() => (expanded ? faChevronUp : faChevronDown), [expanded]);
 
     return (
         <>
