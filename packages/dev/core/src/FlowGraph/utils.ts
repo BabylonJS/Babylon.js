@@ -66,10 +66,15 @@ export function _areSameIntegerClass(className: string, className2: string) {
 /**
  * Check if an object has a numeric value.
  * @param a the object to check if it is a number.
+ * @param validIfNaN whether to consider NaN as a valid number.
  * @returns whether a is a FlowGraphNumber (Integer or number).
  */
-export function isNumeric(a: FlowGraphMathOperationType): a is FlowGraphNumber {
-    return typeof a === "number" || typeof (a as FlowGraphInteger)?.value === "number";
+export function isNumeric(a: FlowGraphMathOperationType, validIfNaN?: boolean): a is FlowGraphNumber {
+    const isNumeric = typeof a === "number" || typeof (a as FlowGraphInteger)?.value === "number";
+    // if (isNumeric && !validIfNaN) {
+    //     return !isNaN(getNumericValue(a as FlowGraphNumber));
+    // }
+    return isNumeric;
 }
 
 /**
