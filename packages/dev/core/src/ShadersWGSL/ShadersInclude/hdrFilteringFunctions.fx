@@ -191,6 +191,7 @@
                     var NoH: f32 = dot(n, H);
                     var NoV: f32 = dot(n, inputV);
                     var VoH: f32 = dot(inputV, H);
+                    var LoV: f32 = dot(Ls, inputV);
                 #else
                     var Ls: vec3f = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
@@ -200,6 +201,7 @@
                     var NoH: f32 = dot(Ns, H);
                     // TODO inputV is in world space, we need to convert it to tangent space
                     var VoH: f32 = dot(inputV, H);
+                    var LoV: f32 = dot(Ls, inputV);
                 #endif
 
                 if (NoL > 0.) {
@@ -221,7 +223,7 @@
 
                     var diffuseRoughnessTerm: vec3f = vec3f(1.0);
                     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
-                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV) * PI;
+                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
                     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
                         diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
