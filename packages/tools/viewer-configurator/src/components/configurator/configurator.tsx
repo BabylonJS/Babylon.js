@@ -2,7 +2,7 @@ import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, HotSpot, ToneMapping } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { IInspectableOptions, Nullable, Observable } from "core/index";
+import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -160,6 +160,12 @@ const HotSpotEntry: FunctionComponent<{
     const [isPicking, setIsPicking] = useState(false);
     const [hasPicked, setHasPicked] = useState(false);
 
+    const pickingOperation = useRef<IDisposable>();
+
+    useEffect(() => {
+        return () => pickingOperation.current?.dispose();
+    }, []);
+
     const onHotspotDeleteClick = useCallback(() => {
         if (index >= 0) {
             setHotspots((hotspots) => {
@@ -171,15 +177,22 @@ const HotSpotEntry: FunctionComponent<{
     }, [index, setHotspots]);
 
     const onHotspotPickClick = useCallback(() => {
-        if (viewerElement.viewerDetails?.model && hotspot) {
+        if (isPicking) {
+            pickingOperation.current?.dispose();
+        } else if (viewerElement.viewerDetails?.model && hotspot) {
             const originalCursor = getComputedStyle(viewerElement).cursor;
             viewerElement.style.cursor = "crosshair";
             const { scene, model, viewer } = viewerElement.viewerDetails;
 
-            const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor)];
+            const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor), () => (pickingOperation.current = undefined)];
 
             const cleanup = () => {
                 cleanupActions.forEach((action) => action());
+            };
+            pickingOperation.current = {
+                dispose: () => {
+                    cleanup();
+                },
             };
 
             const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
@@ -234,7 +247,7 @@ const HotSpotEntry: FunctionComponent<{
 
             setIsPicking(true);
         }
-    }, [hotspot, setHotspots]);
+    }, [isPicking, hotspot, setHotspots]);
 
     const onCameraSnapshotClick = useCallback(() => {
         if (hotspot) {
