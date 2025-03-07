@@ -296,7 +296,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize("baseDiffuseRoughness")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseDiffuseRoughness = 1;
+    public baseDiffuseRoughness = 0;
 
     /**
      * AKA Specular Color in other nomenclature.
