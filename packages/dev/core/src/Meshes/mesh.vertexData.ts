@@ -470,7 +470,7 @@ export class VertexData implements IVertexDataLike {
         }
 
         if (this.colors) {
-            const stride = this.colors.length === this.positions!.length ? 3 : 4;
+            const stride = this.positions && this.colors.length === this.positions!.length ? 3 : 4;
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable, stride);
             if (this.hasVertexAlpha && (meshOrGeometry as any).hasVertexAlpha !== undefined) {
                 (meshOrGeometry as any).hasVertexAlpha = true;
