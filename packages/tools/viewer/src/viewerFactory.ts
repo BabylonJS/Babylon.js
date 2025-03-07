@@ -12,7 +12,6 @@ export type CanvasViewerOptions = ViewerOptions &
 const defaultCanvasViewerOptions: CanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
-    // premultipliedAlpha: false,
 };
 
 /**
