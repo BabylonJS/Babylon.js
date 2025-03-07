@@ -198,6 +198,7 @@
             tangent = normalize(cross(tangent, n));
             vec3 bitangent = cross(n, tangent);
             mat3 tbn = mat3(tangent, bitangent, n);
+            mat3 tbnInverse = transpose(tbn);
             #endif
 
             float maxLevel = filteringInfo.y;
@@ -230,9 +231,11 @@
                     float NoL = dot(Ns, Ls);
                     vec3 H = (Ns + Ls) * 0.5;
                     float NoH = dot(Ns, H);
-                    // TODO inputV is in world space, we need to convert it to tangent space
-                    float VoH = dot(inputV, H);
-                    float LoV = dot (Ls, inputV);
+                    
+                    vec3 V = tbnInverse * inputV;
+                    float NoV = dot(n, V);
+                    float VoH = dot(V, H);
+                    float LoV = dot (Ls, V);
                 #endif
 
                 if (NoL > 0.) {
