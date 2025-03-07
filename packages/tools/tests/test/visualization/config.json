@@ -2474,6 +2474,21 @@
             "errorRatio": 2
         },
         {
+            "title": "FrameGraph nrge SSR cube",
+            "playgroundId": "#PIZ1GK#2072",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge SSR HillValley",
+            "playgroundId": "#PIZ1GK#2075",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge SSR neon",
+            "playgroundId": "#Z6C5EF",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017",
             "errorRatio": 2

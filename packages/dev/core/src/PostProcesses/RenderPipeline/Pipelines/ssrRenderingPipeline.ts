@@ -215,7 +215,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
+     * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.03)
      * The reflections are blurred based on the roughness of the surface and the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
      * blurDispersionStrength allows to increase or decrease this effect.
      */
