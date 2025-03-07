@@ -1,4 +1,4 @@
-.ConfiguratorContainer {
+.configurator {
     $line-height: 22px;
     $line-padding-left: 3px;
     $line-padding-right: 5px;
@@ -41,7 +41,6 @@
         }
     }
 
-    // Bespoke; currently only used for hotspots
     .flexColumn {
         @extend .commonFlex;
         height: auto;
@@ -53,14 +52,14 @@
         }
     }
 
-    .Sticky {
+    .stickyContainer {
         position: sticky;
         top: 0;
         z-index: 100;
         background: $primary-background;
     }
 
-    .Header {
+    .configuratorHeader {
         height: auto;
         background: #222;
         line-height: 16px;
@@ -105,6 +104,7 @@
     // Styling for icons
     svg {
         height: $line-height !important;
+
         * {
             transform: scale(0.8);
             transform-origin: center;
@@ -119,11 +119,6 @@
 
     // LineContainer override
     .paneContainer {
-        margin-top: 3px;
-        display: grid;
-        grid-template-rows: 100%;
-        grid-template-columns: 100%;
-
         .paneList {
             border-left: 3px solid transparent;
         }
@@ -152,8 +147,6 @@
         }
 
         .paneContainer-highlight-border {
-            grid-row: 1;
-            grid-column: 1;
             opacity: 1;
             border: 3px solid red;
             transition: opacity 250ms;
@@ -165,30 +158,24 @@
         }
 
         .paneContainer-content {
-            grid-row: 1;
-            grid-column: 1;
-
             .header {
-                display: grid;
-                grid-template-columns: 1fr auto;
+                display: flex;
                 background: #555555;
                 height: 30px;
                 padding-right: 5px;
                 cursor: pointer;
 
                 .title {
+                    flex: 1;
                     border-left: 3px solid transparent;
                     padding-left: 5px;
-                    grid-column: 1;
                     display: flex;
                     align-items: center;
                 }
 
                 .collapse {
-                    grid-column: 2;
                     display: flex;
                     align-items: center;
-                    justify-items: center;
                     transform-origin: center;
 
                     &.closed {
