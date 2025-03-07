@@ -295,7 +295,9 @@
             #else
                 var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
             #endif
-            var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
+            #if defined(REALTIME_FILTERING)
+                var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
+            #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
