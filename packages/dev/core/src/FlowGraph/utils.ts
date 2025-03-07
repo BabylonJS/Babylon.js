@@ -71,9 +71,9 @@ export function _areSameIntegerClass(className: string, className2: string) {
  */
 export function isNumeric(a: FlowGraphMathOperationType, validIfNaN?: boolean): a is FlowGraphNumber {
     const isNumeric = typeof a === "number" || typeof (a as FlowGraphInteger)?.value === "number";
-    // if (isNumeric && !validIfNaN) {
-    //     return !isNaN(getNumericValue(a as FlowGraphNumber));
-    // }
+    if (isNumeric && !validIfNaN) {
+        return !isNaN(getNumericValue(a as FlowGraphNumber));
+    }
     return isNumeric;
 }
 
