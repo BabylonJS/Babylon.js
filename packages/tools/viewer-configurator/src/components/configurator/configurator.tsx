@@ -976,7 +976,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <ExpandableMessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
                 </div>
                 <div>
-                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={() => syncEnvironment} onSelect={onSyncEnvironmentChanged} />
+                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={syncEnvironment} onSelect={onSyncEnvironmentChanged} />
                 </div>
                 <div>
                     <div style={{ flex: 1 }}>
@@ -1141,7 +1141,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                     <FontAwesomeIconButton title="Reset camera pose attributes" disabled={!cameraConfig.canReset} icon={faTrashCan} onClick={cameraConfig.reset} />
                 </div>
                 <div>
-                    <CheckBoxLineComponent label="Auto Orbit" isSelected={() => autoOrbitConfig.configuredState} onSelect={autoOrbitConfig.update} />
+                    <CheckBoxLineComponent label="Auto Orbit" isSelected={autoOrbitConfig.configuredState} onSelect={autoOrbitConfig.update} />
                 </div>
                 {autoOrbitConfig.configuredState && (
                     <>
@@ -1210,7 +1210,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         />
                     </div>
                     <div>
-                        <CheckBoxLineComponent label="Auto Play" isSelected={() => animationAutoPlayConfig.configuredState} onSelect={animationAutoPlayConfig.update} />
+                        <CheckBoxLineComponent label="Auto Play" isSelected={animationAutoPlayConfig.configuredState} onSelect={animationAutoPlayConfig.update} />
                     </div>
                 </LineContainerComponent>
             )}
