@@ -58,7 +58,7 @@ function createDefaultAnnotation(hotSpotName: string) {
         <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
       </svg>
       <span style="color: black; background: white; border-radius: 6px; padding: 0px 3px; transform: translate(0%, -50%)">${hotSpotName}</span>
-    </div>`;
+    </div>` as const;
 }
 
 function useConfiguration<T>(
@@ -81,23 +81,28 @@ function useConfiguration<T>(
         memoSet?.(configuredState);
     }, [configuredState, memoSet]);
 
+    // Indicates whether the live state of the viewer can be "reverted" to the configured state.
     const canRevert = useMemo(() => {
         return isConfigured && !memoEquals(liveState, configuredState);
     }, [isConfigured, liveState, configuredState, memoEquals]);
 
+    // Indicates whether the configured state can be "reset" to the default state.
     const canReset = useMemo(() => {
         return isConfigured && !memoEquals(memoDefaultState, configuredState);
     }, [isConfigured, memoDefaultState, configuredState, memoEquals]);
 
+    // Reverts the live state of the viewer to the configured state.
     const revert = useCallback(() => {
         memoSet?.(configuredState);
     }, [configuredState, memoSet]);
 
+    // Resets the configured state to the default state.
     const reset = useCallback(() => {
         setConfiguredState(memoDefaultState);
         setIsConfigured(false);
     }, [memoDefaultState]);
 
+    // Updates the configured state to the specified state.
     const update = useCallback(
         (data: T) => {
             setConfiguredState((previous) => {
@@ -111,6 +116,7 @@ function useConfiguration<T>(
         [memoEquals]
     );
 
+    // Updates the configured tate to the live state of the viewer.
     const snapshot = useCallback(() => {
         setConfiguredState(liveState);
         setIsConfigured(true);
@@ -292,6 +298,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged, viewer.onModelError);
     const lockObject = useMemo(() => new LockObject(), []);
 
+    // Allow models to be dragged and dropped into the viewer.
     useEffect(() => {
         const onDragOver = (event: DragEvent) => event.preventDefault();
         const onDrop = async (event: DragEvent) => {
@@ -313,6 +320,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const [modelUrl, setModelUrl] = useState(defaultModelUrl);
 
+    // Whenever the model changes, update the model URL.
     useEffect(() => {
         viewerElement.source = modelUrl;
 
@@ -390,6 +398,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewerDetails.scene.onClearColorChangedObservable],
         [viewerDetails.scene]
     );
+    // This is only needed because the color picker expects to "bind" to an object and a property.
     const clearColorWrapper = useMemo(() => {
         return { clearColor: clearColorConfig.configuredState };
     }, [clearColorConfig.configuredState]);
@@ -435,6 +444,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer.onPostProcessingChanged],
         [viewer]
     );
+    // This is only needed because the select expects to "bind" to an object and a property.
     const toneMappingWrapper = useMemo(() => {
         return { toneMapping: toneMappingConfig.configuredState };
     }, [toneMappingConfig.configuredState]);
@@ -549,6 +559,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         }, {});
     }, [viewerElement, hotspots]);
 
+    // This is part of the drag and drop support for re-ordering hot spots.
     const dndSensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -559,6 +570,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
 
+    // This is all the configured attributes, as an array of strings.
     const attributes = useMemo(() => {
         const attributes: string[] = [`source="${modelUrl || "[model url]"}"`];
 
@@ -700,6 +712,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         hotspots,
     ]);
 
+    // This is all the child annotation elements, as a single string.
     const children = useMemo(() => {
         if (hotspots.length === 0) {
             return "";
@@ -710,6 +723,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return `\n  <!-- Annotations are optional HTML child elements that track hot spots. -->\n${annotations}`;
     }, [hotspots]);
 
+    // This is the full html snippet (attributes and child elements).
     const htmlSnippet = useMemo(() => {
         const formattedAttributes = attributes.map((attribute) => `\n  ${attribute}`).join("");
         const snippet = `<babylon-viewer ${formattedAttributes}\n>${children}\n</babylon-viewer>`;
@@ -745,6 +759,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         })();
     }, []);
 
+    // TODO: Ideally we can handle keyboard events from the text input components.
     const onModelUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
@@ -776,6 +791,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [skyboxUrlConfig.update]
     );
 
+    // This applies the configured environment (lighting and skybox) to the viewer element when needed.
     useEffect(() => {
         if (needsEnvironmentUpdate) {
             if (syncEnvironment) {
@@ -804,6 +820,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         skyboxBlurConfig.configuredState,
     ]);
 
+    // TODO: Ideally we can handle keyboard events from the text input components.
     const onEnvironmentLightingUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
@@ -818,6 +835,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         setNeedsEnvironmentUpdate(true);
     }, [setNeedsEnvironmentUpdate, lightingUrlConfig.update]);
 
+    // TODO: Ideally we can handle keyboard events from the text input components.
     const onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
@@ -885,6 +903,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [setHotspots]
     );
 
+    // This resets and adds <babylon-viewer-annotation> elements to the viewer element for each hot spot.
     useEffect(() => {
         viewerElement.innerHTML = "";
         for (const hotspot of hotspots) {

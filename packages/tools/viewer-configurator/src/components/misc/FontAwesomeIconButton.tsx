@@ -1,8 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
-// TODO: Move this file
-
 const ClassName = "faIconButton";
 
 export type IFontAwesomeIconButtonProps = FontAwesomeIconProps & {
