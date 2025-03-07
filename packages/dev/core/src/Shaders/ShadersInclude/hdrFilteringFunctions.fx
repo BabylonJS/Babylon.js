@@ -222,6 +222,7 @@
                     float NoH = dot(n, H);
                     float NoV = dot(n, inputV);
                     float VoH = dot(inputV, H);
+                    float LoV = dot (Ls, inputV);
                 #else
                     vec3 Ls = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
@@ -231,6 +232,7 @@
                     float NoH = dot(Ns, H);
                     // TODO inputV is in world space, we need to convert it to tangent space
                     float VoH = dot(inputV, H);
+                    float LoV = dot (Ls, inputV);
                 #endif
 
                 if (NoL > 0.) {
@@ -250,7 +252,7 @@
 
                     vec3 diffuseRoughnessTerm = vec3(1.0);
                     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
-                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV) * PI;
+                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
                     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
                         diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
