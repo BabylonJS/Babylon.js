@@ -42,15 +42,13 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         const duration = this.duration.getValue(context);
         if (duration < 0 || isNaN(duration) || !isFinite(duration)) {
-            this.error.payload = { message: "Invalid duration" };
-            return this.error._activateSignal(context);
+            return this._reportError(context, "Invalid duration in SetDelay block");
         }
 
         // active delays are global to the context
         const activeDelays: number = context._getGlobalContextVariable("activeDelays", 0);
         if (activeDelays >= FlowGraphSetDelayBlock.MaxParallelDelayCount) {
-            this.error.payload = { message: "Max parallel delays reached" };
-            return this.error._activateSignal(context);
+            return this._reportError(context, "Max parallel delays reached");
         }
         // get the last global delay index
         const lastDelayIndex: number = context._getGlobalContextVariable("lastDelayIndex", -1);

@@ -6,6 +6,7 @@ export * from "./flowGraphGetPropertyBlock";
 export * from "../Execution/flowGraphSetPropertyBlock";
 export * from "./flowGraphConstantBlock";
 export * from "./flowGraphGetAssetBlock";
+export * from "./flowGraphDataSwitchBlock";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./Math/index";
 // eslint-disable-next-line import/no-internal-modules

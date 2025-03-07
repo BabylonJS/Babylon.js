@@ -374,7 +374,7 @@ describe("glTF interactivity Object Model", () => {
             [{ signature: "float3" }, { signature: "float" }]
         );
 
-        // wait for 1 second
+        // wait for 1 second + buffer
         await new Promise((resolve) => setTimeout(resolve, 1000 + 300));
         expect(calls[0]).toEqual(new Vector3(1, 2, 3));
         calls.forEach((call, idx) => {
