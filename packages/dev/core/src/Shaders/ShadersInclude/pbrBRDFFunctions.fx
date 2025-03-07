@@ -444,12 +444,12 @@ float E_FON_approx(float mu, float roughness)
     return (1.0f + sigma * GoverPi) / (1.0f + constant1_FON * sigma);
 }
 
-vec3 diffuseBRDF_EON(vec3 rho, float roughness, float NdotL, float NdotV)
+vec3 diffuseBRDF_EON(vec3 rho, float roughness, float NdotL, float NdotV, float LdotV)
 {
     float sigma = roughness;                            // FON sigma prime
     float mu_i = NdotL;                            // input angle cos
     float mu_o = NdotV;                            // output angle cos
-    float s = NdotL - mu_i * mu_o;    // QON s term
+    float s = LdotV - mu_i * mu_o;    // QON s term
     float sovertF = s > 0.0f ? s / max(mu_i, mu_o) : s; // FON s/t
     float AF = 1.0f / (1.0f + constant1_FON * sigma);   // FON A coeff.
     vec3 f_ss = (rho * RECIPROCAL_PI) * AF * (1.0f + sigma * sovertF); // single-scatter

@@ -16,6 +16,7 @@ struct preLightingInfo
     float NdotLUnclamped;
     float NdotL;
     float VdotH;
+    float LdotV;
 
      // TODO: the code would probably be leaner with material properties out of the structure.
     float roughness;
@@ -69,7 +70,7 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
-
+    result.LdotV = dot(result.L, V);
     return result;
 }
 
