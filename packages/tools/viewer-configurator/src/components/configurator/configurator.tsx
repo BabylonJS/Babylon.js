@@ -1,9 +1,9 @@
 import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement } from "viewer/index";
-// eslint-disable-next-line import/no-internal-modules
-import type { DragEndEvent } from "@dnd-kit/core";
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
+// eslint-disable-next-line import/no-internal-modules
+import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement } from "viewer/index";
+import type { DragEndEvent } from "@dnd-kit/core";
 
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
