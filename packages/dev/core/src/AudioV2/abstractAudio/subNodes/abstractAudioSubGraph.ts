@@ -1,6 +1,7 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "../abstractAudioNode";
 import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
+import type { AudioSubNode } from "./audioSubNode";
 
 /**
  * Adds common sub graph functionality to an audio node.
@@ -29,15 +30,17 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @param name The name of the sub node
      * @param callback The function to call with the named sub node
+     *
+     * @internal
      */
-    public callOnSubNode<T extends _AbstractAudioSubNode>(name: string, callback: (node: T) => void): void {
+    public callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): void {
         const node = this.getSubNode(name);
         if (node) {
             callback(node as T);
             return;
         }
 
-        const promise = this._createSubNodePromises[name] ?? this._createAndAddSubNode(name);
+        const promise = this._createSubNodePromises[name] ?? this.createAndAddSubNode(name);
 
         promise.then((node) => {
             callback(node as T);
@@ -45,49 +48,14 @@ export abstract class _AbstractAudioSubGraph {
     }
 
     /**
-     * Releases associated resources.
-     */
-    public dispose() {
-        const subNodes = Object.values(this._subNodes);
-        for (const subNode of subNodes) {
-            subNode.dispose();
-        }
-
-        this._subNodes = {};
-        this._createSubNodePromises = {};
-    }
-
-    /**
-     * Gets a previously created sub node.
-     * @param name - The name of the sub node
-     * @returns The named sub node, or `null` if it has not been created, yet
+     * Creates the named subnode and adds it to the sub graph.
+     *
+     * @param name The name of the sub node.
+     * @returns A promise that resolves to the created sub node.
+     *
      * @internal
-     * */
-    public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
-        return (this._subNodes[name] as T) ?? null;
-    }
-
-    protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;
-
-    /**
-     * Called when sub-nodes are added or removed.
-     * - Override this to connect and reconnect sub-nodes as needed.
      */
-    protected _onSubNodesChanged(): void {}
-
-    protected _createSubNodePromisesResolved(): Promise<_AbstractAudioSubNode[]> {
-        return Promise.all(Object.values(this._createSubNodePromises));
-    }
-
-    private _addSubNode(node: AbstractNamedAudioNode): void {
-        this._subNodes[node.name] = node;
-
-        node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
-
-        this._onSubNodesChanged();
-    }
-
-    protected _createAndAddSubNode(name: string): Promise<_AbstractAudioSubNode> {
+    public createAndAddSubNode(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
         const promise = this._createSubNode(name);
 
         if (!promise) {
@@ -106,6 +74,53 @@ export abstract class _AbstractAudioSubGraph {
         });
 
         return promise;
+    }
+
+    /**
+     * Releases associated resources.
+     *
+     * @internal
+     */
+    public dispose() {
+        const subNodes = Object.values(this._subNodes);
+        for (const subNode of subNodes) {
+            subNode.dispose();
+        }
+
+        this._subNodes = {};
+        this._createSubNodePromises = {};
+    }
+
+    /**
+     * Gets a previously created sub node.
+     *
+     * @param name - The name of the sub node
+     * @returns The named sub node, or `null` if it has not been created, yet
+     *
+     * @internal
+     * */
+    public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
+        return (this._subNodes[name] as T) ?? null;
+    }
+
+    protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;
+
+    /**
+     * Called when sub-nodes are added or removed.
+     * - Override this to connect and reconnect sub-nodes as needed.
+     */
+    protected abstract _onSubNodesChanged(): void;
+
+    protected _createSubNodePromisesResolved(): Promise<_AbstractAudioSubNode[]> {
+        return Promise.all(Object.values(this._createSubNodePromises));
+    }
+
+    private _addSubNode(node: AbstractNamedAudioNode): void {
+        this._subNodes[node.name] = node;
+
+        node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
+
+        this._onSubNodesChanged();
     }
 
     private _onSubNodeDisposed = (node: AbstractAudioNode) => {
