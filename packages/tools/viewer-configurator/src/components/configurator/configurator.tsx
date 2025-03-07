@@ -1,42 +1,42 @@
 import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
-import type { ViewerElement, ViewerDetails, Viewer, PostProcessing, HotSpot, ToneMapping } from "viewer/index";
+import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement } from "viewer/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
 import type { DragEndEvent } from "@dnd-kit/core";
+import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faCamera, faCopy, faGripVertical, faTrashCan, faCheck, faUpload, faRotateLeft, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { faFileLines } from "@fortawesome/free-regular-svg-icons";
+import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
 
-import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
-import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { Epsilon } from "core/Maths/math.constants";
+import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
 
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
 
-import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
+import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
-const defaultModelUrl = "https://cdn.jsdelivr.net/gh/BabylonJS/Assets/meshes/aerobatic_plane.glb";
+const defaultModelUrl = "https://assets.babylonjs.com/meshes/aerobatic_plane.glb";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
@@ -752,16 +752,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [viewerElement, isModelUrlValid, modelUrl]);
 
     const onLoadModelClick = useCallback(() => {
-        (async () => {
-            try {
-                await PickModel(viewerElement);
-            } catch (error: unknown) {
-                if ("message" in (error as Error)) {
-                    alert(error);
-                }
-            }
-        })();
-    }, []);
+        PickModel(viewerElement);
+    }, [viewerElement]);
 
     // TODO: Ideally we can handle keyboard events from the text input components.
     const onModelUrlKeyDown = useCallback(

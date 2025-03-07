@@ -1,7 +1,7 @@
 import "./viewer.scss";
 import type { FunctionComponent } from "react";
-import type { ViewerElement } from "viewer";
-import { useEffect, useState } from "react";
+import type { ViewerElement } from "viewer/viewerElement";
+import "viewer";
 
 interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
     class?: string;
@@ -22,13 +22,5 @@ declare global {
 }
 
 export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: ViewerElement) => void }> = (props) => {
-    const [viewerLoaded, setViewerLoaded] = useState(false);
-
-    useEffect(() => {
-        import("viewer").then(() => {
-            setViewerLoaded(true);
-        });
-    }, []);
-
-    return viewerLoaded ? <babylon-viewer class="viewerElement" ref={props.onViewerCreated}></babylon-viewer> : <div className="loadingDiv">Loading...</div>;
+    return <babylon-viewer class="viewerElement" ref={props.onViewerCreated}></babylon-viewer>;
 };
