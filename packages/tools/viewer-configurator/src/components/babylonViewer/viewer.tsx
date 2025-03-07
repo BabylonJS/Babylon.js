@@ -30,5 +30,5 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (viewerElement: Viewer
         });
     }, []);
 
-    return viewerLoaded ? <babylon-viewer class="viewerElement" ref={props.onViewerCreated} engine="WebGL"></babylon-viewer> : <div className="loadingDiv">Loading...</div>;
+    return viewerLoaded ? <babylon-viewer class="viewerElement" ref={props.onViewerCreated}></babylon-viewer> : <div className="loadingDiv">Loading...</div>;
 };
