@@ -271,6 +271,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
+     * Base Diffuse Roughness Model
+     */
+    @editableInPropertyPage("Diffuse Roughness Model", PropertyTypeForEdition.List, "RENDERING", {
+        notifiers: { update: true },
+        options: [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+        ],
+    })
+    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT;
+
+    /**
      * Defines if the material uses energy conservation.
      */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
@@ -760,6 +773,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
+        if (this.baseDiffuseRoughnessModel === Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY) {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_BURLEY", 1, true);
+        } else if (this.baseDiffuseRoughnessModel === Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR) {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_OPENPBR", 1, true);
+        } else {
+            defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL_LAMBERT", 1, true);
+        }
+
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
         defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation, true);
@@ -1019,6 +1040,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
+            #endif
+                , 0.
+            #ifdef BASE_DIFFUSE_ROUGHNESS
+                , 0.
+                , vec2${state.fSuffix}(0., 0.)
             #endif
             #ifdef REFLECTIVITY
                 , vec3${state.fSuffix}(0., 0., ${aoIntensity})

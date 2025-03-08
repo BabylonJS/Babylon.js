@@ -184,7 +184,7 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo
+        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 inputV
         #ifdef IBL_CDF_FILTERING
         , sampler2D icdfSampler
         #endif
@@ -198,6 +198,7 @@
             tangent = normalize(cross(tangent, n));
             vec3 bitangent = cross(n, tangent);
             mat3 tbn = mat3(tangent, bitangent, n);
+            mat3 tbnInverse = transpose(tbn);
             #endif
 
             float maxLevel = filteringInfo.y;
@@ -218,11 +219,23 @@
                     T.y = textureLod(icdfSampler, vec2(T.x, Xi.y), 0.0).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
+                    vec3 H = (n + Ls) * 0.5;
+                    float NoH = dot(n, H);
+                    float NoV = dot(n, inputV);
+                    float VoH = dot(inputV, H);
+                    float LoV = dot (Ls, inputV);
                 #else
                     vec3 Ls = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
                     vec3 Ns = vec3(0., 0., 1.);
                     float NoL = dot(Ns, Ls);
+                    vec3 H = (Ns + Ls) * 0.5;
+                    float NoH = dot(Ns, H);
+                    
+                    vec3 V = tbnInverse * inputV;
+                    float NoV = dot(n, V);
+                    float VoH = dot(V, H);
+                    float LoV = dot (Ls, V);
                 #endif
 
                 if (NoL > 0.) {
@@ -240,11 +253,18 @@
                         c = toLinearSpace(c);
                     #endif
 
+                    vec3 diffuseRoughnessTerm = vec3(1.0);
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                        diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                    #endif
+
                     #ifdef IBL_CDF_FILTERING
                         vec3 light = pdf < 1e-6 ? vec3(0.0) : vec3(1.0) / vec3(pdf) * c;
-                        result += NoL * light;
+                        result += NoL * diffuseRoughnessTerm * light;
                     #else
-                        result += c;
+                        result += c * diffuseRoughnessTerm;
                     #endif
                 }
             }
