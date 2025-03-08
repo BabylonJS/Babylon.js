@@ -95,19 +95,18 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
      * Constructs a depth of field task.
      * @param name The name of the task.
      * @param frameGraph The frame graph this task belongs to.
-     * @param engine The engine to use for the depth of field effect.
      * @param blurLevel The blur level of the depth of field effect (default: ThinDepthOfFieldEffectBlurLevel.Low).
      * @param hdr Whether the depth of field effect is HDR.
      */
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low, hdr = false) {
+    constructor(name: string, frameGraph: FrameGraph, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low, hdr = false) {
         super(name, frameGraph);
 
-        this._engine = engine;
+        this._engine = frameGraph.engine;
         this.hdr = hdr;
 
         this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
-            const caps = engine.getCaps();
+            const caps = frameGraph.engine.getCaps();
             if (caps.textureHalfFloatRender) {
                 this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender) {
@@ -115,7 +114,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             }
         }
 
-        this.depthOfField = new ThinDepthOfFieldEffect(name, engine, blurLevel, true);
+        this.depthOfField = new ThinDepthOfFieldEffect(name, frameGraph.engine, blurLevel, true);
 
         this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(`${name} Circle of Confusion`, this._frameGraph, this.depthOfField._circleOfConfusion);
 
