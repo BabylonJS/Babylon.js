@@ -1,6 +1,7 @@
 import type { Nullable } from "../../../types";
 import { _AudioAnalyzerSubNode } from "../../abstractAudio/subNodes/audioAnalyzerSubNode";
 import type { AudioAnalyzerFFTSizeType } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
+import { _GetEmptyByteFrequencyData, _GetEmptyFloatFrequencyData } from "../../abstractAudio/subProperties/audioAnalyzer";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
@@ -104,7 +105,7 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
     }
 
     private _clearArrays(): void {
-        this._byteFrequencyData?.set([]);
-        this._floatFrequencyData?.set([]);
+        this._byteFrequencyData?.set(_GetEmptyByteFrequencyData());
+        this._floatFrequencyData?.set(_GetEmptyFloatFrequencyData());
     }
 }

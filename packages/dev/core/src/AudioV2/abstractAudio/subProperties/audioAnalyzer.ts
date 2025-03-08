@@ -9,14 +9,16 @@ import { AudioSubNode } from "../subNodes/audioSubNode";
 let _emptyByteFrequencyData: Nullable<Uint8Array> = null;
 let _emptyFloatFrequencyData: Nullable<Float32Array> = null;
 
-function _GetEmptyByteFrequencyData(): Uint8Array {
+/** @internal */
+export function _GetEmptyByteFrequencyData(): Uint8Array {
     if (!_emptyByteFrequencyData) {
         _emptyByteFrequencyData = new Uint8Array();
     }
     return _emptyByteFrequencyData;
 }
 
-function _GetEmptyFloatFrequencyData(): Float32Array {
+/** @internal */
+export function _GetEmptyFloatFrequencyData(): Float32Array {
     if (!_emptyFloatFrequencyData) {
         _emptyFloatFrequencyData = new Float32Array();
     }
