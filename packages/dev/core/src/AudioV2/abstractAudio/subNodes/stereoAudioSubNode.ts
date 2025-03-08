@@ -12,7 +12,7 @@ export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {
         super(AudioSubNode.STEREO, engine);
     }
 
-    abstract pan: number;
+    public abstract pan: number;
 
     /** @internal */
     public setOptions(options: Partial<IStereoAudioOptions>): void {
