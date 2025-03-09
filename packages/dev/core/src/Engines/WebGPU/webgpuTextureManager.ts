@@ -71,15 +71,14 @@ const invertYPreMultiplyAlphaVertexSource = `
     const tex = array<vec2<f32>, 4>( vec2f(0.0f, 0.0f),  vec2f(1.0f, 0.0f),  vec2f(0.0f, 1.0f),  vec2f(1.0f, 1.0f));
 
     var img: texture_2d<f32>;
-
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @vertex
     fn main(input : VertexInputs) -> FragmentInputs {
         #ifdef INVERTY
-            vertexOutputs.vTextureSize = vec2f(textureDimensions(img, 0));
+            vertexOutputs.vTex = vec2f(tex[input.vertexIndex].x, 1.0 - tex[input.vertexIndex].y);
+        #else
+            vertexOutputs.vTex = tex[input.vertexIndex];
         #endif
         vertexOutputs.position =  vec4f(pos[input.vertexIndex], 0.0, 1.0);
     }
@@ -87,20 +86,14 @@ const invertYPreMultiplyAlphaVertexSource = `
 
 const invertYPreMultiplyAlphaFragmentSource = `
     var img: texture_2d<f32>;
-
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-    #ifdef INVERTY
-        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(input.vTextureSize.y - input.position.y)), 0);
-    #else
-        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
-    #endif
+        let dims = textureDimensions(img);
+        var color: vec4f = textureLoad(img, clamp(vec2u(vec2<f32>(dims) * input.vTex), vec2u(0, 0), dims - vec2u(1, 1)), 0);
     #ifdef PREMULTIPLYALPHA
-        fragmentOutputs.color = vec4f(color.rgb * color.a, color.a);
+        color = vec4f(color.rgb * color.a, color.a);
     #endif
         fragmentOutputs.color = color;
     }
@@ -115,23 +108,19 @@ const invertYPreMultiplyAlphaWithOfstFragmentSource = `
     uniform width: f32;
     uniform height: f32;
 
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-        if (input.position.x < uniforms.ofstX || input.position.x >= uniforms.ofstX + uniforms.width) {
+        let dims = textureDimensions(img);
+        let coords = clamp(vec2u(vec2f(dims) * input.vTex), vec2u(0, 0), dims - vec2u(1, 1));
+        if (f32(coords.x) < uniforms.ofstX || f32(coords.x) >= uniforms.ofstX + uniforms.width) {
             discard;
         }
-        if (input.position.y < uniforms.ofstY || input.position.y >= uniforms.ofstY + uniforms.height) {
+        if (f32(coords.y) < uniforms.ofstY || f32(coords.y) >= uniforms.ofstY + uniforms.height) {
             discard;
         }
-    #ifdef INVERTY
-        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(uniforms.ofstY + uniforms.height - (input.position.y - uniforms.ofstY))), 0);
-    #else
-        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
-    #endif
+        var color: vec4f = textureLoad(img, coords, 0);
     #ifdef PREMULTIPLYALPHA
         color = vec4f(color.rgb * color.a, color.a);
     #endif
@@ -741,41 +730,6 @@ export class WebGPUTextureManager {
         }
     }
 
-    public copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void {
-        const useOwnCommandEncoder = commandEncoder === undefined;
-        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY: true, premultiplyAlpha: false });
-
-        if (useOwnCommandEncoder) {
-            commandEncoder = this._device.createCommandEncoder({});
-        }
-
-        commandEncoder!.pushDebugGroup?.(`internal copy texture with invertY`);
-
-        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
-
-        const bindGroup = this._device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [
-                {
-                    binding: 0,
-                    resource: srcTextureView,
-                },
-            ],
-        });
-
-        passEncoder.setPipeline(pipeline);
-        passEncoder.setBindGroup(0, bindGroup);
-        passEncoder.draw(4, 1, 0, 0);
-        passEncoder.end();
-
-        commandEncoder!.popDebugGroup?.();
-
-        if (useOwnCommandEncoder) {
-            this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
-        }
-    }
-
     //------------------------------------------------------------------------------
     //                               Creation
     //------------------------------------------------------------------------------
@@ -1320,71 +1274,7 @@ export class WebGPUTextureManager {
             }
         } else {
             imageBitmap = imageBitmap as ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas;
-
-            if (invertY) {
-                textureCopyView.premultipliedAlpha = false; // we are going to handle premultiplyAlpha ourselves
-
-                // we must preprocess the image
-                if (WebGPUTextureHelper.IsInternalTexture(texture) && offsetX === 0 && offsetY === 0 && width === texture.width && height === texture.height) {
-                    // optimization when the source image is the same size than the destination texture and offsets X/Y == 0:
-                    // we simply copy the source to the destination and we apply the preprocessing on the destination
-                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-
-                    this.invertYPreMultiplyAlpha(
-                        gpuOrHdwTexture,
-                        width,
-                        height,
-                        format,
-                        invertY,
-                        premultiplyAlpha,
-                        faceIndex,
-                        mipLevel,
-                        layers || 1,
-                        0,
-                        0,
-                        0,
-                        0,
-                        undefined,
-                        allowGPUOptimization
-                    );
-                } else {
-                    // we must apply the preprocessing on the source image before copying it into the destination texture
-                    const commandEncoder = this._device.createCommandEncoder({});
-
-                    // create a temp texture and copy the image to it
-                    const srcTexture = this.createTexture(
-                        { width, height, layers: 1 },
-                        false,
-                        false,
-                        false,
-                        false,
-                        false,
-                        format,
-                        1,
-                        commandEncoder,
-                        WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding,
-                        undefined,
-                        "TempTextureForUpdateTexture"
-                    );
-
-                    this._deferredReleaseTextures.push([srcTexture, null]);
-
-                    textureExtent.depthOrArrayLayers = 1;
-                    this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: srcTexture }, textureExtent);
-                    textureExtent.depthOrArrayLayers = layers || 1;
-
-                    // apply the preprocessing to this temp texture
-                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, 0, 0, 1, 0, 0, 0, 0, commandEncoder, allowGPUOptimization);
-
-                    // copy the temp texture to the destination texture
-                    commandEncoder.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
-
-                    this._device.queue.submit([commandEncoder!.finish()]);
-                }
-            } else {
-                // no preprocessing: direct copy to destination texture
-                this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-            }
+            this._device.queue.copyExternalImageToTexture({ source: imageBitmap, flipY: invertY }, textureCopyView, textureExtent);
         }
     }
 
