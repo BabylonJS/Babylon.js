@@ -100,7 +100,7 @@ const invertYPreMultiplyAlphaFragmentSource = `
         var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
     #endif
     #ifdef PREMULTIPLYALPHA
-        fragmentOutputs.color = vec4f(color.rgb * color.a, color.a);
+        color = vec4f(color.rgb * color.a, color.a);
     #endif
         fragmentOutputs.color = color;
     }
