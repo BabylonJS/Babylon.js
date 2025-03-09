@@ -71,15 +71,14 @@ const invertYPreMultiplyAlphaVertexSource = `
     const tex = array<vec2<f32>, 4>( vec2f(0.0f, 0.0f),  vec2f(1.0f, 0.0f),  vec2f(0.0f, 1.0f),  vec2f(1.0f, 1.0f));
 
     var img: texture_2d<f32>;
-
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @vertex
     fn main(input : VertexInputs) -> FragmentInputs {
         #ifdef INVERTY
-            vertexOutputs.vTextureSize = vec2f(textureDimensions(img, 0));
+            vertexOutputs.vTex = vec2f(tex[input.vertexIndex].x, 1.0 - tex[input.vertexIndex].y);
+        #else
+            vertexOutputs.vTex = tex[input.vertexIndex];
         #endif
         vertexOutputs.position =  vec4f(pos[input.vertexIndex], 0.0, 1.0);
     }
@@ -87,18 +86,12 @@ const invertYPreMultiplyAlphaVertexSource = `
 
 const invertYPreMultiplyAlphaFragmentSource = `
     var img: texture_2d<f32>;
-
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-    #ifdef INVERTY
-        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(input.vTextureSize.y - input.position.y)), 0);
-    #else
-        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
-    #endif
+        let dims = textureDimensions(img);
+        var color: vec4f = textureLoad(img, clamp(vec2u(vec2<f32>(dims) * input.vTex), vec2u(0, 0), dims - vec2u(1, 1)), 0);
     #ifdef PREMULTIPLYALPHA
         color = vec4f(color.rgb * color.a, color.a);
     #endif
@@ -115,23 +108,19 @@ const invertYPreMultiplyAlphaWithOfstFragmentSource = `
     uniform width: f32;
     uniform height: f32;
 
-    #ifdef INVERTY
-        varying vTextureSize: vec2f;
-    #endif
+    varying vTex: vec2f;
 
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-        if (input.position.x < uniforms.ofstX || input.position.x >= uniforms.ofstX + uniforms.width) {
+        let dims = textureDimensions(img);
+        let coords = clamp(vec2u(vec2f(dims) * input.vTex), vec2u(0, 0), dims - vec2u(1, 1));
+        if (f32(coords.x) < uniforms.ofstX || f32(coords.x) >= uniforms.ofstX + uniforms.width) {
             discard;
         }
-        if (input.position.y < uniforms.ofstY || input.position.y >= uniforms.ofstY + uniforms.height) {
+        if (f32(coords.y) < uniforms.ofstY || f32(coords.y) >= uniforms.ofstY + uniforms.height) {
             discard;
         }
-    #ifdef INVERTY
-        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(uniforms.ofstY + uniforms.height - (input.position.y - uniforms.ofstY))), 0);
-    #else
-        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
-    #endif
+        var color: vec4f = textureLoad(img, coords, 0);
     #ifdef PREMULTIPLYALPHA
         color = vec4f(color.rgb * color.a, color.a);
     #endif
