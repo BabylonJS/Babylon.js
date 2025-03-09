@@ -741,41 +741,6 @@ export class WebGPUTextureManager {
         }
     }
 
-    public copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void {
-        const useOwnCommandEncoder = commandEncoder === undefined;
-        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY: true, premultiplyAlpha: false });
-
-        if (useOwnCommandEncoder) {
-            commandEncoder = this._device.createCommandEncoder({});
-        }
-
-        commandEncoder!.pushDebugGroup?.(`internal copy texture with invertY`);
-
-        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
-
-        const bindGroup = this._device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [
-                {
-                    binding: 0,
-                    resource: srcTextureView,
-                },
-            ],
-        });
-
-        passEncoder.setPipeline(pipeline);
-        passEncoder.setBindGroup(0, bindGroup);
-        passEncoder.draw(4, 1, 0, 0);
-        passEncoder.end();
-
-        commandEncoder!.popDebugGroup?.();
-
-        if (useOwnCommandEncoder) {
-            this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
-        }
-    }
-
     //------------------------------------------------------------------------------
     //                               Creation
     //------------------------------------------------------------------------------
