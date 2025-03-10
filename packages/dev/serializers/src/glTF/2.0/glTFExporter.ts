@@ -1035,7 +1035,7 @@ export class GLTFExporter {
                 }
             }
 
-            // Performs coordinate conversion if needed (only for position, normal and tanget).
+            // Performs coordinate conversion if needed (only for position, normal and tangent).
             if (state.convertToRightHanded) {
                 for (const vertexBuffer of vertexBuffers) {
                     switch (vertexBuffer.getKind()) {
