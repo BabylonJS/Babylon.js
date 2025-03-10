@@ -51,7 +51,7 @@
                         preInfo.attenuation *= computeDirectionalLightFalloff_IES(light{X}.vLightDirection.xyz, preInfo.L, iesLightTexture{X});
                     #else
                         preInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
-                    #endif                        
+                    #endif
                 #endif
             #elif defined(POINTLIGHT{X})
                 #ifdef LIGHT_FALLOFF_GLTF{X}
@@ -74,6 +74,7 @@
             #else
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
+            preInfo.diffuseRoughness = diffuseRoughness;
 
             #ifdef IRIDESCENCE
                 preInfo.iridescenceIntensity = iridescenceIntensity;
@@ -129,7 +130,7 @@
                     #endif
 
                     info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse{X}.rgb);
-                    
+
                     #ifdef CLEARCOAT_TINT
                         // Absorption
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
@@ -178,7 +179,7 @@
 
     #ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
-            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
+            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++)
             {
                 #ifdef SHADOWCSM_RIGHTHANDED{X}
                     diff{X} = viewFrustumZ{X}[i] + vPositionFromCamera{X}.z;
@@ -335,7 +336,7 @@
         #else
             #ifdef SHADOWCSMDEBUG{X}
                 diffuseBase += info.diffuse * shadowDebug{X};
-            #else        
+            #else
                 diffuseBase += info.diffuse * shadow;
             #endif
             #ifdef SPECULARTERM

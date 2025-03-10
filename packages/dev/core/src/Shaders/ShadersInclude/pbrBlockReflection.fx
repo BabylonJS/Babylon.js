@@ -202,9 +202,11 @@
     #endif
     #ifdef REALTIME_FILTERING
         , in vec2 vReflectionFilteringInfo
+        , in vec3 viewDirectionW
         #ifdef IBL_CDF_FILTERING
             , in sampler2D icdfSampler
         #endif
+        , in float diffuseRoughness
     #endif
     )
     {
@@ -264,6 +266,9 @@
             #else
                 vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
             #endif
+            #if defined(REALTIME_FILTERING)
+                vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
+            #endif
             
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
@@ -278,12 +283,14 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo
+                    // Note that irradianceVector is NOT the same as normalW. It has been rotated into the space of the cubemap.
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                     #endif
                     );
                 #else
+                    // TODO - Add approximation to computeEnvironmentIrradiance that includes diffuse roughness and NdotV
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
 

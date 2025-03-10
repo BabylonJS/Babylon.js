@@ -20,7 +20,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance) {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         float lightRoughness = lightRadius / lightDistance;
         // Distribution can sum.
         float totalRoughness = saturate(lightRoughness + roughness);
@@ -41,7 +41,12 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
 #endif
 
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
-    float diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    vec3 diffuseTerm = vec3(1.0 / PI);
+    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+        diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+        diffuseTerm = diffuseBRDF_EON(vec3(1.0), info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+    #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
@@ -65,8 +70,12 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
             float trAdapt = step(0., info.NdotLUnclamped);
             transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
             }
-
-        float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
+        float diffuseTerm = 1.0 / PI;
+        #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+            diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.diffuseRoughness);
+        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+            diffuseTerm = diffuseBRDF_EON(vec3(1.0), info.diffuseRoughness, NdotL, info.NdotV, info.LdotV).x;
+        #endif
         // Note: we use a Lambert BRDF for the transmitted term.
         return (transmittanceNdotL / PI + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
     }
