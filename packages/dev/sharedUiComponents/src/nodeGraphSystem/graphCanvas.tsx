@@ -1055,7 +1055,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Selection?
-        if (evt.currentTarget === this._hostCanvas && !evt.shiftKey && evt.button == 0) {
+        if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
             this._selectionBox.classList.add(styles["selection-box"]);
             this._selectionContainer.appendChild(this._selectionBox);
@@ -1067,10 +1067,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
-            // Loose select
-            if (!evt.ctrlKey) {
-                this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            }
             return;
         }
 
@@ -1090,6 +1086,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
     }
