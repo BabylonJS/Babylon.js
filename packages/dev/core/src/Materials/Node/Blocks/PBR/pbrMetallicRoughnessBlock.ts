@@ -1042,7 +1042,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
             #endif
-                , 0.
+                , ${(isWebGPU ? "uniforms." : "") + "baseDiffuseRoughness"}
             #ifdef BASE_DIFFUSE_ROUGHNESS
                 , 0.
                 , vec2${state.fSuffix}(0., 0.)
