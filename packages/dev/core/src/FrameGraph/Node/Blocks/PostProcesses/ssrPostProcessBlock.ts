@@ -425,7 +425,9 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
             if (ownerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
                 const geometryRendererBlock = ownerBlock as NodeRenderGraphGeometryRendererBlock;
                 if (!geometryRendererBlock.reverseCulling) {
-                    throw new Error(`SSR post process "${this.name}": Automatic thickness computation requires the geometry renderer block to have reverse culling enabled!`);
+                    throw new Error(
+                        `SSR post process "${this.name}": Automatic thickness computation requires the geometry renderer block for the back depth texture to have reverse culling enabled!`
+                    );
                 }
             }
         }

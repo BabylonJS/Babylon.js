@@ -5,8 +5,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
 
 /**
- * Task which applies a SSR post process.
- * Don't use it directly but use the FrameGraphSSRRenderingPipelineTask instead.
  * @internal
  */
 export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
