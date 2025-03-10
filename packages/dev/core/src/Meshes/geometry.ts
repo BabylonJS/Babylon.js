@@ -772,6 +772,10 @@ export class Geometry implements IGetSetVerticesData {
                 // This can happen if the buffer comes from a Hardware Buffer where
                 // The data have not been uploaded by Babylon. (ex: Compute Shaders and Storage Buffers)
                 if (!data) {
+                    this._extend = {
+                        minimum: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
+                        maximum: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
+                    };
                     return;
                 }
             }
