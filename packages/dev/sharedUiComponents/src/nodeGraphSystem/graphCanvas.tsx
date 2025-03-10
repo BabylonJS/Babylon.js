@@ -828,21 +828,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 return;
             }
 
-            graph.setNode(node.id.toString(), {
-                id: node.id,
-                type: "node",
-                width: node.width,
-                height: node.height,
-            });
+            graph.setNode(node.id.toString(), { id: node.id, type: "node", width: node.width, height: node.height });
         });
 
         this._frames.forEach((frame) => {
-            graph.setNode(frame.id.toString(), {
-                id: frame.id,
-                type: "frame",
-                width: frame.element.clientWidth,
-                height: frame.element.clientHeight,
-            });
+            graph.setNode(frame.id.toString(), { id: frame.id, type: "frame", width: frame.element.clientWidth, height: frame.element.clientHeight });
         });
 
         this._nodes.forEach((node) => {
@@ -1065,7 +1055,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Selection?
-        if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
+        if (evt.currentTarget === this._hostCanvas && !evt.shiftKey && evt.button == 0) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
             this._selectionBox.classList.add(styles["selection-box"]);
             this._selectionContainer.appendChild(this._selectionBox);
@@ -1077,6 +1067,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
+            // Loose select
+            if (!evt.ctrlKey) {
+                this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            }
             return;
         }
 
@@ -1096,7 +1090,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
     }
@@ -1121,10 +1114,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     const port = this._candidateLink.portA;
                     const frame = this.frames.find((frame: GraphFrame) => frame.id === port.parentFrameId);
                     if (frame) {
-                        const data: FramePortData = {
-                            frame,
-                            port,
-                        };
+                        const data: FramePortData = { frame, port };
                         this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: data });
                     }
                 } else if (this._candidateLink.portA instanceof NodePort) {

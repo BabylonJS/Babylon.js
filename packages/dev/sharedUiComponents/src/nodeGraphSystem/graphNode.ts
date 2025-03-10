@@ -509,20 +509,48 @@ export class GraphNode {
         this._stateManager.onNodeMovedObservable.notifyObservers(this);
     }
 
+    private _attach(attached: GraphNode[], right: boolean) {
+        for (const link of this.links) {
+            if (right && link.nodeA == this && link.nodeB != undefined && !attached.includes(link.nodeB)) {
+                attached.push(link.nodeB);
+                link.nodeB._attach(attached, right);
+            }
+            if (!right && link.nodeB == this && link.nodeA != undefined && !attached.includes(link.nodeA)) {
+                attached.push(link.nodeA);
+                link.nodeA._attach(attached, right);
+            }
+        }
+    }
+
     private _onMove(evt: PointerEvent) {
         this._ownerCanvas._targetLinkCandidate = null;
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
 
-        // Move
+        // Delta
         const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
+        // Move selected
         for (const selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.x += newX;
             selectedNode.y += newY;
         }
+
+        // Move attached (Shift / Alt)
+        let attached: Array<GraphNode> = [];
+        if (evt.shiftKey) {
+            this._attach(attached, false);
+        } else if (evt.altKey) {
+            this._attach(attached, true);
+        }
+        for (const attachedNode of attached) {
+            attachedNode.x += newX;
+            attachedNode.y += newY;
+        }
+
+        // Move frame
         for (const frame of this._ownerCanvas.selectedFrames) {
             frame._moveFrame(newX, newY);
         }
@@ -563,10 +591,7 @@ export class GraphNode {
             control = PropertyLedger.DefaultControl;
         }
 
-        return React.createElement(control, {
-            stateManager: this._stateManager,
-            nodeData: this.content,
-        });
+        return React.createElement(control, { stateManager: this._stateManager, nodeData: this.content });
     }
 
     public _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
