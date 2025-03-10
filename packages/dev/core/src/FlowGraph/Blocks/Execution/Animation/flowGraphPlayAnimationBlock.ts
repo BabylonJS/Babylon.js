@@ -91,9 +91,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {
-            this.error.payload = { message: "No animation group or animation provided" };
-            this.error._activateSignal(context);
-            return;
+            return this._reportError(context, "No animation or animation group provided");
         } else {
             // if an animation group was already created, dispose it and create a new one
             const currentAnimationGroup = this.currentAnimationGroup.getValue(context);
@@ -105,9 +103,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
                 if (!target) {
-                    this.error.payload = { message: "No target object provided" };
-                    this.error._activateSignal(context);
-                    return;
+                    return this._reportError(context, "No target object provided");
                 }
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 const name = animationsArray[0].name;
@@ -138,14 +134,24 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (currentlyRunningAnimationGroups.indexOf(animationGroupToUse.uniqueId) !== -1) {
                 animationGroupToUse.stop();
             }
-            animationGroupToUse.start(loop, speed, from, to);
-            animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
-            animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
-            animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
-            animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
-            currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);
-            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+            try {
+                animationGroupToUse.start(loop, speed, from, to);
+                animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
+                animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
+                animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
+                animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
+                currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);
+                context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+            } catch (e) {
+                this._reportError(context, e);
+            }
         }
+    }
+
+    protected override _reportError(context: FlowGraphContext, error: string | Error): void {
+        super._reportError(context, error);
+        this.currentFrame.setValue(-1, context);
+        this.currentTime.setValue(-1, context);
     }
 
     /**

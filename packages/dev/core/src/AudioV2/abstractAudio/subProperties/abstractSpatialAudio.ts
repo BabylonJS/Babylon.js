@@ -1,4 +1,6 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import type { Node } from "../../../node";
+import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioDefaults = {
     coneInnerAngle: 6.28318530718 as number,
@@ -69,13 +71,14 @@ export interface ISpatialAudioOptions {
      */
     spatialMaxDistance: number;
     /**
-     * The spatial panning model. Defaults to "equalpower".
-     * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
-     * - "HRTF" requires more CPU but is more realistic for listeners with headphones or speakers close to the ears.
-     *
+     * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
+     * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    spatialMinUpdateTime: number;
+    /**
      * Possible values are:
      * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
-     * - `"HRTF"`:Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
+     * - `"HRTF"`: Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
      */
     spatialPanningModel: "equalpower" | "HRTF";
     /**
@@ -117,6 +120,7 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialConeOuterVolume !== undefined ||
         options.spatialDistanceModel !== undefined ||
         options.spatialMaxDistance !== undefined ||
+        options.spatialMinUpdateTime !== undefined ||
         options.spatialPanningModel !== undefined ||
         options.spatialPosition !== undefined ||
         options.spatialReferenceDistance !== undefined ||
@@ -165,6 +169,11 @@ export abstract class AbstractSpatialAudio {
     public abstract distanceModel: "linear" | "inverse" | "exponential";
 
     /**
+     * Whether the audio source is attached to a mesh or transform node.
+     */
+    public abstract isAttached: boolean;
+
+    /**
      * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link distanceModel} is set to `"linear"`.
      * @see {@link distanceModel}
@@ -172,9 +181,13 @@ export abstract class AbstractSpatialAudio {
     public abstract maxDistance: number;
 
     /**
+     * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
+     * - The spatialization's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
+     */
+    public abstract minUpdateTime: number;
+
+    /**
      * The spatial panning model. Defaults to "equalpower".
-     * - "equalpower" requires less CPU than "HRTF" but is less realistic for listeners with headphones or speakers close to the ears.
-     * - "HRTF" requires more CPU but is more realistic for listeners with headphones or speakers close to the ears.
      *
      * Possible values are:
      * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
@@ -212,7 +225,19 @@ export abstract class AbstractSpatialAudio {
     public abstract rotationQuaternion: Quaternion;
 
     /**
-     * Updates the position and rotation properties.
+     * Attaches the audio source to a scene object.
+     * @param sceneNode The scene node to attach the audio source to.
+     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
+     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     */
+    public abstract attach(sceneNode: Node, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
+
+    /**
+     * Detaches the audio source from the currently attached graphics node.
+     */
+    public abstract detach(): void;
+    /**
+     * Updates the position and rotation in the audio engine to the current values.
      */
     public abstract update(): void;
 }

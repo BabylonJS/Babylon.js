@@ -75,6 +75,11 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         }
     }
 
+    protected _reportError(context: FlowGraphContext, error: Error | string) {
+        this.error.payload = typeof error === "string" ? new Error(error) : error;
+        this.error._activateSignal(context);
+    }
+
     /**
      * Given a name of a signal input, return that input if it exists
      * @param name the name of the input

@@ -39,7 +39,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
         // in seconds
         const durationValue = this.duration.getValue(context);
         if (durationValue <= 0 || isNaN(durationValue) || !isFinite(durationValue)) {
-            return this.error._activateSignal(context);
+            return this._reportError(context, "Invalid duration in Throttle block");
         }
         const lastRemainingTime = context._getExecutionVariable(this, "lastRemainingTime", NaN);
         // Using Date.now() to get ms since epoch. not using performance.now() because its precision is not needed here

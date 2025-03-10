@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.52.0",
+    "fromTag": "7.52.1",
     "changelog": {
         "7.52.1": [
             {
@@ -13,6 +13,96 @@
                 "files": [
                     "packages/dev/core/src/Engines/abstractEngine.ts",
                     "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.52.2": [
+            {
+                "pr": "16259",
+                "title": "Fix color affectation when dealing with color3 component",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16251",
+                "title": "Add spatial audio attach to camera, mesh and transform node capabilities to audio engine v2",
+                "description": "Based on original PR https://github.com/BabylonJS/Babylon.js/pull/16161, but with refactors and updates including using camera view matrixes instead of their world matrixes.\r\n\r\nNote that this PR targets the `master` branch, unlike the original PR which targeted the now merged `audio-engine-v2` branch.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/components/spatialAudioAttacherComponent.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/index.ts",
+                    "packages/dev/core/src/AudioV2/spatialAudioAttachmentType.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/components/spatialWebAudioUpdaterComponent.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16256",
+                "title": "corrected property assignment",
+                "description": "Apologies, just spotted an error on recent PR: https://github.com/BabylonJS/Babylon.js/pull/16254.\r\n\r\nThis corrects it.",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16254",
+                "title": "Inspector gltf validation save",
+                "description": "- Refactored GLTF Validation _More details_ and added Copy button for user convenience.\r\n- `<TextLineComponent />` now has optional `onCopy` property which accepts `true` or a callback that must return a string.\r\n- Updated `onCopy` to common classes' `ID` property.",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/commonCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/styleHelper.ts"
                 ],
                 "tags": []
             }

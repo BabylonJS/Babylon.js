@@ -65,7 +65,10 @@ export class Geometry implements IGetSetVerticesData {
     /** @internal */
     public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
-    private _extend: { minimum: Vector3; maximum: Vector3 };
+    private _extend: { minimum: Vector3; maximum: Vector3 } = {
+        minimum: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
+        maximum: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
+    };
     private _boundingBias: Vector2;
     /** @internal */
     public _delayInfo: Array<string>;
@@ -1042,21 +1045,27 @@ export class Geometry implements IGetSetVerticesData {
         let stopChecking = false;
         let kind;
         for (kind in this._vertexBuffers) {
-            this.copyVerticesData(kind, vertexData as any);
+            const data = this.getVerticesData(kind);
+            if (data) {
+                if (data instanceof Float32Array) {
+                    vertexData.set(new Float32Array(<Float32Array>data), kind);
+                } else {
+                    vertexData.set((<number[]>data).slice(0), kind);
+                }
 
-            if (!stopChecking) {
-                const vb = this.getVertexBuffer(kind);
+                if (!stopChecking) {
+                    const vb = this.getVertexBuffer(kind);
 
-                if (vb) {
-                    updatable = vb.isUpdatable();
-                    stopChecking = !updatable;
+                    if (vb) {
+                        updatable = vb.isUpdatable();
+                        stopChecking = !updatable;
+                    }
                 }
             }
         }
 
         const geometry = new Geometry(id, this._scene, vertexData, updatable);
 
-        geometry._totalVertices = this._totalVertices;
         geometry.delayLoadState = this.delayLoadState;
         geometry.delayLoadingFile = this.delayLoadingFile;
         geometry._delayLoadingFunction = this._delayLoadingFunction;

@@ -286,6 +286,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Utils/flowGraphIndexOfBlock")).FlowGraphIndexOfBlock;
         case FlowGraphBlockNames.FunctionReference:
             return async () => (await import("./Data/Utils/flowGraphFunctionReferenceBlock")).FlowGraphFunctionReferenceBlock;
+        case FlowGraphBlockNames.DataSwitch:
+            return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
         default:
             // check if the block is a custom block
             if (customBlocks[blockName]) {
