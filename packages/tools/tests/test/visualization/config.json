@@ -673,8 +673,7 @@
         },
         {
             "title": "Custom render target",
-            "renderCount": 20,
-            "playgroundId": "#TQCEBF#3",
+            "playgroundId": "#TQCEBF#5",
             "referenceImage": "customRTT.png"
         },
         {
@@ -2474,27 +2473,42 @@
             "errorRatio": 2
         },
         {
+            "title": "FrameGraph nrge SSR cube",
+            "playgroundId": "#PIZ1GK#2072",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge SSR HillValley",
+            "playgroundId": "#PIZ1GK#2075",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge SSR neon",
+            "playgroundId": "#Z6C5EF",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph glow layer",
-            "playgroundId": "#9YU4C5#1",
+            "playgroundId": "#9YU4C5#4",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1
         },
         {
             "title": "FrameGraph highlight layer",
-            "playgroundId": "#PV8OLY"
+            "playgroundId": "#PV8OLY#13"
         },
         {
             "title": "FrameGraph custom rendering",
-            "playgroundId": "#RM56RY#3"
+            "playgroundId": "#RM56RY#7"
         },
         {
             "title": "FrameGraph gui bloom",
-            "playgroundId": "#RM56RY#2"
+            "playgroundId": "#RM56RY#6"
         },
         {
             "title": "IBL radiance roughness",

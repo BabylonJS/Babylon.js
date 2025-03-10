@@ -349,6 +349,8 @@ export class NullEngine extends Engine {
         }
     }
 
+    public override setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void {}
+
     /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it

@@ -33,7 +33,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
 
         this._finalizeInputOutputRegistering();
 
-        this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, 0.75, 64, 0.2, hdr, bloomScale);
     }
 
     private _createTask(bloomScale: number, hdr: boolean) {
@@ -44,7 +44,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
 
         this._frameGraphTask.dispose();
 
-        this._frameGraphTask = new FrameGraphBloomTask(this.name, this._frameGraph, this._scene.getEngine(), weight, kernel, threshold, hdr, bloomScale);
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, this._frameGraph, weight, kernel, threshold, hdr, bloomScale);
         this._frameGraphTask.sourceSamplingMode = sourceSamplingMode;
 
         this._additionalConstructionParameters = [hdr, bloomScale];

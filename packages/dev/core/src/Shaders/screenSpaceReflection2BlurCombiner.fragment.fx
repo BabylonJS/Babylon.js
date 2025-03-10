@@ -16,6 +16,9 @@ varying vec2 vUV;
 
     uniform mat4 projection;
     uniform mat4 invProjectionMatrix;
+    #ifdef SSR_NORMAL_IS_IN_WORLDSPACE
+        uniform mat4 view;
+    #endif
 
     uniform sampler2D normalSampler;
     uniform sampler2D depthSampler;
@@ -49,6 +52,12 @@ void main()
     vec2 texSize = vec2(textureSize(depthSampler, 0));
 
     vec3 csNormal = texelFetch(normalSampler, ivec2(vUV * texSize), 0).xyz;
+    #ifdef SSR_DECODE_NORMAL
+        csNormal = csNormal * 2.0 - 1.0;
+    #endif
+    #ifdef SSR_NORMAL_IS_IN_WORLDSPACE
+        csNormal = (view * vec4(csNormal, 0.0)).xyz;
+    #endif
     float depth = texelFetch(depthSampler, ivec2(vUV * texSize), 0).r;
     #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
         depth = linearizeDepth(depth, nearPlaneZ, farPlaneZ);
