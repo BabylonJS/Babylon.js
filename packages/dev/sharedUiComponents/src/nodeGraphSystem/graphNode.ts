@@ -546,8 +546,10 @@ export class GraphNode {
             this._attach(attached, true);
         }
         for (const attachedNode of attached) {
-            attachedNode.x += newX;
-            attachedNode.y += newY;
+            if (!this._ownerCanvas.selectedNodes.includes(attachedNode)) {
+                attachedNode.x += newX;
+                attachedNode.y += newY;
+            }
         }
 
         // Move frame
