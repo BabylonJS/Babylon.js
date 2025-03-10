@@ -198,7 +198,9 @@
             tangent = normalize(cross(tangent, n));
             vec3 bitangent = cross(n, tangent);
             mat3 tbn = mat3(tangent, bitangent, n);
-            mat3 tbnInverse = transpose(tbn);
+            // The inverse is just the transpose of the TBN matrix. However, WebGL 1.0 doesn't support mat3 transpose.
+            // So, we have to calculate it manually.
+            mat3 tbnInverse = mat3(tangent.x, bitangent.x, n.x, tangent.y, bitangent.y, n.y, tangent.z, bitangent.z, n.z);
             #endif
 
             float maxLevel = filteringInfo.y;
@@ -215,8 +217,8 @@
 
                 #ifdef IBL_CDF_FILTERING
                     vec2 T;
-                    T.x = textureLod(icdfSampler, vec2(Xi.x, 0.0), 0.0).x;
-                    T.y = textureLod(icdfSampler, vec2(T.x, Xi.y), 0.0).y;
+                    T.x = texture2D(icdfSampler, vec2(Xi.x, 0.0)).x;
+                    T.y = texture2D(icdfSampler, vec2(T.x, Xi.y)).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                     vec3 H = (n + Ls) * 0.5;
@@ -233,14 +235,14 @@
                     float NoH = dot(Ns, H);
                     
                     vec3 V = tbnInverse * inputV;
-                    float NoV = dot(n, V);
+                    float NoV = dot(Ns, V);
                     float VoH = dot(V, H);
                     float LoV = dot (Ls, V);
                 #endif
 
                 if (NoL > 0.) {
                     #ifdef IBL_CDF_FILTERING
-                        float pdf = textureLod(icdfSampler, T, 0.0).z;
+                        float pdf = texture2D(icdfSampler, T).z;
                         vec3 c = textureCubeLodEXT(inputTexture, Ls, 0.0).rgb;
                     #else
                         float pdf_inversed = PI / NoL;
