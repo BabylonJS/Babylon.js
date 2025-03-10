@@ -18,6 +18,7 @@ import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
+import { Logger } from "../Misc/logger";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -32,6 +33,18 @@ export class IblCdfGenerator {
     private _scaledLuminancePT: ProceduralTexture;
     private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
+
+    /**
+     * Returns whether the CDF renderer is supported by the current engine
+     */
+    public get isSupported(): boolean {
+        const engine = EngineStore.LastCreatedEngine;
+        if (!engine) {
+            return false;
+        }
+        return engine.getCaps().texelFetch;
+    }
+
     /**
      * Gets the IBL source texture being used by the CDF renderer
      */
@@ -147,6 +160,10 @@ export class IblCdfGenerator {
         }
         if (this._scene) {
             this._engine = this._scene.getEngine();
+        }
+        if (!this.isSupported) {
+            Logger.Warn("CDF renderer is not supported by the current engine.");
+            return;
         }
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
         this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
