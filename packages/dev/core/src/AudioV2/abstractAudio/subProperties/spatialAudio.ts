@@ -20,13 +20,17 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         super();
 
         const subNode = _GetSpatialAudioSubNode(subGraph);
-        if (!subNode) {
-            throw new Error("Sub node not found");
-        }
+        if (subNode) {
+            this._position = subNode.position.clone();
+            this._rotation = subNode.rotation.clone();
+            this._rotationQuaternion = subNode.rotationQuaternion.clone();
+        } else {
+            this._position = _SpatialAudioDefaults.position.clone();
+            this._rotation = _SpatialAudioDefaults.rotation.clone();
+            this._rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
-        this._position = subNode.position.clone();
-        this._rotation = subNode.rotation.clone();
-        this._rotationQuaternion = subNode.rotationQuaternion.clone();
+            subGraph.createAndAddSubNode(AudioSubNode.SPATIAL);
+        }
 
         this._subGraph = subGraph;
     }

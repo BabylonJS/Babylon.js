@@ -21,31 +21,19 @@ import type { AudioSubNode } from "./audioSubNode";
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises: { [key: string]: Promise<_AbstractAudioSubNode> } = {};
     private _isDisposed = false;
-    private _subNodes: { [key: string]: AbstractNamedAudioNode } = {};
+    private _subNodes: { [key: string]: _AbstractAudioSubNode } = {};
 
     /**
      * Executes the given callback with the named sub node, creating the sub node if needed.
-     *
-     * Note that `callback` is executed synchronously if the sub node already exists, otherwise the sub node is created
-     * asynchronously before `callback` is executed.
      *
      * @param name The name of the sub node
      * @param callback The function to call with the named sub node
      *
      * @internal
      */
-    public callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): void {
-        const node = this.getSubNode(name);
-        if (node) {
-            callback(node as T);
-            return;
-        }
-
-        const promise = this._createSubNodePromises[name] ?? this.createAndAddSubNode(name);
-
-        promise.then((node) => {
-            callback(node as T);
-        });
+    public async callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): Promise<void> {
+        await this._createSubNodePromisesResolved();
+        callback(this.getSubNode(name) || ((await this.createAndAddSubNode(name)) as T));
     }
 
     /**
@@ -127,7 +115,7 @@ export abstract class _AbstractAudioSubGraph {
         return Promise.all(Object.values(this._createSubNodePromises));
     }
 
-    private _addSubNode(node: AbstractNamedAudioNode): void {
+    private _addSubNode(node: _AbstractAudioSubNode): void {
         if (this._isDisposed) {
             node.dispose();
             return;
