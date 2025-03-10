@@ -539,7 +539,7 @@ export class GraphNode {
         }
 
         // Move attached (Shift / Alt)
-        let attached: Array<GraphNode> = [];
+        const attached: Array<GraphNode> = [];
         if (evt.shiftKey) {
             this._attach(attached, false);
         } else if (evt.altKey) {
