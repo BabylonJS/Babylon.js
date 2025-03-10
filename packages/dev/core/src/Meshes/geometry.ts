@@ -65,7 +65,10 @@ export class Geometry implements IGetSetVerticesData {
     /** @internal */
     public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
-    private _extend: { minimum: Vector3; maximum: Vector3 };
+    private _extend: { minimum: Vector3; maximum: Vector3 } = {
+        minimum: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
+        maximum: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
+    };
     private _boundingBias: Vector2;
     /** @internal */
     public _delayInfo: Array<string>;
@@ -772,10 +775,6 @@ export class Geometry implements IGetSetVerticesData {
                 // This can happen if the buffer comes from a Hardware Buffer where
                 // The data have not been uploaded by Babylon. (ex: Compute Shaders and Storage Buffers)
                 if (!data) {
-                    this._extend = {
-                        minimum: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
-                        maximum: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
-                    };
                     return;
                 }
             }
