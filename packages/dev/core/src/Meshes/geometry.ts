@@ -793,7 +793,10 @@ export class Geometry implements IGetSetVerticesData {
                 if (!this._extend) {
                     this._updateExtend();
                 }
-                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
+                // If the data have not been uploaded by Babylon (ex: Compute Shaders and Storage Buffers), _extend may be undefined even after calling _updateExtend()
+                if (this._extend) {
+                    mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
+                }
 
                 mesh._createGlobalSubMesh(mesh.isUnIndexed);
 
