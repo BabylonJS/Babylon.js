@@ -286,7 +286,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
                     window.engine = await asyncEngineCreation();
                     
-                    ${audioInit}`;
+                    const engineOptions = window.engine.getCreationOptions();
+                    if (engineOptions.audioEngine === undefined || engineOptions.audioEngine === true) {
+                        ${audioInit}
+                    }`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
