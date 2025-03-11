@@ -89,14 +89,14 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         return this._outNode;
     }
 
-    protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
+    protected _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
         switch (name) {
             case AudioSubNode.ANALYZER:
                 return _CreateAudioAnalyzerSubNodeAsync(this._owner.engine);
             case AudioSubNode.VOLUME:
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
-                return null;
+                throw new Error(`Unknown subnode name: ${name}`);
         }
     }
 

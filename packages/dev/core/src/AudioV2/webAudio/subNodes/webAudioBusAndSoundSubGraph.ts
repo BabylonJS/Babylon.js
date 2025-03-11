@@ -56,12 +56,11 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         return this._inNode;
     }
 
-    protected override _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
-        const node = super._createSubNode(name);
-
-        if (node) {
+    protected override _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
+        try {
+            const node = super._createSubNode(name);
             return node;
-        }
+        } catch (e) {}
 
         switch (name) {
             case AudioSubNode.SPATIAL:
@@ -69,7 +68,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             case AudioSubNode.STEREO:
                 return _CreateStereoAudioSubNodeAsync(this._owner.engine);
             default:
-                return null;
+                throw new Error(`Unknown subnode name: ${name}`);
         }
     }
 
