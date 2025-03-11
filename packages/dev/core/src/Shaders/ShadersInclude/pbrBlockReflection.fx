@@ -202,12 +202,12 @@
     #endif
     #ifdef REALTIME_FILTERING
         , in vec2 vReflectionFilteringInfo
-        , in vec3 viewDirectionW
         #ifdef IBL_CDF_FILTERING
             , in sampler2D icdfSampler
         #endif
-        , in float diffuseRoughness
     #endif
+        , in vec3 viewDirectionW
+        , in float diffuseRoughness
     )
     {
         reflectionOutParams outParams;
@@ -266,8 +266,12 @@
             #else
                 vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
             #endif
-            #if defined(REALTIME_FILTERING)
+            #if defined(REALTIME_FILTERING) || defined(USEIRRADIANCEMAP)
                 vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
+            #endif
+            #ifdef USEIRRADIANCEMAP
+                float NdotV = max(dot(normalW, viewDirectionW), 0.0);
+                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
             #endif
             
             #ifdef REFLECTIONMAP_OPPOSITEZ

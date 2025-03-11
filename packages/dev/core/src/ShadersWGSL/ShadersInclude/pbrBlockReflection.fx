@@ -228,13 +228,13 @@
     #endif
     #ifdef REALTIME_FILTERING
         , vReflectionFilteringInfo: vec2f
-        , viewDirectionW: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>
             , icdfSamplerSampler: sampler
         #endif
-        , diffuseRoughness: f32
     #endif
+        , viewDirectionW: vec3f
+        , diffuseRoughness: f32
     ) -> reflectionOutParams
     {
         var outParams: reflectionOutParams;
@@ -295,8 +295,12 @@
             #else
                 var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
             #endif
-            #if defined(REALTIME_FILTERING)
+            #if defined(REALTIME_FILTERING) || defined(USEIRRADIANCEMAP)
                 var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
+            #endif
+            #ifdef USEIRRADIANCEMAP
+                var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
+                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ

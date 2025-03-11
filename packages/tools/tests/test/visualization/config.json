@@ -28,6 +28,12 @@
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
+            "playgroundId": "#MXACV7#6",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
