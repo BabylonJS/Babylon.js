@@ -20,6 +20,7 @@ import type { AudioSubNode } from "./audioSubNode";
  */
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises: { [key: string]: Promise<_AbstractAudioSubNode> } = {};
+    private _isDisposed = false;
     private _subNodes: { [key: string]: AbstractNamedAudioNode } = {};
 
     /**
@@ -70,6 +71,8 @@ export abstract class _AbstractAudioSubGraph {
      * @internal
      */
     public dispose() {
+        this._isDisposed = true;
+
         const subNodes = Object.values(this._subNodes);
         for (const subNode of subNodes) {
             subNode.dispose();
@@ -125,6 +128,11 @@ export abstract class _AbstractAudioSubGraph {
     }
 
     private _addSubNode(node: AbstractNamedAudioNode): void {
+        if (this._isDisposed) {
+            node.dispose();
+            return;
+        }
+
         this._subNodes[node.name] = node;
 
         node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
