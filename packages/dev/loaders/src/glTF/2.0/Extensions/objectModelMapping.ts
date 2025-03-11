@@ -323,15 +323,14 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            get: (node: INode) => Matrix.Compose(node._babylonTransformNode?.scaling!, node._babylonTransformNode?.rotationQuaternion!, node._babylonTransformNode?.position!),
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "worldMatrix"],
         },
         globalMatrix: {
             type: "Matrix",
             get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "_worldMatrix"],
+            getPropertyName: [() => "worldMatrixFromCache"],
             isReadOnly: true,
         },
         extensions: {
