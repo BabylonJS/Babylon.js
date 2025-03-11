@@ -23,6 +23,7 @@ export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/extractHighlightsTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
+export * from "./Tasks/PostProcesses/ssrRenderingPipelineTask";
 
 export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";

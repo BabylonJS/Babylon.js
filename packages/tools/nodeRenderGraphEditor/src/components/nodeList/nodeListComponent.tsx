@@ -56,6 +56,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         GlowLayerBlock: "Adds a glow effect to a texture",
         HighlightLayerBlock: "Adds a highlight effect to a texture",
         UtilityLayerRendererBlock: "Renders an utility layer",
+        SSRBlock: "Applies a Screen Space Reflection post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -158,6 +159,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ExtractHighlightsBlock",
                 "PassBlock",
                 "PassCubeBlock",
+                "SSRBlock",
             ],
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],

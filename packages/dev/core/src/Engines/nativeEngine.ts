@@ -945,6 +945,10 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
+    public override setStateCullFaceType(_cullBackFaces?: boolean, _force?: boolean): void {
+        throw new Error("setStateCullFaceType: Not Implemented");
+    }
+
     public override setState(
         culling: boolean,
         zOffset: number = 0,
