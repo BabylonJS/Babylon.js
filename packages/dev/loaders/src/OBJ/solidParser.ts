@@ -93,22 +93,39 @@ export class SolidParser {
     private _increment: number = 1; //Id for meshes created by the multimaterial
     private _isFirstMaterial: boolean = true;
     private _grayColor = new Color4(0.5, 0.5, 0.5, 1);
-    private _materialToUse: string[];
-    private _babylonMeshesArray: Array<Mesh>;
-    private _pushTriangle: (faces: Array<string>, faceIndex: number) => void;
+    private readonly _pushTriangle: (faces: Array<string>, faceIndex: number) => void;
     private _handednessSign: number;
     private _hasLineData: boolean = false; //If this mesh has line segment(l) data
+    /**
+     * Material to use
+     */
+    public readonly materialToUse: string[] = [];
+    /**
+     * Mesh for babylon
+     */
+    public readonly babylonMeshesArray: Array<Mesh> = [];
+    /**
+     * Mlt file to load if any
+     */
+    public mltFileToLoad: string;
 
     /**
      * Creates a new SolidParser
-     * @param materialToUse defines the array to fill with the list of materials to use (it will be filled by the parse function)
-     * @param babylonMeshesArray defines the array to fill with the list of loaded meshes (it will be filled by the parse function)
+     * @param scene defines the hosting scene
      * @param loadingOptions defines the loading options to use
      */
-    public constructor(materialToUse: string[], babylonMeshesArray: Array<Mesh>, loadingOptions: OBJLoadingOptions) {
-        this._materialToUse = materialToUse;
-        this._babylonMeshesArray = babylonMeshesArray;
+    public constructor(scene: Scene, loadingOptions: OBJLoadingOptions) {
         this._loadingOptions = loadingOptions;
+        if (this._loadingOptions.useLegacyBehavior) {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
+            this._handednessSign = 1;
+        } else if (scene.useRightHandedSystem) {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex]);
+            this._handednessSign = 1;
+        } else {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
+            this._handednessSign = -1;
+        }
     }
 
     /**
@@ -578,28 +595,26 @@ export class SolidParser {
     }
 
     /**
+     * Sanitize data by removing unwanted CR and LF
+     * @param data Data to sanitize
+     * @returns Sanitized data
+     */
+    public static SanitizeData(data: string): string {
+        //Move Santitize here to forbid delete zbrush data
+        // Sanitize data
+        data = data.replace(/#MRGB/g, "mrgb");
+        data = data.replace(/#.*$/gm, "").trim();
+        return data;
+    }
+    /**
      * Function used to parse an OBJ string
      * @param meshesNames defines the list of meshes to load (all if not defined)
      * @param data defines the OBJ string
      * @param scene defines the hosting scene
      * @param assetContainer defines the asset container to load data in
-     * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
-    public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>, onFileToLoadFound: (fileToLoad: string) => void): void {
-        //Move Santitize here to forbid delete zbrush data
-        // Sanitize data
-        data = data.replace(/#MRGB/g, "mrgb");
-        data = data.replace(/#.*$/gm, "").trim();
-        if (this._loadingOptions.useLegacyBehavior) {
-            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
-            this._handednessSign = 1;
-        } else if (scene.useRightHandedSystem) {
-            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex]);
-            this._handednessSign = 1;
-        } else {
-            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
-            this._handednessSign = -1;
-        }
+    public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>) {
+        data = SolidParser.SanitizeData(data);
 
         // Split the file into lines
         // Preprocess line data
@@ -634,9 +649,22 @@ export class SolidParser {
         }
 
         const lines = lineLines.flat();
+        this.parseLines(lines);
+        this.finalizeParse(scene, assetContainer, meshesNames);
+    }
+
+    /**
+     * Parse the OBJ file
+     * @param lines lines of the file
+     */
+    public parseLines(lines: string[]) {
         // Look at each line
         for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim().replace(/\s\s/g, " ");
+            //manage multiple consecutive spaces in the line
+            const line = lines[i]
+                .split(" ")
+                .filter((x) => x.length > 0)
+                .join(" ");
             let result;
             // Comment or newLine
             if (line.length === 0 || line.charAt(0) === "#") {
@@ -803,18 +831,17 @@ export class SolidParser {
                     //Set the data for the previous mesh
                     this._addPreviousObjMesh();
                     //Create a new mesh
-                    const objMesh: MeshObject =
+                    const objMesh: MeshObject = {
                         //Set the name of the current obj mesh
-                        {
-                            name: (this._objMeshName || "mesh") + "_mm" + this._increment.toString(), //Set the name of the current obj mesh
-                            indices: null,
-                            positions: null,
-                            normals: null,
-                            uvs: null,
-                            colors: null,
-                            materialName: this._materialNameFromObj,
-                            isObject: false,
-                        };
+                        name: (this._objMeshName || "mesh") + "_mm" + this._increment.toString(), //Set the name of the current obj mesh
+                        indices: null,
+                        positions: null,
+                        normals: null,
+                        uvs: null,
+                        colors: null,
+                        materialName: this._materialNameFromObj,
+                        isObject: false,
+                    };
                     this._increment++;
                     //If meshes are already defined
                     this._meshesFromObj.push(objMesh);
@@ -830,7 +857,7 @@ export class SolidParser {
                 // Keyword for loading the mtl file
             } else if (SolidParser.MtlLibGroupDescriptor.test(line)) {
                 // Get the name of mtl file
-                onFileToLoadFound(line.substring(7).trim());
+                this.mltFileToLoad = line.substring(7).trim();
 
                 // Apply smoothing
             } else if (SolidParser.SmoothDescriptor.test(line)) {
@@ -842,6 +869,15 @@ export class SolidParser {
                 Logger.Log("Unhandled expression at line : " + line);
             }
         }
+    }
+
+    /**
+     * Finalize the parsing
+     * @param scene Scene The scene where is loaded the obj file
+     * @param assetContainer AssetContainer The assetContainer to load the data
+     * @param meshesNames Array of the names of meshes to load
+     */
+    public finalizeParse(scene: Scene, assetContainer: Nullable<AssetContainer>, meshesNames: any): void {
         // At the end of the file, add the last mesh into the meshesFromObj array
         if (this._hasMeshes) {
             // Set the data for the last mesh
@@ -973,7 +1009,7 @@ export class SolidParser {
 
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
-            this._materialToUse.push(this._meshesFromObj[j].materialName);
+            this.materialToUse.push(this._meshesFromObj[j].materialName);
             //If the mesh is a line mesh
             if (this._handledMesh.hasLines) {
                 babylonMesh._internalMetadata ??= {};
@@ -982,7 +1018,7 @@ export class SolidParser {
 
             if (this._handledMesh.positions?.length === 0) {
                 //Push the mesh into an array
-                this._babylonMeshesArray.push(babylonMesh);
+                this.babylonMeshesArray.push(babylonMesh);
                 continue;
             }
 
@@ -1011,7 +1047,7 @@ export class SolidParser {
             }
 
             //Push the mesh into an array
-            this._babylonMeshesArray.push(babylonMesh);
+            this.babylonMeshesArray.push(babylonMesh);
 
             if (this._handledMesh.directMaterial) {
                 babylonMesh.material = this._handledMesh.directMaterial;

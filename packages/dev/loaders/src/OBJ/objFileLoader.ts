@@ -2,8 +2,8 @@ import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -168,22 +168,104 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the meshes should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
+     * @param onProgress event that fires when loading progress has occured
+     * @param fileName name of the file to load
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
-        //get the meshes from OBJ file
-        return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
-            return {
-                meshes: meshes,
-                particleSystems: [],
-                skeletons: [],
-                animationGroups: [],
-                transformNodes: [],
-                geometries: [],
-                lights: [],
-                spriteManagers: [],
-            };
-        });
+    public async importMeshAsync(
+        meshesNames: any,
+        scene: Scene,
+        data: any,
+        rootUrl: string,
+        onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        fileName?: string
+    ): Promise<ISceneLoaderAsyncResult> {
+        if (!data && (fileName || rootUrl)) {
+            const fileUrl = new URL((rootUrl ?? "") + (fileName ?? "")).href;
+            let reader;
+
+            const response = await fetch(fileUrl);
+            if (!response.ok || !response.body) {
+                throw new Error(`Failed to load file: ${fileUrl}`);
+            }
+            let total = 0;
+            if (!fileUrl.endsWith(".gz")) {
+                reader = response.body.getReader();
+                total = parseInt(response.headers.get("Content-Length") ?? "");
+            } else {
+                const ds = new DecompressionStream("gzip");
+                const decompressedStream = response.body.pipeThrough(ds);
+                reader = decompressedStream.getReader();
+            }
+
+            const solidParser = new SolidParser(scene, this._loadingOptions);
+
+            let loaded = 0;
+            let lastLine: string | undefined;
+            let splitter;
+            const decoder = new TextDecoder();
+            //eslint-disable-next-line no-constant-condition
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) {
+                    break;
+                }
+                if (value) {
+                    //handle the compression ratio
+                    loaded += value.length;
+                    onProgress?.({ lengthComputable: !!total, loaded, total });
+                    const str = decoder.decode(value);
+                    if (!splitter) {
+                        if (str.includes("\r\n")) {
+                            splitter = "\r\n";
+                        } else if (str.includes("\n")) {
+                            splitter = "\n";
+                        } else if (str.includes("\r")) {
+                            splitter = "\r";
+                        } else {
+                            throw new Error("Line splitter not found");
+                        }
+                    }
+                    const linesOBJ = str.split(splitter);
+                    if (lastLine) {
+                        linesOBJ[0] = lastLine + linesOBJ[0];
+                    }
+                    lastLine = linesOBJ.pop();
+                    solidParser.parseLines(linesOBJ);
+                }
+            }
+            if (lastLine) {
+                solidParser.parseLines([lastLine]);
+            }
+            solidParser.finalizeParse(scene, this._assetContainer, meshesNames);
+            const meshes = this._loadMTLFromFile(solidParser.mltFileToLoad, solidParser.materialToUse, solidParser.babylonMeshesArray, rootUrl, scene);
+            return meshes.then((meshes) => {
+                return {
+                    meshes: meshes,
+                    particleSystems: [],
+                    skeletons: [],
+                    animationGroups: [],
+                    transformNodes: [],
+                    geometries: [],
+                    lights: [],
+                    spriteManagers: [],
+                };
+            });
+        } else {
+            //get the meshes from OBJ file
+            return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
+                return {
+                    meshes: meshes,
+                    particleSystems: [],
+                    skeletons: [],
+                    animationGroups: [],
+                    transformNodes: [],
+                    geometries: [],
+                    lights: [],
+                    spriteManagers: [],
+                };
+            });
+        }
     }
 
     /**
@@ -251,25 +333,29 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns the list of loaded meshes
      */
     private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
-        let fileToLoad: string = ""; //The name of the mtlFile to load
-        const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
-        const materialToUse: string[] = [];
-        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
-
+        const solidParser = new SolidParser(scene, this._loadingOptions);
         // Sanitize data
         data = data.replace(/#.*$/gm, "").trim();
-
         // Main function
-        const solidParser = new SolidParser(materialToUse, babylonMeshesArray, this._loadingOptions);
+        solidParser.parse(meshesNames, data, scene, this._assetContainer);
+        return this._loadMTLFromFile(solidParser.mltFileToLoad, solidParser.materialToUse, solidParser.babylonMeshesArray, rootUrl, scene);
+    }
 
-        solidParser.parse(meshesNames, data, scene, this._assetContainer, (fileName: string) => {
-            fileToLoad = fileName;
-        });
-
+    /**
+     * Load the material file associated with the OBJ file
+     * @param fileToLoad MTL file to load
+     * @param materialToUse Array of materials to use
+     * @param babylonMeshesArray Array of meshes with materials to use
+     * @param rootUrl Root url for MTL loading
+     * @param scene Scene to add materials to
+     * @returns Array of loaded meshes
+     */
+    private _loadMTLFromFile(fileToLoad: string, materialToUse: string[], babylonMeshesArray: Mesh[], rootUrl: string, scene: Scene): Promise<Array<AbstractMesh>> {
+        const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         // load the materials
         const mtlPromises: Array<Promise<void>> = [];
         // Check if we have a file to load
-        if (fileToLoad !== "" && !this._loadingOptions.skipMaterials) {
+        if (fileToLoad && !this._loadingOptions.skipMaterials) {
             //Load the file synchronously
             mtlPromises.push(
                 new Promise((resolve, reject) => {
@@ -361,4 +447,4 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 }
 
 //Add this loader into the register plugin
-RegisterSceneLoaderPlugin(new OBJFileLoader());
+registerSceneLoaderPlugin(new OBJFileLoader());

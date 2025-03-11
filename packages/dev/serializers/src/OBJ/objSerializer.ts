@@ -18,8 +18,7 @@ export class OBJExport {
      * @param globalposition defines if the exported positions are globals or local to the exported mesh
      * @returns the OBJ content
      */
-    public static OBJ(meshes: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
-        const output: string[] = [];
+    public static *OBJ(meshes: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): Generator<string> {
         let v = 1;
         // keep track of uv index in case mixed meshes are passed in
         let textureV = 1;
@@ -28,12 +27,12 @@ export class OBJExport {
             if (!matlibname) {
                 matlibname = "mat";
             }
-            output.push("mtllib " + matlibname + ".mtl");
+            yield "mtllib " + matlibname + ".mtl";
         }
         for (let j = 0; j < meshes.length; j++) {
             const mesh = meshes[j];
             const objectName = mesh.name || `mesh${j}}`;
-            output.push(`o ${objectName}`);
+            yield `o ${objectName}`;
 
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
             let inverseTransform: Nullable<Matrix> = null;
@@ -51,7 +50,7 @@ export class OBJExport {
                 const mat = mesh.material;
 
                 if (mat) {
-                    output.push("usemtl " + mat.id);
+                    yield "usemtl " + mat.id;
                 }
             }
             const g: Nullable<Geometry> = mesh.geometry;
@@ -77,18 +76,18 @@ export class OBJExport {
             const handednessSign = useRightHandedSystem ? 1 : -1;
 
             for (let i = 0; i < trunkVerts.length; i += 3) {
-                output.push("v " + trunkVerts[i] * handednessSign + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                yield "v " + trunkVerts[i] * handednessSign + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2];
                 currentV++;
             }
 
             if (trunkNormals != null) {
                 for (let i = 0; i < trunkNormals.length; i += 3) {
-                    output.push("vn " + trunkNormals[i] * handednessSign + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                    yield "vn " + trunkNormals[i] * handednessSign + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2];
                 }
             }
             if (trunkUV != null) {
                 for (let i = 0; i < trunkUV.length; i += 2) {
-                    output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    yield "vt " + trunkUV[i] + " " + trunkUV[i + 1];
                     currentTextureV++;
                 }
             }
@@ -107,26 +106,7 @@ export class OBJExport {
                 const faceUVs = trunkUV != null ? textureIndices : blanks;
                 const faceNormals = trunkNormals != null ? indices : blanks;
 
-                output.push(
-                    "f " +
-                        facePositions[0] +
-                        "/" +
-                        faceUVs[0] +
-                        "/" +
-                        faceNormals[0] +
-                        " " +
-                        facePositions[1] +
-                        "/" +
-                        faceUVs[1] +
-                        "/" +
-                        faceNormals[1] +
-                        " " +
-                        facePositions[2] +
-                        "/" +
-                        faceUVs[2] +
-                        "/" +
-                        faceNormals[2]
-                );
+                yield `f ${facePositions[0]}/${faceUVs[0]}/${faceNormals[0]} ${facePositions[1]}/${faceUVs[1]}/${faceNormals[1]} ${facePositions[2]}/${faceUVs[2]}/${faceNormals[2]}`;
             }
             //back de previous matrix, to not change the original mesh in the scene
             if (globalposition && inverseTransform) {
@@ -135,8 +115,6 @@ export class OBJExport {
             v += currentV;
             textureV += currentTextureV;
         }
-        const text: string = output.join("\n");
-        return text;
     }
 
     /**
