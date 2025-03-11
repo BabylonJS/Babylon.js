@@ -36,10 +36,10 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.SPATIAL);
+            this.createAndAddSubNode(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.STEREO);
+            this.createAndAddSubNode(AudioSubNode.STEREO);
         }
 
         await this._createSubNodePromisesResolved();
@@ -57,12 +57,11 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         return this._inNode;
     }
 
-    protected override _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
-        const node = super._createSubNode(name);
-
-        if (node) {
+    protected override _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
+        try {
+            const node = super._createSubNode(name);
             return node;
-        }
+        } catch (e) {}
 
         switch (name) {
             case AudioSubNode.SPATIAL:
@@ -70,11 +69,13 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             case AudioSubNode.STEREO:
                 return _CreateStereoAudioSubNodeAsync(this._owner.engine);
             default:
-                return null;
+                throw new Error(`Unknown subnode name: ${name}`);
         }
     }
 
     protected override _onSubNodesChanged(): void {
+        super._onSubNodesChanged();
+
         const spatialNode = _GetSpatialAudioSubNode(this);
         const stereoNode = _GetStereoAudioSubNode(this);
         const volumeNode = _GetVolumeAudioSubNode(this);
