@@ -25,13 +25,13 @@ export const enum ThinDepthOfFieldEffectBlurLevel {
 
 export class ThinDepthOfFieldEffect {
     /** @internal */
-    public _circleOfConfusion: ThinCircleOfConfusionPostProcess;
+    public readonly _circleOfConfusion: ThinCircleOfConfusionPostProcess;
     /** @internal */
-    public _depthOfFieldBlurX: Array<[ThinBlurPostProcess, number]> = [];
+    public readonly _depthOfFieldBlurX: Array<[ThinBlurPostProcess, number]> = [];
     /** @internal */
-    public _depthOfFieldBlurY: Array<[ThinBlurPostProcess, number]> = [];
+    public readonly _depthOfFieldBlurY: Array<[ThinBlurPostProcess, number]> = [];
     /** @internal */
-    public _dofMerge: ThinDepthOfFieldMergePostProcess;
+    public readonly _dofMerge: ThinDepthOfFieldMergePostProcess;
 
     /**
      * The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter)

@@ -28,6 +28,7 @@ import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layer
 import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 import { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
+import { NodeRenderGraphSSRPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -134,6 +135,9 @@ export class BlockTools {
             }
             case "HighlightLayerBlock": {
                 return new NodeRenderGraphHighlightLayerBlock("Highlight Layer", frameGraph, scene);
+            }
+            case "SSRBlock": {
+                return new NodeRenderGraphSSRPostProcessBlock("SSR", frameGraph, scene);
             }
         }
 

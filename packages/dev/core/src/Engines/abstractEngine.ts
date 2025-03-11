@@ -1307,6 +1307,13 @@ export abstract class AbstractEngine {
     public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
 
     /**
+     * Sets the type of faces to cull
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param force defines if states must be applied even if cache is up to date
+     */
+    public abstract setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void;
+
+    /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)

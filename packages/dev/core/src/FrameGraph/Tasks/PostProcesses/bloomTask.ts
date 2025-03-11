@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, AbstractEngine } from "core/index";
+import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -79,21 +79,20 @@ export class FrameGraphBloomTask extends FrameGraphTask {
      * Constructs a new bloom task.
      * @param name Name of the task.
      * @param frameGraph The frame graph this task is associated with.
-     * @param engine The engine to use for the bloom effect.
      * @param weight Weight of the bloom effect.
      * @param kernel Kernel size of the bloom effect.
      * @param threshold Threshold of the bloom effect.
      * @param hdr Whether the bloom effect is HDR.
      * @param bloomScale The scale of the bloom effect. This value is multiplied by the source texture size to determine the bloom texture size.
      */
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
+    constructor(name: string, frameGraph: FrameGraph, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
 
         this.hdr = hdr;
 
         this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
-            const caps = engine.getCaps();
+            const caps = frameGraph.engine.getCaps();
             if (caps.textureHalfFloatRender) {
                 this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender) {
@@ -101,7 +100,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             }
         }
 
-        this.bloom = new ThinBloomEffect(name, engine, bloomScale);
+        this.bloom = new ThinBloomEffect(name, frameGraph.engine, bloomScale);
         this.bloom.threshold = threshold;
         this.bloom.kernel = kernel;
         this.bloom.weight = weight;

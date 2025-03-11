@@ -275,7 +275,7 @@ export class FrameGraphTextureManager {
                 size: textureSizeIsObject(creationOptions.size) ? { ...creationOptions.size } : creationOptions.size,
                 sizeIsPercentage: creationOptions.sizeIsPercentage,
                 isHistoryTexture: creationOptions.isHistoryTexture,
-                options: FrameGraphTextureManager.CloneTextureOptions(creationOptions.options),
+                options: FrameGraphTextureManager.CloneTextureOptions(creationOptions.options, undefined, true),
             },
             this._isRecordingTask ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph,
             handle
@@ -872,9 +872,10 @@ export class FrameGraphTextureManager {
      * Clones a texture options
      * @param options The options to clone
      * @param textureIndex The index of the texture in the types, formats, etc array of FrameGraphTextureOptions. If not provided, all options are cloned.
+     * @param preserveLabels True if the labels should be preserved (default: false)
      * @returns The cloned options
      */
-    public static CloneTextureOptions(options: FrameGraphTextureOptions, textureIndex?: number): FrameGraphTextureOptions {
+    public static CloneTextureOptions(options: FrameGraphTextureOptions, textureIndex?: number, preserveLabels?: boolean): FrameGraphTextureOptions {
         return textureIndex !== undefined
             ? {
                   createMipMaps: options.createMipMaps,
@@ -892,7 +893,7 @@ export class FrameGraphTextureManager {
                   formats: options.formats ? [...options.formats] : undefined,
                   useSRGBBuffers: options.useSRGBBuffers ? [...options.useSRGBBuffers] : undefined,
                   creationFlags: options.creationFlags ? [...options.creationFlags] : undefined,
-                  labels: options.labels ? [...options.labels] : undefined,
+                  labels: options.labels && preserveLabels ? [...options.labels] : undefined,
               };
     }
 

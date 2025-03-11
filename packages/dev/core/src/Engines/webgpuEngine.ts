@@ -2309,10 +2309,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const texture = new InternalTexture(this, source);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
-        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth ?? 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers ?? 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -2509,7 +2509,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public _unpackFlipY(value: boolean) {}
+    public _unpackFlipY(_value: boolean) {}
 
     /**
      * Update the sampling mode of a given texture
@@ -3537,6 +3537,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return false;
     }
 
+    public setStateCullFaceType(cullBackFaces?: boolean, force = false) {
+        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 2;
+        if (this._depthCullingState.cullFace !== cullFace || force) {
+            this._depthCullingState.cullFace = cullFace;
+        }
+    }
+
     /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
@@ -3554,10 +3561,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         // Cull face
-        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 2;
-        if (this._depthCullingState.cullFace !== cullFace || force) {
-            this._depthCullingState.cullFace = cullFace;
-        }
+        this.setStateCullFaceType(cullBackFaces, force);
 
         // Z offset
         this.setZOffset(zOffset);
