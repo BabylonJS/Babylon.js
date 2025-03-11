@@ -23,6 +23,7 @@ export interface IWebAudioBusAndSoundSubGraphOptions extends ISpatialAudioOption
 
 /** @internal */
 export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph {
+    private _rootNode: Nullable<GainNode> = null;
     protected abstract readonly _upstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
     protected _inNode: Nullable<AudioNode> = null;
@@ -91,9 +92,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         if (spatialNode) {
             spatialNode.disconnectAll();
 
-            if (stereoNode) {
-                spatialNode.connect(stereoNode);
-            } else if (volumeNode) {
+            if (volumeNode) {
                 spatialNode.connect(volumeNode);
             }
         }
@@ -106,17 +105,32 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             }
         }
 
-        let inSubNode: Nullable<IWebAudioSubNode> = null;
-
-        if (spatialNode) {
-            inSubNode = spatialNode as _SpatialWebAudioSubNode;
-        } else if (stereoNode) {
-            inSubNode = stereoNode as _StereoWebAudioSubNode;
-        } else if (volumeNode) {
-            inSubNode = volumeNode as _VolumeWebAudioSubNode;
+        if (spatialNode && stereoNode) {
+            this._rootNode = new GainNode(this._owner.engine.audioContext);
+            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode).outNode);
+            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode).outNode);
+        } else {
+            this._rootNode?.disconnect();
+            this._rootNode = null;
         }
 
-        const inNode = inSubNode?.node ?? null;
+        let inSubNode: Nullable<IWebAudioSubNode> = null;
+
+        let inNode: Nullable<AudioNode> = null;
+
+        if (this._rootNode) {
+            inNode = this._rootNode;
+        } else {
+            if (spatialNode) {
+                inSubNode = spatialNode as _SpatialWebAudioSubNode;
+            } else if (stereoNode) {
+                inSubNode = stereoNode as _StereoWebAudioSubNode;
+            } else if (volumeNode) {
+                inSubNode = volumeNode as _VolumeWebAudioSubNode;
+            }
+
+            inNode = inSubNode?.node ?? null;
+        }
 
         if (this._inNode !== inNode) {
             // Disconnect the wrapped upstream WebAudio nodes from the old wrapped WebAudio node.
