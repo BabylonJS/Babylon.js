@@ -444,8 +444,9 @@ float E_FON_approx(float mu, float roughness)
     return (1.0 + sigma * GoverPi) / (1.0 + constant1_FON * sigma);
 }
 
-vec3 diffuseBRDF_EON(vec3 rho, float roughness, float NdotL, float NdotV, float LdotV)
+vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, float LdotV)
 {
+    vec3 rho = vec3(0.5);
     float sigma = roughness;                            // FON sigma prime
     float mu_i = NdotL;                            // input angle cos
     float mu_o = NdotV;                            // output angle cos
@@ -461,7 +462,7 @@ vec3 diffuseBRDF_EON(vec3 rho, float roughness, float NdotL, float NdotV, float 
     vec3 f_ms = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0 - EFo) // multi-scatter lobe
                                  * max(eps, 1.0 - EFi)
                                  / max(eps, 1.0 - avgEF);
-    return f_ss + f_ms;
+    return (f_ss + f_ms) / rho;
 }
 
 #ifdef SS_TRANSLUCENCY
