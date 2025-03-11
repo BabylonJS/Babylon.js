@@ -585,7 +585,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             if (!d) {
                 throw new Error("Rotation quaternion input not found");
             }
-            context._connectionValues[d.uniqueId].type = FlowGraphTypes.Quaternion;
+            // if value is defined, set the type to quaternion
+            if (context._connectionValues[d.uniqueId]) {
+                context._connectionValues[d.uniqueId].type = FlowGraphTypes.Quaternion;
+            }
             return serializedObjects;
         },
     },
