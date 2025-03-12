@@ -1308,6 +1308,9 @@ export class NodeMaterial extends PushMaterial {
         }
 
         postProcess.nodeMaterialSource = this;
+        postProcess.onDisposeObservable.add(() => {
+            dummyMesh.dispose();
+        });
 
         postProcess.onApplyObservable.add((effect) => {
             if (buildId !== this._buildId) {
