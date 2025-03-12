@@ -496,7 +496,7 @@ export class PostProcess {
     /**
      * An event triggered when the post-process is disposed
      */
-    public onDisposeObservable = new Observable<void>();
+    public readonly onDisposeObservable = new Observable<void>();
 
     /**
      * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
