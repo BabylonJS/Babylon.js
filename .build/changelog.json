@@ -1,22 +1,6 @@
 {
-    "fromTag": "7.52.1",
+    "fromTag": "7.52.2",
     "changelog": {
-        "7.52.1": [
-            {
-                "pr": "16255",
-                "title": "Allow engine instance to be passed to LoadImage",
-                "description": "This is to address https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950\r\n\r\nCurrently when using multiple WebGPUEngine instances, it's quite easy to get into a scenario where creating a texture fails. This is due to a confluence of other issues:\r\n1. `LoadImage` uses `EngineStore.LastEngine` and accesses `engine._features`\r\n2. `EngineStore.LastEngine` is set synchronously when the engine is constructed, but `WebGPUEngine` sets `_features` asynchronously during `initAsync`.\r\n3. We don't have the `strictPropertyInitialization` TS flag enabled, which means it's easy for these kinds of issues to slip through (where `_features` is declared as non-nullable but in fact can be null/undefined).\r\n\r\nTargeted fix is to just allow an engine instance to be passed to `LoadImage`, and doing so in the specific code path that is failing. ",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/abstractEngine.ts",
-                    "packages/dev/core/src/Misc/fileTools.ts"
-                ],
-                "tags": []
-            }
-        ],
         "7.52.2": [
             {
                 "pr": "16259",
@@ -103,6 +87,379 @@
                     "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
                     "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx",
                     "packages/dev/sharedUiComponents/src/styleHelper.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.52.3": [
+            {
+                "pr": "16280",
+                "title": "Document sound property defaults",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16278",
+                "title": "Allow old audio engine to be enabled using engine's `audioEngine` option",
+                "description": "The old audio engine is not being enabled when the graphics engine is constructed with the `audioEngine` option set to `true`. This change fixes it while keeping the desired behavior of not enabling the old audio engine by default anymore, which was done to pave the way for the new audio engine.\r\n\r\nPartially reverts https://github.com/BabylonJS/Babylon.js/pull/16249 to address issues reported on forum:\r\n- https://forum.babylonjs.com/t/legacy-audio-engine-enabled-not-working/57059.\r\n- https://forum.babylonjs.com/t/audioenginev2-how-to-attach-sound-to-mesh-in-a-new-way/57027/5\r\n",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.common.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16272",
+                "title": "Fix some imports for IBL shadows pipeline",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16277",
+                "title": "Fix point mode not being observed when using default material",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16260",
+                "title": "Add audio analyzer feature to audio engine v2 sound and bus classes",
+                "description": "Adds a lazy-loaded `analyzer` property to the sound and bus classes in the new audio engine, and adds analyzer-related init options.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/mainAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/audioAnalyzerSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/audioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/stereoAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractAudioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/audioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/index.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioAnalyzerSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBaseSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16275",
+                "title": "Make spatial and stereo subnodes route audio in parallel, not chained",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16266",
+                "title": "Cleanup WebGPU invertYPreMultiplyAlpha",
+                "description": "As I mentioned on the [forum](https://forum.babylonjs.com/t/text-is-not-shown-in-3d-gui-using-webgpu/57005) text in 3D GUI is not shown on my machine when using WebGPU.\r\n\r\n1. After a debugging session I found the issue in the shader, we used clip space coordinates with textureLoad which takes texture coordinates. It seems that most GPUs (but not my AMD 780M) optimise textures to use clip space dimensions.\r\n2. Looks like after [discussion](https://github.com/gpuweb/gpuweb/issues/2324) with webGPU 4 years ago they implemented flipY flag, so now we can simply use `this._device.queue.copyExternalImageToTexture({ source: imageBitmap, flipY: true }, ...);` for most of cases, except for `imageBitmap as Uint8Array` as we can't call it with `Uint8Array`\r\n3. I noticed that the result of `PREMULTIPLYALPHA` (in `invertYPreMultiplyAlphaFragmentSource`) is not used because it is always overwritten by `color`\r\n4. Looks like copyWithInvertY is unused\r\n\r\nThanks, feel free to change the code if I made a mistake\r\n\r\n\r\n",
+                "author": {
+                    "name": "3vilWind",
+                    "url": "https://github.com/3vilWind"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16273",
+                "title": "Skip legacy audio engine init in playgrounds that explicitly turn it off",
+                "description": "There is currently no way to disable the old audio engine in playgrounds that include `BABYLON.Sound`, even if the playground supplies a `createEngine` function and explicitly sets the `audioEngine` option to `false`.\r\n\r\nThis change fixes the issue by only doing the backcompat init of the old audio engine if the engine's `audioEngine` option is undefined or explicitly set to `true`. This causes backcompat init of the old audio engine to be skipped when the engine's `audioEngine` option is explicitly set to `false`.\r\n\r\n#### Forum post:\r\nhttps://forum.babylonjs.com/t/audioenginev2-how-to-attach-sound-to-mesh-in-a-new-way/57027/12\r\n\r\nTested with playground https://playground.babylonjs.com/#QARKUZ#5.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16269",
+                "title": "Node Editor : Enhancing Node Manipulation",
+                "description": "This PR follows this topic from the forum :\r\nhttps://forum.babylonjs.com/t/node-editors-enhancing-node-manipulation/50573/3\r\n\r\n- Default box selection with left click (leaving wheel click for panning)\r\n- Moving a node holding SHIFT will bring the parent nodes\r\n- Moving a node holding ALT will bring the children nodes\r\n\r\n`NB` For some reason, some old code was not formatted",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16270",
+                "title": "FlowGraph/glTF interactivity - some fixes.",
+                "description": "Ensure the type is set to quaternion only when the connection value is defined, preventing potential errors.\r\n\r\nAlso fixing Integer and custom matrix missing toString functions",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/CustomTypes/flowGraphInteger.ts",
+                    "packages/dev/core/src/FlowGraph/CustomTypes/flowGraphMatrix.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/objectModelMapping.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16262",
+                "title": "FrameGraph: add support for SSR",
+                "description": "Sorry, big PR!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/blurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/ssrBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/ssrRenderingPipelineTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/ssrTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/thinSSRRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/thinDepthOfFieldEffect.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurCombinerPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRPostProcess.ts",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2BlurCombiner.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-SSR-HillValley.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-SSR-cube.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-SSR-neon.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/customRTT.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16268",
+                "title": "Mesh: Fix crash when cloning mesh",
+                "description": "See https://forum.babylonjs.com/t/gpu-meshed-voxel-data-questions/57009",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16267",
+                "title": "Fix Typo",
+                "description": "https://forum.babylonjs.com/t/gltfexporter-typo/57018/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16264",
+                "title": "Fix dynamically imported shaders",
+                "description": "I recently added support for hdr environments to the Viewer. It looked like everything was working, but I later noticed errors in the browser console like indicating several expected shaders did not exist (no idea why these don't show up in the VSCode debug console, which is why I missed it originally). When I dug into this, I found that in fact dynamically importing most shaders is currently broken, and has been for about 4 months. The issue is that after a refactor, we ended up with code that awaits a function rather than awaiting the result of the function because the actual invocation of the function was missing. That means the code that tries to dynamically import shaders never even executes. I would have thought this would break a lot of scenarios (basically any consumer that is not relying on side effects to statically import the shaders), so I'm quite surprised it went unnoticed this long. 🤷🏻‍♂️",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16257",
+                "title": "Initial impl of Viewer Configurator",
+                "description": "This introduces the new Viewer Configurator tool. For testing purposes, we already had a build pipeline running on the side branch so others could test. This means if you check out https://viewerconfig.babylonjs.com, it will be up-to-date with the state of the code in this PR.\r\n\r\nThis PR has contributions from @RaananW (build, webpack, and deployment), @alexchuber (much of the initial setup, all the styling, and much of the UI), and @ryantrem (most of the state/logic and some of the UI).\r\n\r\nDocs have already been updated as well with a new section on the Viewer Configurator.\r\n\r\nAside from introducing the Viewer Configurator, this PR has a few small fixes for minor Viewer issues we discovered along the way.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.dist.json",
+                    "packages/tools/viewer-configurator/package.json",
+                    "packages/tools/viewer-configurator/public/index.html",
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer-configurator/src/App.tsx",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.scss",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.tsx",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.scss",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer-configurator/src/components/misc/ExpandableMessageLineComponent.tsx",
+                    "packages/tools/viewer-configurator/src/components/misc/FontAwesomeIconButton.tsx",
+                    "packages/tools/viewer-configurator/src/hooks/observableHooks.ts",
+                    "packages/tools/viewer-configurator/src/index.tsx",
+                    "packages/tools/viewer-configurator/src/modelLoader.ts",
+                    "packages/tools/viewer-configurator/src/scssDeclaration.d.ts",
+                    "packages/tools/viewer-configurator/tsconfig.build.json",
+                    "packages/tools/viewer-configurator/tsconfig.json",
+                    "packages/tools/viewer-configurator/webpack.config.js",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16258",
+                "title": "Refactor error handling and add DataSwitch block",
+                "description": "Centralized error handling improves consistency across animation and control flow blocks. \nIntroduced FlowGraphDataSwitchBlock for conditional data output based on specified cases.\nDataSwith (math/switch in KHR_interactivit-ish) is needed to stay conform with the specs.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCancelDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockFactory.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockNames.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/utils.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/objectModel.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16263",
+                "title": "Particle create custom effect: Allow to pass the vertex shader name",
+                "description": "See https://forum.babylonjs.com/t/access-gpu-particle-vec4-seed-in-custom-effect/56951/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "16261",
+                "title": "Bump axios from 1.7.9 to 1.8.2",
+                "description": "Bumps [axios](https://github.com/axios/axios) from 1.7.9 to 1.8.2.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/axios/axios/releases\">axios's releases</a>.</em></p>\n<blockquote>\n<h2>Release v1.8.2</h2>\n<h2>Release notes:</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>http-adapter:</strong> add allowAbsoluteUrls to path building (<a href=\"https://redirect.github.com/axios/axios/issues/6810\">#6810</a>) (<a href=\"https://github.com/axios/axios/commit/fb8eec214ce7744b5ca787f2c3b8339b2f54b00f\">fb8eec2</a>)</li>\n</ul>\n<h3>Contributors to this release</h3>\n<ul>\n<li><!-- raw HTML omitted --> <a href=\"https://github.com/lexcorp16\" title=\"+1/-1 ([#6810](https://github.com/axios/axios/issues/6810) )\">Fasoro-Joseph Alexander</a></li>\n</ul>\n<h2>Release v1.8.1</h2>\n<h2>Release notes:</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>utils:</strong> move <code>generateString</code> to platform utils to avoid importing crypto module into client builds; (<a href=\"https://redirect.github.com/axios/axios/issues/6789\">#6789</a>) (<a href=\"https://github.com/axios/axios/commit/36a5a620bec0b181451927f13ac85b9888b86cec\">36a5a62</a>)</li>\n</ul>\n<h3>Contributors to this release</h3>\n<ul>\n<li><!-- raw HTML omitted --> <a href=\"https://github.com/DigitalBrainJS\" title=\"+51/-47 ([#6789](https://github.com/axios/axios/issues/6789) )\">Dmitriy Mozgovoy</a></li>\n</ul>\n<h2>Release v1.8.0</h2>\n<h2>Release notes:</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>examples:</strong> application crashed when navigating examples in browser (<a href=\"https://redirect.github.com/axios/axios/issues/5938\">#5938</a>) (<a href=\"https://github.com/axios/axios/commit/1260ded634ec101dd5ed05d3b70f8e8f899dba6c\">1260ded</a>)</li>\n<li>missing word in SUPPORT_QUESTION.yml (<a href=\"https://redirect.github.com/axios/axios/issues/6757\">#6757</a>) (<a href=\"https://github.com/axios/axios/commit/1f890b13f2c25a016f3c84ae78efb769f244133e\">1f890b1</a>)</li>\n<li><strong>utils:</strong> replace getRandomValues with crypto module (<a href=\"https://redirect.github.com/axios/axios/issues/6788\">#6788</a>) (<a href=\"https://github.com/axios/axios/commit/23a25af0688d1db2c396deb09229d2271cc24f6c\">23a25af</a>)</li>\n</ul>\n<h3>Features</h3>\n<ul>\n<li>Add config for ignoring absolute URLs (<a href=\"https://redirect.github.com/axios/axios/issues/5902\">#5902</a>) (<a href=\"https://redirect.github.com/axios/axios/issues/6192\">#6192</a>) (<a href=\"https://github.com/axios/axios/commit/32c7bcc0f233285ba27dec73a4b1e81fb7a219b3\">32c7bcc</a>)</li>\n</ul>\n<h3>Reverts</h3>\n<ul>\n<li>Revert &quot;chore: expose fromDataToStream to be consumable (<a href=\"https://redirect.github.com/axios/axios/issues/6731\">#6731</a>)&quot; (<a href=\"https://redirect.github.com/axios/axios/issues/6732\">#6732</a>) (<a href=\"https://github.com/axios/axios/commit/1317261125e9c419fe9f126867f64d28f9c1efda\">1317261</a>), closes <a href=\"https://redirect.github.com/axios/axios/issues/6731\">#6731</a> <a href=\"https://redirect.github.com/axios/axios/issues/6732\">#6732</a></li>\n</ul>\n<h3>BREAKING CHANGES</h3>\n<ul>\n<li>\n<p>code relying on the above will now combine the URLs instead of prefer request URL</p>\n</li>\n<li>\n<p>feat: add config option for allowing absolute URLs</p>\n</li>\n<li>\n<p>fix: add default value for allowAbsoluteUrls in buildFullPath</p>\n</li>\n<li>\n<p>fix: typo in flow control when setting allowAbsoluteUrls</p>\n</li>\n</ul>\n<h3>Contributors to this release</h3>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/axios/axios/blob/v1.x/CHANGELOG.md\">axios's changelog</a>.</em></p>\n<blockquote>\n<h2><a href=\"https://github.com/axios/axios/compare/v1.8.1...v1.8.2\">1.8.2</a> (2025-03-07)</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>http-adapter:</strong> add allowAbsoluteUrls to path building (<a href=\"https://redirect.github.com/axios/axios/issues/6810\">#6810</a>) (<a href=\"https://github.com/axios/axios/commit/fb8eec214ce7744b5ca787f2c3b8339b2f54b00f\">fb8eec2</a>)</li>\n</ul>\n<h3>Contributors to this release</h3>\n<ul>\n<li><!-- raw HTML omitted --> <a href=\"https://github.com/lexcorp16\" title=\"+1/-1 ([#6810](https://github.com/axios/axios/issues/6810) )\">Fasoro-Joseph Alexander</a></li>\n</ul>\n<h2><a href=\"https://github.com/axios/axios/compare/v1.8.0...v1.8.1\">1.8.1</a> (2025-02-26)</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>utils:</strong> move <code>generateString</code> to platform utils to avoid importing crypto module into client builds; (<a href=\"https://redirect.github.com/axios/axios/issues/6789\">#6789</a>) (<a href=\"https://github.com/axios/axios/commit/36a5a620bec0b181451927f13ac85b9888b86cec\">36a5a62</a>)</li>\n</ul>\n<h3>Contributors to this release</h3>\n<ul>\n<li><!-- raw HTML omitted --> <a href=\"https://github.com/DigitalBrainJS\" title=\"+51/-47 ([#6789](https://github.com/axios/axios/issues/6789) )\">Dmitriy Mozgovoy</a></li>\n</ul>\n<h1><a href=\"https://github.com/axios/axios/compare/v1.7.9...v1.8.0\">1.8.0</a> (2025-02-25)</h1>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>examples:</strong> application crashed when navigating examples in browser (<a href=\"https://redirect.github.com/axios/axios/issues/5938\">#5938</a>) (<a href=\"https://github.com/axios/axios/commit/1260ded634ec101dd5ed05d3b70f8e8f899dba6c\">1260ded</a>)</li>\n<li>missing word in SUPPORT_QUESTION.yml (<a href=\"https://redirect.github.com/axios/axios/issues/6757\">#6757</a>) (<a href=\"https://github.com/axios/axios/commit/1f890b13f2c25a016f3c84ae78efb769f244133e\">1f890b1</a>)</li>\n<li><strong>utils:</strong> replace getRandomValues with crypto module (<a href=\"https://redirect.github.com/axios/axios/issues/6788\">#6788</a>) (<a href=\"https://github.com/axios/axios/commit/23a25af0688d1db2c396deb09229d2271cc24f6c\">23a25af</a>)</li>\n</ul>\n<h3>Features</h3>\n<ul>\n<li>Add config for ignoring absolute URLs (<a href=\"https://redirect.github.com/axios/axios/issues/5902\">#5902</a>) (<a href=\"https://redirect.github.com/axios/axios/issues/6192\">#6192</a>) (<a href=\"https://github.com/axios/axios/commit/32c7bcc0f233285ba27dec73a4b1e81fb7a219b3\">32c7bcc</a>)</li>\n</ul>\n<h3>Reverts</h3>\n<ul>\n<li>Revert &quot;chore: expose fromDataToStream to be consumable (<a href=\"https://redirect.github.com/axios/axios/issues/6731\">#6731</a>)&quot; (<a href=\"https://redirect.github.com/axios/axios/issues/6732\">#6732</a>) (<a href=\"https://github.com/axios/axios/commit/1317261125e9c419fe9f126867f64d28f9c1efda\">1317261</a>), closes <a href=\"https://redirect.github.com/axios/axios/issues/6731\">#6731</a> <a href=\"https://redirect.github.com/axios/axios/issues/6732\">#6732</a></li>\n</ul>\n<h3>BREAKING CHANGES</h3>\n<ul>\n<li>\n<p>code relying on the above will now combine the URLs instead of prefer request URL</p>\n</li>\n<li>\n<p>feat: add config option for allowing absolute URLs</p>\n</li>\n<li>\n<p>fix: add default value for allowAbsoluteUrls in buildFullPath</p>\n</li>\n</ul>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/axios/axios/commit/a9f7689b0c4b6d68c7f587c3aa376860da509d94\"><code>a9f7689</code></a> chore(release): v1.8.2 (<a href=\"https://redirect.github.com/axios/axios/issues/6812\">#6812</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/fb8eec214ce7744b5ca787f2c3b8339b2f54b00f\"><code>fb8eec2</code></a> fix(http-adapter): add allowAbsoluteUrls to path building (<a href=\"https://redirect.github.com/axios/axios/issues/6810\">#6810</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/98120457559e573024862e2925d56295a965ad7e\"><code>9812045</code></a> chore(sponsor): update sponsor block (<a href=\"https://redirect.github.com/axios/axios/issues/6804\">#6804</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/72acf759373ef4e211d5299818d19e50e08c02f8\"><code>72acf75</code></a> chore(sponsor): update sponsor block (<a href=\"https://redirect.github.com/axios/axios/issues/6794\">#6794</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/2e64afdff5c41e38284a6fb8312f2745072513a1\"><code>2e64afd</code></a> chore(release): v1.8.1 (<a href=\"https://redirect.github.com/axios/axios/issues/6800\">#6800</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/36a5a620bec0b181451927f13ac85b9888b86cec\"><code>36a5a62</code></a> fix(utils): move <code>generateString</code> to platform utils to avoid importing crypto...</li>\n<li><a href=\"https://github.com/axios/axios/commit/cceb7b1e154fbf294135c93d3f91921643bbe49f\"><code>cceb7b1</code></a> chore(release): v1.8.0 (<a href=\"https://redirect.github.com/axios/axios/issues/6795\">#6795</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/23a25af0688d1db2c396deb09229d2271cc24f6c\"><code>23a25af</code></a> fix(utils): replace getRandomValues with crypto module (<a href=\"https://redirect.github.com/axios/axios/issues/6788\">#6788</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/32c7bcc0f233285ba27dec73a4b1e81fb7a219b3\"><code>32c7bcc</code></a> feat: Add config for ignoring absolute URLs (<a href=\"https://redirect.github.com/axios/axios/issues/5902\">#5902</a>) (<a href=\"https://redirect.github.com/axios/axios/issues/6192\">#6192</a>)</li>\n<li><a href=\"https://github.com/axios/axios/commit/4a3e26cf65bb040b7eb4577d5fd62199b0f3d017\"><code>4a3e26c</code></a> chore(config): adjust rollup config to preserve license header to minified Ja...</li>\n<li>Additional commits viewable in <a href=\"https://github.com/axios/axios/compare/v1.7.9...v1.8.2\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=axios&package-manager=npm_and_yarn&previous-version=1.7.9&new-version=1.8.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            }
+        ],
+        "7.52.1": [
+            {
+                "pr": "16255",
+                "title": "Allow engine instance to be passed to LoadImage",
+                "description": "This is to address https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950\r\n\r\nCurrently when using multiple WebGPUEngine instances, it's quite easy to get into a scenario where creating a texture fails. This is due to a confluence of other issues:\r\n1. `LoadImage` uses `EngineStore.LastEngine` and accesses `engine._features`\r\n2. `EngineStore.LastEngine` is set synchronously when the engine is constructed, but `WebGPUEngine` sets `_features` asynchronously during `initAsync`.\r\n3. We don't have the `strictPropertyInitialization` TS flag enabled, which means it's easy for these kinds of issues to slip through (where `_features` is declared as non-nullable but in fact can be null/undefined).\r\n\r\nTargeted fix is to just allow an engine instance to be passed to `LoadImage`, and doing so in the specific code path that is failing. ",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
                 ],
                 "tags": []
             }
