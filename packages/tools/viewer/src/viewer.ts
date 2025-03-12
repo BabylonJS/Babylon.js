@@ -1253,19 +1253,26 @@ export class Viewer implements IDisposable {
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        let url: Nullable<string> = null;
+        const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
-            url = (await import("./defaultEnvironment")).default;
-            const loadOptions: LoadEnvironmentOptions = { ...options, extension: ".env" };
-            options = loadOptions;
+            const lightingOptions = { ...options, skybox: false };
+            options = { ...options, lighting: false };
+            promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
         }
 
-        await this._updateEnvironment(url, options, abortSignal);
+        promises.push(this._updateEnvironment(undefined, options, abortSignal));
+        await Promise.all(promises);
     }
 
     private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
+
+        let urlPromise: Nullable<string | undefined> | Promise<string> = url;
+        if (url && url.trim() === "auto") {
+            options = { ...options, extension: ".env" };
+            urlPromise = (async () => (await import("./defaultEnvironment")).default)();
+        }
 
         options = options ?? defaultLoadEnvironmentOptions;
         if (!options.lighting && !options.skybox) {
@@ -1306,6 +1313,7 @@ export class Viewer implements IDisposable {
             dispose();
 
             try {
+                url = await urlPromise;
                 if (url) {
                     const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 

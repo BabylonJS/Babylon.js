@@ -303,6 +303,10 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     public getClassName(): string {
         return "FlowGraphMatrix2D";
     }
+
+    public toString(): string {
+        return `FlowGraphMatrix2D(${this._m.join(", ")})`;
+    }
 }
 
 /**
@@ -494,5 +498,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     public getClassName(): string {
         return "FlowGraphMatrix3D";
+    }
+
+    public toString(): string {
+        return `FlowGraphMatrix3D(${this._m.join(", ")})`;
     }
 }

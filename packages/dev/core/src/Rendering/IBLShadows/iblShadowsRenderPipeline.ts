@@ -25,6 +25,8 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Material } from "core/Materials/material";
 import { Observable } from "core/Misc/observable";
+import "../geometryBufferRendererSceneComponent";
+import "../iblCdfGeneratorSceneComponent";
 
 interface IblShadowsSettings {
     /**

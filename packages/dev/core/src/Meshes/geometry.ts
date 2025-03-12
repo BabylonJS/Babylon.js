@@ -65,7 +65,10 @@ export class Geometry implements IGetSetVerticesData {
     /** @internal */
     public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
-    private _extend: { minimum: Vector3; maximum: Vector3 };
+    private _extend: { minimum: Vector3; maximum: Vector3 } = {
+        minimum: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
+        maximum: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
+    };
     private _boundingBias: Vector2;
     /** @internal */
     public _delayInfo: Array<string>;

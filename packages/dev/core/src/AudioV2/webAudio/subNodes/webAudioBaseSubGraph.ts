@@ -1,18 +1,22 @@
-import type { Nullable } from "core/types";
+import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
 import { _AbstractAudioSubGraph } from "../../abstractAudio/subNodes/abstractAudioSubGraph";
 import type { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
+import { _GetAudioAnalyzerSubNode } from "../../abstractAudio/subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
 import type { IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
 import { _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import type { IAudioAnalyzerOptions } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
+import { _HasAudioAnalyzerOptions } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
 import type { IWebAudioInNode, IWebAudioSuperNode } from "../webAudioNode";
 import type { _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
 import { _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
+import { _CreateAudioAnalyzerSubNodeAsync } from "./webAudioAnalyzerSubNode";
 
 /**
  * Options for creating a WebAudioBaseSubGraph.
  */
-export interface IWebAudioBaseSubGraphOptions extends IVolumeAudioOptions {}
+export interface IWebAudioBaseSubGraphOptions extends IAudioAnalyzerOptions, IVolumeAudioOptions {}
 
 /** @internal */
 export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
@@ -28,8 +32,24 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
 
     /** @internal */
     public async init(options: Partial<IWebAudioBaseSubGraphOptions>): Promise<void> {
-        this._createAndAddSubNode(AudioSubNode.VOLUME);
+        const hasAnalyzerOptions = _HasAudioAnalyzerOptions(options);
+
+        if (hasAnalyzerOptions) {
+            await this.createAndAddSubNode(AudioSubNode.ANALYZER);
+        }
+
+        await this.createAndAddSubNode(AudioSubNode.VOLUME);
+
         await this._createSubNodePromisesResolved();
+
+        if (hasAnalyzerOptions) {
+            const analyzerNode = _GetAudioAnalyzerSubNode(this);
+            if (!analyzerNode) {
+                throw new Error("No analyzer subnode.");
+            }
+
+            analyzerNode.setOptions(options);
+        }
 
         const volumeNode = _GetVolumeAudioSubNode(this);
         if (!volumeNode) {
@@ -69,12 +89,23 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         return this._outNode;
     }
 
-    protected _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
+    protected _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
         switch (name) {
+            case AudioSubNode.ANALYZER:
+                return _CreateAudioAnalyzerSubNodeAsync(this._owner.engine);
             case AudioSubNode.VOLUME:
                 return _CreateVolumeAudioSubNodeAsync(this._owner.engine);
             default:
-                return null;
+                throw new Error(`Unknown subnode name: ${name}`);
+        }
+    }
+
+    protected _onSubNodesChanged(): void {
+        const analyzerNode = _GetAudioAnalyzerSubNode(this);
+        const volumeNode = _GetVolumeAudioSubNode(this);
+
+        if (analyzerNode && volumeNode) {
+            volumeNode.connect(analyzerNode);
         }
     }
 }

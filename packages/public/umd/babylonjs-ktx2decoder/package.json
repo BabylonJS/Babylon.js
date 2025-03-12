@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-ktx2decoder",
-    "version": "7.52.2",
+    "version": "7.52.3",
     "main": "babylon.ktx2Decoder.js",
     "types": "babylon.ktx2Decoder.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^7.52.2"
+        "babylonjs": "^7.52.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
