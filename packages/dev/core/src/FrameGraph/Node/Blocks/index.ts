@@ -7,9 +7,11 @@ export * from "./resourceContainerBlock";
 export * from "./Layers/glowLayerBlock";
 export * from "./Layers/highlightLayerBlock";
 
+export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
+export * from "./PostProcesses/chromaticAberrationPostProcessBlock";
 export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
