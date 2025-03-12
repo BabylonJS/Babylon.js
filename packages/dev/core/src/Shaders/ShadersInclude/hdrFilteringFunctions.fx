@@ -221,7 +221,11 @@
                     T.y = texture2D(icdfSampler, vec2(T.x, Xi.y)).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
-                    vec3 H = (n + Ls) * 0.5;
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        vec3 H = (n + Ls) * 0.5;
+                    #else
+                        vec3 H = (inputV + Ls) * 0.5;
+                    #endif
                     float NoH = dot(n, H);
                     float NoV = dot(n, inputV);
                     float VoH = dot(inputV, H);
@@ -231,10 +235,13 @@
                     Ls = normalize(Ls);
                     vec3 Ns = vec3(0., 0., 1.);
                     float NoL = dot(Ns, Ls);
-                    vec3 H = (Ns + Ls) * 0.5;
-                    float NoH = dot(Ns, H);
-                    
                     vec3 V = tbnInverse * inputV;
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        vec3 H = (Ns + Ls) * 0.5;
+                    #else
+                        vec3 H = (V + Ls) * 0.5;
+                    #endif
+                    float NoH = dot(Ns, H);
                     float NoV = dot(Ns, V);
                     float VoH = dot(V, H);
                     float LoV = dot (Ls, V);
