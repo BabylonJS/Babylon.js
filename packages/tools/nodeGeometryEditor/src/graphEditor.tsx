@@ -151,10 +151,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
+        const globalState = this.props.globalState;
 
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+        if (globalState.hostDocument) {
+            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
+
+        globalState.stateManager.onUpdateRequiredObservable.clear();
+        globalState.stateManager.onRebuildRequiredObservable.clear();
+        globalState.stateManager.onNodeMovedObservable.clear();
+        globalState.stateManager.onNewNodeCreatedObservable.clear();
+        globalState.onClearUndoStack.clear();
 
         if (this._historyStack) {
             this._historyStack.dispose();
