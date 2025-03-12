@@ -31,9 +31,24 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
-    public async callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): Promise<void> {
-        await this._createSubNodePromisesResolved();
-        callback(this.getSubNode(name) || ((await this.createAndAddSubNode(name)) as T));
+    public callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): void {
+        const node = this.getSubNode(name);
+        if (node) {
+            callback(node as T);
+            return;
+        }
+
+        this._createSubNodePromisesResolved().then(() => {
+            const node = this.getSubNode(name);
+            if (node) {
+                callback(node as T);
+                return;
+            }
+
+            this.createAndAddSubNode(name).then((node) => {
+                callback(node as T);
+            });
+        });
     }
 
     /**
