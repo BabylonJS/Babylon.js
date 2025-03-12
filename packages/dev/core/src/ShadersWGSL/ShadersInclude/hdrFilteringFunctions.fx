@@ -188,7 +188,11 @@
                     T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
                     var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
                     var NoL: f32 = dot(n, Ls);
-                    var H: vec3f = (n + Ls) * 0.5;
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        var H: vec3f = (n + Ls) * 0.5;
+                    #else
+                        var H: vec3f = (inputV + Ls) * 0.5;
+                    #endif
                     var NoH: f32 = dot(n, H);
                     var NoV: f32 = dot(n, inputV);
                     var VoH: f32 = dot(inputV, H);
@@ -198,10 +202,13 @@
                     Ls = normalize(Ls);
                     var Ns: vec3f =  vec3f(0., 0., 1.);
                     var NoL: f32 = dot(Ns, Ls);
-                    var H: vec3f = (Ns + Ls) * 0.5;
-                    var NoH: f32 = dot(Ns, H);
-                    
                     var V: vec3f = tbnInverse * inputV;
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        var H: vec3f = (Ns + Ls) * 0.5;
+                    #else
+                        var H: vec3f = (V + Ls) * 0.5;
+                    #endif
+                    var NoH: f32 = dot(Ns, H);
                     var NoV: f32 = dot(Ns, V);
                     var VoH: f32 = dot(V, H);
                     var LoV: f32 = dot(Ls, V);
