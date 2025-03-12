@@ -325,12 +325,30 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             type: "Matrix",
             get: (node: INode) => Matrix.Compose(node._babylonTransformNode?.scaling!, node._babylonTransformNode?.rotationQuaternion!, node._babylonTransformNode?.position!),
             getTarget: (node: INode) => node._babylonTransformNode,
+            isReadOnly: true,
         },
         globalMatrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            get: (node: INode) => {
+                const matrix = Matrix.Identity();
+                // RHS/LHS support
+                let rootNode = node.parent;
+                while (rootNode && rootNode.parent) {
+                    rootNode = rootNode.parent;
+                }
+                if (rootNode) {
+                    // take the parent root node's world matrix, invert it, and multiply it with the current node's world matrix
+                    // This will provide the global matrix, ignoring the RHS->LHS conversion
+                    const rootMatrix = rootNode._babylonTransformNode?.getWorldMatrix().invert();
+                    if (rootMatrix) {
+                        node._babylonTransformNode?.getWorldMatrix()?.multiplyToRef(rootMatrix, matrix);
+                    }
+                } else if (node._babylonTransformNode) {
+                    matrix.copyFrom(node._babylonTransformNode.getWorldMatrix());
+                }
+                return matrix;
+            },
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "worldMatrixFromCache"],
             isReadOnly: true,
         },
         extensions: {
