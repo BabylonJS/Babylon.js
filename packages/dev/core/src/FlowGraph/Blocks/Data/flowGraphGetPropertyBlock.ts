@@ -1,11 +1,11 @@
 import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 
 export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAssetType> extends IFlowGraphBlockConfiguration {
     /**
@@ -32,12 +32,7 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
  *
  * Note that it is recommended to input the object on which you are working on (i.e. a material) rather than providing a mesh as object and then getting the material from it.
  */
-export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
-    /**
-     * Output connection: The value of the property.
-     */
-    public readonly value: FlowGraphDataConnection<P>;
-
+export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphCachedOperationBlock<P> {
     /**
      * Input connection: The asset from which the property will be retrieved
      */
@@ -47,11 +42,6 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
      * Input connection: The name of the property that will be set
      */
     public readonly propertyName: FlowGraphDataConnection<string>;
-
-    /**
-     * Output connection: Whether the value is valid.
-     */
-    public readonly isValid: FlowGraphDataConnection<boolean>;
 
     /**
      * Input connection: A function that can be used to get the value of the property.
@@ -65,15 +55,13 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
          */
         public override config: IFlowGraphGetPropertyBlockConfiguration<O>
     ) {
-        super(config);
+        super(RichTypeAny, config);
         this.object = this.registerDataInput("object", RichTypeAny, config.object);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
-        this.value = this.registerDataOutput("value", RichTypeAny);
-        this.isValid = this.registerDataOutput("isValid", RichTypeAny, false);
         this.customGetFunction = this.registerDataInput("customGetFunction", RichTypeAny);
     }
 
-    public override _updateOutputs(context: FlowGraphContext): void {
+    public override _doOperation(context: FlowGraphContext): P | undefined {
         const getter = this.customGetFunction.getValue(context);
         let value;
         if (getter) {
@@ -83,13 +71,7 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
             const propertyName = this.propertyName.getValue(context);
             value = target && propertyName ? this._getPropertyValue(target, propertyName) : undefined;
         }
-        if (value === undefined) {
-            this.value.resetToDefaultValue(context);
-            this.isValid.setValue(false, context);
-        } else {
-            this.value.setValue(value, context);
-            this.isValid.setValue(true, context);
-        }
+        return value;
     }
 
     private _getPropertyValue(target: AssetType<O>, propertyName: string): P | undefined {

@@ -1,6 +1,5 @@
 import type { FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphPathConverterComponent } from "core/FlowGraph/flowGraphPathConverterComponent";
@@ -13,6 +12,7 @@ import type { Animation } from "core/Animations/animation";
 import type { EasingFunction } from "core/Animations/easing";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
+import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 
 /**
  * Configuration for the JSON pointer parser block.
@@ -38,7 +38,7 @@ export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGrap
  * The output is an object and a property name.
  * Optionally, the block can also output the value of the property. This is configurable.
  */
-export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
+export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphCachedOperationBlock<P> {
     /**
      * Output connection: The object that contains the property.
      */
@@ -48,12 +48,6 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
      * Output connection: The property name.
      */
     public readonly propertyName: FlowGraphDataConnection<string>;
-
-    /**
-     * Output connection: The value of the property.
-     * Note that per default this is not outputted. It can be enabled by setting the outputValue property to true.
-     */
-    public readonly value: FlowGraphDataConnection<P>;
 
     /**
      * Output connection: A function that can be used to update the value of the property.
@@ -71,11 +65,6 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public readonly generateAnimationsFunction: FlowGraphDataConnection<() => (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
 
     /**
-     * Output connection: Whether the value is valid.
-     */
-    public readonly isValid: FlowGraphDataConnection<boolean>;
-
-    /**
      * The component with the templated inputs for the provided path.
      */
     public readonly templateComponent: FlowGraphPathConverterComponent;
@@ -86,47 +75,29 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
          */
         public override config: IFlowGraphJsonPointerParserBlockConfiguration
     ) {
-        super(config);
+        super(RichTypeAny, config);
         this.object = this.registerDataOutput("object", RichTypeAny);
         this.propertyName = this.registerDataOutput("propertyName", RichTypeAny);
-        this.isValid = this.registerDataOutput("isValid", RichTypeAny);
-        if (config.outputValue) {
-            this.value = this.registerDataOutput("value", RichTypeAny);
-        }
         this.setterFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
         this.getterFunction = this.registerDataOutput("getFunction", RichTypeAny, this._getPropertyValue.bind(this));
         this.generateAnimationsFunction = this.registerDataOutput("generateAnimationsFunction", RichTypeAny, this._getInterpolationAnimationPropertyInfo.bind(this));
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
-    public override _updateOutputs(context: FlowGraphContext) {
-        try {
-            const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-            const value = accessorContainer.info.get(accessorContainer.object);
-            const object = accessorContainer.info.getTarget?.(accessorContainer.object);
-            const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
-            if (!object) {
-                this.isValid.setValue(false, context);
-                return;
-            } else {
-                this.object.setValue(object, context);
-                if (propertyName) {
-                    this.propertyName.setValue(propertyName, context);
-                }
-                this.isValid.setValue(true, context);
+    public override _doOperation(context: FlowGraphContext): P {
+        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const value = accessorContainer.info.get(accessorContainer.object) as P;
+        const object = accessorContainer.info.getTarget?.(accessorContainer.object);
+        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
+        if (!object) {
+            throw new Error("Object is undefined");
+        } else {
+            this.object.setValue(object, context);
+            if (propertyName) {
+                this.propertyName.setValue(propertyName, context);
             }
-            if (this.config.outputValue) {
-                if (value === undefined) {
-                    this.isValid.setValue(false, context);
-                } else {
-                    this.value.setValue(value, context);
-                    this.isValid.setValue(true, context);
-                }
-            }
-        } catch (e) {
-            this.isValid.setValue(false, context);
-            return;
         }
+        return value;
     }
 
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {

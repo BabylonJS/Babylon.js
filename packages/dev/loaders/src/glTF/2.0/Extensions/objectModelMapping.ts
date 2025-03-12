@@ -323,14 +323,32 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => Matrix.Compose(node._babylonTransformNode?.scaling!, node._babylonTransformNode?.rotationQuaternion!, node._babylonTransformNode?.position!),
+            get: (node: INode) => node._babylonTransformNode?._localMatrix.clone(),
             getTarget: (node: INode) => node._babylonTransformNode,
+            isReadOnly: true,
         },
         globalMatrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            get: (node: INode) => {
+                const matrix = Matrix.Identity();
+                // RHS/LHS support
+                let rootNode = node.parent;
+                while (rootNode && rootNode.parent) {
+                    rootNode = rootNode.parent;
+                }
+                if (rootNode) {
+                    // take the parent root node's world matrix, invert it, and multiply it with the current node's world matrix
+                    // This will provide the global matrix, ignoring the RHS->LHS conversion
+                    const rootMatrix = rootNode._babylonTransformNode?.getWorldMatrix().invert();
+                    if (rootMatrix) {
+                        node._babylonTransformNode?.getWorldMatrix()?.multiplyToRef(rootMatrix, matrix);
+                    }
+                } else if (node._babylonTransformNode) {
+                    matrix.copyFrom(node._babylonTransformNode.getWorldMatrix());
+                }
+                return matrix;
+            },
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "worldMatrixFromCache"],
             isReadOnly: true,
         },
         extensions: {
@@ -953,14 +971,17 @@ function _GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: s
                 const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uOffset = value.x), (texture.vOffset = value.y);
             },
-            getPropertyName: [() => `${textureType}.${textureInObject}.uOffset`, () => `${textureType}.${textureInObject}.vOffset`],
+            getPropertyName: [
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vOffset`,
+            ],
         },
         rotation: {
             type: "number",
             get: (material, _index?, payload?) => _GetTexture(material, payload, textureType, textureInObject)?.wAng,
             getTarget: _GetMaterial,
             set: (value, material, _index?, payload?) => (_GetTexture(material, payload, textureType, textureInObject).wAng = value),
-            getPropertyName: [() => `${textureType}.${textureInObject}.wAng`],
+            getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
         },
         scale: {
             componentsCount: 2,
@@ -974,7 +995,10 @@ function _GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: s
                 const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uScale = value.x), (texture.vScale = value.y);
             },
-            getPropertyName: [() => `${textureType}.${textureInObject}.uScale`, () => `${textureType}.${textureInObject}.vScale`],
+            getPropertyName: [
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vScale`,
+            ],
         },
     };
 }
