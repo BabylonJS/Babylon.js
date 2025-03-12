@@ -17,6 +17,7 @@ import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+import "../Audio/audioEngine";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.rawTexture";
