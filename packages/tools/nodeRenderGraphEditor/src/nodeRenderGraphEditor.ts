@@ -45,6 +45,8 @@ export class NodeRenderGraphEditor {
             }
         }
 
+        alert("Frame graph is currently in alpha phase, so don't use it in production code yet!");
+
         let hostElement = options.hostElement;
 
         if (!hostElement) {
