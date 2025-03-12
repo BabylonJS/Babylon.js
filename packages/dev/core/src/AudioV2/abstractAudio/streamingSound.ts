@@ -51,7 +51,7 @@ export abstract class StreamingSound extends AbstractSound {
     }
 
     /**
-     * The number of instances to preload.
+     * The number of instances to preload. Defaults to `1`.
      */
     public get preloadCount(): number {
         return this._options.preloadCount ?? 1;
