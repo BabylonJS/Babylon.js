@@ -29,17 +29,17 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
 
-        this.output._typeConnectionSource = this.texture;
+        this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;
 
         this._frameGraphTask = new FrameGraphClearTextureTask(name, frameGraph);
@@ -94,9 +94,9 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the texture input component
+     * Gets the target input component
      */
-    public get texture(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -124,10 +124,10 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.texture, this.output);
+        this._propagateInputValueToOutput(this.target, this.output);
         this._propagateInputValueToOutput(this.depth, this.outputDepth);
 
-        this._frameGraphTask.destinationTexture = this.texture.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
     }
 

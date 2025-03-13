@@ -612,7 +612,7 @@ export class NodeRenderGraph {
         clear.clearDepth = true;
         clear.clearStencil = true;
 
-        colorTexture.output.connectTo(clear.texture);
+        colorTexture.output.connectTo(clear.target);
         depthTexture.output.connectTo(clear.depth);
 
         // Render objects
@@ -623,7 +623,7 @@ export class NodeRenderGraph {
 
         camera.output.connectTo(mainRendering.camera);
         objectList.output.connectTo(mainRendering.objects);
-        clear.output.connectTo(mainRendering.destination);
+        clear.output.connectTo(mainRendering.target);
         clear.outputDepth.connectTo(mainRendering.depth);
 
         // Final output

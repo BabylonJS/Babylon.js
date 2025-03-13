@@ -19,10 +19,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
-     * The destination texture to render the post process to.
+     * The target texture to render the post process to.
      * If not supplied, a texture with the same configuration as the source texture will be created.
      */
-    public destinationTexture?: FrameGraphTextureHandle;
+    public targetTexture?: FrameGraphTextureHandle;
 
     /**
      * The output texture of the post process.
@@ -82,7 +82,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
         sourceTextureCreationOptions.options.samples = 1;
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this.name, sourceTextureCreationOptions);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture, this.name, sourceTextureCreationOptions);
 
         const sourceSize = !sourceTextureCreationOptions.sizeIsPercentage
             ? textureSizeIsObject(sourceTextureCreationOptions.size)

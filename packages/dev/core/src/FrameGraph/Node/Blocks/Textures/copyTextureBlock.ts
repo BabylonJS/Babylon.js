@@ -28,13 +28,13 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         super(name, frameGraph, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = this.destination;
+        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphCopyToTextureTask(name, frameGraph);
     }
@@ -54,9 +54,9 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the destination input component
+     * Gets the target input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[1];
     }
 
@@ -73,7 +73,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         this._frameGraphTask.sourceTexture = this.source.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }
 }
 
