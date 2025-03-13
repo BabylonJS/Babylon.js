@@ -48,7 +48,7 @@ export function ExtrudeShape(
         invertUV?: boolean;
         firstNormal?: Vector3;
         adjustFrame?: boolean;
-        capFunction?: Function;
+        capFunction?: Nullable<{ (shapePath: Vector3[]): Vector3[] }>;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -140,7 +140,7 @@ export function ExtrudeShapeCustom(
         invertUV?: boolean;
         firstNormal?: Vector3;
         adjustFrame?: boolean;
-        capFunction?: Function;
+        capFunction?: Nullable<{ (shapePath: Vector3[]): Vector3[] }>;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -212,7 +212,7 @@ function _ExtrudeShapeGeneric(
     backUVs: Nullable<Vector4>,
     firstNormal: Nullable<Vector3>,
     adjustFrame: boolean,
-    capFunction: Nullable<Function>
+    capFunction: Nullable<{ (shapePath: Vector3[]): Vector3[] }>
 ): Mesh {
     // extrusion geometry
     const extrusionPathArray = (
