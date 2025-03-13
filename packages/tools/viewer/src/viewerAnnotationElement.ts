@@ -18,18 +18,43 @@ export class HTML3DAnnotationElement extends LitElement {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static override styles = css`
         :host {
+            --annotation-foreground-color: black;
+            --annotation-background-color: white;
             display: inline-block;
             position: absolute;
             transition: opacity 0.25s;
         }
+
         :host([hidden]) {
             display: none;
         }
+
         :host(:state(back-facing)) {
             opacity: 0.2;
         }
+
         :host(:state(invalid)) {
             display: none;
+        }
+
+        .annotation {
+            transform: translate(-50%, -135%);
+            font-size: 14px;
+            padding: 0px 6px;
+            border-radius: 6px;
+            color: var(--annotation-foreground-color);
+            background-color: var(--annotation-background-color);
+        }
+
+        .annotation::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            height: 60%;
+            aspect-ratio: 1;
+            transform: translate(-50%, 110%) rotate(-45deg);
+            background-color: inherit;
+            clip-path: polygon(0 0, 100% 100%, 0 100%, 0 0);
         }
     `;
 
@@ -119,7 +144,7 @@ export class HTML3DAnnotationElement extends LitElement {
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
-        return html` <slot></slot> `;
+        return html` <slot><div aria-label="${this.hotSpot} annotation" part="annotation" class="annotation">${this.hotSpot}</div></slot> `;
     }
 
     /** @internal */
