@@ -1359,11 +1359,11 @@ describe("Interactivity math nodes", () => {
                         // matrix4d
                         a: {
                             type: 0,
-                            value: randomMatrix1,
+                            value: randomMatrix2,
                         },
                         b: {
                             type: 0,
-                            value: randomMatrix2,
+                            value: randomMatrix1,
                         },
                     },
                 },
