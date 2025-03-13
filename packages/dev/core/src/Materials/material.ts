@@ -1710,7 +1710,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                const material = subMesh.getMaterial() || scene.defaultMaterial;
+                const material = subMesh.getMaterial() || (scene._hasDefaultMaterial ? scene.defaultMaterial : null);
                 if (material !== this) {
                     continue;
                 }
