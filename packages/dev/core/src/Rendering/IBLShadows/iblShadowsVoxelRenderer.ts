@@ -11,6 +11,7 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
+import { Observable } from "../../Misc/observable";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
@@ -51,6 +52,11 @@ export class _IblShadowsVoxelRenderer {
             return this._voxelGridZaxis;
         }
     }
+
+    /**
+     * Observable that triggers when the voxelization is complete
+     */
+    public onVoxelizationCompleteObservable: Observable<void> = new Observable<void>();
 
     /**
      * The debug pass post process
@@ -659,6 +665,7 @@ export class _IblShadowsVoxelRenderer {
                     this._copyMipMaps();
                     this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
                     this._voxelizationInProgress = false;
+                    this.onVoxelizationCompleteObservable.notifyObservers();
                 });
             }
         }
