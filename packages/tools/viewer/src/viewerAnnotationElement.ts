@@ -18,6 +18,8 @@ export class HTML3DAnnotationElement extends LitElement {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static override styles = css`
         :host {
+            --annotation-foreground-color: black;
+            --annotation-background-color: white;
             display: inline-block;
             position: absolute;
             transition: opacity 0.25s;
@@ -40,7 +42,8 @@ export class HTML3DAnnotationElement extends LitElement {
             font-size: 14px;
             padding: 0px 6px;
             border-radius: 6px;
-            background-color: white;
+            color: var(--annotation-foreground-color);
+            background-color: var(--annotation-background-color);
         }
 
         .annotation::after {
