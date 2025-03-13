@@ -1,92 +1,129 @@
 {
-    "fromTag": "7.52.2",
+    "fromTag": "7.52.3",
     "changelog": {
-        "7.52.2": [
+        "7.53.0": [
             {
-                "pr": "16259",
-                "title": "Fix color affectation when dealing with color3 component",
-                "description": null,
+                "pr": "16294",
+                "title": "Viewer: add the concept of a faulted state and a reload button",
+                "description": "If there are too many Viewer instances, we can get into a faulted state (e.g. webgl context lost, but maybe other things in the future). This PR adds the concept of the Viewer entering a faulted state, and the Viewer element handles this and shows a reload button. The reload button will recreate the underlying Viewer, which may in turn cause another Viewer instance to go into a faulted state and get a reload button.",
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    ".build/config.json",
-                    "packages/dev/core/src/Meshes/geometry.ts",
-                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "16251",
-                "title": "Add spatial audio attach to camera, mesh and transform node capabilities to audio engine v2",
-                "description": "Based on original PR https://github.com/BabylonJS/Babylon.js/pull/16161, but with refactors and updates including using camera view matrixes instead of their world matrixes.\r\n\r\nNote that this PR targets the `master` branch, unlike the original PR which targeted the now merged `audio-engine-v2` branch.",
+                "pr": "16292",
+                "title": "Update sandbox.tsx",
+                "description": "Add .spz to the text of files that can be open by the sandbox",
                 "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
+                    "name": "thomlucc",
+                    "url": "https://github.com/thomlucc"
                 },
                 "files": [
-                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/audioBus.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/components/spatialAudioAttacherComponent.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudio.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudioListener.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
-                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudioListener.ts",
-                    "packages/dev/core/src/AudioV2/index.ts",
-                    "packages/dev/core/src/AudioV2/spatialAudioAttachmentType.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/components/spatialWebAudioUpdaterComponent.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudio.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
-                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts"
-                ],
-                "tags": [
-                    "audio"
-                ]
-            },
-            {
-                "pr": "16256",
-                "title": "corrected property assignment",
-                "description": "Apologies, just spotted an error on recent PR: https://github.com/BabylonJS/Babylon.js/pull/16254.\r\n\r\nThis corrects it.",
-                "author": {
-                    "name": "j-te",
-                    "url": "https://github.com/j-te"
-                },
-                "files": [
-                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
+                    "packages/tools/sandbox/src/sandbox.tsx"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "16254",
-                "title": "Inspector gltf validation save",
-                "description": "- Refactored GLTF Validation _More details_ and added Copy button for user convenience.\r\n- `<TextLineComponent />` now has optional `onCopy` property which accepts `true` or a callback that must return a string.\r\n- Updated `onCopy` to common classes' `ID` property.",
+                "pr": "16291",
+                "title": "Added new param capFunction in MeshBuilder.ExtrudeShape",
+                "description": "Following discussions in these topic :\r\nhttps://forum.babylonjs.com/t/extrude-2d-png-image-to-mesh/54230/42\r\nand this topic :\r\nhttps://forum.babylonjs.com/t/extrudeshape-caps-issue/57062/3\r\n\r\nThis (light !) PR is adding a new param to `MeshBuilder.ExtrudeShape` so that we can pass a custom function for cap, avoiding issue with non convex shapes",
                 "author": {
-                    "name": "j-te",
-                    "url": "https://github.com/j-te"
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
                 },
                 "files": [
-                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/commonCameraPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
-                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx",
-                    "packages/dev/sharedUiComponents/src/styleHelper.ts"
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16285",
+                "title": "Correctly support global matrix in glTF interactivity",
+                "description": "Because of babylon's RHS->LHS conversion of any glTF scene, there was an issue with using the global matrix compared to local matrix in glTF interactivity (or more percise in the glTF json pointer system).\n\nLocal matrix is actually in RHS, as the node itself doesn't change the properties provided from glTF. However, globalMatrix was (incorrectly) in LHS. The solution is to provide the global matrix in RHS as well. I am doing it by inverting the root node's transformation and multiplying it. This way we support RHS (identity) and LHS (rotation/scaling combination).\n\nThis PR also changes the JSONPointer block and the getproperty block to be a cached operation, meaning calculations will only be done once per execusion. This will optimize the execusion.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/objectModelMapping.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16290",
+                "title": "Post-Process: Add missing dispose calls",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "16279",
+                "title": "Fix spatial audio init issues",
+                "description": "If spatial audio is not enabled at init time using the `spatialEnabled` option, accessing the `spatial` property on a sound or bus throws error \"Sub node not found\".\r\n\r\nThis change fixes the issue by creating the underlying spatial audio subnode if it doesn't exist, instead of throwing an error.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBaseSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16288",
+                "title": "NRGE: Show popup for alpha stage",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/nodeRenderGraphEditor/src/nodeRenderGraphEditor.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16289",
+                "title": "Update dependencies (including vite)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/tools/viewer/package.json"
                 ],
                 "tags": []
             }
@@ -446,6 +483,96 @@
                 "tags": [
                     "dependencies"
                 ]
+            }
+        ],
+        "7.52.2": [
+            {
+                "pr": "16259",
+                "title": "Fix color affectation when dealing with color3 component",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16251",
+                "title": "Add spatial audio attach to camera, mesh and transform node capabilities to audio engine v2",
+                "description": "Based on original PR https://github.com/BabylonJS/Babylon.js/pull/16161, but with refactors and updates including using camera view matrixes instead of their world matrixes.\r\n\r\nNote that this PR targets the `master` branch, unlike the original PR which targeted the now merged `audio-engine-v2` branch.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/components/spatialAudioAttacherComponent.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/index.ts",
+                    "packages/dev/core/src/AudioV2/spatialAudioAttachmentType.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/components/spatialWebAudioUpdaterComponent.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16256",
+                "title": "corrected property assignment",
+                "description": "Apologies, just spotted an error on recent PR: https://github.com/BabylonJS/Babylon.js/pull/16254.\r\n\r\nThis corrects it.",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16254",
+                "title": "Inspector gltf validation save",
+                "description": "- Refactored GLTF Validation _More details_ and added Copy button for user convenience.\r\n- `<TextLineComponent />` now has optional `onCopy` property which accepts `true` or a callback that must return a string.\r\n- Updated `onCopy` to common classes' `ID` property.",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/commonCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/styleHelper.ts"
+                ],
+                "tags": []
             }
         ],
         "7.52.1": [

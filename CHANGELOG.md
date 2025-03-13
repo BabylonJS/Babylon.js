@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.53.0
+
+### Core
+
+- Added new param capFunction in MeshBuilder.ExtrudeShape - by [Tricotou](https://github.com/Tricotou) ([#16291](https://github.com/BabylonJS/Babylon.js/pull/16291))
+- Correctly support global matrix in glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16285](https://github.com/BabylonJS/Babylon.js/pull/16285))
+- Post-Process: Add missing dispose calls - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16290](https://github.com/BabylonJS/Babylon.js/pull/16290))
+- Fix spatial audio init issues - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16279](https://github.com/BabylonJS/Babylon.js/pull/16279))
+
+### Loaders
+
+- Correctly support global matrix in glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16285](https://github.com/BabylonJS/Babylon.js/pull/16285))
+
+### Viewer
+
+- Viewer: add the concept of a faulted state and a reload button - by [ryantrem](https://github.com/ryantrem) ([#16294](https://github.com/BabylonJS/Babylon.js/pull/16294))
+- Update dependencies (including vite) - by [RaananW](https://github.com/RaananW) ([#16289](https://github.com/BabylonJS/Babylon.js/pull/16289))
+
 ## 7.52.3
 
 ### Core
