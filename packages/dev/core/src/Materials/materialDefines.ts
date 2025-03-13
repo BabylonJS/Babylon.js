@@ -94,7 +94,7 @@ export class MaterialDefines {
         this._areLightsDirty = true;
         this._areFresnelDirty = true;
         this._areMiscDirty = true;
-        this._arePrePassDirty = false;
+        this._arePrePassDirty = true;
         this._areImageProcessingDirty = true;
         this._isDirty = true;
     }
