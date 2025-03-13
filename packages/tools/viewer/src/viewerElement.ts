@@ -1142,7 +1142,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     protected _renderReloadButton(): TemplateResult {
         return html`${this._isFaulted
             ? html`
-                  <button class="reload-button" @click="${this._setupViewer}">
+                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this._setupViewer}">
                       <svg viewBox="0 0 24 24">
                           <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
                       </svg>
