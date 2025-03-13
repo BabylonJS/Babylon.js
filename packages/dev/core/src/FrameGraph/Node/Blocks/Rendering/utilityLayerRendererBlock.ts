@@ -31,13 +31,13 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
 
         this._additionalConstructionParameters = [handleEvents];
 
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = this.destination;
+        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphUtilityLayerRendererTask(name, frameGraph, scene, handleEvents);
     }
@@ -69,9 +69,9 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
     }
 
     /**
-     * Gets the destination input component
+     * Gets the target input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -94,7 +94,7 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
 
         this.output.value = this._frameGraphTask.outputTexture;
 
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
     }
 }

@@ -2444,71 +2444,71 @@
         },
         {
             "title": "FrameGraph nrge shadows",
-            "playgroundId": "#JWKDME#13",
+            "playgroundId": "#JWKDME#28",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge csm shadows",
-            "playgroundId": "#JWKDME#12",
+            "playgroundId": "#JWKDME#29",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge custom rendering",
-            "playgroundId": "#1QCA2M",
+            "playgroundId": "#1QCA2M#1",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge depth of field",
-            "playgroundId": "#GAGVQO#1",
+            "playgroundId": "#GAGVQO#3",
             "errorRatio": 3
         },
         {
             "title": "FrameGraph nrge glow layer",
-            "playgroundId": "#IG8NRC#11",
+            "playgroundId": "#IG8NRC#15",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge highlight layer",
-            "playgroundId": "#QZYNMK",
+            "playgroundId": "#QZYNMK#1",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge SSR cube",
-            "playgroundId": "#PIZ1GK#2072",
+            "playgroundId": "#PIZ1GK#2090",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR HillValley",
-            "playgroundId": "#PIZ1GK#2075",
+            "playgroundId": "#PIZ1GK#2091",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR neon",
-            "playgroundId": "#Z6C5EF",
+            "playgroundId": "#Z6C5EF#1",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrg gui bloom",
-            "playgroundId": "#3LB017",
+            "playgroundId": "#3LB017#1",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph glow layer",
-            "playgroundId": "#9YU4C5#4",
+            "playgroundId": "#9YU4C5#8",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1
         },
         {
             "title": "FrameGraph highlight layer",
-            "playgroundId": "#PV8OLY#13"
+            "playgroundId": "#PV8OLY#16"
         },
         {
             "title": "FrameGraph custom rendering",
-            "playgroundId": "#RM56RY#7"
+            "playgroundId": "#RM56RY#15"
         },
         {
             "title": "FrameGraph gui bloom",
-            "playgroundId": "#RM56RY#6"
+            "playgroundId": "#RM56RY#16"
         },
         {
             "title": "IBL radiance roughness",

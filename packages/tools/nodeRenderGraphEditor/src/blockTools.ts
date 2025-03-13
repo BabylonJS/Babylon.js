@@ -29,6 +29,8 @@ import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 import { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 import { NodeRenderGraphSSRPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock";
+import { NodeRenderGraphAnaglyphPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock";
+import { NodeRenderGraphChromaticAberrationPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/chromaticAberrationPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -138,6 +140,12 @@ export class BlockTools {
             }
             case "SSRBlock": {
                 return new NodeRenderGraphSSRPostProcessBlock("SSR", frameGraph, scene);
+            }
+            case "AnaglyphBlock": {
+                return new NodeRenderGraphAnaglyphPostProcessBlock("Anaglyph", frameGraph, scene);
+            }
+            case "ChromaticAberrationBlock": {
+                return new NodeRenderGraphChromaticAberrationPostProcessBlock("Chromatic Aberration", frameGraph, scene);
             }
         }
 

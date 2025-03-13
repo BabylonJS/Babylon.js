@@ -22,10 +22,10 @@ export class FrameGraphBloomTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
-     * The destination texture to render the bloom effect to.
+     * The target texture to render the bloom effect to.
      * If not supplied, a texture with the same configuration as the source texture will be created.
      */
-    public destinationTexture?: FrameGraphTextureHandle;
+    public targetTexture?: FrameGraphTextureHandle;
 
     /**
      * The output texture of the bloom effect.
@@ -151,31 +151,31 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         this._downscale.sourceTexture = this.sourceTexture;
         this._downscale.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-        this._downscale.destinationTexture = downscaleTextureHandle;
+        this._downscale.targetTexture = downscaleTextureHandle;
         this._downscale.record(true);
 
         const blurXTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurX.name, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
         this._blurX.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-        this._blurX.destinationTexture = blurXTextureHandle;
+        this._blurX.targetTexture = blurXTextureHandle;
         this._blurX.record(true);
 
         const blurYTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurY.name, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
         this._blurY.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-        this._blurY.destinationTexture = blurYTextureHandle;
+        this._blurY.targetTexture = blurYTextureHandle;
         this._blurY.record(true);
 
         const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture, this._merge.name, sourceTextureCreationOptions);
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;
         this._merge.blurTexture = blurYTextureHandle;
-        this._merge.destinationTexture = this.outputTexture;
+        this._merge.targetTexture = this.outputTexture;
         this._merge.record(true);
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);

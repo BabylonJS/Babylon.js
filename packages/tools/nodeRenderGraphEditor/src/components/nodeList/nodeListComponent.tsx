@@ -57,6 +57,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         HighlightLayerBlock: "Adds a highlight effect to a texture",
         UtilityLayerRendererBlock: "Renders an utility layer",
         SSRBlock: "Applies a Screen Space Reflection post process",
+        AnaglyphBlock: "Applies an anaglyph post process",
+        ChromaticAberrationBlock: "Applies a chromatic aberration post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -151,9 +153,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ShadowLightBlock",
             ],
             Post_Processes: [
+                "AnaglyphBlock",
                 "BlackAndWhiteBlock",
                 "BloomBlock",
                 "BlurBlock",
+                "ChromaticAberrationBlock",
                 "CircleOfConfusionBlock",
                 "DepthOfFieldBlock",
                 "ExtractHighlightsBlock",

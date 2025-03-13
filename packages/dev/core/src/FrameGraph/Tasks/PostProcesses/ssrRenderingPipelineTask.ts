@@ -63,9 +63,9 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
     }
 
     /**
-     * The destination texture to render the SSR effect to.
+     * The target texture to render the SSR effect to.
      */
-    public destinationTexture?: FrameGraphTextureHandle;
+    public targetTexture?: FrameGraphTextureHandle;
 
     /**
      * The output texture of the SSR effect.
@@ -186,22 +186,22 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
             sizeIsPercentage: false,
         };
 
-        if (this.ssr.blurDispersionStrength > 0 || !this.destinationTexture) {
+        if (this.ssr.blurDispersionStrength > 0 || !this.targetTexture) {
             ssrTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._ssr.name, textureCreationOptions);
         }
 
         if (this.ssr.blurDispersionStrength === 0) {
-            this._ssr.destinationTexture = this.outputTexture;
+            this._ssr.targetTexture = this.outputTexture;
 
             if (ssrTextureHandle !== undefined) {
                 this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, ssrTextureHandle);
             } else {
-                this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+                this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
             }
 
             this._ssr.record(true);
         } else {
-            this._ssr.destinationTexture = ssrTextureHandle;
+            this._ssr.targetTexture = ssrTextureHandle;
             this._ssr.record(true);
 
             textureSize.width = Math.floor(sourceTextureDescription.size.width / (this.ssr.blurDownsample + 1));
@@ -209,25 +209,25 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
             const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this.name + " Output", sourceTextureCreationOptions);
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture, this.name + " Output", sourceTextureCreationOptions);
 
             const blurXTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._ssrBlurX.name, textureCreationOptions);
 
             this._ssrBlurX.sourceTexture = ssrTextureHandle!;
             this._ssrBlurX.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-            this._ssrBlurX.destinationTexture = blurXTextureHandle;
+            this._ssrBlurX.targetTexture = blurXTextureHandle;
             this._ssrBlurX.record(true);
 
             const blurYTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._ssrBlurY.name, textureCreationOptions);
 
             this._ssrBlurY.sourceTexture = blurXTextureHandle;
             this._ssrBlurY.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-            this._ssrBlurY.destinationTexture = blurYTextureHandle;
+            this._ssrBlurY.targetTexture = blurYTextureHandle;
             this._ssrBlurY.record(true);
 
             this._ssrBlurCombiner.sourceTexture = this.sourceTexture;
             this._ssrBlurCombiner.sourceSamplingMode = this.sourceSamplingMode;
-            this._ssrBlurCombiner.destinationTexture = this.outputTexture;
+            this._ssrBlurCombiner.targetTexture = this.outputTexture;
             const combinerPass = this._ssrBlurCombiner.record(true, undefined, (context) => {
                 context.bindTextureHandle(this._ssrBlurCombiner.drawWrapper.effect!, "mainSampler", this.sourceTexture);
                 context.bindTextureHandle(this._ssrBlurCombiner.drawWrapper.effect!, "textureSampler", blurYTextureHandle);
