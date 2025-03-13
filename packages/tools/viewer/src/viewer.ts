@@ -1403,6 +1403,7 @@ export class Viewer implements IDisposable {
         this.animationProgress = 0;
 
         this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();

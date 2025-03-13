@@ -27,6 +27,8 @@ const arrowResetFilledIcon =
     "M7.20711 2.54289C7.59763 2.93342 7.59763 3.56658 7.20711 3.95711L5.41421 5.75H13.25C17.6683 5.75 21.25 9.33172 21.25 13.75C21.25 18.1683 17.6683 21.75 13.25 21.75C8.83172 21.75 5.25 18.1683 5.25 13.75C5.25 13.1977 5.69772 12.75 6.25 12.75C6.80228 12.75 7.25 13.1977 7.25 13.75C7.25 17.0637 9.93629 19.75 13.25 19.75C16.5637 19.75 19.25 17.0637 19.25 13.75C19.25 10.4363 16.5637 7.75 13.25 7.75H5.41421L7.20711 9.54289C7.59763 9.93342 7.59763 10.5666 7.20711 10.9571C6.81658 11.3476 6.18342 11.3476 5.79289 10.9571L2.29289 7.45711C1.90237 7.06658 1.90237 6.43342 2.29289 6.04289L5.79289 2.54289C6.18342 2.15237 6.81658 2.15237 7.20711 2.54289Z";
 const targetFilledIcon =
     "M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14ZM6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12ZM12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z";
+const arrowClockwiseFilledIcon =
+    "M5 12C5 8.13401 8.13401 5 12 5C13.32 5 14.5542 5.36484 15.608 6H15C14.4477 6 14 6.44772 14 7C14 7.55228 14.4477 8 15 8H18C18.5523 8 19 7.55228 19 7C19 6 19 5 19 4C19 3.44772 18.5523 3 18 3C17.4477 3 17 3.44772 17 4V4.51575C15.5702 3.5588 13.85 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 11.6199 20.9764 11.2448 20.9304 10.8763C20.8621 10.3282 20.3624 9.93935 19.8144 10.0077C19.2663 10.076 18.8775 10.5757 18.9458 11.1237C18.9815 11.4104 19 11.7028 19 12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12Z";
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
@@ -300,6 +302,25 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             top: 0;
             background: transparent;
             pointer-events: none;
+        }
+
+        .reload-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 25%;
+            transform: translate(-50%, -50%);
+            color: var(--ui-foreground-color);
+            background-color: var(--ui-background-color);
+            border: 1px solid transparent;
+            border-radius: 24px;
+            padding: 0;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .reload-button:hover {
+            background-color: var(--ui-background-color-hover);
         }
 
         .bar {
@@ -583,6 +604,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return true;
         }
         return false;
+    }
+
+    @state()
+    private _isFaultedBacking = false;
+
+    protected get _isFaulted() {
+        return this._isFaultedBacking;
     }
 
     /**
@@ -1108,6 +1136,23 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /**
      * @experimental
+     * Renders the reload button.
+     * @returns The template result for the reload button.
+     */
+    protected _renderReloadButton(): TemplateResult {
+        return html`${this._isFaulted
+            ? html`
+                  <button class="reload-button" @click="${this._setupViewer}">
+                      <svg viewBox="0 0 24 24">
+                          <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
+                      </svg>
+                  </button>
+              `
+            : ""}`;
+    }
+
+    /**
+     * @experimental
      * Renders UI elements that overlay the viewer.
      * Override this method to provide additional rendering for the component.
      * @returns TemplateResult The rendered template result.
@@ -1118,6 +1163,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             <slot class="full-size children-slot"></slot>
             <slot name="progress-bar">${this._renderProgressBar()}</slot>
             <slot name="tool-bar">${this._renderToolbar()}</slot>
+            <slot name="reload-button">${this._renderReloadButton()}</slot>
         `;
     }
 
@@ -1298,6 +1344,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                             {
                                 engine: this.engine,
                                 autoSuspendRendering: !this.renderWhenIdle,
+                                onFaulted: () => {
+                                    this._isFaultedBacking = true;
+                                    this._tearDownViewer();
+                                },
                                 onInitialized: (details) => {
                                     detailsDeferred.resolve(details);
                                 },
@@ -1379,6 +1429,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }
+
+            this._isFaultedBacking = false;
         });
     }
 
@@ -1399,6 +1451,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 this._viewerDetails.viewer.dispose();
                 this._viewerDetails = undefined;
             }
+
+            this._loadingProgress = false;
 
             // We want to replace the canvas for two reasons:
             // 1. When the viewer element is reconnected to the DOM, we don't want to briefly see the last frame of the previous model.
