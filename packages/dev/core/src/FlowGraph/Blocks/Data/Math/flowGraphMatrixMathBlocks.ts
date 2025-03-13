@@ -96,7 +96,7 @@ export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperation
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
-            (a, b) => a.multiply(b as any),
+            (a, b) => b.multiply(a as any),
             FlowGraphBlockNames.MatrixMultiplication,
             config
         );

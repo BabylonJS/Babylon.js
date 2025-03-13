@@ -146,7 +146,7 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
             } else {
                 a = a as Matrix;
                 b = b as Matrix;
-                return a.multiply(b);
+                return b.multiply(a);
             }
         } else {
             return (a as number) * (b as number);
