@@ -3,8 +3,7 @@ import type { Mesh } from "./mesh";
 import type { FloatArray } from "core/types";
 import { VertexBuffer } from "./buffer";
 import { Clamp, OutsideRange } from "core/Maths/math.scalar.functions";
-import { Epsilon } from "core/Maths";
-
+import { Epsilon } from "core/Maths/math.constants";
 /**
  * Interface used to define options for creating a lattice
  */
