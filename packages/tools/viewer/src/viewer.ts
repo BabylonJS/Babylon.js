@@ -163,25 +163,31 @@ async function createCubeTexture(url: string, scene: Scene, extension?: string) 
 }
 
 function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTexture, blur: number): Mesh {
-    const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
-    const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
-    // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
-    hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
-    hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-    if (hdrSkyboxMaterial.reflectionTexture) {
-        hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+    const originalBlockMaterialDirtyMechanism = scene.blockMaterialDirtyMechanism;
+    scene.blockMaterialDirtyMechanism = true;
+    try {
+        const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
+        const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+        // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
+        hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
+        hdrSkyboxMaterial.backFaceCulling = false;
+        hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
+        if (hdrSkyboxMaterial.reflectionTexture) {
+            hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        }
+        hdrSkyboxMaterial.microSurface = 1.0 - blur;
+        hdrSkyboxMaterial.disableLighting = true;
+        hdrSkyboxMaterial.twoSidedLighting = true;
+        hdrSkybox.material = hdrSkyboxMaterial;
+        hdrSkybox.isPickable = false;
+        hdrSkybox.infiniteDistance = true;
+
+        updateSkybox(hdrSkybox, camera);
+
+        return hdrSkybox;
+    } finally {
+        scene.blockMaterialDirtyMechanism = originalBlockMaterialDirtyMechanism;
     }
-    hdrSkyboxMaterial.microSurface = 1.0 - blur;
-    hdrSkyboxMaterial.disableLighting = true;
-    hdrSkyboxMaterial.twoSidedLighting = true;
-    hdrSkybox.material = hdrSkyboxMaterial;
-    hdrSkybox.isPickable = false;
-    hdrSkybox.infiniteDistance = true;
-
-    updateSkybox(hdrSkybox, camera);
-
-    return hdrSkybox;
 }
 
 function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
