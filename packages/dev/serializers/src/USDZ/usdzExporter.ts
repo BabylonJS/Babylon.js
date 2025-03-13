@@ -181,7 +181,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 
     if (colorAttribute) {
         string += `
-	color3f[] primvars:displayColor = [${BuildVector3Array(colorAttribute, options, 4)}] (
+	color3f[] primvars:displayColor = [${BuildVector3Array(colorAttribute, options, colorAttribute.length / geometry.getTotalVertices())}] (
 		interpolation = "vertex"
 		)`;
     }
