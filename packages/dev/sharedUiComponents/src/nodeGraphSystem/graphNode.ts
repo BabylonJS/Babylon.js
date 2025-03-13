@@ -421,7 +421,7 @@ export class GraphNode {
 
     // Search nodes is direction of node from this
     private _expand(node: GraphNode) {
-        let queue: GraphNode[] = [];
+        const queue: GraphNode[] = [];
         let right = undefined;
         for (const link of this.links) {
             if (link.nodeA == this && link.nodeB == node) {
