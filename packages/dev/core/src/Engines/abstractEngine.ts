@@ -2026,7 +2026,6 @@ export abstract class AbstractEngine {
         options.deterministicLockstep = options.deterministicLockstep ?? false;
         options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
         options.timeStep = options.timeStep ?? 1 / 60;
-        options.audioEngine = options.audioEngine ?? false;
         options.stencil = options.stencil ?? true;
 
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
