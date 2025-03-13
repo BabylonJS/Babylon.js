@@ -175,3 +175,28 @@ test('material-variant="name"', async ({ page }) => {
 
     expect(await materialVariant.jsonValue()).toEqual("street");
 });
+
+test('environment="auto"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            environment="auto"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    const isEnvironmentLoaded = await page.waitForFunction((viewerElement) => {
+        const viewerDetails = (viewerElement as ViewerElement).viewerDetails;
+        // Verify we get to a state where:
+        // 1. We have the viewerDetails.
+        // 2. The scene is in a ready state (it has successfully rendered at least one frame).
+        // 3. The environment texture has been set.
+        // 4. A skybox has been created (e.g. there is at least one mesh in the scene).
+        return viewerDetails && viewerDetails.scene.isReady() && viewerDetails.scene.environmentTexture && viewerDetails.scene.meshes.length > 0;
+    }, viewerElementHandle);
+
+    expect(isEnvironmentLoaded).toBeTruthy();
+});
