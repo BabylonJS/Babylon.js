@@ -1,6 +1,135 @@
 {
-    "fromTag": "7.52.3",
+    "fromTag": "7.53.0",
     "changelog": {
+        "7.53.1": [
+            {
+                "pr": "16301",
+                "title": "Enhance matrix validation and type transformation features",
+                "description": "Round the last column components of the matrix for improved validation checks, add a type transformer to facilitate value transformations in RichType, and correct a typo in the isDisabled property while introducing a lastValue for debugging purposes.\n\nAlso introducing a multi-type connection transformer. The idea here is that it is possible that a data input of specific type will be connected to a data input connection of another type. We have specific blocks for that, but in some cases, like quaternion and vector4, it can be supported out of the box directly in the connection. This PR adds a type transformer to quaternion input/output data connections. If a data connection of type quaternion is connected to a vector4, it will be converted to the right type.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16300",
+                "title": "Frame Graph: refactoring + more post-processes supported",
+                "description": "All `destination` / `destinationTexture` inputs have been renamed `target` / `targetTexture`.\r\n\r\nI also added support for two other post-processes (anaglyph and chromatic aberration).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/glowLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/highlightLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/chromaticAberrationPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/copyTextureBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/baseLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/anaglyphTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/chromaticAberrationTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/ssrRenderingPipelineTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/utilityLayerRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/generateMipMapsTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/anaglyphPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/chromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/thinAnaglyphPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinChromaticAberrationPostProcess.ts",
+                    "packages/dev/gui/src/2D/FrameGraph/guiTask.ts",
+                    "packages/dev/gui/src/2D/FrameGraph/renderGraphGUIBlock.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16299",
+                "title": "Fix matrix multiplication order in FlowGraph classes",
+                "description": "Correct the matrix multiplication order in FlowGraph blocks and matrix classes to ensure consistent behavior across the application.\n\nThis is because Babylon defines `a.multiply(b)` as b * a.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/CustomTypes/flowGraphMatrix.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivity.math nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16297",
+                "title": "MeshBuilder.ExtrudeShape : fixed capFunction type syntax",
+                "description": "Following [comment](https://github.com/BabylonJS/Babylon.js/pull/16291#discussion_r1992255272) from @sebavan on the PR [Added new param capFunction in MeshBuilder.ExtrudeShape #16291](https://github.com/BabylonJS/Babylon.js/pull/16291)\r\n\r\nFixed syntax for capFunction\r\n\r\n`NB`: I'm more used to Arrow Function Syntax :\r\n```typescript\r\ncapFunction?: Nullable<(vectors: Vector3[]) => Vector3[]>\r\n```\r\nBut I used Callable Object Syntax, in order to align consistency with the already existing `scaleFunction` and `rotationFunction` of the same options object :\r\n```typescript\r\noptions: {\r\n    shape: Vector3[];\r\n    path: Vector3[];\r\n    scaleFunction?: Nullable<{ (i: number, distance: number): number }>;\r\n    rotationFunction?: Nullable<{ (i: number, distance: number): number }>;\r\n    ribbonCloseArray?: boolean;\r\n    // [...]\r\n    adjustFrame?: boolean;\r\n    capFunction?: Nullable<{ (shapePath: Vector3[]): Vector3[] }>;\r\n}\r\n```",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16298",
+                "title": "Material:Fix pre-pass dirty flag",
+                "description": "See https://forum.babylonjs.com/t/prepass-dirty-set-to-false-in-materialdefines-markallasdirty/57092/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialDefines.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16293",
+                "title": "Fix leaks when reusing same NME or NGE instance in Sandbox or PG",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
+                ],
+                "tags": []
+            }
+        ],
         "7.53.0": [
             {
                 "pr": "16294",
