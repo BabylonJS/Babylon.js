@@ -1,28 +1,35 @@
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    AnimationGroup,
-    AssetContainer,
-    AutoRotationBehavior,
-    BaseTexture,
-    Camera,
-    CubeTexture,
-    FramingBehavior,
-    HDRCubeTexture,
-    HotSpotQuery,
-    IDisposable,
-    IMeshDataCache,
-    ISceneLoaderProgressEvent,
-    LoadAssetContainerOptions,
-    Mesh,
-    Nullable,
-    Observer,
-    PickingInfo,
+import {
+    GizmoManager,
+    LightGizmo,
+    RenderTargetTexture,
+    type AbstractEngine,
+    type AbstractMesh,
+    type AnimationGroup,
+    type AssetContainer,
+    type AutoRotationBehavior,
+    type BaseTexture,
+    type Camera,
+    type CubeTexture,
+    type FramingBehavior,
+    type HDRCubeTexture,
+    type HotSpotQuery,
+    type IDisposable,
+    type IMeshDataCache,
+    type ISceneLoaderProgressEvent,
+    type LoadAssetContainerOptions,
+    type Mesh,
+    type Nullable,
+    type Observer,
+    type PickingInfo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
+import "core/Materials/standardMaterial";
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
+import { SpotLight } from "core/Lights/spotLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -30,7 +37,7 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -48,6 +55,8 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { ShadowOnlyMaterial } from "materials/shadowOnly";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -287,6 +296,27 @@ export type EnvironmentOptions = Partial<
          * Whether to use the environment for the skybox.
          */
         skybox: boolean;
+    }>
+>;
+
+export type ShadowsOptions = Partial<
+    Readonly<{
+        /**
+         * Whether the shadows are enabled.
+         */
+        enable: boolean;
+
+        /**
+         * The type of shadows to use.
+         * "classic" uses the default shadow generator with shadow map.
+         * "environment" uses the environment shadows.
+         */
+        type: "classic" | "environment";
+
+        /**
+         * The target frame rate for the shadows.
+         */
+        targetFps: boolean;
     }>
 >;
 
@@ -1236,6 +1266,71 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Updates the shadows configuration.
+     * @param options The options to use when updating the shadows.
+     */
+    public updateShadows(options: ShadowsOptions) {
+        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
+
+        if (!worldBounds) {
+            return;
+        }
+
+        const min = Vector3.FromArray(worldBounds.extents.min);
+        const max = Vector3.FromArray(worldBounds.extents.max);
+        const size = max.subtract(min);
+        const maxRadius = size.length();
+        const light = new SpotLight("spotLight", new Vector3(maxRadius / 2, maxRadius, maxRadius / 2), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
+
+        const lightgizmo = new LightGizmo();
+        lightgizmo.scaleRatio = 2;
+        lightgizmo.light = light;
+
+        const gizmomanager = new GizmoManager(this._scene);
+        gizmomanager.positionGizmoEnabled = true;
+        gizmomanager.rotationGizmoEnabled = true;
+        gizmomanager.usePointerToAttachGizmos = false;
+        gizmomanager.attachToMesh(lightgizmo.attachedMesh);
+
+        const generator = new ShadowGenerator(2048, light);
+
+        this._loadedModelsBacking.forEach((model) => {
+            const mesh = model.assetContainer.meshes[0];
+            generator.addShadowCaster(mesh, true);
+            mesh.receiveShadows = true;
+        });
+
+        const shadowGround = MeshBuilder.CreateGround("ground", { width: worldBounds.size[0] * 10, height: worldBounds.size[2] * 10, subdivisions: 100 }, this._scene);
+        // Improve performance by only rendering the shadow map once
+        // RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME
+        // RenderTargetTexture.REFRESHRATE_RENDER_ONCE
+        const shadowMap = generator.getShadowMap();
+        if (shadowMap) {
+            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+        }
+
+        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
+        shadowMaterial.activeLight = light;
+        shadowGround.receiveShadows = true;
+        shadowGround.material = shadowMaterial;
+        shadowGround.position.y = worldBounds.extents.min[1];
+
+        generator.setDarkness(0.95);
+        generator.setTransparencyShadow(true);
+        generator.usePercentageCloserFiltering = true;
+        generator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
+        generator.bias = -0.00001;
+        generator.normalBias = 0.0001;
+        generator.useContactHardeningShadow = false;
+        generator.contactHardeningLightSizeUVRatio = 0.1;
+        generator.useExponentialShadowMap = true;
+        generator.useBlurExponentialShadowMap = true;
+        generator.useKernelBlur = true;
+        generator.blurScale = 1;
+        generator.blurKernel = 32;
+    }
+
+    /**
      * Loads an environment texture from the specified url and sets up a corresponding skybox.
      * @remarks
      * If an environment is already loaded, it will be unloaded before loading the new environment.
@@ -1716,16 +1811,22 @@ export class Viewer implements IDisposable {
         return null;
     }
 
-    protected _startSceneOptimizer(reset = false) {
+    protected _startSceneOptimizer(reset = false, shadows: boolean = false, targetFps: number = 60) {
         this._stopSceneOptimizer();
 
         if (reset) {
             this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
         }
 
-        const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
+        const sceneOptimizerOptions = new SceneOptimizerOptions(targetFps, 1000);
+
         const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
         sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
+
+        if (shadows) {
+            // create IblShadowsOptimization
+        }
+
         this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
 
         this._sceneOptimizer.start();

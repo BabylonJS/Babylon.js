@@ -3,7 +3,7 @@ import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ShadowsOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -1422,8 +1422,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                 });
 
-                this._updateModel();
+                await this._updateModel();
                 this._updateEnv({ lighting: true, skybox: true });
+                this._updateShadows({ enable: true });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1511,6 +1512,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 await Promise.all(promises);
             } catch (error) {
                 // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
+            }
+        }
+    }
+
+    private async _updateShadows(options: ShadowsOptions) {
+        if (this._viewerDetails) {
+            try {
+                await this._viewerDetails.viewer.updateShadows(options);
+            } catch (error) {
+                // If updateShadows was aborted (e.g. because a new shadows update was requested before this one finished), we can just ignore the error.
                 if (!(error instanceof AbortError)) {
                     Logger.Error(error);
                 }
