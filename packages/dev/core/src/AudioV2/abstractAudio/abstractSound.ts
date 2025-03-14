@@ -286,6 +286,21 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this._state = instance.state;
     }
 
+    protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
+        if (this._instances.size === 0) {
+            return null;
+        }
+
+        if (!this._newestInstance) {
+            const it = this._instances.values();
+            for (let next = it.next(); !next.done; next = it.next()) {
+                this._newestInstance = next.value;
+            }
+        }
+
+        return this._newestInstance;
+    }
+
     protected _setState(state: SoundState): void {
         this._state = state;
     }
@@ -302,21 +317,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
                 instance.stop();
             }
         }
-    }
-
-    private _getNewestInstance(): Nullable<_AbstractSoundInstance> {
-        if (this._instances.size === 0) {
-            return null;
-        }
-
-        if (!this._newestInstance) {
-            const it = this._instances.values();
-            for (let next = it.next(); !next.done; next = it.next()) {
-                this._newestInstance = next.value;
-            }
-        }
-
-        return this._newestInstance;
     }
 
     private _onInstanceEnded: (instance: _AbstractSoundInstance) => void = (instance) => {
