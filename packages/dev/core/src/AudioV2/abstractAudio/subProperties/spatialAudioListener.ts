@@ -21,12 +21,16 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /**
-     * Attaches the audio source to a scene object.
-     * @param sceneNode The scene node to attach the audio source to.
+     * Attaches to a scene node.
+     *
+     * Detaches automatically before attaching to the given scene node.
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
      * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
         if (!this._attacherComponent) {
             this._attacherComponent = new _SpatialAudioAttacherComponent(this);
         }
@@ -34,7 +38,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /**
-     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     * Detaches from the scene node if attached.
      */
     public detach(): void {
         this._attacherComponent?.detach();
@@ -67,6 +71,6 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         this.update();
     }
 
-    public abstract updatePosition(): void;
-    public abstract updateRotation(): void;
+    public abstract _updatePosition(): void;
+    public abstract _updateRotation(): void;
 }

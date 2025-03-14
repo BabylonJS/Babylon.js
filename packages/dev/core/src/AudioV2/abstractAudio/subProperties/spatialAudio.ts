@@ -90,6 +90,15 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return _GetSpatialAudioProperty(this._subGraph, "minDistance");
+    }
+
+    public set minDistance(value: number) {
+        _SetSpatialAudioProperty(this._subGraph, "minDistance", value);
+    }
+
+    /** @internal */
     public get panningModel(): PanningModelType {
         return _GetSpatialAudioProperty(this._subGraph, "panningModel");
     }
@@ -106,15 +115,6 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     public set position(value: Vector3) {
         this._position = value;
         this._updatePosition();
-    }
-
-    /** @internal */
-    public get referenceDistance(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "referenceDistance");
-    }
-
-    public set referenceDistance(value: number) {
-        _SetSpatialAudioProperty(this._subGraph, "referenceDistance", value);
     }
 
     /** @internal */
@@ -147,17 +147,21 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Attaches the audio source to a scene object.
-     * @param sceneNode The scene node to attach the audio source to.
+     * Attaches to a scene node.
+     *
+     * Detaches automatically before attaching to the given scene node.
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
         _GetSpatialAudioSubNode(this._subGraph)?.attach(sceneNode, useBoundingBox, attachmentType);
     }
 
     /**
-     * Detaches the audio source from the currently attached graphics node.
+     * Detaches from the scene node if attached.
      */
     public detach(): void {
         _GetSpatialAudioSubNode(this._subGraph)?.detach();
@@ -191,7 +195,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         const position = subNode.position;
         if (!position.equalsWithEpsilon(this._position)) {
             subNode.position.copyFrom(this._position);
-            subNode.updatePosition();
+            subNode._updatePosition();
         }
     }
 
@@ -206,10 +210,10 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
         if (!subNode.rotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
             subNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
-            subNode.updateRotation();
+            subNode._updateRotation();
         } else if (!subNode.rotation.equalsWithEpsilon(this._rotation)) {
             subNode.rotation.copyFrom(this._rotation);
-            subNode.updateRotation();
+            subNode._updateRotation();
         }
     }
 }

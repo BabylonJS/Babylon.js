@@ -62,13 +62,13 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         if (this.isAttached) {
             this._attacherComponent?.update();
         } else {
-            this.updatePosition();
-            this.updateRotation();
+            this._updatePosition();
+            this._updateRotation();
         }
     }
 
     /** @internal */
-    public updatePosition(): void {
+    public _updatePosition(): void {
         if (this._lastPosition.equalsWithEpsilon(this.position)) {
             return;
         }
@@ -82,7 +82,7 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     }
 
     /** @internal */
-    public updateRotation(): void {
+    public _updateRotation(): void {
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);
