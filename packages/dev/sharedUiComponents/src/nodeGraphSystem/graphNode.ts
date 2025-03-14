@@ -52,7 +52,6 @@ export class GraphNode {
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<INodeData>>>;
     private _onHighlightNodeObserver: Nullable<Observer<any>>;
     private _ownerCanvas: GraphCanvasComponent;
-    private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
@@ -171,10 +170,6 @@ export class GraphNode {
         return this.content.name;
     }
 
-    public get isSelected() {
-        return this._isSelected;
-    }
-
     public get enclosingFrameId() {
         return this._enclosingFrameId;
     }
@@ -183,17 +178,7 @@ export class GraphNode {
         this._enclosingFrameId = value;
     }
 
-    public set isSelected(value: boolean) {
-        this.setIsSelected(value, false);
-    }
-
     public setIsSelected(value: boolean, marqueeSelection: boolean) {
-        if (this._isSelected === value) {
-            return;
-        }
-
-        this._isSelected = value;
-
         if (!value) {
             this._visual.classList.remove(localStyles["selected"]);
             const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
@@ -506,17 +491,13 @@ export class GraphNode {
                 // Simple click
                 const middle = this._searchMiddle(last);
                 for (const node of middle) {
-                    if (!node.isSelected) {
-                        this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
-                    }
+                    this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
                 }
             } else {
                 // Double click
                 const queue = this._expand(last);
                 for (const node of queue) {
-                    if (!node.isSelected) {
-                        this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
-                    }
+                    this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
                 }
             }
         }
