@@ -77,8 +77,8 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
             if (translucencyIntensityTexture) {
                 additionalTextures.push(translucencyIntensityTexture);
             }
-            if (babylonMaterial.subSurface.thicknessTexture) {
-                additionalTextures.push(babylonMaterial.subSurface.thicknessTexture);
+            if (babylonMaterial.subSurface.translucencyColorTexture) {
+                additionalTextures.push(babylonMaterial.subSurface.translucencyColorTexture);
             }
             return additionalTextures;
         }
