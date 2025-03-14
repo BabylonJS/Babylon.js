@@ -132,7 +132,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public updatePosition(): void {
+    public _updatePosition(): void {
         if (this._lastPosition.equalsWithEpsilon(this.position)) {
             return;
         }
@@ -145,7 +145,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public updateRotation(): void {
+    public _updateRotation(): void {
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);

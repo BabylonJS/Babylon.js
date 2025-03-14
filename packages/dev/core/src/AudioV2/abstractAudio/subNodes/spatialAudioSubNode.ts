@@ -91,13 +91,13 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         if (this.isAttached) {
             this._attacherComponent?.update();
         } else {
-            this.updatePosition();
-            this.updateRotation();
+            this._updatePosition();
+            this._updateRotation();
         }
     }
 
-    public abstract updatePosition(): void;
-    public abstract updateRotation(): void;
+    public abstract _updatePosition(): void;
+    public abstract _updateRotation(): void;
 }
 
 /** @internal */

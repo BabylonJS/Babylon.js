@@ -71,6 +71,6 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         this.update();
     }
 
-    public abstract updatePosition(): void;
-    public abstract updateRotation(): void;
+    public abstract _updatePosition(): void;
+    public abstract _updateRotation(): void;
 }

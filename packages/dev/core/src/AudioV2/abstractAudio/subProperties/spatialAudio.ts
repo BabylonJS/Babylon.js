@@ -195,7 +195,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         const position = subNode.position;
         if (!position.equalsWithEpsilon(this._position)) {
             subNode.position.copyFrom(this._position);
-            subNode.updatePosition();
+            subNode._updatePosition();
         }
     }
 
@@ -210,10 +210,10 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
         if (!subNode.rotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
             subNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
-            subNode.updateRotation();
+            subNode._updateRotation();
         } else if (!subNode.rotation.equalsWithEpsilon(this._rotation)) {
             subNode.rotation.copyFrom(this._rotation);
-            subNode.updateRotation();
+            subNode._updateRotation();
         }
     }
 }

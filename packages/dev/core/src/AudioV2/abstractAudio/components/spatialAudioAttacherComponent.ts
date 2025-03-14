@@ -90,14 +90,14 @@ export class _SpatialAudioAttacherComponent {
             }
 
             this._spatialAudioNode.position.copyFrom(this._position);
-            this._spatialAudioNode.updatePosition();
+            this._spatialAudioNode._updatePosition();
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
             this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
-            this._spatialAudioNode.updateRotation();
+            this._spatialAudioNode._updateRotation();
         }
     }
 }
