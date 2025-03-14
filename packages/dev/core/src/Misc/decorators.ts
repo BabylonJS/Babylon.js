@@ -25,7 +25,7 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
                 // does this object (i.e. vector3) has an equals function? use it!
                 // Note - not using "with epsilon" here, it is expected te behave like the internal cache does.
                 if (typeof this[key]?.equals === "function") {
-                    if (this[key]?.equals(value)) {
+                    if (this[key].equals(value)) {
                         return;
                     }
                 }
