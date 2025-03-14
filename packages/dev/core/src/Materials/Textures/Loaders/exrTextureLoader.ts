@@ -82,6 +82,7 @@ import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
  * #4RN0VF#146: ZIP compression
  * #4RN0VF#149: RLE compression
  * #4RN0VF#150: PXR24 compression
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ExrTextureLoader implements IInternalTextureLoader {
