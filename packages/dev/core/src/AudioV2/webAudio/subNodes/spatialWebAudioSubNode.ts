@@ -86,6 +86,15 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return this.node.refDistance;
+    }
+
+    public set minDistance(value: number) {
+        this.node.refDistance = value;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this.node.maxDistance;
     }
@@ -101,15 +110,6 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set panningModel(value: "equalpower" | "HRTF") {
         this.node.panningModel = value;
-    }
-
-    /** @internal */
-    public get referenceDistance(): number {
-        return this.node.refDistance;
-    }
-
-    public set referenceDistance(value: number) {
-        this.node.refDistance = value;
     }
 
     /** @internal */

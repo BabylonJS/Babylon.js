@@ -9,9 +9,9 @@ export const _SpatialAudioDefaults = {
     coneOuterVolume: 0 as number,
     distanceModel: "linear" as DistanceModelType,
     maxDistance: 10000 as number,
+    minDistance: 1 as number,
     panningModel: "equalpower" as PanningModelType,
     position: Vector3.Zero(),
-    referenceDistance: 1 as number,
     rolloffFactor: 1 as number,
     rotation: Vector3.Zero(),
     rotationQuaternion: new Quaternion(),
@@ -49,7 +49,7 @@ export interface ISpatialAudioOptions {
      * - `"exponential"`: The volume is reduced exponentially as the source moves away from the listener.
      *
      * @see {@link spatialMaxDistance}
-     * @see {@link spatialReferenceDistance}
+     * @see {@link spatialMinDistance}
      * @see {@link spatialRolloffFactor}
      */
     spatialDistanceModel: "linear" | "inverse" | "exponential";
@@ -91,7 +91,7 @@ export interface ISpatialAudioOptions {
      * - This value is used by all distance models.
      * @see {@link spatialDistanceModel}
      */
-    spatialReferenceDistance: number;
+    spatialMinDistance: number;
     /**
      * How quickly the volume is reduced as the source moves away from the listener. Defaults to 1.
      * - This value is used by all distance models.
@@ -121,10 +121,10 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialConeOuterVolume !== undefined ||
         options.spatialDistanceModel !== undefined ||
         options.spatialMaxDistance !== undefined ||
+        options.spatialMinDistance !== undefined ||
         options.spatialMinUpdateTime !== undefined ||
         options.spatialPanningModel !== undefined ||
         options.spatialPosition !== undefined ||
-        options.spatialReferenceDistance !== undefined ||
         options.spatialRolloffFactor !== undefined ||
         options.spatialRotation !== undefined ||
         options.spatialRotationQuaternion !== undefined
@@ -164,7 +164,7 @@ export abstract class AbstractSpatialAudio {
      * - `"exponential"`: The volume is reduced exponentially as the source moves away from the listener.
      *
      * @see {@link spatialMaxDistance}
-     * @see {@link spatialReferenceDistance}
+     * @see {@link spatialMinDistance}
      * @see {@link spatialRolloffFactor}
      */
     public abstract distanceModel: "linear" | "inverse" | "exponential";
@@ -180,6 +180,13 @@ export abstract class AbstractSpatialAudio {
      * @see {@link distanceModel}
      */
     public abstract maxDistance: number;
+
+    /**
+     * The distance for reducing volume as the audio source moves away from the listener – i.e. the distance the volume reduction starts at. Defaults to 1.
+     * - This value is used by all distance models.
+     * @see {@link distanceModel}
+     */
+    public abstract minDistance: number;
 
     /**
      * The minimum update time in seconds of the spatialization if it is attached to a mesh or transform node. Defaults to `0`.
@@ -200,13 +207,6 @@ export abstract class AbstractSpatialAudio {
      * The spatial position. Defaults to (0, 0, 0).
      */
     public abstract position: Vector3;
-
-    /**
-     * The distance for reducing volume as the audio source moves away from the listener – i.e. the distance the volume reduction starts at. Defaults to 1.
-     * - This value is used by all distance models.
-     * @see {@link distanceModel}
-     */
-    public abstract referenceDistance: number;
 
     /**
      * How quickly the volume is reduced as the source moves away from the listener. Defaults to 1.

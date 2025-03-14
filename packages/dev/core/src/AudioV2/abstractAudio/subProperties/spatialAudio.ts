@@ -90,6 +90,15 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return _GetSpatialAudioProperty(this._subGraph, "minDistance");
+    }
+
+    public set minDistance(value: number) {
+        _SetSpatialAudioProperty(this._subGraph, "minDistance", value);
+    }
+
+    /** @internal */
     public get panningModel(): PanningModelType {
         return _GetSpatialAudioProperty(this._subGraph, "panningModel");
     }
@@ -106,15 +115,6 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     public set position(value: Vector3) {
         this._position = value;
         this._updatePosition();
-    }
-
-    /** @internal */
-    public get referenceDistance(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "referenceDistance");
-    }
-
-    public set referenceDistance(value: number) {
-        _SetSpatialAudioProperty(this._subGraph, "referenceDistance", value);
     }
 
     /** @internal */
