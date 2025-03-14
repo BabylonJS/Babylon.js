@@ -233,7 +233,7 @@ export abstract class AbstractSpatialAudio {
      *
      * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
     public abstract attach(sceneNode: Nullable<Node>, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
 

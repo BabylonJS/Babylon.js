@@ -154,7 +154,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
      *
      * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
     public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
         _GetSpatialAudioSubNode(this._subGraph)?.attach(sceneNode, useBoundingBox, attachmentType);
