@@ -144,6 +144,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set pitch(value: number) {
         this._options.pitch = value;
+
+        const instance = this._getNewestInstance() as _StaticSoundInstance;
+        if (instance) {
+            instance.pitch = value;
+        }
     }
 
     /**
@@ -156,6 +161,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
+
+        const instance = this._getNewestInstance() as _StaticSoundInstance;
+        if (instance) {
+            instance.playbackRate = value;
+        }
     }
 
     protected abstract override _createInstance(): _StaticSoundInstance;

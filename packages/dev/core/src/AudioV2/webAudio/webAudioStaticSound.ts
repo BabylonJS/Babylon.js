@@ -324,6 +324,22 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
+    public set pitch(value: number) {
+        this._options.pitch = value;
+        if (this._sourceNode) {
+            this._sourceNode.detune.value = value;
+        }
+    }
+
+    /** @internal */
+    public set playbackRate(value: number) {
+        this._options.playbackRate = value;
+        if (this._sourceNode) {
+            this._sourceNode.playbackRate.value = value;
+        }
+    }
+
+    /** @internal */
     public get startTime(): number {
         if (this._state === SoundState.Stopped) {
             return 0;
