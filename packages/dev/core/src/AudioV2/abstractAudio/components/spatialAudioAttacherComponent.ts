@@ -34,12 +34,23 @@ export class _SpatialAudioAttacherComponent {
 
     /**
      * Attaches a scene object.
+     *
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
      * @param sceneNode The scene node to attach to.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
      * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public attach(sceneNode: Node, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+        if (this._sceneNode === sceneNode) {
+            return;
+        }
+
         this.detach();
+
+        if (!sceneNode) {
+            return;
+        }
 
         this._attachmentType = attachmentType;
 

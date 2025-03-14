@@ -1,5 +1,6 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Node } from "../../../node";
+import type { Nullable } from "../../../types";
 import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioListenerDefaults = {
@@ -87,11 +88,14 @@ export abstract class AbstractSpatialAudioListener {
 
     /**
      * Attaches the audio source to a scene object.
-     * @param sceneNode The scene node to attach the audio source to.
+     *
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
      * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public abstract attach(sceneNode: Node, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
+    public abstract attach(sceneNode: Nullable<Node>, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
 
     /**
      * Detaches the audio source from the currently attached graphics node.
