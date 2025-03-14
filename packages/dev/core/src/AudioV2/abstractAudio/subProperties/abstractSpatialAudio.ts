@@ -7,7 +7,7 @@ export const _SpatialAudioDefaults = {
     coneInnerAngle: 6.28318530718 as number,
     coneOuterAngle: 6.28318530718 as number,
     coneOuterVolume: 0 as number,
-    distanceModel: "inverse" as DistanceModelType,
+    distanceModel: "linear" as DistanceModelType,
     maxDistance: 10000 as number,
     panningModel: "equalpower" as PanningModelType,
     position: Vector3.Zero(),
