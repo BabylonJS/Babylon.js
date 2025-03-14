@@ -159,6 +159,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    public MORPHTARGETS_COLOR = false;
     /** Morph target support positions */
     public MORPHTARGETTEXTURE_HASPOSITIONS = false;
     /** Morph target support normals */
@@ -169,6 +170,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETTEXTURE_HASUVS = false;
     /** Morph target support uv2s */
     public MORPHTARGETTEXTURE_HASUV2S = false;
+    public MORPHTARGETTEXTURE_HASCOLORS = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */
@@ -1135,6 +1137,22 @@ export class NodeMaterial extends PushMaterial {
             result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
         }
 
+        if (prePassOutputBlock.localPosition.isConnected) {
+            result.push(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.reflectivity.isConnected) {
+            result.push(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.velocity.isConnected) {
+            result.push(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.velocityLinear.isConnected) {
+            result.push(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
+        }
+
         return result;
     }
 
@@ -1290,6 +1308,9 @@ export class NodeMaterial extends PushMaterial {
         }
 
         postProcess.nodeMaterialSource = this;
+        postProcess.onDisposeObservable.add(() => {
+            dummyMesh.dispose();
+        });
 
         postProcess.onApplyObservable.add((effect) => {
             if (buildId !== this._buildId) {

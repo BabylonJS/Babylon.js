@@ -41,7 +41,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.registerOutput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerOutput("geomScreenDepth", NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
         this.registerOutput("geomViewNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
-        this.registerOutput("geomWorldNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
+        this.registerOutput("geomWorldNormal", NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
         this.registerOutput("geomLocalPosition", NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition);
         this.registerOutput("geomWorldPosition", NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition);
         this.registerOutput("geomAlbedo", NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo);
@@ -128,26 +128,46 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.samples = value;
     }
 
+    /** Indicates if culling must be reversed */
+    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get reverseCulling() {
+        return this._frameGraphTask.reverseCulling;
+    }
+
+    public set reverseCulling(value: boolean) {
+        this._frameGraphTask.reverseCulling = value;
+    }
+
+    /** Indicates if a mesh shouldn't be rendered when its material has depth write disabled */
+    @editableInPropertyPage("Don't render if material depth write is disabled", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get dontRenderWhenMaterialDepthWriteIsDisabled() {
+        return this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled;
+    }
+
+    public set dontRenderWhenMaterialDepthWriteIsDisabled(value: boolean) {
+        this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled = value;
+    }
+
     // View depth
     @editableInPropertyPage("View depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
     @editableInPropertyPage("View depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public viewDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
+    public viewDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // Screen depth
     @editableInPropertyPage("Screen depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
 
     @editableInPropertyPage("Screen depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public screenDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
+    public screenDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // View normal
     @editableInPropertyPage("View normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
     @editableInPropertyPage("View normal type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public viewNormalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    public viewNormalType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World normal
     @editableInPropertyPage("World normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
@@ -395,6 +415,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
+        codes.push(`${this._codeVariableName}.reverseCulling = ${this.reverseCulling};`);
+        codes.push(`${this._codeVariableName}.dontRenderWhenMaterialDepthWriteIsDisabled = ${this.dontRenderWhenMaterialDepthWriteIsDisabled};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
         codes.push(`${this._codeVariableName}.screenDepthFormat = ${this.screenDepthFormat};`);
@@ -423,6 +445,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.samples = this.samples;
+        serializationObject.reverseCulling = this.reverseCulling;
+        serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
         serializationObject.screenDepthFormat = this.screenDepthFormat;
@@ -451,6 +475,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.samples = serializationObject.samples;
+        this.reverseCulling = serializationObject.reverseCulling;
+        this.dontRenderWhenMaterialDepthWriteIsDisabled = serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
         this.screenDepthFormat = serializationObject.screenDepthFormat;

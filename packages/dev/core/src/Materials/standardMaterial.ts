@@ -161,11 +161,13 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public MORPHTARGETS_UV2 = false;
+    public MORPHTARGETS_COLOR = false;
     public MORPHTARGETTEXTURE_HASPOSITIONS = false;
     public MORPHTARGETTEXTURE_HASNORMALS = false;
     public MORPHTARGETTEXTURE_HASTANGENTS = false;
     public MORPHTARGETTEXTURE_HASUVS = false;
     public MORPHTARGETTEXTURE_HASUV2S = false;
+    public MORPHTARGETTEXTURE_HASCOLORS = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
@@ -1638,7 +1640,7 @@ export class StandardMaterial extends PushMaterial {
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
-        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, this._activeEffect, mesh, world);
+        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, this._activeEffect, mesh, world, this);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

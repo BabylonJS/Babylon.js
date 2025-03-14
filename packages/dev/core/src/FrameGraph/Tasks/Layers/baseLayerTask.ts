@@ -58,10 +58,10 @@ class FrameGraphGlowBlurTask extends FrameGraphPostProcessTask {
  */
 export class FrameGraphBaseLayerTask extends FrameGraphTask {
     /**
-     * The destination texture to apply the effect layer to.
+     * The target texture to apply the effect layer to.
      * The effect will be blended with the contents of this texture.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
      * The object renderer task used to render the objects in the texture to which the layer will be applied.
@@ -76,7 +76,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
     public layerTexture?: FrameGraphTextureHandle;
 
     /**
-     * The output texture of the task (same as destinationTexture, but the handle will be different).
+     * The output texture of the task (same as targetTexture, but the handle will be different).
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -189,7 +189,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
                 this._blurY[i].onTexturesAllocatedObservable.notifyObservers(context);
             }
 
-            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].destinationTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
         });
     }
 
@@ -198,11 +198,11 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
     }
 
     public record() {
-        if (this.destinationTexture === undefined || this.objectRendererTask === undefined) {
-            throw new Error(`${this.constructor.name} "${this.name}": destinationTexture and objectRendererTask are required`);
+        if (this.targetTexture === undefined || this.objectRendererTask === undefined) {
+            throw new Error(`${this.constructor.name} "${this.name}": targetTexture and objectRendererTask are required`);
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
 
         // Uses the layerTexture or creates a color texture to render the layer to
         let textureSize: {
@@ -219,10 +219,10 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             textureSize = getDimensionsFromTextureSize(textureCreationOptions.size);
             textureCreationOptions.size = textureSize;
         } else {
-            const destinationTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.destinationTexture);
+            const targetTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.targetTexture);
             const fixedTextureSize = this.layer._options.mainTextureFixedSize ? Math.max(2, this.layer._options.mainTextureFixedSize) : 0;
 
-            textureSize = getDimensionsFromTextureSize(destinationTextureCreationOptions.size);
+            textureSize = getDimensionsFromTextureSize(targetTextureCreationOptions.size);
             textureSize.width = fixedTextureSize || Math.floor(textureSize.width * (this.layer._options.mainTextureRatio || 0.1));
             textureSize.height = fixedTextureSize || Math.floor(textureSize.height * (this.layer._options.mainTextureRatio || 0.1));
 
@@ -236,7 +236,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
                     useSRGBBuffers: [false],
                     creationFlags: [0],
                 },
-                sizeIsPercentage: this.layer._options.mainTextureFixedSize ? false : destinationTextureCreationOptions.sizeIsPercentage,
+                sizeIsPercentage: this.layer._options.mainTextureFixedSize ? false : targetTextureCreationOptions.sizeIsPercentage,
             };
             colorLayerOutput = this._frameGraph.textureManager.createRenderTargetTexture(`${this.name} Color`, textureCreationOptions);
         }
@@ -254,7 +254,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         const depthLayerOutput = this._frameGraph.textureManager.createRenderTargetTexture(`${this.name} Depth`, textureDepthCreationOptions);
 
         // Clears the textures
-        this._clearLayerTextures.destinationTexture = colorLayerOutput;
+        this._clearLayerTextures.targetTexture = colorLayerOutput;
         this._clearLayerTextures.depthTexture = depthLayerOutput;
         this._clearLayerTextures.color = this.layer.neutralColor;
         this._clearLayerTextures.clearDepth = true;
@@ -262,7 +262,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         const clearTaskPass = this._clearLayerTextures.record();
 
         // Renders the objects to the layer texture
-        this._objectRendererForLayer.destinationTexture = this._clearLayerTextures.outputTexture;
+        this._objectRendererForLayer.targetTexture = this._clearLayerTextures.outputTexture;
         this._objectRendererForLayer.depthTexture = this._clearLayerTextures.outputDepthTexture;
         this._objectRendererForLayer.camera = this.objectRendererTask.camera;
         this._objectRendererForLayer.objectList = this.objectRendererTask.objectList;
@@ -295,14 +295,14 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
 
             this._blurX[i].sourceTexture = i === 0 ? this._objectRendererForLayer.outputTexture : this._blurY[i - 1].outputTexture;
             this._blurX[i].sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-            this._blurX[i].destinationTexture = blurXTextureHandle;
+            this._blurX[i].targetTexture = blurXTextureHandle;
             blurPasses.push(this._blurX[i].record(true));
 
             const blurYTextureHandle = this._frameGraph.textureManager.createRenderTargetTexture(this._blurY[i].name, textureCreationOptions);
 
             this._blurY[i].sourceTexture = this._blurX[i].outputTexture;
             this._blurY[i].sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-            this._blurY[i].destinationTexture = blurYTextureHandle;
+            this._blurY[i].targetTexture = blurYTextureHandle;
             blurPasses.push(this._blurY[i].record(true));
 
             textureSize.width = textureSize.width >> 1;
@@ -342,7 +342,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             }
         });
 
-        // Composes the layer with the destination texture
+        // Composes the layer with the target texture
         this.layer.bindTexturesForCompose = undefined as any;
 
         this._clearAfterRenderingGroupObserver();

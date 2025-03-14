@@ -1,14 +1,16 @@
+import type { Nullable } from "../../../types";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { RichType } from "../../flowGraphRichTypes";
+import { RichTypeBoolean } from "../../flowGraphRichTypes";
 
 const cacheName = "cachedOperationValue";
 const cacheExecIdName = "cachedExecutionId";
 
 /**
- * @experimental
+ * A block that will cache the result of an operation and deliver it as an output.
  */
 export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBlock {
     /**
@@ -16,10 +18,16 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
      */
     public readonly value: FlowGraphDataConnection<OutputT>;
 
+    /**
+     * Output connection: Whether the value is valid.
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
+
     constructor(outputRichType: RichType<OutputT>, config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.value = this.registerDataOutput("value", outputRichType);
+        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean);
     }
 
     /**
@@ -27,18 +35,28 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
      * Operation to realize
      * @param context the graph context
      */
-    public abstract _doOperation(context: FlowGraphContext): OutputT;
+    public abstract _doOperation(context: FlowGraphContext): OutputT | undefined;
 
     public override _updateOutputs(context: FlowGraphContext) {
-        const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName);
-        const cachedValue = context._getExecutionVariable(this, cacheName);
-        if (cachedValue !== undefined && cachedExecutionId === context.executionId) {
+        const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName, -1);
+        const cachedValue = context._getExecutionVariable<Nullable<OutputT>>(this, cacheName, null);
+        if (cachedValue !== undefined && cachedValue !== null && cachedExecutionId === context.executionId) {
+            this.isValid.setValue(true, context);
             this.value.setValue(cachedValue, context);
         } else {
-            const calculatedValue = this._doOperation(context);
-            context._setExecutionVariable(this, cacheName, calculatedValue);
-            context._setExecutionVariable(this, cacheExecIdName, context.executionId);
-            this.value.setValue(calculatedValue, context);
+            try {
+                const calculatedValue = this._doOperation(context);
+                if (calculatedValue === undefined || calculatedValue === null) {
+                    this.isValid.setValue(false, context);
+                    return;
+                }
+                context._setExecutionVariable(this, cacheName, calculatedValue);
+                context._setExecutionVariable(this, cacheExecIdName, context.executionId);
+                this.value.setValue(calculatedValue, context);
+                this.isValid.setValue(true, context);
+            } catch (e) {
+                this.isValid.setValue(false, context);
+            }
         }
     }
 }

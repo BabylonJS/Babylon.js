@@ -54,7 +54,7 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
 
         this._additionalConstructionParameters = [layerTextureRatio, layerTextureFixedSize, blurTextureSizeRatio, isStroke, layerTextureType];
 
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerInput(
             "objectRenderer",
@@ -72,10 +72,10 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.layer.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
-        this.output._typeConnectionSource = this.destination;
+        this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphHighlightLayerTask(this.name, this._frameGraph, this._scene, {
             mainTextureRatio: layerTextureRatio,
@@ -195,9 +195,9 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the destination texture input component
+     * Gets the target texture input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -227,7 +227,7 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
 
         this.output.value = this._frameGraphTask.outputTexture;
 
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.layerTexture = this.layer.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.objectRendererTask = this.objectRenderer.connectedPoint?.value as FrameGraphObjectRendererTask;
     }

@@ -27,6 +27,7 @@ export class FrameGraph {
     public readonly textureManager: FrameGraphTextureManager;
 
     private readonly _engine: AbstractEngine;
+    private readonly _scene: Scene;
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
@@ -51,13 +52,27 @@ export class FrameGraph {
     }
 
     /**
-     * Constructs the frame graph
-     * @param engine defines the hosting engine
-     * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector
-     * @param scene defines the scene the frame graph is associated with
+     * Gets the scene used by the frame graph
      */
-    constructor(engine: AbstractEngine, debugTextures = false, scene: Scene) {
-        this._engine = engine;
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
+     * Gets the list of tasks in the frame graph
+     */
+    public get tasks() {
+        return this._tasks;
+    }
+
+    /**
+     * Constructs the frame graph
+     * @param scene defines the scene the frame graph is associated with
+     * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector (default is false)
+     */
+    constructor(scene: Scene, debugTextures = false) {
+        this._scene = scene;
+        this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);

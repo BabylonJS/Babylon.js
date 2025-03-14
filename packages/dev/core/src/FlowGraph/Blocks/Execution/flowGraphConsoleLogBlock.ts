@@ -5,9 +5,9 @@ import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { Logger } from "core/Misc/logger";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
- * @experimental
  * Block that logs a message to the console.
  */
 export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSignal {
@@ -16,17 +16,30 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      */
     public readonly message: FlowGraphDataConnection<any>;
 
+    /**
+     * Input connection: The log type.
+     */
+    public readonly logType: FlowGraphDataConnection<"log" | "warn" | "error">;
+
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.message = this.registerDataInput("message", RichTypeAny);
+        this.logType = this.registerDataInput("logType", RichTypeAny, "log");
     }
 
     /**
      * @internal
      */
     public _execute(context: FlowGraphContext): void {
+        const typeValue = this.logType.getValue(context);
         const messageValue = this.message.getValue(context);
-        Logger.Log(messageValue);
+        if (typeValue === "warn") {
+            Logger.Warn(messageValue);
+        } else if (typeValue === "error") {
+            Logger.Error(messageValue);
+        } else {
+            Logger.Log(messageValue);
+        }
         // activate the output flow block
         this.out._activateSignal(context);
     }
@@ -35,12 +48,8 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphConsoleLogBlock.ClassName;
+        return FlowGraphBlockNames.ConsoleLog;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGConsoleLogBlock";
 }
-RegisterClass(FlowGraphConsoleLogBlock.ClassName, FlowGraphConsoleLogBlock);
+
+RegisterClass(FlowGraphBlockNames.ConsoleLog, FlowGraphConsoleLogBlock);

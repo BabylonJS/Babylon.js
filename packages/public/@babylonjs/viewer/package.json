@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "7.48.3",
+    "version": "7.53.0",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
@@ -45,7 +45,7 @@
         "rollup": "^4.18.0",
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
-        "vite": "^5.4.2"
+        "vite": "^6.2.1"
     },
     "keywords": [
         "3D",

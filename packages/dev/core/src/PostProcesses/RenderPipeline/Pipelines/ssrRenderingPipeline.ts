@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import { Vector3, Matrix, Quaternion, TmpVectors } from "../../../Maths/math.vector";
 import type { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { PostProcess } from "../../postProcess";
@@ -17,12 +16,12 @@ import type { Nullable } from "../../../types";
 import type { CubeTexture } from "../../../Materials/Textures/cubeTexture";
 import { DepthRenderer } from "../../../Rendering/depthRenderer";
 import type { ISize } from "../../../Maths/math.size";
+import { ThinSSRRenderingPipeline } from "./thinSSRRenderingPipeline";
+import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
+import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProcess";
+import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCombinerPostProcess";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
-
-const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
-const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
 
 /**
  * Render pipeline to produce Screen Space Reflections (SSR) effect
@@ -51,6 +50,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      */
     public SSRCombineRenderEffect: string = "SSRCombineRenderEffect";
 
+    /** @internal */
+    public _thinSSRRenderingPipeline: ThinSSRRenderingPipeline;
+
     private _samples = 1;
     /**
      * MSAA sample count, setting this to 4 will provide 4x anti aliasing. (default: 1)
@@ -60,8 +62,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._samples = sampleCount;
-
-        this._buildPipeline();
+        if (this._ssrPostProcess) {
+            this._ssrPostProcess.samples = this.samples;
+        }
     }
 
     @serialize()
@@ -74,76 +77,127 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Note that this value is a view (camera) space distance (not pixels!).
      */
     @serialize()
-    public maxDistance = 1000.0;
+    public get maxDistance() {
+        return this._thinSSRRenderingPipeline.maxDistance;
+    }
+
+    public set maxDistance(distance: number) {
+        this._thinSSRRenderingPipeline.maxDistance = distance;
+    }
+
     /**
      * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Should be an integer \>= 1 as it is the number of pixels we advance at each step (default: 1).
      * Use higher values to improve performances (but at the expense of quality).
      */
     @serialize()
-    public step = 1.0;
+    public get step() {
+        return this._thinSSRRenderingPipeline.step;
+    }
+
+    public set step(step: number) {
+        this._thinSSRRenderingPipeline.step = step;
+    }
+
     /**
      * Gets or sets the thickness value used as tolerance when computing the intersection between the reflected ray and the scene (default: 0.5).
      * If setting "enableAutomaticThicknessComputation" to true, you can use lower values for "thickness" (even 0), as the geometry thickness
      * is automatically computed thank to the regular depth buffer + the backface depth buffer
      */
     @serialize()
-    public thickness = 0.5;
+    public get thickness() {
+        return this._thinSSRRenderingPipeline.thickness;
+    }
+
+    public set thickness(thickness: number) {
+        this._thinSSRRenderingPipeline.thickness = thickness;
+    }
+
     /**
      * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results (default: 1).
      */
     @serialize()
-    public strength = 1;
+    public get strength() {
+        return this._thinSSRRenderingPipeline.strength;
+    }
+
+    public set strength(strength: number) {
+        this._thinSSRRenderingPipeline.strength = strength;
+    }
+
     /**
      * Gets or sets the falloff exponent used to compute the reflection strength. Higher values lead to fainter reflections (default: 1).
      */
     @serialize()
-    public reflectionSpecularFalloffExponent = 1;
+    public get reflectionSpecularFalloffExponent() {
+        return this._thinSSRRenderingPipeline.reflectionSpecularFalloffExponent;
+    }
+
+    public set reflectionSpecularFalloffExponent(exponent: number) {
+        this._thinSSRRenderingPipeline.reflectionSpecularFalloffExponent = exponent;
+    }
+
     /**
      * Maximum number of steps during the ray marching process after which we consider an intersection could not be found (default: 1000).
      * Should be an integer value.
      */
     @serialize()
-    public maxSteps = 1000.0;
+    public get maxSteps() {
+        return this._thinSSRRenderingPipeline.maxSteps;
+    }
+
+    public set maxSteps(steps: number) {
+        this._thinSSRRenderingPipeline.maxSteps = steps;
+    }
+
     /**
      * Gets or sets the factor applied when computing roughness. Default value is 0.2.
      * When blurring based on roughness is enabled (meaning blurDispersionStrength \> 0), roughnessFactor is used as a global roughness factor applied on all objects.
      * If you want to disable this global roughness set it to 0.
      */
     @serialize()
-    public roughnessFactor = 0.2;
+    public get roughnessFactor() {
+        return this._thinSSRRenderingPipeline.roughnessFactor;
+    }
+
+    public set roughnessFactor(factor: number) {
+        this._thinSSRRenderingPipeline.roughnessFactor = factor;
+    }
+
     /**
      * Number of steps to skip at start when marching the ray to avoid self collisions (default: 1)
      * 1 should normally be a good value, depending on the scene you may need to use a higher value (2 or 3)
      */
     @serialize()
-    public selfCollisionNumSkip = 1;
+    public get selfCollisionNumSkip() {
+        return this._thinSSRRenderingPipeline.selfCollisionNumSkip;
+    }
 
-    @serialize()
-    private _reflectivityThreshold = 0.04;
+    public set selfCollisionNumSkip(skip: number) {
+        this._thinSSRRenderingPipeline.selfCollisionNumSkip = skip;
+    }
 
     /**
      * Gets or sets the minimum value for one of the reflectivity component of the material to consider it for SSR (default: 0.04).
      * If all r/g/b components of the reflectivity is below or equal this value, the pixel will not be considered reflective and SSR won't be applied.
      */
+    @serialize()
     public get reflectivityThreshold() {
-        return this._reflectivityThreshold;
+        return this._thinSSRRenderingPipeline.reflectivityThreshold;
     }
 
     public set reflectivityThreshold(threshold: number) {
-        if (threshold === this._reflectivityThreshold) {
+        const currentThreshold = this.reflectivityThreshold;
+
+        if (threshold === currentThreshold) {
             return;
         }
 
-        if ((threshold === 0 && this._reflectivityThreshold !== 0) || (threshold !== 0 && this._reflectivityThreshold === 0)) {
-            this._reflectivityThreshold = threshold;
+        this._thinSSRRenderingPipeline.reflectivityThreshold = threshold;
+
+        if ((threshold === 0 && currentThreshold !== 0) || (threshold !== 0 && currentThreshold === 0)) {
             this._buildPipeline();
-        } else {
-            this._reflectivityThreshold = threshold;
         }
     }
-
-    @serialize("_ssrDownsample")
-    private _ssrDownsample = 0;
 
     /**
      * Gets or sets the downsample factor used to reduce the size of the texture used to compute the SSR contribution (default: 0).
@@ -152,252 +206,185 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      */
     @serialize()
     public get ssrDownsample() {
-        return this._ssrDownsample;
+        return this._thinSSRRenderingPipeline.ssrDownsample;
     }
 
     public set ssrDownsample(downsample: number) {
-        if (downsample === this._ssrDownsample) {
-            return;
-        }
-
-        this._ssrDownsample = downsample;
+        this._thinSSRRenderingPipeline.ssrDownsample = downsample;
         this._buildPipeline();
     }
 
-    @serialize("blurDispersionStrength")
-    private _blurDispersionStrength = 0.03;
-
     /**
-     * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
+     * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.03)
      * The reflections are blurred based on the roughness of the surface and the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
      * blurDispersionStrength allows to increase or decrease this effect.
      */
+    @serialize("blurDispersionStrength")
     public get blurDispersionStrength() {
-        return this._blurDispersionStrength;
+        return this._thinSSRRenderingPipeline.blurDispersionStrength;
     }
 
     public set blurDispersionStrength(strength: number) {
-        if (strength === this._blurDispersionStrength) {
+        const currentStrength = this.blurDispersionStrength;
+
+        if (strength === currentStrength) {
             return;
         }
 
-        const rebuild = (strength === 0 && this._blurDispersionStrength !== 0) || (strength !== 0 && this._blurDispersionStrength === 0);
+        this._thinSSRRenderingPipeline.blurDispersionStrength = strength;
 
-        this._blurDispersionStrength = strength;
-
-        if (rebuild) {
+        if ((strength === 0 && currentStrength !== 0) || (strength !== 0 && currentStrength === 0)) {
             this._buildPipeline();
         }
     }
 
     private _useBlur() {
-        return this._blurDispersionStrength > 0;
+        return this.blurDispersionStrength > 0;
     }
-
-    @serialize("blurDownsample")
-    private _blurDownsample = 0;
 
     /**
      * Gets or sets the downsample factor used to reduce the size of the textures used to blur the reflection effect (default: 0).
      * Use 0 to blur at full resolution, 1 to render at half resolution, 2 to render at 1/3 resolution, etc.
      */
+    @serialize("blurDownsample")
     public get blurDownsample() {
-        return this._blurDownsample;
+        return this._thinSSRRenderingPipeline.blurDownsample;
     }
 
     public set blurDownsample(downsample: number) {
-        if (downsample === this._blurDownsample) {
-            return;
-        }
-
-        this._blurDownsample = downsample;
+        this._thinSSRRenderingPipeline.blurDownsample = downsample;
         this._buildPipeline();
     }
-
-    @serialize("enableSmoothReflections")
-    private _enableSmoothReflections = false;
 
     /**
      * Gets or sets whether or not smoothing reflections is enabled (default: false)
      * Enabling smoothing will require more GPU power.
      * Note that this setting has no effect if step = 1: it's only used if step \> 1.
      */
+    @serialize("enableSmoothReflections")
     public get enableSmoothReflections(): boolean {
-        return this._enableSmoothReflections;
+        return this._thinSSRRenderingPipeline.enableSmoothReflections;
     }
 
     public set enableSmoothReflections(enabled: boolean) {
-        if (enabled === this._enableSmoothReflections) {
-            return;
-        }
-
-        this._enableSmoothReflections = enabled;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.enableSmoothReflections = enabled;
     }
 
-    private _useScreenspaceDepth = false;
-
-    @serialize("environmentTexture")
-    private _environmentTexture: Nullable<CubeTexture>;
+    private get _useScreenspaceDepth() {
+        return this._thinSSRRenderingPipeline.useScreenspaceDepth;
+    }
 
     /**
      * Gets or sets the environment cube texture used to define the reflection when the reflected rays of SSR leave the view space or when the maxDistance/maxSteps is reached.
      */
+    @serialize("environmentTexture")
     public get environmentTexture() {
-        return this._environmentTexture;
+        return this._thinSSRRenderingPipeline.environmentTexture;
     }
 
     public set environmentTexture(texture: Nullable<CubeTexture>) {
-        this._environmentTexture = texture;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.environmentTexture = texture;
     }
-
-    @serialize("environmentTextureIsProbe")
-    private _environmentTextureIsProbe = false;
 
     /**
      * Gets or sets the boolean defining if the environment texture is a standard cubemap (false) or a probe (true). Default value is false.
      * Note: a probe cube texture is treated differently than an ordinary cube texture because the Y axis is reversed.
      */
+    @serialize("environmentTextureIsProbe")
     public get environmentTextureIsProbe(): boolean {
-        return this._environmentTextureIsProbe;
+        return this._thinSSRRenderingPipeline.environmentTextureIsProbe;
     }
 
     public set environmentTextureIsProbe(isProbe: boolean) {
-        this._environmentTextureIsProbe = isProbe;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.environmentTextureIsProbe = isProbe;
     }
-
-    @serialize("attenuateScreenBorders")
-    private _attenuateScreenBorders = true;
 
     /**
      * Gets or sets a boolean indicating if the reflections should be attenuated at the screen borders (default: true).
      */
+    @serialize("attenuateScreenBorders")
     public get attenuateScreenBorders() {
-        return this._attenuateScreenBorders;
+        return this._thinSSRRenderingPipeline.attenuateScreenBorders;
     }
 
     public set attenuateScreenBorders(attenuate: boolean) {
-        if (this._attenuateScreenBorders === attenuate) {
-            return;
-        }
-        this._attenuateScreenBorders = attenuate;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.attenuateScreenBorders = attenuate;
     }
-
-    @serialize("attenuateIntersectionDistance")
-    private _attenuateIntersectionDistance = true;
 
     /**
      * Gets or sets a boolean indicating if the reflections should be attenuated according to the distance of the intersection (default: true).
      */
+    @serialize("attenuateIntersectionDistance")
     public get attenuateIntersectionDistance() {
-        return this._attenuateIntersectionDistance;
+        return this._thinSSRRenderingPipeline.attenuateIntersectionDistance;
     }
 
     public set attenuateIntersectionDistance(attenuate: boolean) {
-        if (this._attenuateIntersectionDistance === attenuate) {
-            return;
-        }
-        this._attenuateIntersectionDistance = attenuate;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.attenuateIntersectionDistance = attenuate;
     }
-
-    @serialize("attenuateIntersectionIterations")
-    private _attenuateIntersectionIterations = true;
 
     /**
      * Gets or sets a boolean indicating if the reflections should be attenuated according to the number of iterations performed to find the intersection (default: true).
      */
+    @serialize("attenuateIntersectionIterations")
     public get attenuateIntersectionIterations() {
-        return this._attenuateIntersectionIterations;
+        return this._thinSSRRenderingPipeline.attenuateIntersectionIterations;
     }
 
     public set attenuateIntersectionIterations(attenuate: boolean) {
-        if (this._attenuateIntersectionIterations === attenuate) {
-            return;
-        }
-        this._attenuateIntersectionIterations = attenuate;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.attenuateIntersectionIterations = attenuate;
     }
-
-    @serialize("attenuateFacingCamera")
-    private _attenuateFacingCamera = false;
 
     /**
      * Gets or sets a boolean indicating if the reflections should be attenuated when the reflection ray is facing the camera (the view direction) (default: false).
      */
+    @serialize("attenuateFacingCamera")
     public get attenuateFacingCamera() {
-        return this._attenuateFacingCamera;
+        return this._thinSSRRenderingPipeline.attenuateFacingCamera;
     }
 
     public set attenuateFacingCamera(attenuate: boolean) {
-        if (this._attenuateFacingCamera === attenuate) {
-            return;
-        }
-        this._attenuateFacingCamera = attenuate;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.attenuateFacingCamera = attenuate;
     }
-
-    @serialize("attenuateBackfaceReflection")
-    private _attenuateBackfaceReflection = false;
 
     /**
      * Gets or sets a boolean indicating if the backface reflections should be attenuated (default: false).
      */
+    @serialize("attenuateBackfaceReflection")
     public get attenuateBackfaceReflection() {
-        return this._attenuateBackfaceReflection;
+        return this._thinSSRRenderingPipeline.attenuateBackfaceReflection;
     }
 
     public set attenuateBackfaceReflection(attenuate: boolean) {
-        if (this._attenuateBackfaceReflection === attenuate) {
-            return;
-        }
-        this._attenuateBackfaceReflection = attenuate;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.attenuateBackfaceReflection = attenuate;
     }
-
-    @serialize("clipToFrustum")
-    private _clipToFrustum = true;
 
     /**
      * Gets or sets a boolean indicating if the ray should be clipped to the frustum (default: true).
      * You can try to set this parameter to false to save some performances: it may produce some artefacts in some cases, but generally they won't really be visible
      */
+    @serialize("clipToFrustum")
     public get clipToFrustum() {
-        return this._clipToFrustum;
+        return this._thinSSRRenderingPipeline.clipToFrustum;
     }
 
     public set clipToFrustum(clip: boolean) {
-        if (this._clipToFrustum === clip) {
-            return;
-        }
-        this._clipToFrustum = clip;
-        this._updateEffectDefines();
+        this._thinSSRRenderingPipeline.clipToFrustum = clip;
     }
-
-    @serialize("useFresnel")
-    private _useFresnel = false;
 
     /**
      * Gets or sets a boolean indicating whether the blending between the current color pixel and the reflection color should be done with a Fresnel coefficient (default: false).
      * It is more physically accurate to use the Fresnel coefficient (otherwise it uses the reflectivity of the material for blending), but it is also more expensive when you use blur (when blurDispersionStrength \> 0).
      */
+    @serialize("useFresnel")
     public get useFresnel() {
-        return this._useFresnel;
+        return this._thinSSRRenderingPipeline.useFresnel;
     }
 
     public set useFresnel(fresnel: boolean) {
-        if (this._useFresnel === fresnel) {
-            return;
-        }
-        this._useFresnel = fresnel;
+        this._thinSSRRenderingPipeline.useFresnel = fresnel;
         this._buildPipeline();
     }
-
-    @serialize("enableAutomaticThicknessComputation")
-    private _enableAutomaticThicknessComputation = false;
 
     /**
      * Gets or sets a boolean defining if geometry thickness should be computed automatically (default: false).
@@ -406,17 +393,13 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * value than when enableAutomaticThicknessComputation is false (it's even possible to use a value of 0 when using low values for "step")
      * Note that for performance reasons, this option will only apply to the first camera to which the rendering pipeline is attached!
      */
+    @serialize("enableAutomaticThicknessComputation")
     public get enableAutomaticThicknessComputation(): boolean {
-        return this._enableAutomaticThicknessComputation;
+        return this._thinSSRRenderingPipeline.enableAutomaticThicknessComputation;
     }
 
     public set enableAutomaticThicknessComputation(automatic: boolean) {
-        if (this._enableAutomaticThicknessComputation === automatic) {
-            return;
-        }
-
-        this._enableAutomaticThicknessComputation = automatic;
-
+        this._thinSSRRenderingPipeline.enableAutomaticThicknessComputation = automatic;
         this._buildPipeline();
     }
 
@@ -503,50 +486,33 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
     }
 
-    @serialize("inputTextureColorIsInGammaSpace")
-    private _inputTextureColorIsInGammaSpace = true;
-
     /**
      * Gets or sets a boolean defining if the input color texture is in gamma space (default: true)
      * The SSR effect works in linear space, so if the input texture is in gamma space, we must convert the texture to linear space before applying the effect
      */
+    @serialize("inputTextureColorIsInGammaSpace")
     public get inputTextureColorIsInGammaSpace(): boolean {
-        return this._inputTextureColorIsInGammaSpace;
+        return this._thinSSRRenderingPipeline.inputTextureColorIsInGammaSpace;
     }
 
     public set inputTextureColorIsInGammaSpace(gammaSpace: boolean) {
-        if (this._inputTextureColorIsInGammaSpace === gammaSpace) {
-            return;
-        }
-
-        this._inputTextureColorIsInGammaSpace = gammaSpace;
-
+        this._thinSSRRenderingPipeline.inputTextureColorIsInGammaSpace = gammaSpace;
         this._buildPipeline();
     }
-
-    @serialize("generateOutputInGammaSpace")
-    private _generateOutputInGammaSpace = true;
 
     /**
      * Gets or sets a boolean defining if the output color texture generated by the SSR pipeline should be in gamma space (default: true)
      * If you have a post-process that comes after the SSR and that post-process needs the input to be in a linear space, you must disable generateOutputInGammaSpace
      */
+    @serialize("generateOutputInGammaSpace")
     public get generateOutputInGammaSpace(): boolean {
-        return this._generateOutputInGammaSpace;
+        return this._thinSSRRenderingPipeline.generateOutputInGammaSpace;
     }
 
     public set generateOutputInGammaSpace(gammaSpace: boolean) {
-        if (this._generateOutputInGammaSpace === gammaSpace) {
-            return;
-        }
-
-        this._generateOutputInGammaSpace = gammaSpace;
-
+        this._thinSSRRenderingPipeline.generateOutputInGammaSpace = gammaSpace;
         this._buildPipeline();
     }
-
-    @serialize("debug")
-    private _debug = false;
 
     /**
      * Gets or sets a boolean indicating if the effect should be rendered in debug mode (default: false).
@@ -558,17 +524,13 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * In the first 3 cases, the final color is calculated by mixing the skybox color with the pixel color (if environmentTexture is defined), otherwise the pixel color is not modified
      * You should try to get as few blue/red/yellow pixels as possible, as this means that the ray has gone further than if it had hit a surface.
      */
+    @serialize("debug")
     public get debug(): boolean {
-        return this._debug;
+        return this._thinSSRRenderingPipeline.debug;
     }
 
     public set debug(value: boolean) {
-        if (this._debug === value) {
-            return;
-        }
-
-        this._debug = value;
-
+        this._thinSSRRenderingPipeline.debug = value;
         this._buildPipeline();
     }
 
@@ -636,6 +598,10 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE, useScreenspaceDepth = false) {
         super(scene.getEngine(), name);
 
+        this._thinSSRRenderingPipeline = new ThinSSRRenderingPipeline(name, scene);
+        this._thinSSRRenderingPipeline.isSSRSupported = false;
+        this._thinSSRRenderingPipeline.useScreenspaceDepth = useScreenspaceDepth;
+
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();
         this._camerasToBeAttached = this._cameras.slice();
@@ -643,9 +609,10 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._scene = scene;
         this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
-        this._useScreenspaceDepth = useScreenspaceDepth;
 
         if (this.isSupported) {
+            this._createSSRPostProcess();
+
             scene.postProcessRenderPipelineManager.addPipeline(this);
 
             if (this._forceGeometryBuffer) {
@@ -663,6 +630,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     prePassRenderer.markAsDirty();
                 }
             }
+
+            this._thinSSRRenderingPipeline.isSSRSupported = !!this._geometryBufferRenderer || !!this._prePassRenderer;
 
             this._buildPipeline();
         }
@@ -701,13 +670,16 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      */
     public override dispose(disableGeometryBufferRenderer: boolean = false): void {
         this._disposeDepthRenderer();
-        this._disposePostProcesses();
+        this._disposeSSRPostProcess();
+        this._disposeBlurPostProcesses();
 
         if (disableGeometryBufferRenderer) {
             this._scene.disableGeometryBufferRenderer();
         }
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+
+        this._thinSSRRenderingPipeline.dispose();
 
         super.dispose();
     }
@@ -732,90 +704,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return textureSize;
     }
 
-    private _updateEffectDefines(): void {
-        const defines: string[] = [];
-
-        if (this._geometryBufferRenderer || this._prePassRenderer) {
-            defines.push("#define SSR_SUPPORTED");
-        }
-        if (this._enableSmoothReflections) {
-            defines.push("#define SSRAYTRACE_ENABLE_REFINEMENT");
-        }
-        if (this._scene.useRightHandedSystem) {
-            defines.push("#define SSRAYTRACE_RIGHT_HANDED_SCENE");
-        }
-        if (this._useScreenspaceDepth) {
-            defines.push("#define SSRAYTRACE_SCREENSPACE_DEPTH");
-        }
-        if (this._environmentTexture) {
-            defines.push("#define SSR_USE_ENVIRONMENT_CUBE");
-            if (this._environmentTexture.boundingBoxSize) {
-                defines.push("#define SSR_USE_LOCAL_REFLECTIONMAP_CUBIC");
-            }
-            if (this._environmentTexture.gammaSpace) {
-                defines.push("#define SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE");
-            }
-        }
-        if (this._environmentTextureIsProbe) {
-            defines.push("#define SSR_INVERTCUBICMAP");
-        }
-        if (this._enableAutomaticThicknessComputation) {
-            defines.push("#define SSRAYTRACE_USE_BACK_DEPTHBUFFER");
-        }
-        if (this._attenuateScreenBorders) {
-            defines.push("#define SSR_ATTENUATE_SCREEN_BORDERS");
-        }
-        if (this._attenuateIntersectionDistance) {
-            defines.push("#define SSR_ATTENUATE_INTERSECTION_DISTANCE");
-        }
-        if (this._attenuateIntersectionIterations) {
-            defines.push("#define SSR_ATTENUATE_INTERSECTION_NUMITERATIONS");
-        }
-        if (this._attenuateFacingCamera) {
-            defines.push("#define SSR_ATTENUATE_FACING_CAMERA");
-        }
-        if (this._attenuateBackfaceReflection) {
-            defines.push("#define SSR_ATTENUATE_BACKFACE_REFLECTION");
-        }
-        if (this._clipToFrustum) {
-            defines.push("#define SSRAYTRACE_CLIP_TO_FRUSTUM");
-        }
-        if (this._useBlur()) {
-            defines.push("#define SSR_USE_BLUR");
-        }
-        if (this._debug) {
-            defines.push("#define SSRAYTRACE_DEBUG");
-        }
-        if (this._inputTextureColorIsInGammaSpace) {
-            defines.push("#define SSR_INPUT_IS_GAMMA_SPACE");
-        }
-        if (this._generateOutputInGammaSpace) {
-            defines.push("#define SSR_OUTPUT_IS_GAMMA_SPACE");
-        }
-        if (this._useFresnel) {
-            defines.push("#define SSR_BLEND_WITH_FRESNEL");
-        }
-        if (this._reflectivityThreshold === 0) {
-            defines.push("#define SSR_DISABLE_REFLECTIVITY_TEST");
-        }
-
-        if (this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace) {
-            defines.push("#define SSR_NORMAL_IS_IN_WORLDSPACE");
-        }
-
-        if (this._geometryBufferRenderer?.normalsAreUnsigned) {
-            defines.push("#define SSR_DECODE_NORMAL");
-        }
-
-        const camera = this._cameras?.[0];
-
-        if (camera && camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-            defines.push("#define ORTHOGRAPHIC_CAMERA");
-        }
-
-        this._ssrPostProcess?.updateEffect(defines.join("\n"));
-    }
-
     private _buildPipeline() {
         if (!this.isSupported) {
             return;
@@ -831,15 +719,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         const engine = this._scene.getEngine();
 
         this._disposeDepthRenderer();
-        this._disposePostProcesses();
         if (this._cameras !== null) {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
             // get back cameras to be used to reattach pipeline
             this._cameras = this._camerasToBeAttached.slice();
+            if (this._cameras.length > 0) {
+                this._thinSSRRenderingPipeline.camera = this._cameras[0];
+            }
         }
         this._reset();
 
-        if (this._enableAutomaticThicknessComputation) {
+        this._thinSSRRenderingPipeline.normalsAreInWorldSpace = !!(this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace);
+
+        if (this.enableAutomaticThicknessComputation) {
             const camera = this._cameras?.[0];
 
             if (camera) {
@@ -857,7 +749,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 }
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
-                this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
+                this._depthRenderer.forceDepthWriteTransparentMeshes = this.backfaceForceDepthWriteTransparentMeshes;
 
                 this._resizeDepthRenderer();
 
@@ -865,7 +757,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             }
         }
 
-        this._createSSRPostProcess();
         this.addEffect(
             new PostProcessRenderEffect(
                 engine,
@@ -877,8 +768,11 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             )
         );
 
+        this._disposeBlurPostProcesses();
+
         if (this._useBlur()) {
             this._createBlurAndCombinerPostProcesses();
+
             this.addEffect(
                 new PostProcessRenderEffect(
                     engine,
@@ -914,8 +808,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         const textureSize = this._getTextureSize();
         const depthRendererSize = this._depthRenderer.getDepthMap().getSize();
 
-        const width = Math.floor(textureSize.width / (this._backfaceDepthTextureDownsample + 1));
-        const height = Math.floor(textureSize.height / (this._backfaceDepthTextureDownsample + 1));
+        const width = Math.floor(textureSize.width / (this.backfaceDepthTextureDownsample + 1));
+        const height = Math.floor(textureSize.height / (this.backfaceDepthTextureDownsample + 1));
 
         if (depthRendererSize.width !== width || depthRendererSize.height !== height) {
             this._depthRenderer.getDepthMap().resize({ width, height });
@@ -936,70 +830,40 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._depthRenderer = null;
     }
 
-    private _disposePostProcesses(): void {
+    private _disposeBlurPostProcesses(): void {
         for (let i = 0; i < this._cameras.length; i++) {
             const camera = this._cameras[i];
 
-            this._ssrPostProcess?.dispose(camera);
             this._blurPostProcessX?.dispose(camera);
             this._blurPostProcessY?.dispose(camera);
             this._blurCombinerPostProcess?.dispose(camera);
         }
 
-        this._ssrPostProcess = null;
         this._blurPostProcessX = null;
         this._blurPostProcessY = null;
         this._blurCombinerPostProcess = null;
     }
 
-    private _createSSRPostProcess(): void {
-        this._ssrPostProcess = new PostProcess(
-            "ssr",
-            "screenSpaceReflection2",
-            [
-                "projection",
-                "invProjectionMatrix",
-                "view",
-                "invView",
-                "thickness",
-                "reflectionSpecularFalloffExponent",
-                "strength",
-                "stepSize",
-                "maxSteps",
-                "roughnessFactor",
-                "projectionPixel",
-                "nearPlaneZ",
-                "farPlaneZ",
-                "maxDistance",
-                "selfCollisionNumSkip",
-                "vReflectionPosition",
-                "vReflectionSize",
-                "backSizeFactor",
-                "reflectivityThreshold",
-            ],
-            ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"],
-            1.0,
-            null,
-            this._textureType,
-            this._scene.getEngine(),
-            false,
-            "",
-            this._textureType,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            (useWebGPU, list) => {
-                if (useWebGPU) {
-                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2.fragment"));
-                } else {
-                    list.push(import("../../../Shaders/screenSpaceReflection2.fragment"));
-                }
-            }
-        );
+    private _disposeSSRPostProcess(): void {
+        for (let i = 0; i < this._cameras.length; i++) {
+            const camera = this._cameras[i];
 
-        this._updateEffectDefines();
+            this._ssrPostProcess?.dispose(camera);
+        }
+
+        this._ssrPostProcess = null;
+    }
+
+    private _createSSRPostProcess(): void {
+        this._ssrPostProcess = new PostProcess("ssr", ThinSSRPostProcess.FragmentUrl, {
+            uniformNames: ThinSSRPostProcess.Uniforms,
+            samplerNames: ThinSSRPostProcess.Samplers,
+            size: 1.0,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            engine: this._scene.getEngine(),
+            textureType: this._textureType,
+            effectWrapper: this._thinSSRRenderingPipeline._ssrPostProcess,
+        });
 
         this._ssrPostProcess.onApply = (effect: Effect) => {
             this._resizeDepthRenderer();
@@ -1034,57 +898,17 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
             }
 
-            if (this._enableAutomaticThicknessComputation && this._depthRenderer) {
+            if (this.enableAutomaticThicknessComputation && this._depthRenderer) {
                 effect.setTexture("backDepthSampler", this._depthRenderer.getDepthMap());
-                effect.setFloat("backSizeFactor", this._backfaceDepthTextureDownsample + 1);
+                effect.setFloat("backSizeFactor", this.backfaceDepthTextureDownsample + 1);
             }
-
-            const camera = this._scene.activeCamera;
-            if (!camera) {
-                return;
-            }
-
-            const viewMatrix = camera.getViewMatrix();
-            const projectionMatrix = camera.getProjectionMatrix();
-
-            projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
-            viewMatrix.invertToRef(TmpVectors.Matrix[1]);
-
-            effect.setMatrix("projection", projectionMatrix);
-            effect.setMatrix("view", viewMatrix);
-            effect.setMatrix("invView", TmpVectors.Matrix[1]);
-            effect.setMatrix("invProjectionMatrix", TmpVectors.Matrix[0]);
-            effect.setFloat("thickness", this.thickness);
-            effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
-            effect.setFloat("strength", this.strength);
-            effect.setFloat("stepSize", this.step);
-            effect.setFloat("maxSteps", this.maxSteps);
-            effect.setFloat("roughnessFactor", this.roughnessFactor);
-            effect.setFloat("nearPlaneZ", camera.minZ);
-            effect.setFloat("farPlaneZ", camera.maxZ);
-            effect.setFloat("maxDistance", this.maxDistance);
-            effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
-            effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
 
             const textureSize = this._getTextureSize();
 
-            Matrix.ScalingToRef(textureSize!.width, textureSize!.height, 1, TmpVectors.Matrix[2]);
-
-            projectionMatrix.multiplyToRef(this._scene.getEngine().isWebGPU ? trsWebGPU : trs, TmpVectors.Matrix[3]);
-
-            TmpVectors.Matrix[3].multiplyToRef(TmpVectors.Matrix[2], TmpVectors.Matrix[4]);
-
-            effect.setMatrix("projectionPixel", TmpVectors.Matrix[4]);
-
-            if (this._environmentTexture) {
-                effect.setTexture("envCubeSampler", this._environmentTexture);
-
-                if (this._environmentTexture.boundingBoxSize) {
-                    effect.setVector3("vReflectionPosition", this._environmentTexture.boundingBoxPosition);
-                    effect.setVector3("vReflectionSize", this._environmentTexture.boundingBoxSize);
-                }
-            }
+            this._thinSSRRenderingPipeline._ssrPostProcess.textureWidth = textureSize.width;
+            this._thinSSRRenderingPipeline._ssrPostProcess.textureHeight = textureSize.height;
         };
+
         this._ssrPostProcess.samples = this.samples;
 
         if (!this._forceGeometryBuffer) {
@@ -1095,124 +919,47 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     private _createBlurAndCombinerPostProcesses() {
         const engine = this._scene.getEngine();
 
-        this._blurPostProcessX = new PostProcess(
-            "SSRblurX",
-            "screenSpaceReflection2Blur",
-            ["texelOffsetScale"],
-            ["textureSampler"],
-            this._useBlur() ? 1 / (this._ssrDownsample + 1) : 1,
-            null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        this._blurPostProcessX = new PostProcess("SSRblurX", ThinSSRBlurPostProcess.FragmentUrl, {
+            uniformNames: ThinSSRBlurPostProcess.Uniforms,
+            samplerNames: ThinSSRBlurPostProcess.Samplers,
+            size: 1 / (this.ssrDownsample + 1),
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            "",
-            this._textureType,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            (useWebGPU, list) => {
-                if (useWebGPU) {
-                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment"));
-                } else {
-                    list.push(import("../../../Shaders/screenSpaceReflection2Blur.fragment"));
-                }
-            }
-        );
+            textureType: this._textureType,
+            effectWrapper: this._thinSSRRenderingPipeline._ssrBlurXPostProcess,
+        });
         this._blurPostProcessX.autoClear = false;
 
-        this._blurPostProcessX.onApplyObservable.add((effect) => {
-            const width = this._blurPostProcessX?.inputTexture.width ?? this._scene.getEngine().getRenderWidth();
-
-            effect.setFloat2("texelOffsetScale", this._blurDispersionStrength / width, 0);
+        this._blurPostProcessX.onApplyObservable.add(() => {
+            this._thinSSRRenderingPipeline._ssrBlurXPostProcess.textureWidth = this._blurPostProcessX?.inputTexture.width ?? this._scene.getEngine().getRenderWidth();
+            this._thinSSRRenderingPipeline._ssrBlurXPostProcess.textureHeight = 1; // not used
         });
 
-        this._blurPostProcessY = new PostProcess(
-            "SSRblurY",
-            "screenSpaceReflection2Blur",
-            ["texelOffsetScale"],
-            ["textureSampler"],
-            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
-            null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        this._blurPostProcessY = new PostProcess("SSRblurY", ThinSSRBlurPostProcess.FragmentUrl, {
+            uniformNames: ThinSSRBlurPostProcess.Uniforms,
+            samplerNames: ThinSSRBlurPostProcess.Samplers,
+            size: 1 / (this.blurDownsample + 1),
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            "",
-            this._textureType,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            (useWebGPU, list) => {
-                if (useWebGPU) {
-                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment"));
-                } else {
-                    list.push(import("../../../Shaders/screenSpaceReflection2Blur.fragment"));
-                }
-            }
-        );
+            textureType: this._textureType,
+            effectWrapper: this._thinSSRRenderingPipeline._ssrBlurYPostProcess,
+        });
         this._blurPostProcessY.autoClear = false;
 
-        this._blurPostProcessY.onApplyObservable.add((effect) => {
-            const height = this._blurPostProcessY?.inputTexture.height ?? this._scene.getEngine().getRenderHeight();
-
-            effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
+        this._blurPostProcessY.onApplyObservable.add(() => {
+            this._thinSSRRenderingPipeline._ssrBlurYPostProcess.textureWidth = 1; // not used
+            this._thinSSRRenderingPipeline._ssrBlurYPostProcess.textureHeight = this._blurPostProcessY?.inputTexture.height ?? this._scene.getEngine().getRenderHeight();
         });
 
-        const uniformNames = ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold"];
-        const samplerNames = ["textureSampler", "mainSampler", "reflectivitySampler"];
-
-        let defines = "";
-
-        if (this._debug) {
-            defines += "#define SSRAYTRACE_DEBUG\n";
-        }
-        if (this._inputTextureColorIsInGammaSpace) {
-            defines += "#define SSR_INPUT_IS_GAMMA_SPACE\n";
-        }
-        if (this._generateOutputInGammaSpace) {
-            defines += "#define SSR_OUTPUT_IS_GAMMA_SPACE\n";
-        }
-        if (this.useFresnel) {
-            defines += "#define SSR_BLEND_WITH_FRESNEL\n";
-
-            uniformNames.push("projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ");
-            samplerNames.push("depthSampler", "normalSampler");
-        }
-        if (this._useScreenspaceDepth) {
-            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH";
-        }
-        if (this._reflectivityThreshold === 0) {
-            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
-        }
-
-        this._blurCombinerPostProcess = new PostProcess(
-            "SSRblurCombiner",
-            "screenSpaceReflection2BlurCombiner",
-            uniformNames,
-            samplerNames,
-            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
-            null,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        this._blurCombinerPostProcess = new PostProcess("SSRblurCombiner", ThinSSRBlurCombinerPostProcess.FragmentUrl, {
+            uniformNames: ThinSSRBlurCombinerPostProcess.Uniforms,
+            samplerNames: ThinSSRBlurCombinerPostProcess.Samplers,
+            size: 1 / (this.blurDownsample + 1),
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine,
-            false,
-            defines,
-            this._textureType,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            (useWebGPU, list) => {
-                if (useWebGPU) {
-                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment"));
-                } else {
-                    list.push(import("../../../Shaders/screenSpaceReflection2BlurCombiner.fragment"));
-                }
-            }
-        );
+            textureType: this._textureType,
+            effectWrapper: this._thinSSRRenderingPipeline._ssrBlurCombinerPostProcess,
+        });
         this._blurCombinerPostProcess.autoClear = false;
 
         this._blurCombinerPostProcess.onApplyObservable.add((effect) => {
@@ -1237,11 +984,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const camera = this._scene.activeCamera;
-                    if (camera && this._useScreenspaceDepth) {
-                        effect.setFloat("nearPlaneZ", camera.minZ);
-                        effect.setFloat("farPlaneZ", camera.maxZ);
-                    }
                     effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
                     if (this._useScreenspaceDepth) {
                         const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
@@ -1254,11 +996,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const camera = this._scene.activeCamera;
-                    if (camera && this._useScreenspaceDepth) {
-                        effect.setFloat("nearPlaneZ", camera.minZ);
-                        effect.setFloat("farPlaneZ", camera.maxZ);
-                    }
                     const depthIndex = prePassRenderer.getIndex(
                         this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE
                     );
@@ -1266,22 +1003,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
                     effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                     effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
-                }
-            }
-
-            effect.setFloat("strength", this.strength);
-            effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
-            effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
-
-            if (this.useFresnel) {
-                const camera = this._scene.activeCamera;
-                if (camera) {
-                    const projectionMatrix = camera.getProjectionMatrix();
-
-                    projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
-
-                    effect.setMatrix("projection", projectionMatrix);
-                    effect.setMatrix("invProjectionMatrix", TmpVectors.Matrix[0]);
                 }
             }
         });

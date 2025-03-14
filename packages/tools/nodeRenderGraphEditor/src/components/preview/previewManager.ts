@@ -27,6 +27,8 @@ import type { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Bl
 import { BoundingBox } from "core/Culling/boundingBox";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 import type { Mesh } from "core/Meshes";
+import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
+import { GizmoManager } from "core/Gizmos/gizmoManager";
 
 const useWebGPU = false;
 const debugTextures = false;
@@ -343,6 +345,14 @@ export class PreviewManager {
                     if (mesh) {
                         layer.addMesh(mesh, new Color3(0, 1, 0), false);
                     }
+                    break;
+                }
+                case "NodeRenderGraphUtilityLayerRendererBlock": {
+                    const layer = (block as NodeRenderGraphUtilityLayerRendererBlock).task.layer;
+                    const gizmoManager = new GizmoManager(this._scene, undefined, layer, layer);
+                    gizmoManager.positionGizmoEnabled = true;
+                    gizmoManager.rotationGizmoEnabled = true;
+                    gizmoManager.attachableMeshes = this._scene.meshes.filter((m) => m.getTotalVertices() > 0);
                     break;
                 }
             }

@@ -1,44 +1,31 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
- * @experimental
  * Block that triggers when a scene is ready.
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
-    /**
-     * @internal
-     */
-    public _preparePendingTasks(context: FlowGraphContext): void {
-        if (!context._getExecutionVariable(this, "sceneReadyObserver")) {
-            const scene = context.configuration.scene;
-            const contextObserver = scene.onReadyObservable.add(() => {
-                this._execute(context);
-            });
-            context._setExecutionVariable(this, "sceneReadyObserver", contextObserver);
-        }
-    }
+    public override initPriority: number = -1;
 
-    /**
-     * @internal
-     */
-    public _cancelPendingTasks(context: FlowGraphContext) {
-        const contextObserver = context._getExecutionVariable(this, "sceneReadyObserver");
-        const scene = context.configuration.scene;
-        scene.onReadyObservable.remove(contextObserver);
-        context._deleteExecutionVariable(this, "sceneReadyObserver");
-    }
+    public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
 
+    public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
+        this._execute(context);
+        return true;
+    }
+    public override _preparePendingTasks(context: FlowGraphContext): void {
+        // no-op
+    }
+    public override _cancelPendingTasks(context: FlowGraphContext): void {
+        // no-op
+    }
     /**
      * @returns class name of the block.
      */
     public override getClassName() {
-        return FlowGraphSceneReadyEventBlock.ClassName;
+        return FlowGraphBlockNames.SceneReadyEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSceneReadyEventBlock";
 }
-RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);
+RegisterClass(FlowGraphBlockNames.SceneReadyEvent, FlowGraphSceneReadyEventBlock);

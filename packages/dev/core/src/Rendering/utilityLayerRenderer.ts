@@ -152,11 +152,13 @@ export class UtilityLayerRenderer implements IDisposable {
      * Instantiates a UtilityLayerRenderer
      * @param originalScene the original scene that will be rendered on top of
      * @param handleEvents boolean indicating if the utility layer should handle events
+     * @param manualRender boolean indicating if the utility layer should render manually.
      */
     constructor(
         /** the original scene that will be rendered on top of */
         public originalScene: Scene,
-        handleEvents: boolean = true
+        public readonly handleEvents: boolean = true,
+        manualRender = false
     ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
         this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
@@ -235,6 +237,11 @@ export class UtilityLayerRenderer implements IDisposable {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
 
+                if (prePointerInfo.originalPickingInfo?.aimTransform && utilityScenePick) {
+                    utilityScenePick.aimTransform = prePointerInfo.originalPickingInfo.aimTransform;
+                    utilityScenePick.gripTransform = prePointerInfo.originalPickingInfo.gripTransform;
+                }
+
                 // always fire the prepointer observable
                 this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
@@ -277,6 +284,7 @@ export class UtilityLayerRenderer implements IDisposable {
                                 prePointerInfo.skipOnPointerObservable = true;
                             } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                             } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
                                 if (this._lastPointerEvents[pointerEvent.pointerId]) {
                                     // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
@@ -327,12 +335,14 @@ export class UtilityLayerRenderer implements IDisposable {
         // Render directly on top of existing scene without clearing
         this.utilityLayerScene.autoClear = false;
 
-        this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
-            // Only render when the render camera finishes rendering
-            if (this.shouldRender && camera == this.getRenderCamera()) {
-                this.render();
-            }
-        });
+        if (!manualRender) {
+            this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
+                // Only render when the render camera finishes rendering
+                if (this.shouldRender && camera == this.getRenderCamera()) {
+                    this.render();
+                }
+            });
+        }
 
         this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(() => {
             this.dispose();

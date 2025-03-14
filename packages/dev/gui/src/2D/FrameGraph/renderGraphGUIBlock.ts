@@ -39,12 +39,12 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = this.destination;
+        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.output._typeConnectionSource = this.target;
 
         this._gui = AdvancedDynamicTexture.CreateFullscreenUI(this.name, undefined, {
             useStandalone: true,
@@ -61,9 +61,9 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the destination input component
+     * Gets the target input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -77,14 +77,9 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name;
-
         this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
-        const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
-        }
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }
 }
 

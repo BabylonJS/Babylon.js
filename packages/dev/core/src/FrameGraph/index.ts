@@ -15,14 +15,17 @@ export * from "./Tasks/Layers/highlightLayerTask";
 
 export * from "./Tasks/Misc/executeTask";
 
+export * from "./Tasks/PostProcesses/anaglyphTask";
 export * from "./Tasks/PostProcesses/blackAndWhiteTask";
 export * from "./Tasks/PostProcesses/bloomTask";
 export * from "./Tasks/PostProcesses/blurTask";
+export * from "./Tasks/PostProcesses/chromaticAberrationTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/extractHighlightsTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
+export * from "./Tasks/PostProcesses/ssrRenderingPipelineTask";
 
 export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";
@@ -35,6 +38,7 @@ export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";
 export * from "./Tasks/Rendering/taaObjectRendererTask";
+export * from "./Tasks/Rendering/utilityLayerRendererTask";
 
 export * from "./frameGraph";
 export * from "./frameGraphContext";

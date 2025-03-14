@@ -217,15 +217,37 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInput lockObject={this.props.lockObject} label="r" labelTooltip="Red" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
-                        <NumericInput lockObject={this.props.lockObject} label="g" labelTooltip="Green" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
-                        <NumericInput lockObject={this.props.lockObject} label="b" labelTooltip="Blue" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        <NumericInput
+                            lockObject={this.props.lockObject}
+                            label="r"
+                            labelTooltip="Red"
+                            value={this.state.color.r}
+                            step={0.1}
+                            onChange={(value) => this.updateStateR(value)}
+                        />
+                        <NumericInput
+                            lockObject={this.props.lockObject}
+                            label="g"
+                            labelTooltip="Green"
+                            value={this.state.color.g}
+                            step={0.1}
+                            onChange={(value) => this.updateStateG(value)}
+                        />
+                        <NumericInput
+                            lockObject={this.props.lockObject}
+                            label="b"
+                            labelTooltip="Blue"
+                            value={this.state.color.b}
+                            step={0.1}
+                            onChange={(value) => this.updateStateB(value)}
+                        />
                         {this.props.disableAlpha || (
                             <NumericInput
                                 lockObject={this.props.lockObject}
                                 label="a"
                                 labelTooltip="Alpha"
                                 value={this.state.color.a}
+                                step={0.1}
                                 onChange={(value) => this.updateStateA(value)}
                             />
                         )}

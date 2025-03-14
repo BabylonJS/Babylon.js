@@ -120,9 +120,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
         this._externalTextures.length = 0;
 
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+        const globalState = this.props.globalState;
+
+        if (globalState.hostDocument) {
+            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
+
+        globalState.stateManager.onUpdateRequiredObservable.clear();
+        globalState.stateManager.onRebuildRequiredObservable.clear();
+        globalState.stateManager.onNodeMovedObservable.clear();
+        globalState.stateManager.onNewNodeCreatedObservable.clear();
 
         if (this._previewManager) {
             this._previewManager.dispose();

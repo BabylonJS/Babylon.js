@@ -1,4 +1,4 @@
-import type { IndicesArray, Nullable, TypedArray } from "core/types";
+import type { IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -74,13 +74,13 @@ import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
-import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
+import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
+import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
-import type { TypedArrayConstructor } from "core/Buffers/bufferUtils";
 
 export { GLTFFileLoader };
 
@@ -200,6 +200,9 @@ export class GLTFLoader implements IGLTFLoader {
 
     /** @internal */
     public _allMaterialsDirtyRequired = false;
+
+    /** @internal */
+    public _skipStartAnimationStep = false;
 
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
@@ -464,8 +467,9 @@ export class GLTFLoader implements IGLTFLoader {
 
                     this._extensionsOnReady();
                     this._parent._setState(GLTFLoaderState.READY);
-
-                    this._startAnimations();
+                    if (!this._skipStartAnimationStep) {
+                        this._startAnimations();
+                    }
 
                     return resultFunc();
                 });
@@ -928,7 +932,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                const asMesh = babylonMesh as Mesh;
+                if (!asMesh.isAnInstance && asMesh.geometry && asMesh.geometry.useBoundingInfoFromGeometry) {
                     // simply apply the world matrices to the bounding info - the extends are already ok
                     babylonMesh._updateBoundingInfo();
                 } else {
@@ -1292,6 +1297,30 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMorphTarget.setUV2s(uvs);
         });
 
+        loadAttribute("COLOR_0", VertexBuffer.ColorKind, (babylonVertexBuffer, data) => {
+            let colors = null;
+            const componentSize = babylonVertexBuffer.getSize();
+            if (componentSize === 3) {
+                colors = new Float32Array((data.length / 3) * 4);
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    const pixid = Math.floor(index / 3);
+                    const channel = index % 3;
+                    colors[4 * pixid + channel] = data[3 * pixid + channel] + value;
+                });
+                for (let i = 0; i < data.length / 3; ++i) {
+                    colors[4 * i + 3] = 1;
+                }
+            } else if (componentSize === 4) {
+                colors = new Float32Array(data.length);
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    colors[index] = data[index] + value;
+                });
+            } else {
+                throw new Error(`${context}: Invalid number of components (${componentSize}) for COLOR_0 attribute`);
+            }
+            babylonMorphTarget.setColors(colors);
+        });
+
         return Promise.all(promises).then(() => {});
     }
 
@@ -1645,7 +1674,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */
-    public _loadAnimationChannelAsync(
+    public async _loadAnimationChannelAsync(
         context: string,
         animationContext: string,
         animation: IAnimation,
@@ -1674,31 +1703,37 @@ export class GLTFLoader implements IGLTFLoader {
         if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
             return Promise.resolve();
         }
+        // async-load the animation sampler to provide the interpolation of the channelTargetPath
+        await import("./glTFLoaderAnimation");
 
-        let properties: Array<AnimationPropertyInfo>;
+        let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
-                properties = nodeAnimationData.translation;
+                properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.ROTATION: {
-                properties = nodeAnimationData.rotation;
+                properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.SCALE: {
-                properties = nodeAnimationData.scale;
+                properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
                 break;
             }
             case AnimationChannelTargetPath.WEIGHTS: {
-                properties = nodeAnimationData.weights;
+                properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
                 break;
             }
             default: {
                 throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
             }
         }
+        // stay safe
+        if (!properties) {
+            throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
+        }
 
-        const targetInfo: IObjectInfo<AnimationPropertyInfo[]> = {
+        const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
             object: targetNode,
             info: properties,
         };
@@ -1722,7 +1757,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IObjectInfo<AnimationPropertyInfo[]>,
+        targetInfo: IObjectInfo<IInterpolationPropertyInfo[]>,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;
@@ -1794,10 +1829,11 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
-                        ++numAnimations;
-                        onLoad(babylonAnimatable, babylonAnimation);
-                    });
+                    const babylonAnimations = propertyInfo.buildAnimations(target, name, fps, keys);
+                    for (const babylonAnimation of babylonAnimations) {
+                        numAnimations++;
+                        onLoad(babylonAnimation.babylonAnimatable, babylonAnimation.babylonAnimation);
+                    }
                 }
             }
         });

@@ -1401,6 +1401,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
+        this._scene.getSceneUniformBuffer().unbindEffect();
+
         if (this._onUnBindObservable) {
             this._onUnBindObservable.notifyObservers(this);
         }
@@ -1696,18 +1698,20 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
+        const scene = this.getScene();
+        if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
-        const meshes = this.getScene().meshes;
+        const meshes = scene.meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                if (subMesh.getMaterial(false) !== this) {
+                const material = subMesh.getMaterial() || scene.defaultMaterial;
+                if (material !== this) {
                     continue;
                 }
 

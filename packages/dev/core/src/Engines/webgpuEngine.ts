@@ -1602,7 +1602,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer {
         let is32Bits = true;
-        let view: ArrayBufferView;
+        let view: ArrayBufferView | undefined;
 
         if (indices instanceof Uint32Array || indices instanceof Int32Array) {
             view = indices;
@@ -1610,9 +1610,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = indices;
             is32Bits = false;
         } else {
-            if (indices.length > 65535) {
-                view = new Uint32Array(indices);
-            } else {
+            for (let index = 0; index < indices.length; index++) {
+                if (indices[index] > 65535) {
+                    view = new Uint32Array(indices);
+                    break;
+                }
+            }
+
+            if (!view) {
                 view = new Uint16Array(indices);
                 is32Bits = false;
             }
@@ -2304,10 +2309,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const texture = new InternalTexture(this, source);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
-        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth ?? 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers ?? 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -2504,7 +2509,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
-    public _unpackFlipY(value: boolean) {}
+    public _unpackFlipY(_value: boolean) {}
 
     /**
      * Update the sampling mode of a given texture
@@ -3532,6 +3537,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return false;
     }
 
+    public setStateCullFaceType(cullBackFaces?: boolean, force = false) {
+        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 2;
+        if (this._depthCullingState.cullFace !== cullFace || force) {
+            this._depthCullingState.cullFace = cullFace;
+        }
+    }
+
     /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
@@ -3549,10 +3561,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         // Cull face
-        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 2;
-        if (this._depthCullingState.cullFace !== cullFace || force) {
-            this._depthCullingState.cullFace = cullFace;
-        }
+        this.setStateCullFaceType(cullBackFaces, force);
 
         // Z offset
         this.setZOffset(zOffset);

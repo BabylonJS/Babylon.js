@@ -517,6 +517,14 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Checks if the layer is ready to be used.
+     * @returns true if the layer is ready to be used
+     */
+    public isLayerReady(): boolean {
+        return this._arePostProcessAndMergeReady() && this._mainTexture.isReady();
+    }
+
+    /**
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
