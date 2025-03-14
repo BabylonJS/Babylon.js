@@ -21,8 +21,9 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /**
-     * Attaches the audio source to a scene object.
+     * Attaches to a scene node.
      *
+     * Detaches automatically before attaching to the given scene node.
      * If `sceneNode` is `null` it is the same as calling `detach()`.
      *
      * @param sceneNode The scene node to attach to, or `null` to detach.
@@ -37,7 +38,7 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
     }
 
     /**
-     * Detaches the audio source from the currently attached camera, mesh or transform node.
+     * Detaches from the scene node if attached.
      */
     public detach(): void {
         this._attacherComponent?.detach();

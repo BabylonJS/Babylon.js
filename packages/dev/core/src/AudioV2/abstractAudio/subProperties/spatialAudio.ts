@@ -147,8 +147,9 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Attaches the audio source to a scene object.
+     * Attaches to a scene node.
      *
+     * Detaches automatically before attaching to the given scene node.
      * If `sceneNode` is `null` it is the same as calling `detach()`.
      *
      * @param sceneNode The scene node to attach to, or `null` to detach.
@@ -160,7 +161,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Detaches the audio source from the currently attached graphics node.
+     * Detaches from the scene node if attached.
      */
     public detach(): void {
         _GetSpatialAudioSubNode(this._subGraph)?.detach();
