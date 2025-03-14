@@ -105,7 +105,7 @@ export interface IIESTextureData {
  * @param uint8Array defines the IES data
  * @returns the IES data buffer
  * @see https://ieslibrary.com/browse
- * #UQGPDT#1
+ * @see https://playground.babylonjs.com/#UQGPDT#1
  */
 export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     const decoder = new TextDecoder("utf-8");

@@ -59,7 +59,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
 
 /**
  * Block used to implement the PBR metallic/roughness model
- * #D8AK3Z#80
+ * @see https://playground.babylonjs.com/#D8AK3Z#80
  */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**

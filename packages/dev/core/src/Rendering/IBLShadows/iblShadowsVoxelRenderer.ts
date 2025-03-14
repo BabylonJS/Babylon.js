@@ -25,7 +25,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
  * @internal
- * #8R5SSE#222
+ * @see https://playground.babylonjs.com/#8R5SSE#222
  */
 export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
