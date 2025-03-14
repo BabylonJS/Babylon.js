@@ -1,6 +1,404 @@
 {
-    "fromTag": "7.53.1",
+    "fromTag": "7.53.2",
     "changelog": {
+        "7.53.3": [
+            {
+                "pr": "16329",
+                "title": "Viewer: hide animation slider if its width is below a usable threshold",
+                "description": "The Viewer toolbar can have animation controls, the reset button, material variants, and hotspots. When all this UI is being used, the animation slider can become too small to be usable and even get clipped on devices with small enough displays. This change mostly is just about hiding the animation slider when its width falls below a usable threshold.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16328",
+                "title": "Update playground links in typedoc comments",
+                "description": "All changes were done with regex replace.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMesh.ts",
+                    "packages/dev/core/src/Lights/IES/iesLoader.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/spotLight.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Meshes/csg2.ts",
+                    "packages/dev/core/src/Meshes/lattice.material.ts",
+                    "packages/dev/core/src/Meshes/lattice.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16326",
+                "title": "Make sound `pitch` and `playbackRate` properties change continuously",
+                "description": "Users expect the `StaticSound.pitch` and `playback` properties to update while a sound is playing, but they don't. They're only updated when playback starts.\r\n\r\nThis change addresses user needs by updating the pitch and playback rate of the newest sound playback instance immediately instead of only when the `play` function is called.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSoundInstance.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16327",
+                "title": "Fix spatial audio `attach` feature position tracking",
+                "description": "Use the attached scene node's world position for the spatial audio position, not the scene node's local position.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/components/spatialAudioAttacherComponent.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16325",
+                "title": "Ensure FloatLineComponent has lock when a key is pressed",
+                "description": "There's a bug when another line component is unmounted while the user has focus in the FloatLineComponent (which can happen when the values the user is typing cause another control to be removed). This ensures that the FloatLineComponent has the lock when the user types in it.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16322",
+                "title": "Expose OBJFileLoader options to scene loader APIs",
+                "description": "This is a small change that exposes the existing ObjFileLoader options through the new scene loader functions. The focus at the time was glTF and this just wasn't on the radar, but there is a real use case for it now.\r\n- Allow a subset of options to be passed to OBJFileLoader. Any that are missing will get the default. This is fully backward compatible with the existing API.\r\n- Plumb OBJFileLoader options through the dynamic loader factory (same as other loader plugins).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/dynamic.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16323",
+                "title": "flag missing loaders as internal",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16321",
+                "title": "Viewer and configurator tiny fixes",
+                "description": "1. The default viewer annotation UI does not show up if the `innerHTML` is white space only (e.g. code formatting). It seems this is just how slots work with html custom elements, but this is not how we want the viewer annotations to work. This change just sets the `innerHTML` to empty string if it is only white space so the default annotation UI still shows up (e.g. it is not replaced by html white space).\r\n2. Changed the help icon in the Viewer Configurator based on bug bash feedback.\r\n![image](https://github.com/user-attachments/assets/ed66b8ef-6f62-4db0-8eef-8c838d0671e9)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.scss",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16320",
+                "title": "Add a new block to NGE: Ease",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryEaseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16307",
+                "title": "Node Graph Editor : new smart expand of selections with SHIFT",
+                "description": "Following discussion with @PatrickRyanMS in this topic : [Node Editors : Enhancing Node Manipulation](https://forum.babylonjs.com/t/node-editors-enhancing-node-manipulation/50573)\r\n\r\nI edited the behavior to do like so :\r\n\r\n- No more use if `ALT` key\r\n- Select with `SHIFT` adds to the selection, just like `CTRL`\r\n- `_searchMiddle` : In addition, select with `SHIFT` will look for a direct link from `LAST_SELECTED` to `SELECTED`, and select all in between\r\n- `_expand` : If 2 nodes A & B are neightboors, select A, `SHIFT` and `DOUBLE CLICK` B --> Will select all in direction of B, following links",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16319",
+                "title": "Daily interactivity fixes",
+                "description": "Introduce KHR_interactivity and KHR_node_selectability extensions to the GLTF loader. Fix the loop condition in FlowGraphPlayAnimationBlock to correctly handle non-finite 'to' values.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16316",
+                "title": "Fix lattice ejecting vertices too early",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.scalar.functions.ts",
+                    "packages/dev/core/src/Meshes/lattice.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16318",
+                "title": "Improve audio engine API",
+                "description": "Makes improvements to the new audio engine API based on user testing and feedback. See forum thread https://forum.babylonjs.com/t/properly-setup-spatial-audio/57064.\r\n\r\nThis change brings in the following API improvements:\r\n- [Make spatial audio attach function's sceneNode parameter nullable](https://github.com/BabylonJS/Babylon.js/commit/57ad4de4bf91b2f168d858f29ab901411a2452c8)\r\n- [Improve spatial audio code docs](https://github.com/BabylonJS/Babylon.js/commit/2d751bd346654dc6de9dc091c5826ebd25621008)\r\n- [Prefix internal spatial audio updatePosition/Rotation with underscore](https://github.com/BabylonJS/Babylon.js/commit/0701bf2f1887846681752e1a2dc771cd596c26d0)\r\n- [Change spatial audio distanceModel default from \"inverse\" to \"linear\"](https://github.com/BabylonJS/Babylon.js/commit/0f4d52cbdd0a938f8d7a2b6103548fd1d5a3e9f9)\r\n- [Rename spatial audio referenceDistance to minDistance](https://github.com/BabylonJS/Babylon.js/commit/e2508b4ccb9f07930c81025de343ab832def5023)\r\n",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/components/spatialAudioAttacherComponent.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractSpatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16317",
+                "title": "Fixes to KHR_materials_diffuse_transmission export",
+                "description": "- Export the same translucency texture and color texture in both postExportMaterialAdditionalTextures + postExportMaterialAsync\r\n- Transmission factor default is 0, not 1",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_diffuse_transmission.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16314",
+                "title": "Fix IES profile viz test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/iesprofile2.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16315",
+                "title": "Viewer and Configurator small improvements",
+                "description": "- Configurator: Switch to the updated airplane model as the default configurator model.\r\n- Configurator: Move environment intensity/rotation out of the section that is conditional on having a skybox (they apply to both lighting and skybox).\r\n- Viewer: Add a simple default UI for viewer annotations (hotspot name with a little down arrow, as seen below). This default UI can have custom styling applied to it, or it can be fully replaced with custom UI by simply adding child elements to `<babylon-viewer-annotation>` (as seen in the index.html of the test app).\r\n\r\nDefault annotation example:\r\n![image](https://github.com/user-attachments/assets/df2edd46-61d9-4b02-8eab-90defebfeaaa)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer/src/viewerAnnotationElement.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16306",
+                "title": "Add observer for when IBL shadow voxelization is complete",
+                "description": "When updating the voxelization for IBL shadows, the process can take a few frames. It's useful to know when it's finished if the user wants to hide/show the shadows or take other actions.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16312",
+                "title": "Fix react looping",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16311",
+                "title": "Get old audio engine working in playgrounds that use `BABYLON.Sound`",
+                "description": "The previous change to the `audioEngine` option that changes its default from `true` to `false` broke the playground code that initializes the old audio engine when `BABYLON.Sound` is found in the playground's user code.\r\n\r\nThis change fixes the issue by leaving the `audioEngine` undefined if it is not defined in the playground's user code. This gets the playground's old audio engine init code working correctly without breaking the edge cases fixed in similar previous PRs.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16310",
+                "title": "Viewer: add test for successfully loading an env and rendering at least one frame without errors",
+                "description": "Follow up from https://github.com/BabylonJS/Babylon.js/pull/16305\r\n\r\nThe test would fail prior to the change mentioned above, and after the change it succeeds. 👍🏻",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/test/viewer.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.53.2": [
+            {
+                "pr": "16304",
+                "title": "Bug bash fixes",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16308",
+                "title": "Add an option for specifying the default material variant",
+                "description": "This is not a bug fix, but a small improvement that became apparent when I was creating a demo for loader options. In addition to being able to provide a callback option to receive a material variants controller, you should also be able to simply specify the default material variant.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16305",
+                "title": "Add a _hasDefaultMaterial property",
+                "description": "Addressing https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950/6\r\n\r\nA recent [PR](https://github.com/BabylonJS/Babylon.js/pull/16277/files#diff-2cc63980f0d7bff0a7a002d34348349697af415faa1e4e79a99b51e3deb2853eR1713) introduced a call to `scene.defaultMaterial` in a very common code path. If `StandardMaterial` has not been imported, `scene.defaultMaterial` throws. This change fixes that.\r\n- Add a `_hasDefaultMaterial` internal property (could make it non-internal if we want it to be part of the public API). This works by seeing if `Scene.DefaultMaterialFactory` has been assigned to something other than the default value. This makes it so that even if `Scene.DefaultMaterialFactory` has been set to a factory function other than the one in `StandardMaterial`, it still works (e.g. default material does not have to be `StandardMaterial` for this mechanism to work).\r\n- A couple places on the common hot path that recently started accessing `Scene.defaultMaterial` now check `_hasDefaultMaterial` first. This is just a property evaluation, so I think the perf impact should be negligible.\r\n- I had \"fixed\" this problem in the Viewer first by setting `Scene.blockMaterialDirtyMechanism` when creating the skybox material, but I kept that change anyway because I think it is slightly better. It's the same thing the glTF loader does for example.\r\n- While testing this to make sure it doesn't regress the point mode fix from the previous PR, I noticed that inspector fails if `animatable.ts` has not been imported (e.g. if you didn't explicitly import it yourself or load a model with animations). So I also included a very small change to fix this.\r\n\r\nI'd like to get this PR in since it is a bug reported on the forum, and see about adding a Viewer test that can catch this separately. But we can block this PR on adding a test if anyone feels strongly about tying them together.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16303",
+                "title": "Fix bug with internal texture disposing observables too soon",
+                "description": "Fix #16296 #16296",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16302",
+                "title": "Fix usdz exporter for models with Color3 vertex attributes",
+                "description": "Code was broken when color attribute was Color3 instead of Color4. Added a check to adjust stride appropriately.  ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.53.1": [
             {
                 "pr": "16301",
@@ -126,78 +524,6 @@
                 "files": [
                     "packages/tools/nodeEditor/src/graphEditor.tsx",
                     "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
-                ],
-                "tags": []
-            }
-        ],
-        "7.53.2": [
-            {
-                "pr": "16304",
-                "title": "Bug bash fixes",
-                "description": null,
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
-                    "packages/dev/core/src/Physics/v2/characterController.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16308",
-                "title": "Add an option for specifying the default material variant",
-                "description": "This is not a bug fix, but a small improvement that became apparent when I was creating a demo for loader options. In addition to being able to provide a callback option to receive a material variants controller, you should also be able to simply specify the default material variant.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16305",
-                "title": "Add a _hasDefaultMaterial property",
-                "description": "Addressing https://forum.babylonjs.com/t/viewer-v2-began-to-ask-for-the-standard-material/56950/6\r\n\r\nA recent [PR](https://github.com/BabylonJS/Babylon.js/pull/16277/files#diff-2cc63980f0d7bff0a7a002d34348349697af415faa1e4e79a99b51e3deb2853eR1713) introduced a call to `scene.defaultMaterial` in a very common code path. If `StandardMaterial` has not been imported, `scene.defaultMaterial` throws. This change fixes that.\r\n- Add a `_hasDefaultMaterial` internal property (could make it non-internal if we want it to be part of the public API). This works by seeing if `Scene.DefaultMaterialFactory` has been assigned to something other than the default value. This makes it so that even if `Scene.DefaultMaterialFactory` has been set to a factory function other than the one in `StandardMaterial`, it still works (e.g. default material does not have to be `StandardMaterial` for this mechanism to work).\r\n- A couple places on the common hot path that recently started accessing `Scene.defaultMaterial` now check `_hasDefaultMaterial` first. This is just a property evaluation, so I think the perf impact should be negligible.\r\n- I had \"fixed\" this problem in the Viewer first by setting `Scene.blockMaterialDirtyMechanism` when creating the skybox material, but I kept that change anyway because I think it is slightly better. It's the same thing the glTF loader does for example.\r\n- While testing this to make sure it doesn't regress the point mode fix from the previous PR, I noticed that inspector fails if `animatable.ts` has not been imported (e.g. if you didn't explicitly import it yourself or load a model with animations). So I also included a very small change to fix this.\r\n\r\nI'd like to get this PR in since it is a bug reported on the forum, and see about adding a Viewer test that can catch this separately. But we can block this PR on adding a test if anyone feels strongly about tying them together.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Meshes/subMesh.ts",
-                    "packages/dev/core/src/scene.ts",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx",
-                    "packages/tools/viewer/src/viewer.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16303",
-                "title": "Fix bug with internal texture disposing observables too soon",
-                "description": "Fix #16296 #16296",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/internalTexture.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16302",
-                "title": "Fix usdz exporter for models with Color3 vertex attributes",
-                "description": "Code was broken when color attribute was Color3 instead of Color4. Added a check to adjust stride appropriately.  ",
-                "author": {
-                    "name": "SergioRZMasson",
-                    "url": "https://github.com/SergioRZMasson"
-                },
-                "files": [
-                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
                 ],
                 "tags": []
             }
