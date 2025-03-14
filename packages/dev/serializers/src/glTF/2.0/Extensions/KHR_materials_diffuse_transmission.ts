@@ -121,7 +121,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
                 const subs = babylonMaterial.subSurface;
                 const translucencyIntensityTexture = getTranslucencyIntensityTexture(context, babylonMaterial);
 
-                const diffuseTransmissionFactor = subs.translucencyIntensity == 1 ? undefined : subs.translucencyIntensity;
+                const diffuseTransmissionFactor = subs.translucencyIntensity == 0 ? undefined : subs.translucencyIntensity;
                 const diffuseTransmissionTexture = this._exporter._materialExporter.getTextureInfo(translucencyIntensityTexture) ?? undefined;
                 const diffuseTransmissionColorFactor = !subs.translucencyColor || subs.translucencyColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : subs.translucencyColor.asArray();
                 const diffuseTransmissionColorTexture = this._exporter._materialExporter.getTextureInfo(subs.translucencyColorTexture) ?? undefined;
