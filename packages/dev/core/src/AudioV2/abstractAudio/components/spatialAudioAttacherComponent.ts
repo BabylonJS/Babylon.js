@@ -86,7 +86,7 @@ export class _SpatialAudioAttacherComponent {
             if (this._useBoundingBox && (this._sceneNode as AbstractMesh).getBoundingInfo) {
                 this._position.copyFrom((this._sceneNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
             } else {
-                this._position.copyFrom((this._sceneNode as any).position);
+                this._sceneNode?.getWorldMatrix().getTranslationToRef(this._position);
             }
 
             this._spatialAudioNode.position.copyFrom(this._position);
@@ -94,7 +94,7 @@ export class _SpatialAudioAttacherComponent {
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
-            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
+            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion);
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
             this._spatialAudioNode._updateRotation();
