@@ -8,7 +8,7 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { faFileLines } from "@fortawesome/free-regular-svg-icons";
+import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -961,7 +961,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 <div className="configuratorHeader">
                     <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div className="title">VIEWER CONFIGURATOR</div>
-                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faFileLines} onClick={openDocumentation} />
+                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faQuestionCircle} onClick={openDocumentation} />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div className="flexColumn">

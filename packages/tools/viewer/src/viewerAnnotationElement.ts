@@ -59,6 +59,11 @@ export class HTML3DAnnotationElement extends LitElement {
     `;
 
     private readonly _internals = this.attachInternals();
+    private readonly _mutationObserver = new MutationObserver((mutations) => {
+        if (mutations.some((mutation) => mutation.type === "childList")) {
+            this._sanitizeInnerHTML();
+        }
+    });
     private _viewerAttachment: Nullable<IDisposable> = null;
     private _connectingAbortController: Nullable<AbortController> = null;
     private _updateAnnotation: Nullable<() => void> = null;
@@ -95,6 +100,9 @@ export class HTML3DAnnotationElement extends LitElement {
                 console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
                 return;
             }
+
+            this._mutationObserver.observe(this, { childList: true, characterData: true });
+            this._sanitizeInnerHTML();
 
             const viewerElement = this.parentElement;
             const hotSpotResult = new ViewerHotSpotResult();
@@ -153,6 +161,12 @@ export class HTML3DAnnotationElement extends LitElement {
         super.update(changedProperties);
         if (changedProperties.has("hotSpot")) {
             this._updateAnnotation?.();
+        }
+    }
+
+    private _sanitizeInnerHTML() {
+        if (this.innerHTML.trim().length === 0) {
+            this.innerHTML = "";
         }
     }
 }
