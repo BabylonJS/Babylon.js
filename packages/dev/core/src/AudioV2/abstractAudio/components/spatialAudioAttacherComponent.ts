@@ -94,7 +94,7 @@ export class _SpatialAudioAttacherComponent {
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
-            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
+            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion);
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
             this._spatialAudioNode._updateRotation();
