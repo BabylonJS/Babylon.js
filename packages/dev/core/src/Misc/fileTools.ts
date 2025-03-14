@@ -172,7 +172,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 
 /**
  * Configuration used to load images
- * @see #DKMEZK#2
+ * @see https://playground.babylonjs.com/#DKMEZK#2
  */
 export const LoadImageConfiguration: {
     /**

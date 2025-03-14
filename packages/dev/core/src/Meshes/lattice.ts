@@ -24,8 +24,8 @@ export interface ILatticeOptions {
 
 /**
  * Class used to represent a lattice
- * #MDVD75#18 - Moving lattice bounds
- * #MDVD75#23 - Twist
+ * @see [Moving lattice bounds](https://playground.babylonjs.com/#MDVD75#18)
+ * @see [Twist](https://playground.babylonjs.com/#MDVD75#23)
  */
 export class Lattice {
     private _resolutionX: number;
