@@ -1801,7 +1801,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Indicates that prepass needs to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsPrePassDirty() {
-        this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
+        this._markAllSubMeshesAsDirty(Material._PrePassDirtyCallBack);
     }
 
     /**
