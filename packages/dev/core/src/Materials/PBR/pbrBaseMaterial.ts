@@ -7,7 +7,7 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import { Vector4 } from "../../Maths/math.vector";
+import { Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -188,6 +188,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public INVERTCUBICMAP = false;
     public USESPHERICALFROMREFLECTIONMAP = false;
     public USEIRRADIANCEMAP = false;
+    public USE_IRRADIANCE_DOMINANT_DIRECTION = false;
     public USESPHERICALINVERTEX = false;
     public REFLECTIONMAP_OPPOSITEZ = false;
     public LODINREFLECTIONALPHA = false;
@@ -1540,6 +1541,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL21",
             "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
+            "vReflectionDominantDirection",
             "vTangentSpaceParams",
             "boneTextureWidth",
             "vDebugMode",
@@ -1812,11 +1814,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
                             defines.USESPHERICALINVERTEX = false;
+                            if (reflectionTexture.irradianceTexture.dominantDirection) {
+                                defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
+                            }
                         }
                         // Assume using spherical polynomial if the reflection texture is a cube map
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
+                            defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
                             if (this._forceIrradianceInFragment || this.realTimeFiltering || this._twoSidedLighting || engine.getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
@@ -1840,6 +1846,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.INVERTCUBICMAP = false;
                     defines.USESPHERICALFROMREFLECTIONMAP = false;
                     defines.USEIRRADIANCEMAP = false;
+                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
                     defines.USESPHERICALINVERTEX = false;
                     defines.REFLECTIONMAP_OPPOSITEZ = false;
                     defines.LODINREFLECTIONALPHA = false;
@@ -2108,6 +2115,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
+        ubo.addUniform("vReflectionDominantDirection", 3);
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("vReflectivityColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
@@ -2284,6 +2292,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                                     ubo.updateFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
                                     ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                                 }
+                            }
+                        } else {
+                            // If we're using an irradiance map with a dominant direction assigned, set it.
+                            if (defines.USEIRRADIANCEMAP && reflectionTexture.irradianceTexture) {
+                                const irradianceTexture = reflectionTexture.irradianceTexture;
+                                if (irradianceTexture.dominantDirection) {
+                                    ubo.updateVector3("vReflectionDominantDirection", irradianceTexture.dominantDirection);
+                                } else {
+                                    ubo.updateVector3("vReflectionDominantDirection", Vector3.Up());
+                                }
+                            } else {
+                                ubo.updateVector3("vReflectionDominantDirection", Vector3.Up());
                             }
                         }
 
