@@ -72,6 +72,9 @@ uniform mat4 view;
     #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+    #ifdef USEIRRADIANCEMAP
+        uniform vec3 vReflectionDominantDirection;
+    #endif
 
     #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
 	    uniform vec3 vReflectionPosition;
