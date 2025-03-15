@@ -212,6 +212,7 @@
             , irradianceSampler: texture_2d<f32>
             , irradianceSamplerSampler: sampler        
         #endif
+        , reflectionDominantDirection: vec3f
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
@@ -299,8 +300,10 @@
                 var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
             #endif
             #ifdef USEIRRADIANCEMAP
-                var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
-                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
+                    var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
+                    irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                #endif
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -336,7 +339,30 @@
             #else
                 var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
             #endif
-            environmentIrradiance = environmentIrradiance4.rgb;
+
+            // If we have a predominant light direction, use it to compute the diffuse roughness term.abort
+            // Otherwise, bend the irradiance vector to simulate retro-reflectivity of diffuse roughness.
+            #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                var Ls: vec3f = normalize(reflectionDominantDirection);
+                var NoL: f32 = dot(irradianceVector, Ls);
+                var NoV: f32 = dot(irradianceVector, irradianceView);
+                
+                var diffuseRoughnessTerm: vec3f = vec3f(1.0);
+                #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                    var LoV: f32 = dot(Ls, irradianceView);
+                    var mag: f32 = length(reflectionDominantDirection) * 2.0f;
+                    diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                    diffuseRoughnessTerm = mix(vec3f(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0f)));
+                #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                    var H: vec3f = (irradianceView + Ls) * 0.5f;
+                    var VoH: f32 = dot(irradianceView, H);
+                    diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                #endif
+                environmentIrradiance = environmentIrradiance4.rgb * diffuseRoughnessTerm;
+            #else
+                environmentIrradiance = environmentIrradiance4.rgb;
+            #endif
+
             #ifdef RGBDREFLECTION
                 environmentIrradiance = fromRGBD(environmentIrradiance4);
             #endif
