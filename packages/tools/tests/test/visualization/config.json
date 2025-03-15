@@ -28,10 +28,16 @@
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
-            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
-            "playgroundId": "#MXACV7#6",
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
+            "playgroundId": "#MXACV7#9",
             "renderCount": 5,
-            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
+            "playgroundId": "#MXACV7#10",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
             "title": "NME Glow Manual",

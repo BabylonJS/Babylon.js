@@ -218,6 +218,12 @@ export class HDRIrradianceFiltering {
         await this._effectWrapper.effect.whenCompiledAsync();
 
         const irradianceTexture = this._prefilterInternal(texture);
+
+        if (this.useCdf) {
+            await this._cdfGenerator.findDominantDirection().then((dir) => {
+                irradianceTexture.dominantDirection = dir;
+            });
+        }
         this._effectRenderer.dispose();
         this._effectWrapper.dispose();
         this._cdfGenerator?.dispose();

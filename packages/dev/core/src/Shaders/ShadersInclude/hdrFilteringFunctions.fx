@@ -221,30 +221,27 @@
                     T.y = texture2D(icdfSampler, vec2(T.x, Xi.y)).y;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
-                        vec3 H = (n + Ls) * 0.5;
-                    #else
-                        vec3 H = (inputV + Ls) * 0.5;
-                    #endif
-                    float NoH = dot(n, H);
                     float NoV = dot(n, inputV);
-                    float VoH = dot(inputV, H);
-                    float LoV = dot (Ls, inputV);
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        float LoV = dot (Ls, inputV);
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+                        vec3 H = (inputV + Ls) * 0.5;
+                        float VoH = dot(inputV, H);
+                    #endif
                 #else
                     vec3 Ls = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
                     vec3 Ns = vec3(0., 0., 1.);
                     float NoL = dot(Ns, Ls);
                     vec3 V = tbnInverse * inputV;
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
-                        vec3 H = (Ns + Ls) * 0.5;
-                    #else
-                        vec3 H = (V + Ls) * 0.5;
-                    #endif
-                    float NoH = dot(Ns, H);
                     float NoV = dot(Ns, V);
-                    float VoH = dot(V, H);
-                    float LoV = dot (Ls, V);
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                        float LoV = dot (Ls, V);
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+                        vec3 H = (V + Ls) * 0.5;
+                        float VoH = dot(V, H);
+                    #endif
+                    
                 #endif
 
                 if (NoL > 0.) {
@@ -263,9 +260,9 @@
                     #endif
 
                     vec3 diffuseRoughnessTerm = vec3(1.0);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
                         diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
-                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
                         diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
 

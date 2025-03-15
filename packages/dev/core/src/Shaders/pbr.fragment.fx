@@ -310,6 +310,7 @@ void main(void) {
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
+                , vReflectionDominantDirection
             #endif
             #ifndef LODBASEDMICROSFURACE
                 , reflectionSamplerLow

@@ -297,6 +297,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
                 , irradianceSamplerSampler
+                , uniforms.vReflectionDominantDirection
             #endif
             #ifndef LODBASEDMICROSFURACE
                 , reflectionLowSampler

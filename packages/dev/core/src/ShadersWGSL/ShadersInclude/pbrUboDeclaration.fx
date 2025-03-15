@@ -30,6 +30,7 @@ uniform baseWeight: f32;
 uniform baseDiffuseRoughness: f32;
 uniform vLightingIntensity: vec4f;
 uniform vReflectionMicrosurfaceInfos: vec3f;
+uniform vReflectionDominantDirection: vec3f;
 uniform pointSize: f32;
 uniform vReflectivityColor: vec4f;
 uniform vEmissiveColor: vec3f;
