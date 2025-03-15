@@ -190,6 +190,7 @@
         #else
             , in sampler2D irradianceSampler
         #endif
+        , in vec3 reflectionDominantDirection
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
@@ -270,8 +271,10 @@
                 vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
             #endif
             #ifdef USEIRRADIANCEMAP
-                float NdotV = max(dot(normalW, viewDirectionW), 0.0);
-                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
+                    float NdotV = max(dot(normalW, viewDirectionW), 0.0);
+                    irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                #endif
             #endif
             
             #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -287,14 +290,12 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    // Note that irradianceVector is NOT the same as normalW. It has been rotated into the space of the cubemap.
                     environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                     #endif
                     );
                 #else
-                    // TODO - Add approximation to computeEnvironmentIrradiance that includes diffuse roughness and NdotV
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
 
@@ -308,7 +309,29 @@
             #else
                 vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, reflectionCoords);
             #endif
-            environmentIrradiance = environmentIrradiance4.rgb;
+            
+            // If we have a predominant light direction, use it to compute the diffuse roughness term.abort
+            // Otherwise, bend the irradiance vector to simulate retro-reflectivity of diffuse roughness.
+            #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                vec3 Ls = normalize(reflectionDominantDirection);
+                float NoL = dot(irradianceVector, Ls);
+                float NoV = dot(irradianceVector, irradianceView);
+                
+                vec3 diffuseRoughnessTerm = vec3(1.0);
+                #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                    float LoV = dot (Ls, irradianceView);
+                    float mag = length(reflectionDominantDirection) * 2.0;
+                    diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                    diffuseRoughnessTerm = mix(vec3(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0)));
+                #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                    vec3 H = (irradianceView + Ls)*0.5;
+                    float VoH = dot(irradianceView, H);
+                    diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                #endif
+                environmentIrradiance = environmentIrradiance4.rgb * diffuseRoughnessTerm;
+            #else
+                environmentIrradiance = environmentIrradiance4.rgb;
+            #endif
             #ifdef RGBDREFLECTION
                 environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
             #endif

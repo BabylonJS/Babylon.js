@@ -55,6 +55,7 @@ uniform Material {
     float baseDiffuseRoughness;
     vec4 vLightingIntensity;
     vec3 vReflectionMicrosurfaceInfos;
+    vec3 vReflectionDominantDirection;
     float pointSize;
     vec4 vReflectivityColor;
     vec3 vEmissiveColor;
