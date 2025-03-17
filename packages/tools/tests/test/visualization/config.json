@@ -2534,6 +2534,10 @@
             "playgroundId": "#FQWPBI#11",
             "referenceImage": "Flow-Graph-multiple-contexts.png",
             "renderCount": 30
+        },
+        {
+            "title": "KHR diffuse transmission",
+            "playgroundId": "#RX52XX#1"
         }
     ]
 }
