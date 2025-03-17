@@ -408,9 +408,7 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount, continu
                     } else {
                         (window as any).onRenderCallback && (window as any).onRenderCallback();
                         window.scene && window.scene.render();
-                        if (window.scene!.isReady()) {
-                            renderCount--;
-                        }
+                        renderCount--;
                         if (adtsAreReady()) {
                             renderAfterGuiIsReadyCount--;
                         }
