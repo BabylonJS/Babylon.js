@@ -284,12 +284,13 @@ export type ViewerOptions = Partial<{
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction.
      */
-    cameraAutoOrbit?: Partial<CameraAutoOrbit>;
+    cameraAutoOrbit: Partial<CameraAutoOrbit>;
 
     /**
      * Boolean indicating if the scene must use right-handed coordinates system.
      */
-    useRightHandedSystem?: boolean;
+    useRightHandedSystem: boolean;
+
 }>;
 
 export type EnvironmentOptions = Partial<
