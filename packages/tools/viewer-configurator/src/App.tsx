@@ -16,10 +16,13 @@ export const App: FunctionComponent = () => {
     const viewer = useMemo(() => viewerDetails?.viewer, [viewerDetails]);
 
     return (
-        <SplitContainer className="appContainer" direction={SplitDirection.Horizontal}>
-            <Viewer onViewerCreated={setViewerElement} />
-            <Splitter size={8} minSize={300} initialSize={400} maxSize={600} controlledSide={ControlledSize.Second} />
-            <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>
-        </SplitContainer>
+        <>
+            <SplitContainer className="appContainer" direction={SplitDirection.Horizontal}>
+                <Viewer onViewerCreated={setViewerElement} />
+                <Splitter size={8} minSize={300} initialSize={400} maxSize={600} controlledSide={ControlledSize.Second} />
+                <div>{viewerElement && viewerDetails && viewer && <Configurator viewerElement={viewerElement} viewerDetails={viewerDetails} viewer={viewer} />}</div>
+            </SplitContainer>
+            <div className="blocker">Viewer Configurator needs a horizontal resolution of at least 900px</div>
+        </>
     );
 };
