@@ -118,6 +118,7 @@ vec3 FetchDiffuseFilteredTexture(sampler2D texLightFiltered, vec3 p1_, vec3 p2_,
     float d = abs(planeDistxPlaneArea) / pow(planeAreaSquared, 0.75);
 	float sampleLOD = log(2048.0*d)/log(3.0);
 	vec2 sampleUV = vec2(0.125, 0.125) + (vec2(0.75) * Puv);
+	sampleUV.x = 1.0 - sampleUV.x;
 
     return texture2DLodEXT(texLightFiltered, sampleUV, sampleLOD).rgb;
 }

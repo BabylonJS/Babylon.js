@@ -50,9 +50,9 @@ export class AreaLightTextureTools {
 
         if (engine.isWebGPU) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-            await import("../ShadersWGSL/areaLightTextureProcessing.fragment");
+            //await import("../ShadersWGSL/areaLightTextureProcessing.fragment");
         } else {
-            await import("../Shaders/areaLightTextureProcessing.fragment");
+            //await import("../Shaders/areaLightTextureProcessing.fragment");
         }
 
         this._shadersLoaded = true;
