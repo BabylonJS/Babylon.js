@@ -43,11 +43,13 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
     }
 
     private _createTask(handleEvents: boolean) {
+        const disabled = this._frameGraphTask.disabled;
+
         this._frameGraphTask.dispose();
-
         this._frameGraphTask = new FrameGraphUtilityLayerRendererTask(this.name, this._frameGraph, this._scene, handleEvents);
-
         this._additionalConstructionParameters = [handleEvents];
+
+        this._frameGraphTask.disabled = disabled;
     }
 
     /** If the utility layer should handle events */
