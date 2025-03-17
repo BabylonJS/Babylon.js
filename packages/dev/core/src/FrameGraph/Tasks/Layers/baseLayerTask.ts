@@ -223,8 +223,8 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             const fixedTextureSize = this.layer._options.mainTextureFixedSize ? Math.max(2, this.layer._options.mainTextureFixedSize) : 0;
 
             textureSize = getDimensionsFromTextureSize(targetTextureCreationOptions.size);
-            textureSize.width = fixedTextureSize || Math.floor(textureSize.width * (this.layer._options.mainTextureRatio || 0.1));
-            textureSize.height = fixedTextureSize || Math.floor(textureSize.height * (this.layer._options.mainTextureRatio || 0.1));
+            textureSize.width = fixedTextureSize || Math.floor(textureSize.width * (this.layer._options.mainTextureRatio || 0.1)) || 1;
+            textureSize.height = fixedTextureSize || Math.floor(textureSize.height * (this.layer._options.mainTextureRatio || 0.1)) || 1;
 
             textureCreationOptions = {
                 size: textureSize,
@@ -282,8 +282,8 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
 
         const blurTextureSizeRatio = (this.layer._options as any).blurTextureSizeRatio !== undefined ? (this.layer._options as any).blurTextureSizeRatio || 0.1 : undefined;
         if (blurTextureSizeRatio !== undefined) {
-            textureSize.width = Math.floor(textureSize.width * blurTextureSizeRatio);
-            textureSize.height = Math.floor(textureSize.height * blurTextureSizeRatio);
+            textureSize.width = Math.floor(textureSize.width * blurTextureSizeRatio) || 1;
+            textureSize.height = Math.floor(textureSize.height * blurTextureSizeRatio) || 1;
         }
 
         const onBeforeBlurPass = this._onBeforeBlurTask?.record();
