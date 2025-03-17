@@ -166,6 +166,14 @@ checkBabylonVersionAsync().then(() => {
             editorDisplayed = true;
             let hostElement = document.getElementById("host-element");
 
+            if (navigator.userAgent.indexOf("Mobile") !== -1 || navigator.userAgent.indexOf("Tablet") !== -1) {
+                let errorMessage = document.getElementById("error-message");
+                if (errorMessage) {
+                    errorMessage.classList.remove("hidden");
+                    return;
+                }
+            }
+
             BABYLON.NodeGeometryEditor.Show({
                 nodeGeometry: nodeGeometry,
                 hostElement: hostElement,

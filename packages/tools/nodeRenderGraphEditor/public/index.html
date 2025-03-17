@@ -42,11 +42,29 @@
                 margin: 0;
                 overflow: hidden;
             }
+
+            
+            .hidden {
+                display: none;
+            }
+
+            .centered {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                font-family: "futura-pt", sans-serif;
+                font-size: 20px;
+            }
         </style>
     </head>
 
     <body>
         <div id="host-element"></div>
+        <div class="hidden centered" id="error-message">
+            The Node Render Graph Editor must be used on a dekstop device.
+        </div>
         <script src="index.js"></script>
     </body>
 </html>
