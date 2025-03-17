@@ -21,6 +21,7 @@ import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 import { BuildFloatUI } from "./tools";
 
 export class GraphNode {
+    private static _IdGenerator = 0;
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
     private _headerIcon: HTMLDivElement;
@@ -782,7 +783,6 @@ export class GraphNode {
 
         // Options
         let portUICount = 0;
-        let idGenerator = 0;
         const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
         if (propStore) {
             const source = this.content.data;
@@ -810,7 +810,7 @@ export class GraphNode {
                         container.classList.add(localStyles.booleanContainer);
                         const checkbox = root.ownerDocument!.createElement("input");
                         checkbox.type = "checkbox";
-                        checkbox.id = `checkbox-${idGenerator++}`;
+                        checkbox.id = `checkbox-${GraphNode._IdGenerator++}`;
                         checkbox.checked = source[propertyName];
                         this._visualPropertiesRefresh.push(() => {
                             checkbox.checked = source[propertyName];
