@@ -33,6 +33,7 @@ import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import type { IShadowLight } from "core/Lights";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
+import { HistoryStack } from "shared-ui-components/historyStack";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -63,6 +64,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
+    private _historyStack: HistoryStack;
 
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
@@ -92,17 +94,53 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this.appendBlock(newInputBlock);
     }
 
+    prepareHistoryStack() {
+        const globalState = this.props.globalState;
+        const renderGraph = this.props.globalState.nodeRenderGraph;
+
+        const dataProvider = () => {
+            SerializationTools.UpdateLocations(renderGraph, globalState);
+            return renderGraph.serialize();
+        };
+
+        const applyUpdate = (data: any) => {
+            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            renderGraph.parseSerializedObject(data);
+
+            globalState.onResetRequiredObservable.notifyObservers(false);
+        };
+
+        // Create the stack
+        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        globalState.stateManager.historyStack = this._historyStack;
+
+        // Connect to relevant events
+        globalState.stateManager.onUpdateRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNodeMovedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.onClearUndoStack.add(() => {
+            this._historyStack.reset();
+        });
+    }
+
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
+        const globalState = this.props.globalState;
 
-        if (this.props.globalState.hostDocument) {
+        if (globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
-            this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
-            (this.props.globalState as any)._previewManager = this._previewManager;
-        }
-
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
-            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
+            this.prepareHistoryStack();
+            this._previewManager = new PreviewManager(globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, globalState);
+            (globalState as any)._previewManager = this._previewManager;
         }
 
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
@@ -110,6 +148,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.build();
+        this.props.globalState.onClearUndoStack.notifyObservers();
     }
 
     override componentWillUnmount() {
@@ -130,6 +169,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         globalState.stateManager.onRebuildRequiredObservable.clear();
         globalState.stateManager.onNodeMovedObservable.clear();
         globalState.stateManager.onNewNodeCreatedObservable.clear();
+
+        if (this._previewManager) {
+            this._previewManager.dispose();
+            this._previewManager = null as any;
+        }
+
+        globalState.onClearUndoStack.clear();
+
+        if (this._historyStack) {
+            this._historyStack.dispose();
+            this._historyStack = null as any;
+        }
 
         if (this._previewManager) {
             this._previewManager.dispose();
@@ -216,6 +267,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+            if (this._historyStack.processKeyEvent(evt)) {
+                return;
+            }
+
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
@@ -371,10 +426,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
-        setTimeout(() => {
-            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
-            this.hideWaitScreen();
-        });
+        this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        this.hideWaitScreen();
     }
 
     onWheel = (evt: WheelEvent) => {
@@ -680,7 +733,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Render Graph Editor runs only on desktop</div>
+                <div className="blocker">Node Render Graph Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

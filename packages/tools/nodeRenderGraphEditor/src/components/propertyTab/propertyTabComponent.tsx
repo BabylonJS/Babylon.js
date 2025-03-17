@@ -84,6 +84,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
                 this.props.globalState.onFrame.notifyObservers();
             },
             undefined,
@@ -196,6 +197,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             .then(() => {
                 renderGraph.build();
                 this.props.globalState.onFrame.notifyObservers();
+                this.props.globalState.onClearUndoStack.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node render graph: " + err);
@@ -265,6 +267,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.props.globalState.nodeRenderGraph!.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                                 this.props.globalState.onFrame.notifyObservers();
+                                this.props.globalState.onClearUndoStack.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
