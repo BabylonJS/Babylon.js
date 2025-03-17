@@ -35,6 +35,8 @@
         "@babylonjs/loaders": "^7.23.1"
     },
     "devDependencies": {
+        "@babylonjs/core": "^7.53.3",
+        "@babylonjs/loaders": "^7.53.3",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-commonjs": "^26.0.1",
