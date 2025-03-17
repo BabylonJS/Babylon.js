@@ -659,7 +659,7 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
-        this.cameraAutoOrbit =  { enabled: !!options?.cameraAutoOrbit };
+        this.cameraAutoOrbit = { enabled: !!options?.cameraAutoOrbit };
 
         // Default to KHR PBR Neutral tone mapping.
         this.postProcessing = {
