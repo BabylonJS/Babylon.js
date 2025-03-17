@@ -284,7 +284,7 @@ export type ViewerOptions = Partial<{
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction. 
      */
-    cameraAutoOrbit?: boolean;
+    cameraAutoOrbit?: Partial<CameraAutoOrbit>;
 
     /**
      * Boolean indicating if the scene must use right-handed coordinates system.
@@ -659,7 +659,9 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
-        this.cameraAutoOrbit = { enabled: !!options?.cameraAutoOrbit };
+        if (options?.cameraAutoOrbit) {
+            this.cameraAutoOrbit = options?.cameraAutoOrbit;
+        }
 
         // Default to KHR PBR Neutral tone mapping.
         this.postProcessing = {
