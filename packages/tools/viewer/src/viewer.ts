@@ -280,6 +280,16 @@ export type ViewerOptions = Partial<{
      * Enabled by default.
      */
     autoSuspendRendering: boolean;
+
+    /**
+     * Automatically rotates a 3D model or scene without requiring user interaction.
+     */
+    cameraAutoOrbit: Partial<CameraAutoOrbit>;
+
+    /**
+     * Boolean indicating if the scene must use right-handed coordinates system.
+     */
+    useRightHandedSystem: boolean;
 }>;
 
 export type EnvironmentOptions = Partial<
@@ -575,6 +585,7 @@ export class Viewer implements IDisposable {
         {
             const scene = new Scene(this._engine);
             scene.clearColor = options?.clearColor ? new Color4(...options.clearColor) : new Color4(0, 0, 0, 0);
+            scene.useRightHandedSystem = !!options?.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -648,6 +659,9 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+        if (options?.cameraAutoOrbit) {
+            this.cameraAutoOrbit = options?.cameraAutoOrbit;
+        }
 
         // Default to KHR PBR Neutral tone mapping.
         this.postProcessing = {
