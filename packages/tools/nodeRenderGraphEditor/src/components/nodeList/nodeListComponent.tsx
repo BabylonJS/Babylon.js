@@ -152,6 +152,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CameraBlock",
                 "ShadowLightBlock",
             ],
+            Layers: ["GlowLayerBlock", "HighlightLayerBlock"],
+            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
             Post_Processes: [
                 "AnaglyphBlock",
                 "BlackAndWhiteBlock",
@@ -165,8 +167,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "PassCubeBlock",
                 "SSRBlock",
             ],
-            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
-            Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
             Output_Nodes: ["OutputBlock"],
             Rendering: [
                 "ObjectRendererBlock",
@@ -176,7 +176,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CascadedShadowGeneratorBlock",
                 "UtilityLayerRendererBlock",
             ],
-            Layers: ["GlowLayerBlock", "HighlightLayerBlock"],
+            Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
         };
 
         // Create node menu

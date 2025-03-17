@@ -31,9 +31,13 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
     }
 
     public set doNotChangeAspectRatio(value: boolean) {
+        const disabled = this._frameGraphTask.disabled;
+
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
         this._additionalConstructionParameters = [value];
+
+        this._frameGraphTask.disabled = disabled;
     }
 
     /**
