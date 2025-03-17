@@ -290,7 +290,6 @@ export type ViewerOptions = Partial<{
      * Boolean indicating if the scene must use right-handed coordinates system.
      */
     useRightHandedSystem: boolean;
-
 }>;
 
 export type EnvironmentOptions = Partial<
