@@ -87,7 +87,7 @@ export class PreviewManager {
     }
 
     private async _initAsync(targetCanvas: HTMLCanvasElement) {
-        if (useWebGPU) {
+        if (this._globalState.engine === 1) {
             this._engine = new WebGPUEngine(targetCanvas, {
                 enableGPUDebugMarkers: true,
                 enableAllFeatures: true,
