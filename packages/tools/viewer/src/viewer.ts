@@ -282,7 +282,7 @@ export type ViewerOptions = Partial<{
     autoSuspendRendering: boolean;
 
     /**
-     * Automatically rotates a 3D model or scene without requiring user interaction. 
+     * Automatically rotates a 3D model or scene without requiring user interaction.
      */
     cameraAutoOrbit?: Partial<CameraAutoOrbit>;
 
