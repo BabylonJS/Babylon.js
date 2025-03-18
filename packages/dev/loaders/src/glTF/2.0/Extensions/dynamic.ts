@@ -181,11 +181,6 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_node_hoverability(loader);
     });
 
-    registerGLTFExtension("KHR_interactivity", true, async (loader) => {
-        const { KHR_interactivity } = await import("./KHR_interactivity");
-        return new KHR_interactivity(loader);
-    });
-
     registerGLTFExtension("KHR_node_selectability", true, async (loader) => {
         const { KHR_node_selectability } = await import("./KHR_node_selectability");
         return new KHR_node_selectability(loader);
