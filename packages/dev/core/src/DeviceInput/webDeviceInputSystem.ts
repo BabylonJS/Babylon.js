@@ -433,12 +433,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerMoveEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
-            let button = evt.button;
-
-            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
-                // Firefox will tell a left click is a right click, so we need to adjust the button index
-                button = 0;
-            }
 
             // In the event that we're getting pointermove events from touch inputs that we aren't tracking,
             // look for an available slot and retroactively connect it.
@@ -485,9 +479,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
                 // Lets Propagate the event for move with same position.
-                if (!this._usingSafari && button !== -1) {
-                    deviceEvent.inputIndex = button + 2;
-                    pointer[button + 2] = pointer[button + 2] ? 0 : 1; // Reverse state of button if evt.button has value
+                if (!this._usingSafari && evt.button !== -1) {
+                    deviceEvent.inputIndex = evt.button + 2;
+                    pointer[evt.button + 2] = pointer[evt.button + 2] ? 0 : 1; // Reverse state of button if evt.button has value
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
@@ -498,6 +492,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : evt.pointerId;
             let button = evt.button;
 
+            // https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
             if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
                 // Firefox will tell a left click is a right click, so we need to adjust the button index
                 button = 0;
@@ -586,6 +581,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
             let button = evt.button;
 
+            // TODO: confirm it works in both directions
+            // In Firefox on MacOS, if you hold down control while clicking, the click is treated as a right click.
+            // If you click and drag, and release control during the drag, the pointer up event will be a left click.
+            // This is a workaround to treat both as left click here so we know they should be paired up, otherwise
+            // we won't process the pointer up event because it could appear to be from a button that was never pressed.
+            // https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
             if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
                 // Firefox will tell a left click is a right click, so we need to adjust the button index
                 button = 0;
