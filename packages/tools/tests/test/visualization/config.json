@@ -37,7 +37,7 @@
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
             "playgroundId": "#MXACV7#10",
             "renderCount": 5,
-            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness SH IBL",
