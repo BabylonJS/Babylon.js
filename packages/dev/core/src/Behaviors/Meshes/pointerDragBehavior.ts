@@ -16,6 +16,7 @@ import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import { Epsilon } from "../../Maths/math.constants";
 
+let nextInstanceId = 0;
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
  */
@@ -252,6 +253,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                   return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
               };
 
+        const instance = nextInstanceId++;
+
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
             if (!this.enabled) {
                 // If behavior is disabled before releaseDrag is ever called, call it now.
@@ -259,6 +262,37 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this.releaseDrag();
                 }
 
+                return;
+            }
+
+            // eslint-disable-next-line no-console
+            console.log(
+                "***",
+                "PDB[" + instance + "]",
+                "dragging",
+                this.dragging,
+                "pointerId",
+                (<IPointerEvent>pointerInfo.event).pointerId,
+                "currentDraggingPointerId",
+                this.currentDraggingPointerId,
+                "button",
+                pointerInfo.event.button,
+                "activeDragButton",
+                this._activeDragButton
+            );
+
+            // If we are dragging and the user presses another button on the same pointer, end the drag. Otherwise,
+            // tracking when the drag should end becomes very complex.
+            // gizmo.ts has similar behavior.
+            if (
+                this.dragging &&
+                this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
+                pointerInfo.event.button !== -1 &&
+                pointerInfo.event.button !== this._activeDragButton
+            ) {
+                // eslint-disable-next-line no-console
+                console.log("***", "PDB[" + instance + "]", "forcing release");
+                this.releaseDrag();
                 return;
             }
 
