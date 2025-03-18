@@ -170,8 +170,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         let ssrTextureHandle: FrameGraphTextureHandle | undefined;
 
         const textureSize = {
-            width: Math.floor(sourceTextureDescription.size.width / (this.ssr.ssrDownsample + 1)),
-            height: Math.floor(sourceTextureDescription.size.height / (this.ssr.ssrDownsample + 1)),
+            width: Math.floor(sourceTextureDescription.size.width / (this.ssr.ssrDownsample + 1)) || 1,
+            height: Math.floor(sourceTextureDescription.size.height / (this.ssr.ssrDownsample + 1)) || 1,
         };
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: textureSize,
@@ -204,8 +204,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
             this._ssr.targetTexture = ssrTextureHandle;
             this._ssr.record(true);
 
-            textureSize.width = Math.floor(sourceTextureDescription.size.width / (this.ssr.blurDownsample + 1));
-            textureSize.height = Math.floor(sourceTextureDescription.size.height / (this.ssr.blurDownsample + 1));
+            textureSize.width = Math.floor(sourceTextureDescription.size.width / (this.ssr.blurDownsample + 1)) || 1;
+            textureSize.height = Math.floor(sourceTextureDescription.size.height / (this.ssr.blurDownsample + 1)) || 1;
 
             const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 

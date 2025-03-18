@@ -133,8 +133,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
-                width: Math.floor(sourceTextureDescription.size.width * this.bloom.scale),
-                height: Math.floor(sourceTextureDescription.size.height * this.bloom.scale),
+                width: Math.floor(sourceTextureDescription.size.width * this.bloom.scale) || 1,
+                height: Math.floor(sourceTextureDescription.size.height * this.bloom.scale) || 1,
             },
             options: {
                 createMipMaps: false,

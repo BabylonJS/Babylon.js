@@ -30,6 +30,12 @@ export const enum FlowGraphTypes {
  * such as its name and a default value constructor.
  */
 export class RichType<T> {
+    /**
+     * A function that can be used to transform a value of any type into a value of this rich type.
+     * This can be used, for example, between vector4 and quaternion.
+     */
+    public typeTransformer: (value: any) => T;
+
     constructor(
         /**
          * The name given to the type.
@@ -81,7 +87,16 @@ export const RichTypeColor3: RichType<Color3> = new RichType(FlowGraphTypes.Colo
 export const RichTypeColor4: RichType<Color4> = new RichType(FlowGraphTypes.Color4, new Color4(0, 0, 0, 0), Constants.ANIMATIONTYPE_COLOR4);
 
 export const RichTypeQuaternion: RichType<Quaternion> = new RichType(FlowGraphTypes.Quaternion, Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
-
+RichTypeQuaternion.typeTransformer = (value: any) => {
+    if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector4) {
+        return Quaternion.FromArray(value.asArray());
+    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector3) {
+        return Quaternion.FromEulerVector(value);
+    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Matrix) {
+        return Quaternion.FromRotationMatrix(value);
+    }
+    return value;
+};
 export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType(FlowGraphTypes.Integer, new FlowGraphInteger(0), Constants.ANIMATIONTYPE_FLOAT);
 
 /**

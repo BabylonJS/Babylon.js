@@ -24,6 +24,7 @@ export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraph
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
+            case FlowGraphTypes.Quaternion:
                 return (a as Vector3).length();
             default:
                 throw new Error(`Cannot compute length of value ${a}`);
@@ -58,6 +59,7 @@ export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGr
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
+            case FlowGraphTypes.Quaternion:
                 normalized = a.normalizeToNew();
                 if (this.config?.nanOnZeroLength) {
                     const length = a.length();
@@ -87,6 +89,7 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVe
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
+            case FlowGraphTypes.Quaternion:
                 // casting is needed because dot requires both to be the same type
                 return (a as Vector3).dot(b as Vector3);
             default:

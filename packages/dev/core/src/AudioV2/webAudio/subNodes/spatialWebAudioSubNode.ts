@@ -86,6 +86,15 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return this.node.refDistance;
+    }
+
+    public set minDistance(value: number) {
+        this.node.refDistance = value;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this.node.maxDistance;
     }
@@ -101,15 +110,6 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set panningModel(value: "equalpower" | "HRTF") {
         this.node.panningModel = value;
-    }
-
-    /** @internal */
-    public get referenceDistance(): number {
-        return this.node.refDistance;
-    }
-
-    public set referenceDistance(value: number) {
-        this.node.refDistance = value;
     }
 
     /** @internal */
@@ -132,7 +132,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public updatePosition(): void {
+    public _updatePosition(): void {
         if (this._lastPosition.equalsWithEpsilon(this.position)) {
             return;
         }
@@ -145,7 +145,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public updateRotation(): void {
+    public _updateRotation(): void {
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);

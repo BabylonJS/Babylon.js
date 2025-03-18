@@ -8,8 +8,8 @@ import type { ThinEngine } from "core/Engines";
  * Warning: using the BoundingInfoHelper class may be slower than executing calculations on the CPU!
  * This will happen if there are a lot of meshes / few vertices (like with the BrainStem model)
  * The BoundingInfoHelper will perform better if there are few meshes / a lot of vertices
- *  https://playground.babylonjs.com/#QPOERJ#9: WebGL
- *  https://playground.babylonjs.com/#QPOERJ#10: WebGPU
+ *  https://playground.babylonjs.com/#QPOERJ#9 : WebGL
+ *  https://playground.babylonjs.com/#QPOERJ#10 : WebGPU
  */
 export class BoundingInfoHelper {
     private _platform: IBoundingInfoHelperPlatform;

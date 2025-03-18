@@ -13,6 +13,7 @@ import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
+import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
 
 /**
  * Options for creating a v2 audio engine that uses the WebAudio API.
@@ -22,6 +23,14 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
      * The audio context to be used by the engine.
      */
     audioContext: AudioContext;
+    /**
+     * The default UI's parent element. Defaults to the last created graphics engine's canvas if it exists; otherwise the HTML document's body.
+     */
+    defaultUIParentElement?: HTMLElement;
+    /**
+     * Set to `true` to disable the default UI. Defaults to `false`.
+     */
+    disableDefaultUI?: boolean;
     /**
      * Set to `true` to automatically resume the audio context when the user interacts with the page. Defaults to `true`.
      */
@@ -65,6 +74,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _invalidFormats = new Set<string>();
     private _listener: Nullable<_SpatialAudioListener> = null;
     private _mainOut: _WebAudioMainOut;
+    private _pauseCalled = false;
     private _resumeOnInteraction = true;
     private _resumeOnPause = true;
     private _resumeOnPauseRetryInterval = 1000;
@@ -72,6 +82,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumePromise: Nullable<Promise<void>> = null;
     private readonly _listenerAutoUpdate: boolean = true;
     private readonly _listenerMinUpdateTime: number = 0;
+    private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
 
@@ -103,6 +114,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._volume = options.volume ?? 1;
         this.audioContext = options.audioContext ?? new AudioContext();
+
+        if (!options.disableDefaultUI) {
+            this._unmuteUI = new _WebAudioUnmuteUI(this, options.defaultUIParentElement);
+        }
     }
 
     /** @internal */
@@ -236,6 +251,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         document.removeEventListener("click", this._onUserGesture);
         this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
+
+        this._unmuteUI?.dispose();
+        this._unmuteUI = null;
     }
 
     /** @internal */
@@ -272,10 +290,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public override async pause(): Promise<void> {
         await this.audioContext.suspend();
+
+        this._pauseCalled = true;
     }
 
     /** @internal */
     public override async resume(): Promise<void> {
+        this._pauseCalled = false;
+
         if (this._resumePromise) {
             return this._resumePromise;
         }
@@ -320,7 +342,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this._resumePromise = null;
         }
         if (this.state === "suspended" || this.state === "interrupted") {
-            if (this._audioContextStarted && this._resumeOnPause) {
+            if (this._audioContextStarted && this._resumeOnPause && !this._pauseCalled) {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {

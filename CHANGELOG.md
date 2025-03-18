@@ -1,5 +1,76 @@
 # Changelog
 
+## 7.53.3
+
+### Core
+
+- Make sound `pitch` and `playbackRate` properties change continuously - by [docEdub](https://github.com/docEdub) ([#16326](https://github.com/BabylonJS/Babylon.js/pull/16326))
+- Fix spatial audio `attach` feature position tracking - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16327](https://github.com/BabylonJS/Babylon.js/pull/16327))
+- Add a new block to NGE: Ease - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16320](https://github.com/BabylonJS/Babylon.js/pull/16320))
+- Fix lattice ejecting vertices too early - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16316](https://github.com/BabylonJS/Babylon.js/pull/16316))
+- Add observer for when IBL shadow voxelization is complete - by [MiiBond](https://github.com/MiiBond) ([#16306](https://github.com/BabylonJS/Babylon.js/pull/16306))
+- Get old audio engine working in playgrounds that use `BABYLON.Sound` - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16311](https://github.com/BabylonJS/Babylon.js/pull/16311))
+
+### Loaders
+
+- Expose OBJFileLoader options to scene loader APIs - by [ryantrem](https://github.com/ryantrem) ([#16322](https://github.com/BabylonJS/Babylon.js/pull/16322))
+
+### Serializers
+
+- Fixes to KHR_materials_diffuse_transmission export - by [alexchuber](https://github.com/alexchuber) ([#16317](https://github.com/BabylonJS/Babylon.js/pull/16317))
+
+### Viewer
+
+- Viewer: hide animation slider if its width is below a usable threshold - by [ryantrem](https://github.com/ryantrem) ([#16329](https://github.com/BabylonJS/Babylon.js/pull/16329))
+- Viewer and Configurator small improvements - by [ryantrem](https://github.com/ryantrem) ([#16315](https://github.com/BabylonJS/Babylon.js/pull/16315))
+- Viewer: add test for successfully loading an env and rendering at least one frame without errors - by [ryantrem](https://github.com/ryantrem) ([#16310](https://github.com/BabylonJS/Babylon.js/pull/16310))
+
+## 7.53.2
+
+### Core
+
+- Bug bash fixes - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16304](https://github.com/BabylonJS/Babylon.js/pull/16304))
+- Add a _hasDefaultMaterial property - by [ryantrem](https://github.com/ryantrem) ([#16305](https://github.com/BabylonJS/Babylon.js/pull/16305))
+- Fix bug with internal texture disposing observables too soon - by [deltakosh](https://github.com/deltakosh) ([#16303](https://github.com/BabylonJS/Babylon.js/pull/16303))
+
+### Inspector
+
+- Add a _hasDefaultMaterial property - by [ryantrem](https://github.com/ryantrem) ([#16305](https://github.com/BabylonJS/Babylon.js/pull/16305))
+
+### Loaders
+
+- Add an option for specifying the default material variant - by [ryantrem](https://github.com/ryantrem) ([#16308](https://github.com/BabylonJS/Babylon.js/pull/16308))
+
+### Serializers
+
+- Fix usdz exporter for models with Color3 vertex attributes - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#16302](https://github.com/BabylonJS/Babylon.js/pull/16302))
+
+### Viewer
+
+- Add a _hasDefaultMaterial property - by [ryantrem](https://github.com/ryantrem) ([#16305](https://github.com/BabylonJS/Babylon.js/pull/16305))
+
+## 7.53.1
+
+### Core
+
+- Enhance matrix validation and type transformation features - by [RaananW](https://github.com/RaananW) ([#16301](https://github.com/BabylonJS/Babylon.js/pull/16301))
+- Frame Graph: refactoring + more post-processes supported - by [Popov72](https://github.com/Popov72) ([#16300](https://github.com/BabylonJS/Babylon.js/pull/16300))
+- Fix matrix multiplication order in FlowGraph classes - by [RaananW](https://github.com/RaananW) ([#16299](https://github.com/BabylonJS/Babylon.js/pull/16299))
+- MeshBuilder.ExtrudeShape : fixed capFunction type syntax - by [Tricotou](https://github.com/Tricotou) ([#16297](https://github.com/BabylonJS/Babylon.js/pull/16297))
+- Material:Fix pre-pass dirty flag - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16298](https://github.com/BabylonJS/Babylon.js/pull/16298))
+
+### GUI
+
+- Frame Graph: refactoring + more post-processes supported - by [Popov72](https://github.com/Popov72) ([#16300](https://github.com/BabylonJS/Babylon.js/pull/16300))
+
+### Loaders
+
+- Fix matrix multiplication order in FlowGraph classes - by [RaananW](https://github.com/RaananW) ([#16299](https://github.com/BabylonJS/Babylon.js/pull/16299))
+
+### Node Editor
+
+- Fix leaks when reusing same NME or NGE instance in Sandbox or PG - by [deltakosh](https://github.com/deltakosh) ([#16293](https://github.com/BabylonJS/Babylon.js/pull/16293))
+
 ## 7.53.0
 
 ### Core

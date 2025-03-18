@@ -150,6 +150,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         AggregatorBlock: "Block used to aggregate values from a geometry",
         CleanGeometryBlock: "Try to clean a geometry",
         SubdivideBlock: "Subdivide a geometry using Catmull-Clark algorithm",
+        EaseBlock: "Block used to apply easing on a value",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -286,6 +287,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "IntFloatConverterBlock",
                 "ModBlock",
                 "ClampBlock",
+                "EaseBlock",
             ],
             Math__Scientific: [
                 "AbsBlock",

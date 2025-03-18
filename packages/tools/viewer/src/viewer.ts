@@ -225,25 +225,31 @@ async function createCubeTexture(url: string, scene: Scene, extension?: string) 
 }
 
 function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTexture, blur: number): Mesh {
-    const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
-    const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
-    // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
-    hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
-    hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-    if (hdrSkyboxMaterial.reflectionTexture) {
-        hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+    const originalBlockMaterialDirtyMechanism = scene.blockMaterialDirtyMechanism;
+    scene.blockMaterialDirtyMechanism = true;
+    try {
+        const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
+        const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+        // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
+        hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
+        hdrSkyboxMaterial.backFaceCulling = false;
+        hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
+        if (hdrSkyboxMaterial.reflectionTexture) {
+            hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        }
+        hdrSkyboxMaterial.microSurface = 1.0 - blur;
+        hdrSkyboxMaterial.disableLighting = true;
+        hdrSkyboxMaterial.twoSidedLighting = true;
+        hdrSkybox.material = hdrSkyboxMaterial;
+        hdrSkybox.isPickable = false;
+        hdrSkybox.infiniteDistance = true;
+
+        updateSkybox(hdrSkybox, camera);
+
+        return hdrSkybox;
+    } finally {
+        scene.blockMaterialDirtyMechanism = originalBlockMaterialDirtyMechanism;
     }
-    hdrSkyboxMaterial.microSurface = 1.0 - blur;
-    hdrSkyboxMaterial.disableLighting = true;
-    hdrSkyboxMaterial.twoSidedLighting = true;
-    hdrSkybox.material = hdrSkyboxMaterial;
-    hdrSkybox.isPickable = false;
-    hdrSkybox.infiniteDistance = true;
-
-    updateSkybox(hdrSkybox, camera);
-
-    return hdrSkybox;
 }
 
 function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
@@ -336,6 +342,16 @@ export type ViewerOptions = Partial<{
      * Enabled by default.
      */
     autoSuspendRendering: boolean;
+
+    /**
+     * Automatically rotates a 3D model or scene without requiring user interaction.
+     */
+    cameraAutoOrbit: Partial<CameraAutoOrbit>;
+
+    /**
+     * Boolean indicating if the scene must use right-handed coordinates system.
+     */
+    useRightHandedSystem: boolean;
 }>;
 
 export type EnvironmentOptions = Partial<
@@ -652,6 +668,7 @@ export class Viewer implements IDisposable {
         {
             const scene = new Scene(this._engine);
             scene.clearColor = options?.clearColor ? new Color4(...options.clearColor) : new Color4(0, 0, 0, 0);
+            scene.useRightHandedSystem = !!options?.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -725,6 +742,9 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+        if (options?.cameraAutoOrbit) {
+            this.cameraAutoOrbit = options?.cameraAutoOrbit;
+        }
 
         // Default to KHR PBR Neutral tone mapping.
         this.postProcessing = {

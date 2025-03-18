@@ -21,6 +21,7 @@ import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 import { BuildFloatUI } from "./tools";
 
 export class GraphNode {
+    private static _IdGenerator = 0;
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
     private _headerIcon: HTMLDivElement;
@@ -52,11 +53,11 @@ export class GraphNode {
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<INodeData>>>;
     private _onHighlightNodeObserver: Nullable<Observer<any>>;
     private _ownerCanvas: GraphCanvasComponent;
-    private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
     private _visualPropertiesRefresh: Array<() => void> = [];
+    private _lastClick = 0.0;
 
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
@@ -170,10 +171,6 @@ export class GraphNode {
         return this.content.name;
     }
 
-    public get isSelected() {
-        return this._isSelected;
-    }
-
     public get enclosingFrameId() {
         return this._enclosingFrameId;
     }
@@ -182,17 +179,7 @@ export class GraphNode {
         this._enclosingFrameId = value;
     }
 
-    public set isSelected(value: boolean) {
-        this.setIsSelected(value, false);
-    }
-
     public setIsSelected(value: boolean, marqueeSelection: boolean) {
-        if (this._isSelected === value) {
-            return;
-        }
-
-        this._isSelected = value;
-
         if (!value) {
             this._visual.classList.remove(localStyles["selected"]);
             const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
@@ -418,6 +405,72 @@ export class GraphNode {
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
     }
 
+    // Search nodes is direction of node from this
+    private _expand(node: GraphNode) {
+        const queue: GraphNode[] = [];
+        let right = undefined;
+        for (const link of this.links) {
+            if (link.nodeA == this && link.nodeB == node) {
+                right = false;
+            }
+            if (link.nodeB == this && link.nodeA == node) {
+                right = true;
+            }
+        }
+        if (right != undefined) {
+            const loop = (right: boolean) => {
+                const last = queue[queue.length - 1];
+                for (const link of last.links) {
+                    if (right && link.nodeA == last && link.nodeB != undefined) {
+                        queue.push(link.nodeB);
+                        loop(right);
+                    }
+                    if (!right && link.nodeB == last && link.nodeA != undefined) {
+                        queue.push(link.nodeA);
+                        loop(right);
+                    }
+                }
+            };
+            queue.push(node);
+            loop(right);
+        }
+        return queue;
+    }
+
+    // Search nodes between node and this
+    private _searchMiddle(node: GraphNode) {
+        let middle: GraphNode[] = [];
+        const loop = (nodes: GraphNode[], right: boolean) => {
+            const last = nodes[nodes.length - 1];
+            for (const link of last.links) {
+                const newNodes = Object.assign([], nodes);
+                if (right && link.nodeA == last && link.nodeB != undefined) {
+                    newNodes.push(link.nodeB);
+                    if (link.nodeB == this) {
+                        middle = newNodes;
+                        return;
+                    } else {
+                        loop(newNodes, right);
+                    }
+                }
+                if (!right && link.nodeB == last && link.nodeA != undefined) {
+                    newNodes.push(link.nodeA);
+                    if (link.nodeA == this) {
+                        middle = newNodes;
+                        return;
+                    } else {
+                        loop(newNodes, right);
+                    }
+                }
+            }
+        };
+        loop([node], true);
+        if (!middle.length) {
+            loop([node], false);
+        }
+        return middle;
+    }
+
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
         if (evt.target && (evt.target as HTMLElement).nodeName === "IMG" && (evt.target as HTMLElement).draggable) {
@@ -431,6 +484,25 @@ export class GraphNode {
             this.setIsSelected(false, false);
         }
 
+        // Shift key
+        if (evt.shiftKey && this._ownerCanvas.selectedNodes.length > 1) {
+            // Last selected
+            const last = this._ownerCanvas.selectedNodes[this._ownerCanvas.selectedNodes.length - 2];
+            if (performance.now() - this._lastClick > 300) {
+                // Simple click
+                const middle = this._searchMiddle(last);
+                for (const node of middle) {
+                    this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
+                }
+            } else {
+                // Double click
+                const queue = this._expand(last);
+                for (const node of queue) {
+                    this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
+                }
+            }
+        }
+
         evt.stopPropagation();
 
         for (const selectedNode of this._ownerCanvas.selectedNodes) {
@@ -441,6 +513,8 @@ export class GraphNode {
         this._mouseStartPointY = evt.clientY;
 
         this._visual.setPointerCapture(evt.pointerId);
+
+        this._lastClick = performance.now();
     }
 
     public cleanAccumulation(useCeil = false) {
@@ -509,50 +583,20 @@ export class GraphNode {
         this._stateManager.onNodeMovedObservable.notifyObservers(this);
     }
 
-    private _attach(attached: GraphNode[], right: boolean) {
-        for (const link of this.links) {
-            if (right && link.nodeA == this && link.nodeB != undefined && !attached.includes(link.nodeB)) {
-                attached.push(link.nodeB);
-                link.nodeB._attach(attached, right);
-            }
-            if (!right && link.nodeB == this && link.nodeA != undefined && !attached.includes(link.nodeA)) {
-                attached.push(link.nodeA);
-                link.nodeA._attach(attached, right);
-            }
-        }
-    }
-
     private _onMove(evt: PointerEvent) {
         this._ownerCanvas._targetLinkCandidate = null;
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
 
-        // Delta
+        // Move
         const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        // Move selected
         for (const selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.x += newX;
             selectedNode.y += newY;
         }
-
-        // Move attached (Shift / Alt)
-        const attached: Array<GraphNode> = [];
-        if (evt.shiftKey) {
-            this._attach(attached, false);
-        } else if (evt.altKey) {
-            this._attach(attached, true);
-        }
-        for (const attachedNode of attached) {
-            if (!this._ownerCanvas.selectedNodes.includes(attachedNode)) {
-                attachedNode.x += newX;
-                attachedNode.y += newY;
-            }
-        }
-
-        // Move frame
         for (const frame of this._ownerCanvas.selectedFrames) {
             frame._moveFrame(newX, newY);
         }
@@ -739,7 +783,6 @@ export class GraphNode {
 
         // Options
         let portUICount = 0;
-        let idGenerator = 0;
         const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
         if (propStore) {
             const source = this.content.data;
@@ -767,7 +810,7 @@ export class GraphNode {
                         container.classList.add(localStyles.booleanContainer);
                         const checkbox = root.ownerDocument!.createElement("input");
                         checkbox.type = "checkbox";
-                        checkbox.id = `checkbox-${idGenerator++}`;
+                        checkbox.id = `checkbox-${GraphNode._IdGenerator++}`;
                         checkbox.checked = source[propertyName];
                         this._visualPropertiesRefresh.push(() => {
                             checkbox.checked = source[propertyName];

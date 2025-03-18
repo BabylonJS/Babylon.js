@@ -41,6 +41,10 @@
                 /* background-color: aqua; */
             }
 
+            babylon-viewer-annotation[hotspot="thruster"]::part(annotation) {
+                background-color: orange;
+            }
+
             /* babylon-viewer-annotation:state(back-facing) {
                 display: none;
              } */
@@ -124,11 +128,8 @@
                     </div>
                 </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="thruster">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">Thruster</div>
                 </babylon-viewer-annotation>
-                <babylon-viewer-annotation hotspot="poi">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">World Space POI</div>
-                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="poi"></babylon-viewer-annotation>
             </babylon-viewer>
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>

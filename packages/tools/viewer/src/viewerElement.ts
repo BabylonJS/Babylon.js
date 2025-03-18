@@ -8,6 +8,7 @@ import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
+import { ref } from "lit/directives/ref.js";
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -153,6 +154,7 @@ export interface ViewerElement {
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
     private readonly _viewerLock = new AsyncLock();
+    private _animationSliderResizeObserver: Nullable<ResizeObserver> = null;
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
@@ -400,6 +402,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             border-color: var(--ui-foreground-color);
             height: 48px;
             bottom: 12px;
+            min-width: 370px;
             color: var(--ui-foreground-color);
             -webkit-tap-highlight-color: transparent;
         }
@@ -916,6 +919,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @state()
     private _isAnimationPlaying = false;
 
+    @state()
+    private _showAnimationSlider = true;
+
     /**
      * The list of material variants for the currently loaded model.
      */
@@ -1057,8 +1063,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                   `}
                         </button>
                         <input
+                            ${ref(this._onAnimationSliderChanged)}
                             aria-label="Animation Progress"
                             class="animation-timeline-input"
+                            style="${this._showAnimationSlider ? "" : "visibility: hidden"}"
                             type="range"
                             min="0"
                             max="1"
@@ -1142,7 +1150,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     protected _renderReloadButton(): TemplateResult {
         return html`${this._isFaulted
             ? html`
-                  <button class="reload-button" @click="${this._setupViewer}">
+                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this._setupViewer}">
                       <svg viewBox="0 0 24 24">
                           <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
                       </svg>
@@ -1246,6 +1254,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         // We don't actually want a selected value, this is just a one time trigger.
         selectElement.value = "";
         this.focusHotSpot(hotSpotName);
+    }
+
+    private _onAnimationSliderChanged(element?: Element) {
+        this._animationSliderResizeObserver?.disconnect();
+        if (element) {
+            this._animationSliderResizeObserver = new ResizeObserver(() => {
+                this._showAnimationSlider = element.clientWidth >= 80;
+            });
+            this._animationSliderResizeObserver.observe(element);
+        }
     }
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.

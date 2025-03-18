@@ -13,7 +13,12 @@ import { defaultValueSerializationFunction } from "./serialization";
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-    private _isDiabled: boolean = false;
+    private _isDisabled: boolean = false;
+    /**
+     * This is used for debugging purposes! It is the last value that was set to this connection with ANY context.
+     * Do not use this value for anything else, as it might be wrong if used in a different context.
+     */
+    private _lastValue: Nullable<T> = null;
 
     /**
      * a data transformer function, if needed.
@@ -67,15 +72,15 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * If the connection is disabled you will not be able to connect anything to it.
      */
     public get isDisabled(): boolean {
-        return this._isDiabled;
+        return this._isDisabled;
     }
 
     public set isDisabled(value: boolean) {
-        if (this._isDiabled === value) {
+        if (this._isDisabled === value) {
             return;
         }
-        this._isDiabled = value;
-        if (this._isDiabled) {
+        this._isDisabled = value;
+        if (this._isDisabled) {
             this.disconnectFromAll();
         }
     }
@@ -116,7 +121,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param point the point to connect to.
      */
     public override connectTo(point: FlowGraphDataConnection<T>): void {
-        if (this._isDiabled) {
+        if (this._isDisabled) {
             return;
         }
         super.connectTo(point);
@@ -136,14 +141,20 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         if (this.connectionType === FlowGraphConnectionType.Output) {
             context._notifyExecuteNode(this._ownerBlock);
             this._ownerBlock._updateOutputs(context);
-            return this._getValueOrDefault(context);
+            const value = this._getValueOrDefault(context);
+            this._lastValue = value;
+            return this.richType.typeTransformer ? this.richType.typeTransformer(value) : value;
         }
+        const value = !this.isConnected() ? this._getValueOrDefault(context) : this._connectedPoint[0].getValue(context);
+        this._lastValue = value;
+        return this.richType.typeTransformer ? this.richType.typeTransformer(value) : value;
+    }
 
-        if (!this.isConnected()) {
-            return this._getValueOrDefault(context);
-        } else {
-            return this._connectedPoint[0].getValue(context);
-        }
+    /**
+     * @internal
+     */
+    public _getLastValue(): Nullable<T> {
+        return this._lastValue;
     }
 
     /**

@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-addons",
-    "version": "7.53.0",
+    "version": "7.53.3",
     "main": "babylonjs.addons.js",
     "types": "babylonjs.addons.module.d.ts",
     "files": [
@@ -15,7 +15,7 @@
         "test:escheck": "es-check es6 ./babylonjs.addons.js"
     },
     "dependencies": {
-        "babylonjs": "^7.53.0"
+        "babylonjs": "^7.53.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
