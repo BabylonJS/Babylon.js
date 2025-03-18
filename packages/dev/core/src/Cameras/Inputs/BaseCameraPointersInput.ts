@@ -8,7 +8,6 @@ import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo, PointerTouch } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import { IsNavigatorAvailable } from "../../Misc/domManagement";
 
 /**
  * Base class for Camera Pointer Inputs.
