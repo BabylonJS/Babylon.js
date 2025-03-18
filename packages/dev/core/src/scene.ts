@@ -180,6 +180,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("StandardMaterial");
     }
 
+    private static readonly _OriginalDefaultMaterialFactory = Scene.DefaultMaterialFactory;
+
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the a collision coordinator.
@@ -1383,6 +1385,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this._activeCamera = value;
         this.onActiveCameraChanged.notifyObservers(this);
+    }
+
+    /** @internal */
+    public get _hasDefaultMaterial() {
+        return Scene.DefaultMaterialFactory !== Scene._OriginalDefaultMaterialFactory;
     }
 
     private _defaultMaterial: Material;

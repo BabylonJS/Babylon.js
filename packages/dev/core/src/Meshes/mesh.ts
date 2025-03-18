@@ -2500,8 +2500,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Render a complete mesh by going through all submeshes
      * @returns the current mesh
-     * #5SPY1V#2: simple test
-     * #5SPY1V#5: perf test
+     * @see [simple test](https://playground.babylonjs.com/#5SPY1V#2)
+     * @see [perf test](https://playground.babylonjs.com/#5SPY1V#5)
      */
     public directRender(): Mesh {
         if (!this.subMeshes) {

@@ -126,7 +126,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
             const to = this.to.getValue(context) || animationGroupToUse.to;
-            const loop = this.loop.getValue(context);
+            const loop = !isFinite(to) || this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 
             const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];

@@ -345,16 +345,19 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 .arrayBuffer()
                 .then((buffer) => {
                     this._parseSPZ(buffer, scene).then((parsedSPZ) => {
+                        scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
+                        scene._blockEntityCollection = false;
+                        resolve(babylonMeshesArray);
                     });
-                    resolve(babylonMeshesArray);
                 })
                 .catch(() => {
                     // Catch any decompression errors
                     SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
+                        scene._blockEntityCollection = !!this._assetContainer;
                         switch (parsedPLY.mode) {
                             case Mode.Splat:
                                 {
@@ -388,6 +391,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                             default:
                                 throw new Error("Unsupported Splat mode");
                         }
+                        scene._blockEntityCollection = false;
                         resolve(babylonMeshesArray);
                     });
                 });

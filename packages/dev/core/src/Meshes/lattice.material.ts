@@ -9,8 +9,8 @@ import type { UniformBuffer } from "core/Materials/uniformBuffer";
 
 /**
  * Material plugin to add hardware accelerated lattice support
- * #HBZD72#5 - webgl2
- * #HBZD72#6 - webgpu
+ * @see [webgl2](https://playground.babylonjs.com/#HBZD72#5)
+ * @see [webgpu](https://playground.babylonjs.com/#HBZD72#6)
  */
 export class LatticePluginMaterial extends MaterialPluginBase {
     private _lattice: Lattice;

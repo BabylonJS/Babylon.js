@@ -48,6 +48,7 @@ export function ExtrudeShape(
         invertUV?: boolean;
         firstNormal?: Vector3;
         adjustFrame?: boolean;
+        capFunction?: Nullable<{ (shapePath: Vector3[]): Vector3[] }>;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -62,6 +63,7 @@ export function ExtrudeShape(
     const invertUV = options.invertUV || false;
     const closeShape = options.closeShape || false;
     const closePath = options.closePath || false;
+    const capFunction = options.capFunction || null;
 
     return _ExtrudeShapeGeneric(
         name,
@@ -83,7 +85,8 @@ export function ExtrudeShape(
         options.frontUVs || null,
         options.backUVs || null,
         options.firstNormal || null,
-        options.adjustFrame ? true : false
+        options.adjustFrame ? true : false,
+        capFunction
     );
 }
 
@@ -137,6 +140,7 @@ export function ExtrudeShapeCustom(
         invertUV?: boolean;
         firstNormal?: Vector3;
         adjustFrame?: boolean;
+        capFunction?: Nullable<{ (shapePath: Vector3[]): Vector3[] }>;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -161,6 +165,7 @@ export function ExtrudeShapeCustom(
     const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     const instance = options.instance;
     const invertUV = options.invertUV || false;
+    const capFunction = options.capFunction || null;
     return _ExtrudeShapeGeneric(
         name,
         shape,
@@ -181,7 +186,8 @@ export function ExtrudeShapeCustom(
         options.frontUVs || null,
         options.backUVs || null,
         firstNormal,
-        adjustFrame
+        adjustFrame,
+        capFunction || null
     );
 }
 
@@ -205,7 +211,8 @@ function _ExtrudeShapeGeneric(
     frontUVs: Nullable<Vector4>,
     backUVs: Nullable<Vector4>,
     firstNormal: Nullable<Vector3>,
-    adjustFrame: boolean
+    adjustFrame: boolean,
+    capFunction: Nullable<{ (shapePath: Vector3[]): Vector3[] }>
 ): Mesh {
     // extrusion geometry
     const extrusionPathArray = (
@@ -282,7 +289,7 @@ function _ExtrudeShapeGeneric(
             index++;
         }
         // cap
-        const capPath = (shapePath: Vector3[]) => {
+        const defaultCapPath = (shapePath: Vector3[]) => {
             const pointCap = Array<Vector3>();
             const barycenter = Vector3.Zero();
             let i: number;
@@ -295,6 +302,7 @@ function _ExtrudeShapeGeneric(
             }
             return pointCap;
         };
+        const capPath = capFunction || defaultCapPath;
         switch (cap) {
             case Mesh.NO_CAP:
                 break;

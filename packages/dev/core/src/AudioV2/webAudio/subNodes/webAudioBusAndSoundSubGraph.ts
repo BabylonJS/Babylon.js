@@ -30,16 +30,16 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
 
     /** @internal */
     public override async init(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
-        super.init(options);
+        await super.init(options);
 
         let hasSpatialOptions = false;
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            this.createAndAddSubNode(AudioSubNode.SPATIAL);
+            await this.createAndAddSubNode(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            this.createAndAddSubNode(AudioSubNode.STEREO);
+            await this.createAndAddSubNode(AudioSubNode.STEREO);
         }
 
         await this._createSubNodePromisesResolved();

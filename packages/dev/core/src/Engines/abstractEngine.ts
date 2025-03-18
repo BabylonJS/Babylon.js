@@ -1879,14 +1879,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.52.2";
+        return "babylonjs@7.53.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.52.2";
+        return "7.53.3";
     }
 
     /**
@@ -2026,7 +2026,6 @@ export abstract class AbstractEngine {
         options.deterministicLockstep = options.deterministicLockstep ?? false;
         options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
         options.timeStep = options.timeStep ?? 1 / 60;
-        options.audioEngine = options.audioEngine ?? true;
         options.stencil = options.stencil ?? true;
 
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
