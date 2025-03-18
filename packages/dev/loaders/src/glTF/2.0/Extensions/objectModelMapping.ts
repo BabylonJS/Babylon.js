@@ -336,15 +336,17 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 while (rootNode && rootNode.parent) {
                     rootNode = rootNode.parent;
                 }
+                const forceUpdate =
+                    node._babylonTransformNode?.position._isDirty || node._babylonTransformNode?.rotationQuaternion?._isDirty || node._babylonTransformNode?.scaling._isDirty;
                 if (rootNode) {
                     // take the parent root node's world matrix, invert it, and multiply it with the current node's world matrix
                     // This will provide the global matrix, ignoring the RHS->LHS conversion
-                    const rootMatrix = rootNode._babylonTransformNode?.getWorldMatrix().invert();
+                    const rootMatrix = rootNode._babylonTransformNode?.computeWorldMatrix(true).invert();
                     if (rootMatrix) {
-                        node._babylonTransformNode?.getWorldMatrix()?.multiplyToRef(rootMatrix, matrix);
+                        node._babylonTransformNode?.computeWorldMatrix(forceUpdate)?.multiplyToRef(rootMatrix, matrix);
                     }
                 } else if (node._babylonTransformNode) {
-                    matrix.copyFrom(node._babylonTransformNode.getWorldMatrix());
+                    matrix.copyFrom(node._babylonTransformNode.computeWorldMatrix(forceUpdate));
                 }
                 return matrix;
             },
