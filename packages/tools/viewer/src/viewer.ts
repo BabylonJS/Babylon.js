@@ -25,6 +25,7 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 
 import "core/Materials/standardMaterial";
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { SpotLight } from "core/Lights/spotLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
