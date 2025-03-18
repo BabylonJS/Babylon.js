@@ -433,6 +433,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerMoveEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
+            let button = evt.button;
+
+            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
+                // Firefox will tell a left click is a right click, so we need to adjust the button index
+                button = 0;
+            }
 
             // In the event that we're getting pointermove events from touch inputs that we aren't tracking,
             // look for an available slot and retroactively connect it.
@@ -479,9 +485,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
                 // Lets Propagate the event for move with same position.
-                if (!this._usingSafari && evt.button !== -1) {
-                    deviceEvent.inputIndex = evt.button + 2;
-                    pointer[evt.button + 2] = pointer[evt.button + 2] ? 0 : 1; // Reverse state of button if evt.button has value
+                if (!this._usingSafari && button !== -1) {
+                    deviceEvent.inputIndex = button + 2;
+                    pointer[button + 2] = pointer[button + 2] ? 0 : 1; // Reverse state of button if evt.button has value
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
@@ -490,6 +496,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerDownEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : evt.pointerId;
+            let button = evt.button;
+
+            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
+                // Firefox will tell a left click is a right click, so we need to adjust the button index
+                button = 0;
+            }
 
             if (deviceType === DeviceType.Touch) {
                 // See if this pointerId is already using an existing slot
@@ -551,14 +563,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[evt.button + 2] = 1;
+                pointer[button + 2] = 1;
 
                 const deviceEvent = evt as IUIEvent;
 
                 // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
                 // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
                 // EG. ([X, Y, Left-click], Middle-click, etc...)
-                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.inputIndex = button + 2;
 
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
@@ -572,6 +584,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerUpEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
+            let button = evt.button;
+
+            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
+                // Firefox will tell a left click is a right click, so we need to adjust the button index
+                button = 0;
+            }
 
             if (deviceType === DeviceType.Touch) {
                 // If we're getting a pointerup event for a touch that isn't active, just return.
@@ -583,13 +601,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
-            if (pointer && pointer[evt.button + 2] !== 0) {
+            if (pointer && pointer[button + 2] !== 0) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[evt.button + 2] = 0;
+                pointer[button + 2] = 0;
 
                 const deviceEvent = evt as IUIEvent;
 
@@ -605,7 +623,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
                 // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
                 // EG. ([X, Y, Left-click], Middle-click, etc...)
-                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.inputIndex = button + 2;
 
                 if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
