@@ -162,7 +162,7 @@ export class BlockTools {
                 color = "#be5126";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-                color = "#5170ff";
+                color = "#f28e0a";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer:
                 color = "#51dcc5";
@@ -204,7 +204,7 @@ export class BlockTools {
                 color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
-                color = "#f28e0a";
+                color = "#cb9e27";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
                 color = "#591990";
