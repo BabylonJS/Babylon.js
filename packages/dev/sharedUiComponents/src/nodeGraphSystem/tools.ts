@@ -163,3 +163,45 @@ export const BuildFloatUI = (
         };
     }
 };
+
+export function GetConnectionErrorMessage<T extends Record<string, string | number>>(
+    sourceType: number,
+    types: T,
+    allValue: number,
+    autoDetectValue: number,
+    port: { acceptedConnectionPointTypes: number[]; excludedConnectionPointTypes: number[]; type: number },
+    skips: number[] = []
+) {
+    let acceptedTypes = "";
+
+    if (port.acceptedConnectionPointTypes.length !== 0) {
+        acceptedTypes = port.acceptedConnectionPointTypes
+            .map((t) => types[t])
+            .filter((t) => t && t !== types[port.type])
+            .join(", ");
+    }
+
+    if (port.excludedConnectionPointTypes.length !== 0) {
+        let bitmask = 1;
+        const candidates: number[] = [];
+        while (bitmask < allValue) {
+            if (port.excludedConnectionPointTypes.indexOf(bitmask) === -1 && skips.indexOf(bitmask) === -1) {
+                if (candidates.indexOf(bitmask) === -1) {
+                    candidates.push(bitmask);
+                }
+            }
+            bitmask = bitmask << 1;
+        }
+        acceptedTypes = (Object.values(types) as T[keyof T][])
+            .filter((t) => candidates.indexOf(t as number) !== -1 && t !== port.type)
+            .map((t) => types[t as number])
+            .filter((t) => t)
+            .join(", ");
+    }
+
+    if (port.type !== autoDetectValue) {
+        acceptedTypes = `${types[port.type]}` + (acceptedTypes ? `, ${acceptedTypes}` : "");
+    }
+
+    return `Cannot connect two different connection types:\nSource is ${types[sourceType]} but destination only accepts ${acceptedTypes}`;
+}
