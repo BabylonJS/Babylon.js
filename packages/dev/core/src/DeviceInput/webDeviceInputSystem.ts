@@ -490,13 +490,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerDownEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : evt.pointerId;
-            let button = evt.button;
-
-            // https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
-            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
-                // Firefox will tell a left click is a right click, so we need to adjust the button index
-                button = 0;
-            }
 
             if (deviceType === DeviceType.Touch) {
                 // See if this pointerId is already using an existing slot
@@ -558,14 +551,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[button + 2] = 1;
+                pointer[evt.button + 2] = 1;
 
                 const deviceEvent = evt as IUIEvent;
 
                 // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
                 // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
                 // EG. ([X, Y, Left-click], Middle-click, etc...)
-                deviceEvent.inputIndex = button + 2;
+                deviceEvent.inputIndex = evt.button + 2;
 
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
@@ -579,18 +572,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerUpEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
-            let button = evt.button;
-
-            // TODO: confirm it works in both directions
-            // In Firefox on MacOS, if you hold down control while clicking, the click is treated as a right click.
-            // If you click and drag, and release control during the drag, the pointer up event will be a left click.
-            // This is a workaround to treat both as left click here so we know they should be paired up, otherwise
-            // we won't process the pointer up event because it could appear to be from a button that was never pressed.
-            // https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
-            if (this._isUsingFirefox && this._usingMacOS && evt.ctrlKey && evt.button === 2) {
-                // Firefox will tell a left click is a right click, so we need to adjust the button index
-                button = 0;
-            }
 
             if (deviceType === DeviceType.Touch) {
                 // If we're getting a pointerup event for a touch that isn't active, just return.
@@ -602,13 +583,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
-            if (pointer && pointer[button + 2] !== 0) {
+            let button = evt.button;
+            let shouldProcessPointerUp = pointer && pointer[button + 2] !== 0;
+            if (!shouldProcessPointerUp && this._isUsingFirefox && this._usingMacOS) {
+                // Try the other (left or right button)
+                button = button === 2 ? 0 : 2;
+
+                shouldProcessPointerUp = pointer && pointer[button + 2] !== 0;
+            }
+
+            if (shouldProcessPointerUp) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[button + 2] = 0;
+                pointer[evt.button + 2] = 0;
 
                 const deviceEvent = evt as IUIEvent;
 
@@ -624,7 +614,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
                 // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
                 // EG. ([X, Y, Left-click], Middle-click, etc...)
-                deviceEvent.inputIndex = button + 2;
+                deviceEvent.inputIndex = evt.button + 2;
 
                 if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
