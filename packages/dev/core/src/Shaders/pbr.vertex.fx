@@ -176,7 +176,11 @@ void main(void) {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+        vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
+        float NdotV = max(dot(vNormalW, viewDirectionW), 0.0);
+        // Bend the normal towards the viewer based on the diffuse roughness
+        vec3 roughNormal = mix(vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * baseDiffuseRoughness);
+        vec3 reflectionVector = vec3(reflectionMatrix * vec4(roughNormal, 0)).xyz;
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
