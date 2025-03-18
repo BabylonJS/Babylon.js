@@ -204,9 +204,13 @@ export class BlockTools {
                 color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
+                color = "#f28e0a";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
+                color = "#591990";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
-                color = "#000000";
+                color = "#b786cb";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks
