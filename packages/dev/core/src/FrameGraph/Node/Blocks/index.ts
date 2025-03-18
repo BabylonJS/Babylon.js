@@ -1,3 +1,4 @@
+export * from "./cullObjectsBlock";
 export * from "./elbowBlock";
 export * from "./executeBlock";
 export * from "./inputBlock";
@@ -19,7 +20,6 @@ export * from "./PostProcesses/passPostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
-export * from "./Rendering/cullObjectsBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
