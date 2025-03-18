@@ -73,7 +73,8 @@ export const BuildFloatUI = (
     onChange: () => void,
     min?: number,
     max?: number,
-    visualPropertiesRefresh?: Array<() => void>
+    visualPropertiesRefresh?: Array<() => void>,
+    additionalClassName?: string
 ) => {
     const cantDisplaySlider = min === undefined || max === undefined || isNaN(min) || isNaN(max) || min === max;
     if (cantDisplaySlider) {
@@ -81,6 +82,9 @@ export const BuildFloatUI = (
         const numberInput = document.createElement("input");
         numberInput.type = "number";
         numberInput.id = `number-${idGenerator++}`;
+        if (additionalClassName) {
+            numberInput.classList.add(additionalClassName);
+        }
 
         if (visualPropertiesRefresh) {
             visualPropertiesRefresh.push(() => {
@@ -101,6 +105,9 @@ export const BuildFloatUI = (
         container.appendChild(numberInput);
         const label = document.createElement("div");
         label.innerText = displayName;
+        if (additionalClassName) {
+            label.classList.add(additionalClassName);
+        }
         container.appendChild(label);
 
         let shouldCapture = false;
