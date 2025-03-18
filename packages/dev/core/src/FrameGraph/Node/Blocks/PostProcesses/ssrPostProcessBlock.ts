@@ -41,14 +41,20 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this._additionalConstructionParameters = [textureType];
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
-        this.registerInput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
+        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerInput("geomReflectivity", NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity);
-        this.registerInput("geomBackDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth, true);
+        this.registerInput("geomBackDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
-        this.geomNormal.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
-        this.geomDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
-        this.geomBackDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
+        this.geomNormal.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal | NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal
+        );
+        this.geomDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth | NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth
+        );
+        this.geomBackDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth | NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth
+        );
 
         this._finalizeInputOutputRegistering();
 

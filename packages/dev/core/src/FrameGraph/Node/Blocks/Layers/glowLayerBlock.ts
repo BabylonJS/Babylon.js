@@ -52,8 +52,8 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
 
         this._additionalConstructionParameters = [ldrMerge, layerTextureRatio, layerTextureFixedSize, layerTextureType];
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput(
             "objectRenderer",
             NodeRenderGraphBlockConnectionPointTypes.Object,
@@ -70,8 +70,8 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
-        this.layer.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.layer.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
         this.output._typeConnectionSource = this.target;
 
