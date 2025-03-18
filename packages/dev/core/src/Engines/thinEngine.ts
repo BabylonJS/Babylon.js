@@ -4497,12 +4497,21 @@ export class ThinEngine extends AbstractEngine {
      * @param height defines the height of the rectangle where pixels must be read
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const numChannels = hasAlpha ? 4 : 3;
         const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
-        const data = new Uint8Array(height * width * numChannels);
+
+        const dataLength = width * height * numChannels;
+        if (!data) {
+            data = new Uint8Array(dataLength);
+        } else if (data.length < dataLength) {
+            Logger.Error(`Data buffer is too small to store the read pixels (${data.length} should be more than ${dataLength})`);
+            return Promise.resolve(data);
+        }
+
         if (flushRenderer) {
             this.flushFramebuffer();
         }

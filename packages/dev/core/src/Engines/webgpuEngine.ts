@@ -2899,10 +2899,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param height defines the height of the rectangle where pixels must be read
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const renderPassWrapper = this._getCurrentRenderPassWrapper();
         const hardwareTexture = renderPassWrapper.colorAttachmentGPUTextures[0];
         if (!hardwareTexture) {
@@ -2918,7 +2919,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (flushRenderer) {
             this.flushFramebuffer();
         }
-        return this._textureHelper.readPixels(gpuTexture, x, y, width, height, gpuTextureFormat);
+        return this._textureHelper.readPixels(gpuTexture, x, y, width, height, gpuTextureFormat, undefined, undefined, data);
     }
 
     //------------------------------------------------------------------------------
