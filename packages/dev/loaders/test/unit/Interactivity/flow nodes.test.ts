@@ -1753,4 +1753,34 @@ describe("Flow Nodes", () => {
         // expect log to be not have been called
         expect(log).not.toHaveBeenCalled();
     });
+
+    test("debug/log", async () => {
+        await generateSimpleNodeGraph(
+            [{ op: "debug/log" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        message: {
+                            value: ["Hello World {a}, this is a test {b}"],
+                        },
+                    },
+                    values: {
+                        a: {
+                            type: 0,
+                            value: [1],
+                        },
+                        b: {
+                            type: 1,
+                            value: [2, 3],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "float2" }]
+        );
+        // expect log to be called 1 time with the message
+        expect(log).toHaveBeenCalledTimes(1);
+        expect(log).toHaveBeenCalledWith("Hello World 1, this is a test {X: 2 Y: 3}");
+    });
 });
