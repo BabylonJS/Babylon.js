@@ -164,21 +164,25 @@ export const BuildFloatUI = (
     }
 };
 
-export function GetConnectionErrorMessage<T extends Record<string, string | number>>(
-    sourceType: number,
+export function GetListOfAcceptedTypes<T extends Record<string, string | number>>(
     types: T,
     allValue: number,
     autoDetectValue: number,
     port: { acceptedConnectionPointTypes: number[]; excludedConnectionPointTypes: number[]; type: number },
     skips: number[] = []
 ) {
-    let acceptedTypes = "";
+    let acceptedTypes: string[] = [];
+
+    if (port.type !== autoDetectValue) {
+        acceptedTypes = [types[port.type] as string];
+    }
 
     if (port.acceptedConnectionPointTypes.length !== 0) {
-        acceptedTypes = port.acceptedConnectionPointTypes
-            .map((t) => types[t])
-            .filter((t) => t && t !== types[port.type])
-            .join(", ");
+        acceptedTypes = port.acceptedConnectionPointTypes.filter((t) => t && t !== port.type).map((t) => types[t as number] as string);
+    }
+
+    if (skips.indexOf(autoDetectValue) === -1) {
+        skips.push(autoDetectValue);
     }
 
     if (port.excludedConnectionPointTypes.length !== 0) {
@@ -194,14 +198,21 @@ export function GetConnectionErrorMessage<T extends Record<string, string | numb
         }
         acceptedTypes = (Object.values(types) as T[keyof T][])
             .filter((t) => candidates.indexOf(t as number) !== -1 && t !== port.type)
-            .map((t) => types[t as number])
-            .filter((t) => t)
-            .join(", ");
+            .map((t) => types[t as number] as string)
+            .filter((t) => t);
     }
+    return acceptedTypes;
+}
 
-    if (port.type !== autoDetectValue) {
-        acceptedTypes = `${types[port.type]}` + (acceptedTypes ? `, ${acceptedTypes}` : "");
-    }
+export function GetConnectionErrorMessage<T extends Record<string, string | number>>(
+    sourceType: number,
+    types: T,
+    allValue: number,
+    autoDetectValue: number,
+    port: { acceptedConnectionPointTypes: number[]; excludedConnectionPointTypes: number[]; type: number },
+    skips: number[] = []
+) {
+    const list = GetListOfAcceptedTypes(types, allValue, autoDetectValue, port, skips).join(", ");
 
-    return `Cannot connect two different connection types:\nSource is ${types[sourceType]} but destination only accepts ${acceptedTypes}`;
+    return `Cannot connect two different connection types:\nSource is ${types[sourceType]} but destination only accepts ${list}`;
 }

@@ -183,7 +183,7 @@ export class ConnectionPointPortData implements IPortData {
                     NodeGeometryBlockConnectionPointTypes.All,
                     NodeGeometryBlockConnectionPointTypes.AutoDetect,
                     targetPort.data as NodeGeometryConnectionPoint,
-                    [NodeGeometryBlockConnectionPointTypes.BasedOnInput, NodeGeometryBlockConnectionPointTypes.AutoDetect]
+                    [NodeGeometryBlockConnectionPointTypes.BasedOnInput]
                 );
             }
             case NodeGeometryConnectionPointCompatibilityStates.HierarchyIssue:
