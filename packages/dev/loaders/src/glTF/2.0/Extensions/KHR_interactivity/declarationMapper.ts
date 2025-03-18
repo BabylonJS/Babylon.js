@@ -1540,6 +1540,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
+    "debug/log": {
+        blocks: [FlowGraphBlockNames.ConsoleLog],
+        configuration: {
+            message: { name: "messageTemplate", inOptions: true },
+        },
+    },
 };
 
 function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {

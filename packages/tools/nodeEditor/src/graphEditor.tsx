@@ -133,10 +133,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
-            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
             this.componentWillUnmount();
         });
@@ -676,7 +672,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Material Editor runs only on desktop</div>
+                <div className="blocker">Node Material Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

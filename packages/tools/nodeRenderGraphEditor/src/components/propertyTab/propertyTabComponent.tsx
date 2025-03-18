@@ -27,6 +27,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -84,6 +85,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
                 this.props.globalState.onFrame.notifyObservers();
             },
             undefined,
@@ -196,6 +198,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             .then(() => {
                 renderGraph.build();
                 this.props.globalState.onFrame.notifyObservers();
+                this.props.globalState.onClearUndoStack.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node render graph: " + err);
@@ -236,6 +239,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         const gridSize = DataStorage.ReadNumber("GridSize", 20);
 
+        const engineList = [
+            { label: "WebGL", value: 0 },
+            { label: "WebGPU", value: 1 },
+        ];
+
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -244,6 +252,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
+                        <OptionsLine
+                            label="Engine"
+                            target={this}
+                            extractValue={() => this.props.globalState.engine}
+                            options={engineList}
+                            onSelect={(value) => {
+                                this.props.globalState.engine = value as number;
+                                this.forceUpdate();
+                            }}
+                            propertyName={""}
+                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
@@ -265,6 +284,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.props.globalState.nodeRenderGraph!.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                                 this.props.globalState.onFrame.notifyObservers();
+                                this.props.globalState.onClearUndoStack.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>

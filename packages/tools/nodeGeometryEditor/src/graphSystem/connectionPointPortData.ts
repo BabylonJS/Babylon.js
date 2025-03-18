@@ -12,6 +12,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
@@ -176,12 +177,14 @@ export class ConnectionPointPortData implements IPortData {
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
             case NodeGeometryConnectionPointCompatibilityStates.TypeIncompatible: {
-                const port = targetPort.data as NodeGeometryConnectionPoint;
-                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeGeometryBlockConnectionPointTypes[t]).join(", ");
-
-                acceptedTypes = `${NodeGeometryBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
-
-                return `Cannot connect two different connection types:\nSource is ${NodeGeometryBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+                return GetConnectionErrorMessage(
+                    this.data.type,
+                    NodeGeometryBlockConnectionPointTypes,
+                    NodeGeometryBlockConnectionPointTypes.All,
+                    NodeGeometryBlockConnectionPointTypes.AutoDetect,
+                    targetPort.data as NodeGeometryConnectionPoint,
+                    [NodeGeometryBlockConnectionPointTypes.BasedOnInput]
+                );
             }
             case NodeGeometryConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";
