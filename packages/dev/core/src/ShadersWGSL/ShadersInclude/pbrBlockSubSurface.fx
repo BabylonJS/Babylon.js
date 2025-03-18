@@ -492,7 +492,7 @@ struct subSurfaceOutParams
             outParams.refractionTransmittance = refractionTransmittance;
         #endif
 
-        outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance * vLightingIntensity.z;
+        outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance;
 
         #if DEBUGMODE > 0
             outParams.environmentRefraction = environmentRefraction;
