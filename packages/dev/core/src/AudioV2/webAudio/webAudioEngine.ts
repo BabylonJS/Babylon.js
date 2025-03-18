@@ -65,6 +65,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _invalidFormats = new Set<string>();
     private _listener: Nullable<_SpatialAudioListener> = null;
     private _mainOut: _WebAudioMainOut;
+    private _pauseCalled = false;
     private _resumeOnInteraction = true;
     private _resumeOnPause = true;
     private _resumeOnPauseRetryInterval = 1000;
@@ -272,10 +273,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public override async pause(): Promise<void> {
         await this.audioContext.suspend();
+
+        this._pauseCalled = true;
     }
 
     /** @internal */
     public override async resume(): Promise<void> {
+        this._pauseCalled = false;
+
         if (this._resumePromise) {
             return this._resumePromise;
         }
@@ -320,7 +325,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this._resumePromise = null;
         }
         if (this.state === "suspended" || this.state === "interrupted") {
-            if (this._audioContextStarted && this._resumeOnPause) {
+            if (this._audioContextStarted && this._resumeOnPause && !this._pauseCalled) {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
