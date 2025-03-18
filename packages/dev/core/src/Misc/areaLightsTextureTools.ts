@@ -1,19 +1,16 @@
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import { Constants } from "core/Engines/constants";
 import type { Nullable } from "core/types";
-
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Vector2 } from "core/Maths";
 
 /**
  * Class used for fast copy from one texture to another
  */
 export class AreaLightTextureTools {
     private _engine: AbstractEngine;
-    private _isDepthTexture: boolean;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
@@ -29,61 +26,56 @@ export class AreaLightTextureTools {
     }
 
     private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
-        return (texture as ThinTexture).getInternalTexture === undefined;
+        return (texture as ThinTexture)?.getInternalTexture === undefined;
     }
 
     /**
      * Constructs a new instance of the class
      * @param engine The engine to use for the copy
-     * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
      */
-    constructor(engine: AbstractEngine, isDepthTexture = false) {
+    constructor(engine: AbstractEngine) {
         this._engine = engine;
-        this._isDepthTexture = isDepthTexture;
-        this._renderer = new EffectRenderer(engine);
-        this._initShaderSourceAsync(isDepthTexture);
+        this._renderer = new EffectRenderer(this._engine);
     }
 
     private _shadersLoaded = false;
-    private async _initShaderSourceAsync(isDepthTexture: boolean) {
+    private _createEffect(): EffectWrapper {
         const engine = this._engine;
+        let isWebGPU = false;
 
-        if (engine.isWebGPU) {
+        if (engine?.isWebGPU) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-            //await import("../ShadersWGSL/areaLightTextureProcessing.fragment");
-        } else {
-            //await import("../Shaders/areaLightTextureProcessing.fragment");
+            isWebGPU = true;
         }
 
-        this._shadersLoaded = true;
-
-        this._effectWrapper = new EffectWrapper({
+        const effectWrapper = new EffectWrapper({
             engine: engine,
             name: "AreaLightTextureProcessing",
             fragmentShader: "areaLightTextureProcessing",
             useShaderStore: true,
-            uniformNames: [],
+            uniformNames: ["texelSize"],
             samplerNames: ["textureSampler"],
-            defines: isDepthTexture ? ["#define DEPTH_TEXTURE"] : [],
+            defines: [],
             shaderLanguage: this._shaderLanguage,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await import("../ShadersWGSL/areaLightTextureProcessing.fragment");
+                } else {
+                    await import("../Shaders/areaLightTextureProcessing.fragment");
+                }
+            },
         });
 
-        this._effectWrapper.onApplyObservable.add(() => {
-            if (isDepthTexture) {
-                engine.setState(false);
-                engine.setDepthBuffer(true);
-                engine.depthCullingState.depthMask = true;
-                engine.depthCullingState.depthFunc = Constants.ALWAYS;
-            } else {
-                engine.depthCullingState.depthMask = false;
-            }
-
+        effectWrapper.onApplyObservable.add(() => {
+            engine.depthCullingState.depthMask = false;
             if (this._textureIsInternal(this._source)) {
-                this._effectWrapper.effect._bindTexture("textureSampler", this._source);
+                effectWrapper.effect._bindTexture("textureSampler", this._source);
             } else {
-                this._effectWrapper.effect.setTexture("textureSampler", this._source);
+                effectWrapper.effect.setTexture("textureSampler", this._source);
             }
         });
+
+        return effectWrapper;
     }
 
     /**
@@ -94,31 +86,82 @@ export class AreaLightTextureTools {
         return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
+    public async processAsync(source: InternalTexture | ThinTexture): Promise<Nullable<InternalTexture | ThinTexture>> {
+        return await this._processAsync(source);
+    }
+
     /**
      * Copy one texture into another
      * @param source The source texture
-     * @param destination The destination texture. If null, copy the source to the currently bound framebuffer
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null): boolean {
-        if (!this.isReady()) {
-            return false;
+    public async _processAsync(source: InternalTexture | ThinTexture): Promise<Nullable<InternalTexture | ThinTexture>> {
+        if (!this._shadersLoaded) {
+            this._effectWrapper = this._createEffect();
+            await this._effectWrapper.effect.whenCompiledAsync();
+            this._shadersLoaded = true;
         }
+
+        let wight = 0;
+        let height = 0;
+        let format = 0;
+        let samplingMode = 0;
+        let type = 0;
 
         this._source = source;
 
-        const engineDepthFunc = this._engine.getDepthFunction();
-        const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
+        if (this._textureIsInternal(this._source)) {
+            const internalTexture = this._source as InternalTexture;
+            wight = internalTexture.width;
+            height = internalTexture.height;
+            format = internalTexture.format;
+            samplingMode = internalTexture.samplingMode;
+            type = internalTexture.type;
+        } else {
+            const thinTexture = this._source as ThinTexture;
+            const size = thinTexture.getSize();
+            wight = size.width;
+            height = size.height;
 
-        this._renderer.render(this._effectWrapper, destination);
+            const internalTexture = thinTexture.getInternalTexture();
 
-        this._engine.setDepthWrite(engineDepthMask);
-
-        if (this._isDepthTexture && engineDepthFunc) {
-            this._engine.setDepthFunction(engineDepthFunc);
+            if (internalTexture) {
+                format = internalTexture.format;
+                samplingMode = internalTexture.samplingMode;
+                type = internalTexture.type;
+            }
         }
 
-        return true;
+        // Hold the output of the decoding.
+        const renderTarget = this._engine.createRenderTargetTexture(
+            { width: wight, height: height },
+            {
+                generateDepthBuffer: false,
+                generateMipMaps: false,
+                generateStencilBuffer: false,
+                samplingMode: samplingMode,
+                type: type,
+                format: format,
+            }
+        );
+
+        this._effectWrapper.effect.setVector2("texelSize", new Vector2(1 / wight, 1 / height));
+        const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
+        this._renderer.render(this._effectWrapper, renderTarget);
+        this._engine.setDepthWrite(engineDepthMask);
+
+        if (this._textureIsInternal(this._source)) {
+            const internalTexture = this._source as InternalTexture;
+            renderTarget._swapAndDie(internalTexture);
+        } else {
+            const thinTexture = this._source as ThinTexture;
+            const internalTexture = thinTexture.getInternalTexture();
+
+            if (internalTexture) {
+                renderTarget._swapAndDie(internalTexture);
+            }
+        }
+        return source;
     }
 
     /**
