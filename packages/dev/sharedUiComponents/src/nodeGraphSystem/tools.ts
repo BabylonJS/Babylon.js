@@ -186,15 +186,17 @@ export function GetListOfAcceptedTypes<T extends Record<string, string | number>
     }
 
     if (port.excludedConnectionPointTypes.length !== 0) {
-        let bitmask = 1;
+        let bitmask = 0;
+        let val = 2 ** bitmask;
         const candidates: number[] = [];
-        while (bitmask < allValue) {
-            if (port.excludedConnectionPointTypes.indexOf(bitmask) === -1 && skips.indexOf(bitmask) === -1) {
-                if (candidates.indexOf(bitmask) === -1) {
-                    candidates.push(bitmask);
+        while (val < allValue) {
+            if (port.excludedConnectionPointTypes.indexOf(val) === -1 && skips.indexOf(val) === -1) {
+                if (candidates.indexOf(val) === -1) {
+                    candidates.push(val);
                 }
             }
-            bitmask = bitmask << 1;
+            bitmask++;
+            val = 2 ** bitmask;
         }
         acceptedTypes = (Object.values(types) as T[keyof T][])
             .filter((t) => candidates.indexOf(t as number) !== -1 && t !== port.type)
