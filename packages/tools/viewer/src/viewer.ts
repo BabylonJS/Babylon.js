@@ -1,7 +1,4 @@
 import {
-    GizmoManager,
-    LightGizmo,
-    RenderTargetTexture,
     type AbstractEngine,
     type AbstractMesh,
     type AnimationGroup,
@@ -37,9 +34,9 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
@@ -57,9 +54,65 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { ShadowOnlyMaterial } from "materials/shadowOnly";
+import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
+import { Constants } from "core/Engines/constants";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { CreateDisc } from "core/Meshes/Builders/discBuilder";
+import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { LightGizmo } from "core/Gizmos/lightGizmo";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+const customGroundVertexShader = `
+precision highp float;
+
+// Attributes
+attribute vec3 position;
+attribute vec2 uv;
+
+// Uniforms
+uniform mat4 worldViewProjection;
+
+// Varying
+varying vec2 vUV;
+
+void main(void) {
+    gl_Position = worldViewProjection * vec4(position, 1.0);
+    vUV = uv;
+}
+`;
+
+const customGroundFragmentShader = `
+precision highp float;
+
+// Sampler
+uniform sampler2D shadowTexture;
+uniform vec2 renderTargetSize;
+uniform float shadowOpacity;
+// Varying
+varying vec2 vUV;
+
+void main(void) {
+    float uvBasedOpacity = clamp(length(vUV * vec2(2.0) - vec2(1.0)), 0.0, 1.0);
+    uvBasedOpacity = uvBasedOpacity * uvBasedOpacity;
+    uvBasedOpacity = 1.0 - uvBasedOpacity;
+    // float uvBasedOpacity = length(vUV - vec2(0.5, 0.5))
+    vec2 screenUv = gl_FragCoord.xy / renderTargetSize;
+    vec3 shadowValue = texture2D(shadowTexture, screenUv).rrr;
+    float totalOpacity = shadowOpacity * uvBasedOpacity;
+    shadowValue = mix(vec3(1.0), shadowValue, totalOpacity);
+    gl_FragColor.rgb = shadowValue;
+    gl_FragColor.a = 1.0;
+}
+`;
+
+const customGroundAttributes = {
+    attributes: ["position", "uv"],
+    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
+    samplers: ["shadowTexture"],
+};
 
 type UpdateModelOptions = {
     /**
@@ -809,6 +862,8 @@ export class Viewer implements IDisposable {
 
     private _changeSkyboxVisible(value: boolean) {
         if (value !== this._skyboxVisible) {
+            // eslint-disable-next-line no-console
+            console.log("change visibility", this._skybox);
             this._skyboxVisible = value;
             if (this._skybox) {
                 this._snapshotHelper.disableSnapshotRendering();
@@ -1270,6 +1325,84 @@ export class Viewer implements IDisposable {
      * @param options The options to use when updating the shadows.
      */
     public updateShadows(options: ShadowsOptions) {
+        if (options.type === "environment") {
+            // eslint-disable-next-line no-console
+            console.log("this", this._scene.environmentTexture, this._scene);
+            console.log("ahaha", this._scene.postProcessRenderPipelineManager);
+            const shadowPipeline = new IblShadowsRenderPipeline(
+                "ibl shadows",
+                this._scene,
+                {
+                    resolutionExp: 5,
+                    sampleDirections: 3,
+                    ssShadowsEnabled: true,
+                    shadowRemanence: 0.7,
+                    triPlanarVoxelization: true,
+                },
+                [this._camera]
+            );
+
+            shadowPipeline.allowDebugPasses = false;
+            shadowPipeline.gbufferDebugEnabled = false;
+            shadowPipeline.voxelDebugEnabled = false;
+            shadowPipeline.accumulationPassDebugEnabled = false;
+
+            const shadowGround = CreateDisc(
+                "ground",
+                {
+                    radius: 5,
+                },
+                this._scene
+            );
+
+            const groundShadowMaterial2 = new ShaderMaterial(
+                "customGroundMaterial",
+                this._scene,
+                {
+                    vertexSource: customGroundVertexShader,
+                    fragmentSource: customGroundFragmentShader,
+                },
+                customGroundAttributes
+            );
+
+            groundShadowMaterial2.alphaMode = Constants.ALPHA_MULTIPLY;
+            groundShadowMaterial2.alpha = 0.99;
+
+            shadowGround.rotation.x = Math.PI / 2;
+            shadowPipeline.onShadowTextureReadyObservable.addOnce(() => {
+                // eslint-disable-next-line no-console
+                console.log("Shadow texture ready");
+                groundShadowMaterial2.setTexture("shadowTexture", shadowPipeline._getAccumulatedTexture());
+            });
+
+            const groundSize = 4.0 * shadowPipeline.voxelGridSize;
+            shadowGround.scaling.set(groundSize, groundSize, groundSize);
+            groundShadowMaterial2.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+            groundShadowMaterial2.setFloat("shadowOpacity", shadowPipeline.shadowOpacity);
+            groundShadowMaterial2.setTexture("shadowTexture", shadowPipeline._getAccumulatedTexture());
+
+            shadowGround.material = groundShadowMaterial2;
+            shadowPipeline.addShadowReceivingMaterial(groundShadowMaterial2);
+
+            this._loadedModelsBacking.forEach((model) => {
+                const meshes = model.assetContainer.meshes as Mesh[];
+
+                // Add shadow-receivers
+                meshes.forEach((mesh) => {
+                    shadowPipeline.addShadowCastingMesh(mesh);
+
+                    if (mesh.material) {
+                        shadowPipeline.addShadowReceivingMaterial(mesh.material);
+                    }
+                });
+            });
+
+            shadowPipeline.updateSceneBounds();
+            shadowPipeline.updateVoxelization();
+
+            return;
+        }
+
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
 
         if (!worldBounds) {
@@ -1306,7 +1439,7 @@ export class Viewer implements IDisposable {
         // RenderTargetTexture.REFRESHRATE_RENDER_ONCE
         const shadowMap = generator.getShadowMap();
         if (shadowMap) {
-            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
         }
 
         const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
@@ -1418,6 +1551,8 @@ export class Viewer implements IDisposable {
                         cubeTexture.level = this.environmentConfig.intensity;
                         cubeTexture.rotationY = this.environmentConfig.rotation;
                     }
+                    // eslint-disable-next-line no-console
+                    console.log("create envrionment", options.skybox, options.lighting);
                     if (options.skybox) {
                         this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
                         this._skyboxTexture.level = this.environmentConfig.intensity;
@@ -1636,7 +1771,7 @@ export class Viewer implements IDisposable {
 
             const render = () => {
                 // First check if we have indicators that we should render.
-                let shouldRender = this._shouldRender;
+                let shouldRender = true;
 
                 // If we don't have indicators that we should render (e.g. nothing has changed since the last frame),
                 // we still need to ensure that we render at least one frame after any mutations. Scene.isReady does
@@ -1683,11 +1818,11 @@ export class Viewer implements IDisposable {
                 dispose: () => {
                     if (!disposed) {
                         disposed = true;
-                        this._engine.stopRenderLoop(render);
+                        // this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
 
                         if (this._renderedLastFrame) {
-                            onRenderingSuspended();
+                            // onRenderingSuspended();
                         }
                     }
                 },

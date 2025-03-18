@@ -1423,8 +1423,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 await this._updateModel();
-                this._updateEnv({ lighting: true, skybox: true });
-                this._updateShadows({ enable: true });
+                await this._updateEnv({ lighting: true, skybox: true });
+                this._updateShadows({ enable: true, type: "environment" });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1485,7 +1485,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private async _updateEnv(options: EnvironmentOptions) {
+    private async _updateEnv(options: EnvironmentOptions): Promise<void> {
         if (this._viewerDetails) {
             try {
                 const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
@@ -1510,6 +1510,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 await Promise.all(promises);
+                console.log("env loaded");
             } catch (error) {
                 // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
                 if (!(error instanceof AbortError)) {
