@@ -297,7 +297,7 @@
                 var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
             #endif
             var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
-            #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
+            #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
                 irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
             #endif
