@@ -40,6 +40,12 @@
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
+            "title": "OpenPBR Base Diffuse Roughness SH IBL",
+            "playgroundId": "#MXACV7#11",
+            "renderCount": 2,
+            "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"

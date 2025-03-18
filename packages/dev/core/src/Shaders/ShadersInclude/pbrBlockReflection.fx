@@ -267,16 +267,12 @@
             #else
                 vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
             #endif
-            #if defined(REALTIME_FILTERING) || defined(USEIRRADIANCEMAP)
-                vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
+            vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
+            #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
+                float NdotV = max(dot(normalW, viewDirectionW), 0.0);
+                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
             #endif
-            #ifdef USEIRRADIANCEMAP
-                #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
-                    float NdotV = max(dot(normalW, viewDirectionW), 0.0);
-                    irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
-                #endif
-            #endif
-            
+
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
             #endif
