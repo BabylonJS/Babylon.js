@@ -296,14 +296,10 @@
             #else
                 var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
             #endif
-            #if defined(REALTIME_FILTERING) || defined(USEIRRADIANCEMAP)
-                var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
-            #endif
-            #ifdef USEIRRADIANCEMAP
-                #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
-                    var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
-                    irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
-                #endif
+            var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
+            #ifndef USE_IRRADIANCE_DOMINANT_DIRECTION
+                var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
+                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
