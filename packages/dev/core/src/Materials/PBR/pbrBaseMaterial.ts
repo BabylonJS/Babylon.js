@@ -1823,7 +1823,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
                             defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
-                            if (this._forceIrradianceInFragment || this.realTimeFiltering || this._twoSidedLighting || engine.getCaps().maxVaryingVectors <= 8) {
+                            if (
+                                this._forceIrradianceInFragment ||
+                                this.realTimeFiltering ||
+                                this._twoSidedLighting ||
+                                engine.getCaps().maxVaryingVectors <= 8 ||
+                                this._baseDiffuseRoughnessTexture
+                            ) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
                                 defines.USESPHERICALINVERTEX = true;
