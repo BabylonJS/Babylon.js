@@ -33,7 +33,7 @@ export * from "./Tasks/Texture/copyToTextureTask";
 export * from "./Tasks/Texture/generateMipMapsTask";
 
 export * from "./Tasks/Rendering/csmShadowGeneratorTask";
-export * from "./Tasks/Rendering/cullObjectsTask";
+export * from "./Tasks/Misc/cullObjectsTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";

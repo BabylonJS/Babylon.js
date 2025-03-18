@@ -83,9 +83,13 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     public set doNotChangeAspectRatio(value: boolean) {
+        const disabled = this._frameGraphTask.disabled;
+
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
         this._additionalConstructionParameters = [value];
+
+        this._frameGraphTask.disabled = disabled;
     }
 
     /** Width of the geometry texture */

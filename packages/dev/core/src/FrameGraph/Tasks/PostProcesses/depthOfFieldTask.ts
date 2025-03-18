@@ -184,8 +184,8 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         for (let i = 0; i < this._blurX.length; i++) {
             const ratio = this.depthOfField._depthOfFieldBlurX[i][1];
 
-            textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio);
-            textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio);
+            textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio) || 1;
+            textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio) || 1;
 
             textureCreationOptions.options.labels![0] = "step " + (i + 1);
 

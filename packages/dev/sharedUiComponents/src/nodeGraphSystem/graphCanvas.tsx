@@ -1104,7 +1104,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Un select with no move click, 1 pixel tolerance
-        if (!this._selectionBox && !this._frameCandidate && Math.abs(this.x - this._lastx) < 2 && Math.abs(this.y - this._lasty) < 2) {
+        if (!this._selectionBox && !this.selectedLink && !this._frameCandidate && Math.abs(this.x - this._lastx) < 2 && Math.abs(this.y - this._lasty) < 2) {
             this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         }
 
