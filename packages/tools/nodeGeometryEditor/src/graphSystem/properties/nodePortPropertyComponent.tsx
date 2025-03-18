@@ -7,6 +7,7 @@ import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes";
 import type { NodeGeometryConnectionPoint } from "core/Meshes";
+import { GetListOfAcceptedTypes } from "shared-ui-components/nodeGraphSystem/tools";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;
@@ -25,14 +26,14 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
 
     override render() {
         const port = this.props.nodePort.portData.data as NodeGeometryConnectionPoint;
-        const acceptedConnectionPointTypes: string[] = [];
+        const acceptedConnectionPointTypes = GetListOfAcceptedTypes(
+            NodeGeometryBlockConnectionPointTypes,
+            NodeGeometryBlockConnectionPointTypes.All,
+            NodeGeometryBlockConnectionPointTypes.AutoDetect,
+            port,
+            [NodeGeometryBlockConnectionPointTypes.BasedOnInput]
+        );
 
-        for (const type of port.acceptedConnectionPointTypes) {
-            const enumValue = NodeGeometryBlockConnectionPointTypes[type];
-            if (enumValue) {
-                acceptedConnectionPointTypes.push(enumValue);
-            }
-        }
         const info = this.props.nodePort.hasLabel() ? (
             <>
                 {this.props.nodePort.hasLabel() && (
