@@ -8,6 +8,7 @@ import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo, PointerTouch } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import { IsNavigatorAvailable } from "../../Misc/domManagement";
 
 /**
  * Base class for Camera Pointer Inputs.
@@ -63,6 +64,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._metaKey = false;
         this._shiftKey = false;
         this._buttonsPressed = 0;
+
+        const isUsingFirefox = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+        const usingMacOS = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+        const allowAnyButtonForPointerUp = isUsingFirefox && usingMacOS;
 
         this._pointerInput = (p) => {
             const evt = <IPointerEvent>p.event;
@@ -131,7 +136,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+            } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch || allowAnyButtonForPointerUp)) {
                 try {
                     srcElement?.releasePointerCapture(evt.pointerId);
                 } catch (e) {
