@@ -61,7 +61,7 @@ export abstract class AudioEngineV2 {
         Instances.push(this);
 
         if (typeof options.parameterRampDuration === "number") {
-            this._parameterRampDuration = options.parameterRampDuration;
+            this.parameterRampDuration = options.parameterRampDuration;
         }
     }
 
@@ -123,7 +123,7 @@ export abstract class AudioEngineV2 {
     }
 
     public set parameterRampDuration(value: number) {
-        this._parameterRampDuration = value;
+        this._parameterRampDuration = Math.max(0, value);
     }
 
     /**
