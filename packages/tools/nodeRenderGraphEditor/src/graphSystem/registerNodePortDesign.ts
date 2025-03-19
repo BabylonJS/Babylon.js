@@ -73,6 +73,6 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
         imgHost.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
         imgHost.style.height = "100%";
 
-        return point.isOptional && !point.isConnected;
+        return point.isOptional && !point.isConnected && type !== NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
     };
 };

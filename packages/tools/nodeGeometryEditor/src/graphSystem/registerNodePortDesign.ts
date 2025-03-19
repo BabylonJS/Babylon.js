@@ -84,6 +84,6 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
             pip.style.display = "none";
         }
 
-        return point.isOptional && !point.isConnected;
+        return point.isOptional && !point.isConnected && type !== NodeGeometryBlockConnectionPointTypes.AutoDetect;
     };
 };
