@@ -284,7 +284,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 calc(var(--ui-background-lightness) - 10%),
                 calc(var(--ui-background-opacity) - 0.1)
             );
-            all: inherit;
             overflow: hidden;
         }
 
