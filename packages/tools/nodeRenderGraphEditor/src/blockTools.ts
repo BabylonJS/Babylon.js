@@ -159,10 +159,10 @@ export class BlockTools {
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:
-                color = "#be5126";
+                color = "#e24975";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-                color = "#5170ff";
+                color = "#f28e0a";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer:
                 color = "#51dcc5";
@@ -204,13 +204,13 @@ export class BlockTools {
                 color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
-                color = "#f28e0a";
+                color = "#adad92";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
-                color = "#591990";
+                color = "#495e77";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
-                color = "#b786cb";
+                color = "#e08e4b";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks
