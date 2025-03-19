@@ -17,7 +17,7 @@ import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Tex
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
 import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
-import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
+import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
 import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Blocks/resourceContainerBlock";
@@ -204,9 +204,13 @@ export class BlockTools {
                 color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
+                color = "#f28e0a";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
+                color = "#591990";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
-                color = "#000000";
+                color = "#b786cb";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks
