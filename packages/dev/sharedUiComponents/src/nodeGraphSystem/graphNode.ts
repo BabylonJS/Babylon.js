@@ -473,7 +473,7 @@ export class GraphNode {
 
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
-        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG" && (evt.target as HTMLElement).draggable) {
+        if (evt.target && (evt.target as HTMLElement).classList.contains("port-icon")) {
             return;
         }
 
