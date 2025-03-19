@@ -327,7 +327,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     public set pitch(value: number) {
         this._options.pitch = value;
         if (this._sourceNode) {
-            this._sourceNode.detune.value = value;
+            this.engine._setAudioParam(this._sourceNode.detune, value);
         }
     }
 
@@ -335,7 +335,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
         if (this._sourceNode) {
-            this._sourceNode.playbackRate.value = value;
+            this.engine._setAudioParam(this._sourceNode.playbackRate, value);
         }
     }
 

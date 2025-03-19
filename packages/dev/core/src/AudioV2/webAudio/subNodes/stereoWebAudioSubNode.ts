@@ -9,6 +9,11 @@ export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): P
 
 /** @internal */
 export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
+    private _pan: number = 0;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
     /** @internal */
     public readonly node: StereoPannerNode;
 
@@ -21,12 +26,13 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
 
     /** @internal */
     public get pan(): number {
-        return this.node.pan.value;
+        return this._pan;
     }
 
     /** @internal */
     public set pan(value: number) {
-        this.node.pan.value = value;
+        this._pan = value;
+        this.engine._setAudioParam(this.node.pan, value);
     }
 
     /** @internal */
