@@ -212,16 +212,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         propertyName="iblIntensity"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        minimum={0}
-                        maximum={2}
-                        step={0.01}
-                        label="Environment Intensity"
-                        target={scene}
-                        propertyName="environmentIntensity"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
                     <FogPropertyGridComponent
                         globalState={this.props.globalState}
                         lockObject={this.props.lockObject}
