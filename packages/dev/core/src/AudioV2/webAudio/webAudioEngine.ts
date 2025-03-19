@@ -102,7 +102,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
-        super();
+        super(options);
 
         if (typeof options.listenerAutoUpdate === "boolean") {
             this._listenerAutoUpdate = options.listenerAutoUpdate;
@@ -324,6 +324,11 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public removeNode(node: AbstractNamedAudioNode): void {
         this._removeNode(node);
+    }
+
+    /** @internal */
+    public _setAudioParam(audioParam: AudioParam, value: number) {
+        audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
     private _initAudioContext: () => Promise<void> = async () => {

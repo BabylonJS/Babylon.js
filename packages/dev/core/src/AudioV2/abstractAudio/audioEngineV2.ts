@@ -26,6 +26,10 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
  */
 export interface IAudioEngineV2Options extends ISpatialAudioListenerOptions {
     /**
+     * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
+     */
+    parameterRampDuration: number;
+    /**
      * The initial output volume of the audio engine. Defaults to `1`.
      */
     volume: number;
@@ -51,8 +55,14 @@ export abstract class AudioEngineV2 {
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    protected constructor() {
+    private _parameterRampDuration: number = 0.01;
+
+    protected constructor(options: Partial<IAudioEngineV2Options>) {
         Instances.push(this);
+
+        if (typeof options.parameterRampDuration === "number") {
+            this._parameterRampDuration = options.parameterRampDuration;
+        }
     }
 
     /**
@@ -104,6 +114,17 @@ export abstract class AudioEngineV2 {
      * The output volume of the audio engine.
      */
     public abstract volume: number;
+
+    /**
+     * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
+     */
+    public get parameterRampDuration(): number {
+        return this._parameterRampDuration;
+    }
+
+    public set parameterRampDuration(value: number) {
+        this._parameterRampDuration = value;
+    }
 
     /**
      * Creates a new audio bus.

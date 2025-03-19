@@ -28,6 +28,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _lastRotationQuaternion: Quaternion = new Quaternion();
 
     /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
     public readonly position = _SpatialAudioDefaults.position.clone();
     /** @internal */
     public readonly rotation: Vector3 = _SpatialAudioDefaults.rotation.clone();
@@ -137,9 +140,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return;
         }
 
-        this.node.positionX.value = this.position.x;
-        this.node.positionY.value = this.position.y;
-        this.node.positionZ.value = this.position.z;
+        this.engine._setAudioParam(this.node.positionX, this.position.x);
+        this.engine._setAudioParam(this.node.positionY, this.position.y);
+        this.engine._setAudioParam(this.node.positionZ, this.position.z);
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -159,9 +162,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
         Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
 
-        this.node.orientationX.value = TmpVector.x;
-        this.node.orientationY.value = TmpVector.y;
-        this.node.orientationZ.value = TmpVector.z;
+        this.engine._setAudioParam(this.node.orientationX, TmpVector.x);
+        this.engine._setAudioParam(this.node.orientationY, TmpVector.y);
+        this.engine._setAudioParam(this.node.orientationZ, TmpVector.z);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {

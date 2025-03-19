@@ -9,6 +9,11 @@ export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): P
 
 /** @internal */
 export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
+    private _volume: number = 1;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
     /** @internal */
     public readonly node: GainNode;
 
@@ -21,12 +26,13 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
 
     /** @internal */
     public get volume(): number {
-        return this.node.gain.value;
+        return this._volume;
     }
 
     /** @internal */
     public set volume(value: number) {
-        this.node.gain.value = value;
+        this._volume = value;
+        this.engine._setAudioParam(this.node.gain, value);
     }
 
     /** @internal */
