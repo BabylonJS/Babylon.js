@@ -14,6 +14,10 @@ export class AreaLightTextureTools {
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
+    private _blurDirection: Vector2;
+    private _textureResolution: Vector2;
+    private _rangeFilter: Vector2;
+    private _scalingRange: Vector2;
 
     /** Shader language used */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -36,6 +40,10 @@ export class AreaLightTextureTools {
     constructor(engine: AbstractEngine) {
         this._engine = engine;
         this._renderer = new EffectRenderer(this._engine);
+        this._blurDirection = new Vector2(1, 0);
+        this._textureResolution = new Vector2(1024, 1024);
+        this._rangeFilter = new Vector2();
+        this._scalingRange = new Vector2();
     }
 
     private _shadersLoaded = false;
@@ -53,7 +61,7 @@ export class AreaLightTextureTools {
             name: "AreaLightTextureProcessing",
             fragmentShader: "areaLightTextureProcessing",
             useShaderStore: true,
-            uniformNames: ["texelSize"],
+            uniformNames: ["textureResolution", "blurDirection", "rangeFilter", "scalingRange"],
             samplerNames: ["textureSampler"],
             defines: [],
             shaderLanguage: this._shaderLanguage,
@@ -73,6 +81,10 @@ export class AreaLightTextureTools {
             } else {
                 effectWrapper.effect.setTexture("textureSampler", this._source);
             }
+            effectWrapper.effect.setVector2("textureResolution", this._textureResolution);
+            effectWrapper.effect.setVector2("blurDirection", this._blurDirection);
+            effectWrapper.effect.setVector2("rangeFilter", this._rangeFilter);
+            effectWrapper.effect.setVector2("scalingRange", this._scalingRange);
         });
 
         return effectWrapper;
@@ -86,55 +98,68 @@ export class AreaLightTextureTools {
         return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
-    public async processAsync(source: InternalTexture | ThinTexture): Promise<Nullable<InternalTexture | ThinTexture>> {
-        return await this._processAsync(source);
-    }
-
-    /**
-     * Copy one texture into another
-     * @param source The source texture
-     * @returns
-     */
-    public async _processAsync(source: InternalTexture | ThinTexture): Promise<Nullable<InternalTexture | ThinTexture>> {
+    public async processAsync(source: ThinTexture): Promise<Nullable<ThinTexture>> {
         if (!this._shadersLoaded) {
             this._effectWrapper = this._createEffect();
             await this._effectWrapper.effect.whenCompiledAsync();
             this._shadersLoaded = true;
         }
 
-        let wight = 0;
+        if (!source.isReady()) {
+            return null;
+        }
+
+        this._rangeFilter.x = 0.125;
+        this._rangeFilter.y = 0.875;
+        this._scalingRange.x = 0.125;
+        this._scalingRange.y = 0.875;
+
+        let width = 0;
         let height = 0;
         let format = 0;
         let samplingMode = 0;
         let type = 0;
-
         this._source = source;
+        this._source.wrapU = 0;
+        this._source.wrapV = 0;
 
-        if (this._textureIsInternal(this._source)) {
-            const internalTexture = this._source as InternalTexture;
-            wight = internalTexture.width;
-            height = internalTexture.height;
+        const thinTexture = this._source as ThinTexture;
+        const size = thinTexture.getSize();
+        width = size.width;
+        height = size.height;
+
+        const internalTexture = thinTexture.getInternalTexture();
+
+        if (internalTexture) {
             format = internalTexture.format;
             samplingMode = internalTexture.samplingMode;
             type = internalTexture.type;
-        } else {
-            const thinTexture = this._source as ThinTexture;
-            const size = thinTexture.getSize();
-            wight = size.width;
-            height = size.height;
-
-            const internalTexture = thinTexture.getInternalTexture();
-
-            if (internalTexture) {
-                format = internalTexture.format;
-                samplingMode = internalTexture.samplingMode;
-                type = internalTexture.type;
-            }
         }
 
+        this._textureResolution.x = width;
+        this._textureResolution.y = height;
+
+        this._blurDirection.x = 1;
+        this._blurDirection.y = 0;
+
+        let result = await this._processAsync(source, width, height, samplingMode, type, format);
+
+        this._scalingRange.x = 0;
+        this._scalingRange.y = 1;
+
+        this._blurDirection.x = 0;
+        this._blurDirection.y = 1;
+
+        result = await this._processAsync(source, width, height, samplingMode, type, format);
+
+        return result;
+    }
+
+    private async _processAsync(source: ThinTexture, width: number, height: number, samplingMode: number, type: number, format: number): Promise<Nullable<ThinTexture>> {
+        this._source = source;
         // Hold the output of the decoding.
         const renderTarget = this._engine.createRenderTargetTexture(
-            { width: wight, height: height },
+            { width: width, height: height },
             {
                 generateDepthBuffer: false,
                 generateMipMaps: false,
@@ -145,7 +170,6 @@ export class AreaLightTextureTools {
             }
         );
 
-        this._effectWrapper.effect.setVector2("texelSize", new Vector2(1 / wight, 1 / height));
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
         this._renderer.render(this._effectWrapper, renderTarget);
         this._engine.setDepthWrite(engineDepthMask);
