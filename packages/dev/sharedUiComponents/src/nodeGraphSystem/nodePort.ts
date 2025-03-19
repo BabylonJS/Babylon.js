@@ -108,7 +108,16 @@ export class NodePort {
     }
 
     public refresh() {
-        this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip);
+        if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
+            this._element.style.background = "#000";
+            const svg = this._imgHost.querySelector("svg");
+
+            if (svg) {
+                svg.querySelectorAll("path, circle, rect, ellipse, polygon, polyline").forEach((el) => {
+                    (el as HTMLElement).style.fill = "#767676";
+                });
+            }
+        }
 
         if (this._portUIcontainer) {
             if (this.portData.isConnected) {

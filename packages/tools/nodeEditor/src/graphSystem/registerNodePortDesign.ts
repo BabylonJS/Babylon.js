@@ -9,7 +9,8 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
         return BlockTools.GetColorFromConnectionNodeType((portData as ConnectionPointPortData).data.type);
     };
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, imgHost: HTMLDivElement) => {
-        const type = (portData as ConnectionPointPortData).data.type;
+        const point = (portData as ConnectionPointPortData).data;
+        const type = point.type;
 
         element.style.background = BlockTools.GetColorFromConnectionNodeType(type);
         let decodedSvg = "";
@@ -52,5 +53,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
         imgHost.innerHTML = decodedSvg;
         imgHost.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
         imgHost.style.height = "100%";
+
+        return point.isOptional && !point.isConnected;
     };
 };
