@@ -2001,7 +2001,7 @@ export abstract class AbstractEngine {
      * Creates a new engine
      * @param antialias defines whether anti-aliasing should be enabled. If undefined, it means that the underlying engine is free to enable it or not
      * @param options defines further options to be sent to the creation context
-     * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
+     * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false). Takes precedence over options.adaptToDeviceRatio.
      */
     constructor(antialias: boolean | undefined, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
         EngineStore.Instances.push(this);
@@ -2020,7 +2020,8 @@ export abstract class AbstractEngine {
         }
 
         // Save this off for use in resize().
-        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
+        this.adaptToDeviceRatio = adaptToDeviceRatio;
 
         options.antialias = antialias ?? options.antialias;
         options.deterministicLockstep = options.deterministicLockstep ?? false;
@@ -2039,7 +2040,6 @@ export abstract class AbstractEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         // Viewport
-        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
         this._lastDevicePixelRatio = devicePixelRatio;
 
