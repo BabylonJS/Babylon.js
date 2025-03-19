@@ -49,24 +49,25 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
+export type ResetFlag = "camera" | "animationAutoPlay";
+
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
+// TODO: Remove
 type UpdateModelOptions = {
     /**
      * The default animation index.
      */
     defaultAnimation?: number;
-
-    /**
-     * Whether to play the default animation immediately after loading.
-     */
-    animationAutoPlay?: boolean;
 };
 
 type ActivateModelOptions = UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
 
 export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
+
+export type CameraOrbit = [alpha: number, beta: number, radius: number];
+export type CameraTarget = [x: number, y: number, z: number];
 
 export type CameraAutoOrbit = {
     /**
@@ -188,7 +189,7 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
-function computeModelsMaxExtents(models: Model[]): Array<{ minimum: Vector3; maximum: Vector3 }> {
+function computeModelsMaxExtents(models: readonly Model[]): Array<{ minimum: Vector3; maximum: Vector3 }> {
     return models.flatMap((model) => {
         return computeMaxExtents(model.assetContainer.meshes, model.assetContainer.animationGroups[model.selectedAnimation]);
     });
@@ -215,10 +216,14 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
  * @param models The models to consider when computing the bounding info
  * @returns The computed bounding info for the models or null
  */
-function computeModelsBoundingInfos(models: Model[]): Nullable<ViewerBoundingInfo> {
+function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
     const maxExtents = computeModelsMaxExtents(models);
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
+
+// function nanToUndefined(value: number): number | undefined {
+//     return isNaN(value) ? undefined : value;
+// }
 
 export type ViewerDetails = {
     /**
@@ -264,16 +269,25 @@ export type ViewerOptions = Partial<{
     onInitialized: (details: Readonly<ViewerDetails>) => void;
 
     /**
-     * The default clear color of the scene.
-     */
-    clearColor: [r: number, g: number, b: number, a?: number];
-
-    /**
      * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
      * This can reduce resource CPU/GPU pressure when the scene is static.
      * Enabled by default.
      */
     autoSuspendRendering: boolean;
+
+    /**
+     * The default clear color of the scene.
+     */
+    clearColor: [r: number, g: number, b: number, a?: number];
+
+    cameraOrbit: CameraOrbit;
+
+    cameraTarget: CameraTarget;
+
+    /**
+     * Whether to play the default animation immediately after loading.
+     */
+    animationAutoPlay: boolean;
 }>;
 
 export type EnvironmentOptions = Partial<
@@ -449,6 +463,7 @@ export class Viewer implements IDisposable {
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
+
     /**
      * Fired when the environment configuration has changed.
      */
@@ -485,6 +500,8 @@ export class Viewer implements IDisposable {
      * Fired when the camera auto orbit state changes.
      */
     public readonly onCameraAutoOrbitChanged = new Observable<void>();
+
+    public readonly onCameraPoseChanged = new Observable<void>();
 
     /**
      * Fired when the selected animation changes.
@@ -540,6 +557,8 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
+    private _cameraOrbit: Readonly<CameraOrbit> = BuildTuple(3, () => NaN);
+    private _cameraTarget: Readonly<CameraTarget> = BuildTuple(3, () => NaN);
 
     private readonly _autoSuspendRendering: boolean;
     private _sceneMutated = false;
@@ -562,13 +581,13 @@ export class Viewer implements IDisposable {
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        options?: ViewerOptions
+        private readonly _options?: ViewerOptions
     ) {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
-        this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
+        this._autoSuspendRendering = this._options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
-            scene.clearColor = options?.clearColor ? new Color4(...options.clearColor) : new Color4(0, 0, 0, 0);
+            scene.clearColor = this._options?.clearColor ? new Color4(...this._options.clearColor) : new Color4(0, 0, 0, 0);
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -640,7 +659,7 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._reframeCamera(); // set default camera values
+        this._reframeCameraFromBounds(false, [], this._options?.cameraOrbit, this._options?.cameraTarget); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
@@ -655,7 +674,7 @@ export class Viewer implements IDisposable {
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const viewer = this;
-        options?.onInitialized?.({
+        this._options?.onInitialized?.({
             scene: viewer._scene,
             camera: viewer._camera,
             get model() {
@@ -665,6 +684,25 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
+    }
+
+    public get cameraPose(): Readonly<{ orbit: Readonly<CameraOrbit>; target: Readonly<CameraTarget> }> {
+        return {
+            orbit: this._cameraOrbit,
+            target: this._cameraTarget,
+        };
+    }
+
+    public set cameraPose(value: Partial<Readonly<{ orbit: Readonly<CameraOrbit>; target: Readonly<CameraTarget> }>>) {
+        if (value.orbit) {
+            this._cameraOrbit = value.orbit;
+        }
+
+        if (value.target) {
+            this._cameraTarget = value.target;
+        }
+
+        this._reframeCameraFromBounds(true, this._loadedModels, this._cameraOrbit, this._cameraTarget);
     }
 
     /**
@@ -899,9 +937,6 @@ export class Viewer implements IDisposable {
             this._updateLight();
             this._applyAnimationSpeed();
             this._selectAnimation(options?.defaultAnimation ?? 0, false);
-            if (options?.animationAutoPlay) {
-                this.playAnimation();
-            }
             this.onSelectedMaterialVariantChanged.notifyObservers();
             this._reframeCamera(options?.interpolateCamera);
             this.onModelChanged.notifyObservers(options?.source ?? null);
@@ -1224,6 +1259,7 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+                this.reset();
             }
         });
 
@@ -1388,12 +1424,51 @@ export class Viewer implements IDisposable {
         this._activeAnimation?.pause();
     }
 
-    /**
-     * Resets the camera to its initial pose.
-     */
-    public resetCamera() {
-        this._camera.restoreState();
+    public reset(...flags: ResetFlag[]) {
+        if (flags.length === 0 || flags.includes("animationAutoPlay")) {
+            if (this._options?.animationAutoPlay) {
+                this.playAnimation();
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("camera")) {
+            this._reframeCameraFromBounds(true, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+        }
     }
+
+    public reframe() {
+        this._reframeCamera(true);
+    }
+
+    // /**
+    //  * Reframes the camera given the current model state, or reverts the camera to its initial pose.
+    //  * @param reframe If true, the camera will be reframed to fit the current model state.
+    //  */
+    // public resetCamera(reframe = true) {
+    //     if (reframe) {
+    //         //this._camera.restoreState();
+    //         this._reframeCamera();
+    //     } else {
+    //         if (this._options?.cameraOrbit) {
+    //             for (const [index, property] of (["alpha", "beta", "radius"] as const).entries()) {
+    //                 const value = this._options.cameraOrbit[index];
+    //                 if (value != undefined) {
+    //                     this._camera[property] = Number(value);
+    //                 }
+    //             }
+    //         }
+    //         if (this._options?.cameraTarget) {
+    //             const target = this._camera.target;
+    //             for (const [index, property] of (["x", "y", "z"] as const).entries()) {
+    //                 const value = this._options.cameraTarget[index];
+    //                 if (value != undefined) {
+    //                     target[property] = Number(value);
+    //                 }
+    //             }
+    //             this._camera.target = target.clone();
+    //         }
+    //     }
+    // }
 
     /**
      * Disposes of the resources held by the Viewer.
@@ -1599,12 +1674,13 @@ export class Viewer implements IDisposable {
         }
     }
 
-    protected _reframeCamera(interpolateCamera: boolean = false, models: Model[] = this._loadedModelsBacking): void {
-        const worldBounds = computeModelsBoundingInfos(models);
-        this._reframeCameraFromBounds(worldBounds, interpolateCamera);
+    protected _reframeCamera(interpolate: boolean = false, models: readonly Model[] = this._loadedModelsBacking): void {
+        this._reframeCameraFromBounds(interpolate, models);
     }
 
-    private _reframeCameraFromBounds(worldBounds?: Nullable<ViewerBoundingInfo>, interpolate: boolean = false): void {
+    private _reframeCameraFromBounds(interpolate: boolean, models: readonly Model[], orbitOverrides?: Readonly<CameraOrbit>, targetOverrides?: Readonly<CameraTarget>): void {
+        const worldBounds = computeModelsBoundingInfos(models);
+
         this._camera.useFramingBehavior = true;
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
@@ -1617,8 +1693,8 @@ export class Viewer implements IDisposable {
         const currentRadius = this._camera.radius;
         const currentTarget = this._camera.target;
 
-        const goalAlpha = Math.PI / 2;
-        const goalBeta = Math.PI / 2.4;
+        let goalAlpha = Math.PI / 2;
+        let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
         let goalTarget = currentTarget;
 
@@ -1637,6 +1713,39 @@ export class Viewer implements IDisposable {
                 goalTarget.copyFromFloats(0, 0, 0);
             }
         }
+
+        if (orbitOverrides) {
+            const [optionsAlpha, optionsBeta, optionsRadius] = orbitOverrides;
+
+            if (!isNaN(optionsAlpha)) {
+                goalAlpha = optionsAlpha;
+            }
+
+            if (!isNaN(optionsBeta)) {
+                goalBeta = optionsBeta;
+            }
+
+            if (!isNaN(optionsRadius)) {
+                goalRadius = optionsRadius;
+            }
+        }
+
+        if (targetOverrides) {
+            const [optionsTargetX, optionsTargetY, optionsTargetZ] = targetOverrides;
+
+            if (!isNaN(optionsTargetX)) {
+                goalTarget.x = optionsTargetX;
+            }
+
+            if (!isNaN(optionsTargetY)) {
+                goalTarget.y = optionsTargetY;
+            }
+
+            if (!isNaN(optionsTargetZ)) {
+                goalTarget.z = optionsTargetZ;
+            }
+        }
+
         this._camera.alpha = Math.PI / 2;
         this._camera.beta = Math.PI / 2.4;
         this._camera.radius = goalRadius;

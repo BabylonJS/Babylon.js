@@ -3,7 +3,7 @@ import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { CameraOrbit, CameraTarget, EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -56,8 +56,17 @@ export type HotSpot = ViewerHotSpotQuery & {
     /**
      * An optional camera pose to associate with the hotspot.
      */
-    cameraOrbit?: [alpha: number, beta: number, radius: number];
+    cameraOrbit?: CameraOrbit;
 };
+
+type ResetMode = "auto" | "camera" | "reframe";
+
+function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
+    if (value === "WebGL" || value === "WebGPU") {
+        return value;
+    }
+    return GetDefaultEngine();
+}
 
 /**
  * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
@@ -220,6 +229,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onPostProcessingChanged,
             (details) => (details.viewer.postProcessing = { exposure: this.exposure ?? undefined }),
             (details) => (this.exposure = details.viewer.postProcessing.exposure)
+        ),
+        this._createPropertyBinding(
+            "cameraOrbit",
+            (details) => details.viewer.onCameraPoseChanged,
+            (details) => (details.viewer.cameraPose = { orbit: this.cameraOrbit ?? [NaN, NaN, NaN] }),
+            (details) => (this.cameraOrbit = details.viewer.cameraPose.orbit)
+        ),
+        this._createPropertyBinding(
+            "cameraTarget",
+            (details) => details.viewer.onCameraPoseChanged,
+            (details) => (details.viewer.cameraPose = { target: this.cameraTarget ?? [NaN, NaN, NaN] }),
+            (details) => (this.cameraTarget = details.viewer.cameraPose.target)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
@@ -588,21 +609,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * The engine to use for rendering.
      */
-    @property({
-        converter: (value: string | null): ViewerElement["engine"] => {
-            if (value === "WebGL" || value === "WebGPU") {
-                return value;
-            }
-            return GetDefaultEngine();
-        },
-    })
-    public engine: NonNullable<CanvasViewerOptions["engine"]> = GetDefaultEngine();
+    @property({ converter: coerceEngineAttribute })
+    public engine: NonNullable<CanvasViewerOptions["engine"]> = this._options.engine ?? GetDefaultEngine();
 
     /**
      * When true, the scene will be rendered even if no scene state has changed.
      */
     @property({ attribute: "render-when-idle", type: Boolean })
-    public renderWhenIdle = false;
+    public renderWhenIdle: boolean = this._options.autoSuspendRendering === false;
 
     /**
      * The model URL.
@@ -720,7 +734,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property({
         attribute: "clear-color",
-        reflect: true,
         converter: {
             fromAttribute: parseColor,
             toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
@@ -771,17 +784,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
             }
 
-            return (camera: ArcRotateCamera) => {
-                for (const [index, property] of (["alpha", "beta", "radius"] as const).entries()) {
-                    const value = array[index];
-                    if (value !== "auto") {
-                        camera[property] = Number(value);
-                    }
-                }
-            };
+            return array.map((value) => Number(value));
         },
     })
-    private _cameraOrbitCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
+    public cameraOrbit: Nullable<Readonly<CameraOrbit>> = this._options.cameraOrbit ?? null;
 
     /**
      * Camera target can only be set as an attribute, and is set on the camera each time a new model is loaded.
@@ -799,19 +805,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 throw new Error("cameraTarget should be defined as 'x y z'");
             }
 
-            return (camera: ArcRotateCamera) => {
-                const target = camera.target;
-                for (const [index, property] of (["x", "y", "z"] as const).entries()) {
-                    const value = array[index];
-                    if (value !== "auto") {
-                        target[property] = Number(value);
-                    }
-                }
-                camera.target = target.clone();
-            };
+            return array.map((value) => Number(value));
         },
     })
-    private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
+    public cameraTarget: Nullable<Readonly<CameraTarget>> = this._options.cameraTarget ?? null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -839,8 +836,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * True if the default animation should play automatically when a model is loaded.
      */
-    @property({ attribute: "animation-auto-play", reflect: true, type: Boolean })
-    public animationAutoPlay = false;
+    @property({ attribute: "animation-auto-play", type: Boolean })
+    public animationAutoPlay: boolean = !!this._options.animationAutoPlay;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -904,8 +901,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * True if scene cameras should be used as hotspots.
      */
-    @property({ attribute: "cameras-as-hotspots", reflect: true, type: Boolean })
+    @property({ attribute: "cameras-as-hotspots", type: Boolean })
     public camerasAsHotSpots = false;
+
+    @property({ attribute: "reset-mode" })
+    public resetMode: ResetMode = "auto";
 
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
@@ -920,11 +920,23 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._viewerDetails?.viewer.toggleAnimation();
     }
 
+    public reset() {
+        switch (this.resetMode) {
+            case "auto":
+            case "reframe":
+                this.resetCamera();
+                break;
+            case "camera":
+                this._viewerDetails?.viewer.reset("camera");
+                break;
+        }
+    }
+
     /**
      * Resets the camera to its initial pose.
      */
     public resetCamera() {
-        this._viewerDetails?.viewer.resetCamera();
+        this._viewerDetails?.viewer.reframe();
     }
 
     /** @internal */
@@ -1062,7 +1074,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
             // Always include a button to reset the camera pose.
             toolbarControls.push(html`
-                <button aria-label="Reset Camera Pose" @click="${this.resetCamera}">
+                <button aria-label="Reset Camera Pose" @click="${this.reset}">
                     <svg viewBox="0 0 24 24">
                         <path d="${arrowResetFilledIcon}" fill="currentColor"></path>
                     </svg>
@@ -1292,19 +1304,22 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
-                    const viewer = await this._createViewer(
-                        canvas,
-                        Object.assign(
-                            {
-                                engine: this.engine,
-                                autoSuspendRendering: !this.renderWhenIdle,
-                                onInitialized: (details) => {
-                                    detailsDeferred.resolve(details);
-                                },
-                            } satisfies CanvasViewerOptions,
-                            this._options
-                        )
-                    );
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const viewerElement = this;
+                    const viewer = await this._createViewer(canvas, {
+                        get engine() {
+                            return coerceEngineAttribute(viewerElement.getAttribute("engine")) ?? viewerElement._options.engine;
+                        },
+                        get autoSuspendRendering() {
+                            return !(viewerElement.hasAttribute("render-when-idle") || !viewerElement._options.autoSuspendRendering);
+                        },
+                        get animationAutoPlay() {
+                            return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
+                        },
+                        onInitialized: (details) => {
+                            detailsDeferred.resolve(details);
+                        },
+                    });
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1326,14 +1341,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.viewer.onModelChanged.add((source) => {
                     this._animations = [...details.viewer.animations];
-
-                    // When attributes are explicitly set, they are re-applied when a new model is loaded.
-                    this._propertyBindings.forEach((binding) => binding.syncToAttribute());
-
-                    // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
-                    // (since the underlying Babylon camera already has these properties).
-                    this._cameraOrbitCoercer?.(details.camera);
-                    this._cameraTargetCoercer?.(details.camera);
 
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
@@ -1416,7 +1423,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     await this._viewerDetails.viewer.loadModel(this.source, {
                         pluginExtension: this.extension ?? undefined,
                         defaultAnimation: this.selectedAnimation ?? 0,
-                        animationAutoPlay: this.animationAutoPlay,
                     });
                 } else {
                     await this._viewerDetails.viewer.resetModel();

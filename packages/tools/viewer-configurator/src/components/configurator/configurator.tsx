@@ -419,9 +419,13 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         },
         (cameraState) => {
             if (cameraState) {
-                viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
+                //viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
+                viewerElement.setAttribute("camera-orbit", `${cameraState.alpha} ${cameraState.beta} ${cameraState.radius}`);
+                viewerElement.setAttribute("camera-target", `${cameraState.target.x} ${cameraState.target.y} ${cameraState.target.z}`);
             } else {
-                viewer.resetCamera();
+                viewerElement.removeAttribute("camera-orbit");
+                viewerElement.removeAttribute("camera-target");
+                // viewerElement.resetCamera();
             }
         },
         (left, right) => {
@@ -527,7 +531,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         false,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
-            viewerElement.animationAutoPlay = autoPlay;
+            //viewerElement.animationAutoPlay = autoPlay;
+            if (autoPlay) {
+                viewerElement.setAttribute("animation-auto-play", "");
+            } else {
+                viewerElement.removeAttribute("animation-auto-play");
+            }
             autoPlay ? viewer.playAnimation() : viewer.pauseAnimation();
         },
         undefined,

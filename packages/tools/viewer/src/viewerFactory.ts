@@ -9,10 +9,10 @@ import { Viewer } from "./viewer";
  */
 export type CanvasViewerOptions = ViewerOptions &
     (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
-const defaultCanvasViewerOptions: CanvasViewerOptions = {
+const defaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
-};
+} as const satisfies CanvasViewerOptions;
 
 /**
  * Chooses a default engine for the current browser environment.
@@ -58,7 +58,17 @@ export async function CreateViewerForCanvas(
     canvas: HTMLCanvasElement,
     options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
-    options = { ...defaultCanvasViewerOptions, ...options };
+    // options = { ...defaultCanvasViewerOptions, ...options };
+    if (options) {
+        if (options.antialias === undefined) {
+            options.antialias = defaultCanvasViewerOptions.antialias;
+        }
+        if (options.adaptToDeviceRatio === undefined) {
+            options.adaptToDeviceRatio = defaultCanvasViewerOptions.adaptToDeviceRatio;
+        }
+    } else {
+        options = defaultCanvasViewerOptions;
+    }
     const disposeActions: (() => void)[] = [];
 
     // Create an engine instance.
