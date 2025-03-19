@@ -157,7 +157,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
         .replace("##INCLUDES_PLACEHOLDER##", includeText)
         .replace("##NAME_PLACEHOLDER##", shaderName)
         .replace("##SHADER_PLACEHOLDER##", fxData)
-        .replace("##SHADERSTORE_PLACEHOLDER##", shaderStore)
+        .replace(new RegExp("##SHADERSTORE_PLACEHOLDER##", "g"), shaderStore)
         .replace(
             "##EXPORT_PLACEHOLDER##",
             `/** @internal */
