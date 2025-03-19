@@ -31,12 +31,12 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
 
         this._additionalConstructionParameters = [handleEvents];
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphUtilityLayerRendererTask(name, frameGraph, scene, handleEvents);

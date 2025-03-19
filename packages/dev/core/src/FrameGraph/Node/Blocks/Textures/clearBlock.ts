@@ -29,15 +29,17 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.depth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+        );
 
         this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;

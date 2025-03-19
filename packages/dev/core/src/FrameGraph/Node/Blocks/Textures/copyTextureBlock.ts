@@ -27,13 +27,13 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.source.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphCopyToTextureTask(name, frameGraph);

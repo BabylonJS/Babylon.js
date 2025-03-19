@@ -38,12 +38,12 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
         this._addDependenciesInput();
-        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator, true);
+        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -59,9 +59,13 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
             )
         );
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
-        this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.shadowGenerators.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.depth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+        );
+        this.shadowGenerators.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator | NodeRenderGraphBlockConnectionPointTypes.ResourceContainer
+        );
 
         this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;
