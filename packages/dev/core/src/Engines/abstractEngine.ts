@@ -2040,8 +2040,8 @@ export abstract class AbstractEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         // Viewport
-        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
-        this._lastDevicePixelRatio = devicePixelRatio;
+        this._lastDevicePixelRatio = adaptToDeviceRatio ? Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._hardwareScalingLevel = 1.0 / this._lastDevicePixelRatio;
 
         this._creationOptions = options;
     }
