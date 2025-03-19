@@ -2057,7 +2057,7 @@ export abstract class AbstractEngine {
         // Re-query hardware scaling level to handle zoomed-in resizing.
         if (this.adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-            const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
+            const changeRatio = this._lastDevicePixelRatio / Math.min(this._creationOptions.limitDeviceRatio ?? devicePixelRatio, devicePixelRatio);
             this._lastDevicePixelRatio = devicePixelRatio;
             this._hardwareScalingLevel *= changeRatio;
         }
