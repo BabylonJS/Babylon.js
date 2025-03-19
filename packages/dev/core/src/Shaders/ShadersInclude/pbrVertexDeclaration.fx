@@ -15,6 +15,7 @@ uniform mat4 baseWeightMatrix;
 uniform vec2 vBaseWeightInfos;
 #endif
 
+uniform float baseDiffuseRoughness;
 #ifdef BASE_DIFFUSE_ROUGHNESS
 uniform mat4 baseDiffuseRoughnessMatrix;
 uniform vec2 vBaseDiffuseRoughnessInfos;
