@@ -193,7 +193,7 @@
         grid-row: 1;
         grid-column: 1;
         -moz-appearance: textfield;
-        margin-left: 5px;
+        margin-left: -1px;
         margin-right: 5px;
         transform: translateY(2px);
         border: 0px;
@@ -207,6 +207,11 @@
         text-align: end;
         padding-right: 5px;
         cursor: col-resize;
+
+        &.standalone {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -236,10 +241,14 @@
         z-index: 2;
         align-self: center;
         justify-self: left;
-        margin-left: 15px;
+        margin-left: 4px;
         font-size: 12px;
         font-weight: 100;
         pointer-events: none;
+
+        &.standalone {
+            margin-left: 15px;
+        }
     }
 }
 

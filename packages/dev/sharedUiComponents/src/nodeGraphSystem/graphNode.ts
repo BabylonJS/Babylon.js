@@ -841,7 +841,8 @@ export class GraphNode {
                             },
                             options.min,
                             options.max,
-                            this._visualPropertiesRefresh
+                            this._visualPropertiesRefresh,
+                            localStyles.standalone
                         );
                         break;
                     }
