@@ -493,7 +493,7 @@ export class BlockTools {
     }
 
     public static GetColorFromConnectionNodeType(type: NodeGeometryBlockConnectionPointTypes) {
-        let color = "#880000";
+        let color = "#964848";
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
                 color = "#51b0e5";
