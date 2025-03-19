@@ -2177,7 +2177,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        ubo.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
+                        ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
 
                         if ((<any>reflectionTexture).boundingBoxSize) {
                             const cubeTexture = <CubeTexture>reflectionTexture;
