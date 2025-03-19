@@ -1801,7 +1801,7 @@ export class Viewer implements IDisposable {
                 // to render after the scene is ready.
                 if (!shouldRender && this._renderedLastFrame && !renderedReadyFrame) {
                     renderedReadyFrame = this._scene.isReady(true);
-                    shouldRender = true;
+                    shouldRender = this._shouldRender;
                 }
 
                 if (shouldRender) {
@@ -1839,11 +1839,11 @@ export class Viewer implements IDisposable {
                 dispose: () => {
                     if (!disposed) {
                         disposed = true;
-                        // this._engine.stopRenderLoop(render);
+                        this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
 
                         if (this._renderedLastFrame) {
-                            // onRenderingSuspended();
+                            onRenderingSuspended();
                         }
                     }
                 },
