@@ -22,7 +22,9 @@ import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 const name = "##NAME_PLACEHOLDER##";
 const shader = \`##SHADER_PLACEHOLDER##\`;
 // Sideeffect
-ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+if (!ShaderStore.##SHADERSTORE_PLACEHOLDER##[name]) {
+    ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+}
 ##EXPORT_PLACEHOLDER##
 `;
 
@@ -155,7 +157,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
         .replace("##INCLUDES_PLACEHOLDER##", includeText)
         .replace("##NAME_PLACEHOLDER##", shaderName)
         .replace("##SHADER_PLACEHOLDER##", fxData)
-        .replace("##SHADERSTORE_PLACEHOLDER##", shaderStore)
+        .replace(new RegExp("##SHADERSTORE_PLACEHOLDER##", "g"), shaderStore)
         .replace(
             "##EXPORT_PLACEHOLDER##",
             `/** @internal */
