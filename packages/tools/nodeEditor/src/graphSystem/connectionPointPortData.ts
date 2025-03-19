@@ -10,6 +10,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
@@ -164,12 +165,13 @@ export class ConnectionPointPortData implements IPortData {
 
         switch (issue) {
             case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible: {
-                const port = targetPort.data as NodeMaterialConnectionPoint;
-                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeMaterialBlockConnectionPointTypes[t]).join(", ");
-
-                acceptedTypes = `${NodeMaterialBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
-
-                return `Cannot connect two different connection types:\nSource is ${NodeMaterialBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+                return GetConnectionErrorMessage(
+                    this.data.type,
+                    NodeMaterialBlockConnectionPointTypes,
+                    NodeMaterialBlockConnectionPointTypes.All,
+                    NodeMaterialBlockConnectionPointTypes.AutoDetect,
+                    targetPort.data as NodeMaterialConnectionPoint
+                );
             }
 
             case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
