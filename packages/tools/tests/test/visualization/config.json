@@ -2538,6 +2538,12 @@
         {
             "title": "KHR diffuse transmission",
             "playgroundId": "#RX52XX#1"
+        },
+        {
+            "title": "SubSurface Scattering",
+            "playgroundId": "#5H0H89#129",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

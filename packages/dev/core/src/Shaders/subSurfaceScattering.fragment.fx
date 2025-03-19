@@ -1,6 +1,6 @@
 // Samplers
-#include<fibonacci>
 #include<helperFunctions>
+#include<fibonacci>
 #include<subSurfaceScatteringFunctions>
 #include<diffusionProfile>
 
