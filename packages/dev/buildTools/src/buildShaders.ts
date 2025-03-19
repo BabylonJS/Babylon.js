@@ -22,7 +22,9 @@ import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 const name = "##NAME_PLACEHOLDER##";
 const shader = \`##SHADER_PLACEHOLDER##\`;
 // Sideeffect
-ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+if (!ShaderStore.##SHADERSTORE_PLACEHOLDER##[name]) {
+    ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+}
 ##EXPORT_PLACEHOLDER##
 `;
 
