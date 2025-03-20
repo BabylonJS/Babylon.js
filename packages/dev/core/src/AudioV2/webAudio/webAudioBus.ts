@@ -23,9 +23,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public readonly audioContext: AudioContext;
-
-    /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IAudioBusOptions>) {
         super(name, engine);
 
@@ -38,8 +35,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
         }
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
-
-        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
