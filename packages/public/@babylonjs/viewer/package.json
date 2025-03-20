@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "7.53.3",
+    "version": "7.54.0",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
@@ -35,8 +35,8 @@
         "@babylonjs/loaders": "^7.23.1"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.53.3",
-        "@babylonjs/loaders": "^7.53.3",
+        "@babylonjs/core": "^7.54.0",
+        "@babylonjs/loaders": "^7.54.0",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-commonjs": "^26.0.1",

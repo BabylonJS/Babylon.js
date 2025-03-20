@@ -1,5 +1,40 @@
 # Changelog
 
+## 7.54.0
+
+### Core
+
+- Ramp audio parameter values to avoid audible discontinuities - [_New Feature_] by [docEdub](https://github.com/docEdub) ([#16364](https://github.com/BabylonJS/Babylon.js/pull/16364))
+- expose epsilon on conditionalblock on nge and apply it to all operations - by [deltakosh](https://github.com/deltakosh) ([#16355](https://github.com/BabylonJS/Babylon.js/pull/16355))
+- Sub-Surface Scattering post-process: fix bug in shader + port to WGSL - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16363](https://github.com/BabylonJS/Babylon.js/pull/16363))
+- Fix gizmo drag when a second mouse button is pressed during the drag - by [AmoebaChant](https://github.com/AmoebaChant) ([#16359](https://github.com/BabylonJS/Babylon.js/pull/16359))
+- PBR materials: fix sub-surface scattering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16360](https://github.com/BabylonJS/Babylon.js/pull/16360))
+- Fix camera behavior on Firefox on MacOS when using CTRL while dragging - by [AmoebaChant](https://github.com/AmoebaChant) ([#16358](https://github.com/BabylonJS/Babylon.js/pull/16358))
+- Revert "Fix camera behavior on Firefox on MacOS when using CTRL while dragging" - by [AmoebaChant](https://github.com/AmoebaChant) ([#16356](https://github.com/BabylonJS/Babylon.js/pull/16356))
+- Fix camera behavior on Firefox on MacOS when using CTRL while dragging - by [AmoebaChant](https://github.com/AmoebaChant) ([#16354](https://github.com/BabylonJS/Babylon.js/pull/16354))
+- Allow custom target for readPixels - by [sebavan](https://github.com/sebavan) ([#16347](https://github.com/BabylonJS/Babylon.js/pull/16347))
+- Skip audio engine v2 auto resume after `pause()` - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16349](https://github.com/BabylonJS/Babylon.js/pull/16349))
+- PBR: Fix diffuse transmission - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16337](https://github.com/BabylonJS/Babylon.js/pull/16337))
+- Fix Decorators and PrePass dirty flags - by [Hypnosss](https://github.com/Hypnosss) ([#16295](https://github.com/BabylonJS/Babylon.js/pull/16295))
+- Fix Havok shape memory leak - by [noname0310](https://github.com/noname0310) ([#16331](https://github.com/BabylonJS/Babylon.js/pull/16331))
+
+### Loaders
+
+- Remove duplicate registration of KHR_interactivity - by [ryantrem](https://github.com/ryantrem) ([#16345](https://github.com/BabylonJS/Babylon.js/pull/16345))
+
+### Node Editor
+
+- Update node port colors when optional (NME, NGE, NRGE) - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16366](https://github.com/BabylonJS/Babylon.js/pull/16366))
+- FrameGraph: Add undo/redo support - by [deltakosh](https://github.com/deltakosh) ([#16341](https://github.com/BabylonJS/Babylon.js/pull/16341))
+
+### Playground
+
+- Add WebXR visualization tests and improve test utility functions - by [RaananW](https://github.com/RaananW) ([#16332](https://github.com/BabylonJS/Babylon.js/pull/16332))
+
+### Viewer
+
+- Add Handedness and autorotate Viewer options - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16335](https://github.com/BabylonJS/Babylon.js/pull/16335))
+
 ## 7.53.3
 
 ### Core
