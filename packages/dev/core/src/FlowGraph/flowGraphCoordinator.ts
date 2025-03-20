@@ -202,11 +202,11 @@ export class FlowGraphCoordinator {
         // check if we are not exceeding the max number of events
         if (this._eventExecutionCounter.has(id)) {
             const count = this._eventExecutionCounter.get(id)!;
+            this._eventExecutionCounter.set(id, count + 1);
             if (count >= FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
-                Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
+                count === FlowGraphCoordinator.MaxEventTypeExecutionPerFrame && Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
                 return;
             }
-            this._eventExecutionCounter.set(id, count + 1);
         } else {
             this._eventExecutionCounter.set(id, 1);
         }
