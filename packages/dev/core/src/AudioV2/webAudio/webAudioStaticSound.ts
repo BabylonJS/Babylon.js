@@ -30,7 +30,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public audioContext: AudioContext | OfflineAudioContext;
+    public _audioContext: AudioContext | OfflineAudioContext;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -63,8 +63,8 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     }
 
     /** @internal */
-    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
-        this.audioContext = this.engine.audioContext;
+    public async _init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
+        this._audioContext = this.engine._audioContext;
 
         if (source instanceof _WebAudioStaticSoundBuffer) {
             this._buffer = source as _WebAudioStaticSoundBuffer;
@@ -89,7 +89,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
             this.play();
         }
 
-        this.engine.addNode(this);
+        this.engine._addNode(this);
     }
 
     /** @internal */
@@ -98,13 +98,13 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     }
 
     /** @internal */
-    public get inNode() {
-        return this._subGraph.inNode;
+    public get _inNode() {
+        return this._subGraph._inNode;
     }
 
     /** @internal */
-    public get outNode() {
-        return this._subGraph.outNode;
+    public get _outNode() {
+        return this._subGraph._outNode;
     }
 
     /** @internal */
@@ -131,7 +131,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         this._subGraph.dispose();
 
-        this.engine.removeNode(this);
+        this.engine._removeNode(this);
     }
 
     /** @internal */
@@ -151,8 +151,8 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -165,8 +165,8 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
             return false;
         }
 
-        if (node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
@@ -196,7 +196,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 /** @internal */
 export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     /** @internal */
-    public audioBuffer: AudioBuffer;
+    public _audioBuffer: AudioBuffer;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -206,9 +206,9 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         super(engine);
     }
 
-    public async init(source: StaticSoundSourceType, options: Partial<IStaticSoundBufferOptions>): Promise<void> {
+    public async _init(source: StaticSoundSourceType, options: Partial<IStaticSoundBufferOptions>): Promise<void> {
         if (source instanceof AudioBuffer) {
-            this.audioBuffer = source;
+            this._audioBuffer = source;
         } else if (typeof source === "string") {
             await this._initFromUrl(source);
         } else if (Array.isArray(source)) {
@@ -220,26 +220,26 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
     /** @internal */
     public get channelCount(): number {
-        return this.audioBuffer.numberOfChannels;
+        return this._audioBuffer.numberOfChannels;
     }
 
     /** @internal */
     public get duration(): number {
-        return this.audioBuffer.duration;
+        return this._audioBuffer.duration;
     }
 
     /** @internal */
     public get length(): number {
-        return this.audioBuffer.length;
+        return this._audioBuffer.length;
     }
 
     /** @internal */
     public get sampleRate(): number {
-        return this.audioBuffer.sampleRate;
+        return this._audioBuffer.sampleRate;
     }
 
     private async _initFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<void> {
-        this.audioBuffer = await this.engine.audioContext.decodeAudioData(arrayBuffer);
+        this._audioBuffer = await this.engine._audioContext.decodeAudioData(arrayBuffer);
     }
 
     private async _initFromUrl(url: string): Promise<void> {
@@ -265,7 +265,7 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
                 }
             }
 
-            if (this.audioBuffer) {
+            if (this._audioBuffer) {
                 break;
             }
         }
@@ -290,7 +290,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._options = options;
 
-        this._volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound._audioContext);
         this._initSourceNode();
     }
 
@@ -319,7 +319,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         }
     }
 
-    public get outNode(): Nullable<AudioNode> {
+    public get _outNode(): Nullable<AudioNode> {
         return this._volumeNode;
     }
 
@@ -458,8 +458,8 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         }
 
         // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
-        if (node instanceof _WebAudioStaticSound && node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node instanceof _WebAudioStaticSound && node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -472,8 +472,8 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return false;
         }
 
-        if (node instanceof _WebAudioStaticSound && node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node instanceof _WebAudioStaticSound && node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
@@ -503,7 +503,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     private _initSourceNode(): void {
         if (!this._sourceNode) {
-            this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, { buffer: this._sound.buffer.audioBuffer });
+            this._sourceNode = new AudioBufferSourceNode(this._sound._audioContext, { buffer: this._sound.buffer._audioBuffer });
 
             this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
             this._sourceNode.connect(this._volumeNode);

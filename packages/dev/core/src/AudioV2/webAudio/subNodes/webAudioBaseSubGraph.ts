@@ -21,7 +21,7 @@ export interface IWebAudioBaseSubGraphOptions extends IAudioAnalyzerOptions, IVo
 /** @internal */
 export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     protected _owner: IWebAudioSuperNode;
-    protected _outNode: Nullable<AudioNode> = null;
+    protected _outputNode: Nullable<AudioNode> = null;
 
     /** @internal */
     public constructor(owner: IWebAudioSuperNode) {
@@ -62,16 +62,16 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
             throw new Error("Not a WebAudio subnode.");
         }
 
-        this._outNode = (volumeNode as _VolumeWebAudioSubNode).node;
+        this._outputNode = (volumeNode as _VolumeWebAudioSubNode).node;
 
         // Connect the new wrapped WebAudio node to the wrapped downstream WebAudio nodes.
         // The wrapper nodes are unaware of this change.
-        if (this._outNode && this._downstreamNodes) {
+        if (this._outputNode && this._downstreamNodes) {
             const it = this._downstreamNodes.values();
             for (let next = it.next(); !next.done; next = it.next()) {
-                const inNode = (next.value as IWebAudioInNode).inNode;
+                const inNode = (next.value as IWebAudioInNode)._inNode;
                 if (inNode) {
-                    this._outNode.connect(inNode);
+                    this._outputNode.connect(inNode);
                 }
             }
         }
@@ -80,13 +80,13 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     protected abstract readonly _downstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
     /** @internal */
-    public get inNode(): Nullable<AudioNode> {
-        return this._outNode;
+    public get _inNode(): Nullable<AudioNode> {
+        return this._outputNode;
     }
 
     /** @internal */
-    public get outNode(): Nullable<AudioNode> {
-        return this._outNode;
+    public get _outNode(): Nullable<AudioNode> {
+        return this._outputNode;
     }
 
     protected _createSubNode(name: string): Promise<_AbstractAudioSubNode> {

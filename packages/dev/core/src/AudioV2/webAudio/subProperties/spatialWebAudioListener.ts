@@ -40,7 +40,7 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
         this.engine = engine;
 
-        this._audioContext = engine.audioContext;
+        this._audioContext = engine._audioContext;
         this._updaterComponent = new _SpatialWebAudioUpdaterComponent(this, autoUpdate, minUpdateTime);
     }
 
