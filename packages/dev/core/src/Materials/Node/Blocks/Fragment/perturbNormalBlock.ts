@@ -256,6 +256,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const mat3 = isWebGPU ? "mat3x3f" : "mat3";
         const fSuffix = isWebGPU ? "f" : "";
         const uniformPrefix = isWebGPU ? "uniforms." : "";
+        const fragmentInputsPrefix = isWebGPU ? "fragmentInputs." : "";
 
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
@@ -295,7 +296,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
         const tbnVarying = { search: /varying mat3 vTBN;/g, replace: "" };
-        const normalMatrixReplaceString = { search: /uniform mat4 normalMatrix;/g, replace: "" };
+        const normalMatrixReplaceString = { search: isWebGPU ? /uniform normalMatrix: mat4x4f;/g : /uniform mat4 normalMatrix;/g, replace: "" };
 
         const TBN = this.TBN;
         if (TBN.isConnected) {
@@ -307,7 +308,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         } else if (worldTangent.isConnected) {
             state.compilationString += `${state._declareLocalVar("tbnNormal", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldNormal.associatedVariableName}.xyz);\n`;
             state.compilationString += `${state._declareLocalVar("tbnTangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
-            state.compilationString += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${isWebGPU ? "uniforms." : ""}${this._tangentCorrectionFactorName};\n`;
+            state.compilationString += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${uniformPrefix}${this._tangentCorrectionFactorName};\n`;
             state.compilationString += `${isWebGPU ? "var" : "mat3"} vTBN = ${mat3}(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
@@ -365,14 +366,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             },
             {
                 search: new RegExp(
-                    `perturbNormal\\(TBN,texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${isWebGPU ? "uniforms." : ""}vBumpInfos.y\\)`,
+                    `perturbNormal\\(TBN,texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${uniformPrefix}vBumpInfos.y\\)`,
                     "g"
                 ),
-                replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)`,
+                replace: `perturbNormal(TBN, ${uvForPerturbNormal}, ${uniformPrefix}vBumpInfos.y)`,
             },
             {
-                search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
-                replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${
+                search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,(fragmentInputs\.)?vBumpInfos.z\)/g,
+                replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), ${fragmentInputsPrefix}vBumpUV, ${uniformPrefix}vBumpInfos.z, ${
                     isWebGPU
                         ? useParallax && this.useParallaxOcclusion
                             ? `${normalSamplerName}, ${normalSamplerName + Constants.AUTOSAMPLERSUFFIX}`
@@ -384,12 +385,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             },
             {
                 search: /parallaxOffset\(invTBN\*viewDirectionW,vBumpInfos\.z\)/g,
-                replace: `parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z, ${useParallax ? this.parallaxHeight.associatedVariableName : "0."})`,
+                replace: `parallaxOffset(invTBN * viewDirectionW, ${uniformPrefix}vBumpInfos.z, ${useParallax ? this.parallaxHeight.associatedVariableName : "0."})`,
             },
-            { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
-            { search: /vBumpInfos.z/g, replace: replaceForParallaxInfos },
+            { search: isWebGPU ? /uniforms.vBumpInfos.y/g : /vBumpInfos.y/g, replace: replaceForBumpInfos },
+            { search: isWebGPU ? /uniforms.vBumpInfos.z/g : /vBumpInfos.z/g, replace: replaceForParallaxInfos },
             { search: /normalW=/g, replace: tempOutput + " = " },
-            { search: /mat3\(normalMatrix\)\*normalW/g, replace: `${mat3}(normalMatrix) * ` + tempOutput },
+            {
+                search: isWebGPU
+                    ? /mat3x3f\(uniforms\.normalMatrix\[0\].xyz,uniforms\.normalMatrix\[1\]\.xyz,uniforms\.normalMatrix\[2\].xyz\)\*normalW/g
+                    : /mat3\(normalMatrix\)\*normalW/g,
+                replace: `${mat3}(normalMatrix) * ` + tempOutput,
+            },
             { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
             { search: /viewDirectionW/g, replace: useParallax ? this.viewDirection.associatedVariableName : `vec3${fSuffix}(0.)` },
             tangentReplaceString,
