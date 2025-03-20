@@ -52,10 +52,11 @@ export class TextureButtonLine extends React.Component<ITextureButtonLineProps, 
                 <div className={"dropdown" + (this.state.isOpen ? "" : " hidden")}>
                     {this.props.scene.textures
                         .filter((t) => t.name)
+                        .sort((a, b) => (a.displayName || a.name).localeCompare(b.displayName || b.name))
                         .map((texture, index) => {
                             return (
                                 <div key={index} className="dropdownItem" onClick={() => this.props.onLink(texture)} title={texture.name}>
-                                    {texture.name}
+                                    {texture.displayName || texture.name}
                                 </div>
                             );
                         })}

@@ -223,10 +223,10 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }
         return (
             <div className="textureLinkLine">
-                {(!texture.isCube || this.props.cubeOnly) && (this.props.material || this.props.texturedObject) && (
+                {(this.props.material || this.props.texturedObject) && (
                     <>
                         <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
-                            {this.props.material && (
+                            {(!texture.isCube || this.props.cubeOnly) && this.props.material && (
                                 <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
                                     <FontAwesomeIcon icon={faWrench} />
                                 </span>
@@ -237,7 +237,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                         </div>
                     </>
                 )}
-                <TextLineComponent label={this.props.label} value={texture.name} onLink={() => this.onLink()} />
+                <TextLineComponent label={this.props.label} value={texture.displayName || texture.name} onLink={() => this.onLink()} />
             </div>
         );
     }
