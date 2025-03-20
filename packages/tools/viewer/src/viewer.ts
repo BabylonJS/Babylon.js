@@ -1539,6 +1539,7 @@ export class Viewer implements IDisposable {
                 // Resume rendering with the hardware scaling level from prior to suspending.
                 this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
                 this._engine.performanceMonitor.enable();
+                this._snapshotHelper.enableSnapshotRendering();
                 this._startSceneOptimizer();
             };
 
@@ -1549,16 +1550,14 @@ export class Viewer implements IDisposable {
                 // Take note of the current hardware scaling level for when rendering is resumed.
                 this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
                 this._stopSceneOptimizer();
+                this._snapshotHelper.disableSnapshotRendering();
                 // We want a high quality render right before suspending, so set the hardware scaling level back to the default,
                 // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
                 // and then render the scene once.
                 this._engine.performanceMonitor.disable();
-                this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
-                do {
-                    this._engine.beginFrame();
-                    this._scene.render();
-                    this._engine.endFrame();
-                } while (!this._snapshotHelper.isReady); // Render a couple more times until we shouldn't. The snapshot helper, in particular, can take a of couple frames to be ready.
+                this._engine.beginFrame();
+                this._scene.render();
+                this._engine.endFrame();
             };
 
             const render = () => {
