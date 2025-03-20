@@ -14,14 +14,10 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext;
-
-    /** @internal */
     public constructor(name: string, engine: _WebAudioEngine) {
         super(name, engine);
 
         this._subGraph = new _WebAudioMainBus._SubGraph(this);
-        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
