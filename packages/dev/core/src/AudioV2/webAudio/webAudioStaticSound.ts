@@ -30,7 +30,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public audioContext: AudioContext | OfflineAudioContext;
+    public _audioContext: AudioContext | OfflineAudioContext;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -64,7 +64,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public async _init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
-        this.audioContext = this.engine._audioContext;
+        this._audioContext = this.engine._audioContext;
 
         if (source instanceof _WebAudioStaticSoundBuffer) {
             this._buffer = source as _WebAudioStaticSoundBuffer;
@@ -290,7 +290,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._options = options;
 
-        this._volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound._audioContext);
         this._initSourceNode();
     }
 
@@ -503,7 +503,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     private _initSourceNode(): void {
         if (!this._sourceNode) {
-            this._sourceNode = new AudioBufferSourceNode(this._sound.audioContext, { buffer: this._sound.buffer._audioBuffer });
+            this._sourceNode = new AudioBufferSourceNode(this._sound._audioContext, { buffer: this._sound.buffer._audioBuffer });
 
             this._sourceNode.addEventListener("ended", this._onEnded, { once: true });
             this._sourceNode.connect(this._volumeNode);
