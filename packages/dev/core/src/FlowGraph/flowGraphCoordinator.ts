@@ -1,3 +1,4 @@
+import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
@@ -48,23 +49,33 @@ export class FlowGraphCoordinator {
      * This is used to limit the number of events that can be created in a single scene.
      * This is to prevent infinite loops.
      */
-    public static MaxEventsPerType: number = 100;
+    public static MaxEventsPerType: number = 30;
 
     /**
      * The maximum number of execution of a specific event in a single frame.
      */
-    public static MaxEventTypeExecutionPerFrame: number = 100;
+    public static MaxEventTypeExecutionPerFrame: number = 30;
     /**
      * @internal
      * A list of all the coordinators per scene. Will be used by the inspector
      */
     public static readonly SceneCoordinators: Map<Scene, FlowGraphCoordinator[]> = new Map();
 
+    /**
+     * When set to true (default) custom events will be dispatched synchronously.
+     * This means that the events will be dispatched immediately when they are triggered.
+     */
+    public dispatchEventsSynchronously: boolean = true;
+
     private readonly _flowGraphs: FlowGraph[] = [];
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
 
     private _eventExecutionCounter: Map<string, number> = new Map();
+
+    private _disposeObserver: Observer<Scene>;
+    private _onBeforeRenderObserver: Observer<Scene>;
+    private _executeOnNextFrame: { id: string; data?: any }[] = [];
 
     public constructor(
         /**
@@ -73,8 +84,20 @@ export class FlowGraphCoordinator {
         public config: IFlowGraphCoordinatorConfiguration
     ) {
         // When the scene is disposed, dispose all graphs currently running on it.
-        this.config.scene.onDisposeObservable.add(() => {
+        this._disposeObserver = this.config.scene.onDisposeObservable.add(() => {
             this.dispose();
+        });
+
+        this._onBeforeRenderObserver = this.config.scene.onBeforeRenderObservable.add(() => {
+            // Reset the event execution counter at the beginning of each frame.
+            this._eventExecutionCounter.clear();
+            if (this._executeOnNextFrame.length) {
+                // Execute the events that were triggered on the next frame.
+                this._executeOnNextFrame.forEach((event) => {
+                    this.notifyCustomEvent(event.id, event.data, false);
+                });
+                this._executeOnNextFrame.length = 0;
+            }
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
@@ -117,6 +140,8 @@ export class FlowGraphCoordinator {
     public dispose() {
         this._flowGraphs.forEach((graph) => graph.dispose());
         this._flowGraphs.length = 0;
+        this._disposeObserver?.remove();
+        this._onBeforeRenderObserver?.remove();
 
         // Remove itself from the SceneCoordinators list for the Inspector.
         const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
@@ -138,6 +163,7 @@ export class FlowGraphCoordinator {
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
         });
+        serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
     }
 
     /**
@@ -166,13 +192,18 @@ export class FlowGraphCoordinator {
      * Notifies the observable for the given event id with the given data.
      * @param id the id of the event
      * @param data the data to send with the event
+     * @param async if true, the event will be dispatched asynchronously
      */
-    public notifyCustomEvent(id: string, data: any) {
+    public notifyCustomEvent(id: string, data: any, async: boolean = !this.dispatchEventsSynchronously) {
+        if (async) {
+            this._executeOnNextFrame.push({ id, data });
+            return;
+        }
         // check if we are not exceeding the max number of events
         if (this._eventExecutionCounter.has(id)) {
             const count = this._eventExecutionCounter.get(id)!;
             if (count >= FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
-                Logger.Warn(`FlowGraphCoordinator: Too many executions of event ${id}.`);
+                Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
                 return;
             }
             this._eventExecutionCounter.set(id, count + 1);
@@ -182,14 +213,6 @@ export class FlowGraphCoordinator {
         const observable = this._customEventsMap.get(id);
         if (observable) {
             observable.notifyObservers(data);
-        }
-    }
-
-    public resetCounterOfEvent(id: string) {
-        if (this._eventExecutionCounter.has(id)) {
-            this._eventExecutionCounter.set(id, 0);
-        } else {
-            Logger.Warn(`FlowGraphCoordinator: Event ${id} not found.`);
         }
     }
 }

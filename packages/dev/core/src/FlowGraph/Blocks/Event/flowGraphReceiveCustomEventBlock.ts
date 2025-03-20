@@ -75,10 +75,6 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         return true;
     }
 
-    public override _executeOnTick(context: FlowGraphContext): void {
-        context.configuration.coordinator.resetCounterOfEvent(this.config.eventId);
-    }
-
     /**
      * @returns class name of the block.
      */
