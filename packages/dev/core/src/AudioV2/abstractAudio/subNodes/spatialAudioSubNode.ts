@@ -29,7 +29,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract rolloffFactor: number;
     public abstract rotation: Vector3;
     public abstract rotationQuaternion: Quaternion;
-    public abstract inNode: AudioNode;
+    public abstract _inNode: AudioNode;
 
     /** @internal */
     public get isAttached(): boolean {

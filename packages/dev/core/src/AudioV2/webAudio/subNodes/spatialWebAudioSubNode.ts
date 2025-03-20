@@ -44,7 +44,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new PannerNode(engine.audioContext);
+        this.node = new PannerNode(engine._audioContext);
     }
 
     /** @internal */
@@ -125,12 +125,12 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get outNode(): AudioNode {
+    public get _outNode(): AudioNode {
         return this.node;
     }
 
@@ -175,8 +175,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.node.connect(node.inNode);
+        if (node._inNode) {
+            this.node.connect(node._inNode);
         }
 
         return true;
@@ -189,8 +189,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return false;
         }
 
-        if (node.inNode) {
-            this.node.disconnect(node.inNode);
+        if (node._inNode) {
+            this.node.disconnect(node._inNode);
         }
 
         return true;

@@ -26,7 +26,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     private _rootNode: Nullable<GainNode> = null;
     protected abstract readonly _upstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
-    protected _inNode: Nullable<AudioNode> = null;
+    protected _inputNode: Nullable<AudioNode> = null;
 
     /** @internal */
     public override async init(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
@@ -53,8 +53,8 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     }
 
     /** @internal */
-    public override get inNode(): Nullable<AudioNode> {
-        return this._inNode;
+    public override get _inNode(): Nullable<AudioNode> {
+        return this._inputNode;
     }
 
     protected override _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
@@ -107,9 +107,9 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         }
 
         if (spatialNode && stereoNode) {
-            this._rootNode = new GainNode(this._owner.engine.audioContext);
-            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode).outNode);
-            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode).outNode);
+            this._rootNode = new GainNode(this._owner.engine._audioContext);
+            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode)._outNode);
+            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode)._outNode);
         } else {
             this._rootNode?.disconnect();
             this._rootNode = null;
@@ -133,24 +133,24 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             inNode = inSubNode?.node ?? null;
         }
 
-        if (this._inNode !== inNode) {
+        if (this._inputNode !== inNode) {
             // Disconnect the wrapped upstream WebAudio nodes from the old wrapped WebAudio node.
             // The wrapper nodes are unaware of this change.
-            if (this._inNode && this._upstreamNodes) {
+            if (this._inputNode && this._upstreamNodes) {
                 const it = this._upstreamNodes.values();
                 for (let next = it.next(); !next.done; next = it.next()) {
-                    (next.value as IWebAudioOutNode).outNode?.disconnect(this._inNode);
+                    (next.value as IWebAudioOutNode)._outNode?.disconnect(this._inputNode);
                 }
             }
 
-            this._inNode = inNode;
+            this._inputNode = inNode;
 
             // Connect the wrapped upstream WebAudio nodes to the new wrapped WebAudio node.
             // The wrapper nodes are unaware of this change.
             if (inNode && this._upstreamNodes) {
                 const it = this._upstreamNodes.values();
                 for (let next = it.next(); !next.done; next = it.next()) {
-                    (next.value as IWebAudioOutNode).outNode?.connect(inNode);
+                    (next.value as IWebAudioOutNode)._outNode?.connect(inNode);
                 }
             }
         }

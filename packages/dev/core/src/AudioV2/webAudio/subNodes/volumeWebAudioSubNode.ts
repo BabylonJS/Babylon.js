@@ -21,7 +21,7 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new GainNode(engine.audioContext);
+        this.node = new GainNode(engine._audioContext);
     }
 
     /** @internal */
@@ -36,12 +36,12 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get outNode(): AudioNode {
+    public get _outNode(): AudioNode {
         return this.node;
     }
 
@@ -53,8 +53,8 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.node.connect(node.inNode);
+        if (node._inNode) {
+            this.node.connect(node._inNode);
         }
 
         return true;
@@ -67,8 +67,8 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
             return false;
         }
 
-        if (node.inNode) {
-            this.node.disconnect(node.inNode);
+        if (node._inNode) {
+            this.node.disconnect(node._inNode);
         }
 
         return true;
