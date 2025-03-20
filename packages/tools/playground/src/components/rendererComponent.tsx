@@ -109,7 +109,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     }
 
     private async _compileAndRunAsync() {
-        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
         const displayInspector = this._scene?.debugLayer.isVisible();
@@ -410,6 +409,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
+        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
     }
 
     public override render() {
