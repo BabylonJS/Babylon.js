@@ -2001,7 +2001,7 @@ export abstract class AbstractEngine {
      * Creates a new engine
      * @param antialias defines whether anti-aliasing should be enabled. If undefined, it means that the underlying engine is free to enable it or not
      * @param options defines further options to be sent to the creation context
-     * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false). Takes precedence over options.adaptToDeviceRatio.
+     * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
     constructor(antialias: boolean | undefined, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
         EngineStore.Instances.push(this);
@@ -2020,8 +2020,7 @@ export abstract class AbstractEngine {
         }
 
         // Save this off for use in resize().
-        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
-        this.adaptToDeviceRatio = adaptToDeviceRatio;
+        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         options.antialias = antialias ?? options.antialias;
         options.deterministicLockstep = options.deterministicLockstep ?? false;
@@ -2040,8 +2039,9 @@ export abstract class AbstractEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         // Viewport
-        this._lastDevicePixelRatio = adaptToDeviceRatio ? Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
-        this._hardwareScalingLevel = 1.0 / this._lastDevicePixelRatio;
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
+        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._lastDevicePixelRatio = devicePixelRatio;
 
         this._creationOptions = options;
     }
@@ -2056,10 +2056,7 @@ export abstract class AbstractEngine {
 
         // Re-query hardware scaling level to handle zoomed-in resizing.
         if (this.adaptToDeviceRatio) {
-            let devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-            if (this._creationOptions.limitDeviceRatio) {
-                devicePixelRatio = Math.min(devicePixelRatio, this._creationOptions.limitDeviceRatio);
-            }
+            const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
             const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
             this._lastDevicePixelRatio = devicePixelRatio;
             this._hardwareScalingLevel *= changeRatio;
@@ -2068,9 +2065,15 @@ export abstract class AbstractEngine {
         if (IsWindowObjectExist() && IsDocumentAvailable()) {
             // make sure it is a Node object, and is a part of the document.
             if (this._renderingCanvas) {
-                const boundingRect = this._renderingCanvas.getBoundingClientRect?.();
-                width = this._renderingCanvas.clientWidth || boundingRect?.width || this._renderingCanvas.width * this._hardwareScalingLevel || 100;
-                height = this._renderingCanvas.clientHeight || boundingRect?.height || this._renderingCanvas.height * this._hardwareScalingLevel || 100;
+                const boundingRect = this._renderingCanvas.getBoundingClientRect
+                    ? this._renderingCanvas.getBoundingClientRect()
+                    : {
+                          // fallback to last solution in case the function doesn't exist
+                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
+                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
+                      };
+                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;
