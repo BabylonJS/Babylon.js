@@ -1554,9 +1554,11 @@ export class Viewer implements IDisposable {
                 // and then render the scene once.
                 this._engine.performanceMonitor.disable();
                 this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
-                this._engine.beginFrame();
-                this._scene.render();
-                this._engine.endFrame();
+                do {
+                    this._engine.beginFrame();
+                    this._scene.render();
+                    this._engine.endFrame();
+                } while (!this._snapshotHelper.isReady); // Render a couple more times until we shouldn't. The snapshot helper, in particular, can take a of couple frames to be ready.
             };
 
             const render = () => {
