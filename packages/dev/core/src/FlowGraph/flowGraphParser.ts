@@ -62,6 +62,10 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
 
+    if (serializedObject.dispatchEventsSynchronously) {
+        coordinator.dispatchEventsSynchronously = serializedObject.dispatchEventsSynchronously;
+    }
+
     await options.scene.whenReadyAsync();
     // if custom default values are defined, set them in the global context
     if (serializedObject._defaultValues) {
