@@ -110,6 +110,44 @@ void main(void) {
 }
 `;
 
+const customGroundVertexShaderWgsl = `
+attribute position: vec3f;
+attribute uv: vec2f;
+
+uniform viewProjection: mat4x4f;
+uniform worldViewProjection: mat4x4f;
+
+// Output
+varying vUV: vec2f;
+
+@vertex
+fn main(input : VertexInputs) -> FragmentInputs {
+    vertexOutputs.position = uniforms.viewProjection * vec4f(input.position, 1.0);
+    vertexOutputs.vUV = input.uv;
+}
+`;
+
+const customGroundFragmentShaderWgsl = `
+
+var shadowTextureSampler: sampler;
+var shadowTexture : texture_2d<f32>;
+
+uniform shadowOpacity : f32;
+uniform renderTargetSize: vec2<f32>;
+
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+    let uvBasedOpacity = 1.0 - pow(clamp(length(input.vUV * vec2<f32>(2.0) - vec2<f32>(1.0)), 0.0, 1.0), 2.0);
+    let screenUv = fragmentInputs.position.xy / uniforms.renderTargetSize;
+    
+    let shadowValue = textureSampleLevel(shadowTexture, shadowTextureSampler, screenUv, 0.0).rrr;
+    let totalOpacity = uniforms.shadowOpacity * uvBasedOpacity;
+    let finalShadowValue = mix(vec3<f32>(1.0), shadowValue, totalOpacity);
+    fragmentOutputs.color = vec4f(finalShadowValue, 1.0);
+    return fragmentOutputs;
+}
+`;
+
 type UpdateModelOptions = {
     /**
      * The default animation index.
@@ -1394,21 +1432,37 @@ export class Viewer implements IDisposable {
             const isWebGPU = this._scene.getEngine().isWebGPU;
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
 
-            const customGroundAttributes = {
-                attributes: ["position", "uv"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
-                samplers: ["shadowTexture"],
-            };
-
-            this._groundShadowMaterial2 = new ShaderMaterial(
-                "customGroundMaterial",
-                this._scene,
-                {
-                    vertexSource: customGroundVertexShader,
-                    fragmentSource: customGroundFragmentShader,
-                },
-                customGroundAttributes
-            );
+            if (isWebGPU) {
+                this._groundShadowMaterial2 = new ShaderMaterial(
+                    "customGroundMaterial",
+                    this._scene,
+                    {
+                        vertexSource: customGroundVertexShaderWgsl,
+                        fragmentSource: customGroundFragmentShaderWgsl,
+                    },
+                    {
+                        attributes: ["position", "uv"],
+                        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
+                        samplers: ["shadowTexture"],
+                        shaderLanguage,
+                    }
+                );
+            } else {
+                this._groundShadowMaterial2 = new ShaderMaterial(
+                    "customGroundMaterial",
+                    this._scene,
+                    {
+                        vertexSource: customGroundVertexShader,
+                        fragmentSource: customGroundFragmentShader,
+                    },
+                    {
+                        attributes: ["position", "uv"],
+                        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
+                        samplers: ["shadowTexture"],
+                        shaderLanguage,
+                    }
+                );
+            }
 
             this._groundShadowMaterial2.alphaMode = Constants.ALPHA_MULTIPLY;
             this._groundShadowMaterial2.alpha = 0.99;
