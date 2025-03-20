@@ -10,7 +10,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Texture } from "core/Materials/Textures/texture";
-import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
+import { TextureButtonLine } from "shared-ui-components/lines/textureButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -146,6 +146,20 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
 
+    onLinkTexture(texture: BaseTexture) {
+        const material = this.props.material ?? this.props.texturedObject;
+        if (!material) {
+            return;
+        }
+        if (this.props.propertyName) {
+            (material as any)[this.props.propertyName!] = texture;
+        } else if (this.props.onTextureCreated) {
+            this.props.onTextureCreated(texture);
+        }
+
+        this.forceUpdate();
+    }
+
     updateTexture(file: File) {
         const material = this.props.material ?? this.props.texturedObject;
         if (!material) {
@@ -191,12 +205,15 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
     override render() {
         const texture = this.props.texture;
+        const material = this.props.material ?? this.props.texturedObject;
 
         if (!texture) {
-            if (this.props.propertyName || this.props.onTextureCreated) {
+            if (material && (this.props.propertyName || this.props.onTextureCreated)) {
                 return (
-                    <FileButtonLine
-                        label={`Add ${this.props.label} texture`}
+                    <TextureButtonLine
+                        scene={material.getScene()}
+                        label={`${this.props.label}`}
+                        onLink={(texture) => this.onLinkTexture(texture)}
                         onClick={(file) => this.updateTexture(file)}
                         accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env, .exr"}
                     />
