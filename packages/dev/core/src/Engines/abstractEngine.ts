@@ -2068,13 +2068,9 @@ export abstract class AbstractEngine {
         if (IsWindowObjectExist() && IsDocumentAvailable()) {
             // make sure it is a Node object, and is a part of the document.
             if (this._renderingCanvas) {
-                width =
-                    this._renderingCanvas.clientWidth || this._renderingCanvas.getBoundingClientRect?.().width || this._renderingCanvas.width * this._hardwareScalingLevel || 100;
-                height =
-                    this._renderingCanvas.clientHeight ||
-                    this._renderingCanvas.getBoundingClientRect?.().height ||
-                    this._renderingCanvas.height * this._hardwareScalingLevel ||
-                    100;
+                const boundingRect = this._renderingCanvas.getBoundingClientRect?.();
+                width = this._renderingCanvas.clientWidth || boundingRect?.width || this._renderingCanvas.width * this._hardwareScalingLevel || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect?.height || this._renderingCanvas.height * this._hardwareScalingLevel || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;
