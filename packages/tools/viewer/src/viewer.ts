@@ -1555,6 +1555,7 @@ export class Viewer implements IDisposable {
                 // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
                 // and then render the scene once.
                 this._engine.performanceMonitor.disable();
+                this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
                 this._engine.beginFrame();
                 this._scene.render();
                 this._engine.endFrame();
