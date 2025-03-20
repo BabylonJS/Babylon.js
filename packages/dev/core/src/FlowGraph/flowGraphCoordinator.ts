@@ -4,6 +4,7 @@ import { FlowGraph } from "./flowGraph";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { IObjectAccessor } from "./typeDefinitions";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Parameters used to create a flow graph engine.
@@ -43,6 +44,17 @@ export interface FlowGraphCoordinatorParseOptions {
  */
 export class FlowGraphCoordinator {
     /**
+     * The maximum number of events per type.
+     * This is used to limit the number of events that can be created in a single scene.
+     * This is to prevent infinite loops.
+     */
+    public static MaxEventsPerType: number = 100;
+
+    /**
+     * The maximum number of execution of a specific event in a single frame.
+     */
+    public static MaxEventTypeExecutionPerFrame: number = 100;
+    /**
      * @internal
      * A list of all the coordinators per scene. Will be used by the inspector
      */
@@ -51,6 +63,8 @@ export class FlowGraphCoordinator {
     private readonly _flowGraphs: FlowGraph[] = [];
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
+
+    private _eventExecutionCounter: Map<string, number> = new Map();
 
     public constructor(
         /**
@@ -154,9 +168,28 @@ export class FlowGraphCoordinator {
      * @param data the data to send with the event
      */
     public notifyCustomEvent(id: string, data: any) {
+        // check if we are not exceeding the max number of events
+        if (this._eventExecutionCounter.has(id)) {
+            const count = this._eventExecutionCounter.get(id)!;
+            if (count >= FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
+                Logger.Warn(`FlowGraphCoordinator: Too many executions of event ${id}.`);
+                return;
+            }
+            this._eventExecutionCounter.set(id, count + 1);
+        } else {
+            this._eventExecutionCounter.set(id, 1);
+        }
         const observable = this._customEventsMap.get(id);
         if (observable) {
             observable.notifyObservers(data);
+        }
+    }
+
+    public resetCounterOfEvent(id: string) {
+        if (this._eventExecutionCounter.has(id)) {
+            this._eventExecutionCounter.set(id, 0);
+        } else {
+            Logger.Warn(`FlowGraphCoordinator: Event ${id} not found.`);
         }
     }
 }
