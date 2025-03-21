@@ -96,6 +96,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _metallicReflectanceColor: Color3 = Color3.White();
     private _metallicF0Factor = 1;
     private _vMetallicReflectanceFactorsName: string;
+    private _baseDiffuseRoughnessName: string;
 
     /**
      * Create a new ReflectionBlock
@@ -269,6 +270,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         ],
     })
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
+
+    /**
+     * Base Diffuse Roughness Model
+     */
+    @editableInPropertyPage("Diffuse Roughness Model", PropertyTypeForEdition.List, "RENDERING", {
+        notifiers: { update: true },
+        options: [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+        ],
+    })
+    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR;
 
     /**
      * Defines if the material uses energy conservation.
@@ -760,6 +774,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
+        defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL", this.baseDiffuseRoughnessModel, true);
+
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
         defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation, true);
@@ -1012,6 +1028,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
+        this._baseDiffuseRoughnessName = state._getFreeVariableName("baseDiffuseRoughness");
+        state._emitUniformFromString(this._baseDiffuseRoughnessName, NodeMaterialBlockConnectionPointTypes.Float);
+
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
 
             reflectivityOut = reflectivityBlock(
@@ -1019,6 +1038,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
+            #endif
+                , ${(isWebGPU ? "uniforms." : "") + this._baseDiffuseRoughnessName}
+            #ifdef BASE_DIFFUSE_ROUGHNESS
+                , 0.
+                , vec2${state.fSuffix}(0., 0.)
             #endif
             #ifdef REFLECTIVITY
                 , vec3${state.fSuffix}(0., 0., ${aoIntensity})
@@ -1034,6 +1058,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
             ${state._declareLocalVar("microSurface", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.microSurface;
             ${state._declareLocalVar("roughness", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.roughness;
+            ${state._declareLocalVar("diffuseRoughness", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.diffuseRoughness;
 
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo = reflectivityOut.surfaceAlbedo;
