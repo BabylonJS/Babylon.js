@@ -77,6 +77,7 @@ export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
 export * from "./asyncLock";
 export * from "./bitArray";
+export * from "./urlTools";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

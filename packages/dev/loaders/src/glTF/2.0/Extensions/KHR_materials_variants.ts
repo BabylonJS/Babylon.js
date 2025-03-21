@@ -40,6 +40,11 @@ declare module "../../glTFFileLoader" {
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
         ["KHR_materials_variants"]: Partial<{
             /**
+             * Specifies the name of the variant that should be selected by default.
+             */
+            defaultVariant: string;
+
+            /**
              * Defines a callback that will be called if material variants are loaded.
              * @experimental
              */
@@ -218,7 +223,12 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     public onReady(): void {
         const rootNode = this._loader.rootBabylonMesh;
         if (rootNode) {
-            this._loader.parent.extensionOptions[NAME]?.onLoaded?.({
+            const options = this._loader.parent.extensionOptions[NAME];
+            if (options?.defaultVariant) {
+                KHR_materials_variants.SelectVariant(rootNode, options.defaultVariant);
+            }
+
+            options?.onLoaded?.({
                 get variants() {
                     return KHR_materials_variants.GetAvailableVariants(rootNode);
                 },

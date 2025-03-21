@@ -457,7 +457,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , clearCoatBumpMapData
             , fragmentInputs.vClearCoatBumpUV
             #if defined(TANGENT) && defined(NORMAL)
-                , vTBN
+                , mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2)
             #else
                 , uniforms.vClearCoatTangentSpaceParams
             #endif
@@ -514,6 +514,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
             var translucencyColorMap: vec4f = textureSample(translucencyColorSampler, translucencyColorSamplerSampler, fragmentInputs.vTranslucencyColorUV + uvOffset);
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
+                translucencyColorMap = toLinearSpaceVec4(translucencyColorMap);
+            #endif
         #endif
 
         subSurfaceOut = subSurfaceBlock(

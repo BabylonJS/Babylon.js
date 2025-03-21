@@ -324,8 +324,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
  * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
- * #CGHTSM#1 : WebGL
- * #CGHTSM#2 : WebGPU
+ * @see [WebGL](https://playground.babylonjs.com/#CGHTSM#1)
+ * @see [WebGPU](https://playground.babylonjs.com/#CGHTSM#2)
  */
 export abstract class PBRBaseMaterial extends PushMaterial {
     /**
@@ -2124,7 +2124,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
-        MaterialHelperGeometryRendering.Bind(engine.currentRenderPassId, this._activeEffect, mesh, world);
+        MaterialHelperGeometryRendering.Bind(engine.currentRenderPassId, this._activeEffect, mesh, world, this);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
@@ -2177,7 +2177,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        ubo.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
+                        ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
 
                         if ((<any>reflectionTexture).boundingBoxSize) {
                             const cubeTexture = <CubeTexture>reflectionTexture;

@@ -1,0 +1,33 @@
+{
+    "extends": ["../../../tsconfig.build.json", "./tsconfig.json"],
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "moduleResolution": "Node",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "viewer/*": ["tools/viewer/dist/*"],
+            "viewer": ["tools/viewer/dist/tsbuild/index"]
+        }
+    },
+
+    "references": [
+        {
+            "path": "../../dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/loaders/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../../tools/viewer/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*"]
+}

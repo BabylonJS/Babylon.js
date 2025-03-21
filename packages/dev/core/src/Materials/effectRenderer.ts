@@ -581,7 +581,7 @@ export class EffectWrapper {
         if (this.options.extraInitializationsAsync) {
             extraInitializationsAsync = async () => {
                 waitImportsLoaded?.();
-                await this.options.extraInitializationsAsync;
+                await this.options.extraInitializationsAsync();
             };
         } else {
             extraInitializationsAsync = waitImportsLoaded;

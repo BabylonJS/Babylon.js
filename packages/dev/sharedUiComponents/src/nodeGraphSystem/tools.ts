@@ -73,7 +73,8 @@ export const BuildFloatUI = (
     onChange: () => void,
     min?: number,
     max?: number,
-    visualPropertiesRefresh?: Array<() => void>
+    visualPropertiesRefresh?: Array<() => void>,
+    additionalClassName?: string
 ) => {
     const cantDisplaySlider = min === undefined || max === undefined || isNaN(min) || isNaN(max) || min === max;
     if (cantDisplaySlider) {
@@ -81,6 +82,9 @@ export const BuildFloatUI = (
         const numberInput = document.createElement("input");
         numberInput.type = "number";
         numberInput.id = `number-${idGenerator++}`;
+        if (additionalClassName) {
+            numberInput.classList.add(additionalClassName);
+        }
 
         if (visualPropertiesRefresh) {
             visualPropertiesRefresh.push(() => {
@@ -101,6 +105,9 @@ export const BuildFloatUI = (
         container.appendChild(numberInput);
         const label = document.createElement("div");
         label.innerText = displayName;
+        if (additionalClassName) {
+            label.classList.add(additionalClassName);
+        }
         container.appendChild(label);
 
         let shouldCapture = false;
@@ -163,3 +170,58 @@ export const BuildFloatUI = (
         };
     }
 };
+
+export function GetListOfAcceptedTypes<T extends Record<string, string | number>>(
+    types: T,
+    allValue: number,
+    autoDetectValue: number,
+    port: { acceptedConnectionPointTypes: number[]; excludedConnectionPointTypes: number[]; type: number },
+    skips: number[] = []
+) {
+    let acceptedTypes: string[] = [];
+
+    if (port.type !== autoDetectValue) {
+        acceptedTypes = [types[port.type] as string];
+    }
+
+    if (port.acceptedConnectionPointTypes.length !== 0) {
+        acceptedTypes = port.acceptedConnectionPointTypes.filter((t) => t && t !== port.type).map((t) => types[t as number] as string);
+    }
+
+    if (skips.indexOf(autoDetectValue) === -1) {
+        skips.push(autoDetectValue);
+    }
+
+    if (port.excludedConnectionPointTypes.length !== 0) {
+        let bitmask = 0;
+        let val = 2 ** bitmask;
+        const candidates: number[] = [];
+        while (val < allValue) {
+            if (port.excludedConnectionPointTypes.indexOf(val) === -1 && skips.indexOf(val) === -1) {
+                if (candidates.indexOf(val) === -1) {
+                    candidates.push(val);
+                }
+            }
+            bitmask++;
+            val = 2 ** bitmask;
+        }
+        acceptedTypes = (Object.values(types) as T[keyof T][])
+            .filter((t) => candidates.indexOf(t as number) !== -1 && t !== port.type)
+            .map((t) => types[t as number] as string)
+            .filter((t) => t);
+    }
+    return acceptedTypes;
+}
+
+export function GetConnectionErrorMessage<T extends Record<string, string | number>>(
+    sourceType: number,
+    types: T,
+    allValue: number,
+    autoDetectValue: number,
+    port: { acceptedConnectionPointTypes: number[]; excludedConnectionPointTypes: number[]; type: number },
+    skips: number[] = []
+) {
+    const list = GetListOfAcceptedTypes(types, allValue, autoDetectValue, port, skips).join(", ");
+
+    return `Cannot connect two different connection types:\nSource is ${types[sourceType]} but destination only accepts ${list}`;
+}

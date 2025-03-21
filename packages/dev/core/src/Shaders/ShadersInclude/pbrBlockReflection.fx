@@ -307,7 +307,7 @@
             #endif
         #endif
 
-        environmentIrradiance *= vReflectionColor.rgb;
+        environmentIrradiance *= vReflectionColor.rgb * vReflectionInfos.x;
         #ifdef MIX_IBL_RADIANCE_WITH_IRRADIANCE
             outParams.environmentRadiance = vec4(mix(environmentRadiance.rgb, environmentIrradiance, alphaG), environmentRadiance.a);
         #else

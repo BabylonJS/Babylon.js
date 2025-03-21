@@ -1,6 +1,6 @@
 // Samplers
-#include<fibonacci>
 #include<helperFunctions>
+#include<fibonacci>
 #include<subSurfaceScatteringFunctions>
 #include<diffusionProfile>
 
@@ -29,7 +29,7 @@ vec3 EvalBurleyDiffusionProfile(float r, vec3 S)
     vec3 exp_13 = exp2(((LOG2_E * (-1.0/3.0)) * r) * S); // Exp[-S * r / 3]
     vec3 expSum = exp_13 * (1. + exp_13 * exp_13);        // Exp[-S * r / 3] + Exp[-S * r]
 
-    return (S * rcp(8. * PI)) * expSum; // S / (8 * Pi) * (Exp[-S * r / 3] + Exp[-S * r])
+    return (S * rcp((8. * PI))) * expSum; // S / (8 * Pi) * (Exp[-S * r / 3] + Exp[-S * r])
 }
 
 // https://zero-radiance.github.io/post/sampling-diffusion/
@@ -55,7 +55,7 @@ vec2 SampleBurleyDiffusionProfile(float u, float rcpS)
     // exp_1  = Exp[-x] = exp_13 * exp_13 * exp_13
     // expSum = exp_1 + exp_13 = exp_13 * (1 + exp_13 * exp_13)
     // rcpExp = rcp(expSum) = c^3 / ((4 * u) * (c^2 + 16 * u^2))
-    float rcpExp = ((c * c) * c) * rcp((4. * u) * ((c * c) + (4. * u) * (4. * u)));
+    float rcpExp = ((c * c) * c) * rcp(((4. * u) * ((c * c) + (4. * u) * (4. * u))));
 
     float r = x * rcpS;
     float rcpPdf = (8. * PI * rcpS) * rcpExp; // (8 * Pi) / s / (Exp[-s * r / 3] + Exp[-s * r])

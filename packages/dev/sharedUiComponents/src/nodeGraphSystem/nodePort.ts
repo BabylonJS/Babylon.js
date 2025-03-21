@@ -14,7 +14,7 @@ import { BuildFloatUI } from "./tools";
 export class NodePort {
     protected _element: HTMLDivElement;
     protected _portContainer: HTMLElement;
-    protected _img: HTMLImageElement;
+    protected _imgHost: HTMLDivElement;
     protected _pip: HTMLDivElement;
     protected _stateManager: StateManager;
     protected _portLabelElement: Element;
@@ -108,7 +108,16 @@ export class NodePort {
     }
 
     public refresh() {
-        this._stateManager.applyNodePortDesign(this.portData, this._element, this._img, this._pip);
+        if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
+            this._element.style.background = "#000";
+            const svg = this._imgHost.querySelector("svg");
+
+            if (svg) {
+                svg.querySelectorAll("path, circle, rect, ellipse, polygon, polyline").forEach((el) => {
+                    (el as HTMLElement).style.fill = "#767676";
+                });
+            }
+        }
 
         if (this._portUIcontainer) {
             if (this.portData.isConnected) {
@@ -139,8 +148,9 @@ export class NodePort {
         portContainer.appendChild(this._element);
         this._stateManager = stateManager;
 
-        this._img = portContainer.ownerDocument!.createElement("img");
-        this._element.appendChild(this._img);
+        this._imgHost = portContainer.ownerDocument!.createElement("div");
+        this._imgHost.classList.add("port-icon");
+        this._element.appendChild(this._imgHost);
 
         this._pip = portContainer.ownerDocument!.createElement("div");
         this._pip.classList.add(localStyles["pip"]);
@@ -172,9 +182,9 @@ export class NodePort {
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._img.classList.add(localStyles["selected"]);
+                this._imgHost.classList.add(localStyles["icon-selected"]);
             } else {
-                this._img.classList.remove(localStyles["selected"]);
+                this._imgHost.classList.remove(localStyles["icon-selected"]);
             }
         });
 

@@ -50,7 +50,7 @@ export class SpotLight extends ShadowLight {
 
     /**
      * Gets or sets the IES profile texture used to create the spotlight
-     * #UIAXAU#1
+     * @see https://playground.babylonjs.com/#UIAXAU#1
      */
     public get iesProfileTexture(): Nullable<BaseTexture> {
         return this._iesProfileTexture;

@@ -46,7 +46,7 @@ test("animation-auto-play", async ({ page }) => {
         page,
         `
         <babylon-viewer
-            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
             animation-auto-play
         >
         </babylon-viewer>
@@ -61,13 +61,36 @@ test("animation-auto-play", async ({ page }) => {
     expect(isAnimationPlaying).toBeTruthy();
 });
 
-test("camera-orbit", async ({ page }) => {
+test('selected-animation="n"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
         <babylon-viewer
-            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            camera-orbit="1 2 3"
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+            selected-animation="1"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    const selectedAnimation = await page.waitForFunction((viewerElement) => {
+        const viewerDetails = (viewerElement as ViewerElement).viewerDetails;
+        if (viewerDetails?.model) {
+            return viewerDetails.viewer.selectedAnimation;
+        }
+    }, viewerElementHandle);
+
+    expect(await selectedAnimation.jsonValue()).toEqual(1);
+});
+
+test('camera-orbit="a b r"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            camera-orbit=" 1 2 0.1 "
         >
         </babylon-viewer>
         `
@@ -81,16 +104,16 @@ test("camera-orbit", async ({ page }) => {
         }
     }, viewerElementHandle);
 
-    expect(await cameraPose.jsonValue()).toEqual([1, 2, 3]);
+    expect(await cameraPose.jsonValue()).toEqual([1, 2, 0.1]);
 });
 
-test("camera-target", async ({ page }) => {
+test('camera-target="x y z"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
         <babylon-viewer
-            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            camera-target="1 2 3"
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            camera-target=" 1 2 3 "
         >
         </babylon-viewer>
         `
@@ -105,4 +128,75 @@ test("camera-target", async ({ page }) => {
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 3]);
+});
+
+test('tone-mapping="none"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            tone-mapping="none"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    const toneMapping = await page.waitForFunction((viewerElement) => {
+        const viewerDetails = (viewerElement as ViewerElement).viewerDetails;
+        if (viewerDetails?.model) {
+            return viewerDetails.viewer.postProcessing.toneMapping;
+        }
+    }, viewerElementHandle);
+
+    expect(await toneMapping.jsonValue()).toEqual("none");
+});
+
+test('material-variant="name"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
+            material-variant="street"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    const materialVariant = await page.waitForFunction((viewerElement) => {
+        const viewerDetails = (viewerElement as ViewerElement).viewerDetails;
+        if (viewerDetails?.model) {
+            return viewerDetails.viewer.selectedMaterialVariant;
+        }
+    }, viewerElementHandle);
+
+    expect(await materialVariant.jsonValue()).toEqual("street");
+});
+
+test('environment="auto"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            environment="auto"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    const isEnvironmentLoaded = await page.waitForFunction((viewerElement) => {
+        const viewerDetails = (viewerElement as ViewerElement).viewerDetails;
+        // Verify we get to a state where:
+        // 1. We have the viewerDetails.
+        // 2. The scene is in a ready state (it has successfully rendered at least one frame).
+        // 3. The environment texture has been set.
+        // 4. A skybox has been created (e.g. there is at least one mesh in the scene).
+        return viewerDetails && viewerDetails.scene.isReady() && viewerDetails.scene.environmentTexture && viewerDetails.scene.meshes.length > 0;
+    }, viewerElementHandle);
+
+    expect(isEnvironmentLoaded).toBeTruthy();
 });

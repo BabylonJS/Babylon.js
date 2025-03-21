@@ -17,7 +17,7 @@ import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Tex
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
 import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
-import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
+import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
 import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Blocks/resourceContainerBlock";
@@ -28,6 +28,9 @@ import { NodeRenderGraphGlowLayerBlock } from "core/FrameGraph/Node/Blocks/Layer
 import { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { NodeRenderGraphPassCubePostProcessBlock, NodeRenderGraphPassPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock";
 import { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
+import { NodeRenderGraphSSRPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock";
+import { NodeRenderGraphAnaglyphPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock";
+import { NodeRenderGraphChromaticAberrationPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/chromaticAberrationPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -135,22 +138,31 @@ export class BlockTools {
             case "HighlightLayerBlock": {
                 return new NodeRenderGraphHighlightLayerBlock("Highlight Layer", frameGraph, scene);
             }
+            case "SSRBlock": {
+                return new NodeRenderGraphSSRPostProcessBlock("SSR", frameGraph, scene);
+            }
+            case "AnaglyphBlock": {
+                return new NodeRenderGraphAnaglyphPostProcessBlock("Anaglyph", frameGraph, scene);
+            }
+            case "ChromaticAberrationBlock": {
+                return new NodeRenderGraphChromaticAberrationPostProcessBlock("Chromatic Aberration", frameGraph, scene);
+            }
         }
 
         return null;
     }
 
     public static GetColorFromConnectionNodeType(type: NodeRenderGraphBlockConnectionPointTypes) {
-        let color = "#880000";
+        let color = "#964848";
         switch (type) {
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:
-                color = "#be5126";
+                color = "#e24975";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-                color = "#5170ff";
+                color = "#f28e0a";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer:
                 color = "#51dcc5";
@@ -192,9 +204,13 @@ export class BlockTools {
                 color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
+                color = "#adad92";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:
+                color = "#495e77";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ShadowLight:
-                color = "#000000";
+                color = "#e08e4b";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks

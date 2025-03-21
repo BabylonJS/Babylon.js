@@ -278,6 +278,9 @@ export class SceneSerializer {
         // Environment Intensity
         serializationObject.environmentIntensity = scene.environmentIntensity;
 
+        // IBL Intensity
+        serializationObject.iblIntensity = scene.iblIntensity;
+
         // Skeletons
         serializationObject.skeletons = [];
         for (index = 0; index < scene.skeletons.length; index++) {

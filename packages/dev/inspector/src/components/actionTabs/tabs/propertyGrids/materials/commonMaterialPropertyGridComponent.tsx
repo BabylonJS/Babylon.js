@@ -105,7 +105,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={material.id} />
+                    <TextLineComponent label="ID" value={material.id} onCopy />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"

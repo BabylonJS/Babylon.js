@@ -13,12 +13,17 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["NodeRenderGraphElbowBlock"] = ElbowDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphTeleportInBlock"] = TeleportInDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphTeleportOutBlock"] = TeleportOutDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphAnaglyphPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphBlackAndWhitePostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphBloomPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphBlurPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphChromaticAberrationPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphCircleOfConfusionPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphDepthOfFieldPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphExtractHighlightsPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphPassPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphPassCubePostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphSSRPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphClearBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphCopyTextureBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphGenerateMipmapsBlock"] = TextureDisplayManager;

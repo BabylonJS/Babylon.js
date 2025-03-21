@@ -209,7 +209,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         step={0.01}
                         label="IBL Intensity"
                         target={scene}
-                        propertyName="environmentIntensity"
+                        propertyName="iblIntensity"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FogPropertyGridComponent

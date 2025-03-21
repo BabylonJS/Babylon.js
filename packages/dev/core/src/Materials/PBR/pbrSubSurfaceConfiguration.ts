@@ -43,6 +43,7 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
     public SS_TRANSLUCENCYCOLOR_TEXTURE = false;
     public SS_TRANSLUCENCYCOLOR_TEXTUREDIRECTUV = 0;
+    public SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA = false;
 
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
@@ -435,6 +436,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_USE_GLTF_TEXTURES = false;
             defines.SS_TRANSLUCENCYCOLOR_TEXTURE = false;
             defines.SS_TRANSLUCENCYCOLOR_TEXTUREDIRECTUV = 0;
+            defines.SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA = false;
             return;
         }
 
@@ -481,6 +483,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
                     if (this._translucencyColorTexture && MaterialFlags.TranslucencyColorTextureEnabled) {
                         PrepareDefinesForMergedUV(this._translucencyColorTexture, defines, "SS_TRANSLUCENCYCOLOR_TEXTURE");
+                        defines.SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA = this._translucencyColorTexture.gammaSpace;
                     }
                 }
             }

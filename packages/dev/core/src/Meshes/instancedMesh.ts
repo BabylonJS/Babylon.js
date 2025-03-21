@@ -16,6 +16,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { RegisterClass } from "../Misc/typeStore";
+import type { Geometry } from "./geometry";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -196,6 +197,13 @@ export class InstancedMesh extends AbstractMesh {
      */
     public get sourceMesh(): Mesh {
         return this._sourceMesh;
+    }
+
+    /**
+     * Gets the mesh internal Geometry object
+     */
+    public get geometry(): Nullable<Geometry> {
+        return this._sourceMesh._geometry;
     }
 
     /**

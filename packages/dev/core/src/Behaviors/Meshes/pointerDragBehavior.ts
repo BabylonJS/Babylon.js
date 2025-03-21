@@ -262,6 +262,19 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 return;
             }
 
+            // If we are dragging and the user presses another button on the same pointer, end the drag. Otherwise,
+            // tracking when the drag should end becomes very complex.
+            // gizmo.ts has similar behavior.
+            if (
+                this.dragging &&
+                this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
+                pointerInfo.event.button !== -1 &&
+                pointerInfo.event.button !== this._activeDragButton
+            ) {
+                this.releaseDrag();
+                return;
+            }
+
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
                     this.startAndReleaseDragOnPointerEvents &&
@@ -572,8 +585,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._pointA.addToRef(this._localAxis, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
         } else {
+            if (this._scene.activeCamera) {
+                this._scene.activeCamera.getForwardRay().direction.normalizeToRef(this._localAxis);
+            }
             this._dragPlane.position.copyFrom(this._pointA);
-            this._dragPlane.lookAt(ray.origin);
+            this._dragPlane.lookAt(this._pointA.add(this._localAxis));
         }
         // Update the position of the drag plane so it doesn't get out of sync with the node (eg. when moving back and forth quickly)
         this._dragPlane.position.copyFrom(this.attachedNode.getAbsolutePosition());

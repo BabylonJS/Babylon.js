@@ -180,6 +180,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("StandardMaterial");
     }
 
+    private static readonly _OriginalDefaultMaterialFactory = Scene.DefaultMaterialFactory;
+
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the a collision coordinator.
@@ -258,12 +260,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public environmentBRDFTexture: BaseTexture;
 
     /**
-     * Intensity of the environment in all pbr material.
-     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
+     * This dims or reinforces the indirect lighting overall (reflection and diffuse).
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
+     * Note that this is more of a debugging parameter and is not physically accurate.
+     * If you want to modify the intensity of the IBL texture, you should update iblIntensity instead.
      */
     public environmentIntensity: number = 1;
+
+    /**
+     * Overall intensity of the IBL texture.
+     * This value is multiplied with the reflectionTexture.level value to calculate the final IBL intensity.
+     */
+    public iblIntensity = 1;
 
     /** @internal */
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
@@ -1385,6 +1395,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onActiveCameraChanged.notifyObservers(this);
     }
 
+    /** @internal */
+    public get _hasDefaultMaterial() {
+        return Scene.DefaultMaterialFactory !== Scene._OriginalDefaultMaterialFactory;
+    }
+
     private _defaultMaterial: Material;
 
     /** The default material used on meshes when no material is affected */
@@ -2349,6 +2364,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.layers) {
             for (const layer of this.layers) {
                 if (!layer.isReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
+        // Effect layers
+        if (this.effectLayers) {
+            for (const effectLayer of this.effectLayers) {
+                if (!effectLayer.isLayerReady()) {
                     isReady = false;
                 }
             }

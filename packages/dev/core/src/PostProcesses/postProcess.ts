@@ -494,6 +494,11 @@ export class PostProcess {
     }
 
     /**
+     * An event triggered when the post-process is disposed
+     */
+    public readonly onDisposeObservable = new Observable<void>();
+
+    /**
      * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
      * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
      */
@@ -541,6 +546,7 @@ export class PostProcess {
     }
 
     protected readonly _effectWrapper: EffectWrapper;
+    protected readonly _useExistingThinPostProcess: boolean;
 
     /**
      * Creates a new instance PostProcess
@@ -640,7 +646,7 @@ export class PostProcess {
             }
         }
 
-        const useExistingThinPostProcess = !!effectWrapper;
+        this._useExistingThinPostProcess = !!effectWrapper;
 
         this._effectWrapper =
             effectWrapper ??
@@ -700,7 +706,7 @@ export class PostProcess {
 
         this._indexParameters = indexParameters;
 
-        if (!useExistingThinPostProcess) {
+        if (!this._useExistingThinPostProcess) {
             this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
 
             const importPromises: Array<Promise<any>> = [];
@@ -1129,6 +1135,10 @@ export class PostProcess {
     public dispose(camera?: Camera): void {
         camera = camera || this._camera;
 
+        if (!this._useExistingThinPostProcess) {
+            this._effectWrapper.dispose();
+        }
+
         this._disposeTextures();
 
         let index;
@@ -1151,6 +1161,8 @@ export class PostProcess {
         if (index !== -1) {
             this._engine.postProcesses.splice(index, 1);
         }
+
+        this.onDisposeObservable.notifyObservers();
 
         if (!camera) {
             return;
