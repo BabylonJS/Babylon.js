@@ -3,7 +3,7 @@ import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, CameraTarget, EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, Model, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -62,13 +62,17 @@ export type HotSpot = ViewerHotSpotQuery & {
     cameraOrbit?: CameraOrbit;
 };
 
-type ResetMode = "auto" | "camera" | "reframe";
+type ResetMode = "auto" | "reframe" | ResetFlag;
 
 function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
     if (value === "WebGL" || value === "WebGPU") {
         return value;
     }
     return GetDefaultEngine();
+}
+
+function coerceNumericAttribute(value: string | null): Nullable<number> {
+    return value == null ? null : Number(value);
 }
 
 function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, number, number]> {
@@ -913,13 +917,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     public reset() {
-        switch (this.resetMode) {
+        this._reset(this.resetMode);
+    }
+
+    private _reset(mode: ResetMode) {
+        switch (mode) {
             case "auto":
             case "reframe":
-                this.resetCamera();
+                this._viewerDetails?.viewer.resetCamera(true);
                 break;
-            case "camera":
-                this._viewerDetails?.viewer.reset("camera");
+            default:
+                this._viewerDetails?.viewer.reset(mode);
                 break;
         }
     }
@@ -928,7 +936,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * Resets the camera to its initial pose.
      */
     public resetCamera() {
-        this._viewerDetails?.viewer.resetCamera();
+        this._reset("reframe");
     }
 
     /** @internal */
@@ -1355,6 +1363,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get autoSuspendRendering() {
                             return !(viewerElement.hasAttribute("render-when-idle") || !viewerElement._options.autoSuspendRendering);
                         },
+                        get cameraAutoOrbit() {
+                            return {
+                                enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
+                                speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? viewerElement._options.cameraAutoOrbit?.speed,
+                                delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? viewerElement._options.cameraAutoOrbit?.delay,
+                            };
+                        },
                         get cameraOrbit() {
                             return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
                         },
@@ -1363,6 +1378,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         },
                         get animationAutoPlay() {
                             return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
+                        },
+                        get animationSpeed() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
+                        },
+                        get selectedAnimation() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
                         },
                         onInitialized: (details) => {
                             detailsDeferred.resolve(details);
@@ -1478,7 +1499,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 if (this.source) {
                     await this._viewerDetails.viewer.loadModel(this.source, {
                         pluginExtension: this.extension ?? undefined,
-                        defaultAnimation: this.selectedAnimation ?? 0,
                     });
                 } else {
                     await this._viewerDetails.viewer.resetModel();

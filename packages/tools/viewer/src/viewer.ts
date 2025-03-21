@@ -49,22 +49,14 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animationAutoPlay";
+export type ResetFlag = "camera" | "animation";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-// TODO: Remove
-type UpdateModelOptions = {
-    /**
-     * The default animation index.
-     */
-    defaultAnimation?: number;
-};
+type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
 
-type ActivateModelOptions = UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
-
-export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
+export type LoadModelOptions = LoadAssetContainerOptions;
 
 export type CameraOrbit = [alpha: number, beta: number, radius: number];
 export type CameraTarget = [x: number, y: number, z: number];
@@ -294,6 +286,10 @@ export type ViewerOptions = Partial<{
      * Whether to play the default animation immediately after loading.
      */
     animationAutoPlay: boolean;
+
+    animationSpeed: number;
+
+    selectedAnimation: number;
 
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction.
@@ -933,7 +929,6 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             this._applyAnimationSpeed();
-            this._selectAnimation(options?.defaultAnimation ?? 0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
             this._reframeCamera(options?.interpolateCamera);
             this.onModelChanged.notifyObservers(options?.source ?? null);
@@ -1426,14 +1421,25 @@ export class Viewer implements IDisposable {
     }
 
     private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
-        if (flags.length === 0 || flags.includes("animationAutoPlay")) {
+        if (flags.length === 0 || flags.includes("animation")) {
+            if (this._options?.animationSpeed) {
+                this.animationSpeed = this._options.animationSpeed;
+            }
+            if (this._options?.selectedAnimation) {
+                this._selectAnimation(this._options.selectedAnimation, interpolate);
+            }
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
+            } else if (this._options?.animationAutoPlay === false) {
+                this.pauseAnimation();
             }
         }
 
         if (flags.length === 0 || flags.includes("camera")) {
             this._resetCamera(interpolate, false);
+            if (this._options?.cameraAutoOrbit) {
+                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
+            }
         }
     }
 
