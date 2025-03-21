@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animation" | "environment" | "post-processing" | "material-variant";
+export type ResetFlag = "source" | "camera" | "animation" | "environment" | "post-processing" | "material-variant";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -277,6 +277,8 @@ export type ViewerOptions = Partial<{
      * The default clear color of the scene.
      */
     clearColor: [r: number, g: number, b: number, a?: number];
+
+    source: string;
 
     cameraOrbit: Partial<CameraOrbit>;
 
@@ -1465,6 +1467,12 @@ export class Viewer implements IDisposable {
                 if (this._options?.environmentSkybox) {
                     this.loadEnvironment(this._options.environmentSkybox, { skybox: true });
                 }
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("source")) {
+            if (this._options?.source) {
+                this.loadModel(this._options.source);
             }
         }
 

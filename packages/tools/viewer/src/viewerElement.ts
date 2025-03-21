@@ -1382,6 +1382,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get autoSuspendRendering() {
                             return !(viewerElement.hasAttribute("render-when-idle") || !viewerElement._options.autoSuspendRendering);
                         },
+                        get source() {
+                            return viewerElement.getAttribute("source") ?? viewerElement._options.source;
+                        },
                         get cameraAutoOrbit() {
                             return {
                                 enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
