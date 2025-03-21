@@ -1385,6 +1385,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get defaultAnimation() {
                             return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.defaultAnimation;
                         },
+                        get environmentConfig() {
+                            return {
+                                intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,
+                                blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
+                                rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
+                                visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
+                            };
+                        },
                         onInitialized: (details) => {
                             detailsDeferred.resolve(details);
                         },

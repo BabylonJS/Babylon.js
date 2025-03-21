@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animation";
+export type ResetFlag = "camera" | "animation" | "environment";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -295,6 +295,8 @@ export type ViewerOptions = Partial<{
      * Automatically rotates a 3D model or scene without requiring user interaction.
      */
     cameraAutoOrbit: Partial<CameraAutoOrbit>;
+
+    environmentConfig: Partial<EnvironmentParams>;
 
     /**
      * Boolean indicating if the scene must use right-handed coordinates system.
@@ -1251,7 +1253,7 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-                this._reset(false);
+                this._reset(false, "camera", "animation");
             }
         });
 
@@ -1439,6 +1441,12 @@ export class Viewer implements IDisposable {
             this._resetCamera(interpolate, false);
             if (this._options?.cameraAutoOrbit) {
                 this.cameraAutoOrbit = this._options.cameraAutoOrbit;
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("environment")) {
+            if (this._options?.environmentConfig) {
+                this.environmentConfig = this._options.environmentConfig;
             }
         }
     }
