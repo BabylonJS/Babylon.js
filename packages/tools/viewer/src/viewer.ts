@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "source" | "camera" | "animation" | "environment" | "post-processing" | "material-variant";
+export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -219,10 +219,6 @@ function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBo
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
 
-// function nanToUndefined(value: number): number | undefined {
-//     return isNaN(value) ? undefined : value;
-// }
-
 export type ViewerDetails = {
     /**
      * Provides access to the Scene managed by the Viewer.
@@ -267,6 +263,11 @@ export type ViewerOptions = Partial<{
     onInitialized: (details: Readonly<ViewerDetails>) => void;
 
     /**
+     * The default clear color of the scene.
+     */
+    clearColor: [r: number, g: number, b: number, a?: number];
+
+    /**
      * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
      * This can reduce resource CPU/GPU pressure when the scene is static.
      * Enabled by default.
@@ -274,38 +275,63 @@ export type ViewerOptions = Partial<{
     autoSuspendRendering: boolean;
 
     /**
-     * The default clear color of the scene.
+     * The default source model to load into the viewer.
      */
-    clearColor: [r: number, g: number, b: number, a?: number];
-
     source: string;
 
-    cameraOrbit: Partial<CameraOrbit>;
-
-    cameraTarget: Partial<CameraTarget>;
+    /**
+     * The default environment to load into the viewer for lighting (IBL).
+     */
+    environmentLighting: string;
 
     /**
-     * Whether to play the default animation immediately after loading.
+     * The default environment to load into the viewer for the skybox.
      */
-    animationAutoPlay: boolean;
+    environmentSkybox: string;
 
-    animationSpeed: number;
+    /**
+     * The default environment configuration.
+     */
+    environmentConfig: Partial<EnvironmentParams>;
 
-    selectedAnimation: number;
+    /**
+     * The default camera orbit.
+     */
+    cameraOrbit: Partial<CameraOrbit>;
+
+    /**
+     * The default camera target.
+     */
+    cameraTarget: Partial<CameraTarget>;
 
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction.
      */
     cameraAutoOrbit: Partial<CameraAutoOrbit>;
 
-    environmentLighting: string;
+    /**
+     * Whether to play the default animation immediately after loading.
+     */
+    animationAutoPlay: boolean;
 
-    environmentSkybox: string;
+    /**
+     * The default speed of the animation.
+     */
+    animationSpeed: number;
 
-    environmentConfig: Partial<EnvironmentParams>;
+    /**
+     * The default selected animation.
+     */
+    selectedAnimation: number;
 
+    /**
+     * The default post processing configuration.
+     */
     postProcessing: Partial<PostProcessing>;
 
+    /**
+     * The default selected material variant.
+     */
     selectedMaterialVariant: string;
 
     /**
@@ -941,6 +967,7 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             this._applyAnimationSpeed();
+            this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
             this._reframeCamera(true);
             this.onModelChanged.notifyObservers(options?.source ?? null);
@@ -1428,6 +1455,45 @@ export class Viewer implements IDisposable {
         this._activeAnimation?.pause();
     }
 
+    /**
+     * Resets the camera to its initial pose.
+     * @param reframe If true, the camera will be reframed to fit the model bounds. Otherwise, it will use the default camera pose passed in with the options to the constructor (if present).
+     */
+    public resetCamera(reframe?: boolean): void;
+
+    /**
+     * Resets the camera pose
+     */
+    public resetCamera(alpha?: number, beta?: number, radius?: number, targetX?: number, targetY?: number, targetZ?: number): void;
+
+    public resetCamera(...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
+        this._resetCamera(true, ...args);
+    }
+
+    private _resetCamera(interpolate: boolean, ...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
+        const reframeOrAlpha = args[0];
+        let [, beta, radius, targetX, targetY, targetZ] = args;
+        if ((args.length === 0 || typeof reframeOrAlpha === "boolean") && (reframeOrAlpha === undefined || reframeOrAlpha === true)) {
+            this._reframeCamera(interpolate);
+        } else {
+            let alpha: number | undefined = undefined;
+            if (reframeOrAlpha === false) {
+                if (this._options?.cameraOrbit) {
+                    [alpha, beta, radius] = this._options.cameraOrbit;
+                }
+                if (this._options?.cameraTarget) {
+                    [targetX, targetY, targetZ] = this._options.cameraTarget;
+                }
+            }
+
+            this._reframeCameraFromBounds(interpolate, this._loadedModels, [alpha, beta, radius], [targetX, targetY, targetZ]);
+        }
+    }
+
+    /**
+     * Resets the viewer to its initial state based on the options passed in to the constructor.
+     * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
+     */
     public reset(...flags: ResetFlag[]) {
         this._reset(true, ...flags);
     }
@@ -1486,32 +1552,6 @@ export class Viewer implements IDisposable {
             if (this._options?.selectedMaterialVariant) {
                 this.selectedMaterialVariant = this._options.selectedMaterialVariant;
             }
-        }
-    }
-
-    public resetCamera(reframe?: boolean): void;
-    public resetCamera(alpha?: number, beta?: number, radius?: number, targetX?: number, targetY?: number, targetZ?: number): void;
-    public resetCamera(...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
-        this._resetCamera(true, ...args);
-    }
-
-    private _resetCamera(interpolate: boolean, ...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
-        const reframeOrAlpha = args[0];
-        let [, beta, radius, targetX, targetY, targetZ] = args;
-        if ((args.length === 0 || typeof reframeOrAlpha === "boolean") && (reframeOrAlpha === undefined || reframeOrAlpha === true)) {
-            this._reframeCamera(interpolate);
-        } else {
-            let alpha: number | undefined = undefined;
-            if (reframeOrAlpha === false) {
-                if (this._options?.cameraOrbit) {
-                    [alpha, beta, radius] = this._options.cameraOrbit;
-                }
-                if (this._options?.cameraTarget) {
-                    [targetX, targetY, targetZ] = this._options.cameraTarget;
-                }
-            }
-
-            this._reframeCameraFromBounds(interpolate, this._loadedModels, [alpha, beta, radius], [targetX, targetY, targetZ]);
         }
     }
 
