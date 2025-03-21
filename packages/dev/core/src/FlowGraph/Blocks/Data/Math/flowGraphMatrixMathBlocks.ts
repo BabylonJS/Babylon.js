@@ -96,7 +96,7 @@ export class FlowGraphMatrixMultiplicationBlock extends FlowGraphBinaryOperation
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
             getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
-            (a, b) => a.multiply(b as any),
+            (a, b) => b.multiply(a as any),
             FlowGraphBlockNames.MatrixMultiplication,
             config
         );
@@ -155,7 +155,12 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
             const rotation = cachedRotation || new Quaternion();
             const scaling = cachedScaling || new Vector3();
             // check matrix last column components should be 0,0,0,1
-            if (matrix.m[3] !== 0 || matrix.m[7] !== 0 || matrix.m[11] !== 0 || matrix.m[15] !== 1) {
+            // round them to 4 decimal places
+            const m3 = Math.round(matrix.m[3] * 10000) / 10000;
+            const m7 = Math.round(matrix.m[7] * 10000) / 10000;
+            const m11 = Math.round(matrix.m[11] * 10000) / 10000;
+            const m15 = Math.round(matrix.m[15] * 10000) / 10000;
+            if (m3 !== 0 || m7 !== 0 || m11 !== 0 || m15 !== 1) {
                 this.isValid.setValue(false, context);
                 this.position.setValue(Vector3.Zero(), context);
                 this.rotationQuaternion.setValue(Quaternion.Identity(), context);

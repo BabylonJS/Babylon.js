@@ -1,6 +1,7 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "../abstractAudioNode";
 import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
+import type { AudioSubNode } from "./audioSubNode";
 
 /**
  * Adds common sub graph functionality to an audio node.
@@ -19,35 +20,62 @@ import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
  */
 export abstract class _AbstractAudioSubGraph {
     private _createSubNodePromises: { [key: string]: Promise<_AbstractAudioSubNode> } = {};
-    private _subNodes: { [key: string]: AbstractNamedAudioNode } = {};
+    private _isDisposed = false;
+    private _subNodes: { [key: string]: _AbstractAudioSubNode } = {};
 
     /**
      * Executes the given callback with the named sub node, creating the sub node if needed.
      *
-     * Note that `callback` is executed synchronously if the sub node already exists, otherwise the sub node is created
-     * asynchronously before `callback` is executed.
-     *
      * @param name The name of the sub node
      * @param callback The function to call with the named sub node
+     *
+     * @internal
      */
-    public callOnSubNode<T extends _AbstractAudioSubNode>(name: string, callback: (node: T) => void): void {
+    public callOnSubNode<T extends _AbstractAudioSubNode>(name: AudioSubNode, callback: (node: T) => void): void {
         const node = this.getSubNode(name);
         if (node) {
             callback(node as T);
             return;
         }
 
-        const promise = this._createSubNodePromises[name] ?? this._createAndAddSubNode(name);
+        this._createSubNodePromisesResolved().then(() => {
+            const node = this.getSubNode(name);
+            if (node) {
+                callback(node as T);
+                return;
+            }
 
-        promise.then((node) => {
-            callback(node as T);
+            this.createAndAddSubNode(name).then((node) => {
+                callback(node as T);
+            });
         });
     }
 
     /**
+     * Creates the named subnode and adds it to the sub graph.
+     *
+     * @param name The name of the sub node.
+     * @returns A promise that resolves to the created sub node.
+     *
+     * @internal
+     */
+    public createAndAddSubNode(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
+        this._createSubNodePromises[name] ||= this._createSubNode(name).then((node) => {
+            this._addSubNode(node);
+            return node;
+        });
+
+        return this._createSubNodePromises[name];
+    }
+
+    /**
      * Releases associated resources.
+     *
+     * @internal
      */
     public dispose() {
+        this._isDisposed = true;
+
         const subNodes = Object.values(this._subNodes);
         for (const subNode of subNodes) {
             subNode.dispose();
@@ -59,53 +87,60 @@ export abstract class _AbstractAudioSubGraph {
 
     /**
      * Gets a previously created sub node.
+     *
      * @param name - The name of the sub node
      * @returns The named sub node, or `null` if it has not been created, yet
+     *
      * @internal
      * */
-    public getSubNode<T extends AbstractNamedAudioNode>(name: string): Nullable<T> {
+    public getSubNode<T extends _AbstractAudioSubNode>(name: string): Nullable<T> {
         return (this._subNodes[name] as T) ?? null;
     }
 
-    protected abstract _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>>;
+    /**
+     * Removes a sub node from the sub graph.
+     *
+     * @param subNode - The sub node to remove
+     * @returns A promise that resolves when the sub node is removed
+     *
+     * @internal
+     */
+    public async removeSubNode(subNode: _AbstractAudioSubNode): Promise<void> {
+        await this._createSubNodePromisesResolved();
+
+        const name = subNode.name;
+        if (this._subNodes[name]) {
+            delete this._subNodes[name];
+        }
+
+        delete this._createSubNodePromises[name];
+
+        this._onSubNodesChanged();
+    }
+
+    protected abstract _createSubNode(name: string): Promise<_AbstractAudioSubNode>;
 
     /**
      * Called when sub-nodes are added or removed.
      * - Override this to connect and reconnect sub-nodes as needed.
      */
-    protected _onSubNodesChanged(): void {}
+    protected abstract _onSubNodesChanged(): void;
 
     protected _createSubNodePromisesResolved(): Promise<_AbstractAudioSubNode[]> {
         return Promise.all(Object.values(this._createSubNodePromises));
     }
 
-    private _addSubNode(node: AbstractNamedAudioNode): void {
+    private _addSubNode(node: _AbstractAudioSubNode): void {
+        if (this._isDisposed) {
+            node.dispose();
+            return;
+        }
+
         this._subNodes[node.name] = node;
 
         node.onDisposeObservable.addOnce(this._onSubNodeDisposed);
 
         this._onSubNodesChanged();
-    }
-
-    protected _createAndAddSubNode(name: string): Promise<_AbstractAudioSubNode> {
-        const promise = this._createSubNode(name);
-
-        if (!promise) {
-            return Promise.reject(`Failed to create subnode "${name}"`);
-        }
-
-        this._createSubNodePromises[name] = new Promise((resolve, reject) => {
-            promise
-                .then((node) => {
-                    this._addSubNode(node);
-                    resolve(node);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
-        });
-
-        return promise;
     }
 
     private _onSubNodeDisposed = (node: AbstractAudioNode) => {

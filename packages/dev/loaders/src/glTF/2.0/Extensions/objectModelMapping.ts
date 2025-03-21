@@ -323,15 +323,34 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            get: (node: INode) => node._babylonTransformNode?._localMatrix.clone(),
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "worldMatrix"],
+            isReadOnly: true,
         },
         globalMatrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            get: (node: INode) => {
+                const matrix = Matrix.Identity();
+                // RHS/LHS support
+                let rootNode = node.parent;
+                while (rootNode && rootNode.parent) {
+                    rootNode = rootNode.parent;
+                }
+                const forceUpdate =
+                    node._babylonTransformNode?.position._isDirty || node._babylonTransformNode?.rotationQuaternion?._isDirty || node._babylonTransformNode?.scaling._isDirty;
+                if (rootNode) {
+                    // take the parent root node's world matrix, invert it, and multiply it with the current node's world matrix
+                    // This will provide the global matrix, ignoring the RHS->LHS conversion
+                    const rootMatrix = rootNode._babylonTransformNode?.computeWorldMatrix(true).invert();
+                    if (rootMatrix) {
+                        node._babylonTransformNode?.computeWorldMatrix(forceUpdate)?.multiplyToRef(rootMatrix, matrix);
+                    }
+                } else if (node._babylonTransformNode) {
+                    matrix.copyFrom(node._babylonTransformNode.computeWorldMatrix(forceUpdate));
+                }
+                return matrix;
+            },
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "_worldMatrix"],
             isReadOnly: true,
         },
         extensions: {
@@ -954,14 +973,17 @@ function _GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: s
                 const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uOffset = value.x), (texture.vOffset = value.y);
             },
-            getPropertyName: [() => `${textureType}.${textureInObject}.uOffset`, () => `${textureType}.${textureInObject}.vOffset`],
+            getPropertyName: [
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vOffset`,
+            ],
         },
         rotation: {
             type: "number",
             get: (material, _index?, payload?) => _GetTexture(material, payload, textureType, textureInObject)?.wAng,
             getTarget: _GetMaterial,
             set: (value, material, _index?, payload?) => (_GetTexture(material, payload, textureType, textureInObject).wAng = value),
-            getPropertyName: [() => `${textureType}.${textureInObject}.wAng`],
+            getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
         },
         scale: {
             componentsCount: 2,
@@ -975,7 +997,10 @@ function _GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: s
                 const texture = _GetTexture(material, payload, textureType, textureInObject);
                 (texture.uScale = value.x), (texture.vScale = value.y);
             },
-            getPropertyName: [() => `${textureType}.${textureInObject}.uScale`, () => `${textureType}.${textureInObject}.vScale`],
+            getPropertyName: [
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
+                () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vScale`,
+            ],
         },
     };
 }

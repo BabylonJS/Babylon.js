@@ -6,13 +6,13 @@ import type { _WebAudioEngine } from "./webAudioEngine";
 /** @internal */
 export interface IWebAudioInNode extends AbstractAudioNode {
     /** @internal */
-    inNode: Nullable<AudioNode>;
+    _inNode: Nullable<AudioNode>;
 }
 
 /** @internal */
 export interface IWebAudioOutNode extends AbstractAudioNode {
     /** @internal */
-    outNode: Nullable<AudioNode>;
+    _outNode: Nullable<AudioNode>;
 }
 
 /** @internal */

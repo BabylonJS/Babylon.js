@@ -227,6 +227,11 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             scene.environmentIntensity = parsedData.environmentIntensity;
         }
 
+        // IBL Intensity
+        if (parsedData.iblIntensity !== undefined && parsedData.iblIntensity !== null) {
+            scene.iblIntensity = parsedData.iblIntensity;
+        }
+
         // Lights
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {

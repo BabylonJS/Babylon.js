@@ -1698,18 +1698,20 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
+        const scene = this.getScene();
+        if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
-        const meshes = this.getScene().meshes;
+        const meshes = scene.meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                if (subMesh.getMaterial(false) !== this) {
+                const material = subMesh.getMaterial() || (scene._hasDefaultMaterial ? scene.defaultMaterial : null);
+                if (material !== this) {
                     continue;
                 }
 
@@ -1799,7 +1801,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Indicates that prepass needs to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsPrePassDirty() {
-        this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
+        this._markAllSubMeshesAsDirty(Material._PrePassDirtyCallBack);
     }
 
     /**

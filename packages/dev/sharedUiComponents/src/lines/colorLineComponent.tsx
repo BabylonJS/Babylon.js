@@ -81,6 +81,9 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
     }
 
     setColor(newColor: Color4) {
+        if (newColor.equals(this.state.color)) {
+            return;
+        }
         this.setState({ color: newColor.clone() });
         if (this.props.isLinear) {
             newColor.toLinearSpaceToRef(newColor);

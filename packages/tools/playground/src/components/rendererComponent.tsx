@@ -108,8 +108,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
     }
 
-    private async _compileAndRunAsync() {
+    private _notifyError(message: string) {
+        this.props.globalState.onErrorObservable.notifyObservers({
+            message: message,
+        });
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+    }
+
+    private async _compileAndRunAsync() {
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
         const displayInspector = this._scene?.debugLayer.isVisible();
@@ -262,10 +268,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!createSceneFunction) {
-                this.props.globalState.onErrorObservable.notifyObservers({
-                    message: "You must provide a function named createScene.",
-                });
-                return;
+                return this._notifyError("You must provide a function named createScene.");
             } else {
                 // Write an "initFunction" that creates engine and scene
                 // using the appropriate default or user-provided functions.
@@ -286,7 +289,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
                     window.engine = await asyncEngineCreation();
                     
-                    ${audioInit}`;
+                    const engineOptions = window.engine.getCreationOptions();
+                    if (engineOptions.audioEngine !== false) {
+                        ${audioInit}
+                    }`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
@@ -339,17 +345,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._engine = globalObject.engine;
 
                 if (!this._engine) {
-                    this.props.globalState.onErrorObservable.notifyObservers({
-                        message: "createEngine function must return an engine.",
-                    });
-                    return;
+                    return this._notifyError("createEngine function must return an engine.");
                 }
 
                 if (!globalObject.scene) {
-                    this.props.globalState.onErrorObservable.notifyObservers({
-                        message: createSceneFunction + " function must return a scene.",
-                    });
-                    return;
+                    return this._notifyError("createScene function must return a scene.");
                 }
 
                 let sceneToRenderCode = "sceneToRender = scene";
@@ -376,10 +376,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (checkSceneCount && this._engine.scenes.length === 0) {
-                this.props.globalState.onErrorObservable.notifyObservers({
-                    message: "You must at least create a scene.",
-                });
-                return;
+                return this._notifyError("You must at least create a scene.");
             }
 
             if (this._engine.scenes[0] && displayInspector) {
@@ -387,10 +384,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (checkCamera && this._engine.scenes[0].activeCamera == null) {
-                this.props.globalState.onErrorObservable.notifyObservers({
-                    message: "You must at least create a camera.",
-                });
-                return;
+                return this._notifyError("You must at least create a camera.");
             } else if (globalObject.scene.then) {
                 globalObject.scene.then(() => {
                     if (this._engine!.scenes[0] && displayInspector) {
@@ -407,6 +401,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
+        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
     }
 
     public override render() {

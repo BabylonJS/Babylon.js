@@ -23,22 +23,23 @@ export interface IWebAudioBusAndSoundSubGraphOptions extends ISpatialAudioOption
 
 /** @internal */
 export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph {
+    private _rootNode: Nullable<GainNode> = null;
     protected abstract readonly _upstreamNodes: Nullable<Set<AbstractAudioNode>>;
 
-    protected _inNode: Nullable<AudioNode> = null;
+    protected _inputNode: Nullable<AudioNode> = null;
 
     /** @internal */
     public override async init(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
-        super.init(options);
+        await super.init(options);
 
         let hasSpatialOptions = false;
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.SPATIAL);
+            await this.createAndAddSubNode(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            this._createAndAddSubNode(AudioSubNode.STEREO);
+            await this.createAndAddSubNode(AudioSubNode.STEREO);
         }
 
         await this._createSubNodePromisesResolved();
@@ -52,16 +53,15 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     }
 
     /** @internal */
-    public override get inNode(): Nullable<AudioNode> {
-        return this._inNode;
+    public override get _inNode(): Nullable<AudioNode> {
+        return this._inputNode;
     }
 
-    protected override _createSubNode(name: string): Nullable<Promise<_AbstractAudioSubNode>> {
-        const node = super._createSubNode(name);
-
-        if (node) {
+    protected override _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
+        try {
+            const node = super._createSubNode(name);
             return node;
-        }
+        } catch (e) {}
 
         switch (name) {
             case AudioSubNode.SPATIAL:
@@ -69,11 +69,13 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             case AudioSubNode.STEREO:
                 return _CreateStereoAudioSubNodeAsync(this._owner.engine);
             default:
-                return null;
+                throw new Error(`Unknown subnode name: ${name}`);
         }
     }
 
     protected override _onSubNodesChanged(): void {
+        super._onSubNodesChanged();
+
         const spatialNode = _GetSpatialAudioSubNode(this);
         const stereoNode = _GetStereoAudioSubNode(this);
         const volumeNode = _GetVolumeAudioSubNode(this);
@@ -91,9 +93,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         if (spatialNode) {
             spatialNode.disconnectAll();
 
-            if (stereoNode) {
-                spatialNode.connect(stereoNode);
-            } else if (volumeNode) {
+            if (volumeNode) {
                 spatialNode.connect(volumeNode);
             }
         }
@@ -106,36 +106,51 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
             }
         }
 
-        let inSubNode: Nullable<IWebAudioSubNode> = null;
-
-        if (spatialNode) {
-            inSubNode = spatialNode as _SpatialWebAudioSubNode;
-        } else if (stereoNode) {
-            inSubNode = stereoNode as _StereoWebAudioSubNode;
-        } else if (volumeNode) {
-            inSubNode = volumeNode as _VolumeWebAudioSubNode;
+        if (spatialNode && stereoNode) {
+            this._rootNode = new GainNode(this._owner.engine._audioContext);
+            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode)._outNode);
+            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode)._outNode);
+        } else {
+            this._rootNode?.disconnect();
+            this._rootNode = null;
         }
 
-        const inNode = inSubNode?.node ?? null;
+        let inSubNode: Nullable<IWebAudioSubNode> = null;
 
-        if (this._inNode !== inNode) {
+        let inNode: Nullable<AudioNode> = null;
+
+        if (this._rootNode) {
+            inNode = this._rootNode;
+        } else {
+            if (spatialNode) {
+                inSubNode = spatialNode as _SpatialWebAudioSubNode;
+            } else if (stereoNode) {
+                inSubNode = stereoNode as _StereoWebAudioSubNode;
+            } else if (volumeNode) {
+                inSubNode = volumeNode as _VolumeWebAudioSubNode;
+            }
+
+            inNode = inSubNode?.node ?? null;
+        }
+
+        if (this._inputNode !== inNode) {
             // Disconnect the wrapped upstream WebAudio nodes from the old wrapped WebAudio node.
             // The wrapper nodes are unaware of this change.
-            if (this._inNode && this._upstreamNodes) {
+            if (this._inputNode && this._upstreamNodes) {
                 const it = this._upstreamNodes.values();
                 for (let next = it.next(); !next.done; next = it.next()) {
-                    (next.value as IWebAudioOutNode).outNode?.disconnect(this._inNode);
+                    (next.value as IWebAudioOutNode)._outNode?.disconnect(this._inputNode);
                 }
             }
 
-            this._inNode = inNode;
+            this._inputNode = inNode;
 
             // Connect the wrapped upstream WebAudio nodes to the new wrapped WebAudio node.
             // The wrapper nodes are unaware of this change.
             if (inNode && this._upstreamNodes) {
                 const it = this._upstreamNodes.values();
                 for (let next = it.next(); !next.done; next = it.next()) {
-                    (next.value as IWebAudioOutNode).outNode?.connect(inNode);
+                    (next.value as IWebAudioOutNode)._outNode?.connect(inNode);
                 }
             }
         }

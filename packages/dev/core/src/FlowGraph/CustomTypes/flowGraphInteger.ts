@@ -88,5 +88,9 @@ export class FlowGraphInteger {
     public static FromValue(value: number): FlowGraphInteger {
         return new FlowGraphInteger(value);
     }
+
+    public toString(): string {
+        return this.value.toString();
+    }
 }
 RegisterClass("FlowGraphInteger", FlowGraphInteger);

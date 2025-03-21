@@ -7,7 +7,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 interface IPostProcessLike {
     sourceSamplingMode: number;
     sourceTexture: FrameGraphTextureHandle;
-    destinationTexture?: FrameGraphTextureHandle;
+    targetTexture?: FrameGraphTextureHandle;
     outputTexture: FrameGraphTextureHandle;
 }
 
@@ -26,11 +26,11 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.source.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
     }
 
     protected _finalizeInputOutputRegistering() {
@@ -38,7 +38,7 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.output._typeConnectionSource = () => {
-            return this.destination.isConnected ? this.destination : this.source;
+            return this.target.isConnected ? this.target : this.source;
         };
     }
 
@@ -68,9 +68,9 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the destination input component
+     * Gets the target input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[1];
     }
 
@@ -87,7 +87,7 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
         this.output.value = this._frameGraphTask.outputTexture;
 
         this._frameGraphTask.sourceTexture = this.source.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }
 
     protected override _dumpPropertiesCode() {

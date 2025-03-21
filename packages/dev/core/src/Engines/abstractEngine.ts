@@ -1307,6 +1307,13 @@ export abstract class AbstractEngine {
     public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
 
     /**
+     * Sets the type of faces to cull
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param force defines if states must be applied even if cache is up to date
+     */
+    public abstract setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void;
+
+    /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
@@ -1872,14 +1879,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.52.2";
+        return "babylonjs@7.54.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.52.2";
+        return "7.54.0";
     }
 
     /**
@@ -2019,7 +2026,6 @@ export abstract class AbstractEngine {
         options.deterministicLockstep = options.deterministicLockstep ?? false;
         options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
         options.timeStep = options.timeStep ?? 1 / 60;
-        options.audioEngine = options.audioEngine ?? true;
         options.stencil = options.stencil ?? true;
 
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
@@ -2059,15 +2065,9 @@ export abstract class AbstractEngine {
         if (IsWindowObjectExist() && IsDocumentAvailable()) {
             // make sure it is a Node object, and is a part of the document.
             if (this._renderingCanvas) {
-                const boundingRect = this._renderingCanvas.getBoundingClientRect
-                    ? this._renderingCanvas.getBoundingClientRect()
-                    : {
-                          // fallback to last solution in case the function doesn't exist
-                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
-                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
-                      };
-                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
-                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
+                const boundingRect = this._renderingCanvas.getBoundingClientRect?.();
+                width = this._renderingCanvas.clientWidth || boundingRect?.width || this._renderingCanvas.width * this._hardwareScalingLevel || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect?.height || this._renderingCanvas.height * this._hardwareScalingLevel || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;

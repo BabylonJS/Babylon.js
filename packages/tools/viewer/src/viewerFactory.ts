@@ -7,8 +7,12 @@ import { Viewer } from "./viewer";
 /**
  * Options for creating a Viewer instance that is bound to an HTML canvas.
  */
-export type CanvasViewerOptions = ViewerOptions &
-    (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
+export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) => void } & (
+        | ({ engine?: undefined } & AbstractEngineOptions)
+        | ({ engine: "WebGL" } & EngineOptions)
+        | ({ engine: "WebGPU" } & WebGPUEngineOptions)
+    );
+
 const defaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
@@ -88,6 +92,14 @@ export async function CreateViewerForCanvas(
             engine = webGPUEngine;
             break;
         }
+    }
+
+    if (options.onFaulted) {
+        const onFaulted = options.onFaulted;
+        const contextLostObserver = engine.onContextLostObservable.addOnce(() => {
+            onFaulted(new Error("The engine context was lost."));
+        });
+        disposeActions.push(() => contextLostObserver.remove());
     }
 
     // Override the onInitialized callback to add in some specific behavior.

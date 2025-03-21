@@ -8,7 +8,7 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { faFileLines } from "@fortawesome/free-regular-svg-icons";
+import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
@@ -36,7 +36,7 @@ import { LoadModel, PickModel } from "../../modelLoader";
 import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
-const defaultModelUrl = "https://assets.babylonjs.com/meshes/aerobatic_plane.glb";
+const defaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
@@ -50,16 +50,6 @@ const toneMappingOptions = [
 const hotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
 
 const hotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
-
-function createDefaultAnnotation(hotSpotName: string) {
-    return `
-    <div style="display: flex">
-      <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
-        <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
-      </svg>
-      <span style="color: black; background: white; border-radius: 6px; padding: 0px 3px; transform: translate(0%, -50%)">${hotSpotName}</span>
-    </div>` as const;
-}
 
 function useConfiguration<T>(
     defaultState: T,
@@ -376,7 +366,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const skyboxIntensityConfig = useConfiguration(
+    const environmentIntensityConfig = useConfiguration(
         viewer.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
         (intensity) => (viewer.environmentConfig = { intensity }),
@@ -385,7 +375,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const skyboxRotationConfig = useConfiguration(
+    const environmentRotationConfig = useConfiguration(
         viewer.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
         (rotation) => (viewer.environmentConfig = { rotation }),
@@ -605,11 +595,11 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             if (skyboxBlurConfig.canReset) {
                 attributes.push(`skybox-blur="${skyboxBlurConfig.configuredState}"`);
             }
-            if (skyboxIntensityConfig.canReset) {
-                attributes.push(`skybox-intensity="${skyboxIntensityConfig.configuredState}"`);
+            if (environmentIntensityConfig.canReset) {
+                attributes.push(`skybox-intensity="${environmentIntensityConfig.configuredState}"`);
             }
-            if (skyboxRotationConfig.canReset) {
-                attributes.push(`skybox-rotation="${skyboxRotationConfig.configuredState}"`);
+            if (environmentRotationConfig.canReset) {
+                attributes.push(`skybox-rotation="${environmentRotationConfig.configuredState}"`);
             }
         } else {
             if (clearColorConfig.canReset) {
@@ -707,8 +697,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         skyboxUrlConfig.configuredState,
         hasSkybox,
         skyboxBlurConfig.configuredState,
-        skyboxIntensityConfig.configuredState,
-        skyboxRotationConfig.configuredState,
+        environmentIntensityConfig.configuredState,
+        environmentRotationConfig.configuredState,
         clearColorConfig.configuredState,
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
@@ -730,9 +720,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         if (hotspots.length === 0) {
             return "";
         }
-        const annotations = hotspots
-            .map((hotspot) => `  <babylon-viewer-annotation hotSpot="${hotspot.name}">${createDefaultAnnotation(hotspot.name)}\n  </babylon-viewer-annotation>`)
-            .join("\n");
+        const annotations = hotspots.map((hotspot) => `  <babylon-viewer-annotation hotSpot="${hotspot.name}"></babylon-viewer-annotation>`).join("\n");
         return `\n  <!-- Annotations are optional HTML child elements that track hot spots. -->\n${annotations}`;
     }, [hotspots]);
 
@@ -914,7 +902,6 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         for (const hotspot of hotspots) {
             const annotation = new HTML3DAnnotationElement();
             annotation.hotSpot = hotspot.name;
-            annotation.innerHTML = createDefaultAnnotation(hotspot.name);
             viewerElement.appendChild(annotation);
         }
     }, [viewerElement, hotspots]);
@@ -939,8 +926,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         skyboxUrlConfig.reset();
         onSyncEnvironmentChanged();
         skyboxBlurConfig.reset();
-        skyboxIntensityConfig.reset();
-        skyboxRotationConfig.reset();
+        environmentIntensityConfig.reset();
+        environmentRotationConfig.reset();
         clearColorConfig.reset();
         toneMappingConfig.reset();
         contrastConfig.reset();
@@ -958,8 +945,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         skyboxUrlConfig.reset,
         onSyncEnvironmentChanged,
         skyboxBlurConfig.reset,
-        skyboxIntensityConfig.reset,
-        skyboxRotationConfig.reset,
+        environmentIntensityConfig.reset,
+        environmentRotationConfig.reset,
         clearColorConfig.reset,
         toneMappingConfig.reset,
         contrastConfig.reset,
@@ -983,7 +970,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 <div className="configuratorHeader">
                     <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div className="title">VIEWER CONFIGURATOR</div>
-                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faFileLines} onClick={openDocumentation} />
+                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faQuestionCircle} onClick={openDocumentation} />
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div className="flexColumn">
@@ -1050,7 +1037,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <div>
                             <div style={{ flex: 1 }}>
                                 <SliderLineComponent
-                                    label="Skybox Blur"
+                                    label="Blur"
                                     directValue={skyboxBlurConfig.configuredState}
                                     minimum={0}
                                     maximum={1}
@@ -1063,45 +1050,50 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             </div>
                             <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!skyboxBlurConfig.canReset} onClick={skyboxBlurConfig.reset} />
                         </div>
-                        <div>
-                            <div style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Skybox Intensity"
-                                    directValue={skyboxIntensityConfig.configuredState}
-                                    minimum={0}
-                                    maximum={5}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={skyboxIntensityConfig.update}
-                                    lockObject={lockObject}
-                                />
-                            </div>
-                            <FontAwesomeIconButton
-                                title="Reset skybox intensity"
-                                icon={faTrashCan}
-                                disabled={!skyboxIntensityConfig.canReset}
-                                onClick={skyboxIntensityConfig.reset}
-                            />
-                        </div>
-                        <div>
-                            <div style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Skybox Rotation"
-                                    directValue={skyboxRotationConfig.configuredState}
-                                    minimum={0}
-                                    maximum={2 * Math.PI}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={skyboxRotationConfig.update}
-                                    lockObject={lockObject}
-                                />
-                            </div>
-                            <FontAwesomeIconButton title="Reset skybox rotation" icon={faTrashCan} disabled={!skyboxRotationConfig.canReset} onClick={skyboxRotationConfig.reset} />
-                        </div>
                     </>
                 )}
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <SliderLineComponent
+                            label="Intensity"
+                            directValue={environmentIntensityConfig.configuredState}
+                            minimum={0}
+                            maximum={5}
+                            step={0.01}
+                            decimalCount={2}
+                            target={viewerDetails.scene}
+                            onChange={environmentIntensityConfig.update}
+                            lockObject={lockObject}
+                        />
+                    </div>
+                    <FontAwesomeIconButton
+                        title="Reset skybox intensity"
+                        icon={faTrashCan}
+                        disabled={!environmentIntensityConfig.canReset}
+                        onClick={environmentIntensityConfig.reset}
+                    />
+                </div>
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <SliderLineComponent
+                            label="Rotation"
+                            directValue={environmentRotationConfig.configuredState}
+                            minimum={0}
+                            maximum={2 * Math.PI}
+                            step={0.01}
+                            decimalCount={2}
+                            target={viewerDetails.scene}
+                            onChange={environmentRotationConfig.update}
+                            lockObject={lockObject}
+                        />
+                    </div>
+                    <FontAwesomeIconButton
+                        title="Reset skybox rotation"
+                        icon={faTrashCan}
+                        disabled={!environmentRotationConfig.canReset}
+                        onClick={environmentRotationConfig.reset}
+                    />
+                </div>
                 <div style={{ height: "auto" }}>
                     <div style={{ flex: 1 }}>
                         <Color4LineComponent

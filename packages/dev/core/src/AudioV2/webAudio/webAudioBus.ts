@@ -8,7 +8,7 @@ import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioSuperNode } from "./webAudioNode";
+import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
@@ -23,9 +23,6 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public readonly audioContext: AudioContext;
-
-    /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IAudioBusOptions>) {
         super(name, engine);
 
@@ -38,12 +35,10 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
         }
 
         this._subGraph = new _WebAudioBus._SubGraph(this);
-
-        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
-    public async init(options: Partial<IAudioBusOptions>): Promise<void> {
+    public async _init(options: Partial<IAudioBusOptions>): Promise<void> {
         if (options.outBus) {
             this.outBus = options.outBus;
         } else {
@@ -57,7 +52,7 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
             this._initSpatialProperty();
         }
 
-        this.engine.addNode(this);
+        this.engine._addNode(this);
     }
 
     /** @internal */
@@ -67,17 +62,17 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
         this._spatial = null;
         this._stereo = null;
 
-        this.engine.removeNode(this);
+        this.engine._removeNode(this);
     }
 
     /** @internal */
-    public get inNode() {
-        return this._subGraph.inNode;
+    public get _inNode() {
+        return this._subGraph._inNode;
     }
 
     /** @internal */
-    public get outNode() {
-        return this._subGraph.outNode;
+    public get _outNode() {
+        return this._subGraph._outNode;
     }
 
     /** @internal */
@@ -96,6 +91,34 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     /** @internal */
     public getClassName(): string {
         return "_WebAudioBus";
+    }
+
+    protected override _connect(node: IWebAudioInNode): boolean {
+        const connected = super._connect(node);
+
+        if (!connected) {
+            return false;
+        }
+
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
+        }
+
+        return true;
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
+
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
+        }
+
+        return true;
     }
 
     private _initSpatialProperty(): _SpatialAudio {

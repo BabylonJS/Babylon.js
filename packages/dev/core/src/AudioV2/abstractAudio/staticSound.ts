@@ -40,7 +40,7 @@ export interface IStaticSoundOptionsBase {
 /** @internal */
 export interface IStaticSoundPlayOptionsBase {
     /**
-     * The time to wait before playing the sound, in seconds.
+     * The time to wait before playing the sound, in seconds. Defaults to `0`.
      */
     waitTime: number;
 }
@@ -60,7 +60,7 @@ export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, ISta
  */
 export interface IStaticSoundStopOptions {
     /**
-     * The time to wait before stopping the sound, in seconds.
+     * The time to wait before stopping the sound, in seconds. Defaults to `0`.
      */
     waitTime: number;
 }
@@ -99,7 +99,7 @@ export abstract class StaticSound extends AbstractSound {
     }
 
     /**
-     * The amount of time to play the sound for, in seconds.
+     * The amount of time to play the sound for, in seconds. Defaults to `0`.
      * - If less than or equal to `0`, the sound plays for its full duration.
      */
     public get duration(): number {
@@ -135,7 +135,7 @@ export abstract class StaticSound extends AbstractSound {
     }
 
     /**
-     * The pitch of the sound, in cents.
+     * The pitch of the sound, in cents. Defaults to `0`.
      * - Gets combined with {@link playbackRate} to determine the final pitch.
      */
     public get pitch(): number {
@@ -144,10 +144,15 @@ export abstract class StaticSound extends AbstractSound {
 
     public set pitch(value: number) {
         this._options.pitch = value;
+
+        const instance = this._getNewestInstance() as _StaticSoundInstance;
+        if (instance) {
+            instance.pitch = value;
+        }
     }
 
     /**
-     * The playback rate of the sound.
+     * The playback rate of the sound. Defaults to `1`.
      * - Gets combined with {@link pitch} to determine the final playback rate.
      */
     public get playbackRate(): number {
@@ -156,6 +161,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
+
+        const instance = this._getNewestInstance() as _StaticSoundInstance;
+        if (instance) {
+            instance.playbackRate = value;
+        }
     }
 
     protected abstract override _createInstance(): _StaticSoundInstance;

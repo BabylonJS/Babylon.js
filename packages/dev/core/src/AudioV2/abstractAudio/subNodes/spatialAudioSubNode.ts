@@ -23,13 +23,13 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract coneOuterVolume: number;
     public abstract distanceModel: DistanceModelType;
     public abstract maxDistance: number;
+    public abstract minDistance: number;
     public abstract panningModel: PanningModelType;
     public abstract position: Vector3;
-    public abstract referenceDistance: number;
     public abstract rolloffFactor: number;
     public abstract rotation: Vector3;
     public abstract rotationQuaternion: Quaternion;
-    public abstract inNode: AudioNode;
+    public abstract _inNode: AudioNode;
 
     /** @internal */
     public get isAttached(): boolean {
@@ -37,7 +37,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
-    public attach(sceneNode: Node, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
         this.detach();
 
         if (!this._attacherComponent) {
@@ -67,8 +67,8 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.coneOuterVolume = options.spatialConeOuterVolume ?? _SpatialAudioDefaults.coneOuterVolume;
         this.distanceModel = options.spatialDistanceModel ?? _SpatialAudioDefaults.distanceModel;
         this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.maxDistance;
+        this.minDistance = options.spatialMinDistance ?? _SpatialAudioDefaults.minDistance;
         this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.panningModel;
-        this.referenceDistance = options.spatialReferenceDistance ?? _SpatialAudioDefaults.referenceDistance;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.rolloffFactor;
 
         if (options.spatialPosition) {
@@ -91,13 +91,13 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         if (this.isAttached) {
             this._attacherComponent?.update();
         } else {
-            this.updatePosition();
-            this.updateRotation();
+            this._updatePosition();
+            this._updateRotation();
         }
     }
 
-    public abstract updatePosition(): void;
-    public abstract updateRotation(): void;
+    public abstract _updatePosition(): void;
+    public abstract _updateRotation(): void;
 }
 
 /** @internal */
