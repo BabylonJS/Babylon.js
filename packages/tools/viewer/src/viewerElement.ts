@@ -1404,6 +1404,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get selectedAnimation() {
                             return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
                         },
+                        get environmentLighting() {
+                            return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentLighting;
+                        },
+                        get environmentSkybox() {
+                            return viewerElement.getAttribute("environment-skybox") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentSkybox;
+                        },
                         get environmentConfig() {
                             return {
                                 intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,

@@ -296,6 +296,10 @@ export type ViewerOptions = Partial<{
      */
     cameraAutoOrbit: Partial<CameraAutoOrbit>;
 
+    environmentLighting: string;
+
+    environmentSkybox: string;
+
     environmentConfig: Partial<EnvironmentParams>;
 
     postProcessing: Partial<PostProcessing>;
@@ -1451,6 +1455,16 @@ export class Viewer implements IDisposable {
         if (flags.length === 0 || flags.includes("environment")) {
             if (this._options?.environmentConfig) {
                 this.environmentConfig = this._options.environmentConfig;
+            }
+            if (this._options?.environmentLighting && this._options.environmentSkybox && this._options.environmentLighting === this._options.environmentSkybox) {
+                this.loadEnvironment(this._options.environmentLighting, { lighting: true, skybox: true });
+            } else {
+                if (this._options?.environmentLighting) {
+                    this.loadEnvironment(this._options.environmentLighting, { lighting: true });
+                }
+                if (this._options?.environmentSkybox) {
+                    this.loadEnvironment(this._options.environmentSkybox, { skybox: true });
+                }
             }
         }
 
