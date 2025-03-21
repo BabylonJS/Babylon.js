@@ -8,7 +8,7 @@ import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
 import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioSuperNode } from "./webAudioNode";
+import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
@@ -91,6 +91,34 @@ export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {
     /** @internal */
     public getClassName(): string {
         return "_WebAudioBus";
+    }
+
+    protected override _connect(node: IWebAudioInNode): boolean {
+        const connected = super._connect(node);
+
+        if (!connected) {
+            return false;
+        }
+
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
+        }
+
+        return true;
+    }
+
+    protected override _disconnect(node: IWebAudioInNode): boolean {
+        const disconnected = super._disconnect(node);
+
+        if (!disconnected) {
+            return false;
+        }
+
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
+        }
+
+        return true;
     }
 
     private _initSpatialProperty(): _SpatialAudio {
