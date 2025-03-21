@@ -1401,8 +1401,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get animationSpeed() {
                             return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
                         },
-                        get defaultAnimation() {
-                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.defaultAnimation;
+                        get selectedAnimation() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
                         },
                         get environmentConfig() {
                             return {
