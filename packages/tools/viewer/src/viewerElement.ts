@@ -62,7 +62,7 @@ export type HotSpot = ViewerHotSpotQuery & {
     cameraOrbit?: CameraOrbit;
 };
 
-type ResetMode = "auto" | "reframe" | ResetFlag;
+type ResetMode = "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]];
 
 function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
     if (value === "WebGL" || value === "WebGPU") {
@@ -86,6 +86,18 @@ function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, numb
     }
 
     return array.map((value) => Number(value)) as CameraOrbit;
+}
+
+function coerceResetMode(value: string | null): ResetMode {
+    if (!value || value === "auto") {
+        return "auto";
+    }
+
+    if (value === "reframe") {
+        return "reframe";
+    }
+
+    return value.trim().split(/\s+/) as ResetMode;
 }
 
 /**
@@ -900,8 +912,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: "cameras-as-hotspots", type: Boolean })
     public camerasAsHotSpots = false;
 
-    @property({ attribute: "reset-mode" })
-    public resetMode: ResetMode = "auto";
+    @property({ attribute: "reset-mode", converter: coerceResetMode })
+    public resetMode: "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]] = "auto";
 
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
@@ -927,7 +939,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 this._viewerDetails?.viewer.resetCamera(true);
                 break;
             default:
-                this._viewerDetails?.viewer.reset(mode);
+                this._viewerDetails?.viewer.reset(...mode);
                 break;
         }
     }
