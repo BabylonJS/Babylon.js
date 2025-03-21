@@ -68,6 +68,19 @@ function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
     return GetDefaultEngine();
 }
 
+function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, number, number]> {
+    if (!value) {
+        return null;
+    }
+
+    const array = value.trim().split(/\s+/);
+    if (array.length !== 3) {
+        throw new Error(`Camera orbit and target should be defined as three space separated numbers, but was specified as "${value}".`);
+    }
+
+    return array.map((value) => Number(value)) as CameraOrbit;
+}
+
 /**
  * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
  *
@@ -229,18 +242,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onPostProcessingChanged,
             (details) => (details.viewer.postProcessing = { exposure: this.exposure ?? undefined }),
             (details) => (this.exposure = details.viewer.postProcessing.exposure)
-        ),
-        this._createPropertyBinding(
-            "cameraOrbit",
-            (details) => details.viewer.onCameraPoseChanged,
-            (details) => (details.viewer.cameraPose = { orbit: this.cameraOrbit ?? [NaN, NaN, NaN] }),
-            (details) => (this.cameraOrbit = details.viewer.cameraPose.orbit)
-        ),
-        this._createPropertyBinding(
-            "cameraTarget",
-            (details) => details.viewer.onCameraPoseChanged,
-            (details) => (details.viewer.cameraPose = { target: this.cameraTarget ?? [NaN, NaN, NaN] }),
-            (details) => (this.cameraTarget = details.viewer.cameraPose.target)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
@@ -769,48 +770,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public cameraAutoOrbitDelay: Nullable<number> = null;
 
     /**
-     * Camera orbit can only be set as an attribute, and is set on the camera each time a new model is loaded.
-     * For access to the real time camera properties, use viewerDetails.camera.
-     */
-    @property({
-        attribute: "camera-orbit",
-        converter: (value) => {
-            if (!value) {
-                return null;
-            }
-
-            const array = value.trim().split(/\s+/);
-            if (array.length !== 3) {
-                throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
-            }
-
-            return array.map((value) => Number(value));
-        },
-    })
-    public cameraOrbit: Nullable<Readonly<CameraOrbit>> = this._options.cameraOrbit ?? null;
-
-    /**
-     * Camera target can only be set as an attribute, and is set on the camera each time a new model is loaded.
-     * For access to the real time camera properties, use viewerDetails.camera.
-     */
-    @property({
-        attribute: "camera-target",
-        converter: (value) => {
-            if (!value) {
-                return null;
-            }
-
-            const array = value.trim().split(/\s+/);
-            if (array.length !== 3) {
-                throw new Error("cameraTarget should be defined as 'x y z'");
-            }
-
-            return array.map((value) => Number(value));
-        },
-    })
-    public cameraTarget: Nullable<Readonly<CameraTarget>> = this._options.cameraTarget ?? null;
-
-    /**
      * A string value that encodes one or more hotspots.
      */
     @property({
@@ -936,7 +895,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * Resets the camera to its initial pose.
      */
     public resetCamera() {
-        this._viewerDetails?.viewer.reframe();
+        this._viewerDetails?.viewer.resetCamera();
     }
 
     /** @internal */
@@ -949,6 +908,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public override disconnectedCallback(): void {
         super.disconnectedCallback();
         this._tearDownViewer();
+    }
+
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+        super.attributeChangedCallback(name, oldValue, newValue);
+
+        if (this.hasUpdated) {
+            if (name == "camera-orbit") {
+                const value = coerceCameraOrbitOrTarget(newValue);
+                if (value) {
+                    this._viewerDetails?.viewer.resetCamera(...value);
+                }
+            } else if (name == "camera-target") {
+                const value = coerceCameraOrbitOrTarget(newValue);
+                if (value) {
+                    this._viewerDetails?.viewer.resetCamera(undefined, undefined, undefined, ...value);
+                }
+            }
+        }
     }
 
     /** @internal */
@@ -1312,6 +1291,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         },
                         get autoSuspendRendering() {
                             return !(viewerElement.hasAttribute("render-when-idle") || !viewerElement._options.autoSuspendRendering);
+                        },
+                        get cameraOrbit() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
+                        },
+                        get cameraTarget() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? viewerElement._options.cameraTarget;
                         },
                         get animationAutoPlay() {
                             return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;

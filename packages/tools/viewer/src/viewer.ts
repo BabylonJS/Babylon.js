@@ -280,9 +280,9 @@ export type ViewerOptions = Partial<{
      */
     clearColor: [r: number, g: number, b: number, a?: number];
 
-    cameraOrbit: CameraOrbit;
+    cameraOrbit: Partial<CameraOrbit>;
 
-    cameraTarget: CameraTarget;
+    cameraTarget: Partial<CameraTarget>;
 
     /**
      * Whether to play the default animation immediately after loading.
@@ -501,8 +501,6 @@ export class Viewer implements IDisposable {
      */
     public readonly onCameraAutoOrbitChanged = new Observable<void>();
 
-    public readonly onCameraPoseChanged = new Observable<void>();
-
     /**
      * Fired when the selected animation changes.
      */
@@ -557,8 +555,6 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
-    private _cameraOrbit: Readonly<CameraOrbit> = BuildTuple(3, () => NaN);
-    private _cameraTarget: Readonly<CameraTarget> = BuildTuple(3, () => NaN);
 
     private readonly _autoSuspendRendering: boolean;
     private _sceneMutated = false;
@@ -659,7 +655,7 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._reframeCameraFromBounds(false, [], this._options?.cameraOrbit, this._options?.cameraTarget); // set default camera values
+        this._resetCamera(false, false); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
@@ -684,25 +680,6 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
-    }
-
-    public get cameraPose(): Readonly<{ orbit: Readonly<CameraOrbit>; target: Readonly<CameraTarget> }> {
-        return {
-            orbit: this._cameraOrbit,
-            target: this._cameraTarget,
-        };
-    }
-
-    public set cameraPose(value: Partial<Readonly<{ orbit: Readonly<CameraOrbit>; target: Readonly<CameraTarget> }>>) {
-        if (value.orbit) {
-            this._cameraOrbit = value.orbit;
-        }
-
-        if (value.target) {
-            this._cameraTarget = value.target;
-        }
-
-        this._reframeCameraFromBounds(true, this._loadedModels, this._cameraOrbit, this._cameraTarget);
     }
 
     /**
@@ -1259,7 +1236,7 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-                this.reset();
+                this._reset(false);
             }
         });
 
@@ -1425,6 +1402,10 @@ export class Viewer implements IDisposable {
     }
 
     public reset(...flags: ResetFlag[]) {
+        this._reset(true, ...flags);
+    }
+
+    private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
         if (flags.length === 0 || flags.includes("animationAutoPlay")) {
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
@@ -1432,43 +1413,35 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("camera")) {
-            this._reframeCameraFromBounds(true, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+            this._resetCamera(interpolate, false);
         }
     }
 
-    public reframe() {
-        this._reframeCamera(true);
+    public resetCamera(reframe?: boolean): void;
+    public resetCamera(alpha?: number, beta?: number, radius?: number, targetX?: number, targetY?: number, targetZ?: number): void;
+    public resetCamera(...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
+        this._resetCamera(true, ...args);
     }
 
-    // /**
-    //  * Reframes the camera given the current model state, or reverts the camera to its initial pose.
-    //  * @param reframe If true, the camera will be reframed to fit the current model state.
-    //  */
-    // public resetCamera(reframe = true) {
-    //     if (reframe) {
-    //         //this._camera.restoreState();
-    //         this._reframeCamera();
-    //     } else {
-    //         if (this._options?.cameraOrbit) {
-    //             for (const [index, property] of (["alpha", "beta", "radius"] as const).entries()) {
-    //                 const value = this._options.cameraOrbit[index];
-    //                 if (value != undefined) {
-    //                     this._camera[property] = Number(value);
-    //                 }
-    //             }
-    //         }
-    //         if (this._options?.cameraTarget) {
-    //             const target = this._camera.target;
-    //             for (const [index, property] of (["x", "y", "z"] as const).entries()) {
-    //                 const value = this._options.cameraTarget[index];
-    //                 if (value != undefined) {
-    //                     target[property] = Number(value);
-    //                 }
-    //             }
-    //             this._camera.target = target.clone();
-    //         }
-    //     }
-    // }
+    private _resetCamera(interpolate: boolean, ...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
+        const reframeOrAlpha = args[0];
+        let [, beta, radius, targetX, targetY, targetZ] = args;
+        if ((args.length === 0 || typeof reframeOrAlpha === "boolean") && (reframeOrAlpha === undefined || reframeOrAlpha === true)) {
+            this._reframeCamera(interpolate);
+        } else {
+            let alpha: number | undefined = undefined;
+            if (reframeOrAlpha === false) {
+                if (this._options?.cameraOrbit) {
+                    [alpha, beta, radius] = this._options.cameraOrbit;
+                }
+                if (this._options?.cameraTarget) {
+                    [targetX, targetY, targetZ] = this._options.cameraTarget;
+                }
+            }
+
+            this._reframeCameraFromBounds(interpolate, this._loadedModels, [alpha, beta, radius], [targetX, targetY, targetZ]);
+        }
+    }
 
     /**
      * Disposes of the resources held by the Viewer.
@@ -1678,7 +1651,12 @@ export class Viewer implements IDisposable {
         this._reframeCameraFromBounds(interpolate, models);
     }
 
-    private _reframeCameraFromBounds(interpolate: boolean, models: readonly Model[], orbitOverrides?: Readonly<CameraOrbit>, targetOverrides?: Readonly<CameraTarget>): void {
+    private _reframeCameraFromBounds(
+        interpolate: boolean,
+        models: readonly Model[],
+        orbitOverrides?: Partial<Readonly<CameraOrbit>>,
+        targetOverrides?: Partial<Readonly<CameraTarget>>
+    ): void {
         const worldBounds = computeModelsBoundingInfos(models);
 
         this._camera.useFramingBehavior = true;
@@ -1715,41 +1693,41 @@ export class Viewer implements IDisposable {
         }
 
         if (orbitOverrides) {
-            const [optionsAlpha, optionsBeta, optionsRadius] = orbitOverrides;
+            const [overrideAlpha, overrideBeta, overrideRadius] = orbitOverrides;
 
-            if (!isNaN(optionsAlpha)) {
-                goalAlpha = optionsAlpha;
+            if (overrideAlpha != undefined && !isNaN(overrideAlpha)) {
+                goalAlpha = overrideAlpha;
             }
 
-            if (!isNaN(optionsBeta)) {
-                goalBeta = optionsBeta;
+            if (overrideBeta != undefined && !isNaN(overrideBeta)) {
+                goalBeta = overrideBeta;
             }
 
-            if (!isNaN(optionsRadius)) {
-                goalRadius = optionsRadius;
+            if (overrideRadius != undefined && !isNaN(overrideRadius)) {
+                goalRadius = overrideRadius;
             }
         }
 
         if (targetOverrides) {
-            const [optionsTargetX, optionsTargetY, optionsTargetZ] = targetOverrides;
+            const [overrideTargetX, overrideTargetY, overrideTargetZ] = targetOverrides;
 
-            if (!isNaN(optionsTargetX)) {
-                goalTarget.x = optionsTargetX;
+            if (overrideTargetX != undefined && !isNaN(overrideTargetX)) {
+                goalTarget.x = overrideTargetX;
             }
 
-            if (!isNaN(optionsTargetY)) {
-                goalTarget.y = optionsTargetY;
+            if (overrideTargetY != undefined && !isNaN(overrideTargetY)) {
+                goalTarget.y = overrideTargetY;
             }
 
-            if (!isNaN(optionsTargetZ)) {
-                goalTarget.z = optionsTargetZ;
+            if (overrideTargetZ != undefined && !isNaN(overrideTargetZ)) {
+                goalTarget.z = overrideTargetZ;
             }
         }
 
-        this._camera.alpha = Math.PI / 2;
-        this._camera.beta = Math.PI / 2.4;
+        this._camera.alpha = goalAlpha;
+        this._camera.beta = goalBeta;
         this._camera.radius = goalRadius;
-        this._camera.target = goalTarget;
+        this._camera.setTarget(goalTarget, undefined, undefined, true);
         this._camera.lowerRadiusLimit = goalRadius * 0.001;
         this._camera.upperRadiusLimit = goalRadius * 5;
         this._camera.minZ = goalRadius * 0.001;
@@ -1763,7 +1741,7 @@ export class Viewer implements IDisposable {
             this._camera.alpha = currentAlpha;
             this._camera.beta = currentBeta;
             this._camera.radius = currentRadius;
-            this._camera.target = currentTarget;
+            this._camera.setTarget(currentTarget, undefined, undefined, true);
             this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
         }
 
