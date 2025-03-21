@@ -104,10 +104,7 @@ function coerceResetMode(value: string | null): ResetMode {
         return "reframe";
     }
 
-    return value
-        .trim()
-        .split(/\s+/)
-        .map((flag) => flag.replace("post-processing", "postProcessing" satisfies ResetFlag)) as ResetMode;
+    return value.trim().split(/\s+/) as ResetMode;
 }
 
 /**

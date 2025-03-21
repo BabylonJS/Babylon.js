@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animation" | "environment" | "postProcessing";
+export type ResetFlag = "camera" | "animation" | "environment" | "post-processing";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -1452,7 +1452,7 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (flags.length === 0 || flags.includes("postProcessing")) {
+        if (flags.length === 0 || flags.includes("post-processing")) {
             if (this._options?.postProcessing) {
                 this.postProcessing = this._options.postProcessing;
             }
