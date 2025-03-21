@@ -54,7 +54,7 @@ export type ResetFlag = "camera" | "animation";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
+type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
 export type LoadModelOptions = LoadAssetContainerOptions;
 
@@ -930,7 +930,7 @@ export class Viewer implements IDisposable {
             this._updateLight();
             this._applyAnimationSpeed();
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this._reframeCamera(options?.interpolateCamera);
+            this._reframeCamera(true);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
