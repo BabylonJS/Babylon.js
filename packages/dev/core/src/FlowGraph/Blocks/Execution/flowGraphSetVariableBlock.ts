@@ -1,7 +1,6 @@
 import { RegisterClass } from "core/Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
@@ -14,25 +13,50 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
     /**
      * The name of the variable to set.
      */
-    variable: string;
+    variable?: string;
+
+    /**
+     * The name of the variables to set.
+     */
+    variables?: string[];
 }
 
 /**
  * This block will set a variable on the context.
  */
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The value to set.
-     */
-    public readonly value: FlowGraphDataConnection<T>;
-
     constructor(config: IFlowGraphSetVariableBlockConfiguration) {
         super(config);
-
-        this.value = this.registerDataInput("value", RichTypeAny);
+        // check if the variable is defined
+        if (!config.variable && !config.variables) {
+            throw new Error("FlowGraphSetVariableBlock: variable/variables is not defined");
+        }
+        // check if the variable is an array
+        if (config.variables && config.variable) {
+            throw new Error("FlowGraphSetVariableBlock: variable and variables are both defined");
+        }
+        // check if we have either a variable or variables. If we have variables, set the inputs correctly
+        if (config.variables) {
+            for (const variable of config.variables) {
+                this.registerDataInput(variable, RichTypeAny);
+            }
+        } else {
+            this.registerDataInput("value", RichTypeAny);
+        }
     }
 
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        if (this.config?.variables) {
+            for (const variable of this.config.variables) {
+                this._saveVariable(context, variable);
+            }
+        } else {
+            this._saveVariable(context, this.config?.variable!, "value");
+        }
+        this.out._activateSignal(context);
+    }
+
+    private _saveVariable(context: FlowGraphContext, variableName: string, inputName?: string): void {
         // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const animationUniqueId of currentlyRunningAnimationGroups) {
@@ -43,7 +67,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                     // check if the target property is the variable we are setting
                     if (targetAnimation.target === context) {
                         // check the variable name
-                        if (targetAnimation.animation.targetProperty === this.config?.variable) {
+                        if (targetAnimation.animation.targetProperty === variableName) {
                             // stop the animation
                             animation.stop();
                             // remove the animation from the currently running animations
@@ -58,8 +82,8 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 }
             }
         }
-        context.setVariable(this.config?.variable, this.value.getValue(context));
-        this.out._activateSignal(context);
+        const value = this.getDataInput(inputName || variableName)?.getValue(context);
+        context.setVariable(variableName, value);
     }
 
     public override getClassName(): string {

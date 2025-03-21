@@ -1090,10 +1090,33 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
-                dataTransformer(index, parser) {
+                dataTransformer(index: number[], parser): string[] {
                     return [parser.getVariableName(index[0])];
                 },
             },
+        },
+    },
+    "variable/setMultiple": {
+        blocks: [FlowGraphBlockNames.SetVariable],
+        configuration: {
+            variables: {
+                name: "variables",
+                gltfType: "number",
+                flowGraphType: "string",
+                inOptions: true,
+                dataTransformer(index: number[][], parser): string[][] {
+                    return [index[0].map((i) => parser.getVariableName(i))];
+                },
+            },
+        },
+        extraProcessor(_gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            // variable/get configuration
+            const serializedGetVariable = serializedObjects[0];
+            serializedGetVariable.dataInputs.forEach((input) => {
+                input.name = parser.getVariableName(+input.name);
+            });
+
+            return serializedObjects;
         },
     },
     "variable/interpolate": {
