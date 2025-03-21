@@ -289,7 +289,7 @@ export type ViewerOptions = Partial<{
 
     animationSpeed: number;
 
-    selectedAnimation: number;
+    defaultAnimation: number;
 
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction.
@@ -1425,8 +1425,8 @@ export class Viewer implements IDisposable {
             if (this._options?.animationSpeed) {
                 this.animationSpeed = this._options.animationSpeed;
             }
-            if (this._options?.selectedAnimation) {
-                this._selectAnimation(this._options.selectedAnimation, interpolate);
+            if (this._options?.defaultAnimation) {
+                this._selectAnimation(this._options.defaultAnimation, interpolate);
             }
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
