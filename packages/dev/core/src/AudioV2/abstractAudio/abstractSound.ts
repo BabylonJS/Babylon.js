@@ -8,7 +8,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
-import type { IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
+import type { AbstractAudioAnalyzer, IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
 import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
 import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
@@ -64,7 +64,7 @@ export interface IAbstractSoundStoredOptions extends IAbstractSoundOptionsBase, 
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
-    private _analyzer: Nullable<_AudioAnalyzer> = null;
+    private _analyzer: Nullable<AbstractAudioAnalyzer> = null;
     private _newestInstance: Nullable<_AbstractSoundInstance> = null;
     private _outBus: Nullable<PrimaryAudioBus> = null;
     private _privateInstances = new Set<_AbstractSoundInstance>();
@@ -86,7 +86,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     /**
      * The analyzer features of the sound.
      */
-    public get analyzer(): _AudioAnalyzer {
+    public get analyzer(): AbstractAudioAnalyzer {
         return this._analyzer ?? (this._analyzer = new _AudioAnalyzer(this._subGraph));
     }
 
