@@ -1419,6 +1419,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? viewerElement._options.postProcessing?.exposure,
                             };
                         },
+                        get selectedMaterialVariant() {
+                            return viewerElement.getAttribute("material-variant") ?? viewerElement._options.selectedMaterialVariant;
+                        },
                         onInitialized: (details) => {
                             detailsDeferred.resolve(details);
                         },

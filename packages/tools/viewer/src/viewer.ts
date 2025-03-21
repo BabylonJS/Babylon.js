@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animation" | "environment" | "post-processing";
+export type ResetFlag = "camera" | "animation" | "environment" | "post-processing" | "material-variant";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -299,6 +299,8 @@ export type ViewerOptions = Partial<{
     environmentConfig: Partial<EnvironmentParams>;
 
     postProcessing: Partial<PostProcessing>;
+
+    selectedMaterialVariant: string;
 
     /**
      * Boolean indicating if the scene must use right-handed coordinates system.
@@ -1255,7 +1257,7 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-                this._reset(false, "camera", "animation");
+                this._reset(false, "camera", "animation", "material-variant");
             }
         });
 
@@ -1455,6 +1457,12 @@ export class Viewer implements IDisposable {
         if (flags.length === 0 || flags.includes("post-processing")) {
             if (this._options?.postProcessing) {
                 this.postProcessing = this._options.postProcessing;
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("material-variant")) {
+            if (this._options?.selectedMaterialVariant) {
+                this.selectedMaterialVariant = this._options.selectedMaterialVariant;
             }
         }
     }
