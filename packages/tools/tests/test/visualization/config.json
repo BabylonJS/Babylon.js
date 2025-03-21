@@ -1419,8 +1419,7 @@
             "playgroundId": "#E5YGEL#20",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Screen space reflections",
@@ -1702,7 +1701,7 @@
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#549",
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
