@@ -88,6 +88,13 @@ function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, numb
     return array.map((value) => Number(value)) as CameraOrbit;
 }
 
+function coerceToneMapping(value: string | null): Nullable<ToneMapping> {
+    if (!value || !IsToneMapping(value)) {
+        return null;
+    }
+    return value;
+}
+
 function coerceResetMode(value: string | null): ResetMode {
     if (!value || value === "auto") {
         return "auto";
@@ -97,7 +104,10 @@ function coerceResetMode(value: string | null): ResetMode {
         return "reframe";
     }
 
-    return value.trim().split(/\s+/) as ResetMode;
+    return value
+        .trim()
+        .split(/\s+/)
+        .map((flag) => flag.replace("post-processing", "postProcessing" satisfies ResetFlag)) as ResetMode;
 }
 
 /**
@@ -1403,6 +1413,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
                                 rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
                                 visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
+                            };
+                        },
+                        get postProcessing() {
+                            return {
+                                toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? viewerElement._options.postProcessing?.toneMapping,
+                                contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? viewerElement._options.postProcessing?.contrast,
+                                exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? viewerElement._options.postProcessing?.exposure,
                             };
                         },
                         onInitialized: (details) => {

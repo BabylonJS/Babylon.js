@@ -49,7 +49,7 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "camera" | "animation" | "environment";
+export type ResetFlag = "camera" | "animation" | "environment" | "postProcessing";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -297,6 +297,8 @@ export type ViewerOptions = Partial<{
     cameraAutoOrbit: Partial<CameraAutoOrbit>;
 
     environmentConfig: Partial<EnvironmentParams>;
+
+    postProcessing: Partial<PostProcessing>;
 
     /**
      * Boolean indicating if the scene must use right-handed coordinates system.
@@ -1447,6 +1449,12 @@ export class Viewer implements IDisposable {
         if (flags.length === 0 || flags.includes("environment")) {
             if (this._options?.environmentConfig) {
                 this.environmentConfig = this._options.environmentConfig;
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("postProcessing")) {
+            if (this._options?.postProcessing) {
+                this.postProcessing = this._options.postProcessing;
             }
         }
     }
