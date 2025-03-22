@@ -301,7 +301,7 @@ export class NodeMaterial extends PushMaterial {
     public static DefaultShaderLanguage = ShaderLanguage.GLSL;
 
     /** If true, the node material will use GLSL if the engine is WebGL and WGSL if it's WebGPU. It takes priority over DefaultShaderLanguage if it's true */
-    public static UseNativeShaderLanguageOfEngine = true;
+    public static UseNativeShaderLanguageOfEngine = false;
 
     /**
      * Checks if a block is a texture block
