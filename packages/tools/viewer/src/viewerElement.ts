@@ -315,6 +315,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override get observedAttributes(): string[] {
+        return [...super.observedAttributes, "camera-orbit", "camera-target"];
+    }
+
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static override styles: CSSResultGroup = css`
         :host {
             --ui-foreground-color: white;
@@ -979,12 +985,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (name == "camera-orbit") {
                 const value = coerceCameraOrbitOrTarget(newValue);
                 if (value) {
-                    this._viewerDetails?.viewer.resetCamera(...value);
+                    this._viewerDetails?.viewer.updateCamera(value, undefined);
                 }
             } else if (name == "camera-target") {
                 const value = coerceCameraOrbitOrTarget(newValue);
                 if (value) {
-                    this._viewerDetails?.viewer.resetCamera(undefined, undefined, undefined, ...value);
+                    this._viewerDetails?.viewer.updateCamera(undefined, value);
                 }
             }
         }

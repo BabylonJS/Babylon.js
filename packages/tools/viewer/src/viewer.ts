@@ -706,7 +706,7 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._resetCamera(false, false); // set default camera values
+        this._reframeCameraFromBounds(false, [], this._options?.cameraOrbit, this._options?.cameraTarget);
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
         if (this._options?.cameraAutoOrbit) {
             this.cameraAutoOrbit = this._options?.cameraAutoOrbit;
@@ -1459,35 +1459,21 @@ export class Viewer implements IDisposable {
      * Resets the camera to its initial pose.
      * @param reframe If true, the camera will be reframed to fit the model bounds. Otherwise, it will use the default camera pose passed in with the options to the constructor (if present).
      */
-    public resetCamera(reframe?: boolean): void;
-
-    /**
-     * Resets the camera pose
-     */
-    public resetCamera(alpha?: number, beta?: number, radius?: number, targetX?: number, targetY?: number, targetZ?: number): void;
-
-    public resetCamera(...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
-        this._resetCamera(true, ...args);
+    public resetCamera(reframe = true): void {
+        if (reframe) {
+            this._reframeCamera(true);
+        } else {
+            this._reframeCameraFromBounds(true, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+        }
     }
 
-    private _resetCamera(interpolate: boolean, ...args: [reframe?: boolean] | [...cameraOrbit: Partial<CameraOrbit>, ...cameraTarget: Partial<CameraTarget>]): void {
-        const reframeOrAlpha = args[0];
-        let [, beta, radius, targetX, targetY, targetZ] = args;
-        if ((args.length === 0 || typeof reframeOrAlpha === "boolean") && (reframeOrAlpha === undefined || reframeOrAlpha === true)) {
-            this._reframeCamera(interpolate);
-        } else {
-            let alpha: number | undefined = undefined;
-            if (reframeOrAlpha === false) {
-                if (this._options?.cameraOrbit) {
-                    [alpha, beta, radius] = this._options.cameraOrbit;
-                }
-                if (this._options?.cameraTarget) {
-                    [targetX, targetY, targetZ] = this._options.cameraTarget;
-                }
-            }
-
-            this._reframeCameraFromBounds(interpolate, this._loadedModels, [alpha, beta, radius], [targetX, targetY, targetZ]);
-        }
+    /**
+     * Updates the camera pose.
+     * @param orbit The new camera orbit. If not provided, the current orbit will be used.
+     * @param target The new camera target. If not provided, the current target will be used.
+     */
+    public updateCamera(orbit?: CameraOrbit, target?: CameraTarget): void {
+        this._reframeCameraFromBounds(true, this._loadedModels, orbit, target);
     }
 
     /**
@@ -1514,7 +1500,7 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("camera")) {
-            this._resetCamera(interpolate, false);
+            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
             if (this._options?.cameraAutoOrbit) {
                 this.cameraAutoOrbit = this._options.cameraAutoOrbit;
             }
