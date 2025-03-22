@@ -296,31 +296,37 @@ export type ViewerOptions = Partial<{
 
     /**
      * The default camera orbit.
+     * @remarks The default camera orbit is restored when a new model is loaded.
      */
     cameraOrbit: Partial<CameraOrbit>;
 
     /**
      * The default camera target.
+     * @remarks The default camera target is restored when a new model is loaded.
      */
     cameraTarget: Partial<CameraTarget>;
 
     /**
      * Automatically rotates a 3D model or scene without requiring user interaction.
+     * @remarks The default camera auto orbit is restored when a new model is loaded.
      */
     cameraAutoOrbit: Partial<CameraAutoOrbit>;
 
     /**
      * Whether to play the default animation immediately after loading.
+     * @remarks The default animation auto play is restored when a new model is loaded.
      */
     animationAutoPlay: boolean;
 
     /**
      * The default speed of the animation.
+     * @remarks The default animation speed is restored when a new model is loaded.
      */
     animationSpeed: number;
 
     /**
      * The default selected animation.
+     * @remarks The default selected animation is restored when a new model is loaded.
      */
     selectedAnimation: number;
 
@@ -331,6 +337,7 @@ export type ViewerOptions = Partial<{
 
     /**
      * The default selected material variant.
+     * @remarks The default material variant is restored when a new model is loaded.
      */
     selectedMaterialVariant: string;
 
