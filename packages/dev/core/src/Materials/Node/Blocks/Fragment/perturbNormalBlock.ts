@@ -28,16 +28,16 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     private _worldMatrixName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
-    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: true } })
     public invertX = false;
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
-    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: true } })
     public invertY = false;
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
-    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean, undefined, { embedded: true, notifiers: { update: false } })
+    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean, undefined, { embedded: true })
     public useParallaxOcclusion = false;
     /** Gets or sets a boolean indicating that sampling mode is in Object space */
-    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
+    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: true } })
     public useObjectSpaceNormalMap = false;
 
     /**
@@ -325,7 +325,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         });
 
         const replaceString0 = isWebGPU
-            ? "fn parallaxOcclusion(vViewDirCoT: vec3f, vNormalCoT: vec3f, texCoord: vec2f, parallaxScale:f32, bump: texture_2d<f32>, bumpSampler: sampler)"
+            ? "fn parallaxOcclusion(vViewDirCoT: vec3f, vNormalCoT: vec3f, texCoord: vec2f, parallaxScale:f32, bumpSampler: texture_2d<f32>, bumpSamplerSampler: sampler)"
             : "#define inline\nvec2 parallaxOcclusion(vec3 vViewDirCoT, vec3 vNormalCoT, vec2 texCoord, float parallaxScale, sampler2D bumpSampler)";
 
         const searchExp0 = isWebGPU
@@ -347,7 +347,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                     replace: replaceString0,
                 },
                 { search: searchExp1, replace: replaceString1 },
-                { search: /texture.+?bumpSampler,vBumpUV\)\.w/g, replace: "height_" },
+                { search: /texture.+?bumpSampler,.*?vBumpUV\)\.w/g, replace: "height_" },
             ],
         });
 
@@ -362,7 +362,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             { search: new RegExp(`texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\)`, "g"), replace: `${uvForPerturbNormal}` },
             {
                 search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
-                replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
+                replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : uniformPrefix + this._worldMatrixName});`,
             },
             {
                 search: new RegExp(
@@ -372,7 +372,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 replace: `perturbNormal(TBN, ${uvForPerturbNormal}, ${uniformPrefix}vBumpInfos.y)`,
             },
             {
-                search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,(fragmentInputs\.)?vBumpInfos.z\)/g,
+                search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,(fragmentInputs\.)?vBumpUV,(uniforms\.)?vBumpInfos.z\)/g,
                 replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), ${fragmentInputsPrefix}vBumpUV, ${uniformPrefix}vBumpInfos.z, ${
                     isWebGPU
                         ? useParallax && this.useParallaxOcclusion
@@ -390,12 +390,15 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             { search: isWebGPU ? /uniforms.vBumpInfos.y/g : /vBumpInfos.y/g, replace: replaceForBumpInfos },
             { search: isWebGPU ? /uniforms.vBumpInfos.z/g : /vBumpInfos.z/g, replace: replaceForParallaxInfos },
             { search: /normalW=/g, replace: tempOutput + " = " },
-            {
-                search: isWebGPU
-                    ? /mat3x3f\(uniforms\.normalMatrix\[0\].xyz,uniforms\.normalMatrix\[1\]\.xyz,uniforms\.normalMatrix\[2\].xyz\)\*normalW/g
-                    : /mat3\(normalMatrix\)\*normalW/g,
-                replace: `${mat3}(normalMatrix) * ` + tempOutput,
-            },
+            isWebGPU
+                ? {
+                      search: /mat3x3f\(uniforms\.normalMatrix\[0\].xyz,uniforms\.normalMatrix\[1\]\.xyz,uniforms\.normalMatrix\[2\].xyz\)\*normalW/g,
+                      replace: `${mat3}(normalMatrix[0].xyz, normalMatrix[1].xyz, normalMatrix[2].xyz) * ` + tempOutput,
+                  }
+                : {
+                      search: /mat3\(normalMatrix\)\*normalW/g,
+                      replace: `${mat3}(normalMatrix) * ` + tempOutput,
+                  },
             { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
             { search: /viewDirectionW/g, replace: useParallax ? this.viewDirection.associatedVariableName : `vec3${fSuffix}(0.)` },
             tangentReplaceString,
