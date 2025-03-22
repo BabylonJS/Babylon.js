@@ -62,7 +62,6 @@ export async function CreateViewerForCanvas(
     canvas: HTMLCanvasElement,
     options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
-    // options = { ...defaultCanvasViewerOptions, ...options };
     if (options) {
         if (options.antialias === undefined) {
             options.antialias = defaultCanvasViewerOptions.antialias;
