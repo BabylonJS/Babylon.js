@@ -682,7 +682,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The model URL.
      */
     @property()
-    public source: Nullable<string> = null;
+    public source: Nullable<string> = this._options.source ?? null;
 
     /**
      * Forces the model to be loaded with the specified extension.
@@ -712,19 +712,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The texture URL for lighting.
      */
     @property({ attribute: "environment-lighting" })
-    public environmentLighting: Nullable<string> = null;
+    public environmentLighting: Nullable<string> = this._options.environmentLighting ?? null;
 
     /**
      * The texture URL for the skybox.
      */
     @property({ attribute: "environment-skybox" })
-    public environmentSkybox: Nullable<string> = null;
+    public environmentSkybox: Nullable<string> = this._options.environmentSkybox ?? null;
 
     /**
      * A value between 0 and 2 that specifies the intensity of the environment lighting.
      */
     @property({ type: Number, attribute: "environment-intensity" })
-    public environmentIntensity: Nullable<number> = null;
+    public environmentIntensity: Nullable<number> = this._options.environmentConfig?.intensity ?? null;
 
     /**
      * A value in radians that specifies the rotation of the environment.
@@ -733,7 +733,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         type: Number,
         attribute: "environment-rotation",
     })
-    public environmentRotation: Nullable<number> = null;
+    public environmentRotation: Nullable<number> = this._options.environmentConfig?.rotation ?? null;
 
     /**
      * Wether or not the environment is visible.
@@ -741,7 +741,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({
         attribute: "environment-visible",
     })
-    public environmentVisible: Nullable<boolean> = null;
+    public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -761,7 +761,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * A value between 0 and 1 that specifies how much to blur the skybox.
      */
     @property({ attribute: "skybox-blur" })
-    public skyboxBlur: Nullable<number> = null;
+    public skyboxBlur: Nullable<number> = this._options.environmentConfig?.blur ?? null;
 
     /**
      * The tone mapping to use for rendering the scene.
@@ -775,19 +775,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return value;
         },
     })
-    public toneMapping: Nullable<ToneMapping> = null;
+    public toneMapping: Nullable<ToneMapping> = this._options.postProcessing?.toneMapping ?? null;
 
     /**
      * The contrast applied to the scene.
      */
     @property()
-    public contrast: Nullable<number> = null;
+    public contrast: Nullable<number> = this._options.postProcessing?.contrast ?? null;
 
     /**
      * The exposure applied to the scene.
      */
     @property()
-    public exposure: Nullable<number> = null;
+    public exposure: Nullable<number> = this._options.postProcessing?.exposure ?? null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
@@ -799,7 +799,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
         },
     })
-    public clearColor: Nullable<Color4> = null;
+    public clearColor: Nullable<Color4> = this._options.clearColor
+        ? new Color4(this._options.clearColor[0], this._options.clearColor[1], this._options.clearColor[2], this._options.clearColor[3] ?? 1)
+        : null;
 
     /**
      * Enables or disables camera auto-orbit.
@@ -808,7 +810,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit",
         type: Boolean,
     })
-    public cameraAutoOrbit = false;
+    public cameraAutoOrbit = this._options.cameraAutoOrbit?.enabled ?? false;
 
     /**
      * The speed at which the camera auto-orbits around the target.
@@ -817,7 +819,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit-speed",
         type: Number,
     })
-    public cameraAutoOrbitSpeed: Nullable<number> = null;
+    public cameraAutoOrbitSpeed: Nullable<number> = this._options.cameraAutoOrbit?.speed ?? null;
 
     /**
      * The delay in milliseconds before the camera starts auto-orbiting.
@@ -826,7 +828,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit-delay",
         type: Number,
     })
-    public cameraAutoOrbitDelay: Nullable<number> = null;
+    public cameraAutoOrbitDelay: Nullable<number> = this._options.cameraAutoOrbit?.delay ?? null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -876,7 +878,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The currently selected animation index.
      */
     @property({ attribute: "selected-animation", type: Number })
-    public selectedAnimation: Nullable<number> = null;
+    public selectedAnimation: Nullable<number> = this._options.selectedAnimation ?? null;
 
     /**
      * True if an animation is currently playing.
@@ -889,7 +891,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The speed scale at which animations are played.
      */
     @property({ attribute: "animation-speed" })
-    public animationSpeed = 1;
+    public animationSpeed = this._options.animationSpeed ?? 1;
 
     /**
      * The current point on the selected animation timeline, normalized between 0 and 1.
@@ -917,7 +919,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The currently selected material variant.
      */
     @property({ attribute: "material-variant" })
-    public selectedMaterialVariant: Nullable<string> = null;
+    public selectedMaterialVariant: Nullable<string> = this._options.selectedMaterialVariant ?? null;
 
     /**
      * True if scene cameras should be used as hotspots.
@@ -925,6 +927,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: "cameras-as-hotspots", type: Boolean })
     public camerasAsHotSpots = false;
 
+    /**
+     * Determines the behavior of the reset function, and the associated default reset button.
+     */
     @property({ attribute: "reset-mode", converter: coerceResetMode })
     public resetMode: "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]] = "auto";
 
@@ -941,6 +946,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._viewerDetails?.viewer.toggleAnimation();
     }
 
+    /**
+     * Resets the Viewer state based on the @see resetMode property.
+     */
     public reset() {
         this._reset(this.resetMode);
     }
@@ -1466,7 +1474,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.viewer.onModelChanged.add((source) => {
                     this._animations = [...details.viewer.animations];
-
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
 
