@@ -1485,24 +1485,9 @@ export class Viewer implements IDisposable {
     }
 
     private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
-        if (flags.length === 0 || flags.includes("animation")) {
-            if (this._options?.animationSpeed) {
-                this.animationSpeed = this._options.animationSpeed;
-            }
-            if (this._options?.selectedAnimation) {
-                this._selectAnimation(this._options.selectedAnimation, interpolate);
-            }
-            if (this._options?.animationAutoPlay) {
-                this.playAnimation();
-            } else if (this._options?.animationAutoPlay === false) {
-                this.pauseAnimation();
-            }
-        }
-
-        if (flags.length === 0 || flags.includes("camera")) {
-            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
-            if (this._options?.cameraAutoOrbit) {
-                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
+        if (flags.length === 0 || flags.includes("source")) {
+            if (this._options?.source) {
+                this.loadModel(this._options.source);
             }
         }
 
@@ -1522,9 +1507,24 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (flags.length === 0 || flags.includes("source")) {
-            if (this._options?.source) {
-                this.loadModel(this._options.source);
+        if (flags.length === 0 || flags.includes("camera")) {
+            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+            if (this._options?.cameraAutoOrbit) {
+                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("animation")) {
+            if (this._options?.animationSpeed) {
+                this.animationSpeed = this._options.animationSpeed;
+            }
+            if (this._options?.selectedAnimation) {
+                this._selectAnimation(this._options.selectedAnimation, interpolate);
+            }
+            if (this._options?.animationAutoPlay) {
+                this.playAnimation();
+            } else if (this._options?.animationAutoPlay === false) {
+                this.pauseAnimation();
             }
         }
 

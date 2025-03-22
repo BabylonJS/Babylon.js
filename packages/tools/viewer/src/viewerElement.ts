@@ -1391,28 +1391,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                         get source() {
                             return viewerElement.getAttribute("source") ?? viewerElement._options.source;
                         },
-                        get cameraAutoOrbit() {
-                            return {
-                                enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
-                                speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? viewerElement._options.cameraAutoOrbit?.speed,
-                                delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? viewerElement._options.cameraAutoOrbit?.delay,
-                            };
-                        },
-                        get cameraOrbit() {
-                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
-                        },
-                        get cameraTarget() {
-                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? viewerElement._options.cameraTarget;
-                        },
-                        get animationAutoPlay() {
-                            return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
-                        },
-                        get animationSpeed() {
-                            return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
-                        },
-                        get selectedAnimation() {
-                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
-                        },
                         get environmentLighting() {
                             return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentLighting;
                         },
@@ -1426,6 +1404,28 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
                                 visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
                             };
+                        },
+                        get cameraOrbit() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
+                        },
+                        get cameraTarget() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? viewerElement._options.cameraTarget;
+                        },
+                        get cameraAutoOrbit() {
+                            return {
+                                enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
+                                speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? viewerElement._options.cameraAutoOrbit?.speed,
+                                delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? viewerElement._options.cameraAutoOrbit?.delay,
+                            };
+                        },
+                        get animationAutoPlay() {
+                            return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
+                        },
+                        get animationSpeed() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
+                        },
+                        get selectedAnimation() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
                         },
                         get postProcessing() {
                             return {
