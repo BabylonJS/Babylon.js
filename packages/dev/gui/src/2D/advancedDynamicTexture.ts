@@ -1679,11 +1679,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             layer.layerMask = 0;
         }
 
-        if (adaptiveScaling && resultScene) {
-            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
-            result._rootContainer.scaleX = newScale;
-            result._rootContainer.scaleY = newScale;
-        }
+        result.adjustToEngineHardwareScalingLevel = adaptiveScaling;
 
         // Attach
         result.attach();
