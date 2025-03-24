@@ -149,7 +149,8 @@ export class NodePort {
         this._stateManager = stateManager;
 
         this._imgHost = portContainer.ownerDocument!.createElement("div");
-        this._imgHost.classList.add("port-icon");
+        this._imgHost.classList.add(localStyles["port-icon"]);
+        this._imgHost.classList.add("port-icon"); // Used to flag it as a port icon
         this._element.appendChild(this._imgHost);
 
         this._pip = portContainer.ownerDocument!.createElement("div");
