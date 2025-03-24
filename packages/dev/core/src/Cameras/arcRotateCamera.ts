@@ -1033,10 +1033,12 @@ export class ArcRotateCamera extends TargetCamera {
             this.radius += (this._goalRadius - this.radius) * t;
             Vector2.LerpToRef(this.targetScreenOffset, this._goalTargetScreenOffset, t, this.targetScreenOffset);
 
+            TmpVectors.Quaternion[0].negateToRef(TmpVectors.Quaternion[1]);
+
             // stop restoring when within close range or when user starts interacting
             if (
                 (Vector3.DistanceSquared(this.getTarget(), this._goalTarget) < Epsilon &&
-                    TmpVectors.Quaternion[2].equalsWithEpsilon(TmpVectors.Quaternion[0]) &&
+                    (TmpVectors.Quaternion[2].equalsWithEpsilon(TmpVectors.Quaternion[0]) || TmpVectors.Quaternion[2].equalsWithEpsilon(TmpVectors.Quaternion[1])) &&
                     Math.pow(this._goalRadius - this.radius, 2) < Epsilon &&
                     Vector2.Distance(this.targetScreenOffset, this._goalTargetScreenOffset) < Epsilon) ||
                 this.inertialAlphaOffset !== 0 ||
