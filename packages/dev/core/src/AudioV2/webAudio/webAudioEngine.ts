@@ -6,7 +6,7 @@ import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IMainAudioBusOptions, MainAudioBus } from "../abstractAudio/mainAudioBus";
 import type { IStaticSoundOptions, StaticSound } from "../abstractAudio/staticSound";
-import type { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
@@ -218,7 +218,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public async createSoundBufferAsync(
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-        options: Partial<IStaticSoundOptions> = {}
+        options: Partial<IStaticSoundBufferOptions> = {}
     ): Promise<StaticSoundBuffer> {
         const module = await import("./webAudioStaticSound");
 
