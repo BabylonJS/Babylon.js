@@ -143,7 +143,7 @@ export abstract class StaticSound extends AbstractSound {
     public set pitch(value: number) {
         this._options.pitch = value;
 
-        let it = this._instances.values();
+        const it = this._instances.values();
         for (let instance = it.next(); !instance.done; instance = it.next()) {
             instance.value.pitch = value;
         }
@@ -160,7 +160,7 @@ export abstract class StaticSound extends AbstractSound {
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
 
-        let it = this._instances.values();
+        const it = this._instances.values();
         for (let instance = it.next(); !instance.done; instance = it.next()) {
             instance.value.playbackRate = value;
         }
