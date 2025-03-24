@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
-import { Color4 } from "../../../Maths/math.color";
+import { Color4, TmpColors } from "../../../Maths/math.color";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**
@@ -16,6 +16,11 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
      * If the color should be cleared.
      */
     public clearColor = true;
+
+    /**
+     * If the color should be converted to linear space (default: false).
+     */
+    public convertColorToLinearSpace = false;
 
     /**
      * If the depth should be cleared.
@@ -80,12 +85,19 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the target texture must have the same number of samples.`);
         }
 
+        const color = TmpColors.Color4[0];
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.targetTexture);
         pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
-            context.clear(this.color, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
+            color.copyFrom(this.color);
+            if (this.convertColorToLinearSpace) {
+                color.toLinearSpaceToRef(color);
+            }
+
+            context.clear(color, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
         });
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
