@@ -666,7 +666,6 @@ export class Viewer implements IDisposable {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
-            scene.clearColor = new Color4(...(this._options?.clearColor ?? ViewerOptions.clearColor));
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? ViewerOptions.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
@@ -705,6 +704,7 @@ export class Viewer implements IDisposable {
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
+            camera.useAutoRotationBehavior = true;
             camera.onViewMatrixChangedObservable.add(() => {
                 this._markSceneMutated();
             });
@@ -740,20 +740,8 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._reset(false, "camera");
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
-
-        this.cameraAutoOrbit = {
-            enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
-            speed: this._options?.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
-            delay: this._options?.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
-        };
-
-        this.postProcessing = {
-            toneMapping: this._options?.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
-            contrast: this._options?.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
-            exposure: this._options?.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
-        };
+        this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -1119,13 +1107,19 @@ export class Viewer implements IDisposable {
         return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
     }
 
-    public set selectedMaterialVariant(value: string) {
-        if (value !== this.selectedMaterialVariant && this._activeModel?.materialVariantsController?.variants.includes(value)) {
-            this._snapshotHelper.disableSnapshotRendering();
-            this._activeModel.materialVariantsController.selectedVariant = value;
-            this._snapshotHelper.enableSnapshotRendering();
-            this._markSceneMutated();
-            this.onSelectedMaterialVariantChanged.notifyObservers();
+    public set selectedMaterialVariant(value: Nullable<string>) {
+        if (this._activeModel?.materialVariantsController) {
+            if (!value) {
+                value = this._activeModel.materialVariantsController.variants[0];
+            }
+
+            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
+                this._snapshotHelper.disableSnapshotRendering();
+                this._activeModel.materialVariantsController.selectedVariant = value;
+                this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
+                this.onSelectedMaterialVariantChanged.notifyObservers();
+            }
         }
     }
 
@@ -1526,61 +1520,54 @@ export class Viewer implements IDisposable {
 
     private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
         if (flags.length === 0 || flags.includes("source")) {
-            if (this._options?.source) {
-                this.loadModel(this._options.source);
-            }
+            this._updateModel(this._options?.source);
         }
 
         if (flags.length === 0 || flags.includes("environment")) {
-            if (this._options?.clearColor) {
-                this._scene.clearColor = new Color4(...this._options.clearColor);
-            }
-            if (this._options?.environmentConfig) {
-                this.environmentConfig = this._options.environmentConfig;
-            }
-            if (this._options?.environmentLighting && this._options.environmentSkybox && this._options.environmentLighting === this._options.environmentSkybox) {
-                this.loadEnvironment(this._options.environmentLighting, { lighting: true, skybox: true });
+            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? ViewerOptions.clearColor));
+            this.environmentConfig = {
+                intensity: this._options?.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity,
+                blur: this._options?.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur,
+                rotation: this._options?.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation,
+                visible: this._options?.environmentConfig?.visible ?? ViewerOptions.environmentConfig.visible,
+            };
+            if (this._options?.environmentLighting === this._options?.environmentSkybox) {
+                this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal);
             } else {
-                if (this._options?.environmentLighting) {
-                    this.loadEnvironment(this._options.environmentLighting, { lighting: true });
-                }
-                if (this._options?.environmentSkybox) {
-                    this.loadEnvironment(this._options.environmentSkybox, { skybox: true });
-                }
+                this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal);
+                this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal);
             }
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
-            if (this._options?.animationSpeed) {
-                this.animationSpeed = this._options.animationSpeed;
-            }
-            if (this._options?.selectedAnimation) {
-                this._selectAnimation(this._options.selectedAnimation, interpolate);
-            }
+            this.animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
+            this.selectedAnimation = this._options?.selectedAnimation ?? 0;
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
-            } else if (this._options?.animationAutoPlay === false) {
+            } else {
                 this.pauseAnimation();
             }
         }
 
         if (flags.length === 0 || flags.includes("camera")) {
             this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
-            if (this._options?.cameraAutoOrbit) {
-                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
-            }
+            this.cameraAutoOrbit = {
+                enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
+                speed: this._options?.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
+                delay: this._options?.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
+            };
         }
 
         if (flags.length === 0 || flags.includes("post-processing")) {
-            if (this._options?.postProcessing) {
-                this.postProcessing = this._options.postProcessing;
-            }
+            this.postProcessing = {
+                toneMapping: this._options?.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
+                contrast: this._options?.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
+                exposure: this._options?.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
+            };
         }
 
         if (flags.length === 0 || flags.includes("material-variant")) {
-            if (this._options?.selectedMaterialVariant) {
-                this.selectedMaterialVariant = this._options.selectedMaterialVariant;
-            }
+            this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
         }
     }
 
