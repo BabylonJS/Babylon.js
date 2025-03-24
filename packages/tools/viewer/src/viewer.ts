@@ -256,6 +256,9 @@ export type ViewerDetails = {
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
+/**
+ * The options for the Viewer.
+ */
 export type ViewerOptions = Partial<{
     /**
      * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
@@ -346,6 +349,30 @@ export type ViewerOptions = Partial<{
      */
     useRightHandedSystem: boolean;
 }>;
+
+export const ViewerOptions = {
+    clearColor: [0, 0, 0, 0] as const,
+    autoSuspendRendering: true,
+    environmentConfig: {
+        intensity: 1,
+        blur: 0.3,
+        rotation: 0,
+        visible: true,
+    },
+    cameraAutoOrbit: {
+        enabled: false,
+        delay: 2000,
+        speed: 0.05,
+    },
+    animationAutoPlay: false,
+    animationSpeed: 1,
+    postProcessing: {
+        toneMapping: "neutral",
+        contrast: 1,
+        exposure: 1,
+    },
+    useRightHandedSystem: false,
+} as const satisfies ViewerOptions;
 
 export type EnvironmentOptions = Partial<
     Readonly<{
@@ -601,19 +628,19 @@ export class Viewer implements IDisposable {
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur: number = 0.3;
-    private _skyboxVisible: boolean = true;
+    private _skyboxBlur = this._options?.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur;
+    private _skyboxVisible = this._options?.environmentConfig?.visible ?? ViewerOptions.environmentConfig.visible;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
-    private _reflectionsIntensity: number = 1;
-    private _reflectionsRotation: number = 0;
+    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity;
+    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
 
-    private readonly _autoSuspendRendering: boolean;
+    private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? ViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -630,18 +657,17 @@ export class Viewer implements IDisposable {
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
-    private _animationSpeed = 1;
+    private _animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
 
     public constructor(
         private readonly _engine: AbstractEngine,
         private readonly _options?: ViewerOptions
     ) {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
-        this._autoSuspendRendering = this._options?.autoSuspendRendering ?? true;
         {
             const scene = new Scene(this._engine);
-            scene.clearColor = this._options?.clearColor ? new Color4(...this._options.clearColor) : new Color4(0, 0, 0, 0);
-            scene.useRightHandedSystem = !!this._options?.useRightHandedSystem;
+            scene.clearColor = new Color4(...(this._options?.clearColor ?? ViewerOptions.clearColor));
+            scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? ViewerOptions.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -704,6 +730,7 @@ export class Viewer implements IDisposable {
             this._scene = scene;
             this._camera = camera;
         }
+
         this._scene.skipFrustumClipping = true;
         this._scene.skipPointerDownPicking = true;
         this._scene.skipPointerUpPicking = true;
@@ -713,15 +740,19 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._reframeCameraFromBounds(false, [], this._options?.cameraOrbit, this._options?.cameraTarget);
+        this._reset(false, "camera");
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
-        if (this._options?.cameraAutoOrbit) {
-            this.cameraAutoOrbit = this._options?.cameraAutoOrbit;
-        }
 
-        // Default to KHR PBR Neutral tone mapping.
+        this.cameraAutoOrbit = {
+            enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
+            speed: this._options?.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
+            delay: this._options?.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
+        };
+
         this.postProcessing = {
-            toneMapping: "neutral",
+            toneMapping: this._options?.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
+            contrast: this._options?.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
+            exposure: this._options?.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
         };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
@@ -741,6 +772,8 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
+
+        this._reset(false, "source", "environment");
     }
 
     /**
@@ -1499,6 +1532,9 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("environment")) {
+            if (this._options?.clearColor) {
+                this._scene.clearColor = new Color4(...this._options.clearColor);
+            }
             if (this._options?.environmentConfig) {
                 this.environmentConfig = this._options.environmentConfig;
             }
@@ -1514,13 +1550,6 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (flags.length === 0 || flags.includes("camera")) {
-            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
-            if (this._options?.cameraAutoOrbit) {
-                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
-            }
-        }
-
         if (flags.length === 0 || flags.includes("animation")) {
             if (this._options?.animationSpeed) {
                 this.animationSpeed = this._options.animationSpeed;
@@ -1532,6 +1561,13 @@ export class Viewer implements IDisposable {
                 this.playAnimation();
             } else if (this._options?.animationAutoPlay === false) {
                 this.pauseAnimation();
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("camera")) {
+            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+            if (this._options?.cameraAutoOrbit) {
+                this.cameraAutoOrbit = this._options.cameraAutoOrbit;
             }
         }
 
