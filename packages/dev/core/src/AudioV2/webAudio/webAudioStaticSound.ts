@@ -325,7 +325,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public set pitch(value: number) {
-        this._options.pitch = value;
         if (this._sourceNode) {
             this.engine._setAudioParam(this._sourceNode.detune, value);
         }
@@ -333,7 +332,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public set playbackRate(value: number) {
-        this._options.playbackRate = value;
         if (this._sourceNode) {
             this.engine._setAudioParam(this._sourceNode.playbackRate, value);
         }
@@ -383,12 +381,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         }
         if (options.loopEnd !== undefined) {
             this._options.loopEnd = options.loopEnd;
-        }
-        if (options.pitch !== undefined) {
-            this._options.pitch = options.pitch;
-        }
-        if (options.playbackRate !== undefined) {
-            this._options.playbackRate = options.playbackRate;
         }
         if (options.startOffset !== undefined) {
             this._options.startOffset = options.startOffset;
@@ -514,11 +506,11 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         }
 
         const node = this._sourceNode;
-        node.detune.value = this._options.pitch;
+        node.detune.value = this._sound.pitch;
         node.loop = this._options.loop;
         node.loopEnd = this._options.loopEnd;
         node.loopStart = this._options.loopStart;
-        node.playbackRate.value = this._options.playbackRate;
+        node.playbackRate.value = this._sound.playbackRate;
     }
 
     private _onEngineStateChanged = () => {
