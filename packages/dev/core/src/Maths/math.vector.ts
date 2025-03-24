@@ -4624,6 +4624,26 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     }
 
     /**
+     * Gets a boolean if two quaternions are equals (using an epsilon value), taking care of double cover : https://www.reedbeta.com/blog/why-quaternions-double-cover/
+     * @param otherQuaternion defines the other quaternion
+     * @param epsilon defines the minimal distance to consider equality
+     * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+     */
+    public isApprox(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
+        return (
+            otherQuaternion &&
+            ((WithinEpsilon(this._x, otherQuaternion._x, epsilon) &&
+                WithinEpsilon(this._y, otherQuaternion._y, epsilon) &&
+                WithinEpsilon(this._z, otherQuaternion._z, epsilon) &&
+                WithinEpsilon(this._w, otherQuaternion._w, epsilon)) ||
+                (WithinEpsilon(this._x, -otherQuaternion._x, epsilon) &&
+                    WithinEpsilon(this._y, -otherQuaternion._y, epsilon) &&
+                    WithinEpsilon(this._z, -otherQuaternion._z, epsilon) &&
+                    WithinEpsilon(this._w, -otherQuaternion._w, epsilon)))
+        );
+    }
+
+    /**
      * Clone the current quaternion
      * Example Playground https://playground.babylonjs.com/#L49EJ7#12
      * @returns a new quaternion copied from the current one
