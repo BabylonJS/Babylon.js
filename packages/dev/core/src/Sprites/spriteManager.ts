@@ -420,7 +420,8 @@ export class SpriteManager implements ISpriteManager {
     }
 
     private _checkTextureAlpha(sprite: Sprite, ray: Ray, distance: number, min: Vector3, max: Vector3) {
-        if (!sprite.useAlphaForPicking || !this.texture || !this.texture.isReady()) {
+        if (!sprite.useAlphaForPicking || !this.texture?.isReady()) {
+
             return true;
         }
 
