@@ -146,7 +146,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, this._colors, this.colorsSampling, scene);
             } else {
                 this._color = this._color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR;
-                GreasedLineTools.PrepareEmptyColorsTexture(scene);
+                this.colorsTexture = GreasedLineTools.PrepareEmptyColorsTexture(scene);
             }
         }
 
