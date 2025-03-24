@@ -328,7 +328,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         .bar {
             position: absolute;
             width: calc(100% - 24px);
-            min-width: 150px;
+            min-width: 370px;
             max-width: 1280px;
             left: 50%;
             transform: translateX(-50%);
@@ -402,7 +402,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             border-color: var(--ui-foreground-color);
             height: 48px;
             bottom: 12px;
-            min-width: 370px;
             color: var(--ui-foreground-color);
             -webkit-tap-highlight-color: transparent;
         }
