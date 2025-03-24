@@ -1,7 +1,7 @@
 import * as React from "react";
-import copyIcon from "shared-ui-components/imgs/copy.svg";
-import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
-import { MergeClassNames } from "shared-ui-components/styleHelper";
+import copyIcon from "../imgs/copy.svg";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { MergeClassNames } from "../styleHelper";
 
 interface ITextLineComponentProps {
     label?: string;

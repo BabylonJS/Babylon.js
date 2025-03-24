@@ -1555,7 +1555,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
-            serializedObject.signalInputs.forEach((input) => {
+            serializedObject.dataInputs.forEach((input) => {
                 if (input.name !== "default" && input.name !== "case") {
                     input.name = "in_" + input.name;
                 }
