@@ -288,14 +288,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override async pause(): Promise<void> {
+    public override async pauseAsync(): Promise<void> {
         await this._audioContext.suspend();
 
         this._pauseCalled = true;
     }
 
     /** @internal */
-    public override async resume(): Promise<void> {
+    public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
         if (this._resumePromise) {
@@ -351,7 +351,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
-                    this.resume();
+                    this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
         }
