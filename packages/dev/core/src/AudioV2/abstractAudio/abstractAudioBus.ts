@@ -4,7 +4,7 @@ import type { AudioEngineV2 } from "./audioEngineV2";
 import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
-import type { IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
+import type { AbstractAudioAnalyzer, IAudioAnalyzerOptions } from "./subProperties/abstractAudioAnalyzer";
 import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 
 /** @internal */
@@ -17,7 +17,7 @@ export interface IAbstractAudioBusOptions extends IAudioAnalyzerOptions, IVolume
  * sounds together and apply effects to them.
  */
 export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
-    private _analyzer: Nullable<_AudioAnalyzer> = null;
+    private _analyzer: Nullable<AbstractAudioAnalyzer> = null;
 
     protected abstract _subGraph: _AbstractAudioSubGraph;
 
@@ -28,7 +28,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     /**
      * The analyzer features of the bus.
      */
-    public get analyzer(): _AudioAnalyzer {
+    public get analyzer(): AbstractAudioAnalyzer {
         return this._analyzer ?? (this._analyzer = new _AudioAnalyzer(this._subGraph));
     }
 

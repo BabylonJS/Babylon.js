@@ -1023,7 +1023,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Port dragging
-        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
+        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).classList.contains("port-icon")) {
             if (!this._candidateLink) {
                 const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {

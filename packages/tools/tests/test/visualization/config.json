@@ -1419,8 +1419,7 @@
             "playgroundId": "#E5YGEL#20",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Screen space reflections",
@@ -1702,7 +1701,7 @@
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#549",
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
@@ -2278,7 +2277,8 @@
             "renderCount": 15,
             "errorRatio": 6,
             "playgroundId": "#C90R62#17",
-            "excludedEngines": ["webgl1", "webgl2"]
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "change-texture-of-material",
@@ -2538,6 +2538,12 @@
         {
             "title": "KHR diffuse transmission",
             "playgroundId": "#RX52XX#1"
+        },
+        {
+            "title": "SubSurface Scattering",
+            "playgroundId": "#5H0H89#129",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

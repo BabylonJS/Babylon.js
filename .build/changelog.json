@@ -1,6 +1,907 @@
 {
-    "fromTag": "7.53.2",
+    "fromTag": "7.54.0",
     "changelog": {
+        "7.54.1": [
+            {
+                "pr": "16387",
+                "title": "Fix TextLineComponent imports to work outside of the repo",
+                "description": "When importing @babylonjs/shared-ui-components from another repo, the build is failing because textLineComponent.js is referencing imports in this form:\r\nimport copyIcon from \"shared-ui-components/imgs/copy.svg\";\r\n\r\nThis works in the Babylon repo because that name is mapped to the right path, but doesn't work when used in another repo. This change fixes the imports to be relative paths instead.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16385",
+                "title": "WebGPU: Fix various problems with WGSL and node materials",
+                "description": "Note that I added a static flag `UseNativeShaderLanguageOfEngine` to `NodeMaterial`, so that we can easily generate WGSL code for node materials. This flag is **false** by default (we should probably set it to `true` at some point - after the 8.0 release?), but I set it to **true** when running the visualization tests. That way, all visu tests that use node materials generate their shader code in WGSL when using WebGPU.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Shaders/imageProcessing.fragment.fx",
+                    "packages/dev/core/src/Shaders/motionBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/imageProcessing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/motionBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/screenSpaceReflection2.fragment.fx",
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Screen-Space-Reflections-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/motionBlur.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/terrain-erosion.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16383",
+                "title": "Fix Viewer toolbar width regression",
+                "description": "A recent change resulted in the Viewer toolbar having a min-width set even when there is no animation. In this case, the tool-bar should be allowed to be narrower since it may only have a single reset button.\r\n\r\nThis change also brings over two fixes that were included in https://github.com/BabylonJS/Babylon.js/pull/16372, which was rolled back:\r\n- Explicitly set the width of the Configurator app level div to 100%.\r\n- Disable/enable snapshot rendering on suspend/resume. This ensures we can correctly render the final high res frame (before suspend completes) within a single frame (e.g. single call to scene.render). It will be slightly slower since it is not using snapshot rendering, but this is fine for rendering a single frame (fast snapshot rendering is mostly useful for continuous rendering).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16382",
+                "title": "Don't apply devicePixelRatio to canvas width/height in AbstractEngine.resize",
+                "description": "This is a subset of https://github.com/BabylonJS/Babylon.js/pull/16372, since we found one issue with it (adaptToDeviceRatio + limitDeviceRatio behavior changed).\r\n\r\nThis change contains only the part that prevents the devicePixelRatio scaling from being applied to the width/height when those values come from the canvas width/height, which is the native pixel size, not the css size. Otherwise, every call to resize will scale the canvas and it just gets bigger and bigger until it crashes the browser. This will happen if the canvas width or height is 0, which we initially discovered when testing the Viewer Configurator on iOS (where the width ends up being 0 because the side pane takes up the full horizontal width of the device). However, you can easily repro this in other tools. For example, if you put Playground on a high dpi device (DPR>1), reduce the width of the window, toggle to only show the code (now the canvas css width is 0), and then resize the window, the canvas width will explode:\r\n<img width=\"387\" alt=\"image\" src=\"https://github.com/user-attachments/assets/e5464ad9-bc45-4c99-8168-c0cde03c6464\" />\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16381",
+                "title": "Enhance FlowGraphSetVariableBlock to support setting multiple variables",
+                "description": "Adding new glTF interactivity node, variable/setMultiple - added here - https://github.com/KhronosGroup/glTF/pull/2293/commits/5ef1fad30cb0862d7ff5c680e85e61fa9a258316\n\nThis change allows setting more than one variable at a single call using the set variable block. This is important, for example, when storing all results of a matrix decompose call. If we can't set multiple variables, the matrix will need to be decomposed 3 times, storing all 3 variables.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16380",
+                "title": "Fix regex pattern for template replacement in FlowGraphConsoleLogBlock",
+                "description": "This Regexp will work if the match is anything other than numbers. Once it is numbers it is used as the `{n}` regex pattern. This fixes the issue.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16377",
+                "title": "Fix audio bus connections",
+                "description": "Intermediate audio bus connections are not working because they're not implemented. This change implements them.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16379",
+                "title": "Fix sound and audio bus `analyzer` property return type",
+                "description": "The sound and audio bus `analyzer` property return type is `_AudioAnalyzer`, which is an internal class and breaks the documentation.\r\n\r\nThis change fixes the issue by setting the return type to the correct `AbstractAudioAnalyzer` class.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16378",
+                "title": "Set the audio engine unmute button relative to its parent element",
+                "description": "The position of the audio engine unmute button in the playground is in the top left corner of the code pane instead of the render area.\r\n\r\nThis change fixes the issue by positioning the button relative to the parent element instead of absolute top left.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioUnmuteUI.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16372",
+                "title": "AbstractEngine and Viewer v2 resize fixes",
+                "description": "AbstractEngine\r\n- Read `adaptToDeviceRatio` from `EngineOptions` object, not just the explicit ctr parameter for it\r\n- Consider `limitDeviceRatio` when using `devicePixelRatio` in `resize()`\r\n- Consider `limitDeviceRatio` when initializing `lastDevicePixelRatio` in ctr\r\n- Only apply `hardwareScalingLevel` to dimensions in CSS pixels, never `canvas.width` or `canvas.height`.\r\n\r\nViewer\r\n- Prevent infinite loop between rendering suspended and resumed by disabling snapshot rendering on suspend, enabling on resume.\r\n- Restore lost restoration of `hardwareScalingLevel` for final render",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16376",
+                "title": "AbstractEngine and Viewer v2 resize fixes",
+                "description": "Reverting https://github.com/BabylonJS/Babylon.js/pull/16372 as @sebavan spotted a bug. We'll re-introduce this change probably tomorrow with an additional fix.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16375",
+                "title": "Add underscore to audio engine v2 public internal class members",
+                "description": "Makes no changes to the documented public API.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/stereoWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/volumeWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioAnalyzerSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBaseSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainOut.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16372",
+                "title": "AbstractEngine and Viewer v2 resize fixes",
+                "description": "AbstractEngine\r\n- Read `adaptToDeviceRatio` from `EngineOptions` object, not just the explicit ctr parameter for it\r\n- Consider `limitDeviceRatio` when using `devicePixelRatio` in `resize()`\r\n- Consider `limitDeviceRatio` when initializing `lastDevicePixelRatio` in ctr\r\n- Only apply `hardwareScalingLevel` to dimensions in CSS pixels, never `canvas.width` or `canvas.height`.\r\n\r\nViewer\r\n- Prevent infinite loop between rendering suspended and resumed by disabling snapshot rendering on suspend, enabling on resume.\r\n- Restore lost restoration of `hardwareScalingLevel` for final render",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16374",
+                "title": "Remove wait ring at the end of code run process",
+                "description": "The initial wait ring of the playground is being removed when the code starts executing. This is an issue for TS-based playgrounds because of the language initialization.\n\nThis removes the wait ring at the end of the load process or when an error is triggered. This will make sure the wait ring is there until it is no longer needed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16373",
+                "title": "Remove unused `audioContext` properties from audio bus classes",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainBus.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16367",
+                "title": "PBR: Fix IBL intensity",
+                "description": "In replacement of #16357.\r\n\r\nThe inspector's “IBL Intensity” slider now correctly changes the intensity of the IBL and not the intensity of the indirect lighting.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16371",
+                "title": "Fix debug node size update",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16370",
+                "title": "Add event observer limits to FlowGraphReceiveCustomEventBlock and FlowGraphCoordinator",
+                "description": "Introduce limits on the number of observers for custom events and the execution count of events per frame to prevent potential infinite loops. This enhances the stability of the flow graph system.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16368",
+                "title": "Improve the material inspector display with a way to link channel to existing textures",
+                "description": "\r\nhttps://github.com/user-attachments/assets/d9dc0afe-d0a5-4b92-bdc0-e6160658be45\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/lines/textureLinkLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textureButtonLineComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "7.54.0": [
+            {
+                "pr": "16366",
+                "title": "Update node port colors when optional (NME, NGE, NRGE)",
+                "description": "I had to move from img to svg to be able to color code but that was a change I wanted to do any way...That’s my TED Talk, thanks for coming.",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme",
+                    "nge",
+                    "nrge"
+                ]
+            },
+            {
+                "pr": "16365",
+                "title": "FrameGraph: update icons and colors + use AutoDetect inputs whenever possible",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/glowLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Layers/highlightLayerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/basePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/copyTextureBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/executeBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/resourceContainerBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16364",
+                "title": "Ramp audio parameter values to avoid audible discontinuities",
+                "description": "Audio parameter changes are currently performed at the graphics frame rate, which is too slow to avoid audible discontinuities in the audio output stream. This results in audio artifacts like \"crackles\", \"zippers\" and \"pops\", which lower the quality of the audio output and damage audio hardware over time.\r\n\r\nTo avoid these issues, this change uses linear ramps when changing audio parameter values so they are performed at the audio sample rate, typically 48000 times per second or higher.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/stereoWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/volumeWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainOut.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16355",
+                "title": "expose epsilon on conditionalblock on nge and apply it to all operations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/tools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16363",
+                "title": "Sub-Surface Scattering post-process: fix bug in shader + port to WGSL",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/subSurfaceScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/subSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/subSurfaceScattering.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/diffusionProfile.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fibonacci.fx",
+                    "packages/dev/core/src/ShadersWGSL/subSurfaceScattering.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SubSurface-Scattering.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU",
+                    "breaking change",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "16359",
+                "title": "Fix gizmo drag when a second mouse button is pressed during the drag",
+                "description": "Previously, if you clicked another button during a gizmo drag operation, the drag would stop until you released the original button, then it would be stuck in drag mode. With this change, we cancel the drag operation if you click a different button while dragging with the original button.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16361",
+                "title": "Ensure Shader Store data are not overriden",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/buildShaders.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16360",
+                "title": "PBR materials: fix sub-surface scattering",
+                "description": "See https://forum.babylonjs.com/t/orderindependenttransparency-crashes-scene/57242/2.\r\n\r\nSub-surface scattering was broken since #16011, so I also added a visu test.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/fibonacci.fx",
+                    "packages/dev/core/src/Shaders/subSurfaceScattering.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SubSurface-Scattering.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16358",
+                "title": "Fix camera behavior on Firefox on MacOS when using CTRL while dragging",
+                "description": "On Firefox on MacOS, the user can hold down control during mouse down and it's treated as the right mouse button, and then release the control key, then release the mouse, and the mouse up will be reported as the left mouse button. \r\n\r\nWith this change:\r\n1. When we see a pointerUp with no corresponding pointerDown, yet the other mouse button was down, in MacOS and FF only, we will treat the pointerUp as if it came from the button that was previously down.\r\n2. The camera mouse pointer behavior no longer expects the button is pointer up to be the same button as the one that was in pointer down. Now we only care about matching the pointerId, not the button number, when determining if we should cancel the drag. That means the clicking another button on the mouse during a drag will cancel the drag for cameras.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16356",
+                "title": "Revert \"Fix camera behavior on Firefox on MacOS when using CTRL while dragging\"",
+                "description": "Reverts BabylonJS/Babylon.js#16354",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16353",
+                "title": "Node editors: Better message and properties when a port is AutoDetect",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/tools.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16354",
+                "title": "Fix camera behavior on Firefox on MacOS when using CTRL while dragging",
+                "description": "With this change, the camera mouse pointer behavior no longer expects the button is pointer up to be the same button as the one that was in pointer down. This is because on Firefox on MacOS, the user can hold down control during mouse down and it's treated as the right mouse button, and then release the control key, then release the mouse, and the mouse up will be reported as the left mouse button. Now we only care about matching the pointerId, not the button number, when determining if we should cancel the drag. That means the clicking another button on the mouse during a drag will cancel the drag for cameras.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16351",
+                "title": "FrameGraph: fix icons and colors",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/cullObjectsBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Misc/cullObjectsTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16350",
+                "title": "Introducing a new ConsoleLog node and 2 more fixes for glTF interactivity",
+                "description": "Introduce Quaternion support in FlowGraph operations for length, normalization, and dot product. Optimize world matrix calculations by implementing a force update flag in the computeWorldMatrix method.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVectorMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/objectModelMapping.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16348",
+                "title": "Add audio engine v2 unmute UI",
+                "description": "Adds an unmute UI button for audio engine v2.\r\n\r\nThe button is the same as the old audio engine's button to make it easier to eventually reimplement the old audio engine using the new audio engine.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioUnmuteUI.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16347",
+                "title": "Allow custom target for readPixels",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "16349",
+                "title": "Skip audio engine v2 auto resume after `pause()`",
+                "description": "When the audio engine v2 audio context is started and paused later by the browser, the auto resume feature is intended to unlock the audio context automatically as soon as possible. This feature is kicking in when the user explicitly calls the audio engine's `pause()` function, too, though, which is not intended.\r\n\r\nThis change fixes the audio engine v2 auto resume feature so it doesn't apply when the audio engine's `pause()` function is called.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16345",
+                "title": "Remove duplicate registration of KHR_interactivity",
+                "description": "This was recently added near the end of the file, but it was already being registered on line 49. This resulted in a warning in the console about the double registration.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16344",
+                "title": "Add mobile blocker UI to Viewer Configurator",
+                "description": "![image](https://github.com/user-attachments/assets/957cc450-5ee3-4e62-a2f3-233e116ded67)\r\n",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/App.scss",
+                    "packages/tools/viewer-configurator/src/App.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16343",
+                "title": "FrameGraph: various corrections and additions",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/baseLayerTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/ssrRenderingPipelineTask.ts",
+                    "packages/tools/nodeRenderGraphEditor/public/index.js",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/globalState.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "skip changelog",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16342",
+                "title": "Fix selection regression for links",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16341",
+                "title": "FrameGraph: Add undo/redo support",
+                "description": "Also fix the mobile detection system :)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeRenderGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/globalState.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16337",
+                "title": "PBR: Fix diffuse transmission",
+                "description": "Follow up to #16214, see also #16211.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/KHR-diffuse-transmission.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16335",
+                "title": "Add Handedness and autorotate Viewer options",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16338",
+                "title": "Fix label picking for checkboxes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": [
+                    "nme",
+                    "skip changelog",
+                    "nge",
+                    "nrge"
+                ]
+            },
+            {
+                "pr": "16295",
+                "title": "Fix Decorators and PrePass dirty flags",
+                "description": null,
+                "author": {
+                    "name": "Hypnosss",
+                    "url": "https://github.com/Hypnosss"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Misc/decorators.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16336",
+                "title": "Fix geometry input generation when dragging from input port",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDefaultInput.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16333",
+                "title": "Make sure lerna updates major version correctly",
+                "description": "As I was testing updating a new major version I found out this package is not conform with lerna's requiremenets. Updating a major version without the dev dependency defined made lerna fail the update.\n\nThis will not influence consumers of this package, and will not influence development as well.\n\nTL;dr - without this change we can't release 8.0.0 automatically and will need to run everything manually. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16334",
+                "title": "set _blockEntityCollection value when loading splat files",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16332",
+                "title": "Add WebXR visualization tests and improve test utility functions",
+                "description": "highly inspired by #16204 of @simonedevit,\nintroducing a new playwright project to test webxr scenes. Using IWER (as the original PR) and not an extension, as browserstack does not support installing extensions as part of the test run.\n\nThe idea here is to not change anything in core classes and other tests. The only thing changed is the new testing mechanism. If we want to generate interaction in XR we should do it in the playground itself.\n\nThis is used to make sure WebXR scenes render correctly and is not meant to test interaction. This should be done differently, and not part of the vis-tests suite.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/test/interactions.playground.test.ts",
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/playwright/vr.webxr.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webxr-basic-scene.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webxr-goalie-scene.png",
+                    "packages/tools/tests/test/visualization/webxr.json",
+                    "playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16331",
+                "title": "Fix Havok shape memory leak",
+                "description": "In the Havok Plugin class, we are not doing a delete after a set on the shape map.\r\n\r\ndisposeShape seems like the right place to call delete.\r\n",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.53.3": [
             {
                 "pr": "16329",

@@ -60,9 +60,9 @@ export class FrameNodePort extends NodePort {
         this._onSelectionChangedObserver = stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (IsFramePortData(selection) && (selection as FramePortData).port === this) {
-                this._img.classList.add(commonStyles["selected"]);
+                this._imgHost.classList.add(commonStyles["selected"]);
             } else {
-                this._img.classList.remove(commonStyles["selected"]);
+                this._imgHost.classList.remove(commonStyles["selected"]);
             }
         });
 

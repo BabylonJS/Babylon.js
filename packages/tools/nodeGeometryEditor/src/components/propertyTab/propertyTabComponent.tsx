@@ -341,7 +341,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Help"
                             value="doc.babylonjs.com"
                             underline={true}
-                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/how_to/node_Geometry", "_blank")}
+                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/features/featuresDeepDive/mesh/nodeGeometry", "_blank")}
                         />
                         <TextInputLineComponent
                             label="Comment"

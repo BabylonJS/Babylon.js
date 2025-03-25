@@ -28,9 +28,9 @@ export class NodeRenderGraphAnaglyphPostProcessBlock extends NodeRenderGraphBase
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("leftTexture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("leftTexture", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
 
-        this.leftTexture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.leftTexture.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
         this._finalizeInputOutputRegistering();
 

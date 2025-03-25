@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
-import { FrameGraphCullObjectsTask } from "../../../Tasks/Rendering/cullObjectsTask";
-import type { Camera } from "../../../../Cameras/camera";
+import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
+import { FrameGraphCullObjectsTask } from "../../Tasks/Misc/cullObjectsTask";
+import type { Camera } from "../../../Cameras/camera";
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
 /**
