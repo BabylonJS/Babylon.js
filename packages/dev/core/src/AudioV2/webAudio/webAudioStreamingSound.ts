@@ -85,7 +85,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         }
 
         if (this.preloadCount) {
-            await this.preloadInstances(this.preloadCount);
+            await this.preloadInstancesAsync(this.preloadCount);
         }
 
         if (options.autoplay) {

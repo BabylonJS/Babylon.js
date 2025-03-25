@@ -86,7 +86,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     }
 
     /** @internal */
-    public async enable(): Promise<void> {
+    public async enableAsync(): Promise<void> {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             await this._subGraph.createAndAddSubNode(AudioSubNode.ANALYZER);
@@ -99,7 +99,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
-            this.enable();
+            this.enableAsync();
             return _GetEmptyByteFrequencyData();
         }
         return subNode.getByteFrequencyData();
@@ -110,7 +110,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
-            this.enable();
+            this.enableAsync();
             return _GetEmptyFloatFrequencyData();
         }
         return subNode.getFloatFrequencyData();
