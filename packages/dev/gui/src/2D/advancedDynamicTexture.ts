@@ -739,10 +739,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
         if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
+            const oldState = this._texture ? this._texture.isReady : false;
             this.scaleTo(renderWidth, renderHeight);
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
+            }
+            if (this._texture) {
+                this._texture!.isReady = oldState;
             }
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
