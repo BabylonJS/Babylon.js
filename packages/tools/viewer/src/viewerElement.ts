@@ -1394,7 +1394,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                             return coerceEngineAttribute(viewerElement.getAttribute("engine")) ?? viewerElement._options.engine;
                         },
                         get autoSuspendRendering() {
-                            return !(viewerElement.hasAttribute("render-when-idle") || !viewerElement._options.autoSuspendRendering);
+                            return !(viewerElement.hasAttribute("render-when-idle") || viewerElement._options.autoSuspendRendering === false);
                         },
                         get source() {
                             return viewerElement.getAttribute("source") ?? viewerElement._options.source;
