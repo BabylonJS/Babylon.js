@@ -4,6 +4,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { TransformNode } from "../Meshes/transformNode";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { Sprite } from "../Sprites/sprite";
+import type { Mesh } from "../Meshes/mesh";
 
 import type { Ray } from "../Culling/ray";
 
