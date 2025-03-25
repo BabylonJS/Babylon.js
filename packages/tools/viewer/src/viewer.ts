@@ -1519,8 +1519,18 @@ export class Viewer implements IDisposable {
     }
 
     private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
+        const handleLoadError = async (promise: Promise<unknown>) => {
+            try {
+                await promise;
+            } catch (error) {
+                if (!(error instanceof AbortError)) {
+                    Logger.Error(error);
+                }
+            }
+        };
+
         if (flags.length === 0 || flags.includes("source")) {
-            this._updateModel(this._options?.source);
+            handleLoadError(this._updateModel(this._options?.source));
         }
 
         if (flags.length === 0 || flags.includes("environment")) {
@@ -1532,10 +1542,10 @@ export class Viewer implements IDisposable {
                 visible: this._options?.environmentConfig?.visible ?? ViewerOptions.environmentConfig.visible,
             };
             if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal);
+                handleLoadError(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
             } else {
-                this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal);
-                this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal);
+                handleLoadError(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
+                handleLoadError(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
             }
         }
 
