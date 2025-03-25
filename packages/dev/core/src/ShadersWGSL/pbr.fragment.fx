@@ -406,6 +406,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef CLEARCOAT
                 , NdotVUnclamped
+                , uniforms.vClearCoatParams
                 #ifdef CLEARCOAT_TEXTURE
                     , clearCoatMapData
                 #endif
