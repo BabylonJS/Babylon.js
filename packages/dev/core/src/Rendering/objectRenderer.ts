@@ -399,6 +399,10 @@ export class ObjectRenderer {
                 }
             }
         }
+
+        this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
+        // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+        this._scene.imageProcessingConfiguration._applyByPostProcess = !!this._renderInLinearSpace;
     }
 
     private _defaultRenderListPrepared: boolean;
@@ -424,9 +428,6 @@ export class ObjectRenderer {
         }
 
         this._defaultRenderListPrepared = false;
-        this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
-        // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
-        this._scene.imageProcessingConfiguration._applyByPostProcess = this._renderInLinearSpace;
     }
 
     /**
