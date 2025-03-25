@@ -1,10 +1,11 @@
 import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { faDiagramProject, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import frameGraphIcon from "./ic_fluent_flow_24_filled.svg";
 
 interface IFrameGraphItemComponenttProps {
     frameGraph: FrameGraph;
@@ -25,7 +26,6 @@ export class FrameGraphTreeItemComponent extends React.Component<IFrameGraphItem
                     this.props.frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: this.props.frameGraph.scene } });
                 }}
                 title="Node Render Graph Editor"
-                color="Green"
             >
                 <FontAwesomeIcon icon={faPen} />
             </div>
@@ -33,7 +33,7 @@ export class FrameGraphTreeItemComponent extends React.Component<IFrameGraphItem
 
         return (
             <div className="frameGraphTools">
-                <TreeItemLabelComponent label={this.props.frameGraph.name} onClick={() => this.props.onClick()} icon={faDiagramProject} color="Green" />
+                <TreeItemLabelComponent label={this.props.frameGraph.name} onClick={() => this.props.onClick()} iconBase64={frameGraphIcon} color="#6e9189" />
                 {<ExtensionsComponent target={this.props.frameGraph} extensibilityGroups={this.props.extensibilityGroups} />}
                 {nrgeIcon}
             </div>
