@@ -1470,7 +1470,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 await this._updateModel();
                 await this._updateEnv({ lighting: true, skybox: true });
-                // this._updateShadows({ enable: true, type: "environment" });
+                this._updateShadows({ enable: true, type: "environment" });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 

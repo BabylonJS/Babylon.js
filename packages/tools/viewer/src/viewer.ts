@@ -53,7 +53,6 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { ShadowOnlyMaterial } from "materials/shadowOnly";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
@@ -1439,7 +1438,7 @@ export class Viewer implements IDisposable {
      * Updates the shadows configuration.
      * @param options The options to use when updating the shadows.
      */
-    private _updateShadow(options: ShadowsOptions) {
+    private async _updateShadow(options: ShadowsOptions) {
         this._shadowGround = CreateDisc(
             "ground",
             {
@@ -1539,6 +1538,9 @@ export class Viewer implements IDisposable {
                 this._iblShadowsRenderPipeline.toggleShadow(true);
             }
         } else if (!this._shadowGenerator) {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
+
             const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
 
             if (!worldBounds) {
