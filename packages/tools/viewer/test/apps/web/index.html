@@ -81,7 +81,6 @@
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
             <babylon-viewer
                 clear-color="#ffffff"
-                engine="WebGL"
                 environment="https://cdn.substance3d.com/v2/files/public/studio-white.env"
                 source="http://localhost:4000/glb/SheenChair.glb"
                 animation-speed="1.5"
@@ -138,7 +137,7 @@
         <div class="button-container">
             <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
-            <button onclick="onToggleEngine()">Toggle Engine</button>
+            <button id="engine-button" onclick="onToggleEngine()">Toggle Engine</button>
             <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
@@ -163,6 +162,17 @@
                 <span>Environment Visibility</span>
                 <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
             </div>
+            <div>
+                <span>Shadows</span>
+                <input type="checkbox" id="shadowInput" checked oninput="onShadowSwitch()" />
+            </div>
+            <div>
+                <span>Shadows type</span>
+                <select id="shadowTypeInput" checked oninput="onShadowType()">
+                    <option value="classic">Classic</option>
+                    <option value="environment">Environment</option>
+                </select>
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -184,6 +194,9 @@
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
                 viewerDetails.viewer.showDebugLogs = true;
+
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
+
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
@@ -286,6 +299,7 @@
             };
 
             globalThis.onToggleEngine = () => {
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine} engine`;
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             };
 
@@ -364,6 +378,16 @@
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.environmentConfig = { visible: checked };
+            };
+            globalThis.onShadowSwitch = () => {
+                const checked = document.querySelector("#shadowInput").checked;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.shadowConfig = { enable: checked };
+            };
+            globalThis.onShadowType = () => {
+                const value = document.querySelector("#shadowTypeInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.shadowConfig = { type: value };
             };
         </script>
     </body>

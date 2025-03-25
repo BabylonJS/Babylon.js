@@ -1,24 +1,23 @@
-import {
-    ShaderLanguage,
-    type AbstractEngine,
-    type AbstractMesh,
-    type AnimationGroup,
-    type AssetContainer,
-    type AutoRotationBehavior,
-    type BaseTexture,
-    type Camera,
-    type CubeTexture,
-    type FramingBehavior,
-    type HDRCubeTexture,
-    type HotSpotQuery,
-    type IDisposable,
-    type IMeshDataCache,
-    type ISceneLoaderProgressEvent,
-    type LoadAssetContainerOptions,
-    type Mesh,
-    type Nullable,
-    type Observer,
-    type PickingInfo,
+import type {
+    AbstractEngine,
+    AbstractMesh,
+    AnimationGroup,
+    AssetContainer,
+    AutoRotationBehavior,
+    BaseTexture,
+    Camera,
+    CubeTexture,
+    FramingBehavior,
+    HDRCubeTexture,
+    HotSpotQuery,
+    IDisposable,
+    IMeshDataCache,
+    ISceneLoaderProgressEvent,
+    LoadAssetContainerOptions,
+    Mesh,
+    Nullable,
+    Observer,
+    PickingInfo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
@@ -54,15 +53,13 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { ShadowOnlyMaterial } from "materials/shadowOnly";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
-import { GizmoManager } from "core/Gizmos/gizmoManager";
-import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -122,7 +119,7 @@ varying vUV: vec2f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-    vertexOutputs.position = uniforms.viewProjection * vec4f(input.position, 1.0);
+    vertexOutputs.position = uniforms.worldViewProjection * vec4f(input.position, 1.0);
     vertexOutputs.vUV = input.uv;
 }
 `;
@@ -144,7 +141,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let totalOpacity = uniforms.shadowOpacity * uvBasedOpacity;
     let finalShadowValue = mix(vec3<f32>(1.0), shadowValue, totalOpacity);
     fragmentOutputs.color = vec4f(finalShadowValue, 1.0);
-    return fragmentOutputs;
 }
 `;
 
@@ -201,6 +197,18 @@ export type EnvironmentParams = {
      * If the environment should be visible.
      */
     visible: boolean;
+};
+
+export type ShadowParams = {
+    /**
+     * If the shadow are enable
+     */
+    enable: boolean;
+
+    /**
+     * The type of shadow being used
+     */
+    type: "classic" | "environment";
 };
 
 export type PostProcessing = {
@@ -415,11 +423,6 @@ export type ShadowsOptions = Partial<
          * "environment" uses the environment shadows.
          */
         type: "classic" | "environment";
-
-        /**
-         * The target frame rate for the shadows.
-         */
-        targetFps: boolean;
     }>
 >;
 
@@ -593,6 +596,11 @@ export class Viewer implements IDisposable {
     public readonly onEnvironmentError = new Observable<unknown>();
 
     /**
+     * Fired when the shadows configuration changes.
+     */
+    public readonly onShadowsConfigurationChanged = new Observable<void>();
+
+    /**
      * Fired when the post processing state changes.
      */
     public readonly onPostProcessingChanged = new Observable<void>();
@@ -693,8 +701,11 @@ export class Viewer implements IDisposable {
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
 
+    private _shadowGenerator: Nullable<ShadowGenerator> = null;
     private _iblShadowsRenderPipeline: Nullable<IblShadowsRenderPipeline> = null;
-    private _groundShadowMaterial2: Nullable<ShaderMaterial> = null;
+    private _shadowGround: Nullable<Mesh> = null;
+    private _groundShadowMaterial: Nullable<ShaderMaterial> = null;
+    private _shadowLight: Nullable<SpotLight> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -765,6 +776,12 @@ export class Viewer implements IDisposable {
                 }
             }, PointerEventTypes.POINTERDOUBLETAP);
 
+            this._engine.onResizeObservable.add(() => {
+                if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
+                    this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+                }
+            });
+
             this._scene = scene;
             this._camera = camera;
         }
@@ -805,6 +822,8 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
+
+        console.log("Viewer initialized");
     }
 
     /**
@@ -866,6 +885,47 @@ export class Viewer implements IDisposable {
         this.onEnvironmentConfigurationChanged.notifyObservers();
     }
 
+    /**
+     * Get the current shadow configuration
+     */
+    public get shadowConfig(): Readonly<ShadowParams> {
+        return {
+            enable: this._shadowGenerator !== null || this._iblShadowsRenderPipeline !== null,
+            type: this._shadowGenerator !== null ? "classic" : "environment",
+        };
+    }
+
+    public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
+        if (value.type === "classic") {
+            if (this._iblShadowsRenderPipeline) {
+                this._iblShadowsRenderPipeline.toggleShadow(false);
+            }
+        }
+
+        console.log("shadowConfig");
+
+        this._snapshotHelper.disableSnapshotRendering();
+
+        if (this._shadowGenerator) {
+            this._shadowGenerator?.dispose();
+            this._shadowLight?.dispose();
+            this._shadowGenerator = null;
+        }
+
+        this._shadowGround?.dispose();
+        this._shadowGround = null;
+
+        this._updateShadow({ type: value.type });
+
+        if (this._iblShadowsRenderPipeline && this._iblShadowsRenderPipeline.isReady()) {
+            this._iblShadowsRenderPipeline.onVoxelizationCompleteObservable.add(() => {
+                this._snapshotHelper.enableSnapshotRendering();
+            });
+        }
+
+        this.onShadowsConfigurationChanged.notifyObservers();
+    }
+
     private _changeSkyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
@@ -919,24 +979,10 @@ export class Viewer implements IDisposable {
 
     private _changeSkyboxVisible(value: boolean) {
         if (value !== this._skyboxVisible) {
-            // eslint-disable-next-line no-console
-            console.log("change visibility", this._scene.environmentTexture);
             this._skyboxVisible = value;
             if (this._skybox) {
                 this._snapshotHelper.disableSnapshotRendering();
-
                 this._skybox.setEnabled(this._skyboxVisible);
-
-                if (this._iblShadowsRenderPipeline && this._groundShadowMaterial2) {
-                    console.log("update");
-                    this._groundShadowMaterial2.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-                    this._groundShadowMaterial2.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-                    this._groundShadowMaterial2.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
-
-                    this._iblShadowsRenderPipeline.updateSceneBounds();
-                    this._iblShadowsRenderPipeline.updateVoxelization();
-                }
-
                 this._updateAutoClear();
                 this._snapshotHelper.enableSnapshotRendering();
                 this._markSceneMutated();
@@ -1393,181 +1439,150 @@ export class Viewer implements IDisposable {
      * Updates the shadows configuration.
      * @param options The options to use when updating the shadows.
      */
-    public updateShadows(options: ShadowsOptions) {
+    private _updateShadow(options: ShadowsOptions) {
+        this._shadowGround = CreateDisc(
+            "ground",
+            {
+                radius: 5,
+            },
+            this._scene
+        );
+        this._shadowGround.rotation.x = Math.PI / 2;
+
+        console.log("_updateShadow");
+
         if (options.type === "environment") {
-            // eslint-disable-next-line no-console
-            console.log("this", this._scene.environmentTexture, this._scene);
-            this._iblShadowsRenderPipeline = new IblShadowsRenderPipeline(
-                "ibl shadows",
-                this._scene,
-                {
-                    resolutionExp: 5,
-                    sampleDirections: 3,
-                    ssShadowsEnabled: true,
-                    shadowRemanence: 0.7,
-                    triPlanarVoxelization: true,
-                },
-                [this._camera]
-            );
-
-            this._iblShadowsRenderPipeline.allowDebugPasses = false;
-            this._iblShadowsRenderPipeline.gbufferDebugEnabled = false;
-            this._iblShadowsRenderPipeline.voxelDebugEnabled = false;
-            this._iblShadowsRenderPipeline.accumulationPassDebugEnabled = false;
-
-            const shadowGround = CreateDisc(
-                "ground",
-                {
-                    radius: 5,
-                },
-                this._scene
-            );
-
-            // const shadowMaterial = new PBRMetallicRoughnessMaterial("ground_shadow_material", this.scene);
-
-            // ground.material = shadowMaterial;
-            // ground.isPickable = false;
-            // this.viewer.shadowPipeline.addShadowReceivingMaterial(shadowMaterial);
-
-            const isWebGPU = this._scene.getEngine().isWebGPU;
-            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
-
-            if (isWebGPU) {
-                this._groundShadowMaterial2 = new ShaderMaterial(
-                    "customGroundMaterial",
+            if (!this._iblShadowsRenderPipeline) {
+                this._iblShadowsRenderPipeline = new IblShadowsRenderPipeline(
+                    "ibl shadows",
                     this._scene,
                     {
-                        vertexSource: customGroundVertexShaderWgsl,
-                        fragmentSource: customGroundFragmentShaderWgsl,
+                        resolutionExp: 5,
+                        sampleDirections: 3,
+                        ssShadowsEnabled: true,
+                        shadowRemanence: 0.7,
+                        triPlanarVoxelization: true,
                     },
-                    {
-                        attributes: ["position", "uv"],
-                        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
-                        samplers: ["shadowTexture"],
-                        shaderLanguage,
-                    }
+                    [this._camera]
                 );
-            } else {
-                this._groundShadowMaterial2 = new ShaderMaterial(
-                    "customGroundMaterial",
-                    this._scene,
-                    {
-                        vertexSource: customGroundVertexShader,
-                        fragmentSource: customGroundFragmentShader,
-                    },
-                    {
-                        attributes: ["position", "uv"],
-                        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
-                        samplers: ["shadowTexture"],
-                        shaderLanguage,
-                    }
-                );
-            }
 
-            this._groundShadowMaterial2.alphaMode = Constants.ALPHA_MULTIPLY;
-            this._groundShadowMaterial2.alpha = 0.99;
+                this._iblShadowsRenderPipeline.allowDebugPasses = false;
+                this._iblShadowsRenderPipeline.gbufferDebugEnabled = false;
+                this._iblShadowsRenderPipeline.voxelDebugEnabled = false;
+                this._iblShadowsRenderPipeline.accumulationPassDebugEnabled = false;
 
-            shadowGround.rotation.x = Math.PI / 2;
-            this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(() => {
-                if (!this._iblShadowsRenderPipeline || !this._groundShadowMaterial2) {
-                    return;
+                const isWebGPU = this._scene.getEngine().isWebGPU;
+                const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+                const options = {
+                    attributes: ["position", "uv"],
+                    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
+                    samplers: ["shadowTexture"],
+                    shaderLanguage,
+                };
+
+                if (isWebGPU) {
+                    this._groundShadowMaterial = new ShaderMaterial(
+                        "customGroundMaterial",
+                        this._scene,
+                        {
+                            vertexSource: customGroundVertexShaderWgsl,
+                            fragmentSource: customGroundFragmentShaderWgsl,
+                        },
+                        options
+                    );
+                } else {
+                    this._groundShadowMaterial = new ShaderMaterial(
+                        "customGroundMaterial",
+                        this._scene,
+                        {
+                            vertexSource: customGroundVertexShader,
+                            fragmentSource: customGroundFragmentShader,
+                        },
+                        options
+                    );
                 }
 
-                // eslint-disable-next-line no-console
-                console.log("Shadow texture ready");
-                this._groundShadowMaterial2.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-            });
-
-            const groundSize = 4.0 * this._iblShadowsRenderPipeline.voxelGridSize;
-            shadowGround.scaling.set(groundSize, groundSize, groundSize);
-            this._groundShadowMaterial2.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-            this._groundShadowMaterial2.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
-            this._groundShadowMaterial2.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-
-            shadowGround.material = this._groundShadowMaterial2;
-            // shadowPipeline.addShadowReceivingMaterial(groundShadowMaterial2);
-
-            this._loadedModelsBacking.forEach((model) => {
-                const meshes = model.assetContainer.meshes as Mesh[];
-
-                // Add shadow-receivers
-                meshes.forEach((mesh) => {
-                    if (!this._iblShadowsRenderPipeline) {
+                this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(() => {
+                    if (!this._iblShadowsRenderPipeline || !this._shadowGround) {
                         return;
                     }
-
-                    this._iblShadowsRenderPipeline.addShadowCastingMesh(mesh);
-
-                    if (mesh.material) {
-                        this._iblShadowsRenderPipeline.addShadowReceivingMaterial(mesh.material);
-                    }
+                    this._groundShadowMaterial?.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
                 });
+
+                this._groundShadowMaterial.alphaMode = Constants.ALPHA_MULTIPLY;
+                this._groundShadowMaterial.alpha = 0.99;
+                this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+                this._groundShadowMaterial.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
+                this._groundShadowMaterial.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
+                const groundSize = 4.0 * this._iblShadowsRenderPipeline?.voxelGridSize;
+                this._shadowGround.scaling.set(groundSize, groundSize, groundSize);
+                this._shadowGround.material = this._groundShadowMaterial;
+
+                this._loadedModelsBacking.forEach((model) => {
+                    const meshes = model.assetContainer.meshes as Mesh[];
+
+                    meshes.forEach((mesh) => {
+                        this._iblShadowsRenderPipeline?.addShadowCastingMesh(mesh);
+
+                        if (mesh.material) {
+                            this._iblShadowsRenderPipeline?.addShadowReceivingMaterial(mesh.material);
+                        }
+                    });
+                });
+
+                this._iblShadowsRenderPipeline.updateSceneBounds();
+                this._iblShadowsRenderPipeline.updateVoxelization();
+
+                return;
+            } else {
+                this._shadowGround.material = this._groundShadowMaterial;
+                this._iblShadowsRenderPipeline.toggleShadow(true);
+            }
+        } else if (!this._shadowGenerator) {
+            const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
+
+            if (!worldBounds) {
+                return;
+            }
+
+            const min = Vector3.FromArray(worldBounds.extents.min);
+            const max = Vector3.FromArray(worldBounds.extents.max);
+            const size = max.subtract(min);
+            const maxRadius = size.length();
+            this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius / 2, maxRadius, maxRadius / 2), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
+
+            this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
+
+            this._loadedModelsBacking.forEach((model) => {
+                const mesh = model.assetContainer.meshes[0];
+                this._shadowGenerator?.addShadowCaster(mesh, true);
+                mesh.receiveShadows = true;
             });
 
-            this._iblShadowsRenderPipeline.updateSceneBounds();
-            this._iblShadowsRenderPipeline.updateVoxelization();
+            const shadowMap = this._shadowGenerator.getShadowMap();
+            if (shadowMap) {
+                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
+            }
 
-            return;
+            const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
+            shadowMaterial.activeLight = this._shadowLight;
+            this._shadowGround.receiveShadows = true;
+            this._shadowGround.material = shadowMaterial;
+            this._shadowGround.position.y = worldBounds.extents.min[1];
+
+            this._shadowGenerator.setTransparencyShadow(true);
+            this._shadowGenerator.usePercentageCloserFiltering = true;
+            this._shadowGenerator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
+            this._shadowGenerator.bias = -0.00001;
+            this._shadowGenerator.normalBias = 0.0001;
+            this._shadowGenerator.useContactHardeningShadow = false;
+            this._shadowGenerator.contactHardeningLightSizeUVRatio = 0.1;
+            this._shadowGenerator.useExponentialShadowMap = true;
+            this._shadowGenerator.useBlurExponentialShadowMap = true;
+            this._shadowGenerator.useKernelBlur = true;
+            this._shadowGenerator.blurScale = 1;
+            this._shadowGenerator.blurKernel = 32;
         }
-
-        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
-
-        if (!worldBounds) {
-            return;
-        }
-
-        const min = Vector3.FromArray(worldBounds.extents.min);
-        const max = Vector3.FromArray(worldBounds.extents.max);
-        const size = max.subtract(min);
-        const maxRadius = size.length();
-        const light = new SpotLight("spotLight", new Vector3(maxRadius / 2, maxRadius, maxRadius / 2), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
-
-        const lightgizmo = new LightGizmo();
-        lightgizmo.scaleRatio = 2;
-        lightgizmo.light = light;
-
-        const gizmomanager = new GizmoManager(this._scene);
-        gizmomanager.positionGizmoEnabled = true;
-        gizmomanager.rotationGizmoEnabled = true;
-        gizmomanager.usePointerToAttachGizmos = false;
-        gizmomanager.attachToMesh(lightgizmo.attachedMesh);
-
-        const generator = new ShadowGenerator(2048, light);
-
-        this._loadedModelsBacking.forEach((model) => {
-            const mesh = model.assetContainer.meshes[0];
-            generator.addShadowCaster(mesh, true);
-            mesh.receiveShadows = true;
-        });
-
-        const shadowGround = MeshBuilder.CreateGround("ground", { width: worldBounds.size[0] * 10, height: worldBounds.size[2] * 10, subdivisions: 100 }, this._scene);
-        // Improve performance by only rendering the shadow map once
-        // RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME
-        // RenderTargetTexture.REFRESHRATE_RENDER_ONCE
-        const shadowMap = generator.getShadowMap();
-        if (shadowMap) {
-            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
-        }
-
-        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
-        shadowMaterial.activeLight = light;
-        shadowGround.receiveShadows = true;
-        shadowGround.material = shadowMaterial;
-        shadowGround.position.y = worldBounds.extents.min[1];
-
-        generator.setDarkness(0.95);
-        generator.setTransparencyShadow(true);
-        generator.usePercentageCloserFiltering = true;
-        generator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
-        generator.bias = -0.00001;
-        generator.normalBias = 0.0001;
-        generator.useContactHardeningShadow = false;
-        generator.contactHardeningLightSizeUVRatio = 0.1;
-        generator.useExponentialShadowMap = true;
-        generator.useBlurExponentialShadowMap = true;
-        generator.useKernelBlur = true;
-        generator.blurScale = 1;
-        generator.blurKernel = 32;
     }
 
     /**
@@ -1658,8 +1673,7 @@ export class Viewer implements IDisposable {
                         cubeTexture.level = this.environmentConfig.intensity;
                         cubeTexture.rotationY = this.environmentConfig.rotation;
                     }
-                    // eslint-disable-next-line no-console
-                    console.log("create envrionment", options.skybox, options.lighting);
+
                     if (options.skybox) {
                         this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
                         this._skyboxTexture.level = this.environmentConfig.intensity;
@@ -1746,6 +1760,8 @@ export class Viewer implements IDisposable {
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
         this._loadedModelsBacking.forEach((model) => model.dispose());
+        this._shadowGenerator?.dispose();
+        this._iblShadowsRenderPipeline?.dispose();
         this._scene.dispose();
 
         this.onEnvironmentChanged.clear();

@@ -204,6 +204,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
+            "shadow",
+            (details) => details.viewer.onShadowsConfigurationChanged,
+            (details) => (details.viewer.shadowConfig = { enable: this.shadow ?? details.viewer.shadowConfig.enable }),
+            (details) => (this.shadow = details.viewer.shadowConfig.enable)
+        ),
+        this._createPropertyBinding(
+            "shadowType",
+            (details) => details.viewer.onShadowsConfigurationChanged,
+            (details) => (details.viewer.shadowConfig = { type: this.shadowType ?? details.viewer.shadowConfig.type }),
+            (details) => (this.shadowType = details.viewer.shadowConfig.type)
+        ),
+        this._createPropertyBinding(
             "toneMapping",
             (details) => details.viewer.onPostProcessingChanged,
             (details) => {
@@ -699,6 +711,23 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "environment-visible",
     })
     public environmentVisible: Nullable<boolean> = null;
+
+    /**
+     * Wether or not the shadows are on/off.
+     */
+    @property({
+        attribute: "shadow",
+    })
+    public shadow: Nullable<boolean> = null;
+
+    /**
+     * The type of shadows to use.
+     * "classic" for shadow maps, "environment" for environment shadows.
+     */
+    @property({
+        attribute: "shadow-type",
+    })
+    public shadowType: Nullable<null | "classic" | "environment"> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1442,7 +1471,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 await this._updateModel();
                 await this._updateEnv({ lighting: true, skybox: true });
-                this._updateShadows({ enable: true, type: "environment" });
+                // this._updateShadows({ enable: true, type: "environment" });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1528,7 +1557,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 await Promise.all(promises);
-                console.log("env loaded");
             } catch (error) {
                 // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
                 if (!(error instanceof AbortError)) {
@@ -1541,7 +1569,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private async _updateShadows(options: ShadowsOptions) {
         if (this._viewerDetails) {
             try {
-                await this._viewerDetails.viewer.updateShadows(options);
+                this._viewerDetails.viewer.shadowConfig = options;
             } catch (error) {
                 // If updateShadows was aborted (e.g. because a new shadows update was requested before this one finished), we can just ignore the error.
                 if (!(error instanceof AbortError)) {
