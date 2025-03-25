@@ -14,7 +14,7 @@ import { BuildFloatUI } from "./tools";
 export class NodePort {
     protected _element: HTMLDivElement;
     protected _portContainer: HTMLElement;
-    protected _imgHost: HTMLDivElement;
+    protected _imgHost: HTMLImageElement;
     protected _pip: HTMLDivElement;
     protected _stateManager: StateManager;
     protected _portLabelElement: Element;
@@ -110,13 +110,6 @@ export class NodePort {
     public refresh() {
         if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
             this._element.style.background = "#000";
-            const svg = this._imgHost.querySelector("svg");
-
-            if (svg) {
-                svg.querySelectorAll("path, circle, rect, ellipse, polygon, polyline").forEach((el) => {
-                    (el as HTMLElement).style.fill = "#767676";
-                });
-            }
         }
 
         if (this._portUIcontainer) {
@@ -148,7 +141,7 @@ export class NodePort {
         portContainer.appendChild(this._element);
         this._stateManager = stateManager;
 
-        this._imgHost = portContainer.ownerDocument!.createElement("div");
+        this._imgHost = portContainer.ownerDocument!.createElement("img");
         this._imgHost.classList.add(localStyles["port-icon"]);
         this._imgHost.classList.add("port-icon"); // Used to flag it as a port icon
         this._element.appendChild(this._imgHost);
