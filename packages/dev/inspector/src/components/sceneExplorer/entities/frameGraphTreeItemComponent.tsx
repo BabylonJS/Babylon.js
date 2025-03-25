@@ -18,11 +18,11 @@ export class FrameGraphTreeItemComponent extends React.Component<IFrameGraphItem
     }
 
     override render() {
-        const nrgeIcon = this.props.frameGraph.linkedNodeRenderGraph ? (
+        const nrgeIcon = this.props.frameGraph.getLinkedNodeRenderGraph() ? (
             <div
                 className="icon"
                 onClick={() => {
-                    this.props.frameGraph.linkedNodeRenderGraph!.edit({ nodeRenderGraphEditorConfig: { hostScene: this.props.frameGraph.scene } });
+                    this.props.frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: this.props.frameGraph.scene } });
                 }}
                 title="Node Render Graph Editor"
                 color="Green"

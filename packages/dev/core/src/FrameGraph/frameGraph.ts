@@ -72,15 +72,23 @@ export class FrameGraph {
 
     /**
      * Gets the node render graph linked to the frame graph (if any)
+     * @returns the linked node render graph or null if none
      */
-    public linkedNodeRenderGraph: Nullable<NodeRenderGraph> = null;
+    public getLinkedNodeRenderGraph(): Nullable<NodeRenderGraph> {
+        return this._linkedNodeRenderGraph;
+    }
 
     /**
      * Constructs the frame graph
      * @param scene defines the scene the frame graph is associated with
      * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector (default is false)
+     * @param _linkedNodeRenderGraph defines the linked node render graph (if any)
      */
-    constructor(scene: Scene, debugTextures = false) {
+    constructor(
+        scene: Scene,
+        debugTextures = false,
+        private readonly _linkedNodeRenderGraph: Nullable<NodeRenderGraph> = null
+    ) {
         this._scene = scene;
         this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
