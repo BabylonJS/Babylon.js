@@ -18,14 +18,12 @@ import type {
     Nullable,
     Observer,
     PickingInfo,
+    ShaderMaterial,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
-import "core/Materials/standardMaterial";
-import "core/Lights/Shadows/shadowGeneratorSceneComponent";
-import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { SpotLight } from "core/Lights/spotLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -55,7 +53,6 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -1439,14 +1436,25 @@ export class Viewer implements IDisposable {
      * @param options The options to use when updating the shadows.
      */
     private async _updateShadow(options: ShadowsOptions) {
-        this._shadowGround = CreateDisc(
-            "ground",
-            {
-                radius: 5,
-            },
-            this._scene
-        );
-        this._shadowGround.rotation.x = Math.PI / 2;
+        await import("core/Materials");
+        await import("core/Materials/standardMaterial");
+        await import("core/Lights/Shadows/shadowGeneratorSceneComponent");
+        await import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
+
+        if (!this._shadowGround) {
+            this._shadowGround = CreateDisc(
+                "ground",
+                {
+                    radius: 50,
+                },
+                this._scene
+            );
+            this._shadowGround.rotation.x = Math.PI / 2;
+        }
 
         console.log("_updateShadow");
 
@@ -1538,9 +1546,6 @@ export class Viewer implements IDisposable {
                 this._iblShadowsRenderPipeline.toggleShadow(true);
             }
         } else if (!this._shadowGenerator) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
-
             const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
 
             if (!worldBounds) {
@@ -1570,7 +1575,8 @@ export class Viewer implements IDisposable {
             shadowMaterial.activeLight = this._shadowLight;
             this._shadowGround.receiveShadows = true;
             this._shadowGround.material = shadowMaterial;
-            this._shadowGround.position.y = worldBounds.extents.min[1];
+            // this._shadowGround.position.y = worldBounds.extents.min[1];
+            this._shadowGround.position.y = 0;
 
             this._shadowGenerator.setTransparencyShadow(true);
             this._shadowGenerator.usePercentageCloserFiltering = true;

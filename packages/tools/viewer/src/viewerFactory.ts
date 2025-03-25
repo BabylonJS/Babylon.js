@@ -77,6 +77,7 @@ export async function CreateViewerForCanvas(
         case "WebGPU": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
+            await import("core/Engines/WebGPU/Extensions");
             const webGPUEngine = new WebGPUEngine(canvas, options);
             await webGPUEngine.initAsync();
             engine = webGPUEngine;
