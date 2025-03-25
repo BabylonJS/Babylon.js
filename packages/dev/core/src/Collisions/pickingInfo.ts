@@ -122,6 +122,13 @@ export class PickingInfo {
         }
 
         const transformNormalToWorld = (pickedMesh: AbstractMesh, n: Vector3) => {
+            if (this.thinInstanceIndex !== -1) {
+                const tm = (pickedMesh as Mesh).thinInstanceGetWorldMatrices()[this.thinInstanceIndex];
+                if (tm) {
+                    Vector3.TransformNormalToRef(n, tm, n);
+                }
+            }
+
             let wm = pickedMesh.getWorldMatrix();
 
             if (pickedMesh.nonUniformScaling) {
