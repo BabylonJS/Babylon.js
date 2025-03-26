@@ -822,15 +822,6 @@ export class ArcRotateCamera extends TargetCamera {
     private readonly _goalTarget = new Vector3(NaN, NaN, NaN);
     private readonly _goalTargetScreenOffset = new Vector2(NaN, NaN);
 
-    // private _goalAlpha: Nullable<number> = null;
-    // private _goalBeta: Nullable<number> = null;
-    // private _goalRadius: Nullable<number> = null;
-    // private _goalTargetX: Nullable<number> = null;
-    // private _goalTargetY: Nullable<number> = null;
-    // private _goalTargetZ: Nullable<number> = null;
-    // private _goalTargetScreenOffsetX: Nullable<number> = null;
-    // private _goalTargetScreenOffsetY: Nullable<number> = null;
-
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
      * @returns the camera itself
@@ -873,6 +864,9 @@ export class ArcRotateCamera extends TargetCamera {
         return true;
     }
 
+    /**
+     * Stops any in-progress interpolation.
+     */
     public stopInterpolation(): void {
         this._goalAlpha = NaN;
         this._goalBeta = NaN;
@@ -889,8 +883,17 @@ export class ArcRotateCamera extends TargetCamera {
      * @param target Defines the goal target.
      * @param targetScreenOffset Defines the goal target screen offset.
      * @param interpolationFactor A value  between 0 and 1 that determines the speed of the interpolation.
+     * @remarks Passing undefined for any of the parameters will use the current value (effectively stopping any in-progress interpolation for that parameter).
+     *          Passing NaN will not start or stop any interpolation for that parameter (effectively allowing multiple interpolations of different parameters to overlap).
      */
-    public interpolateTo(alpha?: number, beta?: number, radius?: number, target?: Vector3, targetScreenOffset?: Vector2, interpolationFactor?: number): void {
+    public interpolateTo(
+        alpha = this.alpha,
+        beta = this.beta,
+        radius = this.radius,
+        target = this.target,
+        targetScreenOffset = this.targetScreenOffset,
+        interpolationFactor?: number
+    ): void {
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
         this.inertialRadiusOffset = 0;
@@ -1113,22 +1116,27 @@ export class ArcRotateCamera extends TargetCamera {
 
             const selectGoalValue = (goal: number, current: number): number => (isNaN(goal) ? current : goal);
 
+            // Get the goal radius immediately as we'll need it for determining interpolation termination for the target.
             const goalRadius = selectGoalValue(this._goalRadius, this.radius);
 
+            // Interpolate the target if we haven't reached the goal yet.
             if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
                 const goalTarget = TmpVectors.Vector3[0].set(
                     selectGoalValue(this._goalTarget.x, this._target.x),
                     selectGoalValue(this._goalTarget.y, this._target.y),
                     selectGoalValue(this._goalTarget.z, this._target.z)
                 );
-                this.setTarget(Vector3.Lerp(this.getTarget(), goalTarget, t), undefined, undefined, true);
+                this.setTarget(Vector3.Lerp(this.target, goalTarget, t), undefined, undefined, true);
 
-                if ((Vector3.Distance(this.getTarget(), goalTarget) * 10) / goalRadius < Epsilon) {
+                // Terminate the target interpolation if we the target is close relative to the radius.
+                // This is when visually (regardless of scale) the target appears close to its final goal position.
+                if ((Vector3.Distance(this.target, goalTarget) * 10) / goalRadius < Epsilon) {
                     this._goalTarget.set(NaN, NaN, NaN);
                     this.setTarget(goalTarget.clone(), undefined, undefined, true);
                 }
             }
 
+            // Interpolate the rotation if we haven't reached the goal yet.
             if (!isNaN(this._goalAlpha) || !isNaN(this._goalBeta)) {
                 // Using quaternion for smoother interpolation (and no Euler angles modulo)
                 const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
@@ -1144,6 +1152,7 @@ export class ArcRotateCamera extends TargetCamera {
                 this.alpha = newAlphaBetaGamma.x;
                 this.beta = newAlphaBetaGamma.y;
 
+                // Terminate the rotation interpolation when the rotation appears visually close to the final goal rotation.
                 if (newRotation.isApprox(goalRotation, Epsilon / 5)) {
                     this._goalAlpha = NaN;
                     this._goalBeta = NaN;
@@ -1153,15 +1162,18 @@ export class ArcRotateCamera extends TargetCamera {
                 }
             }
 
+            // Interpolate the radius if we haven't reached the goal yet.
             if (!isNaN(this._goalRadius)) {
                 this.radius += (goalRadius - this.radius) * t;
 
+                // Terminate the radius interpolation when we are 99.9% of the way to the goal radius, at which point it is visually indistinguishable from the goal.
                 if (Math.abs(goalRadius / this.radius - 1) < Epsilon) {
                     this._goalRadius = NaN;
                     this.radius = goalRadius;
                 }
             }
 
+            // Interpolate the target screen offset if we haven't reached the goal yet.
             if (!isNaN(this._goalTargetScreenOffset.x) || !isNaN(this._goalTargetScreenOffset.y)) {
                 const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
                     selectGoalValue(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
@@ -1169,6 +1181,7 @@ export class ArcRotateCamera extends TargetCamera {
                 );
                 Vector2.LerpToRef(this.targetScreenOffset, goalTargetScreenOffset, t, this.targetScreenOffset);
 
+                // Terminate the target screen offset interpolation when the target screen offset appears visually close to the final goal target screen offset.
                 if (Vector2.Distance(this.targetScreenOffset, goalTargetScreenOffset) < Epsilon) {
                     this._goalTargetScreenOffset.set(NaN, NaN);
                     this.targetScreenOffset.copyFrom(goalTargetScreenOffset);
