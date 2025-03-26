@@ -32,7 +32,6 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { TimingTools } from "core/Misc/timingTools";
 
 /**
  * Interface used to define options to create an AdvancedDynamicTexture
@@ -749,7 +748,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
             if (!this._alreadyRegisteredForRender) {
                 this._alreadyRegisteredForRender = true;
-                TimingTools.SetImmediate(() => {
+                Tools.SetImmediate(() => {
                     // We force an update so the texture can be set as ready
                     this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
                     this._alreadyRegisteredForRender = false;
