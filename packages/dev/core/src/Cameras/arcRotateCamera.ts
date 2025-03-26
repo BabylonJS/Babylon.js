@@ -890,7 +890,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param targetScreenOffset Defines the goal target screen offset.
      * @param interpolationFactor A value  between 0 and 1 that determines the speed of the interpolation.
      */
-    public interpolateTo(alpha = this.alpha, beta = this.beta, radius = this.radius, target?: Vector3, targetScreenOffset?: Vector2, interpolationFactor?: number): void {
+    public interpolateTo(alpha?: number, beta?: number, radius?: number, target?: Vector3, targetScreenOffset?: Vector2, interpolationFactor?: number): void {
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
         this.inertialRadiusOffset = 0;
@@ -916,9 +916,9 @@ export class ArcRotateCamera extends TargetCamera {
             selectGoalValue(targetScreenOffset?.y, this._goalTargetScreenOffset.y)
         );
 
-        this._goalAlpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
-        this._goalBeta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
-        this._goalRadius = Clamp(radius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
+        this._goalAlpha = Clamp(this._goalAlpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
+        this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
+        this._goalRadius = Clamp(this._goalRadius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
         this._goalTarget.y = Clamp(this._goalTarget.y, this.lowerTargetYLimit ?? -Infinity, Infinity);
     }
 
@@ -1121,11 +1121,11 @@ export class ArcRotateCamera extends TargetCamera {
                     selectGoalValue(this._goalTarget.y, this._target.y),
                     selectGoalValue(this._goalTarget.z, this._target.z)
                 );
-                this.setTarget(Vector3.Lerp(this.getTarget(), goalTarget, t));
+                this.setTarget(Vector3.Lerp(this.getTarget(), goalTarget, t), undefined, undefined, true);
 
                 if ((Vector3.Distance(this.getTarget(), goalTarget) * 10) / goalRadius < Epsilon) {
                     this._goalTarget.set(NaN, NaN, NaN);
-                    this.setTarget(goalTarget.clone());
+                    this.setTarget(goalTarget.clone(), undefined, undefined, true);
                 }
             }
 

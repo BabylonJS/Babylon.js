@@ -723,7 +723,7 @@ export class Viewer implements IDisposable {
                     camera.radius = distance;
                     camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
                 } else {
-                    camera.restoreState();
+                    this.resetCamera(true);
                 }
             }, PointerEventTypes.POINTERDOUBLETAP);
 
@@ -1497,7 +1497,7 @@ export class Viewer implements IDisposable {
         if (reframe) {
             this._reframeCamera(true);
         } else {
-            this._reframeCameraFromBounds(true, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+            this._reset(true, "camera");
         }
     }
 
@@ -1505,9 +1505,16 @@ export class Viewer implements IDisposable {
      * Updates the camera pose.
      * @param orbit The new camera orbit. If not provided, the current orbit will be used.
      * @param target The new camera target. If not provided, the current target will be used.
+     * @remarks Pass undefined or NaN for orbit or target or any of their components to keep the current value.
      */
-    public updateCamera(orbit?: CameraOrbit, target?: CameraTarget): void {
-        this._reframeCameraFromBounds(true, this._loadedModels, orbit, target);
+    public updateCamera(orbit?: Partial<CameraOrbit>, target?: Partial<CameraTarget>): void {
+        // undefined means default for _resetCameraFromBounds, so convert to NaN if needed.
+        this._reframeCameraFromBounds(
+            true,
+            this._loadedModels,
+            [orbit?.[0] ?? NaN, orbit?.[1] ?? NaN, orbit?.[2] ?? NaN],
+            [target?.[0] ?? NaN, target?.[1] ?? NaN, target?.[2] ?? NaN]
+        );
     }
 
     /**
@@ -1560,7 +1567,21 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("camera")) {
-            this._reframeCameraFromBounds(interpolate, this._loadedModels, this._options?.cameraOrbit, this._options?.cameraTarget);
+            // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
+            this._reframeCameraFromBounds(
+                interpolate,
+                this._loadedModels,
+                [
+                    this._options?.cameraOrbit?.[0] == undefined ? undefined : isNaN(this._options.cameraOrbit[0]) ? undefined : this._options.cameraOrbit[0],
+                    this._options?.cameraOrbit?.[1] == undefined ? undefined : isNaN(this._options.cameraOrbit[1]) ? undefined : this._options.cameraOrbit[1],
+                    this._options?.cameraOrbit?.[2] == undefined ? undefined : isNaN(this._options.cameraOrbit[2]) ? undefined : this._options.cameraOrbit[2],
+                ],
+                [
+                    this._options?.cameraTarget?.[0] == undefined ? undefined : isNaN(this._options.cameraTarget[0]) ? undefined : this._options.cameraTarget[0],
+                    this._options?.cameraTarget?.[1] == undefined ? undefined : isNaN(this._options.cameraTarget[1]) ? undefined : this._options.cameraTarget[1],
+                    this._options?.cameraTarget?.[2] == undefined ? undefined : isNaN(this._options.cameraTarget[2]) ? undefined : this._options.cameraTarget[2],
+                ]
+            );
             this.cameraAutoOrbit = {
                 enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
                 speed: this._options?.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
@@ -1821,10 +1842,6 @@ export class Viewer implements IDisposable {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtentsMin = this._tempVectors[0].copyFromFloats(...worldBounds.extents.min);
-            const worldExtentsMax = this._tempVectors[1].copyFromFloats(...worldBounds.extents.max);
-            framingBehavior.zoomOnBoundingInfo(worldExtentsMin, worldExtentsMax);
-
             goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
             goalTarget = Vector3.FromArray(worldBounds.center);
             if (!isFinite(goalRadius)) {
@@ -1836,15 +1853,15 @@ export class Viewer implements IDisposable {
         if (orbitOverrides) {
             const [overrideAlpha, overrideBeta, overrideRadius] = orbitOverrides;
 
-            if (overrideAlpha != undefined && !isNaN(overrideAlpha)) {
+            if (overrideAlpha != undefined) {
                 goalAlpha = overrideAlpha;
             }
 
-            if (overrideBeta != undefined && !isNaN(overrideBeta)) {
+            if (overrideBeta != undefined) {
                 goalBeta = overrideBeta;
             }
 
-            if (overrideRadius != undefined && !isNaN(overrideRadius)) {
+            if (overrideRadius != undefined) {
                 goalRadius = overrideRadius;
             }
         }
@@ -1852,30 +1869,45 @@ export class Viewer implements IDisposable {
         if (targetOverrides) {
             const [overrideTargetX, overrideTargetY, overrideTargetZ] = targetOverrides;
 
-            if (overrideTargetX != undefined && !isNaN(overrideTargetX)) {
+            if (overrideTargetX != undefined) {
                 goalTarget.x = overrideTargetX;
             }
 
-            if (overrideTargetY != undefined && !isNaN(overrideTargetY)) {
+            if (overrideTargetY != undefined) {
                 goalTarget.y = overrideTargetY;
             }
 
-            if (overrideTargetZ != undefined && !isNaN(overrideTargetZ)) {
+            if (overrideTargetZ != undefined) {
                 goalTarget.z = overrideTargetZ;
             }
         }
 
-        this._camera.alpha = goalAlpha;
-        this._camera.beta = goalBeta;
-        this._camera.radius = goalRadius;
-        this._camera.setTarget(goalTarget, undefined, undefined, true);
-        this._camera.lowerRadiusLimit = goalRadius * 0.001;
-        this._camera.upperRadiusLimit = goalRadius * 5;
-        this._camera.minZ = goalRadius * 0.001;
-        this._camera.maxZ = goalRadius * 1000;
+        if (!isNaN(goalAlpha)) {
+            this._camera.alpha = goalAlpha;
+        }
+        if (!isNaN(goalBeta)) {
+            this._camera.beta = goalBeta;
+        }
+        if (!isNaN(goalRadius)) {
+            this._camera.radius = goalRadius;
+            this._camera.lowerRadiusLimit = goalRadius * 0.001;
+            this._camera.upperRadiusLimit = goalRadius * 5;
+            this._camera.minZ = goalRadius * 0.001;
+            this._camera.maxZ = goalRadius * 1000;
+        }
+        this._camera.setTarget(
+            new Vector3(
+                isNaN(goalTarget.x) ? this._camera.target.x : goalTarget.x,
+                isNaN(goalTarget.y) ? this._camera.target.y : goalTarget.y,
+                isNaN(goalTarget.z) ? this._camera.target.z : goalTarget.z
+            ),
+            undefined,
+            undefined,
+            true
+        );
+
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.useNaturalPinchZoom = true;
-        this._camera.restoreStateInterpolationFactor = 0.1;
         this._camera.storeState();
 
         if (interpolate) {
@@ -1883,7 +1915,9 @@ export class Viewer implements IDisposable {
             this._camera.beta = currentBeta;
             this._camera.radius = currentRadius;
             this._camera.setTarget(currentTarget, undefined, undefined, true);
-            this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
+            this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);
+        } else {
+            this._camera.stopInterpolation();
         }
 
         updateSkybox(this._skybox, this._camera);
