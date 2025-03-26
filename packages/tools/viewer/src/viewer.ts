@@ -1828,15 +1828,10 @@ export class Viewer implements IDisposable {
 
         this._camera.useAutoRotationBehavior = true;
 
-        const currentAlpha = this._camera.alpha;
-        const currentBeta = this._camera.beta;
-        const currentRadius = this._camera.radius;
-        const currentTarget = this._camera.target;
-
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
-        let goalTarget = currentTarget;
+        let goalTarget = this._camera.target.clone();
 
         if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
@@ -1882,43 +1877,38 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (!isNaN(goalAlpha)) {
-            this._camera.alpha = goalAlpha;
-        }
-        if (!isNaN(goalBeta)) {
-            this._camera.beta = goalBeta;
-        }
-        if (!isNaN(goalRadius)) {
-            this._camera.radius = goalRadius;
-            this._camera.lowerRadiusLimit = goalRadius * 0.001;
-            this._camera.upperRadiusLimit = goalRadius * 5;
-            this._camera.minZ = goalRadius * 0.001;
-            this._camera.maxZ = goalRadius * 1000;
-        }
-        this._camera.setTarget(
-            new Vector3(
-                isNaN(goalTarget.x) ? this._camera.target.x : goalTarget.x,
-                isNaN(goalTarget.y) ? this._camera.target.y : goalTarget.y,
-                isNaN(goalTarget.z) ? this._camera.target.z : goalTarget.z
-            ),
-            undefined,
-            undefined,
-            true
-        );
-
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.useNaturalPinchZoom = true;
-        this._camera.storeState();
-
         if (interpolate) {
-            this._camera.alpha = currentAlpha;
-            this._camera.beta = currentBeta;
-            this._camera.radius = currentRadius;
-            this._camera.setTarget(currentTarget, undefined, undefined, true);
             this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);
         } else {
             this._camera.stopInterpolation();
+
+            if (!isNaN(goalAlpha)) {
+                this._camera.alpha = goalAlpha;
+            }
+            if (!isNaN(goalBeta)) {
+                this._camera.beta = goalBeta;
+            }
+            if (!isNaN(goalRadius)) {
+                this._camera.radius = goalRadius;
+                this._camera.lowerRadiusLimit = goalRadius * 0.001;
+                this._camera.upperRadiusLimit = goalRadius * 5;
+                this._camera.minZ = goalRadius * 0.001;
+                this._camera.maxZ = goalRadius * 1000;
+            }
+            this._camera.setTarget(
+                new Vector3(
+                    isNaN(goalTarget.x) ? this._camera.target.x : goalTarget.x,
+                    isNaN(goalTarget.y) ? this._camera.target.y : goalTarget.y,
+                    isNaN(goalTarget.z) ? this._camera.target.z : goalTarget.z
+                ),
+                undefined,
+                undefined,
+                true
+            );
         }
+
+        this._camera.wheelDeltaPercentage = 0.01;
+        this._camera.useNaturalPinchZoom = true;
 
         updateSkybox(this._skybox, this._camera);
     }
