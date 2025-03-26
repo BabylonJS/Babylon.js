@@ -714,6 +714,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onGuiReadyObservable.clear();
         super.dispose();
     }
+
+    private _alreadyRegisteredForRender = false;
     private _onResize(): void {
         const scene = this.getScene();
         if (!scene) {
@@ -739,14 +741,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
         if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
-            const oldState = this._texture ? this._texture.isReady : false;
             this.scaleTo(renderWidth, renderHeight);
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
             }
-            if (this._texture) {
-                this._texture!.isReady = oldState;
+            if (!this._alreadyRegisteredForRender) {
+                this._alreadyRegisteredForRender = true;
+                Tools.SetImmediate(() => {
+                    // We force an update so the texture can be set as ready
+                    this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+                    this._alreadyRegisteredForRender = false;
+                });
             }
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
