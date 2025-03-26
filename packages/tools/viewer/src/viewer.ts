@@ -1503,17 +1503,20 @@ export class Viewer implements IDisposable {
 
     /**
      * Updates the camera pose.
-     * @param orbit The new camera orbit. If not provided, the current orbit will be used.
-     * @param target The new camera target. If not provided, the current target will be used.
-     * @remarks Pass undefined or NaN for orbit or target or any of their components to keep the current value.
+     * @param pose The new pose of the camera.
+     * @remarks Any unspecified values are left unchanged.
      */
-    public updateCamera(orbit?: Partial<CameraOrbit>, target?: Partial<CameraTarget>): void {
+    public updateCamera(pose: { alpha?: number; beta?: number; radius?: number; targetX?: number; targetY?: number; targetZ?: number }): void {
         // undefined means default for _resetCameraFromBounds, so convert to NaN if needed.
         this._reframeCameraFromBounds(
             true,
             this._loadedModels,
-            [orbit?.[0] ?? NaN, orbit?.[1] ?? NaN, orbit?.[2] ?? NaN],
-            [target?.[0] ?? NaN, target?.[1] ?? NaN, target?.[2] ?? NaN]
+            pose.alpha ?? NaN,
+            pose.beta ?? NaN,
+            pose.radius ?? NaN,
+            pose.targetX ?? NaN,
+            pose.targetY ?? NaN,
+            pose.targetZ ?? NaN
         );
     }
 
@@ -1568,19 +1571,21 @@ export class Viewer implements IDisposable {
 
         if (flags.length === 0 || flags.includes("camera")) {
             // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
+            const alpha = Number(this._options?.cameraOrbit?.[0]);
+            const beta = Number(this._options?.cameraOrbit?.[1]);
+            const radius = Number(this._options?.cameraOrbit?.[2]);
+            const targetX = Number(this._options?.cameraTarget?.[0]);
+            const targetY = Number(this._options?.cameraTarget?.[1]);
+            const targetZ = Number(this._options?.cameraTarget?.[2]);
             this._reframeCameraFromBounds(
                 interpolate,
                 this._loadedModels,
-                [
-                    this._options?.cameraOrbit?.[0] == undefined ? undefined : isNaN(this._options.cameraOrbit[0]) ? undefined : this._options.cameraOrbit[0],
-                    this._options?.cameraOrbit?.[1] == undefined ? undefined : isNaN(this._options.cameraOrbit[1]) ? undefined : this._options.cameraOrbit[1],
-                    this._options?.cameraOrbit?.[2] == undefined ? undefined : isNaN(this._options.cameraOrbit[2]) ? undefined : this._options.cameraOrbit[2],
-                ],
-                [
-                    this._options?.cameraTarget?.[0] == undefined ? undefined : isNaN(this._options.cameraTarget[0]) ? undefined : this._options.cameraTarget[0],
-                    this._options?.cameraTarget?.[1] == undefined ? undefined : isNaN(this._options.cameraTarget[1]) ? undefined : this._options.cameraTarget[1],
-                    this._options?.cameraTarget?.[2] == undefined ? undefined : isNaN(this._options.cameraTarget[2]) ? undefined : this._options.cameraTarget[2],
-                ]
+                isNaN(alpha) ? undefined : alpha,
+                isNaN(beta) ? undefined : beta,
+                isNaN(radius) ? undefined : radius,
+                isNaN(targetX) ? undefined : targetX,
+                isNaN(targetY) ? undefined : targetY,
+                isNaN(targetZ) ? undefined : targetZ
             );
             this.cameraAutoOrbit = {
                 enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
@@ -1813,19 +1818,23 @@ export class Viewer implements IDisposable {
         this._reframeCameraFromBounds(interpolate, models);
     }
 
+    // For rotation/radius/target, undefined means default framing, NaN means keep current value.
     private _reframeCameraFromBounds(
         interpolate: boolean,
         models: readonly Model[],
-        orbitOverrides?: Partial<Readonly<CameraOrbit>>,
-        targetOverrides?: Partial<Readonly<CameraTarget>>
+        alpha?: number,
+        beta?: number,
+        radius?: number,
+        targetX?: number,
+        targetY?: number,
+        targetZ?: number
     ): void {
-        const worldBounds = computeModelsBoundingInfos(models);
-
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
-        let goalTarget = this._camera.target.clone();
+        let goalTarget = Vector3.Zero();
 
+        const worldBounds = computeModelsBoundingInfos(models);
         if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
@@ -1838,37 +1847,12 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (orbitOverrides) {
-            const [overrideAlpha, overrideBeta, overrideRadius] = orbitOverrides;
-
-            if (overrideAlpha != undefined) {
-                goalAlpha = overrideAlpha;
-            }
-
-            if (overrideBeta != undefined) {
-                goalBeta = overrideBeta;
-            }
-
-            if (overrideRadius != undefined) {
-                goalRadius = overrideRadius;
-            }
-        }
-
-        if (targetOverrides) {
-            const [overrideTargetX, overrideTargetY, overrideTargetZ] = targetOverrides;
-
-            if (overrideTargetX != undefined) {
-                goalTarget.x = overrideTargetX;
-            }
-
-            if (overrideTargetY != undefined) {
-                goalTarget.y = overrideTargetY;
-            }
-
-            if (overrideTargetZ != undefined) {
-                goalTarget.z = overrideTargetZ;
-            }
-        }
+        goalAlpha = alpha ?? goalAlpha;
+        goalBeta = beta ?? goalBeta;
+        goalRadius = radius ?? goalRadius;
+        goalTarget.x = targetX ?? goalTarget.x;
+        goalTarget.y = targetY ?? goalTarget.y;
+        goalTarget.z = targetZ ?? goalTarget.z;
 
         if (interpolate) {
             this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);

@@ -993,12 +993,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (name == "camera-orbit") {
                 const value = coerceCameraOrbitOrTarget(newValue);
                 if (value) {
-                    this._viewerDetails?.viewer.updateCamera(value, undefined);
+                    this._viewerDetails?.viewer.updateCamera({ alpha: value[0], beta: value[1], radius: value[2] });
                 }
             } else if (name == "camera-target") {
                 const value = coerceCameraOrbitOrTarget(newValue);
                 if (value) {
-                    this._viewerDetails?.viewer.updateCamera(undefined, value);
+                    this._viewerDetails?.viewer.updateCamera({ targetX: value[0], targetY: value[1], targetZ: value[2] });
                 }
             }
         }
