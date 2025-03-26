@@ -1319,27 +1319,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     updateViewer(this._viewerDetails);
                 }
             },
-            // Called to re-sync the HTML3DElement property with its corresponding attribute.
-            syncToAttribute: () => {
-                const descriptor = ViewerElement.elementProperties.get(property);
-                if (descriptor) {
-                    if (descriptor.attribute) {
-                        const attributeName = descriptor.attribute === true ? property : descriptor.attribute;
-                        if (this.hasAttribute(attributeName)) {
-                            const attributeValue = this.getAttribute(attributeName);
-
-                            const converter =
-                                typeof descriptor.converter === "function"
-                                    ? descriptor.converter
-                                    : descriptor.converter?.fromAttribute !== undefined
-                                      ? descriptor.converter.fromAttribute
-                                      : defaultConverter.fromAttribute;
-
-                            (this as any)[property] = converter ? converter(attributeValue, descriptor.type) : attributeValue;
-                        }
-                    }
-                }
-            },
         };
     }
 
