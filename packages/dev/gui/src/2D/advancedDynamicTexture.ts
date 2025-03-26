@@ -749,7 +749,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!this._alreadyRegisteredForRender) {
                 this._alreadyRegisteredForRender = true;
                 Tools.SetImmediate(() => {
-                    // We force an update so the texture can be set as ready
+                    // We want to force an update so the texture can be set as ready
+
                     this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
                     this._alreadyRegisteredForRender = false;
                 });
