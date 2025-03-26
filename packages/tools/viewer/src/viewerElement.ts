@@ -6,7 +6,7 @@ import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import type { CameraOrbit, EnvironmentOptions, Model, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
-import { LitElement, css, defaultConverter, html } from "lit";
+import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 

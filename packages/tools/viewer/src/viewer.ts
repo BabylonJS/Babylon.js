@@ -7,7 +7,6 @@ import type {
     BaseTexture,
     Camera,
     CubeTexture,
-    FramingBehavior,
     HDRCubeTexture,
     HotSpotQuery,
     IDisposable,
