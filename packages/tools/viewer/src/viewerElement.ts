@@ -3,7 +3,7 @@ import type { Camera, Nullable, Observable } from "core/index";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, Model, ShadowsOptions, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { EnvironmentOptions, Model, ShadowType, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -204,16 +204,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
-            "shadow",
-            (details) => details.viewer.onShadowsConfigurationChanged,
-            (details) => (details.viewer.shadowConfig = { enable: this.shadow ?? details.viewer.shadowConfig.enable }),
-            (details) => (this.shadow = details.viewer.shadowConfig.enable)
-        ),
-        this._createPropertyBinding(
             "shadowType",
             (details) => details.viewer.onShadowsConfigurationChanged,
             (details) => (details.viewer.shadowConfig = { type: this.shadowType ?? details.viewer.shadowConfig.type }),
-            (details) => (this.shadowType = details.viewer.shadowConfig.type)
+            (details) => (this.shadowType = details.viewer.shadowConfig.type ?? null)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -712,21 +706,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public environmentVisible: Nullable<boolean> = null;
 
     /**
-     * Wether or not the shadows are on/off.
-     */
-    @property({
-        attribute: "shadow",
-    })
-    public shadow: Nullable<boolean> = null;
-
-    /**
      * The type of shadows to use.
      * "classic" for shadow maps, "environment" for environment shadows.
      */
     @property({
         attribute: "shadow-type",
     })
-    public shadowType: Nullable<null | "classic" | "environment"> = null;
+    public shadowType: Nullable<ShadowType> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1470,7 +1456,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 await this._updateModel();
                 await this._updateEnv({ lighting: true, skybox: true });
-                this._updateShadows({ enable: true, type: "environment" });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
@@ -1558,19 +1543,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 await Promise.all(promises);
             } catch (error) {
                 // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
-                if (!(error instanceof AbortError)) {
-                    Logger.Error(error);
-                }
-            }
-        }
-    }
-
-    private async _updateShadows(options: ShadowsOptions) {
-        if (this._viewerDetails) {
-            try {
-                this._viewerDetails.viewer.shadowConfig = options;
-            } catch (error) {
-                // If updateShadows was aborted (e.g. because a new shadows update was requested before this one finished), we can just ignore the error.
                 if (!(error instanceof AbortError)) {
                     Logger.Error(error);
                 }

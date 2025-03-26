@@ -83,7 +83,7 @@
                 clear-color="#ffffff"
                 engine="WebGPU"
                 environment="https://cdn.substance3d.com/v2/files/public/studio-white.env"
-                source="http://localhost:4000/glb/SheenChair.glb"
+                source="http://localhost:4000/glb/test-camera.glb"
                 animation-speed="1.5"
                 selected-animation="1"
                 camera-orbit="auto auto auto"
@@ -164,12 +164,9 @@
                 <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
             </div>
             <div>
-                <span>Shadows</span>
-                <input type="checkbox" id="shadowInput" checked oninput="onShadowSwitch()" />
-            </div>
-            <div>
                 <span>Shadows type</span>
                 <select id="shadowTypeInput" checked oninput="onShadowType()">
+                    <option value="none">None</option>
                     <option value="classic">Classic</option>
                     <option value="environment">Environment</option>
                 </select>
@@ -380,15 +377,10 @@
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.environmentConfig = { visible: checked };
             };
-            globalThis.onShadowSwitch = () => {
-                const checked = document.querySelector("#shadowInput").checked;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.shadowConfig = { enable: checked };
-            };
             globalThis.onShadowType = () => {
                 const value = document.querySelector("#shadowTypeInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.shadowConfig = { type: value };
+                viewer.shadowConfig = { type: value === "none" ? null : value };
             };
         </script>
     </body>
