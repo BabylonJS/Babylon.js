@@ -1821,13 +1821,6 @@ export class Viewer implements IDisposable {
     ): void {
         const worldBounds = computeModelsBoundingInfos(models);
 
-        this._camera.useFramingBehavior = true;
-        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
-
-        this._camera.useAutoRotationBehavior = true;
-
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
