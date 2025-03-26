@@ -1,6 +1,54 @@
 {
-    "fromTag": "7.54.1",
+    "fromTag": "7.54.2",
     "changelog": {
+        "7.54.3": [
+            {
+                "pr": "16407",
+                "title": "Fix dynamicTexture resize losing track of readiness state",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16406",
+                "title": "Increase effect compilation timeout",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16398",
+                "title": "Mesh picking: Fix calculation of the world normal when picking thin instances",
+                "description": "See https://forum.babylonjs.com/t/wrong-result-of-pickinginfo-getnormal-with-thin-instances/57393",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            }
+        ],
         "7.54.2": [
             {
                 "pr": "16404",
