@@ -1,6 +1,43 @@
 {
-    "fromTag": "7.54.3",
+    "fromTag": "8.0.0",
     "changelog": {
+        "8.0.1": [
+            {
+                "pr": "16411",
+                "title": "Remove weird loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16410",
+                "title": "PBR sub-surface: Add switch for back compatibility",
+                "description": "#16337 was a bug fix but a breaking change, so we're adding a toggle to be able to revert to the old buggy behavior in case it's easier for people than to fix their setup.\r\n\r\nJust set `mat.subSurface.applyAlbedoAfterSubSurface = true` to switch to the old behavior.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            }
+        ],
         "8.0.0": [
             {
                 "pr": "16408",
