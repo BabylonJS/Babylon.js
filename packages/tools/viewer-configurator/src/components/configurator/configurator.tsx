@@ -9,7 +9,7 @@ import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSave, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
 
@@ -23,10 +23,13 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
+import { ViewerOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
+import { Color4 } from "core/Maths/math.color";
 import { Epsilon } from "core/Maths/math.constants";
+import { Vector3 } from "core/Maths/math.vector";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
 
@@ -53,6 +56,7 @@ const hotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
 function useConfiguration<T>(
     defaultState: T,
+    initialConfiguredState: T,
     get: () => T,
     set: ((data: T) => void) | undefined,
     equals: (left: T, right: T) => boolean = (left, right) => left === right,
@@ -60,12 +64,13 @@ function useConfiguration<T>(
     dependencies?: unknown[]
 ) {
     const memoDefaultState = useMemo(() => defaultState, dependencies ?? []);
+    const memoInitialConfiguredState = useMemo(() => initialConfiguredState, dependencies ?? []);
     const memoSet = useCallback(set ?? (() => {}), dependencies ?? []);
     const memoGet = useCallback(get, dependencies ?? []);
     const memoEquals = useCallback(equals, []);
-    const [configuredState, setConfiguredState] = useState(memoDefaultState);
     const liveState = useObservableState(memoGet, ...observables);
-    const [isConfigured, setIsConfigured] = useState(false);
+    const [configuredState, setConfiguredState] = useState(initialConfiguredState);
+    const [isConfigured, setIsConfigured] = useState(!memoEquals(memoInitialConfiguredState, memoDefaultState));
 
     useEffect(() => {
         memoSet?.(configuredState);
@@ -283,8 +288,8 @@ const HotSpotEntry: FunctionComponent<{
     );
 };
 
-export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
-    const { viewerElement, viewerDetails, viewer } = props;
+export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
+    const { viewerOptions, viewerElement, viewerDetails, viewer } = props;
     const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged, viewer.onModelError);
     const lockObject = useMemo(() => new LockObject(), []);
 
@@ -340,8 +345,24 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const lightingUrlConfig = useConfiguration("", () => viewerElement.environment.lighting ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
-    const skyboxUrlConfig = useConfiguration("", () => viewerElement.environment.skybox ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
+    const lightingUrlConfig = useConfiguration(
+        "",
+        viewerOptions.environmentLighting ?? "",
+        () => viewerElement.environment.lighting ?? "",
+        undefined,
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
+    const skyboxUrlConfig = useConfiguration(
+        "",
+        viewerOptions.environmentSkybox ?? "",
+        () => viewerElement.environment.skybox ?? "",
+        undefined,
+        undefined,
+        [viewer.onEnvironmentChanged],
+        [viewerElement]
+    );
 
     const [syncEnvironment, setSyncEnvironment] = useState(false);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
@@ -358,7 +379,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
     const skyboxBlurConfig = useConfiguration(
-        viewer.environmentConfig.blur,
+        ViewerOptions.environmentConfig.blur,
+        viewerOptions.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
         (blur) => (viewer.environmentConfig = { blur }),
         undefined,
@@ -367,7 +389,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const environmentIntensityConfig = useConfiguration(
-        viewer.environmentConfig.intensity,
+        ViewerOptions.environmentConfig.intensity,
+        viewerOptions.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
         (intensity) => (viewer.environmentConfig = { intensity }),
         undefined,
@@ -376,7 +399,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const environmentRotationConfig = useConfiguration(
-        viewer.environmentConfig.rotation,
+        ViewerOptions.environmentConfig.rotation,
+        viewerOptions.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
         (rotation) => (viewer.environmentConfig = { rotation }),
         undefined,
@@ -386,6 +410,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const clearColorConfig = useConfiguration(
         viewerDetails.scene.clearColor,
+        new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : ViewerOptions.clearColor)),
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
         (left, right) => left.equals(right),
@@ -398,7 +423,18 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [clearColorConfig.configuredState]);
 
     const cameraConfig = useConfiguration(
-        undefined,
+        {
+            alpha: NaN,
+            beta: NaN,
+            radius: NaN,
+            target: new Vector3(NaN, NaN, NaN),
+        },
+        {
+            alpha: viewerOptions.cameraOrbit?.[0] ?? NaN,
+            beta: viewerOptions.cameraOrbit?.[1] ?? NaN,
+            radius: viewerOptions.cameraOrbit?.[2] ?? NaN,
+            target: new Vector3(viewerOptions.cameraTarget?.[0] ?? NaN, viewerOptions.cameraTarget?.[1] ?? NaN, viewerOptions.cameraTarget?.[2] ?? NaN),
+        },
         () => {
             return {
                 alpha: viewerDetails.camera.alpha,
@@ -408,14 +444,16 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
             };
         },
         (cameraState) => {
-            if (cameraState) {
-                //viewerDetails.camera.interpolateTo(cameraState.alpha, cameraState.beta, cameraState.radius, cameraState.target);
-                viewerElement.setAttribute("camera-orbit", `${cameraState.alpha} ${cameraState.beta} ${cameraState.radius}`);
-                viewerElement.setAttribute("camera-target", `${cameraState.target.x} ${cameraState.target.y} ${cameraState.target.z}`);
-            } else {
+            if (!cameraState || (isNaN(cameraState.alpha) && isNaN(cameraState.beta) && isNaN(cameraState.radius))) {
                 viewerElement.removeAttribute("camera-orbit");
+            } else {
+                viewerElement.setAttribute("camera-orbit", `${cameraState.alpha} ${cameraState.beta} ${cameraState.radius}`);
+            }
+
+            if (!cameraState || (isNaN(cameraState.target.x) && isNaN(cameraState.target.y) && isNaN(cameraState.target.z))) {
                 viewerElement.removeAttribute("camera-target");
-                // viewerElement.resetCamera();
+            } else {
+                viewerElement.setAttribute("camera-target", `${cameraState.target.x} ${cameraState.target.y} ${cameraState.target.z}`);
             }
         },
         (left, right) => {
@@ -424,10 +462,12 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 (!!left &&
                     !!right &&
                     // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
-                    WithinEpsilon(left.alpha, right.alpha, Epsilon * 10) &&
-                    WithinEpsilon(left.beta, right.beta, Epsilon * 10) &&
-                    WithinEpsilon(left.radius, right.radius, Epsilon) &&
-                    left.target.equalsWithEpsilon(right.target, Epsilon))
+                    (isNaN(right.alpha) || WithinEpsilon(left.alpha, right.alpha)) &&
+                    (isNaN(right.beta) || WithinEpsilon(left.beta, right.beta)) &&
+                    (isNaN(right.radius) || WithinEpsilon(left.radius, right.radius)) &&
+                    (isNaN(right.target.x) || WithinEpsilon(left.target.x, right.target.x)) &&
+                    (isNaN(right.target.y) || WithinEpsilon(left.target.y, right.target.y)) &&
+                    (isNaN(right.target.z) || WithinEpsilon(left.target.z, right.target.z)))
             );
         },
         [viewerDetails.camera.onViewMatrixChangedObservable],
@@ -435,7 +475,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const toneMappingConfig = useConfiguration(
-        viewer.postProcessing.toneMapping,
+        ViewerOptions.postProcessing.toneMapping,
+        viewerOptions.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
         (toneMapping) => (viewer.postProcessing = { toneMapping }),
         undefined,
@@ -448,7 +489,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     }, [toneMappingConfig.configuredState]);
 
     const contrastConfig = useConfiguration(
-        viewer.postProcessing.contrast,
+        ViewerOptions.postProcessing.contrast,
+        viewerOptions.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
         (contrast) => (viewer.postProcessing = { contrast }),
         undefined,
@@ -457,7 +499,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const exposureConfig = useConfiguration(
-        viewer.postProcessing.exposure,
+        ViewerOptions.postProcessing.exposure,
+        viewerOptions.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
         (exposure) => (viewer.postProcessing = { exposure }),
         undefined,
@@ -466,8 +509,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const autoOrbitConfig = useConfiguration(
-        // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
-        false,
+        ViewerOptions.cameraAutoOrbit.enabled,
+        viewerOptions.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
         () => viewer.cameraAutoOrbit.enabled,
         (enabled) => (viewer.cameraAutoOrbit = { enabled }),
         undefined,
@@ -476,7 +519,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const autoOrbitSpeedConfig = useConfiguration(
-        viewer.cameraAutoOrbit.speed,
+        ViewerOptions.cameraAutoOrbit.speed,
+        viewerOptions.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
         () => viewer.cameraAutoOrbit.speed,
         (speed) => (viewer.cameraAutoOrbit = { speed }),
         undefined,
@@ -485,7 +529,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const autoOrbitDelayConfig = useConfiguration(
-        viewer.cameraAutoOrbit.delay,
+        ViewerOptions.cameraAutoOrbit.delay,
+        viewerOptions.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
         () => viewer.cameraAutoOrbit.delay,
         (delay) => (viewer.cameraAutoOrbit = { delay }),
         undefined,
@@ -495,6 +540,10 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const animationStateConfig = useConfiguration(
         undefined,
+        {
+            animationSpeed: viewerOptions.animationSpeed ?? ViewerOptions.animationSpeed,
+            selectedAnimation: viewerOptions.selectedAnimation ?? 0,
+        },
         () => {
             return {
                 animationSpeed: viewer.animationSpeed,
@@ -518,7 +567,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     );
 
     const animationAutoPlayConfig = useConfiguration(
-        false,
+        ViewerOptions.animationAutoPlay,
+        viewerOptions.animationAutoPlay ?? ViewerOptions.animationAutoPlay,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
             //viewerElement.animationAutoPlay = autoPlay;
@@ -536,6 +586,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
 
     const selectedMaterialVariantConfig = useConfiguration(
         "",
+        viewerOptions.selectedMaterialVariant ?? "",
         () => viewer.selectedMaterialVariant,
         (materialVariant) => {
             if (materialVariant) {
@@ -727,9 +778,29 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     // This is the full html snippet (attributes and child elements).
     const htmlSnippet = useMemo(() => {
         const formattedAttributes = attributes.map((attribute) => `\n  ${attribute}`).join("");
-        const snippet = `<babylon-viewer ${formattedAttributes}\n>${children}\n</babylon-viewer>`;
-        return snippet;
+        return `<babylon-viewer ${formattedAttributes}\n>${children}\n</babylon-viewer>`;
     }, [attributes, children]);
+
+    // This is the full json snippet
+    const jsonSnippet = useMemo(() => {
+        const properties: string[] = [`"source": "${modelUrl || "[model url]"}"`];
+
+        const autoOrbitProperties: string[] = [];
+        if (autoOrbitConfig.canReset) {
+            autoOrbitProperties.push(`"enabled": ${autoOrbitConfig.configuredState}`);
+        }
+        if (autoOrbitSpeedConfig.canReset) {
+            autoOrbitProperties.push(`"speed": ${autoOrbitSpeedConfig.configuredState}`);
+        }
+        if (autoOrbitDelayConfig.canReset) {
+            autoOrbitProperties.push(`"delay": ${autoOrbitDelayConfig.configuredState}`);
+        }
+        if (autoOrbitProperties.length > 0) {
+            properties.push(`"cameraAutoOrbit": {${autoOrbitProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
+        }
+
+        return `{${properties.map((property) => `\n  ${property}`).join(",")}\n}`;
+    }, [modelUrl, autoOrbitConfig.configuredState, autoOrbitSpeedConfig.configuredState, autoOrbitDelayConfig.configuredState]);
 
     const isModelUrlValid = useMemo(() => {
         return URL.canParse(modelUrl);
@@ -910,6 +981,40 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         navigator.clipboard.writeText(htmlSnippet);
     }, [htmlSnippet]);
 
+    const [canSaveSnippet, setCanSaveSnippet] = useState(true);
+
+    const saveSnippet = useCallback(async () => {
+        if (canSaveSnippet) {
+            setCanSaveSnippet(false);
+            try {
+                let url = "https://snippet.babylonjs.com";
+                if (window.location.hash) {
+                    url = `${url}/${window.location.hash.substring(1)}`;
+                }
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        payload: jsonSnippet,
+                    }),
+                });
+
+                const result = await response.json();
+                let id = result.id;
+                if (result.version) {
+                    id = `${id}#${result.version}`;
+                }
+                window.location.hash = id;
+            } finally {
+                setCanSaveSnippet(true);
+            }
+        }
+    }, [canSaveSnippet, jsonSnippet]);
+
     const canRevertAll = useMemo(
         () => cameraConfig.canRevert || animationStateConfig.canRevert || selectedMaterialVariantConfig.canRevert,
         [cameraConfig.canRevert, animationStateConfig.canRevert, selectedMaterialVariantConfig.canRevert]
@@ -974,13 +1079,14 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                 </div>
                 <LineContainerComponent title="HTML SNIPPET">
                     <div className="flexColumn">
-                        <TextInputLineComponent multilines={true} value={htmlSnippet} disabled={true} />
+                        <TextInputLineComponent multilines={true} value={jsonSnippet} disabled={true} />
                         <div className="flexRow">
                             <div style={{ flex: 1 }}>
                                 <ButtonLineComponent label="Reset" onClick={resetAll} />
                             </div>
                             <FontAwesomeIconButton title="Revert all state to snippet" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
                             <FontAwesomeIconButton title="Copy html to clipboard" icon={faCopy} onClick={copyToClipboard} />
+                            <FontAwesomeIconButton title="Save as snippet" icon={faSave} onClick={saveSnippet} disabled={!canSaveSnippet} />
                         </div>
                     </div>
                 </LineContainerComponent>
