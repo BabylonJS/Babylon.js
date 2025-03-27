@@ -617,9 +617,17 @@ export class NodeMaterialBlock {
                 const connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.declarationVariableName, connectedPoint.type)) {
                     const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "";
-                    state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName} = ${connectedPoint.associatedVariableName};\n`;
+                    if (state.shaderLanguage === ShaderLanguage.WGSL && connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Matrix) {
+                        // We can't pass a matrix as a varying in WGSL, so we need to split it into 4 vectors
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r0 = ${connectedPoint.associatedVariableName}[0];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r1 = ${connectedPoint.associatedVariableName}[1];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r2 = ${connectedPoint.associatedVariableName}[2];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r3 = ${connectedPoint.associatedVariableName}[3];\n`;
+                    } else {
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName} = ${connectedPoint.associatedVariableName};\n`;
+                    }
                 }
-                const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+                const prefix = state.shaderLanguage === ShaderLanguage.WGSL && connectedPoint.type !== NodeMaterialBlockConnectionPointTypes.Matrix ? "fragmentInputs." : "";
                 input.associatedVariableName = prefix + "v_" + connectedPoint.declarationVariableName;
                 input._enforceAssociatedVariableName = true;
             }

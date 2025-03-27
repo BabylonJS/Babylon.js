@@ -241,7 +241,7 @@ export class IblCdfGenerator {
             { width: size.width, height: size.height },
             "iblScaledLuminance",
             this._scene,
-            { ...icdfOptions, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
+            { ...cdfOptions, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
             true,
             false
         );

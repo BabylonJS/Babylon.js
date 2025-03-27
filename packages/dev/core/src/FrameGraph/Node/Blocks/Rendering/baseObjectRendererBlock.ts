@@ -38,12 +38,12 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
         this._addDependenciesInput();
-        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator, true);
+        this.registerInput("shadowGenerators", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -59,11 +59,15 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
             )
         );
 
-        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
-        this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.shadowGenerators.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.depth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+        );
+        this.shadowGenerators.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator | NodeRenderGraphBlockConnectionPointTypes.ResourceContainer
+        );
 
-        this.output._typeConnectionSource = this.destination;
+        this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;
     }
 
@@ -97,6 +101,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.disableShadows = value;
     }
 
+    /** If the rendering should be done in linear space */
+    @editableInPropertyPage("Render in linear space", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get renderInLinearSpace() {
+        return this._frameGraphTask.renderInLinearSpace;
+    }
+
+    public set renderInLinearSpace(value: boolean) {
+        this._frameGraphTask.renderInLinearSpace = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -106,9 +120,9 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /**
-     * Gets the destination texture input component
+     * Gets the target texture input component
      */
-    public get destination(): NodeRenderGraphConnectionPoint {
+    public get target(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -175,7 +189,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture; // the value of the outputDepth connection point is the "outputDepth" texture of the task
         this.objectRenderer.value = this._frameGraphTask; // the value of the objectRenderer connection point is the task itself
 
-        this._frameGraphTask.destinationTexture = this.destination.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
         this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
@@ -202,6 +216,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
+        codes.push(`${this._codeVariableName}.renderInLinearSpace = ${this.renderInLinearSpace};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -210,6 +225,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.disableShadows = this.disableShadows;
+        serializationObject.renderInLinearSpace = this.renderInLinearSpace;
         return serializationObject;
     }
 
@@ -218,5 +234,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.disableShadows = serializationObject.disableShadows;
+        this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
     }
 }

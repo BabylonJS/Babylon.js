@@ -8,13 +8,13 @@ import { FrameGraphTask } from "core/FrameGraph/frameGraphTask";
  */
 export class FrameGraphGUITask extends FrameGraphTask {
     /**
-     * The destination texture to render the GUI to.
+     * The target texture to render the GUI to.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
      * The output texture of the task.
-     * This is the same texture as the destination texture, but the handles are different!
+     * This is the same texture as the target texture, but the handles are different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -62,11 +62,11 @@ export class FrameGraphGUITask extends FrameGraphTask {
     }
 
     public record(): void {
-        if (this.destinationTexture === undefined) {
-            throw new Error("FrameGraphGUITask: destinationTexture is required");
+        if (this.targetTexture === undefined) {
+            throw new Error("FrameGraphGUITask: targetTexture is required");
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 

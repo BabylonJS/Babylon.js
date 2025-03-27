@@ -620,7 +620,7 @@ export class InputBlock extends NodeMaterialBlock {
                             state._attributeDeclaration += `#ifdef ${defineName}\n`;
                             state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
                             state._attributeDeclaration += `#else\n`;
-                            state._attributeDeclaration += `let ${this.declarationVariableName}: ${state._getShaderType(this.type)} = ${state._getShaderType(this.type)}(0.);\n`;
+                            state._attributeDeclaration += `var<private> ${this.declarationVariableName}: ${state._getShaderType(this.type)} = ${state._getShaderType(this.type)}(0.);\n`;
                             state._attributeDeclaration += `#endif\n`;
                         } else {
                             state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;

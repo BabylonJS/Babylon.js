@@ -8,7 +8,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to output values on the prepass textures
- * #WW65SN#9
+ * @see https://playground.babylonjs.com/#WW65SN#9
  */
 export class PrePassOutputBlock extends NodeMaterialBlock {
     /**

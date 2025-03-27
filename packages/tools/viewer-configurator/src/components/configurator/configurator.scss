@@ -1,0 +1,520 @@
+.configurator {
+    $line-height: 22px;
+    $line-padding-left: 3px;
+    $line-padding-right: 5px;
+    $line-padding-top-bottom: 5px;
+    $line-padding: $line-padding-top-bottom $line-padding-right $line-padding-top-bottom $line-padding-left;
+    $line-button-gap: 0.5rem;
+    $line-content-spacing: space-around;
+    $primary-background: #333333;
+    $border-radius: 0px;
+    $icon-height: $line-height * 0.8;
+    $icon-padding-top-bottom: calc(($line-height - $icon-height) / 2);
+    $icon-padding: $icon-padding-top-bottom 0px;
+    color: white;
+    background: $primary-background;
+    grid-row: 1;
+    grid-column: 1;
+    overflow-y: auto;
+    height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+
+    .commonFlex {
+        display: flex;
+        align-items: center;
+        gap: $line-button-gap;
+        justify-content: $line-content-spacing;
+
+        > * {
+            height: 100%;
+        }
+    }
+
+    .flexRow {
+        @extend .commonFlex;
+        height: $line-height;
+        flex-direction: row;
+
+        > * {
+            height: 100%;
+        }
+    }
+
+    .flexColumn {
+        @extend .commonFlex;
+        height: auto;
+        padding: $line-padding;
+        flex-direction: column;
+
+        > * {
+            width: 100%;
+        }
+    }
+
+    .stickyContainer {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: $primary-background;
+    }
+
+    .configuratorHeader {
+        height: auto;
+        background: #222;
+        line-height: 16px;
+        font-size: 16px;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 2px 5px;
+
+        .title {
+            flex: 1;
+            padding: $line-padding;
+            text-align: center;
+        }
+
+        .logo {
+            padding: 1px;
+            width: 30px;
+            height: 30px;
+        }
+
+        .docs {
+            transform: scale(1.3);
+            transform-origin: right center;
+        }
+    }
+
+    // Prevent default styling on inputs
+    input {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        font: inherit; // Forms don't inherit the font-family by default
+    }
+    select {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+    }
+
+    // Styling for icons
+    svg {
+        height: $line-height !important;
+
+        * {
+            transform: scale(0.8);
+            transform-origin: center;
+        }
+    }
+
+    // Styling for disabled elements
+    .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // LineContainer override
+    .paneContainer {
+        .paneList {
+            border-left: 3px solid transparent;
+        }
+
+        .paneList > * {
+            padding: $line-padding;
+        }
+
+        // Make direct children of LineContainer flex rows by default
+        .paneList > *:not(.flexColumn) {
+            @extend .flexRow;
+        }
+
+        &:hover {
+            .paneList {
+                border-left: 3px solid rgba(51, 122, 183, 0.8);
+            }
+
+            .paneContainer-content {
+                .header {
+                    .title {
+                        border-left: 3px solid rgb(51, 122, 183);
+                    }
+                }
+            }
+        }
+
+        .paneContainer-highlight-border {
+            opacity: 1;
+            border: 3px solid red;
+            transition: opacity 250ms;
+            pointer-events: none;
+
+            &.transparent {
+                opacity: 0;
+            }
+        }
+
+        .paneContainer-content {
+            .header {
+                display: flex;
+                background: #555555;
+                height: 30px;
+                padding-right: 5px;
+                cursor: pointer;
+
+                .title {
+                    flex: 1;
+                    border-left: 3px solid transparent;
+                    padding-left: 5px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .collapse {
+                    display: flex;
+                    align-items: center;
+                    transform-origin: center;
+
+                    &.closed {
+                        transform: rotate(180deg);
+                    }
+                }
+            }
+
+            .paneList > div:not(:last-child) {
+                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .fragment > div:not(:last-child) {
+                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+
+    .textInputLine {
+        height: 100%;
+
+        .value {
+            height: 100%;
+        }
+    }
+
+    // TextInputLineComponent override, multiline. Is bespoke, so fine to do like this.
+    .textInputArea {
+        height: 8 * $line-height;
+
+        textarea {
+            padding: $line-padding;
+            width: 100%;
+            height: 100%;
+            resize: none;
+            border-radius: $border-radius;
+            box-sizing: border-box;
+            width: 100%;
+            font: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        textarea:disabled {
+            opacity: 1;
+            color: black;
+            background: white;
+            cursor: text;
+            border: inherit;
+        }
+    }
+
+    // ButtonLineComponent override
+    .buttonLine {
+        button {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            border-radius: $border-radius;
+            color: white;
+            padding: 3px;
+            opacity: 0.9;
+            width: 100%;
+        }
+        button:hover {
+            opacity: 1;
+        }
+        button:active {
+            background: #282828;
+        }
+        button:focus {
+            border: 1px solid rgb(51, 122, 183);
+            outline: 0px;
+        }
+    }
+
+    // SliderLine override
+    .sliderLine {
+        display: flex;
+        flex-direction: row;
+        justify-content: $line-content-spacing;
+        gap: $line-button-gap;
+        height: $line-height;
+        align-items: center;
+
+        .label {
+            flex: 1;
+            align-self: center;
+            text-align: left;
+        }
+
+        .slider {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+
+            .range {
+                -webkit-appearance: none;
+                width: 100%;
+                height: 20%;
+                background: #d3d3d3;
+                border-radius: 5px;
+                outline: none;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            }
+
+            .range:hover {
+                opacity: 1;
+            }
+
+            .range::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: rgb(51, 122, 183);
+                cursor: pointer;
+            }
+
+            .range::-moz-range-thumb {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: rgb(51, 122, 183);
+                cursor: pointer;
+            }
+        }
+
+        // Hide the float text input
+        .floatLine {
+            display: none;
+        }
+
+        // Hide the copy button
+        .copy {
+            display: none;
+        }
+    }
+
+    // OptionsLine override
+    .listLine {
+        align-self: center;
+        display: flex;
+        flex-direction: row;
+        justify-content: $line-content-spacing;
+        gap: $line-button-gap;
+        height: 100%;
+
+        .label {
+            flex: 1;
+            align-self: center;
+            text-align: left;
+        }
+
+        .options {
+            height: 100%;
+            flex: 1.5;
+        }
+
+        .copy {
+            display: none;
+        }
+    }
+
+    // ColorPicker override
+    .color-picker-container {
+        width: 100%;
+
+        input {
+            border: 1px;
+        }
+    }
+
+    // CheckBoxLine override
+    .checkBoxLine {
+        $toggle-width: 35px;
+        $toggle-height: $line-height * 0.6;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: "space-between";
+        gap: $line-button-gap;
+        width: 100%;
+
+        .label {
+            flex: 1;
+            text-align: left;
+        }
+
+        .checkBox {
+            flex: 0 0 $toggle-width; // Fixed width
+            align-content: center;
+
+            $thumb-size: calc($toggle-height * 0.8);
+            $thumb-left-unchecked: ($toggle-width * 0.05);
+            $thumb-left-checked: calc($toggle-width - $thumb-size - $thumb-left-unchecked);
+
+            .icon {
+                display: none;
+            }
+
+            // The toggle container
+            .lbl {
+                position: relative;
+                display: block;
+                height: $toggle-height;
+                width: $toggle-width;
+                margin-right: 5px;
+                background: #898989;
+                border-radius: 100px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .lbl.checked {
+                background: rgb(51, 122, 183);
+                transition: all 0.3s ease;
+            }
+
+            // The toggle thumb
+            .lbl:after {
+                position: absolute;
+                left: $thumb-left-unchecked;
+                transform: translateY(12.5%);
+                display: block;
+                width: $thumb-size;
+                height: $thumb-size;
+                border-radius: 50%;
+                background: #fff;
+                box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);
+                content: "";
+                transition: all 0.15s ease;
+            }
+            .lbl.checked:after {
+                left: $thumb-left-checked;
+                background: #164975;
+            }
+
+            .lbl:active:after {
+                transform: scale(1.15, 0.85);
+            }
+
+            .hidden {
+                display: none;
+            }
+        }
+
+        .copy {
+            display: none;
+        }
+    }
+
+    // Color3Line override
+    .color3Line {
+        $color-box-width: 40px;
+        $color-box-height: $line-height * 0.95;
+
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: $line-button-gap;
+
+        .firstLine {
+            height: $line-height;
+            width: 100%;
+            align-self: center;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: $line-button-gap;
+
+            .label {
+                flex: 1;
+                text-align: left;
+            }
+
+            .color3 {
+                flex: 0 0 $color-box-width;
+                align-content: center;
+
+                .color-picker {
+                    background: white;
+
+                    .color-rect-background {
+                        background: repeating-conic-gradient(#d2d2d2 0% 25%, white 25% 50%) 50% / 10px 10px;
+                    }
+
+                    .color-rect {
+                        $border-size: 2px;
+                        border: $border-size white solid;
+                        cursor: pointer;
+                        height: calc($color-box-height - 2 * $border-size);
+                    }
+
+                    .color-picker-cover {
+                        position: fixed;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: 0px;
+                        z-index: 100;
+                    }
+
+                    .color-picker-float {
+                        position: absolute;
+                    }
+                }
+            }
+
+            .copy {
+                display: none;
+            }
+        }
+
+        .secondLine {
+            display: flex;
+            flex-direction: column;
+            gap: 2px; //$line-button-gap;
+            border-left: 1px solid rgb(51, 122, 183);
+
+            .numeric {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-end;
+                gap: 0.5rem;
+
+                .numeric-label {
+                    flex: 3;
+                    text-align: right;
+                    align-items: center;
+                    justify-self: right;
+                }
+
+                .numeric-input {
+                    flex: 2;
+                }
+            }
+        }
+    }
+}

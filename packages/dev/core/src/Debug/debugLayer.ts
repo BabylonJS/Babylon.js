@@ -76,7 +76,7 @@ export interface IExplorerAdditionalNode {
     getContent(): IExplorerAdditionalChild[];
 }
 
-export type IInspectorContextMenuType = "pipeline" | "node" | "materials" | "spriteManagers" | "particleSystems";
+export type IInspectorContextMenuType = "pipeline" | "node" | "materials" | "spriteManagers" | "particleSystems" | "frameGraphs";
 
 /**
  * Context menu item

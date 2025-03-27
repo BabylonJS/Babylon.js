@@ -1637,6 +1637,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * This method is useful for releasing a physics shape from the physics engine, freeing up resources and preventing memory leaks.
      */
     public disposeShape(shape: PhysicsShape): void {
+        this._shapes.delete(shape._pluginData[0]);
         this._hknp.HP_Shape_Release(shape._pluginData);
         shape._pluginData = undefined;
     }

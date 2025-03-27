@@ -413,6 +413,7 @@ void main(void) {
             #endif
             #ifdef CLEARCOAT
                 , NdotVUnclamped
+                , vClearCoatParams
                 #ifdef CLEARCOAT_TEXTURE
                     , clearCoatMapData
                 #endif
@@ -518,6 +519,9 @@ void main(void) {
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
             vec4 translucencyColorMap = texture2D(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
+                translucencyColorMap = toLinearSpace(translucencyColorMap);
+            #endif
         #endif
 
         subSurfaceOut = subSurfaceBlock(

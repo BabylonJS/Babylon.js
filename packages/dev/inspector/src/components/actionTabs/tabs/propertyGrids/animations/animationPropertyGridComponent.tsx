@@ -144,7 +144,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         const animatable = this.props.animatable;
         const animatableAsAny = this.props.animatable as any;
 
-        const animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
+        // NOTE: getAllAnimatablesByTarget is not defined unless animatable has been imported (and its side effects executed)
+        const animatablesForTarget = this.props.scene.getAllAnimatablesByTarget?.(animatable) ?? [];
         this._isPlaying = animatablesForTarget.length > 0;
 
         if (this._isPlaying) {

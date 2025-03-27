@@ -59,7 +59,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
 
 /**
  * Block used to implement the PBR metallic/roughness model
- * #D8AK3Z#80
+ * @see https://playground.babylonjs.com/#D8AK3Z#80
  */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
@@ -1295,6 +1295,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             ],
         });
 
+        // ____________________ Clear Coat Initialization Code _____________________
+        const clearcoatBlock = this.clearcoat.isConnected ? (this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock) : null;
+
+        state.compilationString += ClearCoatBlock._GetInitializationCode(state, clearcoatBlock);
+
         // _____________________________ Iridescence _______________________________
         const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
         state.compilationString += IridescenceBlock.GetCode(iridescenceBlock, state);
@@ -1304,7 +1309,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Clear Coat ____________________________
-        const clearcoatBlock = this.clearcoat.isConnected ? (this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock) : null;
         const generateTBNSpace = !this.perturbedNormal.isConnected && !this.anisotropy.isConnected;
         const isTangentConnectedToPerturbNormal =
             this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent?.isConnected;
