@@ -760,7 +760,7 @@ export class Viewer implements IDisposable {
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
 
-        this._reset(false, "source", "environment");
+        this._reset(false, "source", "environment", "post-processing");
     }
 
     /**
