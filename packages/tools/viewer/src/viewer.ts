@@ -1437,6 +1437,7 @@ export class Viewer implements IDisposable {
         ground.receiveShadows = true;
         ground.position.y = 0;
         this._snapshotHelper.fixMeshes([ground]);
+        this._snapshotHelper.updateMesh([ground]);
         this._snapshotHelper.enableSnapshotRendering();
         this._updateAutoClear();
     }
@@ -1583,6 +1584,7 @@ export class Viewer implements IDisposable {
         const maxRadius = size.length();
         this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius * 4, maxRadius * 4, maxRadius * 4), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
 
+        this._snapshotHelper.disableSnapshotRendering();
         this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
 
         this._loadedModelsBacking.forEach((model) => {
@@ -1615,6 +1617,9 @@ export class Viewer implements IDisposable {
         this._shadowGenerator.useKernelBlur = true;
         this._shadowGenerator.blurScale = 1;
         this._shadowGenerator.blurKernel = 8;
+
+        this._snapshotHelper.enableSnapshotRendering();
+        this._updateAutoClear();
     }
 
     /**
