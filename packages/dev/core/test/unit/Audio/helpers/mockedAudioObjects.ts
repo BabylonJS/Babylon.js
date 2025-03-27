@@ -100,6 +100,10 @@ export class MockedAudioObjects {
             return {
                 currentTime: 0,
                 state: "running",
+                close: jest.fn().mockName("close").mockImplementation(() => {
+                    this.audioContext.state = "closed";
+                    return Promise.resolve();
+                }),
                 createBufferSource: jest.fn().mockName("createBufferSource").mockImplementation(() => {
                     const bufferSource = new AudioBufferSourceNodeMock;
                     this._audioBufferSources.push(bufferSource);
