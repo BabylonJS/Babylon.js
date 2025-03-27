@@ -14,6 +14,7 @@ import type { Nullable } from "../../../../types";
 import { RefractionBlock } from "./refractionBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { PBRSubSurfaceConfiguration } from "core/Materials/PBR/pbrSubSurfaceConfiguration";
 
 /**
  * Block used to implement the sub surface module of the PBR material
@@ -53,7 +54,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
      * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface properties (transmission, refraction, etc.)
      */
     @editableInPropertyPage("Apply albedo after sub-surface", PropertyTypeForEdition.Boolean, "ADVANCED")
-    public applyAlbedoAfterSubSurface: boolean = false;
+    public applyAlbedoAfterSubSurface: boolean = PBRSubSurfaceConfiguration.DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE;
 
     /**
      * Initialize the block and prepare the context for build

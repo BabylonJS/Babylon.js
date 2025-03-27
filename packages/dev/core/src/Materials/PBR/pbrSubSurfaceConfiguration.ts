@@ -65,6 +65,15 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
  * Plugin that implements the sub surface component of the PBR material
  */
 export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
+    /**
+     * Default value used for applyAlbedoAfterSubSurface.
+     *
+     * This property only exists for backward compatibility reasons.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface properties (transmission, refraction, etc.). Default is false.
+     * Note however that the PBR calculation is wrong when this property is set to true, so only use it if you want to mimic the 7.0 behavior.
+     */
+    public static DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE = false;
+
     protected override _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
@@ -340,7 +349,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Note however that the PBR calculation is wrong when this property is set to true, so only use it if you want to mimic the 7.0 behavior.
      */
     @serialize()
-    public applyAlbedoAfterSubSurface = false;
+    public applyAlbedoAfterSubSurface = PBRSubSurfaceConfiguration.DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE;
 
     private _scene: Scene;
 
