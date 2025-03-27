@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.0.0
+
+### Playground
+
+- Prepare playground for version 8.0.0 - by [RaananW](https://github.com/RaananW) ([#16408](https://github.com/BabylonJS/Babylon.js/pull/16408))
+
 ## 7.54.3
 
 ### Core

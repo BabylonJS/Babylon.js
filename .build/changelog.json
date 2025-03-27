@@ -1,6 +1,21 @@
 {
-    "fromTag": "7.54.2",
+    "fromTag": "7.54.3",
     "changelog": {
+        "8.0.0": [
+            {
+                "pr": "16408",
+                "title": "Prepare playground for version 8.0.0",
+                "description": "Update the versioning structure to include version 7.54.2 and remove outdated entries for version 4.2.1\n\nPlease wait with merging this",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": []
+            }
+        ],
         "7.54.3": [
             {
                 "pr": "16407",
