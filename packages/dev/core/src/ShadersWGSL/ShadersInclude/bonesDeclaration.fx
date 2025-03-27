@@ -8,6 +8,7 @@
 
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
         #ifdef BONETEXTURE
+            var boneSamplerSampler : sampler;
             var boneSampler : texture_2d<f32>;
             uniform boneTextureWidth : f32;
         #else
@@ -18,14 +19,15 @@
         #endif
 
         #ifdef BONETEXTURE
-            fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
+            fn readMatrixFromRawSampler(smp : texture_2d<f32>, smpSampler: sampler, index : f32) -> mat4x4<f32>
             {
-                let offset = i32(index)  * 4;	
+                let offset = index * 4;	
+                let dx = 1.0 / uniforms.boneTextureWidth;
 
-                let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
-                let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
-                let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
-                let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
+                let m0 = textureSampleLevel(smp, smpSampler, vec2f(dx * (offset + 0.5), 0.), 0.);
+                let m1 = textureSampleLevel(smp, smpSampler, vec2f(dx * (offset + 1.5), 0.), 0.);
+                let m2 = textureSampleLevel(smp, smpSampler, vec2f(dx * (offset + 2.5), 0.), 0.);
+                let m3 = textureSampleLevel(smp, smpSampler, vec2f(dx * (offset + 3.5), 0.), 0.);
 
                 return mat4x4<f32>(m0, m1, m2, m3);
             }
