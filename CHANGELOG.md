@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.0.1
+
+### Core
+
+- PBR sub-surface: Add switch for back compatibility - by [Popov72](https://github.com/Popov72) ([#16410](https://github.com/BabylonJS/Babylon.js/pull/16410))
+
 ## 8.0.0
 
 ### Playground
