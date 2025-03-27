@@ -18,12 +18,17 @@
     }
 }
 
-img {
+.port-icon {
     grid-row: 1;
     grid-column: 1;
+    background: transparent;
+
+    img {
+        pointer-events: none;
+    }
 }
 
-img.selected {
+.icon-selected {
     box-shadow: 0 0 0 2px;
     border-radius: 50%;
 }

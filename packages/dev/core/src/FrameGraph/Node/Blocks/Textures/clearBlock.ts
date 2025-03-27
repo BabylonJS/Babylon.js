@@ -29,15 +29,17 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.depth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+        );
 
         this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -63,6 +65,16 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
 
     public set clearColor(value: boolean) {
         this._frameGraphTask.clearColor = value;
+    }
+
+    /** Gets or sets a boolean indicating whether the color should be converted to linear space. */
+    @editableInPropertyPage("Convert color to linear space", PropertyTypeForEdition.Boolean)
+    public get convertColorToLinearSpace(): boolean {
+        return !!this._frameGraphTask.convertColorToLinearSpace;
+    }
+
+    public set convertColorToLinearSpace(value: boolean) {
+        this._frameGraphTask.convertColorToLinearSpace = value;
     }
 
     /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
@@ -135,6 +147,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.color = new BABYLON.Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
         codes.push(`${this._codeVariableName}.clearColor = ${this.clearColor};`);
+        codes.push(`${this._codeVariableName}.convertColorToLinearSpace = ${this.convertColorToLinearSpace};`);
         codes.push(`${this._codeVariableName}.clearDepth = ${this.clearDepth};`);
         codes.push(`${this._codeVariableName}.clearStencil = ${this.clearStencil};`);
         return super._dumpPropertiesCode() + codes.join("\n");
@@ -144,6 +157,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.color = this.color.asArray();
         serializationObject.clearColor = this.clearColor;
+        serializationObject.convertColorToLinearSpace = this.convertColorToLinearSpace;
         serializationObject.clearDepth = this.clearDepth;
         serializationObject.clearStencil = this.clearStencil;
         return serializationObject;
@@ -153,6 +167,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.color = Color4.FromArray(serializationObject.color);
         this.clearColor = serializationObject.clearColor;
+        this.convertColorToLinearSpace = !!serializationObject.convertColorToLinearSpace;
         this.clearDepth = serializationObject.clearDepth;
         this.clearStencil = serializationObject.clearStencil;
     }

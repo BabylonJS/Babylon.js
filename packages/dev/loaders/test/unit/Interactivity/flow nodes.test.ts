@@ -753,6 +753,62 @@ describe("Flow Nodes", () => {
         expect(log).toHaveBeenCalledWith(1);
     });
 
+    test("variable/get and variable/setMultiple", async () => {
+        await generateSimpleNodeGraph(
+            [{ op: "variable/setMultiple" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        variables: {
+                            value: [0, 1], //the index of the variable
+                        },
+                    },
+                    values: {
+                        0: {
+                            type: 0,
+                            value: [4],
+                        },
+                        1: {
+                            type: 0,
+                            value: [5],
+                        },
+                    },
+                    flows: {
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 1,
+                    configuration: {
+                        variable: {
+                            value: [1], //the index of the variable
+                        },
+                    },
+                },
+                {
+                    declaration: 2,
+                    values: {
+                        message: {
+                            node: 1,
+                            socket: "value",
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }],
+            [
+                { type: 0, value: [2] },
+                { type: 0, value: [3] },
+            ]
+        );
+
+        expect(log).toHaveBeenCalledWith(5);
+    });
+
     test("variable/interpolate with float", async () => {
         // linear interpolation from 1 to 5 in 1 second
         await generateSimpleNodeGraph(

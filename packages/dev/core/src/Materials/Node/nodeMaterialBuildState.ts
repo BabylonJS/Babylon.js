@@ -106,7 +106,7 @@ export class NodeMaterialBuildState {
 
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
             if (isFragmentMode) {
-                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.compilationString}`;
+                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}${this.compilationString}`;
             } else {
                 this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n${this.compilationString}`;
             }
@@ -135,7 +135,7 @@ export class NodeMaterialBuildState {
         this.compilationString = `${this.compilationString}\n}`;
 
         if (this.sharedData.varyingDeclaration) {
-            this.compilationString = `\n${emitComments ? "//Varyings\n" : ""}${this.sharedData.varyingDeclaration}\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Varyings\n" : ""}${isFragmentMode ? this.sharedData.varyingDeclarationFragment : this.sharedData.varyingDeclaration}\n${this.compilationString}`;
         }
 
         if (this._samplerDeclaration) {
@@ -487,21 +487,51 @@ export class NodeMaterialBuildState {
 
         this.sharedData.varyings.push(name);
 
-        if (define) {
-            if (define.startsWith("defined(")) {
-                this.sharedData.varyingDeclaration += `#if ${define}\n`;
-            } else {
-                this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
-            }
-        }
         const shaderType = this._getShaderType(type);
+
+        const emitCode = (forFragment = false) => {
+            let code = "";
+            if (define) {
+                if (define.startsWith("defined(")) {
+                    code += `#if ${define}\n`;
+                } else {
+                    code += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
+                }
+            }
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                switch (shaderType) {
+                    case "mat4x4f":
+                        // We can't pass a matrix as a varying in WGSL, so we need to split it into 4 vectors
+                        code += `varying ${name}_r0: vec4f;\n`;
+                        code += `varying ${name}_r1: vec4f;\n`;
+                        code += `varying ${name}_r2: vec4f;\n`;
+                        code += `varying ${name}_r3: vec4f;\n`;
+
+                        if (forFragment) {
+                            code += `var<private> ${name}: mat4x4f;\n`;
+                            this.sharedData.varyingInitializationsFragment += `${name} = mat4x4f(fragmentInputs.${name}_r0, fragmentInputs.${name}_r1, fragmentInputs.${name}_r2, fragmentInputs.${name}_r3);\n`;
+                        }
+                        break;
+                    default:
+                        code += `varying ${name}: ${shaderType};\n`;
+                        break;
+                }
+            } else {
+                code += `varying ${shaderType} ${name};\n`;
+            }
+            if (define) {
+                code += `#endif\n`;
+            }
+            return code;
+        };
+
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            this.sharedData.varyingDeclaration += `varying ${name}: ${shaderType};\n`;
+            this.sharedData.varyingDeclaration += emitCode(false);
+            this.sharedData.varyingDeclarationFragment += emitCode(true);
         } else {
-            this.sharedData.varyingDeclaration += `varying ${shaderType} ${name};\n`;
-        }
-        if (define) {
-            this.sharedData.varyingDeclaration += `#endif\n`;
+            const code = emitCode();
+            this.sharedData.varyingDeclaration += code;
+            this.sharedData.varyingDeclarationFragment += code;
         }
 
         return true;

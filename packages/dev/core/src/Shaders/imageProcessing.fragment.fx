@@ -15,6 +15,8 @@ void main(void)
 {
 	vec4 result = texture2D(textureSampler, vUV);
 
+	result.rgb = max(result.rgb, vec3(0.));
+
 #ifdef IMAGEPROCESSING
 	#ifndef FROMLINEARSPACE
 		// Need to move to linear space for subsequent operations.

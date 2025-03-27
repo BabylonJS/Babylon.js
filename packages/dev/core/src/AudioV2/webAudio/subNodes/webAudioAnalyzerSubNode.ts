@@ -20,7 +20,7 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this._analyzerNode = new AnalyserNode(engine.audioContext);
+        this._analyzerNode = new AnalyserNode(engine._audioContext);
     }
 
     /** @internal */
@@ -39,7 +39,7 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this._analyzerNode;
     }
 

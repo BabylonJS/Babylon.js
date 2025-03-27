@@ -69,7 +69,7 @@ export abstract class AbstractAudioAnalyzer {
     /**
      * Whether the analyzer is enabled or not.
      * - The `getByteFrequencyData` and `getFloatFrequencyData` functions return `null` if the analyzer is not enabled.
-     * @see {@link enable}
+     * @see {@link enableAsync}
      */
     public abstract isEnabled: boolean;
 
@@ -96,7 +96,7 @@ export abstract class AbstractAudioAnalyzer {
     /**
      * Enables the analyzer
      */
-    public abstract enable(): Promise<void>;
+    public abstract enableAsync(): Promise<void>;
 
     /**
      * Gets the current frequency data as a byte array

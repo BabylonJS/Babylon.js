@@ -29,13 +29,13 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public _audioContext: AudioContext;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public source: StreamingSoundSourceType;
+    public _source: StreamingSoundSourceType;
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
@@ -61,15 +61,15 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     }
 
     /** @internal */
-    public async init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
-        const audioContext = this.engine.audioContext;
+    public async _init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
+        const audioContext = this.engine._audioContext;
 
         if (!(audioContext instanceof AudioContext)) {
             throw new Error("Unsupported audio context type.");
         }
 
-        this.audioContext = audioContext;
-        this.source = source;
+        this._audioContext = audioContext;
+        this._source = source;
 
         if (options.outBus) {
             this.outBus = options.outBus;
@@ -85,24 +85,24 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         }
 
         if (this.preloadCount) {
-            await this.preloadInstances(this.preloadCount);
+            await this.preloadInstancesAsync(this.preloadCount);
         }
 
         if (options.autoplay) {
             this.play(options);
         }
 
-        this.engine.addNode(this);
+        this.engine._addNode(this);
     }
 
     /** @internal */
-    public get inNode() {
-        return this._subGraph.inNode;
+    public get _inNode() {
+        return this._subGraph._inNode;
     }
 
     /** @internal */
-    public get outNode() {
-        return this._subGraph.outNode;
+    public get _outNode() {
+        return this._subGraph._outNode;
     }
 
     /** @internal */
@@ -127,7 +127,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
         this._subGraph.dispose();
 
-        this.engine.removeNode(this);
+        this.engine._removeNode(this);
     }
 
     /** @internal */
@@ -147,8 +147,8 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -161,8 +161,8 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
             return false;
         }
 
-        if (node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
@@ -213,14 +213,14 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         super(sound);
 
         this._options = options;
-        this._volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound._audioContext);
 
-        if (typeof sound.source === "string") {
-            this._initFromUrl(sound.source);
-        } else if (Array.isArray(sound.source)) {
-            this._initFromUrls(sound.source);
-        } else if (sound.source instanceof HTMLMediaElement) {
-            this._initFromMediaElement(sound.source);
+        if (typeof sound._source === "string") {
+            this._initFromUrl(sound._source);
+        } else if (Array.isArray(sound._source)) {
+            this._initFromUrls(sound._source);
+        } else if (sound._source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(sound._source);
         }
     }
 
@@ -251,7 +251,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
     }
 
-    public get outNode(): Nullable<AudioNode> {
+    public get _outNode(): Nullable<AudioNode> {
         return this._volumeNode;
     }
 
@@ -357,8 +357,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
-        if (node instanceof _WebAudioStreamingSound && node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node instanceof _WebAudioStreamingSound && node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -371,8 +371,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             return false;
         }
 
-        if (node instanceof _WebAudioStreamingSound && node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node instanceof _WebAudioStreamingSound && node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
@@ -391,7 +391,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         mediaElement.load();
 
-        this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this._sourceNode = new MediaElementAudioSourceNode(this._sound._audioContext, { mediaElement: mediaElement });
         this._sourceNode.connect(this._volumeNode);
 
         if (!this._connect(this._sound)) {

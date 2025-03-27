@@ -714,6 +714,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onGuiReadyObservable.clear();
         super.dispose();
     }
+
+    private _alreadyRegisteredForRender = false;
     private _onResize(): void {
         const scene = this.getScene();
         if (!scene) {
@@ -743,6 +745,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
+            }
+            if (!this._alreadyRegisteredForRender) {
+                this._alreadyRegisteredForRender = true;
+                Tools.SetImmediate(() => {
+                    // We want to force an update so the texture can be set as ready
+                    this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+                    this._alreadyRegisteredForRender = false;
+                });
             }
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
@@ -1679,11 +1689,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             layer.layerMask = 0;
         }
 
-        if (adaptiveScaling && resultScene) {
-            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
-            result._rootContainer.scaleX = newScale;
-            result._rootContainer.scaleY = newScale;
-        }
+        result.adjustToEngineHardwareScalingLevel = adaptiveScaling;
 
         // Attach
         result.attach();

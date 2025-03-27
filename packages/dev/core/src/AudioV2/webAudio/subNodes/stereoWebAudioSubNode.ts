@@ -9,6 +9,11 @@ export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): P
 
 /** @internal */
 export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
+    private _pan: number = 0;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
     /** @internal */
     public readonly node: StereoPannerNode;
 
@@ -16,26 +21,27 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new StereoPannerNode(engine.audioContext);
+        this.node = new StereoPannerNode(engine._audioContext);
     }
 
     /** @internal */
     public get pan(): number {
-        return this.node.pan.value;
+        return this._pan;
     }
 
     /** @internal */
     public set pan(value: number) {
-        this.node.pan.value = value;
+        this._pan = value;
+        this.engine._setAudioParam(this.node.pan, value);
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get outNode(): AudioNode {
+    public get _outNode(): AudioNode {
         return this.node;
     }
 
@@ -52,8 +58,8 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.node.connect(node.inNode);
+        if (node._inNode) {
+            this.node.connect(node._inNode);
         }
 
         return true;
@@ -66,8 +72,8 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
             return false;
         }
 
-        if (node.inNode) {
-            this.node.disconnect(node.inNode);
+        if (node._inNode) {
+            this.node.disconnect(node._inNode);
         }
 
         return true;

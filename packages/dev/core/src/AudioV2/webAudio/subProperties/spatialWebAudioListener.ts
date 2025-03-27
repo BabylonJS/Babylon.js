@@ -25,6 +25,9 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     private _updaterComponent: _SpatialWebAudioUpdaterComponent;
 
     /** @internal */
+    public readonly engine: _WebAudioEngine;
+
+    /** @internal */
     public readonly position: Vector3 = Vector3.Zero();
     /** @internal */
     public readonly rotation: Vector3 = Vector3.Zero();
@@ -35,7 +38,9 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     public constructor(engine: _WebAudioEngine, autoUpdate: boolean, minUpdateTime: number) {
         super();
 
-        this._audioContext = engine.audioContext;
+        this.engine = engine;
+
+        this._audioContext = engine._audioContext;
         this._updaterComponent = new _SpatialWebAudioUpdaterComponent(this, autoUpdate, minUpdateTime);
     }
 
@@ -74,9 +79,10 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         }
 
         const listener = this._audioContext.listener;
-        listener.positionX.value = this.position.x;
-        listener.positionY.value = this.position.y;
-        listener.positionZ.value = this.position.z;
+
+        this.engine._setAudioParam(listener.positionX, this.position.x);
+        this.engine._setAudioParam(listener.positionY, this.position.y);
+        this.engine._setAudioParam(listener.positionZ, this.position.z);
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -98,13 +104,13 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
         // NB: The WebAudio API is right-handed.
         Vector3.TransformNormalToRef(Vector3.RightHandedForwardReadOnly, TmpMatrix, TmpVector);
-        listener.forwardX.value = TmpVector.x;
-        listener.forwardY.value = TmpVector.y;
-        listener.forwardZ.value = TmpVector.z;
+        this.engine._setAudioParam(listener.forwardX, TmpVector.x);
+        this.engine._setAudioParam(listener.forwardY, TmpVector.y);
+        this.engine._setAudioParam(listener.forwardZ, TmpVector.z);
 
         Vector3.TransformNormalToRef(Vector3.Up(), TmpMatrix, TmpVector);
-        listener.upX.value = TmpVector.x;
-        listener.upY.value = TmpVector.y;
-        listener.upZ.value = TmpVector.z;
+        this.engine._setAudioParam(listener.upX, TmpVector.x);
+        this.engine._setAudioParam(listener.upY, TmpVector.y);
+        this.engine._setAudioParam(listener.upZ, TmpVector.z);
     }
 }

@@ -6,7 +6,7 @@ import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IMainAudioBusOptions, MainAudioBus } from "../abstractAudio/mainAudioBus";
 import type { IStaticSoundOptions, StaticSound } from "../abstractAudio/staticSound";
-import type { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
@@ -52,7 +52,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
  */
 export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
-    await engine.init(options);
+    await engine._init(options);
     return engine;
 }
 
@@ -87,7 +87,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _volume = 1;
 
     /** @internal */
-    public readonly audioContext: AudioContext;
+    public readonly _audioContext: AudioContext;
 
     /** @internal */
     public readonly isReadyPromise: Promise<void> = new Promise((resolve) => {
@@ -102,7 +102,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public constructor(options: Partial<IWebAudioEngineOptions> = {}) {
-        super();
+        super(options);
 
         if (typeof options.listenerAutoUpdate === "boolean") {
             this._listenerAutoUpdate = options.listenerAutoUpdate;
@@ -113,7 +113,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._volume = options.volume ?? 1;
-        this.audioContext = options.audioContext ?? new AudioContext();
+        this._audioContext = options.audioContext ?? new AudioContext();
 
         if (!options.disableDefaultUI) {
             this._unmuteUI = new _WebAudioUnmuteUI(this, options.defaultUIParentElement);
@@ -121,7 +121,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public async init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
+    public async _init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
         this._resumeOnInteraction = typeof options.resumeOnInteraction === "boolean" ? options.resumeOnInteraction : true;
         this._resumeOnPause = typeof options.resumeOnPause === "boolean" ? options.resumeOnPause : true;
         this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
@@ -140,12 +140,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get currentTime(): number {
-        return this.audioContext.currentTime ?? 0;
+        return this._audioContext.currentTime ?? 0;
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
-        return this.audioContext.destination;
+    public get _inNode(): AudioNode {
+        return this._audioContext.destination;
     }
 
     /** @internal */
@@ -160,7 +160,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get state(): AudioEngineV2State {
-        return this.audioContext.state;
+        return this._audioContext.state;
     }
 
     /** @internal */
@@ -186,7 +186,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioBus");
 
         const bus = new module._WebAudioBus(name, this, options);
-        await bus.init(options);
+        await bus._init(options);
 
         return bus;
     }
@@ -196,7 +196,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioMainBus");
 
         const bus = new module._WebAudioMainBus(name, this);
-        await bus.init(options);
+        await bus._init(options);
 
         return bus;
     }
@@ -210,7 +210,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const sound = new module._WebAudioStaticSound(name, this, options);
-        await sound.init(source, options);
+        await sound._init(source, options);
 
         return sound;
     }
@@ -218,12 +218,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public async createSoundBufferAsync(
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-        options: Partial<IStaticSoundOptions> = {}
+        options: Partial<IStaticSoundBufferOptions> = {}
     ): Promise<StaticSoundBuffer> {
         const module = await import("./webAudioStaticSound");
 
         const soundBuffer = new module._WebAudioStaticSoundBuffer(this);
-        await soundBuffer.init(source, options);
+        await soundBuffer._init(source, options);
 
         return soundBuffer;
     }
@@ -233,7 +233,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStreamingSound");
 
         const sound = new module._WebAudioStreamingSound(name, this, options);
-        await sound.init(source, options);
+        await sound._init(source, options);
 
         return sound;
     }
@@ -245,12 +245,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._listener?.dispose();
         this._listener = null;
 
-        if (this.audioContext.state !== "closed") {
-            this.audioContext.close();
+        if (this._audioContext.state !== "closed") {
+            this._audioContext.close();
         }
 
         document.removeEventListener("click", this._onUserGesture);
-        this.audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
+        this._audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
 
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
@@ -288,46 +288,51 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override async pause(): Promise<void> {
-        await this.audioContext.suspend();
+    public override async pauseAsync(): Promise<void> {
+        await this._audioContext.suspend();
 
         this._pauseCalled = true;
     }
 
     /** @internal */
-    public override async resume(): Promise<void> {
+    public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
         if (this._resumePromise) {
             return this._resumePromise;
         }
 
-        this._resumePromise = this.audioContext.resume();
+        this._resumePromise = this._audioContext.resume();
         return this._resumePromise;
     }
 
     /** @internal */
-    public addMainBus(mainBus: MainAudioBus): void {
-        this._addMainBus(mainBus);
+    public override _addMainBus(mainBus: MainAudioBus): void {
+        super._addMainBus(mainBus);
     }
 
     /** @internal */
-    public removeMainBus(mainBus: MainAudioBus): void {
-        this._removeMainBus(mainBus);
+    public override _removeMainBus(mainBus: MainAudioBus): void {
+        super._removeMainBus(mainBus);
     }
 
     /** @internal */
-    public addNode(node: AbstractNamedAudioNode): void {
-        this._addNode(node);
+    public override _addNode(node: AbstractNamedAudioNode): void {
+        super._addNode(node);
     }
 
     /** @internal */
-    public removeNode(node: AbstractNamedAudioNode): void {
-        this._removeNode(node);
+    public override _removeNode(node: AbstractNamedAudioNode): void {
+        super._removeNode(node);
+    }
+
+    /** @internal */
+    public _setAudioParam(audioParam: AudioParam, value: number) {
+        audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
     private _initAudioContext: () => Promise<void> = async () => {
-        this.audioContext.addEventListener("statechange", this._onAudioContextStateChange);
+        this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         this._mainOut = new _WebAudioMainOut(this);
         this._mainOut.volume = this._volume;
@@ -346,7 +351,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
-                    this.resume();
+                    this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
         }
@@ -356,7 +361,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     private _onUserGesture: () => void = async () => {
         if (this._resumeOnInteraction) {
-            await this.audioContext.resume();
+            await this._audioContext.resume();
         }
 
         this.userGestureObservable.notifyObservers();

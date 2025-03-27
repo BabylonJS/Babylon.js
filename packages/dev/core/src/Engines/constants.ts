@@ -392,9 +392,13 @@ export class Constants {
      */
     public static readonly MATERIAL_PrePassDirtyFlag = 32;
     /**
+     * The dirty image processing flag value
+     */
+    public static readonly MATERIAL_ImageProcessingDirtyFlag = 64;
+    /**
      * The all dirty flag value
      */
-    public static readonly MATERIAL_AllDirtyFlag = 63;
+    public static readonly MATERIAL_AllDirtyFlag = 127;
 
     /**
      * Returns the triangle fill mode

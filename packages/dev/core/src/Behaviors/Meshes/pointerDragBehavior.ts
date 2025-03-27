@@ -262,6 +262,19 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 return;
             }
 
+            // If we are dragging and the user presses another button on the same pointer, end the drag. Otherwise,
+            // tracking when the drag should end becomes very complex.
+            // gizmo.ts has similar behavior.
+            if (
+                this.dragging &&
+                this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
+                pointerInfo.event.button !== -1 &&
+                pointerInfo.event.button !== this._activeDragButton
+            ) {
+                this.releaseDrag();
+                return;
+            }
+
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
                     this.startAndReleaseDragOnPointerEvents &&

@@ -6,12 +6,16 @@ import type { IWebAudioInNode } from "./webAudioNode";
 export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     private _destinationNode: AudioDestinationNode;
     private _gainNode: GainNode;
+    private _volume: number = 1;
+
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        const audioContext = engine.audioContext;
+        const audioContext = engine._audioContext;
 
         this._gainNode = new GainNode(audioContext);
         this._destinationNode = audioContext.destination;
@@ -20,18 +24,19 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this._gainNode;
     }
 
     /** @internal */
     public get volume(): number {
-        return this._gainNode.gain.value;
+        return this._volume;
     }
 
     /** @internal */
     public set volume(value: number) {
-        this._gainNode.gain.value = value;
+        this._volume = value;
+        this.engine._setAudioParam(this._gainNode.gain, value);
     }
 
     /** @internal */

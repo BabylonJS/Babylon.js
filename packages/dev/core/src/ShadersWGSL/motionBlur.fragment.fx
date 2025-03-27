@@ -30,7 +30,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             var texelSize: vec2f = 1.0 / uniforms.screenSize;
             var velocityColor: vec4f = textureSample(velocitySampler, velocitySamplerSampler, input.vUV);
             velocityColor = vec4f(velocityColor.rg * 2.0 -  vec2f(1.0), velocityColor.b, velocityColor.a);
-            var velocity: vec2f =  vec2f(pow(velocityColor.r, 3.0), pow(velocityColor.g, 3.0)) * velocityColor.a;
+            let signs = sign(velocityColor.rg);
+            var velocity = pow(abs(velocityColor.rg), vec2f(3.0)) * signs * velocityColor.a;
             velocity *= uniforms.motionScale * uniforms.motionStrength;
             var speed: f32 = length(velocity / texelSize);
             var samplesCount: i32 =  i32(clamp(speed, 1.0, SAMPLES));

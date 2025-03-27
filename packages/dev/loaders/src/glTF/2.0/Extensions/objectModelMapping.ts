@@ -323,7 +323,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => node._babylonTransformNode?._localMatrix.clone(),
+            get: (node: INode) => Matrix.Compose(node._babylonTransformNode?.scaling!, node._babylonTransformNode?.rotationQuaternion!, node._babylonTransformNode?.position!),
             getTarget: (node: INode) => node._babylonTransformNode,
             isReadOnly: true,
         },
