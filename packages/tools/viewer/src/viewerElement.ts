@@ -1474,7 +1474,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns The created viewer.
      */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass, enableAllFeatures: true, setMaximumLimits: true }));
     }
 
     private async _tearDownViewer() {

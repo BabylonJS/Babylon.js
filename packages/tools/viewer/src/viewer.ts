@@ -53,6 +53,7 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
+import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -799,9 +800,6 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
-
-        // eslint-disable-next-line no-console
-        console.log("Viewer initialized");
     }
 
     /**
@@ -880,39 +878,35 @@ export class Viewer implements IDisposable {
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
         // For now, we disable environment shadows when using WebGPU as there is some issue.
         const isWebGPU = this._scene.getEngine().isWebGPU;
-        // eslint-disable-next-line no-console
-        console.log("isWebGPU", isWebGPU, value.type);
-        if (!value.type || (isWebGPU && value.type === "environment")) {
+        if (!value.type) {
             if (this._shadowGenerator) {
-                // eslint-disable-next-line no-console
-                console.log("dispose classic shadow");
                 this._shadowGenerator?.dispose();
                 this._shadowLight?.dispose();
                 this._shadowGenerator = null;
                 this._shadowLight = null;
+            }
 
+            if (this._shadowGround) {
                 this._shadowGround?.dispose();
                 this._shadowGround = null;
+            }
+
+            if (this._iblShadowsRenderPipeline) {
+                this._iblShadowsRenderPipeline.dispose();
+                this._iblShadowsRenderPipeline = null;
             }
 
             return;
         }
 
-        // eslint-disable-next-line no-console
-        console.log("should apply shadow", value.type);
-
         if (value.type === "classic") {
             if (this._iblShadowsRenderPipeline) {
-                // eslint-disable-next-line no-console
-                console.log("environment off", value.type);
                 this._iblShadowsRenderPipeline.toggleShadow(false);
             }
 
             this._updateClassicShadow();
         } else if (value.type === "environment") {
             if (this._shadowGenerator) {
-                // eslint-disable-next-line no-console
-                console.log("classic off", value.type);
                 this._shadowGenerator?.dispose();
                 this._shadowLight?.dispose();
                 this._shadowGenerator = null;
@@ -1434,25 +1428,45 @@ export class Viewer implements IDisposable {
         this._startSceneOptimizer(true);
     }
 
+    private _createGround() {
+        this._snapshotHelper.disableSnapshotRendering();
+        // const ground = CreateGround("ground", { width: 50, height: 50 }, this._scene);
+        const ground = CreateDisc("ground", { radius: 25, tessellation: 64 }, this._scene);
+        this._shadowGround = ground;
+        this._shadowGround.rotation.x = Math.PI / 2;
+        ground.receiveShadows = true;
+        ground.position.y = 0;
+        this._snapshotHelper.fixMeshes([ground]);
+        this._snapshotHelper.enableSnapshotRendering();
+        this._updateAutoClear();
+    }
+
     /**
      * Updates the shadows configuration.
      * @param type The type of shadows to use.
      */
     private async _updateEnvironmentShadow() {
-        await import("core/Materials/standardMaterial");
-        await import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent");
+        // await import("core/Materials/standardMaterial");
+        // await import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent");
+
+        await Promise.all([
+            import("core/Materials/standardMaterial"),
+            import("core/Rendering/geometryBufferRendererSceneComponent"),
+            import("core/Engines/Extensions/engine.multiRender"),
+            import("core/Engines/WebGPU/Extensions/engine.multiRender"),
+            import("core/Rendering/iblCdfGeneratorSceneComponent"),
+            import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
+            import("core/Shaders/copyTexture3DLayerToTexture.fragment"),
+            import("core/ShadersWGSL/copyTexture3DLayerToTexture.fragment"),
+            import("core/Shaders/iblScaledLuminance.fragment"),
+            import("core/ShadersWGSL/iblScaledLuminance.fragment"),
+        ]);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
 
         if (!this._shadowGround) {
-            this._shadowGround = CreateDisc(
-                "ground",
-                {
-                    radius: 50,
-                },
-                this._scene
-            );
-            this._shadowGround.rotation.x = Math.PI / 2;
+            this._createGround();
         }
 
         if (!this._iblShadowsRenderPipeline) {
@@ -1480,30 +1494,30 @@ export class Viewer implements IDisposable {
                 attributes: ["position", "uv"],
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
-                // shaderLanguage,
+                shaderLanguage,
             };
 
-            // if (isWebGPU) {
-            //     this._groundShadowMaterial = new ShaderMaterial(
-            //         "customGroundMaterial",
-            //         this._scene,
-            //         {
-            //             vertexSource: customGroundVertexShaderWgsl,
-            //             fragmentSource: customGroundFragmentShaderWgsl,
-            //         },
-            //         options
-            //     );
-            // } else {
-            this._groundShadowMaterial = new ShaderMaterial(
-                "customGroundMaterial",
-                this._scene,
-                {
-                    vertexSource: customGroundVertexShader,
-                    fragmentSource: customGroundFragmentShader,
-                },
-                options
-            );
-            // }
+            if (isWebGPU) {
+                this._groundShadowMaterial = new ShaderMaterial(
+                    "customGroundMaterial",
+                    this._scene,
+                    {
+                        vertexSource: customGroundVertexShaderWgsl,
+                        fragmentSource: customGroundFragmentShaderWgsl,
+                    },
+                    options
+                );
+            } else {
+                this._groundShadowMaterial = new ShaderMaterial(
+                    "customGroundMaterial",
+                    this._scene,
+                    {
+                        vertexSource: customGroundVertexShader,
+                        fragmentSource: customGroundFragmentShader,
+                    },
+                    options
+                );
+            }
 
             this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(() => {
                 if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
@@ -1519,8 +1533,10 @@ export class Viewer implements IDisposable {
             this._groundShadowMaterial.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
             this._groundShadowMaterial.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
             const groundSize = 4.0 * this._iblShadowsRenderPipeline?.voxelGridSize;
-            this._shadowGround.scaling.set(groundSize, groundSize, groundSize);
-            this._shadowGround.material = this._groundShadowMaterial;
+            if (this._shadowGround) {
+                this._shadowGround.scaling.set(groundSize, groundSize, groundSize);
+                this._shadowGround.material = this._groundShadowMaterial;
+            }
 
             this._loadedModelsBacking.forEach((model) => {
                 const meshes = model.assetContainer.meshes as Mesh[];
@@ -1539,7 +1555,9 @@ export class Viewer implements IDisposable {
 
             return;
         } else {
-            this._shadowGround.material = this._groundShadowMaterial;
+            if (this._shadowGround) {
+                this._shadowGround.material = this._groundShadowMaterial;
+            }
             this._iblShadowsRenderPipeline.toggleShadow(true);
         }
     }
@@ -1550,21 +1568,9 @@ export class Viewer implements IDisposable {
         const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
 
         if (!this._shadowGround) {
-            this._shadowGround = CreateDisc(
-                "ground",
-                {
-                    radius: 50,
-                },
-                this._scene
-            );
-            this._shadowGround.rotation.x = Math.PI / 2;
+            this._createGround();
         }
 
-        // eslint-disable-next-line no-console
-        console.log("try to create classic shadow");
-        // if (!this._shadowGenerator) {
-        // eslint-disable-next-line no-console
-        console.log("create classic shadow");
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
 
         if (!worldBounds) {
@@ -1575,7 +1581,7 @@ export class Viewer implements IDisposable {
         const max = Vector3.FromArray(worldBounds.extents.max);
         const size = max.subtract(min);
         const maxRadius = size.length();
-        this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius / 2, maxRadius, maxRadius / 2), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
+        this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius * 4, maxRadius * 4, maxRadius * 4), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
 
         this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
 
@@ -1592,11 +1598,11 @@ export class Viewer implements IDisposable {
 
         const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
         shadowMaterial.activeLight = this._shadowLight;
-        this._shadowGround.receiveShadows = true;
-        this._shadowGround.material = shadowMaterial;
-        // this._shadowGround.position.y = worldBounds.extents.min[1];
-        this._shadowGround.position.y = 0;
+        if (this._shadowGround) {
+            this._shadowGround.material = shadowMaterial;
+        }
 
+        this._shadowGenerator.setDarkness(0.95);
         this._shadowGenerator.setTransparencyShadow(true);
         this._shadowGenerator.usePercentageCloserFiltering = true;
         this._shadowGenerator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
@@ -1608,10 +1614,7 @@ export class Viewer implements IDisposable {
         this._shadowGenerator.useBlurExponentialShadowMap = true;
         this._shadowGenerator.useKernelBlur = true;
         this._shadowGenerator.blurScale = 1;
-        this._shadowGenerator.blurKernel = 32;
-        // } else {
-        // this._shadowGround.material = this._groundShadowMaterial;
-        // }
+        this._shadowGenerator.blurKernel = 8;
     }
 
     /**
