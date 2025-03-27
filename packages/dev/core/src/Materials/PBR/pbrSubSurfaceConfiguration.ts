@@ -58,6 +58,7 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SS_USE_THICKNESS_AS_DEPTH = false;
 
     public SS_USE_GLTF_TEXTURES = false;
+    public SS_APPLY_ALBEDO_AFTER_SUBSURFACE = false;
 }
 
 /**
@@ -333,6 +334,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useGltfStyleTextures: boolean = true;
 
+    /**
+     * This property only exists for backward compatibility reasons.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface properties (transmission, refraction, etc.). Default is false.
+     * Note however that the PBR calculation is wrong when this property is set to true, so only use it if you want to mimic the 7.0 behavior.
+     */
+    @serialize()
+    public applyAlbedoAfterSubSurface = false;
+
     private _scene: Scene;
 
     /** @internal */
@@ -437,6 +446,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_TRANSLUCENCYCOLOR_TEXTURE = false;
             defines.SS_TRANSLUCENCYCOLOR_TEXTUREDIRECTUV = 0;
             defines.SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA = false;
+            defines.SS_APPLY_ALBEDO_AFTER_SUBSURFACE = false;
             return;
         }
 
@@ -466,6 +476,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
             defines.SS_USE_THICKNESS_AS_DEPTH = false;
             defines.SS_TRANSLUCENCYCOLOR_TEXTURE = false;
+            defines.SS_APPLY_ALBEDO_AFTER_SUBSURFACE = this.applyAlbedoAfterSubSurface;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
