@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "7.54.1",
+    "version": "8.0.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",

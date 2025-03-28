@@ -274,6 +274,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
     public TWOSIDEDLIGHTING = false;
+    public MIRRORED = false;
     public SHADOWFLOAT = false;
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
@@ -1921,6 +1922,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             } else {
                 defines.TWOSIDEDLIGHTING = false;
             }
+
+            // We need it to not invert normals in two sided lighting mode (based on the winding of the face)
+            defines.MIRRORED = !!scene._mirroredCameraPosition;
 
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }

@@ -120,6 +120,23 @@ export class ObjectRenderer {
      */
     public cameraForLOD: Nullable<Camera>;
 
+    private _renderInLinearSpace = false;
+    /**
+     * If true, the object renderer will render all objects in linear space (default: false)
+     */
+    public get renderInLinearSpace() {
+        return this._renderInLinearSpace;
+    }
+
+    public set renderInLinearSpace(value: boolean) {
+        if (value === this._renderInLinearSpace) {
+            return;
+        }
+
+        this._renderInLinearSpace = value;
+        this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_ImageProcessingDirtyFlag);
+    }
+
     /**
      * Override the mesh isReady function with your own one.
      */
@@ -168,6 +185,7 @@ export class ObjectRenderer {
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
+    protected _currentApplyByPostProcessSetting = false;
 
     /**
      * The options used by the object renderer
@@ -381,6 +399,10 @@ export class ObjectRenderer {
                 }
             }
         }
+
+        this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
+        // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+        this._scene.imageProcessingConfiguration._applyByPostProcess = !!this._renderInLinearSpace;
     }
 
     private _defaultRenderListPrepared: boolean;
@@ -414,6 +436,7 @@ export class ObjectRenderer {
     public finishRender() {
         const scene = this._scene;
 
+        scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
         scene.activeCamera = this._currentSceneCamera;
         if (this._currentSceneCamera) {
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {

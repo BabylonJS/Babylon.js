@@ -1,5 +1,52 @@
 # Changelog
 
+## 8.0.1
+
+### Core
+
+- PBR sub-surface: Add switch for back compatibility - by [Popov72](https://github.com/Popov72) ([#16410](https://github.com/BabylonJS/Babylon.js/pull/16410))
+
+## 8.0.0
+
+### Playground
+
+- Prepare playground for version 8.0.0 - by [RaananW](https://github.com/RaananW) ([#16408](https://github.com/BabylonJS/Babylon.js/pull/16408))
+
+## 7.54.3
+
+### Core
+
+- Mesh picking: Fix calculation of the world normal when picking thin instances - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16398](https://github.com/BabylonJS/Babylon.js/pull/16398))
+
+### GUI
+
+- Fix dynamicTexture resize losing track of readiness state - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16407](https://github.com/BabylonJS/Babylon.js/pull/16407))
+
+## 7.54.2
+
+### Core
+
+- NME: Fix crash when iridescence and clearcoat are used at the same time - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16401](https://github.com/BabylonJS/Babylon.js/pull/16401))
+- Fix: avoid alpha check when texture is not ready - by [jstroh](https://github.com/jstroh) ([#16386](https://github.com/BabylonJS/Babylon.js/pull/16386))
+- Arc rotate restore stop - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16388](https://github.com/BabylonJS/Babylon.js/pull/16388))
+- GRL colorsTexture fix - [_Bug Fix_] by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16384](https://github.com/BabylonJS/Babylon.js/pull/16384))
+
+### GUI
+
+- Fix adaptive scaling setting in AdvancedDynamicTexture's CreateFullscreenUI - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#16393](https://github.com/BabylonJS/Babylon.js/pull/16393))
+
+### Inspector
+
+
+### Loaders
+
+
+### Node Editor
+
+
+### Playground
+
+
 ## 7.54.1
 
 ### Core

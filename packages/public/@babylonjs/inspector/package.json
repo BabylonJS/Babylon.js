@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "7.54.1",
+    "version": "8.0.1",
     "module": "dist/babylon.inspector.bundle.max.js",
     "main": "dist/babylon.inspector.bundle.max.js",
     "typings": "dist/babylon.inspector.module.d.ts",
@@ -22,22 +22,22 @@
         "@fortawesome/free-solid-svg-icons": "^6.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.0.0",
-        "@babylonjs/gui": "^7.0.0",
-        "@babylonjs/gui-editor": "^7.0.0",
-        "@babylonjs/loaders": "^7.0.0",
-        "@babylonjs/materials": "^7.0.0",
-        "@babylonjs/serializers": "^7.0.0",
+        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/gui": "^8.0.0",
+        "@babylonjs/gui-editor": "^8.0.0",
+        "@babylonjs/loaders": "^8.0.0",
+        "@babylonjs/materials": "^8.0.0",
+        "@babylonjs/serializers": "^8.0.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.54.1",
-        "@babylonjs/gui": "^7.54.1",
-        "@babylonjs/gui-editor": "^7.54.1",
-        "@babylonjs/loaders": "^7.54.1",
-        "@babylonjs/materials": "^7.54.1",
-        "@babylonjs/serializers": "^7.54.1",
+        "@babylonjs/core": "^8.0.1",
+        "@babylonjs/gui": "^8.0.1",
+        "@babylonjs/gui-editor": "^8.0.1",
+        "@babylonjs/loaders": "^8.0.1",
+        "@babylonjs/materials": "^8.0.1",
+        "@babylonjs/serializers": "^8.0.1",
         "@lts/gui": "1.0.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"

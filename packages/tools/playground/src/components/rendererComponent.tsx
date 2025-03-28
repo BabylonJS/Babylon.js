@@ -289,8 +289,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
                     window.engine = await asyncEngineCreation();
                     
-                    const engineOptions = window.engine.getCreationOptions();
-                    if (engineOptions.audioEngine !== false) {
+                    const engineOptions = window.engine.getCreationOptions?.();
+                    if (!engineOptions || engineOptions.audioEngine !== false) {
                         ${audioInit}
                     }`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
