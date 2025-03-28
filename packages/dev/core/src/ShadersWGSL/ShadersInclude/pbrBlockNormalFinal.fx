@@ -7,6 +7,6 @@
     normalW *= sign(dot(normalW, faceNormal));
 #endif
 
-#if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
+#if defined(TWOSIDEDLIGHTING) && defined(NORMAL) && !defined(MIRRORED)
     normalW = select(-normalW, normalW, fragmentInputs.frontFacing);
 #endif
