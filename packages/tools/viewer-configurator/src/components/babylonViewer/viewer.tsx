@@ -1,7 +1,8 @@
 import type { ViewerOptions } from "viewer/viewer";
 import type { ViewerElement } from "viewer/viewerElement";
 import "./viewer.scss";
-import { useCallback, useEffect, useRef, type FunctionComponent } from "react";
+import { useEffect, type FunctionComponent } from "react";
+import { Logger } from "core/Misc/logger";
 import { ConfigureCustomViewerElement } from "viewer/viewerElement";
 import "viewer";
 
@@ -28,19 +29,15 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (element: ViewerElemen
         (async () => {
             let options: ViewerOptions = {};
             if (window.location.hash) {
-                const id = window.location.hash.substring(1).replace("#", "/");
-                const response = await fetch(`https://snippet.babylonjs.com/${id}`);
-                options = JSON.parse((await response.json()).jsonPayload);
+                try {
+                    const id = window.location.hash.substring(1).replace("#", "/");
+                    const response = await fetch(`https://snippet.babylonjs.com/${id}`);
+                    options = JSON.parse((await response.json()).jsonPayload);
+                } catch (error: unknown) {
+                    Logger.Error(`Failed to load snippet from URL: ${error}`);
+                }
             }
 
-            // const options = {
-            //     environmentLighting: "https://assets.babylonjs.com/environments/studio.env",
-            //     cameraAutoOrbit: {
-            //         enabled: false,
-            //         speed: 0.5,
-            //         delay: 1500,
-            //     },
-            // };
             ConfigureCustomViewerElement("configured-babylon-viewer", options);
 
             props.onOptionsLoaded(options);

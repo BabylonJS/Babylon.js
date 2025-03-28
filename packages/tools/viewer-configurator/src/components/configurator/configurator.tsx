@@ -1107,6 +1107,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     id = `${id}#${result.version}`;
                 }
                 window.location.hash = id;
+            } catch (error: unknown) {
+                alert(`Error saving snippet: ${error}`);
             } finally {
                 setCanSaveSnippet(true);
             }
