@@ -18,6 +18,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -43,6 +44,13 @@ const defaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acr
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
+type OutputFormat = "html" | "json";
+
+const outputOptions = [
+    { label: "HTML", value: "html" },
+    { label: "JSON", value: "json" },
+] as const satisfies IInspectableOptions[] & { label: string; value: OutputFormat }[];
+
 const toneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
@@ -59,7 +67,7 @@ function useConfiguration<T>(
     initialConfiguredState: T,
     get: () => T,
     set: ((data: T) => void) | undefined,
-    equals: (left: T, right: T) => boolean = (left, right) => left === right,
+    equals: (baseState: T, configuredState: T) => boolean = (baseState, configuredState) => baseState === configuredState,
     observables: Observable<any>[] = [],
     dependencies?: unknown[]
 ) {
@@ -70,7 +78,7 @@ function useConfiguration<T>(
     const memoEquals = useCallback(equals, []);
     const liveState = useObservableState(memoGet, ...observables);
     const [configuredState, setConfiguredState] = useState(initialConfiguredState);
-    const [isConfigured, setIsConfigured] = useState(!memoEquals(memoInitialConfiguredState, memoDefaultState));
+    const [isConfigured, setIsConfigured] = useState(!memoEquals(memoDefaultState, memoInitialConfiguredState));
 
     useEffect(() => {
         memoSet?.(configuredState);
@@ -345,6 +353,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         };
     }, [viewerElement]);
 
+    const [outputFormat, setOutputFormat] = useState<OutputFormat>("json");
+    const onOutputFormatChange = useCallback((value: string | number) => {
+        setOutputFormat(value as OutputFormat);
+    }, []);
+    // This is only needed because the select expects to "bind" to an object and a property.
+    const outputFormatWrapper = useMemo(() => {
+        return { outputFormat };
+    }, [outputFormat]);
+
     const lightingUrlConfig = useConfiguration(
         "",
         viewerOptions.environmentLighting ?? "",
@@ -356,7 +373,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     const skyboxUrlConfig = useConfiguration(
         "",
-        viewerOptions.environmentSkybox ?? "",
+        viewerOptions.environmentSkybox === viewerOptions.environmentLighting ? "" : (viewerOptions.environmentSkybox ?? ""),
         () => viewerElement.environment.skybox ?? "",
         undefined,
         undefined,
@@ -364,7 +381,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewerElement]
     );
 
-    const [syncEnvironment, setSyncEnvironment] = useState(false);
+    const [syncEnvironment, setSyncEnvironment] = useState(!!viewerOptions.environmentLighting && viewerOptions.environmentLighting === viewerOptions.environmentSkybox);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
 
     const onEnvironmentUrlSubmit = useCallback(() => {
@@ -413,7 +430,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : ViewerOptions.clearColor)),
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
-        (left, right) => left.equals(right),
+        (baseState, configuredState) => baseState.equals(configuredState),
         [viewerDetails.scene.onClearColorChangedObservable],
         [viewerDetails.scene]
     );
@@ -456,18 +473,21 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                 viewerElement.setAttribute("camera-target", `${cameraState.target.x} ${cameraState.target.y} ${cameraState.target.z}`);
             }
         },
-        (left, right) => {
+        (baseState, configuredState) => {
+            const valueEquals = (baseState: number, configuredState: number) => {
+                return isNaN(configuredState) || baseState === configuredState || WithinEpsilon(baseState, configuredState, Epsilon);
+            };
+
             return (
-                left == right ||
-                (!!left &&
-                    !!right &&
-                    // TODO: Figure out why the final alpha/beta are as far from the goal value as they are.
-                    (isNaN(right.alpha) || WithinEpsilon(left.alpha, right.alpha)) &&
-                    (isNaN(right.beta) || WithinEpsilon(left.beta, right.beta)) &&
-                    (isNaN(right.radius) || WithinEpsilon(left.radius, right.radius)) &&
-                    (isNaN(right.target.x) || WithinEpsilon(left.target.x, right.target.x)) &&
-                    (isNaN(right.target.y) || WithinEpsilon(left.target.y, right.target.y)) &&
-                    (isNaN(right.target.z) || WithinEpsilon(left.target.z, right.target.z)))
+                baseState == configuredState ||
+                (!!baseState &&
+                    !!configuredState &&
+                    valueEquals(baseState.alpha, configuredState.alpha) &&
+                    valueEquals(baseState.beta, configuredState.beta) &&
+                    valueEquals(baseState.radius, configuredState.radius) &&
+                    valueEquals(baseState.target.x, configuredState.target.x) &&
+                    valueEquals(baseState.target.y, configuredState.target.y) &&
+                    valueEquals(baseState.target.z, configuredState.target.z))
             );
         },
         [viewerDetails.camera.onViewMatrixChangedObservable],
@@ -539,7 +559,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const animationStateConfig = useConfiguration(
-        undefined,
+        {
+            animationSpeed: ViewerOptions.animationSpeed,
+            selectedAnimation: 0,
+        },
         {
             animationSpeed: viewerOptions.animationSpeed ?? ViewerOptions.animationSpeed,
             selectedAnimation: viewerOptions.selectedAnimation ?? 0,
@@ -559,8 +582,14 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                 viewer.selectedAnimation = 0;
             }
         },
-        (left, right) => {
-            return left == right || (!!left && !!right && WithinEpsilon(left.animationSpeed, right.animationSpeed, Epsilon) && left.selectedAnimation === right.selectedAnimation);
+        (baseState, configuredState) => {
+            return (
+                baseState == configuredState ||
+                (!!baseState &&
+                    !!configuredState &&
+                    WithinEpsilon(baseState.animationSpeed, configuredState.animationSpeed, Epsilon) &&
+                    baseState.selectedAnimation === configuredState.selectedAnimation)
+            );
         },
         [viewer.onAnimationSpeedChanged, viewer.onSelectedAnimationChanged],
         [viewer]
@@ -646,16 +675,16 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             if (skyboxBlurConfig.canReset) {
                 attributes.push(`skybox-blur="${skyboxBlurConfig.configuredState}"`);
             }
-            if (environmentIntensityConfig.canReset) {
-                attributes.push(`skybox-intensity="${environmentIntensityConfig.configuredState}"`);
-            }
-            if (environmentRotationConfig.canReset) {
-                attributes.push(`skybox-rotation="${environmentRotationConfig.configuredState}"`);
-            }
         } else {
             if (clearColorConfig.canReset) {
                 attributes.push(`clear-color="${clearColorConfig.configuredState.toHexString()}"`);
             }
+        }
+        if (environmentIntensityConfig.canReset) {
+            attributes.push(`skybox-intensity="${environmentIntensityConfig.configuredState}"`);
+        }
+        if (environmentRotationConfig.canReset) {
+            attributes.push(`skybox-rotation="${environmentRotationConfig.configuredState}"`);
         }
 
         if (toneMappingConfig.canReset) {
@@ -670,7 +699,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`exposure="${exposureConfig.configuredState.toFixed(1)}"`);
         }
 
-        if (cameraConfig.configuredState) {
+        if (cameraConfig.canReset) {
             const { alpha, beta, radius, target } = cameraConfig.configuredState;
             attributes.push(`camera-orbit="${alpha.toFixed(3)} ${beta.toFixed(3)} ${radius.toFixed(3)}"`);
             attributes.push(`camera-target="${target.x.toFixed(3)} ${target.y.toFixed(3)} ${target.z.toFixed(3)}"`);
@@ -785,6 +814,45 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     const jsonSnippet = useMemo(() => {
         const properties: string[] = [`"source": "${modelUrl || "[model url]"}"`];
 
+        if (lightingUrlConfig.canReset) {
+            properties.push(`"environmentLighting": "${lightingUrlConfig.configuredState}"`);
+        }
+
+        if (syncEnvironment && lightingUrlConfig.canReset) {
+            properties.push(`"environmentSkybox": "${lightingUrlConfig.configuredState}"`);
+        } else if (skyboxUrlConfig.canReset) {
+            properties.push(`"environmentSkybox": "${skyboxUrlConfig.configuredState}"`);
+        }
+
+        const environmentConfigProperties: string[] = [];
+        if (hasSkybox) {
+            if (skyboxBlurConfig.canReset) {
+                environmentConfigProperties.push(`"blur": ${skyboxBlurConfig.configuredState}`);
+            }
+        } else if (clearColorConfig.canReset) {
+            properties.push(`"clearColor": "${clearColorConfig.configuredState.toHexString()}"`);
+        }
+        if (environmentIntensityConfig.canReset) {
+            environmentConfigProperties.push(`"intensity": ${environmentIntensityConfig.configuredState}`);
+        }
+        if (environmentRotationConfig.canReset) {
+            environmentConfigProperties.push(`"rotation": ${environmentRotationConfig.configuredState}`);
+        }
+        if (environmentConfigProperties.length > 0) {
+            properties.push(`"environmentConfig": {${environmentConfigProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
+        }
+
+        if (cameraConfig.canReset) {
+            const {
+                alpha,
+                beta,
+                radius,
+                target: { x: targetX, y: targetY, z: targetZ },
+            } = cameraConfig.configuredState;
+            properties.push(`"cameraOrbit": [${alpha.toFixed(3)}, ${beta.toFixed(3)}, ${radius.toFixed(3)}]`);
+            properties.push(`"cameraTarget": [${targetX.toFixed(3)}, ${targetY.toFixed(3)}, ${targetZ.toFixed(3)}]`);
+        }
+
         const autoOrbitProperties: string[] = [];
         if (autoOrbitConfig.canReset) {
             autoOrbitProperties.push(`"enabled": ${autoOrbitConfig.configuredState}`);
@@ -799,8 +867,38 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             properties.push(`"cameraAutoOrbit": {${autoOrbitProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
 
+        if (animationStateConfig.canReset) {
+            properties.push(`"animationSpeed": ${animationStateConfig.configuredState.animationSpeed}`);
+            properties.push(`"selectedAnimation": ${animationStateConfig.configuredState.selectedAnimation}`);
+        }
+
+        if (animationAutoPlayConfig.canReset) {
+            properties.push(`"animationAutoPlay": ${animationAutoPlayConfig.configuredState}`);
+        }
+
+        if (selectedMaterialVariantConfig.canReset) {
+            properties.push(`"selectedMaterialVariant": "${selectedMaterialVariantConfig.configuredState}"`);
+        }
+
         return `{${properties.map((property) => `\n  ${property}`).join(",")}\n}`;
-    }, [modelUrl, autoOrbitConfig.configuredState, autoOrbitSpeedConfig.configuredState, autoOrbitDelayConfig.configuredState]);
+    }, [
+        modelUrl,
+        syncEnvironment,
+        lightingUrlConfig.configuredState,
+        skyboxUrlConfig.configuredState,
+        hasSkybox,
+        environmentIntensityConfig.configuredState,
+        environmentRotationConfig.configuredState,
+        skyboxBlurConfig.configuredState,
+        clearColorConfig.configuredState,
+        cameraConfig.configuredState,
+        autoOrbitConfig.configuredState,
+        autoOrbitSpeedConfig.configuredState,
+        autoOrbitDelayConfig.configuredState,
+        animationStateConfig.configuredState,
+        animationAutoPlayConfig.configuredState,
+        selectedMaterialVariantConfig.configuredState,
+    ]);
 
     const isModelUrlValid = useMemo(() => {
         return URL.canParse(modelUrl);
@@ -1077,9 +1175,23 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     <div className="title">VIEWER CONFIGURATOR</div>
                     <FontAwesomeIconButton className="docs" title="Documentation" icon={faQuestionCircle} onClick={openDocumentation} />
                 </div>
-                <LineContainerComponent title="HTML SNIPPET">
+                <LineContainerComponent title="SNIPPET">
                     <div className="flexColumn">
-                        <TextInputLineComponent multilines={true} value={jsonSnippet} disabled={true} />
+                        <div style={{ flex: 1 }}>
+                            <OptionsLine
+                                label="Output Type"
+                                valuesAreStrings={true}
+                                options={outputOptions}
+                                target={outputFormatWrapper}
+                                propertyName={"outputFormat"}
+                                noDirectUpdate={true}
+                                onSelect={onOutputFormatChange}
+                            />
+                        </div>
+                        <MessageLineComponent
+                            text={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
+                        />
+                        <TextInputLineComponent multilines={true} value={outputFormat === "html" ? htmlSnippet : jsonSnippet} disabled={true} />
                         <div className="flexRow">
                             <div style={{ flex: 1 }}>
                                 <ButtonLineComponent label="Reset" onClick={resetAll} />
