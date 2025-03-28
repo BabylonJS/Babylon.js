@@ -359,7 +359,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         };
     }, [viewerElement]);
 
-    const [outputFormat, setOutputFormat] = useState<OutputFormat>("json");
+    const [outputFormat, setOutputFormat] = useState<OutputFormat>("html");
     const onOutputFormatChange = useCallback((value: string | number) => {
         setOutputFormat(value as OutputFormat);
     }, []);
