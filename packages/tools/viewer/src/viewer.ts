@@ -892,6 +892,17 @@ export class Viewer implements IDisposable {
             }
 
             if (this._iblShadowsRenderPipeline) {
+                this._loadedModelsBacking.forEach((model) => {
+                    const meshes = model.assetContainer.meshes as Mesh[];
+                    meshes.forEach((mesh) => {
+                        this._iblShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
+                        if (mesh.material) {
+                            this._iblShadowsRenderPipeline?.removeShadowReceivingMaterial(mesh.material);
+                        }
+                    });
+                });
+
+                this._groundShadowMaterial?.dispose(false, true);
                 this._iblShadowsRenderPipeline.dispose();
                 this._iblShadowsRenderPipeline = null;
             }
