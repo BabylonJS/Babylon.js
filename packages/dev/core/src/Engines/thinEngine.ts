@@ -2769,11 +2769,10 @@ export class ThinEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number; hasMipMaps: boolean } {
+    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
         const gl = this._gl;
         let magFilter: GLenum = gl.NEAREST;
         let minFilter: GLenum = gl.NEAREST;
-        let hasMipMaps = false;
 
         switch (samplingMode) {
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
@@ -2786,7 +2785,6 @@ export class ThinEngine extends AbstractEngine {
                 break;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
                 magFilter = gl.LINEAR;
-                hasMipMaps = true;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
                 } else {
@@ -2794,7 +2792,6 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                hasMipMaps = true;
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2819,7 +2816,6 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                hasMipMaps = true;
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2844,7 +2840,6 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                hasMipMaps = true;
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2865,7 +2860,6 @@ export class ThinEngine extends AbstractEngine {
         return {
             min: minFilter,
             mag: magFilter,
-            hasMipMaps: hasMipMaps,
         };
     }
 
@@ -3252,7 +3246,7 @@ export class ThinEngine extends AbstractEngine {
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
 
-        if (generateMipMaps && filters.hasMipMaps) {
+        if (generateMipMaps) {
             texture.generateMipMaps = true;
             this._gl.generateMipmap(target);
         }
