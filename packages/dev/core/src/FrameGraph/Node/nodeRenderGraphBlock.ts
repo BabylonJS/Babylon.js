@@ -569,7 +569,7 @@ export class NodeRenderGraphBlock {
             codeString += `// ${this.comments}\n`;
         }
         const className = this.getClassName();
-        if (className === "RenderGraphInputBlock") {
+        if (className === "NodeRenderGraphInputBlock") {
             const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 
