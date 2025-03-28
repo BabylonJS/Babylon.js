@@ -394,6 +394,11 @@ export type ViewerOptions = Partial<{
     selectedMaterialVariant: string;
 
     /**
+     * The default hotspots.
+     */
+    hotSpots: Record<string, HotSpot>;
+
+    /**
      * Boolean indicating if the scene must use right-handed coordinates system.
      */
     useRightHandedSystem: boolean;
@@ -728,7 +733,7 @@ export class Viewer implements IDisposable {
     private _animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
 
     private _camerasAsHotSpots = false;
-    private _hotSpots: Record<string, HotSpot> = {};
+    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
     public constructor(
         private readonly _engine: AbstractEngine,

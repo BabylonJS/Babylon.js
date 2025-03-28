@@ -44,6 +44,11 @@ const defaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acr
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
+let currentHotSpotId = 0;
+function createHotSpotId() {
+    return (currentHotSpotId++).toString();
+}
+
 type OutputFormat = "html" | "json";
 
 const outputOptions = [
@@ -321,7 +326,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         };
     }, [viewerElement]);
 
-    const [modelUrl, setModelUrl] = useState(defaultModelUrl);
+    const initialModelUrl = useMemo(() => viewerOptions.source ?? defaultModelUrl, [viewerOptions.source]);
+    const [modelUrl, setModelUrl] = useState(initialModelUrl);
 
     // Whenever the model changes, update the model URL.
     useEffect(() => {
@@ -629,11 +635,13 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const [hotspots, setHotspots] = useState<HotSpotInfo[]>([]);
+    const [hotspots, setHotspots] = useState<HotSpotInfo[]>(Object.entries(viewerOptions.hotSpots ?? {}).map(([name, data]) => ({ name, id: createHotSpotId(), data })));
 
     useEffect(() => {
-        setHotspots([]);
-    }, [model]);
+        if (modelUrl !== initialModelUrl) {
+            setHotspots([]);
+        }
+    }, [modelUrl, initialModelUrl]);
 
     useEffect(() => {
         viewerElement.hotSpots = hotspots.reduce<Record<string, HotSpot>>((hotspots, { name, data }) => {
@@ -652,6 +660,48 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
 
     const hasAnimations = useMemo(() => viewer && viewer.animations.length > 0, [viewer.animations]);
     const hasMaterialVariants = useMemo(() => viewer && viewer.materialVariants.length > 0, [viewer.materialVariants]);
+
+    const hotSpotsSnippet = useMemo(() => {
+        if (hotspots.length > 0) {
+            let hotSpotsJSON = `{\n`;
+            hotSpotsJSON += hotspots
+                .map((hotspot) => {
+                    let hotspotJson = `    "${hotspot.name}": {\n`;
+                    const hotspotAttributes: string[] = [];
+                    if (hotspot.data.type === "surface") {
+                        hotspotAttributes.push(
+                            ...[
+                                `      "type": "surface"`,
+                                `      "meshIndex": ${hotspot.data.meshIndex}`,
+                                `      "pointIndex": [${hotspot.data.pointIndex.join(", ")}]`,
+                                `      "barycentric": [${hotspot.data.barycentric.map((value) => value.toFixed(3)).join(", ")}]`,
+                            ]
+                        );
+                    } else {
+                        hotspotAttributes.push(
+                            ...[
+                                `      "type": "world"`,
+                                `      "position": [${hotspot.data.position.map((value) => value.toFixed(3)).join(", ")}]`,
+                                `      "normal": [${hotspot.data.normal.map((value) => value.toFixed(3)).join(", ")}]`,
+                            ]
+                        );
+                    }
+                    if (hotspot.data.cameraOrbit) {
+                        const [alpha, beta, radius] = hotspot.data.cameraOrbit;
+                        hotspotAttributes.push(`      "cameraOrbit": [${alpha.toFixed(3)}, ${beta.toFixed(3)}, ${radius.toFixed(3)}]`);
+                    }
+                    hotspotJson += hotspotAttributes.join(",\n");
+                    hotspotJson += `\n    }`;
+                    return hotspotJson;
+                })
+                .join(",\n");
+            hotSpotsJSON += `\n  }`;
+
+            return hotSpotsJSON;
+        } else {
+            return null;
+        }
+    }, [hotspots]);
 
     // This is all the configured attributes, as an array of strings.
     const attributes = useMemo(() => {
@@ -732,41 +782,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`material-variant="${selectedMaterialVariantConfig.configuredState}"`);
         }
 
-        if (hotspots.length > 0) {
-            let hotspotsAttribute = `hotspots='{\n`;
-            hotspotsAttribute += hotspots
-                .map((hotspot) => {
-                    let hotspotJson = `    "${hotspot.name}": {\n`;
-                    const hotspotAttributes: string[] = [];
-                    if (hotspot.data.type === "surface") {
-                        hotspotAttributes.push(
-                            ...[
-                                `      "type": "surface"`,
-                                `      "meshIndex": ${hotspot.data.meshIndex}`,
-                                `      "pointIndex": [${hotspot.data.pointIndex.join(", ")}]`,
-                                `      "barycentric": [${hotspot.data.barycentric.map((value) => value.toFixed(3)).join(", ")}]`,
-                            ]
-                        );
-                    } else {
-                        hotspotAttributes.push(
-                            ...[
-                                `      "type": "world"`,
-                                `      "position": [${hotspot.data.position.map((value) => value.toFixed(3)).join(", ")}]`,
-                                `      "normal": [${hotspot.data.normal.map((value) => value.toFixed(3)).join(", ")}]`,
-                            ]
-                        );
-                    }
-                    if (hotspot.data.cameraOrbit) {
-                        const [alpha, beta, radius] = hotspot.data.cameraOrbit;
-                        hotspotAttributes.push(`      "cameraOrbit": [${alpha.toFixed(3)}, ${beta.toFixed(3)}, ${radius.toFixed(3)}]`);
-                    }
-                    hotspotJson += hotspotAttributes.join(",\n");
-                    hotspotJson += `\n    }`;
-                    return hotspotJson;
-                })
-                .join(",\n");
-            hotspotsAttribute += `\n  }'`;
-            attributes.push(hotspotsAttribute);
+        if (hotSpotsSnippet) {
+            attributes.push(`hotspots='${hotSpotsSnippet}'`);
         }
 
         return attributes;
@@ -792,7 +809,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationAutoPlayConfig.configuredState,
         hasMaterialVariants,
         selectedMaterialVariantConfig.configuredState,
-        hotspots,
+        hotSpotsSnippet,
     ]);
 
     // This is all the child annotation elements, as a single string.
@@ -880,6 +897,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             properties.push(`"selectedMaterialVariant": "${selectedMaterialVariantConfig.configuredState}"`);
         }
 
+        if (hotSpotsSnippet) {
+            properties.push(`"hotSpots": ${hotSpotsSnippet}`);
+        }
+
         return `{${properties.map((property) => `\n  ${property}`).join(",")}\n}`;
     }, [
         modelUrl,
@@ -898,6 +919,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationStateConfig.configuredState,
         animationAutoPlayConfig.configuredState,
         selectedMaterialVariantConfig.configuredState,
+        hotSpotsSnippet,
     ]);
 
     const isModelUrlValid = useMemo(() => {
@@ -1042,7 +1064,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                 ...hotspots,
                 {
                     name: `HotSpot ${hotspots.length + 1}`,
-                    id: performance.now().toString(),
+                    id: createHotSpotId(),
                     data: { type: "surface", meshIndex: 0, pointIndex: [0, 0, 0], barycentric: [0, 0, 0] },
                 },
             ];

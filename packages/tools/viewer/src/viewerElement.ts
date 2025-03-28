@@ -775,7 +775,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return JSON.parse(value);
         },
     })
-    public hotSpots: Record<string, HotSpot> = {};
+    public hotSpots: Record<string, HotSpot> = this._options.hotSpots ?? {};
 
     /**
      * @experimental
