@@ -22,7 +22,7 @@ import type {
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -216,6 +216,56 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
 function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
     const maxExtents = computeModelsMaxExtents(models);
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
+}
+
+/**
+ * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
+ *
+ * The target point is determined using the camera's forward ray:
+ *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
+ *   - If no intersection is found, a fallback target is calculated by projecting the distance
+ *     between the camera and the model's center along the camera's forward direction.
+ *
+ * @param model The reference model used to determine the target point.
+ * @param camera The camera from which the HotSpot is generated.
+ * @returns A HotSpot object.
+ */
+export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
+    await import("core/Culling/ray");
+    const scene = model.assetContainer.scene;
+    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+    const camGlobalPos = camera.globalPosition.clone();
+
+    // Target
+    let radius: number = 0.0001; // Just to avoid division by zero
+    const targetPoint = Vector3.Zero();
+    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
+    if (pickingInfo && pickingInfo.hit) {
+        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
+    } else {
+        const worldBounds = model.getWorldBounds();
+        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
+        const distancePoint = Vector3.FromArray(centerArray);
+        const direction = ray.direction.clone();
+        targetPoint.copyFrom(camGlobalPos);
+        radius = Vector3.Distance(camGlobalPos, distancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
+    }
+
+    const computationVector = Vector3.Zero();
+    camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+    // Radius
+    if (pickingInfo && pickingInfo.hit) {
+        radius = computationVector.length();
+    }
+
+    // Alpha and Beta
+    const alpha = ComputeAlpha(computationVector);
+    const beta = ComputeBeta(computationVector.y, radius);
+
+    const targetArray = targetPoint.asArray();
+    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
 }
 
 export type ViewerDetails = {
@@ -432,6 +482,13 @@ export type ViewerHotSpotQuery =
           normal: [x: number, y: number, z: number];
       };
 
+export type HotSpot = ViewerHotSpotQuery & {
+    /**
+     * An optional camera pose to associate with the hotspot.
+     */
+    cameraOrbit?: CameraOrbit;
+};
+
 /**
  * Provides the result of a hot spot query.
  */
@@ -609,6 +666,16 @@ export class Viewer implements IDisposable {
      */
     public readonly onSelectedMaterialVariantChanged = new Observable<void>();
 
+    /**
+     * Fired when the hot spots object changes to a complete new object instance.
+     */
+    public readonly onHotSpotsChanged = new Observable<void>();
+
+    /**
+     * Fired when the cameras as hot spots property changes.
+     */
+    public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
+
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
@@ -653,10 +720,15 @@ export class Viewer implements IDisposable {
     private readonly _loadSkyboxLock = new AsyncLock();
     private _loadSkyboxAbortController: Nullable<AbortController> = null;
 
+    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
+
+    private _camerasAsHotSpots = false;
+    private _hotSpots: Record<string, HotSpot> = {};
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -725,6 +797,16 @@ export class Viewer implements IDisposable {
                     this.resetCamera(true);
                 }
             }, PointerEventTypes.POINTERDOUBLETAP);
+
+            scene.onNewCameraAddedObservable.add((camera) => {
+                if (this.camerasAsHotSpots) {
+                    this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
+                }
+            });
+
+            scene.onCameraRemovedObservable.add((camera) => {
+                this._removeCameraHotSpot(camera);
+            });
 
             this._scene = scene;
             this._camera = camera;
@@ -1119,6 +1201,33 @@ export class Viewer implements IDisposable {
                 this._markSceneMutated();
                 this.onSelectedMaterialVariantChanged.notifyObservers();
             }
+        }
+    }
+
+    /**
+     * The set of defined hotspots.
+     */
+    public get hotSpots() {
+        return this._hotSpots;
+    }
+
+    public set hotSpots(value: Record<string, HotSpot>) {
+        this._hotSpots = value;
+        this.onHotSpotsChanged.notifyObservers();
+    }
+
+    /**
+     * True if scene cameras should be used as hotspots.
+     */
+    public get camerasAsHotSpots() {
+        return this._camerasAsHotSpots;
+    }
+
+    public set camerasAsHotSpots(value: boolean) {
+        if (this._camerasAsHotSpots !== value) {
+            this._camerasAsHotSpots = value;
+            this._toggleCamerasAsHotSpots();
+            this.onCamerasAsHotSpotsChanged.notifyObservers();
         }
     }
 
@@ -1689,6 +1798,89 @@ export class Viewer implements IDisposable {
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 
         return true;
+    }
+
+    /**
+     * Get hotspot world and screen values from a named hotspot
+     * @param name slot of the hot spot
+     * @param result resulting world and screen positions
+     * @returns world position, world normal and screen space coordinates
+     */
+    public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
+        return this._queryHotSpot(name, result) != null;
+    }
+
+    /**
+     * Updates the camera to focus on a named hotspot.
+     * @param name The name of the hotspot to focus on.
+     * @returns true if the hotspot was found and the camera was updated, false otherwise.
+     */
+    public focusHotSpot(name: string): boolean {
+        const result = new ViewerHotSpotResult();
+        const query = this._queryHotSpot(name, result);
+        if (query) {
+            this.pauseAnimation();
+            const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
+            this._camera.interpolateTo(cameraOrbit[0], cameraOrbit[1], cameraOrbit[2], new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2]));
+            return true;
+        }
+        return false;
+    }
+
+    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
+        const hotSpot = this.hotSpots?.[name];
+        if (hotSpot) {
+            if (this.getHotSpotToRef(hotSpot, result)) {
+                return hotSpot;
+            }
+        }
+        return null;
+    }
+
+    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
+        if (camera !== this._camera) {
+            const hotSpot = await this._createHotSpotFromCamera(camera);
+            if (hotSpot && !signal?.aborted) {
+                this.hotSpots = {
+                    ...this.hotSpots,
+                    [`camera-${camera.name}`]: hotSpot,
+                };
+            }
+        }
+    }
+
+    private _removeCameraHotSpot(camera: Camera) {
+        delete this.hotSpots[`camera-${camera.name}`];
+        this.hotSpots = { ...this.hotSpots };
+    }
+
+    private _toggleCamerasAsHotSpots() {
+        if (!this.camerasAsHotSpots) {
+            this._camerasAsHotSpotsAbortController?.abort();
+            this._camerasAsHotSpotsAbortController = null;
+            this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+        } else {
+            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
+            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+        }
+    }
+
+    /**
+     * Creates a world HotSpot from a camera.
+     * @param camera The camera to create a HotSpot from.
+     * @returns A HotSpot created from the camera.
+     */
+    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
+        if (camera instanceof ArcRotateCamera) {
+            const targetArray = camera.target.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
+        }
+
+        if (this._activeModel) {
+            return CreateHotSpotFromCamera(this._activeModel, camera);
+        }
+
+        return null;
     }
 
     protected get _shouldRender() {

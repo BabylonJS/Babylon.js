@@ -1,9 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, Nullable, Observable } from "core/index";
-import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
-
+import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, Model, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -11,12 +9,11 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 
 import { Color4 } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
+import { IsToneMapping, Viewer } from "./viewer";
 import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -54,13 +51,6 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     const data = context.getImageData(0, 0, 1, 1).data;
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
-
-export type HotSpot = ViewerHotSpotQuery & {
-    /**
-     * An optional camera pose to associate with the hotspot.
-     */
-    cameraOrbit?: CameraOrbit;
-};
 
 type ResetMode = "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]];
 
@@ -107,56 +97,6 @@ function coerceResetMode(value: string | null): ResetMode {
     return value.trim().split(/\s+/) as ResetMode;
 }
 
-/**
- * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
- *
- * The target point is determined using the camera's forward ray:
- *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
- *   - If no intersection is found, a fallback target is calculated by projecting the distance
- *     between the camera and the model's center along the camera's forward direction.
- *
- * @param model The reference model used to determine the target point.
- * @param camera The camera from which the HotSpot is generated.
- * @returns A HotSpot object.
- */
-export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
-    await import("core/Culling/ray");
-    const scene = model.assetContainer.scene;
-    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-    const camGlobalPos = camera.globalPosition.clone();
-
-    // Target
-    let radius: number = 0.0001; // Just to avoid division by zero
-    const targetPoint = Vector3.Zero();
-    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
-    if (pickingInfo && pickingInfo.hit) {
-        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
-    } else {
-        const worldBounds = model.getWorldBounds();
-        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
-        const distancePoint = Vector3.FromArray(centerArray);
-        const direction = ray.direction.clone();
-        targetPoint.copyFrom(camGlobalPos);
-        radius = Vector3.Distance(camGlobalPos, distancePoint);
-        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
-    }
-
-    const computationVector = Vector3.Zero();
-    camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-    // Radius
-    if (pickingInfo && pickingInfo.hit) {
-        radius = computationVector.length();
-    }
-
-    // Alpha and Beta
-    const alpha = ComputeAlpha(computationVector);
-    const beta = ComputeBeta(computationVector.y, radius);
-
-    const targetArray = targetPoint.asArray();
-    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
-}
-
 // Custom events for the HTML3DElement.
 export interface ViewerElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
@@ -201,7 +141,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private readonly _viewerLock = new AsyncLock();
     private _animationSliderResizeObserver: Nullable<ResizeObserver> = null;
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
     /**
      * @experimental
@@ -310,6 +249,18 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onSelectedMaterialVariantChanged,
             (details) => (details.viewer.selectedMaterialVariant = this.selectedMaterialVariant ?? details.viewer.selectedMaterialVariant ?? ""),
             (details) => (this.selectedMaterialVariant = details.viewer.selectedMaterialVariant)
+        ),
+        this._createPropertyBinding(
+            "hotSpots",
+            (details) => details.viewer.onHotSpotsChanged,
+            (details) => (details.viewer.hotSpots = this.hotSpots ?? details.viewer.hotSpots),
+            (details) => (this.hotSpots = details.viewer.hotSpots)
+        ),
+        this._createPropertyBinding(
+            "camerasAsHotSpots",
+            (details) => details.viewer.onCamerasAsHotSpotsChanged,
+            (details) => (details.viewer.camerasAsHotSpots = this.camerasAsHotSpots ?? details.viewer.camerasAsHotSpots),
+            (details) => (this.camerasAsHotSpots = details.viewer.camerasAsHotSpots)
         ),
     ] as const;
 
@@ -622,19 +573,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns world position, world normal and screen space coordinates
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
-        return this._queryHotSpot(name, result) != null;
-    }
-
-    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
         if (this._viewerDetails) {
-            const hotSpot = this.hotSpots?.[name];
-            if (hotSpot) {
-                if (this._viewerDetails.viewer.getHotSpotToRef(hotSpot, result)) {
-                    return hotSpot;
-                }
-            }
+            return this._viewerDetails.viewer.queryHotSpot(name, result) != null;
         }
-        return null;
+        return false;
     }
 
     /**
@@ -643,18 +585,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns true if the hotspot was found and the camera was updated, false otherwise.
      */
     public focusHotSpot(name: string): boolean {
-        const result = new ViewerHotSpotResult();
-        const query = this._queryHotSpot(name, result);
-        if (query && this._viewerDetails) {
-            this._viewerDetails.viewer.pauseAnimation();
-            const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
-            this._viewerDetails.camera.interpolateTo(
-                cameraOrbit[0],
-                cameraOrbit[1],
-                cameraOrbit[2],
-                new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2])
-            );
-            return true;
+        if (this._viewerDetails) {
+            return this._viewerDetails.viewer.focusHotSpot(name);
         }
         return false;
     }
@@ -831,7 +763,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public cameraAutoOrbitDelay: Nullable<number> = this._options.cameraAutoOrbit?.delay ?? null;
 
     /**
-     * A string value that encodes one or more hotspots.
+     * The set of defined hot spots.
      */
     @property({
         attribute: "hotspots",
@@ -1033,10 +965,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     skybox: changedProperties.has("environmentSkybox"),
                 });
             }
-        }
-
-        if (changedProperties.has("camerasAsHotSpots")) {
-            this._toggleCamerasAsHotSpots();
         }
     }
 
@@ -1326,34 +1254,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         };
     }
 
-    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
-        if (camera !== this._viewerDetails?.camera) {
-            const hotSpot = await this._createHotSpotFromCamera(camera);
-            if (hotSpot && !signal?.aborted) {
-                this.hotSpots = {
-                    ...this.hotSpots,
-                    [`camera-${camera.name}`]: hotSpot,
-                };
-            }
-        }
-    }
-
-    private _removeCameraHotSpot(camera: Camera) {
-        delete this.hotSpots[`camera-${camera.name}`];
-        this.hotSpots = { ...this.hotSpots };
-    }
-
-    private _toggleCamerasAsHotSpots() {
-        if (!this.camerasAsHotSpots) {
-            this._camerasAsHotSpotsAbortController?.abort();
-            this._camerasAsHotSpotsAbortController = null;
-            this._viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
-        } else {
-            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
-        }
-    }
-
     private async _setupViewer() {
         await this._viewerLock.lockAsync(async () => {
             // The first time the element is connected, the canvas container may not be available yet.
@@ -1480,16 +1380,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
                 });
 
-                details.scene.onNewCameraAddedObservable.add((camera) => {
-                    if (this.camerasAsHotSpots) {
-                        this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
-                    }
-                });
-
-                details.scene.onCameraRemovedObservable.add((camera) => {
-                    this._removeCameraHotSpot(camera);
-                });
-
                 details.scene.onAfterRenderCameraObservable.add(() => {
                     this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                 });
@@ -1586,24 +1476,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 }
             }
         }
-    }
-
-    /**
-     * Creates a world HotSpot from a camera.
-     * @param camera The camera to create a HotSpot from.
-     * @returns A HotSpot created from the camera.
-     */
-    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
-        if (camera instanceof ArcRotateCamera) {
-            const targetArray = camera.target.asArray();
-            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
-        }
-
-        if (this._viewerDetails?.model) {
-            return CreateHotSpotFromCamera(this._viewerDetails.model, camera);
-        }
-
-        return null;
     }
 }
 
