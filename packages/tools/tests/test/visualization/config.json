@@ -2222,7 +2222,7 @@
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
             "renderCount": 2,
-            "playgroundId": "#F6PGMC"
+            "playgroundId": "#F6PGMC#9"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -2264,7 +2264,7 @@
         {
             "title": "update-sampler-info",
             "renderCount": 5,
-            "playgroundId": "#7GKK8E#23"
+            "playgroundId": "#7GKK8E#24"
         },
         {
             "title": "wgsl-in-shadermaterial",
