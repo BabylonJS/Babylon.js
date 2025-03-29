@@ -82,12 +82,14 @@
             // Diffuse contribution
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
-            #elif AREALIGHT{X}
+            #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
-            #elif defined(SS_TRANSLUCENCY)
-                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance, subSurfaceOut.translucencyIntensity, surfaceAlbedo.rgb);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
+                #ifdef SS_TRANSLUCENCY
+                    info.diffuse *= (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.transmission = computeTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                #endif
             #endif
 
             // Specular contribution
@@ -357,6 +359,9 @@
                 diffuseBase += info.diffuse * shadowDebug{X};
             #else        
                 diffuseBase += info.diffuse * shadow;
+            #endif
+            #ifdef SS_TRANSLUCENCY
+                transmissionBase += info.transmission * shadow;
             #endif
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;
