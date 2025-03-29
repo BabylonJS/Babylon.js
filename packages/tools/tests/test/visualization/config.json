@@ -2267,11 +2267,6 @@
             "playgroundId": "#KICG93#2"
         },
         {
-            "title": "update-sampler-info",
-            "renderCount": 5,
-            "playgroundId": "#7GKK8E#27"
-        },
-        {
             "title": "wgsl-in-shadermaterial",
             "renderCount": 30,
             "playgroundId": "#8RU8Q3#157",
