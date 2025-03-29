@@ -154,7 +154,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Help",
                                     onClick: () => {
-                                        window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
+                                        window.open("https://doc.babylonjs.com/toolsAndResources/guiEditor", "_blank");
                                     },
                                 },
                                 {
