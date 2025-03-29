@@ -1945,7 +1945,7 @@
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#9228",
             "referenceImage": "exportGltfKHRTextureTransform.png",
-            "renderCount": 15
+            "renderCount": 25
         },
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
