@@ -136,6 +136,9 @@
                         // Absorption
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
                         info.diffuse *= absorption;
+                        #ifdef SS_TRANSLUCENCY
+                            info.transmission *= absorption;
+                        #endif
                         #ifdef SPECULARTERM
                             info.specular *= absorption;
                         #endif
@@ -143,6 +146,9 @@
 
                     // Apply energy conservation on diffuse and specular term.
                     info.diffuse *= info.clearCoat.w;
+                    #ifdef SS_TRANSLUCENCY
+                        info.transmission *= info.clearCoat.w;
+                    #endif
                     #ifdef SPECULARTERM
                         info.specular *= info.clearCoat.w;
                     #endif

@@ -1,7 +1,7 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
-#if defined(SS_TRANSLUCENCY)
+#if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
     finalDiffuse += transmissionBase;
 #endif
 finalDiffuse = max(finalDiffuse, vec3f(0.0));
