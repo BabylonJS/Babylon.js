@@ -1455,7 +1455,7 @@
         },
         {
             "title": "Glow layer and LODs",
-            "playgroundId": "#UNS6ZV#4",
+            "playgroundId": "#UNS6ZV#13",
             "referenceImage": "glowlayerandlods.png"
         },
         {
@@ -2227,7 +2227,7 @@
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
             "renderCount": 2,
-            "playgroundId": "#F6PGMC"
+            "playgroundId": "#F6PGMC#12"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -2265,11 +2265,6 @@
         {
             "title": "lens-flare",
             "playgroundId": "#KICG93#2"
-        },
-        {
-            "title": "update-sampler-info",
-            "renderCount": 5,
-            "playgroundId": "#7GKK8E#20"
         },
         {
             "title": "wgsl-in-shadermaterial",
