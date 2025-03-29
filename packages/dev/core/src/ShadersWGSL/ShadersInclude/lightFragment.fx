@@ -82,12 +82,14 @@
             // Diffuse contribution
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
-            #elif AREALIGHT{X}
+            #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
-            #elif defined(SS_TRANSLUCENCY)
-                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance, subSurfaceOut.translucencyIntensity, surfaceAlbedo.rgb);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
+                #ifdef SS_TRANSLUCENCY
+                    info.diffuse *= (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.transmission = computeTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                #endif
             #endif
 
             // Specular contribution
@@ -134,6 +136,9 @@
                         // Absorption
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
                         info.diffuse *= absorption;
+                        #ifdef SS_TRANSLUCENCY
+                            info.transmission *= absorption;
+                        #endif
                         #ifdef SPECULARTERM
                             info.specular *= absorption;
                         #endif
@@ -141,6 +146,9 @@
 
                     // Apply energy conservation on diffuse and specular term.
                     info.diffuse *= info.clearCoat.w;
+                    #ifdef SS_TRANSLUCENCY
+                        info.transmission *= info.clearCoat.w;
+                    #endif
                     #ifdef SPECULARTERM
                         info.specular *= info.clearCoat.w;
                     #endif
@@ -357,6 +365,9 @@
                 diffuseBase += info.diffuse * shadowDebug{X};
             #else        
                 diffuseBase += info.diffuse * shadow;
+            #endif
+            #ifdef SS_TRANSLUCENCY
+                transmissionBase += info.transmission * shadow;
             #endif
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;
