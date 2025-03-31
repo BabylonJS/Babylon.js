@@ -607,6 +607,9 @@ export class ArcRotateCamera extends TargetCamera {
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
 
+    // This is redundant with all _goal* properties being NaN, but we track it anyway because we check for active interpolation in the hot path.
+    private _isInterpolating = false;
+
     /**
      * Gets the bouncing behavior of the camera if it has been enabled.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#bouncing-behavior
@@ -924,6 +927,8 @@ export class ArcRotateCamera extends TargetCamera {
         this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
         this._goalRadius = Clamp(this._goalRadius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
         this._goalTarget.y = Clamp(this._goalTarget.y, this.lowerTargetYLimit ?? -Infinity, Infinity);
+
+        this._isInterpolating = true;
     }
 
     // Synchronized
@@ -1111,7 +1116,8 @@ export class ArcRotateCamera extends TargetCamera {
 
         if (hasUserInteractions) {
             this.stopInterpolation();
-        } else {
+        } else if (this._isInterpolating) {
+            let isInterpolating = false;
             const dt = this._scene.getEngine().getDeltaTime() / 1000;
             const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
 
@@ -1123,6 +1129,8 @@ export class ArcRotateCamera extends TargetCamera {
 
             // Interpolate the target if we haven't reached the goal yet.
             if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
+                isInterpolating = true;
+
                 const goalTarget = TmpVectors.Vector3[0].set(
                     selectGoalValue(this._goalTarget.x, this._target.x),
                     selectGoalValue(this._goalTarget.y, this._target.y),
@@ -1140,6 +1148,8 @@ export class ArcRotateCamera extends TargetCamera {
 
             // Interpolate the rotation if we haven't reached the goal yet.
             if (!isNaN(this._goalAlpha) || !isNaN(this._goalBeta)) {
+                isInterpolating = true;
+
                 // Using quaternion for smoother interpolation (and no Euler angles modulo)
                 const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
                     selectGoalValue(this._goalAlpha, this.alpha),
@@ -1166,6 +1176,8 @@ export class ArcRotateCamera extends TargetCamera {
 
             // Interpolate the radius if we haven't reached the goal yet.
             if (!isNaN(this._goalRadius)) {
+                isInterpolating = true;
+
                 this.radius += (goalRadius - this.radius) * t;
 
                 // Terminate the radius interpolation when we are 99.9% of the way to the goal radius, at which point it is visually indistinguishable from the goal.
@@ -1177,6 +1189,8 @@ export class ArcRotateCamera extends TargetCamera {
 
             // Interpolate the target screen offset if we haven't reached the goal yet.
             if (!isNaN(this._goalTargetScreenOffset.x) || !isNaN(this._goalTargetScreenOffset.y)) {
+                isInterpolating = true;
+
                 const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
                     selectGoalValue(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
                     selectGoalValue(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
@@ -1189,6 +1203,8 @@ export class ArcRotateCamera extends TargetCamera {
                     this.targetScreenOffset.copyFrom(goalTargetScreenOffset);
                 }
             }
+
+            this._isInterpolating = isInterpolating;
         }
 
         // Limits
