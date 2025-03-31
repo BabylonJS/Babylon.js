@@ -7,6 +7,10 @@
     normalW *= sign(dot(normalW, faceNormal));
 #endif
 
-#if defined(TWOSIDEDLIGHTING) && defined(NORMAL) && !defined(MIRRORED)
-   normalW = gl_FrontFacing ? normalW : -normalW;
+#if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
+    #if defined(MIRRORED)
+        normalW = gl_FrontFacing ? -normalW : normalW;
+    #else
+        normalW = gl_FrontFacing ? normalW : -normalW;
+    #endif
 #endif
