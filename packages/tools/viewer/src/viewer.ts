@@ -1565,6 +1565,7 @@ export class Viewer implements IDisposable {
         const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
         shadowMaterial.activeLight = this._shadowLight;
         if (this._shadowGround) {
+            this._shadowLight.includedOnlyMeshes = [this._shadowGround];
             this._shadowGround.material = shadowMaterial;
         }
         this._snapshotHelper.enableSnapshotRendering();
