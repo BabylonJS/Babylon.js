@@ -1390,9 +1390,7 @@ export class Viewer implements IDisposable {
     }
 
     private async _updateShadows(type: ShadowType) {
-        if (!this._shadowGround) {
-            this._createGround();
-        }
+        this._createGround();
 
         if (type === "classic") {
             await this._updateClassicShadow();
@@ -1402,6 +1400,10 @@ export class Viewer implements IDisposable {
     }
 
     private _createGround() {
+        if (this._shadowGround) {
+            return;
+        }
+
         this._snapshotHelper.disableSnapshotRendering();
 
         this._shadowGround = CreateDisc("ground", { radius: 25, tessellation: 64 }, this._scene);
@@ -1514,20 +1516,13 @@ export class Viewer implements IDisposable {
             this._iblShadowsRenderPipeline.updateSceneBounds();
             this._iblShadowsRenderPipeline.updateVoxelization();
             this._snapshotHelper.enableSnapshotRendering();
-        } else {
-            this._snapshotHelper.disableSnapshotRendering();
-            if (this._shadowGround) {
-                this._shadowGround.material = this._groundShadowMaterial;
-            }
-            this._snapshotHelper.enableSnapshotRendering();
-            this._iblShadowsRenderPipeline.toggleShadow(true);
-        }
 
-        this._resizeShadowObserver = this._engine.onResizeObservable.add(() => {
-            if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
-                this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-            }
-        });
+            this._resizeShadowObserver = this._engine.onResizeObservable.add(() => {
+                if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
+                    this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+                }
+            });
+        }
     }
 
     private async _updateClassicShadow() {
