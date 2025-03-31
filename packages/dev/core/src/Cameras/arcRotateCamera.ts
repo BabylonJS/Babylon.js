@@ -616,6 +616,13 @@ export class ArcRotateCamera extends TargetCamera {
     private _isInterpolating = false;
 
     /**
+     * If true, indicates the camera is currently interpolating to a new pose.
+     */
+    public get isInterpolating(): boolean {
+        return this._isInterpolating;
+    }
+
+    /**
      * Gets the bouncing behavior of the camera if it has been enabled.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#bouncing-behavior
      */
