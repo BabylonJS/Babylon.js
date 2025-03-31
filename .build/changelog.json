@@ -1,6 +1,233 @@
 {
-    "fromTag": "8.0.0",
+    "fromTag": "8.0.1",
     "changelog": {
+        "8.0.2": [
+            {
+                "pr": "16426",
+                "title": "Enable asynchronous glTF interactivity events",
+                "description": "Modify the event handling in the FlowGraphCoordinator to support asynchronous execution of glTF interactivity events as per specs",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16427",
+                "title": "Viewer: Fix trying to use a disposed env texture in a PBR material",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16425",
+                "title": "IBL shadows: add support for instances, thin instances, skinning and morphing",
+                "description": "See https://forum.babylonjs.com/t/ibl-shadows-pipeline-and-instancing/57458",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "16428",
+                "title": "Cloning instanced meshes: don't try to clone the geometry object",
+                "description": "See https://forum.babylonjs.com/t/spamming-warning-on-instancedmesh-clone/57520",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16423",
+                "title": "PBR: Fix wrong diffuse from hemispherical/area lights when translucency is enabled",
+                "description": "See https://forum.babylonjs.com/t/why-are-the-grapes-i-made-with-pbrmaterial-a-different-color-than-before/57482\r\n\r\nDraft request for the time being, so that it's not merged too fast.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidParticleSystem.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage3.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16422",
+                "title": "Fix the correct link for guiEditor",
+                "description": "Change the correct guiEditor link from `https://doc.babylonjs.com/toolsAndResources/tools/guiEditor` to `https://doc.babylonjs.com/toolsAndResources/guiEditor`",
+                "author": {
+                    "name": "gsw945",
+                    "url": "https://github.com/gsw945"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16419",
+                "title": "Fix bug when update sampling was not taking mip map generation in acc…",
+                "description": "…ount",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16421",
+                "title": "fix: mark iblShadowsTexture as \"serializeAsTexture\" and not \"serializ…",
+                "description": "…e\" in IBLShadowsPluginMaterial",
+                "author": {
+                    "name": "julien-moreau",
+                    "url": "https://github.com/julien-moreau"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16420",
+                "title": "Better fix!",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16417",
+                "title": "Fix pbr mirror",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-mirror.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16416",
+                "title": "FrameGraph: Fix code generated for input blocks by NRGE",
+                "description": "See https://forum.babylonjs.com/t/cannot-connect-these-two-connectors-when-generate-code/57466",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16412",
+                "title": "Cleanup legacy audio engine's audio context in `dispose()`",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/mockedAudioObjects.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16413",
+                "title": "Add global default for APPLY_ALBEDO_AFTERSUBSURFACE back compat flag",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": []
+            }
+        ],
         "8.0.1": [
             {
                 "pr": "16411",
