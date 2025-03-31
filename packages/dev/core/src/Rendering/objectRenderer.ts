@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem } from "core/index";
+import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -252,7 +252,11 @@ export class ObjectRenderer {
         }
         for (let j = 0; j < meshes.length; ++j) {
             for (let i = 0; i < this.options.numPasses; ++i) {
-                meshes[j].setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
+                let mesh = meshes[j];
+                if (meshes[j].isAnInstance) {
+                    mesh = (meshes[j] as InstancedMesh).sourceMesh;
+                }
+                mesh.setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
             }
         }
     }
