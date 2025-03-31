@@ -874,14 +874,7 @@ export class Viewer implements IDisposable {
         this._disposeShadows();
 
         if (value.type) {
-            if (!this._shadowGround) {
-                this._createGround();
-            }
-            if (value.type === "classic") {
-                this._updateClassicShadow();
-            } else if (value.type === "environment") {
-                this._updateEnvironmentShadow();
-            }
+            this._updateShadows(value.type);
         }
 
         this.onShadowsConfigurationChanged.notifyObservers();
@@ -1396,6 +1389,18 @@ export class Viewer implements IDisposable {
         this._startSceneOptimizer(true);
     }
 
+    private async _updateShadows(type: ShadowType) {
+        if (!this._shadowGround) {
+            this._createGround();
+        }
+
+        if (type === "classic") {
+            await this._updateClassicShadow();
+        } else if (type === "environment") {
+            await this._updateEnvironmentShadow();
+        }
+    }
+
     private _createGround() {
         this._snapshotHelper.disableSnapshotRendering();
 
@@ -1540,9 +1545,12 @@ export class Viewer implements IDisposable {
         const max = Vector3.FromArray(worldBounds.extents.max);
         const size = max.subtract(min);
         const maxRadius = size.length();
+        const radiusFator = 4;
+        const position = maxRadius * radiusFator;
 
         this._snapshotHelper.disableSnapshotRendering();
-        this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius * 4, maxRadius * 4, maxRadius * 4), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
+
+        this._shadowLight = new SpotLight("spotLight", new Vector3(position, position, position), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
         this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
         const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
 
@@ -1575,23 +1583,19 @@ export class Viewer implements IDisposable {
         this._shadowGenerator.useKernelBlur = true;
         this._shadowGenerator.blurScale = 1;
         this._shadowGenerator.blurKernel = 8;
+
         this._snapshotHelper.enableSnapshotRendering();
     }
 
     private _disposeShadows() {
         this._snapshotHelper.disableSnapshotRendering();
 
-        this._shadowGenerator?.dispose();
-        this._shadowLight?.dispose();
-        this._shadowGenerator = null;
-        this._shadowLight = null;
-
         this._loadedModelsBacking.forEach((model) => {
             const meshes = model.assetContainer.meshes as Mesh[];
 
             const mesh = model.assetContainer.meshes[0];
-            this._shadowGenerator?.addShadowCaster(mesh, true);
-            mesh.receiveShadows = true;
+            this._shadowGenerator?.removeShadowCaster(mesh, true);
+            mesh.receiveShadows = false;
 
             meshes.forEach((mesh) => {
                 this._iblShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
@@ -1600,6 +1604,11 @@ export class Viewer implements IDisposable {
                 }
             });
         });
+
+        this._shadowGenerator?.dispose();
+        this._shadowLight?.dispose();
+        this._shadowGenerator = null;
+        this._shadowLight = null;
 
         this._resizeShadowObserver?.remove();
         this._groundShadowMaterial?.dispose();
