@@ -908,7 +908,8 @@ export class ArcRotateCamera extends TargetCamera {
             this._currentInterpolationFactor = 0.1;
         }
 
-        const selectGoalValue = (newGoal: number | undefined, currentGoal: number): number => (newGoal === undefined || isNaN(newGoal) ? currentGoal : newGoal);
+        // If NaN is passed in for a goal value, keep the current goal value.
+        const selectGoalValue = (newGoal: number, currentGoal: number): number => (isNaN(newGoal) ? currentGoal : newGoal);
 
         this._goalAlpha = selectGoalValue(alpha, this._goalAlpha);
         this._goalBeta = selectGoalValue(beta, this._goalBeta);
@@ -1114,6 +1115,7 @@ export class ArcRotateCamera extends TargetCamera {
             const dt = this._scene.getEngine().getDeltaTime() / 1000;
             const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
 
+            // If the goal is NaN, it means we are not interpolating to a new value, so we can use the current value.
             const selectGoalValue = (goal: number, current: number): number => (isNaN(goal) ? current : goal);
 
             // Get the goal radius immediately as we'll need it for determining interpolation termination for the target.
