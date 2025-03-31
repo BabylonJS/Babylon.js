@@ -56,6 +56,11 @@ export function ComputeBeta(verticalOffset: number, radius: number): number {
     return Math.acos(verticalOffset / radius);
 }
 
+// Returns the value if not NaN, otherwise returns the fallback value.
+function checkNaN(value: number, fallback: number): number {
+    return isNaN(value) ? fallback : value;
+}
+
 /**
  * This represents an orbital type of camera.
  *
@@ -912,16 +917,11 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // If NaN is passed in for a goal value, keep the current goal value.
-        const selectGoalValue = (newGoal: number, currentGoal: number): number => (isNaN(newGoal) ? currentGoal : newGoal);
-
-        this._goalAlpha = selectGoalValue(alpha, this._goalAlpha);
-        this._goalBeta = selectGoalValue(beta, this._goalBeta);
-        this._goalRadius = selectGoalValue(radius, this._goalRadius);
-        this._goalTarget.set(selectGoalValue(target?.x, this._goalTarget.x), selectGoalValue(target?.y, this._goalTarget.y), selectGoalValue(target?.z, this._goalTarget.z));
-        this._goalTargetScreenOffset.set(
-            selectGoalValue(targetScreenOffset?.x, this._goalTargetScreenOffset.x),
-            selectGoalValue(targetScreenOffset?.y, this._goalTargetScreenOffset.y)
-        );
+        this._goalAlpha = checkNaN(alpha, this._goalAlpha);
+        this._goalBeta = checkNaN(beta, this._goalBeta);
+        this._goalRadius = checkNaN(radius, this._goalRadius);
+        this._goalTarget.set(checkNaN(target?.x, this._goalTarget.x), checkNaN(target?.y, this._goalTarget.y), checkNaN(target?.z, this._goalTarget.z));
+        this._goalTargetScreenOffset.set(checkNaN(targetScreenOffset?.x, this._goalTargetScreenOffset.x), checkNaN(targetScreenOffset?.y, this._goalTargetScreenOffset.y));
 
         this._goalAlpha = Clamp(this._goalAlpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
         this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
@@ -1121,20 +1121,19 @@ export class ArcRotateCamera extends TargetCamera {
             const dt = this._scene.getEngine().getDeltaTime() / 1000;
             const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
 
-            // If the goal is NaN, it means we are not interpolating to a new value, so we can use the current value.
-            const selectGoalValue = (goal: number, current: number): number => (isNaN(goal) ? current : goal);
+            // NOTE: If the goal is NaN, it means we are not interpolating to a new value, so we can use the current value. Hence the calls to checkNaN.
 
             // Get the goal radius immediately as we'll need it for determining interpolation termination for the target.
-            const goalRadius = selectGoalValue(this._goalRadius, this.radius);
+            const goalRadius = checkNaN(this._goalRadius, this.radius);
 
             // Interpolate the target if we haven't reached the goal yet.
             if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
                 isInterpolating = true;
 
                 const goalTarget = TmpVectors.Vector3[0].set(
-                    selectGoalValue(this._goalTarget.x, this._target.x),
-                    selectGoalValue(this._goalTarget.y, this._target.y),
-                    selectGoalValue(this._goalTarget.z, this._target.z)
+                    checkNaN(this._goalTarget.x, this._target.x),
+                    checkNaN(this._goalTarget.y, this._target.y),
+                    checkNaN(this._goalTarget.z, this._target.z)
                 );
                 this.setTarget(Vector3.Lerp(this.target, goalTarget, t), undefined, undefined, true);
 
@@ -1152,8 +1151,8 @@ export class ArcRotateCamera extends TargetCamera {
 
                 // Using quaternion for smoother interpolation (and no Euler angles modulo)
                 const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
-                    selectGoalValue(this._goalAlpha, this.alpha),
-                    selectGoalValue(this._goalBeta, this.beta),
+                    checkNaN(this._goalAlpha, this.alpha),
+                    checkNaN(this._goalBeta, this.beta),
                     0,
                     TmpVectors.Quaternion[0]
                 );
@@ -1192,8 +1191,8 @@ export class ArcRotateCamera extends TargetCamera {
                 isInterpolating = true;
 
                 const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
-                    selectGoalValue(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
-                    selectGoalValue(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
+                    checkNaN(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
+                    checkNaN(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
                 );
                 Vector2.LerpToRef(this.targetScreenOffset, goalTargetScreenOffset, t, this.targetScreenOffset);
 
