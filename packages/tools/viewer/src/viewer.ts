@@ -94,13 +94,15 @@ void main(void) {
     float uvBasedOpacity = clamp(length(vUV * vec2(2.0) - vec2(1.0)), 0.0, 1.0);
     uvBasedOpacity = uvBasedOpacity * uvBasedOpacity;
     uvBasedOpacity = 1.0 - uvBasedOpacity;
-    // float uvBasedOpacity = length(vUV - vec2(0.5, 0.5))
+
     vec2 screenUv = gl_FragCoord.xy / renderTargetSize;
     vec3 shadowValue = texture2D(shadowTexture, screenUv).rrr;
+
     float totalOpacity = shadowOpacity * uvBasedOpacity;
-    shadowValue = mix(vec3(1.0), shadowValue, totalOpacity);
-    gl_FragColor.rgb = shadowValue;
-    gl_FragColor.a = 1.0;
+    vec3 invertedShadowValue = vec3(1.0) - shadowValue;
+
+    gl_FragColor.rgb = shadowValue; 
+    gl_FragColor.a = invertedShadowValue.r * totalOpacity; 
 }
 `;
 
@@ -137,7 +139,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let shadowValue = textureSampleLevel(shadowTexture, shadowTextureSampler, screenUv, 0.0).rrr;
     let totalOpacity = uniforms.shadowOpacity * uvBasedOpacity;
     let finalShadowValue = mix(vec3<f32>(1.0), shadowValue, totalOpacity);
-    fragmentOutputs.color = vec4f(finalShadowValue, 1.0);
+    let invertedShadowValue = vec3(1.0) - shadowValue;
+    fragmentOutputs.color = vec4f(finalShadowValue, invertedShadowValue.r * totalOpacity);
 }
 `;
 
