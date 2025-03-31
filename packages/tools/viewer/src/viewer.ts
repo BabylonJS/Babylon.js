@@ -26,7 +26,7 @@ import type {
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
-import { SpotLight } from "core/Lights/spotLight";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -683,7 +683,7 @@ export class Viewer implements IDisposable {
     private _iblShadowsRenderPipeline: Nullable<IblShadowsRenderPipeline> = null;
     private _shadowGround: Nullable<Mesh> = null;
     private _groundShadowMaterial: Nullable<ShaderMaterial> = null;
-    private _shadowLight: Nullable<SpotLight> = null;
+    private _shadowLight: Nullable<DirectionalLight> = null;
     private _resizeShadowObserver: Nullable<Observer<Engine>> = null;
 
     public constructor(
@@ -1532,22 +1532,9 @@ export class Viewer implements IDisposable {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
 
-        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
-
-        if (!worldBounds) {
-            return;
-        }
-
-        const min = Vector3.FromArray(worldBounds.extents.min);
-        const max = Vector3.FromArray(worldBounds.extents.max);
-        const size = max.subtract(min);
-        const maxRadius = size.length();
-        const radiusFator = 4;
-        const position = maxRadius * radiusFator;
-
         this._createShadowGround();
-        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
-        this._shadowLight = new SpotLight("spotLight", new Vector3(position, position, position), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
+        this._shadowLight = new DirectionalLight("spotLight", new Vector3(-1, -1, -1), this._scene);
+        this._shadowLight.setDirectionToTarget(Vector3.Zero());
         this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
         this._shadowGenerator.setDarkness(0.95);
         this._shadowGenerator.setTransparencyShadow(true);
@@ -1575,6 +1562,7 @@ export class Viewer implements IDisposable {
             shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
         }
 
+        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
         shadowMaterial.activeLight = this._shadowLight;
         if (this._shadowGround) {
             this._shadowGround.material = shadowMaterial;
